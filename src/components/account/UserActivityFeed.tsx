@@ -7,10 +7,9 @@ import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Package from "lucide-react/dist/esm/icons/package";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import {
+  ShoppingCart, Package, Settings, TrendingUp
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 

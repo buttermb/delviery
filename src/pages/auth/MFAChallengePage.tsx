@@ -1,8 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { toast } from "@/hooks/use-toast";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Lock from "lucide-react/dist/esm/icons/lock";
+import { Shield } from "lucide-react";
 import { logger } from "@/lib/logger";
 
 type AuthPortal = "tenant-admin" | "super-admin" | "customer";
@@ -106,9 +105,8 @@ export default function MFAChallengePage({ portal }: MFAChallengePageProps) {
 
         {/* Trust indicator */}
         <div className="mt-6 text-center">
-          <p className="text-slate-500 text-xs inline-flex items-center gap-1.5">
-            <Lock className="h-3 w-3" />
-            Secure two-factor authentication
+          <p className="text-slate-500 text-xs">
+            🔒 Secure two-factor authentication
           </p>
         </div>
       </div>

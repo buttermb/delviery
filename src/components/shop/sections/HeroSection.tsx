@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { sanitizeWithLineBreaks } from '@/lib/utils/sanitize';
+import { sanitizeBasicHtml } from '@/lib/utils/sanitize';
 
 export interface HeroSectionProps {
     content: {
@@ -15,8 +15,6 @@ export interface HeroSectionProps {
         cta_secondary_text: string;
         cta_secondary_link: string;
         trust_badges?: boolean;
-        // Announcement banner from Easy Mode
-        announcement_banner?: string;
     };
     styles: {
         background_gradient_start: string;
@@ -39,8 +37,7 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
         cta_primary_link = "/shop",
         cta_secondary_text = "View Menu",
         cta_secondary_link = "/menu",
-        trust_badges = true,
-        announcement_banner,
+        trust_badges = true
     } = content || {};
 
     const {
@@ -66,22 +63,6 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
 
     return (
         <section className="relative min-h-dvh flex items-center justify-center overflow-hidden" style={{ backgroundColor: background_gradient_start }}>
-
-            {/* Announcement Banner */}
-            {announcement_banner && (
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="absolute top-0 left-0 right-0 z-20 py-2.5 px-4 text-center text-sm font-medium"
-                    style={{
-                        backgroundColor: accent_color,
-                        color: background_gradient_start,
-                    }}
-                >
-                    {announcement_banner}
-                </motion.div>
-            )}
 
             {/* Animated background */}
             <div className="absolute inset-0">
@@ -189,8 +170,8 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
                         className="text-center text-lg md:text-xl font-light leading-relaxed mt-12 mb-12 max-w-2xl mx-auto"
-                        style={{ color: `${text_color}80` }}
-                        dangerouslySetInnerHTML={{ __html: sanitizeWithLineBreaks(subheading) }}
+                        style={{ color: `${text_color}80` }} // 50% opacity
+                        dangerouslySetInnerHTML={{ __html: sanitizeBasicHtml(subheading) }} // Sanitized HTML - allows only basic formatting
                     />
 
                     {/* CTAs */}

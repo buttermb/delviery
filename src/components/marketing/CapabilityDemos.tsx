@@ -1,11 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Package, TrendingUp, Clock, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface InventoryItem {
   name: string;

@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Package from "lucide-react/dist/esm/icons/package";
+import { Truck, Package } from 'lucide-react';
 
 interface RoleIndicatorProps {
   role: 'courier' | 'runner';

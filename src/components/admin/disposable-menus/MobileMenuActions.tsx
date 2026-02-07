@@ -11,16 +11,10 @@ import {
   SheetTitle,
   SheetTrigger 
 } from '@/components/ui/sheet';
-import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import Users from "lucide-react/dist/esm/icons/users";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import CopyPlus from "lucide-react/dist/esm/icons/copy-plus";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import { 
+  Copy, ExternalLink, Share2, QrCode, Users, 
+  BarChart3, CopyPlus, Flame, Lock, MoreHorizontal 
+} from 'lucide-react';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import type { DisposableMenu } from '@/types/admin';
 import { BurnMenuDialog } from './BurnMenuDialog';

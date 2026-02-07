@@ -1,40 +1,25 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/ui/password-input";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Key from "lucide-react/dist/esm/icons/key";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import { Loader2, CheckCircle2, XCircle, Key } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
 import { handleError } from "@/utils/errorHandling/handlers";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
-import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
-import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
 export default function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [valid, setValid] = useState(false);
   const [email, setEmail] = useState("");
   const [userType, setUserType] = useState<"super_admin" | "tenant_admin" | "customer">("tenant_admin");
   const [success, setSuccess] = useState(false);
-  const { validateToken } = useCsrfToken();
-
-  // Password breach checking
-  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(password);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -89,15 +74,6 @@ export default function PasswordResetPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
-      return;
-    }
-
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
@@ -112,15 +88,6 @@ export default function PasswordResetPage() {
         variant: "destructive",
         title: "Password Too Short",
         description: "Password must be at least 8 characters",
-      });
-      return;
-    }
-
-    if (breachResult?.blocked) {
-      toast({
-        variant: "destructive",
-        title: "Password not allowed",
-        description: "This password has been found in too many data breaches. Please choose a different password.",
       });
       return;
     }
@@ -294,52 +261,39 @@ export default function PasswordResetPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4" aria-label="Password reset form">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password" className={theme.text}>New Password</Label>
-              <PasswordInput
+              <Input
                 id="password"
+                type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
                 minLength={8}
-                autoComplete="new-password"
                 className={theme.input}
               />
-              <PasswordStrengthIndicator password={password} className="mt-2" />
-              {password.length >= 8 && (
-                <PasswordBreachWarning
-                  checking={breachChecking}
-                  result={breachResult}
-                  suggestPassword={suggestPassword}
-                  onGeneratePassword={(pw) => {
-                    setPassword(pw);
-                    setConfirmPassword(pw);
-                  }}
-                />
-              )}
+              <p className={`text-xs ${theme.textLight}`}>
+                Must be at least 8 characters
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className={theme.text}>Confirm Password</Label>
-              <PasswordInput
+              <Input
                 id="confirmPassword"
+                type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={loading}
                 minLength={8}
-                autoComplete="new-password"
                 className={theme.input}
               />
             </div>
-            <Button
-              type="submit"
-              className={`w-full min-h-[44px] ${theme.button}`}
-              disabled={loading || password.length < 8 || password !== confirmPassword || breachResult?.blocked}
-            >
+            <Button type="submit" className={`w-full ${theme.button}`} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

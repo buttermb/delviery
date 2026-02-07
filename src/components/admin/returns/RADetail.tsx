@@ -7,14 +7,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import Package from "lucide-react/dist/esm/icons/package";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import X from "lucide-react/dist/esm/icons/x";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import {
+  RotateCcw,
+  Package,
+  Calendar,
+  DollarSign,
+  Edit,
+  X,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 
 interface ReturnAuthorization {
   id: string;

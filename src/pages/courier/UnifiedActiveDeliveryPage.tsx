@@ -8,13 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { DeliveryTimeline } from '@/components/courier/DeliveryTimeline';
 import { useDeliveryStatus } from '@/hooks/useDeliveryStatus';
 import { useCourier } from '@/contexts/CourierContext';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Package from "lucide-react/dist/esm/icons/package";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import {
+  ArrowLeft,
+  MapPin,
+  Phone,
+  Package,
+  Navigation,
+  Building2,
+  DollarSign,
+} from 'lucide-react';
 
 export default function UnifiedActiveDeliveryPage() {
   const { id } = useParams();

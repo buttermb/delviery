@@ -23,16 +23,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import History from "lucide-react/dist/esm/icons/history";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import User from "lucide-react/dist/esm/icons/user";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Plus from "lucide-react/dist/esm/icons/plus";
+import {
+  History,
+  Clock,
+  User,
+  Eye,
+  RotateCcw,
+  ChevronRight,
+  FileText,
+  Edit,
+  Trash2,
+  Plus,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface VersionEntry {

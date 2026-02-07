@@ -1,11 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Package from "lucide-react/dist/esm/icons/package";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
+import { MapPin, Phone, Package, Clock, Navigation } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { WholesaleDelivery } from '@/hooks/useWholesaleRunnerDeliveries';
 

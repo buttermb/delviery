@@ -1,6 +1,5 @@
 // Edge Function: super-admin-auth
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';
 
@@ -68,12 +67,8 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
     // Check if it's the old SHA-256 format (hex string, 64 characters)
     if (hashValue.length === 64 && /^[a-f0-9]+$/i.test(hashValue)) {
       // Old format: SHA-256(password + secret)
-      const secret = Deno.env.get("PASSWORD_SECRET");
-      if (!secret) {
-        console.error("PASSWORD_SECRET environment variable is required for legacy password verification");
-        return false;
-      }
       const encoder = new TextEncoder();
+      const secret = Deno.env.get("PASSWORD_SECRET") || "change-in-production";
       const data = encoder.encode(password + secret);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -125,7 +120,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
   }
 }
 
-serve(secureHeadersMiddleware(async (req) => {
+serve(async (req) => {
   // Get origin from request for CORS
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
@@ -183,24 +178,12 @@ serve(secureHeadersMiddleware(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const action = url.searchParams.get("action");
-
-    // Health check endpoint - no auth required, verifies function is deployed and running
-    if (action === 'health') {
-      return new Response(
-        JSON.stringify({
-          status: 'ok',
-          function: 'super-admin-auth',
-          timestamp: new Date().toISOString(),
-        }),
-        { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
 
     let body: any = {};
     if (req.method === "POST") {
@@ -652,11 +635,11 @@ serve(secureHeadersMiddleware(async (req) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error('[super-admin-auth] Error:', error);
+    // Server-side error logging only
     return new Response(
-      JSON.stringify({ error: "Authentication failed" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Authentication failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-}));
+});
 

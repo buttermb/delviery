@@ -9,10 +9,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';
 
 // Import existing components (reuse, don't duplicate)
 import PointOfSale from '@/pages/admin/PointOfSale';
@@ -73,7 +70,7 @@ export default function POSHubPage() {
     }, [handleTabChange]);
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Tab Header - Only show when NOT on register (register is fullscreen) */}
                 {activeTab !== 'register' && (

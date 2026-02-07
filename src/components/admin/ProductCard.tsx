@@ -1,17 +1,12 @@
-import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Archive from "lucide-react/dist/esm/icons/archive";
-import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import Store from "lucide-react/dist/esm/icons/store";
+import {
+  Edit,
+  Trash2,
+  Package,
+  TrendingUp,
+} from "lucide-react";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import {
@@ -20,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MoreVertical, Printer, Store } from "lucide-react";
 import { useProductThumbnail } from "@/hooks/useOptimizedImage";
 import LongPressMenu from "@/components/mobile/LongPressMenu";
 
@@ -29,39 +25,30 @@ interface Product {
   category?: string;
   price?: number;
   stock_quantity?: number;
-  available_quantity?: number;
   in_stock?: boolean;
   image_url?: string;
   sku?: string;
   low_stock_alert?: number;
-  strain_name?: string;
-  cost_per_unit?: number;
-  wholesale_price?: number;
-  deleted_at?: string | null;
+  [key: string]: unknown; // Allow additional properties
 }
 
 interface ProductCardProps {
   product: Product;
   onEdit?: (productId: string) => void;
   onDelete?: (productId: string) => void;
-  onDuplicate?: (productId: string) => void;
   onAddToMenu?: (productId: string) => void;
   onPrintLabel?: () => void;
   onPublish?: (productId: string) => void;
-  onArchive?: (productId: string) => void;
 }
 
-export const ProductCard = React.memo(function ProductCard({
+export function ProductCard({
   product,
   onEdit,
   onDelete,
-  onDuplicate,
   onAddToMenu,
   onPrintLabel,
-  onPublish,
-  onArchive
+  onPublish
 }: ProductCardProps) {
-  const isArchived = !!product.deleted_at;
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
   const reorderPoint = typeof product.low_stock_alert === 'number' ? product.low_stock_alert : 10;
@@ -79,23 +66,12 @@ export const ProductCard = React.memo(function ProductCard({
   const wholesalePrice = Number(product.wholesale_price || 0);
   const margin = profitMargin(costPerUnit, wholesalePrice);
 
-  // Memoize formatted currency values
-  const formattedWholesalePrice = useMemo(() => formatCurrency(wholesalePrice), [wholesalePrice]);
-  const formattedCostPerUnit = useMemo(() => formatCurrency(costPerUnit), [costPerUnit]);
-
   // Build long-press menu items for mobile
   const longPressItems = [
     ...(onEdit ? [{ label: 'Edit', icon: <Edit className="h-4 w-4" />, onSelect: () => onEdit(product.id) }] : []),
-    ...(onDuplicate ? [{ label: 'Duplicate', icon: <Copy className="h-4 w-4" />, onSelect: () => onDuplicate(product.id) }] : []),
     ...(onAddToMenu ? [{ label: 'Add to Menu', icon: <Package className="h-4 w-4" />, onSelect: () => onAddToMenu(product.id) }] : []),
     ...(onPrintLabel && product.sku ? [{ label: 'Print Label', icon: <Printer className="h-4 w-4" />, onSelect: onPrintLabel }] : []),
     ...(onPublish ? [{ label: 'Publish to Store', icon: <Store className="h-4 w-4" />, onSelect: () => onPublish(product.id) }] : []),
-    ...(onArchive ? [{
-      label: isArchived ? 'Restore' : 'Archive',
-      icon: isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />,
-      onSelect: () => onArchive(product.id),
-      destructive: !isArchived
-    }] : []),
     ...(onDelete ? [{ label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onSelect: () => onDelete(product.id), destructive: true }] : []),
   ];
 
@@ -174,12 +150,6 @@ export const ProductCard = React.memo(function ProductCard({
                   Edit
                 </DropdownMenuItem>
               )}
-              {onDuplicate && (
-                <DropdownMenuItem onClick={() => onDuplicate(product.id)}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Duplicate
-                </DropdownMenuItem>
-              )}
               {onAddToMenu && (
                 <DropdownMenuItem onClick={() => onAddToMenu(product.id)}>
                   <Package className="h-4 w-4 mr-2" />
@@ -196,18 +166,6 @@ export const ProductCard = React.memo(function ProductCard({
                 <DropdownMenuItem onClick={() => onPublish(product.id)}>
                   <Store className="h-4 w-4 mr-2" />
                   Publish to Store
-                </DropdownMenuItem>
-              )}
-              {onArchive && (
-                <DropdownMenuItem
-                  onClick={() => onArchive(product.id)}
-                  className={isArchived ? "text-primary focus:text-primary" : "text-warning focus:text-warning"}
-                >
-                  {isArchived ? (
-                    <><ArchiveRestore className="h-4 w-4 mr-2" /> Restore</>
-                  ) : (
-                    <><Archive className="h-4 w-4 mr-2" /> Archive</>
-                  )}
                 </DropdownMenuItem>
               )}
               {onDelete && (
@@ -228,14 +186,14 @@ export const ProductCard = React.memo(function ProductCard({
           <div className="flex items-center justify-between">
             <span className="text-sm text-[hsl(var(--tenant-text-light))]">Wholesale Price</span>
             <span className="text-lg font-bold text-[hsl(var(--tenant-primary))]">
-              {formattedWholesalePrice}
+              {formatCurrency(wholesalePrice)}
             </span>
           </div>
           {costPerUnit > 0 && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-[hsl(var(--tenant-text-light))]">Cost</span>
               <span className="text-[hsl(var(--tenant-text-light))]">
-                {formattedCostPerUnit}
+                {formatCurrency(costPerUnit)}
               </span>
             </div>
           )}
@@ -302,4 +260,4 @@ export const ProductCard = React.memo(function ProductCard({
   }
 
   return cardContent;
-});
+}

@@ -48,7 +48,6 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   at_risk: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
   in_transit: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
   ready_for_pickup: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
-  on_hold: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
   
   // Error/Destructive states (red semantic)
   failed: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -67,9 +66,6 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   critical: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   high: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   
-  // Refund states (info/blue semantic)
-  refunded: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
-
   // Info states (blue semantic)
   draft: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
   new: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
@@ -188,7 +184,7 @@ export function getStatusVariant(status: string): 'default' | 'secondary' | 'des
   }
   
   // Warning states
-  if (['pending', 'processing', 'preparing', 'scheduled', 'in_progress', 'low_stock', 'low', 'warning', 'soft_burned', 'partial', 'past_due', 'at_risk', 'in_transit', 'ready_for_pickup', 'on_hold'].includes(normalized)) {
+  if (['pending', 'processing', 'preparing', 'scheduled', 'in_progress', 'low_stock', 'low', 'warning', 'soft_burned', 'partial', 'past_due', 'at_risk', 'in_transit', 'ready_for_pickup'].includes(normalized)) {
     return 'secondary';
   }
   

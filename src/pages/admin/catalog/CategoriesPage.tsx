@@ -8,17 +8,19 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Folder from "lucide-react/dist/esm/icons/folder";
-import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import {
+  Plus,
+  Search,
+  Tag,
+  Edit,
+  Trash2,
+  Folder,
+  FolderOpen,
+  ChevronRight,
+  ChevronDown,
+  AlertTriangle,
+  ArrowLeft
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,

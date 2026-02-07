@@ -1,7 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 
 interface CreditStatusBadgeProps {
   balance: number;

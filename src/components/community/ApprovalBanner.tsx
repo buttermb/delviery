@@ -5,9 +5,7 @@
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import { AlertCircle, Clock, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useForumApproval } from '@/hooks/useForumApproval';
 import { useForumProfile } from '@/hooks/useForumProfile';

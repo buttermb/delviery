@@ -70,8 +70,7 @@ export function logButtonHealthReport() {
 
   // Also log to console in development
   if (import.meta.env.DEV) {
-    /* eslint-disable no-console */
-    console.group('Button Health Report');
+    console.group('🔍 Button Health Report');
     logger.debug('Total Buttons:', report.totalButtons);
     logger.debug('Total Clicks:', report.totalClicks);
     logger.debug('Success Rate:', `${Math.round(report.successRate * 100)}%`);
@@ -91,7 +90,6 @@ export function logButtonHealthReport() {
       console.groupEnd();
     }
     console.groupEnd();
-    /* eslint-enable no-console */
   }
 
   return report;

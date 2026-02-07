@@ -97,10 +97,10 @@ export function useAttentionQueue() {
 
       const fetchLateDeliveries = async (): Promise<DeliveryRow[]> => {
         try {
-          const { data } = await (supabase as any)
+          // @ts-expect-error - Deep type instantiation issue with Supabase
+          const { data } = await supabase
             .from('deliveries')
             .select('id, created_at')
-            .eq('tenant_id', tenant.id)
             .eq('status', 'in_transit');
           return (data as unknown as DeliveryRow[]) || [];
         } catch { return []; }
@@ -108,10 +108,9 @@ export function useAttentionQueue() {
 
       const fetchActiveDeliveries = async (): Promise<DeliveryRow[]> => {
         try {
-          const { data } = await (supabase as any)
+          const { data } = await supabase
             .from('deliveries')
             .select('id, created_at')
-            .eq('tenant_id', tenant.id)
             .eq('status', 'in_transit');
           return (data as unknown as DeliveryRow[]) || [];
         } catch { return []; }
@@ -221,6 +220,7 @@ export function useAttentionQueue() {
 
       // Late deliveries - use oldest delivery's created_at
       if (lateDeliveries.data && lateDeliveries.data.length > 0) {
+        // @ts-ignore - Complex type from Supabase query
         const oldestTimestamp = getOldestTimestamp(lateDeliveries.data);
         items.push({
           id: 'late-deliveries',

@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { AlertTriangle } from 'lucide-react';
 import { haptics } from '@/utils/haptics';
 
 interface ConfirmDeleteDialogProps {

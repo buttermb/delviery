@@ -15,18 +15,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Send from "lucide-react/dist/esm/icons/send";
-import User from "lucide-react/dist/esm/icons/user";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import {
+    ShoppingCart,
+    ArrowLeft,
+    Edit,
+    CheckCircle,
+    XCircle,
+    Clock,
+    Package,
+    Truck,
+    FileText,
+    Send,
+    User,
+    MapPin
+} from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -40,7 +42,6 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { OrderAuditLog } from '@/components/admin/orders/OrderAuditLog';
 
 export default function OrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -713,11 +714,6 @@ export default function OrderDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    {/* Activity History */}
-                    {orderId && (
-                        <OrderAuditLog orderId={orderId} maxHeight="300px" />
-                    )}
                 </div>
             </div>
 

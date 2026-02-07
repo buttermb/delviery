@@ -6,10 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import X from "lucide-react/dist/esm/icons/x";
+import { AlertTriangle, Clock, Zap, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useCredits } from '@/hooks/useCredits';
@@ -293,4 +290,8 @@ export function useGracePeriod(): UseGracePeriodReturn {
 }
 
 export default GracePeriodBanner;
+
+
+
+
 

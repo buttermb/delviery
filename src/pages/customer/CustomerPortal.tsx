@@ -3,43 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccount } from '@/contexts/AccountContext';
+import { supabase } from '@/integrations/supabase/client';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import Package from "lucide-react/dist/esm/icons/package";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import { 
+  Package, FileText, CreditCard, User,
+  MapPin, Clock
+} from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { useCustomerPortalOrders } from '@/hooks/useCustomerPortalOrders';
-import { format } from 'date-fns';
-
-interface CustomerUser {
-  id: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  customer_id?: string;
-  tenant_id: string;
-}
 
 export default function CustomerPortal() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { userProfile, loading: accountLoading } = useAccount();
-  const [customerUser, setCustomerUser] = useState<CustomerUser | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [customerUser, setCustomerUser] = useState<any>(null);
 
   useEffect(() => {
     // Check for customer token
     const token = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
     const userData = localStorage.getItem(STORAGE_KEYS.CUSTOMER_USER);
-
+    
     if (token && userData) {
       try {
         setCustomerUser(JSON.parse(userData));
@@ -51,24 +38,24 @@ export default function CustomerPortal() {
       // No customer auth and no regular user auth - redirect to login
       navigate('/willysbo/customer/login');
     }
-    setAuthLoading(false);
   }, [user, navigate]);
 
-  // Fetch orders using the new hook
-  const {
-    orders,
-    isLoading: ordersLoading,
-    error: ordersError,
-    orderStats,
-    getStatusInfo,
-    refetch,
-  } = useCustomerPortalOrders({
-    customerEmail: customerUser?.email,
-    tenantId: customerUser?.tenant_id,
-    enabled: !!customerUser,
-  });
+  useEffect(() => {
+    if (customerUser || user) {
+      loadCustomerData();
+    }
+  }, [customerUser, user]);
 
-  const loading = authLoading || accountLoading;
+  const loadCustomerData = async () => {
+    try {
+      // Placeholder - will load actual customer orders
+      setOrders([]);
+    } catch (error) {
+      logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerPortal' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (accountLoading || loading) {
     return (
@@ -100,7 +87,7 @@ export default function CustomerPortal() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{orderStats.activeOrders}</div>
+              <div className="text-3xl font-bold">0</div>
               <p className="text-xs text-muted-foreground mt-1">Currently in progress</p>
             </CardContent>
           </Card>
@@ -111,19 +98,19 @@ export default function CustomerPortal() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{orderStats.totalOrders}</div>
+              <div className="text-3xl font-bold">0</div>
               <p className="text-xs text-muted-foreground mt-1">All time</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+              <CardTitle className="text-sm font-medium">Saved Addresses</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">${orderStats.totalSpent.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Lifetime purchases</p>
+              <div className="text-3xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground mt-1">Delivery locations</p>
             </CardContent>
           </Card>
         </div>
@@ -137,33 +124,11 @@ export default function CustomerPortal() {
 
           <TabsContent value="orders" className="space-y-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader>
                 <CardTitle>Recent Orders</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => refetch()}
-                  disabled={ordersLoading}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${ordersLoading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
               </CardHeader>
               <CardContent>
-                {ordersLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                    <p className="text-muted-foreground mt-4">Loading orders...</p>
-                  </div>
-                ) : ordersError ? (
-                  <div className="text-center py-8 text-destructive">
-                    <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Failed to load orders</p>
-                    <Button variant="outline" className="mt-4" onClick={() => refetch()}>
-                      Try Again
-                    </Button>
-                  </div>
-                ) : orders.length === 0 ? (
+                {orders.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No orders yet</p>
@@ -171,61 +136,11 @@ export default function CustomerPortal() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {orders.map((order) => {
-                      const statusInfo = getStatusInfo(order.status);
-                      const items = order.items as Array<{ name: string; quantity: number; price: number }> | null;
-
-                      return (
-                        <div key={order.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <p className="font-medium text-lg">Order #{order.order_number}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xl font-bold">${order.total_amount.toFixed(2)}</p>
-                              <Badge variant={statusInfo.variant}>
-                                {statusInfo.label}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          {items && items.length > 0 && (
-                            <>
-                              <Separator className="my-3" />
-                              <div className="space-y-2">
-                                {items.slice(0, 3).map((item, idx) => (
-                                  <div key={idx} className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">
-                                      {item.name} × {item.quantity}
-                                    </span>
-                                    <span>${(item.price * item.quantity).toFixed(2)}</span>
-                                  </div>
-                                ))}
-                                {items.length > 3 && (
-                                  <p className="text-sm text-muted-foreground">
-                                    +{items.length - 3} more items
-                                  </p>
-                                )}
-                              </div>
-                            </>
-                          )}
-
-                          {order.tracking_token && (
-                            <div className="mt-3 pt-3 border-t">
-                              <Button variant="outline" size="sm" className="w-full" asChild>
-                                <a href={`/track/${order.tracking_token}`}>
-                                  Track Order
-                                  <ChevronRight className="h-4 w-4 ml-2" />
-                                </a>
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {orders.map((order) => (
+                      <div key={order.id} className="border rounded-lg p-4">
+                        Order details here
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
@@ -255,15 +170,11 @@ export default function CustomerPortal() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium">
-                      {customerUser?.first_name && customerUser?.last_name
-                        ? `${customerUser.first_name} ${customerUser.last_name}`
-                        : customerUser?.first_name || userProfile?.full_name || 'Not set'}
-                    </p>
+                    <p className="font-medium">{userProfile?.full_name || 'Not set'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{customerUser?.email || userProfile?.email || user?.email}</p>
+                    <p className="font-medium">{userProfile?.email || user?.email}</p>
                   </div>
                   <Button>Edit Profile</Button>
                 </div>

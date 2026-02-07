@@ -6,9 +6,7 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import User from "lucide-react/dist/esm/icons/user";
+import { Search, Plus, User } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import * as forumApi from '@/lib/api/forum';

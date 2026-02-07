@@ -6,13 +6,7 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Leaf from "lucide-react/dist/esm/icons/leaf";
-import Cookie from "lucide-react/dist/esm/icons/cookie";
-import Droplets from "lucide-react/dist/esm/icons/droplets";
-import Wind from "lucide-react/dist/esm/icons/wind";
-import Cigarette from "lucide-react/dist/esm/icons/cigarette";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import { Leaf, Cookie, Droplets, Wind, Cigarette, ArrowRight, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const categories = [

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import { MapPin, Truck } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { mockDashboardData } from '../mockDashboardData';
 

@@ -5,11 +5,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import User from "lucide-react/dist/esm/icons/user";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import { User, DollarSign, ShoppingCart, TrendingUp, Calendar } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function CustomerInsights() {

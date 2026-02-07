@@ -11,16 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import PartyPopper from "lucide-react/dist/esm/icons/party-popper";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Crown from "lucide-react/dist/esm/icons/crown";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { 
+  CheckCircle2, 
+  Sparkles, 
+  Package, 
+  Users, 
+  FileSpreadsheet,
+  ArrowRight,
+  PartyPopper,
+  Clock,
+  Crown,
+  Zap
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

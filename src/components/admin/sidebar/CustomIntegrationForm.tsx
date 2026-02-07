@@ -6,7 +6,6 @@
 
 import { useState, useMemo } from 'react';
 import { logger } from '@/lib/logger';
-import { sanitizeFormInput, sanitizeUrlInput, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
 import { Input } from '@/components/ui/input';
@@ -14,8 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -65,17 +63,6 @@ export function CustomIntegrationForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // Sanitize form inputs before processing
-    const sanitizedName = sanitizeFormInput(formData.name, 100);
-    const sanitizedUrl = sanitizeUrlInput(formData.endpoint_url);
-    const sanitizedDescription = sanitizeTextareaInput(formData.description, 500);
-
-    if (!sanitizedUrl) {
-      toast.error('Invalid endpoint URL');
-      setIsSubmitting(false);
-      return;
-    }
 
     try {
       // Mock implementation until custom_integrations table is created

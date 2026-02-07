@@ -6,24 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Star from "lucide-react/dist/esm/icons/star";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Flag from "lucide-react/dist/esm/icons/flag";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2, Truck } from "lucide-react";
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { EditClientDialog } from "@/components/admin/EditClientDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
+import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -135,36 +125,33 @@ export default function ClientDetail() {
     );
   }
 
-  // Calculate metrics from real data - cast orders to any to handle schema mismatches
-  const orderData = orders as any[];
-  const paidOrders = orderData.filter(o => o.status === "delivered");
-  const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  const avgOrderSize = orderData.length > 0
-    ? orderData.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orderData.length
+  // Calculate metrics from real data
+  const paidOrders = orders.filter(o => o.status === "delivered");
+  const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+  const avgOrderSize = orders.length > 0
+    ? orders.reduce((sum, o) => sum + Number(o.total_amount), 0) / orders.length
     : 0;
 
-  const unpaidOrders = orderData.filter(o =>
+  const unpaidOrders = orders.filter(o =>
     o.status === "pending" || o.status === "assigned" || o.status === "in_transit"
   );
 
-  // Cast client to any to handle schema mismatches
-  const clientData = client as any;
   const displayClient = {
-    id: clientData.id,
-    business_name: clientData.business_name,
-    contact_name: clientData.contact_name,
-    phone: clientData.phone,
-    client_type: clientData.client_type || 'regular',
-    outstanding_balance: Number(clientData.outstanding_balance || 0),
-    credit_limit: Number(clientData.credit_limit || 0),
-    reliability_score: Number(clientData.reliability_score || 100),
-    payment_terms: `net_${clientData.payment_terms || 7}`,
+    id: client.id,
+    business_name: client.business_name,
+    contact_name: client.contact_name,
+    phone: client.phone,
+    client_type: client.client_type,
+    outstanding_balance: Number(client.outstanding_balance),
+    credit_limit: Number(client.credit_limit),
+    reliability_score: Number(client.reliability_score),
+    payment_terms: `net_${client.payment_terms || 7}`,
     total_spent: totalSpent,
     avg_order_size: avgOrderSize,
-    status: clientData.status,
-    since: clientData.created_at ? format(new Date(clientData.created_at), "MMM yyyy") : "",
-    address: clientData.address || "",
-    monthly_volume: Number(clientData.monthly_volume || 0)
+    status: client.status,
+    since: client.created_at ? format(new Date(client.created_at), "MMM yyyy") : "",
+    address: client.address || "",
+    monthly_volume: Number(client.monthly_volume || 0)
   };
 
   const getStatusColor = (balance: number) => {

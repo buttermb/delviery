@@ -12,10 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { REPORT_TYPES, REPORT_FIELDS, DATE_RANGES, SCHEDULE_OPTIONS, ReportField } from '@/lib/constants/reportFields';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import X from "lucide-react/dist/esm/icons/x";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Mail from "lucide-react/dist/esm/icons/mail";
+import { Plus, X, Calendar, Mail } from 'lucide-react';
 
 export function ReportBuilder({ onClose }: { onClose?: () => void }) {
   const { tenant } = useTenantAdminAuth();

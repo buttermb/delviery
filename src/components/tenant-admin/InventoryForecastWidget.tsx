@@ -6,9 +6,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import CalendarClock from "lucide-react/dist/esm/icons/calendar-clock";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import {
+    CalendarClock,
+    ArrowRight,
+    AlertTriangle
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

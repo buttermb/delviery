@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface Ticket {
@@ -125,8 +124,8 @@ export function TicketForm({
     }
 
     await createMutation.mutateAsync({
-      subject: sanitizeFormInput(formData.subject, 200),
-      description: sanitizeTextareaInput(formData.description, 2000),
+      subject: formData.subject,
+      description: formData.description,
       priority: formData.priority,
       category: formData.status,
     });

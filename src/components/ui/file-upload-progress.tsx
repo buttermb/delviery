@@ -2,18 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import Upload from "lucide-react/dist/esm/icons/upload";
-import X from "lucide-react/dist/esm/icons/x";
-import File from "lucide-react/dist/esm/icons/file";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import {
-  compressImage,
-  isCompressibleImage,
-  type ImageCompressionOptions,
-  COMPRESSION_PRESETS,
-} from '@/lib/utils/image-compression';
+import { Upload, X, File, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface FileUploadProgressProps {
   /** Upload handler that receives file and progress callback */
@@ -35,18 +24,12 @@ interface FileUploadProgressProps {
   className?: string;
   /** Disabled state */
   disabled?: boolean;
-  /**
-   * Enable automatic image compression before upload.
-   * Can be a boolean (uses default settings) or compression options object.
-   * Set to a preset name ('product', 'thumbnail', 'profile', 'cover') for preset options.
-   */
-  compressImages?: boolean | ImageCompressionOptions | keyof typeof COMPRESSION_PRESETS;
 }
 
 interface UploadingFile {
   file: File;
   progress: number;
-  status: 'compressing' | 'uploading' | 'complete' | 'error';
+  status: 'uploading' | 'complete' | 'error';
   error?: string;
 }
 
@@ -77,40 +60,14 @@ export function FileUploadProgress({
   multiple = false,
   className,
   disabled = false,
-  compressImages: compressImagesOption = false,
 }: FileUploadProgressProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Resolve compression options
-  const getCompressionOptions = useCallback((): ImageCompressionOptions | null => {
-    if (!compressImagesOption) return null;
-    if (compressImagesOption === true) return {};
-    if (typeof compressImagesOption === 'string') {
-      return COMPRESSION_PRESETS[compressImagesOption] || {};
-    }
-    return compressImagesOption;
-  }, [compressImagesOption]);
-
-  // Compress a file if it's a compressible image
-  const maybeCompressFile = useCallback(async (file: File): Promise<File> => {
-    const options = getCompressionOptions();
-    if (!options || !isCompressibleImage(file)) {
-      return file;
-    }
-    try {
-      return await compressImage(file, options);
-    } catch {
-      // Return original file if compression fails
-      return file;
-    }
-  }, [getCompressionOptions]);
-
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
       const fileArray = Array.from(files);
-      const compressionOptions = getCompressionOptions();
 
       for (const file of fileArray) {
         // Validate file size
@@ -124,31 +81,18 @@ export function FileUploadProgress({
           continue;
         }
 
-        // Add to list - start with compressing status if compression is enabled
-        const initialStatus = compressionOptions && isCompressibleImage(file) ? 'compressing' : 'uploading';
+        // Add to uploading list
         setUploadingFiles(prev => [
           ...prev,
-          { file, progress: 0, status: initialStatus },
+          { file, progress: 0, status: 'uploading' },
         ]);
 
         try {
-          // Compress if needed
-          let fileToUpload = file;
-          if (compressionOptions && isCompressibleImage(file)) {
-            fileToUpload = await maybeCompressFile(file);
-            // Update status to uploading after compression
-            setUploadingFiles(prev =>
-              prev.map(f =>
-                f.file === file ? { ...f, file: fileToUpload, status: 'uploading' as const } : f
-              )
-            );
-          }
-
           // Upload with progress tracking
-          const result = await onUpload(fileToUpload, progress => {
+          const result = await onUpload(file, progress => {
             setUploadingFiles(prev =>
               prev.map(f =>
-                f.file === file || f.file === fileToUpload ? { ...f, progress } : f
+                f.file === file ? { ...f, progress } : f
               )
             );
           });
@@ -156,11 +100,11 @@ export function FileUploadProgress({
           // Mark as complete
           setUploadingFiles(prev =>
             prev.map(f =>
-              f.file === file || f.file === fileToUpload ? { ...f, progress: 100, status: 'complete' as const } : f
+              f.file === file ? { ...f, progress: 100, status: 'complete' as const } : f
             )
           );
 
-          onComplete?.(fileToUpload, typeof result === 'string' ? result : undefined);
+          onComplete?.(file, typeof result === 'string' ? result : undefined);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : 'Upload failed';
           setUploadingFiles(prev =>
@@ -172,7 +116,7 @@ export function FileUploadProgress({
         }
       }
     },
-    [onUpload, onComplete, onError, maxSize, getCompressionOptions, maybeCompressFile]
+    [onUpload, onComplete, onError, maxSize]
   );
 
   const handleDrop = useCallback(
@@ -302,11 +246,6 @@ export function FileUploadProgress({
               </div>
 
               <div className="flex items-center gap-2">
-                {upload.status === 'compressing' && (
-                  <span className="text-xs text-amber-600">
-                    Compressing...
-                  </span>
-                )}
                 {upload.status === 'uploading' && (
                   <span className="text-xs text-muted-foreground">
                     {Math.round(upload.progress)}%
@@ -333,8 +272,6 @@ export function FileUploadProgress({
 
 function FileIcon({ status }: { status: UploadingFile['status'] }) {
   switch (status) {
-    case 'compressing':
-      return <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />;
     case 'uploading':
       return <Loader2 className="h-8 w-8 text-primary animate-spin" />;
     case 'complete':

@@ -8,23 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import User from "lucide-react/dist/esm/icons/user";
-import Percent from "lucide-react/dist/esm/icons/percent";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import X from "lucide-react/dist/esm/icons/x";
-import Keyboard from "lucide-react/dist/esm/icons/keyboard";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
+import {
+  ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
+  User, Percent, Receipt, Printer, X, Keyboard, Tag
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +22,6 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
-import { invalidateOnEvent } from '@/lib/invalidation';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,14 +41,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
-import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 
 interface Product {
   id: string;
   name: string;
   price: number;
-  stock_quantity: number | null;
+  stock_quantity: number;
   image_url: string | null;
   sku: string | null;
   barcode: string | null;
@@ -119,37 +103,13 @@ interface POSTransactionResult {
 const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
 function CashRegisterContent() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
   const { execute: executeCreditAction } = useCreditGatedAction();
   const { isOnline, pendingCount } = useOfflineQueue();
-
-  // Query active shift for cash drawer tracking
-  const { data: activeShift } = useQuery({
-    queryKey: queryKeys.pos.shifts.active(tenantId),
-    queryFn: async () => {
-      if (!tenantId) return null;
-      const { data, error } = await supabase
-        .from('pos_shifts')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'open')
-        .order('started_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    },
-    enabled: !!tenantId,
-  });
-
-  // Enable realtime updates for shifts and cash drawer
-  useRealtimeShifts(tenantId);
-  useRealtimeCashDrawer(activeShift?.id);
 
   // Refs for keyboard shortcuts
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -238,20 +198,14 @@ function CashRegisterContent() {
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, first_name, last_name, email, phone')
+          .select('id, name, email, phone')
           .eq('tenant_id', tenantId)
-          .order('first_name', { ascending: true })
+          .order('name', { ascending: true })
           .limit(100);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        // Map first_name/last_name to name for Customer interface
-        return ((data || []) as any[]).map(c => ({
-          id: c.id,
-          name: [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email || 'Unknown',
-          email: c.email,
-          phone: c.phone,
-        })) as Customer[];
+        return (data || []) as Customer[];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
@@ -267,7 +221,8 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error pos_transactions table may not exist in all environments
+        const { data, error } = await supabase
           .from('pos_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -278,7 +233,7 @@ function CashRegisterContent() {
         if (error) throw error;
         return data || [];
       } catch (error: unknown) {
-        if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
+        if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -341,11 +296,9 @@ function CashRegisterContent() {
       p_shift_id: null
     };
 
-    // Use full Supabase functions URL for offline queue
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     await queueAction(
       'generic',
-      `${supabaseUrl}/functions/v1/api/pos/transaction`,
+      `/api/pos/transaction`,
       'POST',
       payload,
       3
@@ -393,11 +346,12 @@ function CashRegisterContent() {
         unit_price: item.price,
         price_at_order_time: item.price,
         total_price: item.subtotal,
-        stock_quantity: item.stock_quantity ?? 0
+        stock_quantity: item.stock_quantity
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
+      // @ts-expect-error RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,
@@ -424,7 +378,7 @@ function CashRegisterContent() {
         throw new Error(errorMessage);
       }
 
-      const result = rpcResult as unknown as POSTransactionResult;
+      const result = rpcResult as POSTransactionResult;
 
       if (!result.success) {
         // Handle specific error codes with user-friendly messages
@@ -463,16 +417,9 @@ function CashRegisterContent() {
       setReceiptDialogOpen(true);
 
       resetTransaction();
-
-      // Cross-panel invalidation - POS sale affects inventory, finance, dashboard, analytics
-      if (tenantId) {
-        invalidateOnEvent(queryClient, 'POS_SALE_COMPLETED', tenantId, {
-          customerId: selectedCustomer?.id || undefined,
-        });
-      }
-
-      // Also invalidate POS-specific queries
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
     onError: (error: unknown) => {
       triggerError();
@@ -487,13 +434,12 @@ function CashRegisterContent() {
 
   const addToCart = useCallback((product: Product) => {
     setIsAddingToCart(product.id);
-    const stock = product.stock_quantity ?? 0;
 
     try {
       const existingItem = cart.find(item => item.id === product.id);
 
       if (existingItem) {
-        if (existingItem.quantity >= stock) {
+        if (existingItem.quantity >= product.stock_quantity) {
           triggerError();
           toast({ title: 'Not enough stock', variant: 'destructive' });
           return;
@@ -505,7 +451,7 @@ function CashRegisterContent() {
             : item
         ));
       } else {
-        if (stock <= 0) {
+        if (product.stock_quantity <= 0) {
           triggerError();
           toast({ title: 'Product out of stock', variant: 'destructive' });
           return;
@@ -523,8 +469,7 @@ function CashRegisterContent() {
   const updateQuantity = (productId: string, change: number) => {
     setCart(cart.map(item => {
       if (item.id === productId) {
-        const stock = item.stock_quantity ?? 0;
-        const newQuantity = Math.max(1, Math.min(stock, item.quantity + change));
+        const newQuantity = Math.max(1, Math.min(item.stock_quantity, item.quantity + change));
         return { ...item, quantity: newQuantity, subtotal: newQuantity * item.price };
       }
       return item;
@@ -589,7 +534,7 @@ function CashRegisterContent() {
           </head>
           <body>
             <div class="header">
-              <h2>${tenant?.business_name || 'Store'}</h2>
+              <h2>${tenant?.name || 'Store'}</h2>
               <p>Transaction: ${lastTransaction.transaction_number}</p>
               <p>${new Date(lastTransaction.created_at || '').toLocaleString()}</p>
             </div>
@@ -812,12 +757,6 @@ function CashRegisterContent() {
           <p className="text-muted-foreground">Point of sale transaction management</p>
         </div>
         <div className="flex items-center gap-2">
-          {activeShift && (
-            <Badge variant="secondary" className="flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              Shift: ${((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)).toFixed(2)}
-            </Badge>
-          )}
           <Button
             variant="outline"
             size="sm"
@@ -850,7 +789,7 @@ function CashRegisterContent() {
                   variant="outline"
                   size="sm"
                   onClick={() => addToCart(product)}
-                  disabled={(product.stock_quantity ?? 0) <= 0 || isAddingToCart === product.id}
+                  disabled={product.stock_quantity <= 0 || isAddingToCart === product.id}
                   className="h-auto py-2 px-3 flex flex-col items-start gap-0.5 min-w-[100px] hover:border-primary hover:bg-primary/5"
                 >
                   {isAddingToCart === product.id ? (
@@ -1100,9 +1039,9 @@ function CashRegisterContent() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-lg font-bold">${transaction.total_amount.toFixed(2)}</div>
+                      <div className="text-lg font-bold">${(transaction.total_amount || 0).toFixed(2)}</div>
                       <Badge variant={transaction.payment_status === 'completed' ? 'default' : 'secondary'}>
-                        {transaction.payment_status}
+                        {transaction.payment_status || 'pending'}
                       </Badge>
                     </div>
                   </div>
@@ -1116,28 +1055,6 @@ function CashRegisterContent() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Cash Drawer Panel - Full Width */}
-      {activeShift && (
-        <div className="mt-4">
-          <CashDrawerPanel
-            shiftId={activeShift.id}
-            openingCash={activeShift.opening_cash || 0}
-            expectedCash={(activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)}
-          />
-        </div>
-      )}
-
-      {/* No Active Shift Alert */}
-      {!activeShift && (
-        <Alert className="mt-4">
-          <Wallet className="h-4 w-4" />
-          <AlertTitle>No Active Shift</AlertTitle>
-          <AlertDescription>
-            Start a shift from the POS page to track cash drawer activity and generate Z-reports.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Product Selection Dialog */}
       <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>

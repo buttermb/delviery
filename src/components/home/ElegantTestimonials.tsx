@@ -4,7 +4,7 @@
  */
 
 import { motion } from 'framer-motion';
-import Star from "lucide-react/dist/esm/icons/star";
+import { Star } from 'lucide-react';
 
 const testimonials = [
   {

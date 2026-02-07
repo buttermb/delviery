@@ -1,236 +1,60 @@
 /**
  * HTML sanitization utility
- * Strips potentially dangerous HTML tags and attributes to prevent XSS
+ * Strips dangerous HTML tags and attributes to prevent XSS
  */
 
 const ALLOWED_TAGS = new Set([
-  'p', 'br', 'b', 'i', 'em', 'strong', 'u', 'a', 'ul', 'ol', 'li',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'blockquote',
-  'pre', 'code', 'hr', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'sup', 'sub', 'small', 'del', 'ins', 'mark',
+  'p', 'br', 'b', 'i', 'em', 'strong', 'u', 'ul', 'ol', 'li',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'a',
+  'blockquote', 'code', 'pre', 'hr', 'sub', 'sup',
 ]);
 
-const ALLOWED_ATTRS = new Set([
-  'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id',
-  'width', 'height', 'style',
-]);
-
-const DANGEROUS_PATTERNS = [
-  /javascript\s*:/gi,
-  /on\w+\s*=/gi,
-  /data\s*:/gi,
-  /vbscript\s*:/gi,
-];
+const ALLOWED_ATTRS = new Set(['href', 'target', 'rel', 'class']);
 
 /**
- * Sanitizes HTML content by removing dangerous tags and attributes.
- * Allows safe formatting tags while stripping script injection vectors.
+ * Sanitize HTML string by removing dangerous tags and attributes.
+ * Only allows a safe subset of HTML for rendering product descriptions.
  */
 export function sanitizeHtml(html: string): string {
   if (!html) return '';
 
-  let sanitized = html;
+  // Remove script tags and their content
+  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
-  // Remove script/style/iframe tags entirely (including content)
-  sanitized = sanitized.replace(/<(script|style|iframe|object|embed|form|input|textarea|button)[^>]*>[\s\S]*?<\/\1>/gi, '');
-  sanitized = sanitized.replace(/<(script|style|iframe|object|embed|form|input|textarea|button)[^>]*\/?>/gi, '');
+  // Remove event handlers (onclick, onerror, etc.)
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
 
-  // Remove event handler attributes (onclick, onload, etc.)
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+  // Remove javascript: URLs
+  sanitized = sanitized.replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"');
 
-  // Remove javascript: and vbscript: protocols from href/src
-  sanitized = sanitized.replace(/(href|src)\s*=\s*(['"])\s*(javascript|vbscript)\s*:[^'"]*\2/gi, '$1=$2#$2');
+  // Remove data: URLs (potential XSS vector)
+  sanitized = sanitized.replace(/href\s*=\s*["']data:[^"']*["']/gi, 'href="#"');
 
-  // Remove data: URIs from src (potential XSS vector)
-  sanitized = sanitized.replace(/src\s*=\s*(['"])\s*data\s*:[^'"]*\1/gi, 'src=$1#$1');
+  // Remove style tags and their content
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
 
+  // Remove iframe, object, embed tags
+  sanitized = sanitized.replace(/<(iframe|object|embed|form|input|textarea|button)\b[^>]*>.*?<\/\1>/gi, '');
+  sanitized = sanitized.replace(/<(iframe|object|embed|form|input|textarea|button)\b[^>]*\/?>/gi, '');
+
+  // Add rel="noopener noreferrer" to links and open in new tab
+  sanitized = sanitized.replace(
+    /<a\b([^>]*)>/gi,
+    (match, attrs) => {
+      const hasTarget = /target\s*=/i.test(attrs);
+      const hasRel = /rel\s*=/i.test(attrs);
+      let newAttrs = attrs;
+      if (!hasTarget) newAttrs += ' target="_blank"';
+      if (!hasRel) newAttrs += ' rel="noopener noreferrer"';
+      return `<a${newAttrs}>`;
+    }
+  );
 
   return sanitized;
-}
-
-/**
- * Strips all HTML tags from a string, leaving only text content.
- */
-export function stripHtml(html: string): string {
-  if (!html) return '';
-  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/gi, ' ').trim();
 }
 
 /**
  * Alias for sanitizeHtml - sanitizes basic HTML content.
  */
 export const sanitizeBasicHtml = sanitizeHtml;
-
-/**
- * Sanitizes general form input by trimming whitespace and removing dangerous characters.
- * @param input - The string to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeFormInput(input: string, maxLength?: number): string {
-  if (!input) return '';
-  let result = input
-    .trim()
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, ''); // Remove event handlers
-
-  if (maxLength && result.length > maxLength) {
-    result = result.slice(0, maxLength);
-  }
-  return result;
-}
-
-/**
- * Sanitizes email input.
- */
-export function sanitizeEmail(email: string): string {
-  if (!email) return '';
-  return email
-    .trim()
-    .toLowerCase()
-    .replace(/[<>'"]/g, ''); // Remove potentially dangerous characters
-}
-
-/**
- * Sanitizes phone number input.
- */
-export function sanitizePhoneInput(phone: string): string {
-  if (!phone) return '';
-  // Allow only digits, spaces, parentheses, hyphens, and plus sign
-  return phone.trim().replace(/[^0-9\s()\-+]/g, '');
-}
-
-/**
- * Sanitizes textarea input (multi-line text).
- * @param text - The text to sanitize
- * @param maxLength - Optional maximum length to truncate to
- */
-export function sanitizeTextareaInput(text: string, maxLength?: number): string {
-  if (!text) return '';
-  let result = text
-    .trim()
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove script tags
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove style tags
-    .replace(/on\w+\s*=\s*(['"])[^'"]*\1/gi, ''); // Remove event handlers
-
-  if (maxLength && result.length > maxLength) {
-    result = result.slice(0, maxLength);
-  }
-  return result;
-}
-
-/**
- * Sanitizes coupon code input - uppercase alphanumeric with limited special chars.
- */
-export function sanitizeCouponCode(code: string): string {
-  if (!code) return '';
-  return code
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9\-_]/g, ''); // Only allow alphanumeric, dash, underscore
-}
-
-/**
- * Sanitizes SKU input - alphanumeric with limited special chars.
- */
-export function sanitizeSkuInput(sku: string): string {
-  if (!sku) return '';
-  return sku
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9\-_]/g, ''); // Only allow alphanumeric, dash, underscore
-}
-
-/**
- * Sanitizes slug input - lowercase alphanumeric with dashes.
- */
-export function sanitizeSlugInput(slug: string): string {
-  if (!slug) return '';
-  return slug
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with dashes
-    .replace(/[^a-z0-9\-]/g, '') // Only allow lowercase alphanumeric and dashes
-    .replace(/-+/g, '-') // Replace multiple dashes with single dash
-    .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
-}
-
-/**
- * Sanitizes color input - validates hex color format.
- */
-export function sanitizeColor(color: string): string {
-  if (!color) return '';
-  const trimmed = color.trim();
-  // Match hex colors with 3, 6, or 8 characters (with or without #)
-  const hexMatch = trimmed.match(/^#?([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/);
-  if (hexMatch) {
-    return `#${hexMatch[1].toLowerCase()}`;
-  }
-  // Match rgb/rgba format
-  if (/^rgba?\s*\([^)]+\)$/i.test(trimmed)) {
-    return trimmed;
-  }
-  // Match named colors (basic validation)
-  if (/^[a-zA-Z]+$/.test(trimmed)) {
-    return trimmed.toLowerCase();
-  }
-  return '';
-}
-
-/**
- * Sanitizes text and converts newlines to <br> tags for HTML display.
- * Removes dangerous HTML but preserves line breaks.
- */
-export function sanitizeWithLineBreaks(text: string): string {
-  if (!text) return '';
-  // First sanitize the input
-  const sanitized = sanitizeHtml(text);
-  // Convert newlines to <br> tags
-  return sanitized.replace(/\n/g, '<br />');
-}
-
-/**
- * Sanitizes URL input - removes dangerous protocols.
- */
-export function sanitizeUrlInput(url: string): string {
-  if (!url) return '';
-  const trimmed = url.trim();
-  // Block dangerous protocols
-  if (/^(javascript|vbscript|data):/i.test(trimmed)) {
-    return '';
-  }
-  // Ensure URL is properly formatted
-  try {
-    // If it starts with http/https, validate it
-    if (/^https?:\/\//i.test(trimmed)) {
-      new URL(trimmed);
-      return trimmed;
-    }
-    // If it's a relative URL starting with /, allow it
-    if (trimmed.startsWith('/')) {
-      return trimmed.replace(/[<>"']/g, '');
-    }
-    // Otherwise, prepend https://
-    const withProtocol = `https://${trimmed}`;
-    new URL(withProtocol);
-    return withProtocol;
-  } catch {
-    // If URL is invalid, remove dangerous characters and return
-    return trimmed.replace(/[<>"']/g, '');
-  }
-}
-
-/**
- * Safely parses a JSON string with a default value, returning a default value if parsing fails.
- * @param jsonString - The JSON string to parse
- * @param defaultValue - The default value to return if parsing fails
- */
-export function safeJsonParseWithDefault<T>(jsonString: string | null | undefined, defaultValue: T): T {
-  if (!jsonString) return defaultValue;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch {
-    return defaultValue;
-  }
-}

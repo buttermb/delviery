@@ -16,16 +16,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import Activity from "lucide-react/dist/esm/icons/activity";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Search from "lucide-react/dist/esm/icons/search";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Timer from "lucide-react/dist/esm/icons/timer";
+import {
+  Activity,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Loader2,
+  AlertCircle,
+  Search,
+  RefreshCw,
+  TrendingUp,
+  Timer,
+} from 'lucide-react';
 
 interface ExecutionLog {
   status: 'success' | 'error';

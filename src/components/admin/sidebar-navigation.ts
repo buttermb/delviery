@@ -1,79 +1,69 @@
 import type { LucideIcon } from 'lucide-react';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import UsersRound from "lucide-react/dist/esm/icons/users-round";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Car from "lucide-react/dist/esm/icons/car";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import UserCog from "lucide-react/dist/esm/icons/user-cog";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
-import LineChart from "lucide-react/dist/esm/icons/line-chart";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Map from "lucide-react/dist/esm/icons/map";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import Database from "lucide-react/dist/esm/icons/database";
-import Tags from "lucide-react/dist/esm/icons/tags";
-import Image from "lucide-react/dist/esm/icons/image";
-import Boxes from "lucide-react/dist/esm/icons/boxes";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import ClipboardList from "lucide-react/dist/esm/icons/clipboard-list";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Calculator from "lucide-react/dist/esm/icons/calculator";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import Landmark from "lucide-react/dist/esm/icons/landmark";
-import UserPlus from "lucide-react/dist/esm/icons/user-plus";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import History from "lucide-react/dist/esm/icons/history";
-import FileCheck from "lucide-react/dist/esm/icons/file-check";
-import Target from "lucide-react/dist/esm/icons/target";
-import Rocket from "lucide-react/dist/esm/icons/rocket";
-import Route from "lucide-react/dist/esm/icons/route";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Code from "lucide-react/dist/esm/icons/code";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Puzzle from "lucide-react/dist/esm/icons/puzzle";
-import Palette from "lucide-react/dist/esm/icons/palette";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import BarChart2 from "lucide-react/dist/esm/icons/bar-chart-2";
-import Store from "lucide-react/dist/esm/icons/store";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Search from "lucide-react/dist/esm/icons/search";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import PackageOpen from "lucide-react/dist/esm/icons/package-open";
-import BarChart4 from "lucide-react/dist/esm/icons/bar-chart-4";
-import UserCheck from "lucide-react/dist/esm/icons/user-check";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Brain from "lucide-react/dist/esm/icons/brain";
-import Star from "lucide-react/dist/esm/icons/star";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Award from "lucide-react/dist/esm/icons/award";
-import Tv from "lucide-react/dist/esm/icons/tv";
-import Command from "lucide-react/dist/esm/icons/command";
-import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
-import Key from "lucide-react/dist/esm/icons/key";
-import Briefcase from "lucide-react/dist/esm/icons/briefcase";
-import Send from "lucide-react/dist/esm/icons/send";
-import Timer from "lucide-react/dist/esm/icons/timer";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  ShoppingCart,
+  Warehouse,
+  MapPin,
+  DollarSign,
+  UsersRound,
+  BarChart3,
+  FileText,
+  Settings,
+  Zap,
+  Truck,
+  Building2,
+  Car,
+  Receipt,
+  TrendingUp,
+  UserCog,
+  Shield,
+  ScrollText,
+  PieChart,
+  LineChart,
+  Activity,
+  Map,
+  FileSpreadsheet,
+  Database,
+  Tags,
+  Image,
+  Boxes,
+  AlertTriangle,
+  ArrowLeftRight,
+  Layers,
+  ClipboardList,
+  CreditCard,
+  Calculator,
+  Wallet,
+  Landmark,
+  UserPlus,
+  Lock,
+  History,
+  FileCheck,
+  Target,
+  Rocket,
+  Route,
+  Navigation,
+  Code,
+  Webhook,
+  Puzzle,
+  Palette,
+  Globe,
+  Printer,
+  MessageSquare,
+  TrendingDown,
+  BarChart2,
+  Store,
+  Clock,
+  Search,
+  Bell,
+  PackageOpen,
+  BarChart4,
+  UserCheck,
+  Flame,
+  Brain
+} from 'lucide-react';
 
 export interface NavItem {
   title: string;
@@ -90,83 +80,21 @@ export interface NavSection {
 }
 
 export const navigationSections: NavSection[] = [
-  // 🎯 COMMAND CENTER
+  // 🎯 DASHBOARD
   {
-    title: 'Command Center',
+    title: 'Dashboard',
     items: [
       {
-        title: 'Dashboard',
+        title: 'Overview',
         href: '/admin/dashboard',
         icon: LayoutDashboard
-      },
-      {
-        title: 'Dashboard Hub',
-        href: '/admin/dashboard-hub',
-        icon: LayoutDashboard,
-        tier: 'professional'
-      },
-      {
-        title: 'TV Dashboard',
-        href: '/admin/tv-dashboard',
-        icon: Tv,
-        badge: 'NEW',
-        tier: 'enterprise'
-      },
-      {
-        title: 'Command Center',
-        href: '/admin/command-center',
-        icon: Command,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Hotbox',
-        href: '/admin/hotbox',
-        icon: Flame,
-        badge: 'HOT',
-        tier: 'professional'
-      },
-      {
-        title: 'Live Orders',
-        href: '/admin/orders?tab=live',
-        icon: Activity,
-        badge: 'LIVE',
-        tier: 'professional'
       },
       {
         title: 'Real-Time Dashboard',
         href: '/admin/realtime-dashboard',
         icon: Activity,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Live Map',
-        href: '/admin/live-map',
-        icon: Map,
         badge: 'LIVE',
         tier: 'enterprise'
-      },
-      {
-        title: 'POS',
-        href: '/admin/pos-system',
-        icon: Store,
-        tier: 'enterprise'
-      }
-    ]
-  },
-
-  // 🛒 ORDERS
-  {
-    title: 'Orders',
-    items: [
-      {
-        title: 'All Orders',
-        href: '/admin/orders',
-        icon: ShoppingCart
-      },
-      {
-        title: 'B2B Orders',
-        href: '/admin/orders/b2b',
-        icon: Building2
       }
     ]
   },
@@ -199,16 +127,6 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Transfers',
-        href: '/admin/inventory-transfers',
-        icon: ArrowLeftRight
-      },
-      {
-        title: 'Barcodes',
-        href: '/admin/generate-barcodes',
-        icon: Barcode
-      },
-      {
         title: 'Transfers & Delivery',
         href: '/admin/dispatch-inventory',
         icon: Truck
@@ -232,34 +150,6 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
-        title: 'Bulk Operations',
-        href: '/admin/bulk-operations',
-        icon: Layers,
-        tier: 'professional'
-      },
-      {
-        title: 'Receiving & Packaging',
-        href: '/admin/operations/receiving',
-        icon: ClipboardList
-      }
-    ]
-  },
-
-  // 📦 INVENTORY
-  {
-    title: 'Inventory',
-    items: [
-      {
-        title: 'Inventory Hub',
-        href: '/admin/inventory-hub',
-        icon: Package
-      },
-      {
-        title: 'Stock Levels',
-        href: '/admin/inventory-hub?tab=stock',
-        icon: Boxes
-      },
-      {
         title: 'Stock Alerts',
         href: '/admin/stock-alerts',
         icon: AlertTriangle,
@@ -272,45 +162,15 @@ export const navigationSections: NavSection[] = [
         tier: 'professional'
       },
       {
-        title: 'Advanced Inventory',
-        href: '/admin/advanced-inventory',
-        icon: Database,
-        tier: 'professional'
-      }
-    ]
-  },
-
-  // 🚚 FULFILLMENT
-  {
-    title: 'Fulfillment',
-    items: [
-      {
-        title: 'Overview',
-        href: '/admin/fulfillment-hub',
-        icon: Truck
-      },
-      {
-        title: 'Fleet',
-        href: '/admin/fulfillment-hub?tab=fleet',
-        icon: Car,
+        title: 'Bulk Operations',
+        href: '/admin/bulk-operations',
+        icon: Layers,
         tier: 'professional'
       },
       {
         title: 'Receiving & Packaging',
         href: '/admin/operations/receiving',
         icon: ClipboardList
-      },
-      {
-        title: 'Team',
-        href: '/admin/team-members',
-        icon: UsersRound,
-        tier: 'professional'
-      },
-      {
-        title: 'Roles',
-        href: '/admin/role-management',
-        icon: Shield,
-        tier: 'enterprise'
       }
     ]
   },
@@ -341,10 +201,16 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
-  // 👥 CUSTOMERS
+  // 🛍️ SALES & MENU
   {
-    title: 'Customers',
+    title: 'Sales & Menu',
     items: [
+      {
+        title: 'Disposable Menus',
+        href: '/admin/disposable-menus',
+        icon: FileText,
+        badge: '🔥'
+      },
       {
         title: 'Customers',
         href: '/admin/customers',
@@ -354,18 +220,6 @@ export const navigationSections: NavSection[] = [
         title: 'Customer Details',
         href: '/admin/customer-details',
         icon: UserCheck
-      },
-      {
-        title: 'CRM',
-        href: '/admin/crm/clients',
-        icon: UsersRound,
-        tier: 'professional'
-      },
-      {
-        title: 'Invoices',
-        href: '/admin/crm/invoices',
-        icon: Receipt,
-        tier: 'professional'
       },
       {
         title: 'Customer Insights',
@@ -378,88 +232,11 @@ export const navigationSections: NavSection[] = [
         href: '/admin/customer-reports',
         icon: FileSpreadsheet,
         tier: 'professional'
-      }
-    ]
-  },
-
-  // 🛍️ SALES & MENU
-  {
-    title: 'Sales & Menu',
-    items: [
-      {
-        title: 'Disposable Menus',
-        href: '/admin/disposable-menus',
-        icon: FileText,
-        badge: '🔥'
-      },
-      {
-        title: 'Menu Analytics',
-        href: '/admin/menu-analytics',
-        icon: BarChart3,
-        tier: 'professional'
-      },
-      {
-        title: 'Menu Migration',
-        href: '/admin/menu-migration',
-        icon: ArrowLeftRight,
-        tier: 'professional'
       },
       {
         title: 'Pricing & Deals',
         href: '/admin/sales/pricing',
         icon: Tags
-      },
-      {
-        title: 'Wholesale Pricing',
-        href: '/admin/wholesale-pricing-tiers',
-        icon: DollarSign,
-        tier: 'professional'
-      },
-      {
-        title: 'Loyalty',
-        href: '/admin/loyalty-program',
-        icon: Award,
-        tier: 'professional'
-      }
-    ]
-  },
-
-  // 📣 MARKETING
-  {
-    title: 'Marketing',
-    items: [
-      {
-        title: 'Marketing Hub',
-        href: '/admin/marketing-hub',
-        icon: Target,
-        badge: 'NEW'
-      },
-      {
-        title: 'Loyalty Program',
-        href: '/admin/marketing-hub?tab=loyalty',
-        icon: Star
-      },
-      {
-        title: 'Coupons',
-        href: '/admin/marketing-hub?tab=coupons',
-        icon: Tags
-      },
-      {
-        title: 'Campaigns',
-        href: '/admin/marketing-hub?tab=campaigns',
-        icon: Rocket,
-        tier: 'professional'
-      },
-      {
-        title: 'Live Chat',
-        href: '/admin/marketing-hub?tab=live-chat',
-        icon: MessageSquare,
-        tier: 'professional'
-      },
-      {
-        title: 'Reviews',
-        href: '/admin/marketing-hub?tab=reviews',
-        icon: TrendingUp
       }
     ]
   },
@@ -644,44 +421,14 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
-  // 🚚 FULFILLMENT
-  {
-    title: 'Fulfillment',
-    items: [
-      {
-        title: 'Drivers',
-        href: '/admin/drivers',
-        icon: Car
-      }
-    ]
-  },
-
   // 💵 FINANCE
   {
     title: 'Finance',
     items: [
       {
-        title: 'Finance Hub',
-        href: '/admin/finance-hub',
-        icon: Landmark,
-        tier: 'professional'
-      },
-      {
         title: 'Financial Center',
         href: '/admin/financial-center',
         icon: Landmark,
-        tier: 'professional'
-      },
-      {
-        title: 'Revenue',
-        href: '/admin/revenue',
-        icon: TrendingUp,
-        tier: 'professional'
-      },
-      {
-        title: 'Expenses',
-        href: '/admin/expenses',
-        icon: TrendingDown,
         tier: 'professional'
       },
       {
@@ -728,27 +475,9 @@ export const navigationSections: NavSection[] = [
         tier: 'enterprise'
       },
       {
-        title: 'POS Shifts',
-        href: '/admin/pos-shifts',
-        icon: Timer,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Z-Reports',
-        href: '/admin/z-reports',
-        icon: FileCheck,
-        tier: 'enterprise'
-      },
-      {
         title: 'Collections',
         href: '/admin/collection-mode',
         icon: Wallet,
-        tier: 'professional'
-      },
-      {
-        title: 'Payouts',
-        href: '/admin/payouts',
-        icon: CreditCard,
         tier: 'professional'
       }
     ]
@@ -789,12 +518,6 @@ export const navigationSections: NavSection[] = [
   {
     title: 'Analytics',
     items: [
-      {
-        title: 'Analytics Hub',
-        href: '/admin/analytics-hub',
-        icon: BarChart3,
-        tier: 'professional'
-      },
       {
         title: 'Analytics Dashboard',
         href: '/admin/analytics-dashboard',
@@ -843,30 +566,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/advanced-analytics',
         icon: BarChart4,
         tier: 'enterprise'
-      },
-      {
-        title: 'Strategic Dashboard',
-        href: '/admin/strategic-dashboard',
-        icon: Target,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Board Report',
-        href: '/admin/board-report',
-        icon: Briefcase,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Expansion Analysis',
-        href: '/admin/expansion',
-        icon: TrendingUp,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Export',
-        href: '/admin/analytics-export',
-        icon: FileSpreadsheet,
-        tier: 'professional'
       }
     ]
   },
@@ -876,20 +575,9 @@ export const navigationSections: NavSection[] = [
     title: 'Reports',
     items: [
       {
-        title: 'Chain of Custody',
-        href: '/admin/reports',
-        icon: FileCheck
-      },
-      {
         title: 'Custom Reports',
         href: '/admin/custom-reports',
         icon: FileText,
-        tier: 'enterprise'
-      },
-      {
-        title: 'Advanced Reporting',
-        href: '/admin/advanced-reporting',
-        icon: FileSpreadsheet,
         tier: 'enterprise'
       },
       {
@@ -897,6 +585,11 @@ export const navigationSections: NavSection[] = [
         href: '/admin/data-export',
         icon: Database,
         tier: 'enterprise'
+      },
+      {
+        title: 'Chain of Custody',
+        href: '/admin/reports',
+        icon: FileCheck
       }
     ]
   },
@@ -962,17 +655,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/vendor-management',
         icon: Building2,
         tier: 'enterprise'
-      },
-      {
-        title: 'Help Center',
-        href: '/admin/help-center',
-        icon: HelpCircle
-      },
-      {
-        title: 'Priority Support',
-        href: '/admin/priority-support',
-        icon: Headphones,
-        tier: 'professional'
       }
     ]
   },
@@ -1004,41 +686,27 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
-  // 🔌 INTEGRATIONS
-  {
-    title: 'Integrations',
-    items: [
-      {
-        title: 'Local AI',
-        href: '/admin/local-ai',
-        icon: Brain,
-        tier: 'professional',
-        badge: 'FREE'
-      },
-      {
-        title: 'Custom Integrations',
-        href: '/admin/custom-integrations',
-        icon: Puzzle,
-        tier: 'ultimate'
-      }
-    ]
-  },
-
   // 🚀 ENTERPRISE
   {
-    title: 'Integrations',
+    title: 'Enterprise',
     items: [
       {
-        title: 'Integrations',
-        href: '/admin/custom-integrations',
-        icon: Puzzle,
-        tier: 'professional'
+        title: 'API Access',
+        href: '/admin/api-access',
+        icon: Code,
+        tier: 'ultimate'
       },
       {
         title: 'Webhooks',
         href: '/admin/webhooks',
         icon: Webhook,
-        tier: 'professional'
+        tier: 'ultimate'
+      },
+      {
+        title: 'Integrations',
+        href: '/admin/custom-integrations',
+        icon: Puzzle,
+        tier: 'ultimate'
       },
       {
         title: 'Compliance',

@@ -1,8 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import { Lock, Plus, FileText } from 'lucide-react';
 
 interface EmptyStateProps {
   onCreateMenu: () => void;

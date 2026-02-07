@@ -6,10 +6,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
-import Users from "lucide-react/dist/esm/icons/users";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Star from "lucide-react/dist/esm/icons/star";
+import { Users, Package, Truck, Star } from 'lucide-react';
 
 export function QuickStats() {
   const { data: stats } = useQuery({
@@ -81,4 +78,5 @@ export function QuickStats() {
     </motion.div>
   );
 }
+
 

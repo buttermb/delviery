@@ -1,11 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Cpu from "lucide-react/dist/esm/icons/cpu";
-import HardDrive from "lucide-react/dist/esm/icons/hard-drive";
-import Server from "lucide-react/dist/esm/icons/server";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Activity, Cpu, HardDrive, Server, TrendingUp, Clock, AlertTriangle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

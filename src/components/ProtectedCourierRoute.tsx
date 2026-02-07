@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useCourier } from '@/contexts/CourierContext';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from 'lucide-react';
 
 export default function ProtectedCourierRoute({ children }: { children: React.ReactNode }) {
   const { courier, loading } = useCourier();

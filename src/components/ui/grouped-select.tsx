@@ -7,10 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Check from "lucide-react/dist/esm/icons/check";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import Search from "lucide-react/dist/esm/icons/search";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { Check, ChevronDown, Search, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface SelectOption {

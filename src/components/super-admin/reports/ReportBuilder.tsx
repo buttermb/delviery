@@ -19,10 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Save from "lucide-react/dist/esm/icons/save";
-import Play from "lucide-react/dist/esm/icons/play";
-import Download from "lucide-react/dist/esm/icons/download";
+import { FileText, Save, Play, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReportConfig {

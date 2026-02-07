@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import X from "lucide-react/dist/esm/icons/x";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Percent from "lucide-react/dist/esm/icons/percent";
+import { X, ShoppingCart, Percent } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 

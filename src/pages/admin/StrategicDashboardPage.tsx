@@ -6,18 +6,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Target from "lucide-react/dist/esm/icons/target";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Users from "lucide-react/dist/esm/icons/users";
-import Package2 from "lucide-react/dist/esm/icons/package-2";
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
-import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { BarChart3, TrendingUp, Target, Zap, DollarSign, ShoppingCart, Users, Package2, ArrowUpRight, ArrowDownRight, Sparkles, Loader2 } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

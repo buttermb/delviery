@@ -5,24 +5,24 @@
  * - Orders: Order analytics
  * - Menu: Menu performance
  * - Delivery: Delivery analytics
- * - Storefront: Store metrics (revenue, orders, conversion, AOV)
  * - Forecasting: Predictive analytics
  */
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import UtensilsCrossed from "lucide-react/dist/esm/icons/utensils-crossed";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import LineChart from "lucide-react/dist/esm/icons/line-chart";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
-import Download from "lucide-react/dist/esm/icons/download";
-import Target from "lucide-react/dist/esm/icons/target";
-import Presentation from "lucide-react/dist/esm/icons/presentation";
-import Store from "lucide-react/dist/esm/icons/store";
+import {
+    BarChart3,
+    ShoppingCart,
+    UtensilsCrossed,
+    Truck,
+    TrendingUp,
+    LineChart,
+    FileText,
+    PieChart,
+    Download,
+    Target,
+    Presentation,
+} from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
@@ -39,7 +39,6 @@ const CustomReportsPage = lazy(() => import('@/pages/tenant-admin/CustomReportsP
 const DataExportPage = lazy(() => import('@/pages/tenant-admin/DataExportPage'));
 const StrategicDashboardPage = lazy(() => import('@/pages/admin/StrategicDashboardPage'));
 const BoardReportPage = lazy(() => import('@/pages/admin/BoardReportPage'));
-const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -55,7 +54,6 @@ const tabs = [
     { id: 'orders', label: 'Orders', icon: ShoppingCart, group: 'Metrics' },
     { id: 'menu', label: 'Menu', icon: UtensilsCrossed, group: 'Metrics' },
     { id: 'delivery', label: 'Delivery', icon: Truck, group: 'Metrics' },
-    { id: 'storefront', label: 'Storefront', icon: Store, group: 'Metrics' },
     // Advanced Analysis
     { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'Analysis' },
     { id: 'advanced', label: 'Advanced', icon: LineChart, group: 'Analysis' },
@@ -79,7 +77,7 @@ export default function AnalyticsHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
@@ -142,13 +140,6 @@ export default function AnalyticsHubPage() {
                 <TabsContent value="delivery" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <DeliveryAnalyticsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Storefront Tab */}
-                <TabsContent value="storefront" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <StorefrontAnalytics />
                     </Suspense>
                 </TabsContent>
 

@@ -6,8 +6,4 @@
 export { ActivityTimeline } from './ActivityTimeline';
 export { CommunicationHistory } from './CommunicationHistory';
 export { ContactCard } from './ContactCard';
-export { ClientSelector } from './ClientSelector';
-export { CreateClientDialog } from './CreateClientDialog';
-export { CreateOrderForm } from './CreateOrderForm';
-export { LineItemsEditor } from './LineItemsEditor';
 

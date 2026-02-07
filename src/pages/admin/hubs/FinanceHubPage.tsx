@@ -5,20 +5,22 @@
  * - Invoices: Invoice management
  * - Expenses: Expense tracking
  * - Revenue: Revenue reports
- * - Payouts: Payout schedules and history
+ * - Commissions: Commission tracking
  */
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import FileEdit from "lucide-react/dist/esm/icons/file-edit";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Banknote from "lucide-react/dist/esm/icons/banknote";
-import { lazy, Suspense, useCallback } from 'react';
+import {
+    DollarSign,
+    FileText,
+    CreditCard,
+    TrendingUp,
+    Percent,
+    FileEdit,
+    Wallet,
+    Building2,
+} from 'lucide-react';
+import { lazy, Suspense, useCallback, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
@@ -26,11 +28,10 @@ const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
 const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage'));
 const ExpenseTracking = lazy(() => import('@/pages/admin/ExpenseTracking'));
 const RevenueReportsPage = lazy(() => import('@/pages/tenant-admin/RevenueReportsPage'));
-const PayoutsPage = lazy(() => import('@/pages/admin/PayoutsPage'));
+const CommissionTrackingPage = lazy(() => import('@/pages/tenant-admin/CommissionTrackingPage'));
 const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
 const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
 const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
-const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -49,7 +50,7 @@ const tabs = [
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
     { id: 'collections', label: 'Collect', icon: Wallet, group: 'Transactions' },
-    { id: 'payouts', label: 'Payouts', icon: Banknote, group: 'Transactions' },
+    { id: 'commissions', label: 'Payouts', icon: Percent, group: 'Transactions' },
     // Utilities
     { id: 'builder', label: 'Builder', icon: FileEdit, group: 'Tools' },
 ] as const;
@@ -65,7 +66,7 @@ export default function FinanceHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="border-b bg-card px-4 py-4">
                     <HubBreadcrumbs
@@ -123,8 +124,8 @@ export default function FinanceHubPage() {
                 <TabsContent value="collections" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><CollectionMode embedded /></Suspense>
                 </TabsContent>
-                <TabsContent value="payouts" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><PayoutsPage /></Suspense>
+                <TabsContent value="commissions" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}><CommissionTrackingPage /></Suspense>
                 </TabsContent>
             </Tabs>
         </div>

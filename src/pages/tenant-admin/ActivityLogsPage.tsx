@@ -1,5 +1,5 @@
-import { ActivityLogs } from '@/pages/admin/ActivityLogs';
+import ActivityLogs from "@/pages/admin/ActivityLogs";
 
-export function ActivityLogsPage() {
+export default function ActivityLogsPage() {
   return <ActivityLogs />;
 }

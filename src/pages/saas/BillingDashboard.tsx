@@ -24,16 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Download from "lucide-react/dist/esm/icons/download";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Users from "lucide-react/dist/esm/icons/users";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Package from "lucide-react/dist/esm/icons/package";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { CreditCard, DollarSign, TrendingUp, AlertTriangle, Download, Plus, Users, Menu, Package, MapPin } from 'lucide-react';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';

@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface SubscriptionGuardProps {

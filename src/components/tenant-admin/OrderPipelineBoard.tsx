@@ -9,17 +9,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Check from "lucide-react/dist/esm/icons/check";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import X from "lucide-react/dist/esm/icons/x";
+import {
+    Clock,
+    Package,
+    Truck,
+    CheckCircle2,
+    MoreVertical,
+    ArrowRight,
+    AlertCircle,
+    Copy,
+    Check,
+    Filter,
+    X
+} from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

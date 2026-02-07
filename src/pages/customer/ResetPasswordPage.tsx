@@ -11,19 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import { Loader2, Lock, ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
-import { useCsrfToken } from '@/hooks/useCsrfToken';
-import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
-import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
-import { AuthErrorAlert, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 
 export default function CustomerResetPasswordPage() {
   const navigate = useNavigate();
@@ -41,11 +32,6 @@ export default function CustomerResetPasswordPage() {
   const [reset, setReset] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
-  const [resetError, setResetError] = useState<string | null>(null);
-  const { validateToken } = useCsrfToken();
-
-  // Password breach checking
-  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(newPassword);
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -70,35 +56,40 @@ export default function CustomerResetPasswordPage() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    setResetError(null);
-
-    if (!validateToken()) {
-      setResetError('Invalid security token. Please refresh the page and try again.');
-      return;
-    }
 
     if (!token) {
-      setResetError('Password reset link is invalid or missing. Please request a new one.');
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Link',
+        description: 'Password reset link is invalid or missing.',
+      });
       return;
     }
 
     if (!email) {
-      setResetError('Please enter your email address.');
+      toast({
+        variant: 'destructive',
+        title: 'Email Required',
+        description: 'Please enter your email address',
+      });
       return;
     }
 
     if (newPassword.length < 8) {
-      setResetError('Password must be at least 8 characters long.');
+      toast({
+        variant: 'destructive',
+        title: 'Password Too Short',
+        description: 'Password must be at least 8 characters',
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setResetError('Passwords do not match. Please make sure both passwords are identical.');
-      return;
-    }
-
-    if (breachResult?.blocked) {
-      setResetError('This password has been found in data breaches. Please choose a different, more secure password.');
+      toast({
+        variant: 'destructive',
+        title: 'Passwords Do Not Match',
+        description: 'Please make sure both passwords match',
+      });
       return;
     }
 
@@ -134,8 +125,11 @@ export default function CustomerResetPasswordPage() {
       }, 3000);
     } catch (error: unknown) {
       logger.error('Password reset error', error, { component: 'CustomerResetPasswordPage' });
-      const errorMessage = getAuthErrorMessage(error, 'Invalid or expired reset link. Please request a new one.');
-      setResetError(errorMessage);
+      toast({
+        variant: 'destructive',
+        title: 'Reset Failed',
+        description: error instanceof Error ? error.message : 'Invalid or expired reset link. Please request a new one.',
+      });
     } finally {
       setLoading(false);
     }
@@ -185,13 +179,6 @@ export default function CustomerResetPasswordPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleReset} className="space-y-4">
-            <AuthErrorAlert
-              message={resetError || ''}
-              type="error"
-              variant="light"
-              className="mb-2"
-            />
-
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -202,7 +189,6 @@ export default function CustomerResetPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={!!emailFromUrl}
-                autoComplete="email"
                 className="min-h-[44px]"
               />
             </div>
@@ -218,7 +204,6 @@ export default function CustomerResetPasswordPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={8}
-                  autoComplete="new-password"
                   className="min-h-[44px] pr-10"
                 />
                 <button
@@ -232,17 +217,6 @@ export default function CustomerResetPasswordPage() {
               {newPassword && (
                 <PasswordStrengthIndicator password={newPassword} />
               )}
-              {newPassword.length >= 8 && (
-                <PasswordBreachWarning
-                  checking={breachChecking}
-                  result={breachResult}
-                  suggestPassword={suggestPassword}
-                  onGeneratePassword={(pw) => {
-                    setNewPassword(pw);
-                    setConfirmPassword(pw);
-                  }}
-                />
-              )}
             </div>
 
             <div className="space-y-2">
@@ -255,7 +229,6 @@ export default function CustomerResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                autoComplete="new-password"
                 className="min-h-[44px]"
               />
             </div>

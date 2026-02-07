@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import Database from "lucide-react/dist/esm/icons/database";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import { Database, AlertCircle, Sparkles } from "lucide-react";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 

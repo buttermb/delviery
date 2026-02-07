@@ -23,12 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import User from "lucide-react/dist/esm/icons/user";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Camera from "lucide-react/dist/esm/icons/camera";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Layout from "lucide-react/dist/esm/icons/layout";
+import { User, Mail, Camera, Trash2, CheckCircle, Layout } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -40,17 +35,17 @@ export default function AccountSettings() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { save: saveName, status: nameStatus } = useAutoSave<{ name: string }>({
-    onSave: async (data) => {
-      const { data: result, error } = await supabase.functions.invoke('update-account-profile', {
-        body: { name: data.name },
+  const { save: saveName, status: nameStatus } = useAutoSave<string>({
+    onSave: async (newName) => {
+      const { data, error } = await supabase.functions.invoke('update-account-profile', {
+        body: { name: newName },
       });
 
       if (error) throw error;
 
       // Check for error in response body (edge functions can return 200 with error)
-      if (result && typeof result === 'object' && 'error' in result && result.error) {
-        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to update profile');
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to update profile');
       }
     },
     onSuccess: () => {
@@ -64,7 +59,7 @@ export default function AccountSettings() {
 
   const handleNameChange = (value: string) => {
     setName(value);
-    saveName({ name: value });
+    saveName(value);
   };
 
   const handleAvatarClick = () => {

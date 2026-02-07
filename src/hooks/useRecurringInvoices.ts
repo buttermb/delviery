@@ -109,12 +109,10 @@ export function useRecurringInvoices() {
       if (updates.is_active !== undefined) payload.is_active = updates.is_active;
       if (updates.notes !== undefined) payload.notes = updates.notes;
 
-      if (!tenant?.id) throw new Error("No tenant");
       const { data, error } = await supabase
         .from("recurring_invoice_schedules")
         .update(payload)
         .eq("id", id)
-        .eq("tenant_id", tenant.id)
         .select()
         .single();
 
@@ -130,12 +128,10 @@ export function useRecurringInvoices() {
 
   const toggleActive = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      if (!tenant?.id) throw new Error("No tenant");
       const { error } = await supabase
         .from("recurring_invoice_schedules")
         .update({ is_active })
-        .eq("id", id)
-        .eq("tenant_id", tenant.id);
+        .eq("id", id);
 
       if (error) throw error;
     },
@@ -148,12 +144,10 @@ export function useRecurringInvoices() {
 
   const deleteSchedule = useMutation({
     mutationFn: async (id: string) => {
-      if (!tenant?.id) throw new Error("No tenant");
       const { error } = await supabase
         .from("recurring_invoice_schedules")
         .delete()
-        .eq("id", id)
-        .eq("tenant_id", tenant.id);
+        .eq("id", id);
 
       if (error) throw error;
     },

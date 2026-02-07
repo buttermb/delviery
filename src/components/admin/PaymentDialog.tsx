@@ -6,9 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 
 interface PaymentDialogProps {
   clientId: string;
@@ -67,8 +66,8 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
       client_id: clientId,
       amount: numAmount,
       payment_method: paymentMethod,
-      reference_number: referenceNumber ? sanitizeFormInput(referenceNumber, 100) : null,
-      notes: notes ? sanitizeTextareaInput(notes, 500) : null
+      reference_number: referenceNumber || null,
+      notes: notes || null
     });
 
     onOpenChange(false);

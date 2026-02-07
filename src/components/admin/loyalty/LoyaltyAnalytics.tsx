@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function LoyaltyAnalytics() {

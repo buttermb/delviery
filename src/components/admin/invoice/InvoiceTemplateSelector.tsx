@@ -1,7 +1,5 @@
 import { useState } from "react";
-import Check from "lucide-react/dist/esm/icons/check";
-import Palette from "lucide-react/dist/esm/icons/palette";
-import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import { Check, Palette, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,

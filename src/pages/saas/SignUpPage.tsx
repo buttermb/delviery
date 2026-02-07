@@ -31,26 +31,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import User from "lucide-react/dist/esm/icons/user";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Briefcase from "lucide-react/dist/esm/icons/briefcase";
-import Users from "lucide-react/dist/esm/icons/users";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import Check from "lucide-react/dist/esm/icons/check";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap, Coins, ArrowLeft } from 'lucide-react';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
 import { PLAN_CONFIG, getPlanConfig, type PlanKey } from '@/config/planPricing';
 import { signupProtection } from '@/lib/signupProtection';
@@ -67,7 +48,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { handleError } from '@/utils/errorHandling/handlers';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import FloraIQLogo from '@/components/FloraIQLogo';
-import { useCsrfToken } from '@/hooks/useCsrfToken';
+
+
 
 const signupSchema = z.object({
   business_name: z.string()
@@ -164,7 +146,8 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { validateToken } = useCsrfToken();
+
+
 
   // Use defined hooks before any return
   // Auto-save form data to localStorage with expiry
@@ -203,6 +186,9 @@ export default function SignUpPage() {
     }
   }, [form]);
 
+
+
+
   // Auto-save form data to localStorage with expiry
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -240,15 +226,6 @@ export default function SignUpPage() {
   }, [form]);
 
   const onSubmit = async (data: SignupFormData) => {
-    if (!validateToken()) {
-      toast({
-        title: 'Security Error',
-        description: 'Invalid security token. Please refresh the page and try again.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     // Client-side rate limiting
     const now = Date.now();
     if (now - lastSubmitTime < SUBMIT_COOLDOWN_MS) {
@@ -594,6 +571,8 @@ export default function SignUpPage() {
     }
   };
 
+
+
   return (
     <ForceLightMode>
       <div className="min-h-screen flex w-full bg-background">
@@ -711,6 +690,8 @@ export default function SignUpPage() {
                         className="w-full h-12"
                       />
 
+
+
                       {/* Divider */}
                       <div className="relative flex items-center py-2">
                         <div className="flex-grow border-t border-border" />
@@ -793,7 +774,6 @@ export default function SignUpPage() {
                                 <Input
                                   type="email"
                                   placeholder="you@business.com"
-                                  autoComplete="email"
                                   {...field}
                                   className={cn(
                                     "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
@@ -824,7 +804,6 @@ export default function SignUpPage() {
                                 <Input
                                   type={showPassword ? "text" : "password"}
                                   placeholder="••••••••"
-                                  autoComplete="new-password"
                                   {...field}
                                   className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                                 />

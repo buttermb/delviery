@@ -1,10 +1,12 @@
 import { Button } from '@/components/ui/button';
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Download from "lucide-react/dist/esm/icons/download";
+import { 
+  CheckCircle2, 
+  XCircle, 
+  AlertTriangle,
+  RotateCcw,
+  ArrowRight,
+  Download,
+} from 'lucide-react';
 import type { ImportResult } from '@/types/migration';
 import { useNavigate } from 'react-router-dom';
 
@@ -150,4 +152,7 @@ function StatCard({ label, value, icon, highlight }: StatCardProps) {
     </div>
   );
 }
+
+
+
 

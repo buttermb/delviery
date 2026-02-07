@@ -10,11 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { Headphones, Plus, MessageCircle, Clock, CheckCircle } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 

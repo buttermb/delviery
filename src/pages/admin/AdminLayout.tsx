@@ -1,26 +1,22 @@
+import { logger } from '@/lib/logger';
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { RouteErrorBoundary } from "@/components/admin/RouteErrorBoundary";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
 import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
-import { LiveBadgeProvider } from "@/components/admin/sidebar/LiveBadgeContext";
 import { useSidebarMode } from "@/hooks/useSidebarMode";
 import { SidebarErrorBoundary } from "@/components/admin/sidebar/SidebarErrorBoundary";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
-import Search from "lucide-react/dist/esm/icons/search";
-import Keyboard from "lucide-react/dist/esm/icons/keyboard";
+import { Search, Keyboard } from "lucide-react";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 import InstallPWA from "@/components/InstallPWA";
 import { Suspense } from "react";
-import { AdminPageSkeleton } from "@/components/admin/AdminPageSkeleton";
-import { useEventNotifications } from "@/hooks/useEventNotifications";
-import { useScrollRestoration } from "@/hooks/useScrollRestoration";
+import { LoadingFallback } from "@/components/LoadingFallback";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
 import { useCommandPaletteStore } from "@/components/tenant-admin/CommandPalette";
@@ -43,17 +39,12 @@ import { useCredits } from "@/contexts/CreditContext";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { CreditBalance } from '@/components/credits/CreditBalance';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
+import { ForceLightMode } from '@/components/marketing/ForceLightMode';
+
 /**
- * Admin Layout Component - v2.2.2
+ * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
- * Features:
- * - Scroll position restoration for all admin routes
- * - Real-time event notifications
- * - Responsive sidebar with mobile bottom navigation
- * - Command palette and keyboard shortcuts
- * - Credit management and subscription status
- * - Error boundary around route content for enhanced error handling
- * Updated: 2026-02-01
+ * Updated: 2025-10-31
  */
 const AdminLayout = () => {
   const location = useLocation();
@@ -72,19 +63,8 @@ const AdminLayout = () => {
   // Sidebar mode toggle (Classic vs Optimized)
   const { isOptimized } = useSidebarMode();
 
-  // Enable real-time event notifications for orders and stock alerts
-  useEventNotifications({
-    enabled: true,
-    playSound: true,
-    showBrowserNotification: true,
-  });
-
-  // Enable scroll position restoration for all admin routes
-  // This preserves scroll position when navigating between admin pages
-  useScrollRestoration({
-    scrollBehavior: 'instant',
-    restoreDelay: 0,
-  });
+  // Force module refresh
+  const moduleVersion = "2.2.0";
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
@@ -110,7 +90,8 @@ const AdminLayout = () => {
   };
 
   return (
-    <TutorialProvider>
+    <ForceLightMode>
+      <TutorialProvider>
         {/* Impersonation Banner */}
         <ImpersonationBanner />
 
@@ -138,15 +119,13 @@ const AdminLayout = () => {
         <SidebarProvider>
           <div className="min-h-dvh flex w-full premium-gradient-mesh">
             <SidebarErrorBoundary>
-              <LiveBadgeProvider>
-                {isOptimized ? (
-                  <OptimizedSidebar userTier="PROFESSIONAL" />
-                ) : (
-                  <AdaptiveSidebar />
-                )}
-              </LiveBadgeProvider>
+              {isOptimized ? (
+                <OptimizedSidebar userTier="PROFESSIONAL" />
+              ) : (
+                <AdaptiveSidebar />
+              )}
             </SidebarErrorBoundary>
-            <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0">
               <AccountSwitcher />
               <header className="glass-floating h-14 sm:h-14 flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
                 {/* Sidebar trigger - 48px minimum touch target */}
@@ -234,8 +213,7 @@ const AdminLayout = () => {
                     <AdminNotificationCenter />
                   </div>
 
-                  {/* Theme Toggle */}
-                  <ThemeToggle />
+                  {/* Theme toggle removed - ForceLightMode enforces light mode */}
 
                   {/* Offline Status Indicator */}
                   <div className="hidden sm:block">
@@ -251,11 +229,9 @@ const AdminLayout = () => {
                 }}
               >
                 <AdminErrorBoundary>
-                  <RouteErrorBoundary routePath={location.pathname}>
-                    <Suspense fallback={<AdminPageSkeleton />}>
-                      <Outlet />
-                    </Suspense>
-                  </RouteErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Outlet />
+                  </Suspense>
                 </AdminErrorBoundary>
               </main>
             </div>
@@ -276,6 +252,7 @@ const AdminLayout = () => {
         {/* Credit deduction toasts */}
         <CreditToastContainer />
       </TutorialProvider>
+    </ForceLightMode>
   );
 };
 

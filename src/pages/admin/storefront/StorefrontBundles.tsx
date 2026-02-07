@@ -42,17 +42,19 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Package from "lucide-react/dist/esm/icons/package";
-import Percent from "lucide-react/dist/esm/icons/percent";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import X from "lucide-react/dist/esm/icons/x";
+import {
+  ArrowLeft,
+  Plus,
+  Package,
+  Percent,
+  DollarSign,
+  Trash2,
+  Edit,
+  Eye,
+  EyeOff,
+  Gift,
+  X
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
@@ -223,10 +225,6 @@ export default function StorefrontBundles() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
     },
-    onError: (error: Error) => {
-      logger.error('Failed to toggle bundle status', { error });
-      toast({ title: 'Failed to update bundle', description: error.message, variant: 'destructive' });
-    },
   });
 
   // Delete bundle
@@ -243,10 +241,6 @@ export default function StorefrontBundles() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
       toast({ title: 'Bundle deleted' });
-    },
-    onError: (error: Error) => {
-      logger.error('Failed to delete bundle', { error });
-      toast({ title: 'Failed to delete bundle', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -678,4 +672,6 @@ export default function StorefrontBundles() {
     </div>
   );
 }
+
+
 

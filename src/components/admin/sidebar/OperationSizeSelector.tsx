@@ -10,9 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useOperationSize } from '@/hooks/useOperationSize';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { Badge } from '@/components/ui/badge';
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import Info from "lucide-react/dist/esm/icons/info";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { RotateCcw, Info, AlertCircle } from 'lucide-react';
 import type { OperationSize } from '@/types/sidebar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -39,6 +37,7 @@ export function OperationSizeSelector() {
     resetToAuto,
     isLoading,
   } = useOperationSize();
+
 
   const { preferences } = useSidebarPreferences();
   const currentPreset = preferences?.layoutPreset || 'default';

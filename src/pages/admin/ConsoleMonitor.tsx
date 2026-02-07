@@ -4,11 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Download from "lucide-react/dist/esm/icons/download";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Terminal from "lucide-react/dist/esm/icons/terminal";
+import { Trash2, Download, Search, Filter, Terminal } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
@@ -17,11 +13,10 @@ interface LogEntry {
   timestamp: Date;
   type: 'log' | 'warn' | 'error' | 'info';
   message: string;
-  args: unknown[];
+  args: any[];
 }
 
-/* eslint-disable no-console */
-export function ConsoleMonitor() {
+export default function ConsoleMonitor() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -33,7 +28,7 @@ export function ConsoleMonitor() {
     const originalError = console.error;
     const originalInfo = console.info;
 
-    const addLog = (type: LogEntry['type'], args: unknown[]) => {
+    const addLog = (type: LogEntry['type'], args: any[]) => {
       const message = args.map(arg => {
         if (typeof arg === 'object') {
           try {

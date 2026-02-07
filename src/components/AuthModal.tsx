@@ -13,8 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from '@/lib/utils';
 
 interface AuthModalProps {

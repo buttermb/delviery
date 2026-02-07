@@ -14,9 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import Minus from "lucide-react/dist/esm/icons/minus";
+import { Check, X, Minus } from 'lucide-react';
 import { BUSINESS_TIER_PRESETS, type BusinessTier, getTierColor } from '@/lib/presets/businessTiers';
 import { cn } from '@/lib/utils';
 

@@ -11,10 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { logger } from '@/lib/logger';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './StarRating';
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import ThumbsUp from "lucide-react/dist/esm/icons/thumbs-up";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import { Check, X, ThumbsUp, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 

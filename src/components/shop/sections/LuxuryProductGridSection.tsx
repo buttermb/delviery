@@ -5,22 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Check from "lucide-react/dist/esm/icons/check";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Moon from "lucide-react/dist/esm/icons/moon";
-import Smile from "lucide-react/dist/esm/icons/smile";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Target from "lucide-react/dist/esm/icons/target";
-import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Sun from "lucide-react/dist/esm/icons/sun";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import X from "lucide-react/dist/esm/icons/x";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import { Search, Plus, RefreshCw, Eye, Check, AlertTriangle, Moon, Smile, Zap, Target, Lightbulb, Activity, Sun, Filter, X, ShoppingCart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
@@ -134,7 +119,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
     }
 
     return filtered.slice(0, max_products);
-  }, [products, debouncedSearch, selectedCategory, max_products]);
+  }, [products, searchQuery, selectedCategory, max_products]);
 
   const handleQuickAdd = (e: React.MouseEvent, product: MarketplaceProduct) => {
     e.preventDefault();
@@ -335,6 +320,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
 }
 
 // Sub-component for performance and clean logic
+
 
 // Add simple CSS usage for no-scrollbar utility if not present
 // or presume Tailwind class 'scrollbar-hide' exists in utility layer

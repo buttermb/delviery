@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,19 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { invalidateOnEvent } from "@/lib/invalidation";
-
-const REASON_OPTIONS = [
-  { value: "receiving", label: "📦 Receiving/Restock" },
-  { value: "damage", label: "💔 Damage/Loss" },
-  { value: "theft", label: "🚨 Theft" },
-  { value: "quality", label: "❌ Quality Issue" },
-  { value: "count", label: "🔢 Count Correction" },
-  { value: "sale", label: "💰 Sale" },
-  { value: "other", label: "Other" },
-] as const;
-
-type ReasonType = typeof REASON_OPTIONS[number]['value'] | "";
 
 interface StockAdjustmentDialogProps {
   productId: string;
@@ -43,19 +30,9 @@ export function StockAdjustmentDialog({
   const { tenant } = useTenantAdminAuth();
   const [adjustmentType, setAdjustmentType] = useState<"add" | "subtract">("add");
   const [quantity, setQuantity] = useState("");
-  const [reason, setReason] = useState<ReasonType>("");
+  const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
   const queryClient = useQueryClient();
-
-  // Reset form when dialog opens
-  useEffect(() => {
-    if (open) {
-      setAdjustmentType("add");
-      setQuantity("");
-      setReason("");
-      setNotes("");
-    }
-  }, [open]);
 
   interface AdjustmentData {
     warehouse: string;
@@ -91,17 +68,11 @@ export function StockAdjustmentDialog({
     },
     onSuccess: (newQuantity) => {
       showSuccessToast(
-        "Stock Adjusted",
+        "Stock Adjusted", 
         `New quantity: ${newQuantity.toFixed(2)} units`
       );
-
-      // Cross-panel invalidation - stock changes affect inventory, POS, storefront, dashboard
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id, {
-          productId,
-        });
-      }
-
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-for-wholesale"] });
       onOpenChange(false);
       setQuantity("");
       setReason("");
@@ -179,19 +150,18 @@ export function StockAdjustmentDialog({
 
           <div>
             <Label htmlFor="reason">Reason *</Label>
-            <Select
-              value={reason || undefined}
-              onValueChange={(v) => setReason(v as ReasonType)}
-            >
+            <Select value={reason} onValueChange={setReason} required>
               <SelectTrigger>
                 <SelectValue placeholder="Select reason..." />
               </SelectTrigger>
               <SelectContent>
-                {REASON_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="receiving">📦 Receiving/Restock</SelectItem>
+                <SelectItem value="damage">💔 Damage/Loss</SelectItem>
+                <SelectItem value="theft">🚨 Theft</SelectItem>
+                <SelectItem value="quality">❌ Quality Issue</SelectItem>
+                <SelectItem value="count">🔢 Count Correction</SelectItem>
+                <SelectItem value="sale">💰 Sale</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>

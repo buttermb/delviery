@@ -1,6 +1,6 @@
 import * as React from "react";
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from "date-fns";
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";

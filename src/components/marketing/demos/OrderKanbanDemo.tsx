@@ -6,10 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Utensils from "lucide-react/dist/esm/icons/utensils";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { ShoppingBag, Utensils, CheckCircle2, Clock } from 'lucide-react';
 
 interface DemoOrder {
     id: string;

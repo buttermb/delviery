@@ -3,15 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Package from "lucide-react/dist/esm/icons/package";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Users from "lucide-react/dist/esm/icons/users";
+import { 
+  ShoppingBag,
+  Package,
+  ArrowRight,
+  Settings,
+  Sparkles,
+  TrendingUp,
+  Building2,
+  MessageSquare,
+  Users,
+} from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { Link, useNavigate } from "react-router-dom";

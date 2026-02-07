@@ -1,8 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AddressSuggestion {

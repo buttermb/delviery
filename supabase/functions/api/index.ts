@@ -16,7 +16,6 @@ import { ordersRouter } from './routes/orders.ts';
 import { contactsRouter } from './routes/contacts.ts';
 import { menusRouter } from './routes/menus.ts';
 import { inventoryRouter } from './routes/inventory.ts';
-import { posRouter } from './routes/pos.ts';
 
 // Type definitions
 type RequestHandler = (req: Request, params: Record<string, string>) => Promise<Response>;
@@ -61,7 +60,6 @@ registerRoutes(ordersRouter);
 registerRoutes(contactsRouter);
 registerRoutes(menusRouter);
 registerRoutes(inventoryRouter);
-registerRoutes(posRouter);
 
 // Middleware: Extract user from JWT
 async function extractUser(req: Request): Promise<{ userId: string | null; tenantId: string | null }> {

@@ -1,24 +1,26 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import X from "lucide-react/dist/esm/icons/x";
-import Check from "lucide-react/dist/esm/icons/check";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Target from "lucide-react/dist/esm/icons/target";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import type LucideIcon from "lucide-react/dist/esm/icons/type lucide-icon";
+import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import {
+  X,
+  Check,
+  FileSpreadsheet,
+  Clock,
+  AlertCircle,
+  Mail,
+  ShieldAlert,
+  TrendingDown,
+  LayoutDashboard,
+  Sparkles,
+  RefreshCw,
+  Target,
+  ShieldCheck,
+  BarChart3,
+  type LucideIcon
+} from 'lucide-react';
 
 interface Problem {
   icon: LucideIcon;

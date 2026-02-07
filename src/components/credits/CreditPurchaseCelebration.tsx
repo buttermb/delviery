@@ -6,12 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import PartyPopper from "lucide-react/dist/esm/icons/party-popper";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Coins from "lucide-react/dist/esm/icons/coins";
+import { PartyPopper, Sparkles, Zap, CheckCircle2, ArrowRight, Coins } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -194,4 +189,8 @@ export function useCreditCelebration(): UseCreditCelebrationReturn {
 }
 
 export default CreditPurchaseCelebration;
+
+
+
+
 

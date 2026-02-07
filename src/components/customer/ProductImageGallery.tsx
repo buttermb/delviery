@@ -6,10 +6,7 @@
 import { useState, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import X from "lucide-react/dist/esm/icons/x";
-import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
+import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 
 interface ProductImage {

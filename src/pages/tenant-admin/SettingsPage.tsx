@@ -3,18 +3,20 @@ import { useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import User from "lucide-react/dist/esm/icons/user";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Users from "lucide-react/dist/esm/icons/users";
-import Plug from "lucide-react/dist/esm/icons/plug";
-import Palette from "lucide-react/dist/esm/icons/palette";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import {
+  User,
+  Shield,
+  Building2,
+  Bell,
+  CreditCard,
+  Users,
+  Plug,
+  Palette,
+  Settings,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 // Lazy load settings sections for better performance

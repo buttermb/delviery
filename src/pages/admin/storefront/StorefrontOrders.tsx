@@ -15,12 +15,20 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import Search from "lucide-react/dist/esm/icons/search";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Download from "lucide-react/dist/esm/icons/download";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import { OrderEmailButton } from '@/components/admin/orders/OrderEmailButton';
-import { OrderExportButton } from '@/components/admin/orders/OrderExportButton';
+import {
+  ArrowLeft,
+  Search,
+  ShoppingCart,
+  Eye,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Truck,
+  Package,
+  Filter,
+  Download,
+  RefreshCw
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
@@ -258,12 +266,10 @@ export default function StorefrontOrders() {
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <OrderExportButton
-            orders={filteredOrders}
-            filenamePrefix="storefront-orders"
-            variant="outline"
-            size="sm"
-          />
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
         </div>
       </div>
 
@@ -533,27 +539,6 @@ export default function StorefrontOrders() {
                     {window.location.origin}/shop/{store?.id}/track/{selectedOrder.tracking_token}
                   </code>
                 </div>
-
-                {/* Send Confirmation Email */}
-                <div className="pt-4">
-                  <OrderEmailButton
-                    orderId={selectedOrder.id}
-                    orderNumber={selectedOrder.order_number}
-                    customerEmail={selectedOrder.customer_email}
-                    customerName={selectedOrder.customer_name}
-                    items={selectedOrder.items.map((item: { name: string; quantity: number; price: number }) => ({
-                      name: item.name,
-                      quantity: item.quantity,
-                      price: item.price,
-                    }))}
-                    subtotal={selectedOrder.subtotal}
-                    deliveryFee={selectedOrder.delivery_fee}
-                    total={selectedOrder.total}
-                    storeName={tenant?.business_name || 'Store'}
-                    trackingUrl={`${window.location.origin}/shop/${store?.id}/track/${selectedOrder.tracking_token}`}
-                    className="w-full"
-                  />
-                </div>
               </div>
             </>
           )}
@@ -562,4 +547,8 @@ export default function StorefrontOrders() {
     </div>
   );
 }
+
+
+
+
 

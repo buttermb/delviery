@@ -24,13 +24,15 @@ import {
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import Search from "lucide-react/dist/esm/icons/search";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Download from "lucide-react/dist/esm/icons/download";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Package from "lucide-react/dist/esm/icons/package";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Filter from "lucide-react/dist/esm/icons/filter";
+import {
+    Search,
+    Loader2,
+    Download,
+    CheckCircle,
+    Package,
+    Sparkles,
+    Filter
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface GlobalProduct {

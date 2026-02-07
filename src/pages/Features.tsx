@@ -1,47 +1,14 @@
-import { lazy, Suspense, type ComponentType } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Users from "lucide-react/dist/esm/icons/users";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import { CheckCircle, ArrowRight, Smartphone, Package, ShoppingCart, Users, BarChart3 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { CTASection } from "@/components/marketing/CTASection";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
-import { FeatureDemoPlayer } from "@/components/marketing/FeatureDemoPlayer";
-
-// Lazy load Remotion demo compositions
-const DisposableMenusDemo = lazy(() =>
-  import('@/remotion/compositions/features/DisposableMenusDemo').then(m => ({ default: m.DisposableMenusDemo }))
-);
-const InventoryDemo = lazy(() =>
-  import('@/remotion/compositions/features/InventoryDemo').then(m => ({ default: m.InventoryDemo }))
-);
-const OrderManagementDemo = lazy(() =>
-  import('@/remotion/compositions/features/OrderManagementDemo').then(m => ({ default: m.OrderManagementDemo }))
-);
-const CustomerPortalDemo = lazy(() =>
-  import('@/remotion/compositions/features/CustomerPortalDemo').then(m => ({ default: m.CustomerPortalDemo }))
-);
-const AnalyticsDemo = lazy(() =>
-  import('@/remotion/compositions/features/AnalyticsDemo').then(m => ({ default: m.AnalyticsDemo }))
-);
-
-interface FeatureData {
-  icon: ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  benefits: string[];
-  demoComponent: ComponentType<Record<string, unknown>>;
-}
 
 export default function Features() {
-  const features: FeatureData[] = [
+  const features = [
     {
       icon: Smartphone,
       title: "DISPOSABLE MENUS",
@@ -53,7 +20,6 @@ export default function Features() {
         "Custom pricing per customer",
         "Mobile-optimized customer experience",
       ],
-      demoComponent: DisposableMenusDemo,
     },
     {
       icon: Package,
@@ -67,7 +33,6 @@ export default function Features() {
         "Batch & expiry tracking",
         "Automated reorder points",
       ],
-      demoComponent: InventoryDemo,
     },
     {
       icon: ShoppingCart,
@@ -81,7 +46,6 @@ export default function Features() {
         "Order history & analytics",
         "Automated order confirmations",
       ],
-      demoComponent: OrderManagementDemo,
     },
     {
       icon: Users,
@@ -95,7 +59,6 @@ export default function Features() {
         "Mobile-responsive",
         "Secure login",
       ],
-      demoComponent: CustomerPortalDemo,
     },
     {
       icon: BarChart3,
@@ -109,7 +72,6 @@ export default function Features() {
         "Custom reports",
         "Export to Excel/PDF",
       ],
-      demoComponent: AnalyticsDemo,
     },
   ];
 
@@ -162,20 +124,14 @@ export default function Features() {
                     )}
                   </div>
                   <div className={index % 2 === 1 ? "md:order-1" : ""}>
-                    <Suspense
-                      fallback={
-                        <div className="aspect-video bg-[hsl(var(--marketing-primary))] rounded-2xl flex items-center justify-center">
-                          <div className="text-center text-white">
-                            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
-                              <feature.icon className="h-10 w-10" />
-                            </div>
-                            <p className="text-sm opacity-80">Loading demo...</p>
-                          </div>
+                    <div className="aspect-video bg-[hsl(var(--marketing-primary))] rounded-2xl flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
+                          <feature.icon className="h-10 w-10" />
                         </div>
-                      }
-                    >
-                      <FeatureDemoPlayer component={feature.demoComponent} />
-                    </Suspense>
+                        <p className="text-sm opacity-80">Screenshot</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -197,3 +153,4 @@ export default function Features() {
     </ForceLightMode>
   );
 }
+

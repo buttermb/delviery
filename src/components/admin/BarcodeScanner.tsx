@@ -14,9 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import Camera from "lucide-react/dist/esm/icons/camera";
-import X from "lucide-react/dist/esm/icons/x";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Camera, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BarcodeScannerProps {

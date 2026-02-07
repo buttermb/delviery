@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import Check from "lucide-react/dist/esm/icons/check";
-import Copy from "lucide-react/dist/esm/icons/copy";
+import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +54,7 @@ export function CopyButton({
       onClick={handleCopy}
     >
       {copied ? (
-        <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+        <Check className="h-4 w-4 text-green-500" />
       ) : (
         <Copy className="h-4 w-4" />
       )}

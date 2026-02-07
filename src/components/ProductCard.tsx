@@ -2,18 +2,7 @@ import { useState, memo, useCallback, useMemo } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Check from "lucide-react/dist/esm/icons/check";
-import Star from "lucide-react/dist/esm/icons/star";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Award from "lucide-react/dist/esm/icons/award";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { ShoppingCart, Plus, Minus, Check, Star, Flame, Sparkles, Loader2, AlertCircle, Award, Clock, TrendingUp } from "lucide-react";
 import { OptimizedProductImage } from "@/components/OptimizedProductImage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -76,11 +65,11 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
     );
   }, [product.id, prefetchQuery]);
 
-  const handleCardClick = useCallback(() => {
+  const handleCardClick = () => {
     haptics.light();
     addToRecentlyViewed(product.id);
     setShowDetailModal(true);
-  }, [addToRecentlyViewed, product.id]);
+  };
 
   const getProductBadge = () => {
     const thcaPercentage = getNumberValue(product.thca_percentage, 0);
@@ -104,7 +93,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
     return [product.image_url, ...additionalImages].filter(Boolean);
   }, [product.image_url, product.additional_images]);
 
-  const handleAddToCart = useCallback(async () => {
+  const handleAddToCart = async () => {
     if (!product.in_stock) {
       haptics.error();
       toast.error("This product is out of stock");
@@ -113,7 +102,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
 
     setLoading(true);
     haptics.light();
-
+    
     try {
       // Get default weight for products with weight options (always starts at 3.5g)
       const defaultWeight = getDefaultWeight(product.prices);
@@ -121,14 +110,14 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
       if (!user) {
         // Guest cart - use localStorage
         addToGuestCart(product.id, quantity, defaultWeight);
-
+        
         // Success feedback
         haptics.success();
         toast.success("Added to cart!", {
           description: `${quantity}x ${product.name}`,
           duration: 2000,
         });
-
+        
         setAdded(true);
         setTimeout(() => setAdded(false), 2000);
         queryClient.invalidateQueries({ queryKey: ["cart"] });
@@ -147,7 +136,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
         p_quantity: quantity,
         p_selected_weight: defaultWeight
       });
-
+      
       if (error) throw error;
 
       // Invalidate cart queries after successful insert
@@ -169,7 +158,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
     } finally {
       setLoading(false);
     }
-  }, [product.in_stock, product.prices, product.id, product.name, user, addToGuestCart, quantity, queryClient]);
+  };
 
   const getCategoryColor = () => {
     const colors: Record<string, string> = {
@@ -182,17 +171,17 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
     return colors[product.category] || colors.flower;
   };
 
-  const handleIncrement = useCallback((e: React.MouseEvent) => {
+  const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     haptics.selection();
     setQuantity(quantity + 1);
-  }, [quantity]);
+  };
 
-  const handleDecrement = useCallback((e: React.MouseEvent) => {
+  const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     haptics.selection();
     setQuantity(Math.max(1, quantity - 1));
-  }, [quantity]);
+  };
 
   return (
     <>

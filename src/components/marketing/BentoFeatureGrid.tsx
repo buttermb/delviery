@@ -3,12 +3,14 @@
  * Large white cards, soft shadows, indigo icons
  */
 
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import FileCheck from "lucide-react/dist/esm/icons/file-check";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Users from "lucide-react/dist/esm/icons/users";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import {
+  BarChart3,
+  Truck,
+  FileCheck,
+  Smartphone,
+  Users,
+  CreditCard
+} from "lucide-react";
 
 export function BentoFeatureGrid() {
   const features = [

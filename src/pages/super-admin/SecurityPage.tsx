@@ -1,10 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Play from "lucide-react/dist/esm/icons/play";
-import Download from "lucide-react/dist/esm/icons/download";
+import { Shield, AlertTriangle, CheckCircle, Play, Download } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";

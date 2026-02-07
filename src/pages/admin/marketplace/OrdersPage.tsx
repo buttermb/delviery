@@ -14,18 +14,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import RefreshCcw from "lucide-react/dist/esm/icons/refresh-ccw";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import {
+    ShoppingCart,
+    Search,
+    Filter,
+    Eye,
+    CheckCircle,
+    XCircle,
+    Clock,
+    Package,
+    Truck,
+    MoreVertical,
+    RefreshCcw,
+    AlertTriangle
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {

@@ -1,7 +1,8 @@
 // Edge Function: polar-webhook
 // Handles Polar.sh webhooks for subscription events
 
-import { serve, createClient } from '../_shared/deps.ts';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',

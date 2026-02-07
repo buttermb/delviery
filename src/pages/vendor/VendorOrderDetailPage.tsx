@@ -1,34 +1,17 @@
+// @ts-nocheck
+import { logger } from '@/lib/logger';
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
+import { Loader2, ArrowLeft, Truck, Check, X } from "lucide-react";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import { toast } from "sonner";
 import { Separator } from '@/components/ui/separator';
-import type { Tables } from '@/integrations/supabase/types';
 
-// Extended order type - buyer_business_name exists in DB but not in generated types yet
-interface ShippingAddress {
-    street?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
-    country?: string;
-}
-
-type MarketplaceOrder = Tables<'marketplace_orders'> & {
-    buyer_business_name?: string | null;
-    marketplace_order_items: Tables<'marketplace_order_items'>[];
-};
-
-export function VendorOrderDetailPage() {
+export default function VendorOrderDetailPage() {
     const { orderId } = useParams();
     const navigate = useNavigate();
     const { vendor } = useVendorAuth();
@@ -46,12 +29,12 @@ export function VendorOrderDetailPage() {
           *,
           marketplace_order_items (*)
         `)
-                .eq("id", orderId as string)
-                .eq("seller_tenant_id", vendor?.tenant_id as string) // Security check
+                .eq("id", orderId)
+                .eq("seller_tenant_id", vendor?.tenant_id) // Security check
                 .single();
 
             if (error) throw error;
-            return data as unknown as MarketplaceOrder;
+            return data;
         },
     });
 
@@ -108,11 +91,11 @@ export function VendorOrderDetailPage() {
                                     order.status === 'shipped' ? 'bg-purple-50 text-purple-700' :
                                         order.status === 'delivered' ? 'bg-green-50 text-green-700' : ''}
             `}>
-                            {(order.status ?? 'unknown').toUpperCase()}
+                            {order.status.toUpperCase()}
                         </Badge>
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Placed on {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'} at {order.created_at ? new Date(order.created_at).toLocaleTimeString() : 'N/A'}
+                        Placed on {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString()}
                     </p>
                 </div>
                 <div className="ml-auto flex gap-2">
@@ -166,11 +149,11 @@ export function VendorOrderDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {order.marketplace_order_items.map((item) => (
+                            {order.marketplace_order_items.map((item: any) => (
                                 <div key={item.id} className="flex justify-between items-start border-b pb-4 last:border-0 last:pb-0">
                                     <div>
                                         <h4 className="font-medium">{item.product_name}</h4>
-                                        <p className="text-sm text-muted-foreground capitalize">{item.product_type ?? 'Unknown'} • {item.quantity} Units</p>
+                                        <p className="text-sm text-muted-foreground capitalize">{item.product_type} • {item.quantity} Units</p>
                                     </div>
                                     <div className="text-right">
                                         <div className="font-bold">${item.total_price}</div>
@@ -208,7 +191,7 @@ export function VendorOrderDetailPage() {
                             <CardTitle className="text-sm font-medium text-muted-foreground">Customer</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="font-semibold text-lg mb-1">{order.buyer_business_name ?? 'Unknown Customer'}</div>
+                            <div className="font-semibold text-lg mb-1">{order.buyer_business_name}</div>
                             {/* We might add more buyer details if available via join or stored in order */}
                         </CardContent>
                     </Card>
@@ -219,16 +202,11 @@ export function VendorOrderDetailPage() {
                         </CardHeader>
                         <CardContent>
                             {order.shipping_address ? (
-                                (() => {
-                                    const address = order.shipping_address as ShippingAddress;
-                                    return (
-                                        <div className="text-sm space-y-1">
-                                            {address.street && <div>{address.street}</div>}
-                                            <div>{address.city}, {address.state} {address.zip}</div>
-                                            {address.country && <div>{address.country}</div>}
-                                        </div>
-                                    );
-                                })()
+                                <div className="text-sm space-y-1">
+                                    <div>{order.shipping_address.street}</div>
+                                    <div>{order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.zip}</div>
+                                    <div>{order.shipping_address.country}</div>
+                                </div>
                             ) : (
                                 <div className="text-sm text-muted-foreground">No shipping address provided</div>
                             )}

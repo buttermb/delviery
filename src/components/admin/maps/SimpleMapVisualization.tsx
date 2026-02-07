@@ -6,7 +6,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { MapPin } from 'lucide-react';
 
 interface Location {
   name: string;

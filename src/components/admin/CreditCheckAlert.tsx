@@ -1,6 +1,4 @@
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { AlertCircle, XCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 

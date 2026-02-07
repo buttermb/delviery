@@ -7,18 +7,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Users from "lucide-react/dist/esm/icons/users";
-import Award from "lucide-react/dist/esm/icons/award";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Trophy from "lucide-react/dist/esm/icons/trophy";
-import Star from "lucide-react/dist/esm/icons/star";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Save from "lucide-react/dist/esm/icons/save";
+import {
+  Gift,
+  TrendingUp,
+  Users,
+  Award,
+  Plus,
+  Settings,
+  Trophy,
+  Star,
+  Zap,
+  Edit,
+  Trash2,
+  Save,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";

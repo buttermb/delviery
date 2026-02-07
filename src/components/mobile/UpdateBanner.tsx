@@ -5,9 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import X from "lucide-react/dist/esm/icons/x";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import { X, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';

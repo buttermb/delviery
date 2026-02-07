@@ -26,20 +26,22 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import Play from "lucide-react/dist/esm/icons/play";
-import Save from "lucide-react/dist/esm/icons/save";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Database from "lucide-react/dist/esm/icons/database";
-import Send from "lucide-react/dist/esm/icons/send";
-import WebhookIcon from "lucide-react/dist/esm/icons/webhook";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Blocks from "lucide-react/dist/esm/icons/blocks";
-import Layout from "lucide-react/dist/esm/icons/layout";
-import History from "lucide-react/dist/esm/icons/history";
+import {
+  Play,
+  Save,
+  Plus,
+  Trash2,
+  Settings,
+  Zap,
+  Database,
+  Send,
+  Webhook as WebhookIcon,
+  Clock,
+  ArrowRight,
+  Blocks,
+  Layout,
+  History,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';

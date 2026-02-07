@@ -17,27 +17,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetFooter,
-} from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Check from "lucide-react/dist/esm/icons/check";
-import ClockIcon from "lucide-react/dist/esm/icons/clock";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCheck from "lucide-react/dist/esm/icons/check-check";
-import SnoozeIcon from "lucide-react/dist/esm/icons/clock";
+import {
+    ChevronRight,
+    AlertCircle,
+    Clock,
+    Calendar,
+    DollarSign,
+} from 'lucide-react';
 import { getCategoryColor } from '@/lib/hotbox/attentionQueue';
 import { AttentionItem } from '@/types/hotbox';
 
@@ -91,6 +78,7 @@ const columns: KanbanColumn[] = [
 
 import { useSwipeable } from 'react-swipeable';
 import { useCallback } from 'react';
+import { Check, Clock as ClockIcon, ArrowRight, Loader2, CheckCheck, Clock as SnoozeIcon } from 'lucide-react';
 
 interface KanbanCardProps {
     item: AttentionItem;
@@ -287,8 +275,6 @@ export function AttentionQueueKanban({
     const navigate = useNavigate();
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [isProcessing, setIsProcessing] = useState<'dismiss' | 'snooze' | null>(null);
-    const [selectedItem, setSelectedItem] = useState<AttentionItem | null>(null);
-    const [sheetOpen, setSheetOpen] = useState(false);
 
     const columnItems = useMemo(() => {
         return columns.map(col => ({
@@ -301,18 +287,12 @@ export function AttentionQueueKanban({
         if (onItemClick) {
             onItemClick(item);
         } else {
-            // Open sheet with item details instead of navigating
-            setSelectedItem(item);
-            setSheetOpen(true);
+            // Navigate to action URL
+            const url = item.actionUrl.startsWith('/')
+                ? (tenantSlug ? `/${tenantSlug}${item.actionUrl}` : item.actionUrl)
+                : item.actionUrl;
+            navigate(url);
         }
-    };
-
-    const handleNavigateToItem = (item: AttentionItem) => {
-        const url = item.actionUrl.startsWith('/')
-            ? (tenantSlug ? `/${tenantSlug}${item.actionUrl}` : item.actionUrl)
-            : item.actionUrl;
-        setSheetOpen(false);
-        navigate(url);
     };
 
     // Batch dismiss handler
@@ -454,99 +434,6 @@ export function AttentionQueueKanban({
                     ))}
                 </div>
             </CardContent>
-
-            {/* Item Detail Sheet */}
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent>
-                    {selectedItem && (
-                        <>
-                            <SheetHeader>
-                                <SheetTitle className="flex items-center gap-2">
-                                    {selectedItem.priority === 'critical' && (
-                                        <AlertCircle className="h-5 w-5 text-red-500" />
-                                    )}
-                                    {selectedItem.priority === 'important' && (
-                                        <Clock className="h-5 w-5 text-yellow-500" />
-                                    )}
-                                    {selectedItem.priority === 'info' && (
-                                        <Calendar className="h-5 w-5 text-green-500" />
-                                    )}
-                                    {selectedItem.title}
-                                </SheetTitle>
-                                <SheetDescription>
-                                    {selectedItem.description || 'No additional details available.'}
-                                </SheetDescription>
-                            </SheetHeader>
-
-                            <div className="py-6 space-y-4">
-                                {/* Category */}
-                                {selectedItem.category && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground">Category:</span>
-                                        <Badge
-                                            variant="outline"
-                                            className={cn("text-xs", getCategoryColor(selectedItem.category))}
-                                        >
-                                            {selectedItem.category}
-                                        </Badge>
-                                    </div>
-                                )}
-
-                                {/* Value */}
-                                {selectedItem.value && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground">Value:</span>
-                                        <span className="font-medium flex items-center gap-1">
-                                            <DollarSign className="h-4 w-4" />
-                                            {selectedItem.value}
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* Priority */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">Priority:</span>
-                                    <Badge
-                                        variant={
-                                            selectedItem.priority === 'critical' ? 'destructive' :
-                                            selectedItem.priority === 'important' ? 'default' : 'secondary'
-                                        }
-                                    >
-                                        {selectedItem.priority === 'critical' ? 'Urgent' :
-                                         selectedItem.priority === 'important' ? 'Today' : 'Upcoming'}
-                                    </Badge>
-                                </div>
-
-                                {/* Action Label */}
-                                {selectedItem.actionLabel && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground">Action:</span>
-                                        <span className="text-sm">{selectedItem.actionLabel}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <SheetFooter className="flex-col sm:flex-row gap-2">
-                                {onBatchDismiss && (
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => {
-                                            onBatchDismiss([selectedItem]);
-                                            setSheetOpen(false);
-                                        }}
-                                    >
-                                        Mark as Done
-                                    </Button>
-                                )}
-                                <Button onClick={() => handleNavigateToItem(selectedItem)}>
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    Go to Page
-                                </Button>
-                            </SheetFooter>
-                        </>
-                    )}
-                </SheetContent>
-            </Sheet>
         </Card>
     );
 }

@@ -11,9 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

@@ -6,10 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import Shield from "lucide-react/dist/esm/icons/shield";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function CompliancePage() {

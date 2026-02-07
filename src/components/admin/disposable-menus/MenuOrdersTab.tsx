@@ -1,11 +1,6 @@
-import { useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Eye from "lucide-react/dist/esm/icons/eye";
+import { ShoppingCart, DollarSign, Package, Clock, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { StatusDropdown, MENU_ORDER_STATUSES } from '@/components/admin/StatusDropdown';
 import { QuickMessageButton } from '@/components/admin/QuickMessageButton';
@@ -38,7 +33,7 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-  const handleStatusChange = useCallback(async (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
     const updates: Record<string, unknown> = {
       status: newStatus as any,
       updated_at: new Date().toISOString()
@@ -72,7 +67,7 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
 
     toast.success(`Order status updated to ${newStatus}`);
     onOrderUpdate?.();
-  }, [onOrderUpdate]);
+  };
 
   const { handleAction } = useOrderContextActions({
     onView: (orderId) => {

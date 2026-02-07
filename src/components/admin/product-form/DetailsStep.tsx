@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Plus } from "lucide-react";
 
 interface ProductFormData {
   description?: string;

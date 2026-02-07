@@ -15,15 +15,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import LogIn from "lucide-react/dist/esm/icons/log-in";
-import Ticket from "lucide-react/dist/esm/icons/ticket";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import {
+    MoreVertical,
+    LogIn,
+    Ticket,
+    Mail,
+    CreditCard,
+    Ban,
+    CheckCircle,
+    Eye,
+    TrendingUp,
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { STORAGE_KEYS } from '@/constants/storageKeys';

@@ -1,7 +1,6 @@
 // Edge Function: magic-link-login
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
-import { checkBruteForce, getClientIP } from '../_shared/bruteForceProtection.ts';
 
 const sendMagicLinkSchema = z.object({
     email: z.string().email(),
@@ -29,17 +28,7 @@ serve(async (req) => {
         }
 
         const { email, redirectTo } = validation.data;
-        const clientIp = getClientIP(req);
-
-        // Brute force protection: Block IP after 10 failed login attempts in 1 hour
-        const bruteForceResult = await checkBruteForce(clientIp);
-        if (bruteForceResult.blocked) {
-            // Return success-like response to not reveal the block
-            return new Response(
-                JSON.stringify({ success: true, message: 'If this email exists, a login link was sent.' }),
-                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
+        const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
 
         // Rate limit check
         const { data: rateCheck } = await supabase.rpc('check_auth_rate_limit', {

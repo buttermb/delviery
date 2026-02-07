@@ -6,8 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Lock from "lucide-react/dist/esm/icons/lock";
+import { Settings, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 

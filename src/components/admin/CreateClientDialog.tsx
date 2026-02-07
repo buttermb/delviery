@@ -6,13 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
@@ -38,14 +35,9 @@ interface ClientFormData {
 }
 
 export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClientDialogProps) {
-  const { tenant, loading: tenantLoading } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
-
-  const isContextReady = !tenantLoading && !!tenant?.id;
-  const contextError = !tenantLoading && !tenant?.id
-    ? 'Tenant context not available. Please refresh the page or contact support.'
-    : null;
   const [formData, setFormData] = useState<ClientFormData>({
     business_name: "",
     contact_name: "",
@@ -76,15 +68,15 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       
       const clientData: WholesaleClientInsert = {
         tenant_id: tenant.id,
-        business_name: sanitizeFormInput(formData.business_name, 200),
-        contact_name: sanitizeFormInput(formData.contact_name, 200),
-        email: formData.email ? sanitizeEmail(formData.email) : null,
-        phone: sanitizePhoneInput(formData.phone),
-        address: formData.address ? sanitizeFormInput(formData.address, 500) : null,
+        business_name: formData.business_name,
+        contact_name: formData.contact_name,
+        email: formData.email || null,
+        phone: formData.phone,
+        address: formData.address || null,
         client_type: formData.client_type,
         credit_limit: parseFloat(formData.credit_limit) || 0,
         payment_terms: parseInt(formData.payment_terms) || 7,
-        notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : null,
+        notes: formData.notes || null,
         status: "active",
         outstanding_balance: 0,
         monthly_volume: 0,
@@ -131,16 +123,9 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
         <DialogHeader>
           <DialogTitle>Create New Client</DialogTitle>
         </DialogHeader>
-
-        {contextError && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{contextError}</AlertDescription>
-          </Alert>
-        )}
-
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="business_name">Business Name *</Label>
               <Input
@@ -164,7 +149,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone *</Label>
               <Input
@@ -199,7 +184,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="client_type">Client Type</Label>
               <Select
@@ -265,9 +250,9 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !isContextReady || tenantLoading}>
-              {(loading || tenantLoading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {tenantLoading ? 'Loading...' : 'Create Client'}
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create Client
             </Button>
           </div>
         </form>

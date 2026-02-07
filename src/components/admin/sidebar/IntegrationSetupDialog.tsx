@@ -19,10 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Loader2, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface IntegrationSetupDialogProps {

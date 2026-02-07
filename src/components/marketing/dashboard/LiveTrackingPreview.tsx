@@ -1,10 +1,5 @@
 import { motion } from 'framer-motion';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Radio from "lucide-react/dist/esm/icons/radio";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
+import { MapPin, Radio, Clock, Package, TrendingUp, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 

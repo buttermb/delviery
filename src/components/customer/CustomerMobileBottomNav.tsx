@@ -1,10 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import Home from "lucide-react/dist/esm/icons/home";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Package from "lucide-react/dist/esm/icons/package";
-import User from "lucide-react/dist/esm/icons/user";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Users from "lucide-react/dist/esm/icons/users";
+import { Home, ShoppingBag, Package, User, ShoppingCart, Users } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";

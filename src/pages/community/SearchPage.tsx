@@ -11,8 +11,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { PostSkeleton } from '@/components/community/PostSkeleton';
 import { EmptyState } from '@/components/community/EmptyState';
 import { Button } from '@/components/ui/button';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import SearchIcon from "lucide-react/dist/esm/icons/search";
+import { ArrowLeft, Search as SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 

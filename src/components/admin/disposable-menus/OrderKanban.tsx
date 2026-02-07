@@ -9,17 +9,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import { 
+  CheckCircle, XCircle, Clock, Package, DollarSign, 
+  User, Phone, RefreshCw, Eye, FileText, ChevronRight
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -226,9 +219,9 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
               </h3>
             </div>
 
-            {/* Column Content - scrollable */}
+            {/* Column Content */}
             <div className={cn(
-              "space-y-2 min-h-[300px] max-h-[500px] overflow-y-auto p-3 rounded-lg border-2 border-dashed",
+              "space-y-2 min-h-[300px] p-3 rounded-lg border-2 border-dashed",
               column.bgColor, "border-transparent"
             )}>
               {ordersByColumn[column.id].length === 0 ? (

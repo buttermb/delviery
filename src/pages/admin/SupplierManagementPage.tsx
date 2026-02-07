@@ -8,17 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  Search,
+  Plus,
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  DollarSign,
+  TrendingUp,
+  Edit,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -30,7 +32,6 @@ import {
 import { SupplierForm } from "@/components/admin/suppliers/SupplierForm";
 import { SupplierDetail } from "@/components/admin/suppliers/SupplierDetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -81,37 +82,22 @@ export default function SupplierManagementPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async ({ id, supplierName }: { id: string; supplierName: string }) => {
+    mutationFn: async (id: string) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
-
+      
       const deleteQuery = supabase
         .from("wholesale_suppliers")
-        .delete() as unknown as { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: Error | null }> } };
-
+        .delete() as any;
+      
       const { error } = await deleteQuery
         .eq("id", id)
         .eq("tenant_id", tenant.id);
 
       if (error) throw error;
-      return { id, supplierName };
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.lists() });
       toast.success("Supplier deleted successfully");
-
-      // Log activity for audit trail
-      if (tenant?.id) {
-        logActivityAuto(
-          tenant.id,
-          ActivityActions.DELETE_SUPPLIER,
-          'supplier',
-          data.id,
-          {
-            supplier_name: data.supplierName,
-            deleted_at: new Date().toISOString(),
-          }
-        );
-      }
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete supplier', error, { component: 'SupplierManagementPage' });
@@ -152,10 +138,7 @@ export default function SupplierManagementPage() {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await deleteMutation.mutateAsync({
-            id: supplier.id,
-            supplierName: supplier.supplier_name || 'Unknown',
-          });
+          await deleteMutation.mutateAsync(supplier.id);
           closeDialog();
         } finally {
           setLoading(false);

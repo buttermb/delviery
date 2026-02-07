@@ -11,8 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Save from "lucide-react/dist/esm/icons/save";
+import { Settings, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 

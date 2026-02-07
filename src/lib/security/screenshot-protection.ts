@@ -1,18 +1,8 @@
-import { logSuspiciousActivity, burnMenu } from '@/lib/security/auto-burn';
-
-export interface ScreenshotProtectionConfig {
-    menuId?: string;
-    autoBurnEnabled?: boolean;
-    burnType?: 'soft' | 'hard';
-    screenshotThreshold?: number;
-}
 
 export class ScreenshotProtection {
     private static instance: ScreenshotProtection;
     private isMonitoring = false;
     private onSuspiciousActivity: ((type: string) => void) | null = null;
-    private config: ScreenshotProtectionConfig = {};
-    private screenshotCount = 0;
 
     private constructor() { }
 
@@ -21,13 +11,6 @@ export class ScreenshotProtection {
             ScreenshotProtection.instance = new ScreenshotProtection();
         }
         return ScreenshotProtection.instance;
-    }
-
-    /**
-     * Configure auto-burn settings for screenshot detection
-     */
-    configure(config: ScreenshotProtectionConfig) {
-        this.config = { ...this.config, ...config };
     }
 
     init(onSuspiciousActivity: (type: string) => void) {
@@ -122,25 +105,6 @@ export class ScreenshotProtection {
     private logSuspiciousActivity(type: string) {
         if (this.onSuspiciousActivity) {
             this.onSuspiciousActivity(type);
-        }
-
-        // Integrate with auto-burn system
-        const { menuId, autoBurnEnabled, burnType, screenshotThreshold } = this.config;
-
-        if (menuId) {
-            // Log to database via auto-burn module
-            logSuspiciousActivity(menuId, type);
-
-            // Check if this is a screenshot-related event that should trigger burn
-            const screenshotEvents = ['print_screen_key', 'clipboard_copy_attempt', 'print_attempt'];
-            if (autoBurnEnabled && screenshotEvents.includes(type)) {
-                this.screenshotCount++;
-                const threshold = screenshotThreshold ?? 1;
-
-                if (this.screenshotCount >= threshold) {
-                    burnMenu(menuId, `screenshot_detected:${type}`, burnType || 'soft');
-                }
-            }
         }
     }
 }

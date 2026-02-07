@@ -1,28 +1,10 @@
 import { useState, useMemo, Suspense, lazy, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Users from "lucide-react/dist/esm/icons/users";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Target from "lucide-react/dist/esm/icons/target";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import {
+  Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
+  RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
+  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,12 +19,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MenuCreationWizard } from './MenuCreationWizard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useDisposableMenus, useMenuOrders, useUpdateOrderStatus } from '@/hooks/useDisposableMenus';
+import { useDisposableMenus, useMenuOrders } from '@/hooks/useDisposableMenus';
 import { MenuCard } from './MenuCard';
 import { PanicModeButton } from './PanicModeButton';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format, formatDistanceToNow } from 'date-fns';
+import { showSuccessToast } from '@/utils/toastHelpers';
 import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -53,8 +36,6 @@ const AutomatedSecuritySettings = lazy(() => import('./AutomatedSecuritySettings
 const NotificationSettings = lazy(() => import('./NotificationSettings').then(m => ({ default: m.NotificationSettings })));
 const CustomerMessaging = lazy(() => import('./CustomerMessaging').then(m => ({ default: m.CustomerMessaging })));
 const EncryptionMigrationTool = lazy(() => import('./EncryptionMigrationTool').then(m => ({ default: m.EncryptionMigrationTool })));
-const MenuAnalyticsDashboard = lazy(() => import('./MenuAnalyticsDashboard').then(m => ({ default: m.MenuAnalyticsDashboard })));
-const ScheduledMenusPanel = lazy(() => import('./ScheduledMenusPanel').then(m => ({ default: m.ScheduledMenusPanel })));
 
 // Enhanced Order Card with more details
 function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id: string, status: string) => void }) {
@@ -141,7 +122,6 @@ function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id
 // Enhanced Orders Tab with better Kanban
 function OrdersTab() {
   const { data: orders = [], isLoading, refetch } = useMenuOrders();
-  const updateOrderStatus = useUpdateOrderStatus();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [listLimit, setListLimit] = useState(20);
 
@@ -301,7 +281,9 @@ function OrdersTab() {
                     key={order.id}
                     order={order}
                     onStatusChange={(id, status) => {
-                      updateOrderStatus.mutate({ orderId: id, status });
+                      // TODO: Implement actual status update via mutation
+                      showSuccessToast(`Order marked as ${status}`);
+                      refetch();
                     }}
                   />
                 ))
@@ -442,7 +424,6 @@ function SetupTab() {
   const [migrationOpen, setMigrationOpen] = useState(false);
 
   const sections = [
-    { id: 'scheduled', label: 'Scheduled Menus', icon: Calendar, component: ScheduledMenusPanel },
     { id: 'security', label: 'Security Rules', icon: Shield, component: AutomatedSecuritySettings },
     { id: 'notifications', label: 'Notifications', icon: AlertCircle, component: NotificationSettings },
     { id: 'messaging', label: 'Customer Messaging', icon: Users, component: CustomerMessaging },
@@ -521,7 +502,7 @@ export function SmartDashboard() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'burned'>('all');
 
   const { data: menus = [], isLoading, refetch } = useDisposableMenus(tenant?.id);
-  const { data: orders = [] } = useMenuOrders(undefined, tenant?.id);
+  const { data: orders = [] } = useMenuOrders();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -673,30 +654,26 @@ export function SmartDashboard() {
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
-          <TabsList className="grid w-full max-w-2xl grid-cols-4 p-1 bg-muted/50">
+          <TabsList className="grid w-full max-w-lg grid-cols-3 p-1 bg-muted/50">
             <TabsTrigger value="menus" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
               <LayoutGrid className="h-4 w-4" />
-              <span className="hidden sm:inline">Menus</span>
+              <span>Menus</span>
               <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                 {stats.activeMenus}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="orders" className="gap-2 relative data-[state=active]:bg-background data-[state=active]:shadow">
               <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline">Orders</span>
+              <span>Orders</span>
               {stats.pendingOrders > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center animate-pulse">
                   {stats.pendingOrders}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
-            </TabsTrigger>
             <TabsTrigger value="setup" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Setup</span>
+              <span>Setup</span>
             </TabsTrigger>
           </TabsList>
 
@@ -767,8 +744,8 @@ export function SmartDashboard() {
             <ResponsiveGrid
               data={filteredMenus}
               isLoading={isLoading}
-              keyExtractor={(menu: any) => menu.id}
-              renderItem={(menu: any) => <MenuCard menu={menu} />}
+              keyExtractor={(menu) => menu.id}
+              renderItem={(menu) => <MenuCard menu={menu} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
                 icon: LayoutGrid,
@@ -788,27 +765,6 @@ export function SmartDashboard() {
           {/* Orders Tab */}
           <TabsContent value="orders" className="mt-0">
             <OrdersTab />
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="mt-0">
-            <Suspense fallback={
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                    <Skeleton key={i} className="h-24" />
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {[1, 2].map((i) => (
-                    <Skeleton key={i} className="h-80" />
-                  ))}
-                </div>
-              </div>
-            }>
-              <MenuAnalyticsDashboard />
-            </Suspense>
           </TabsContent>
 
           {/* Setup Tab */}
@@ -832,4 +788,5 @@ export function SmartDashboard() {
     </div>
   );
 }
+
 

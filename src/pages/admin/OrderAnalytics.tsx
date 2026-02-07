@@ -3,10 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { ShoppingCart, DollarSign, TrendingUp, Clock } from 'lucide-react';
 
 interface Order {
   id: string;

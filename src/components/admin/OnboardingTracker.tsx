@@ -5,8 +5,7 @@
 
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Circle from "lucide-react/dist/esm/icons/circle";
+import { CheckCircle, Circle } from 'lucide-react';
 import {
     Tooltip,
     TooltipContent,

@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
 
 // Prevent redirect loops - don't redirect more than once per 3 seconds

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import Star from "lucide-react/dist/esm/icons/star";
-import Quote from "lucide-react/dist/esm/icons/quote";
+import { Star, Quote } from 'lucide-react';
 
 export interface TestimonialsSectionProps {
     content: {

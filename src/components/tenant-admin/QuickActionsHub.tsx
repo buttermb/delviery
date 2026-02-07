@@ -6,16 +6,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import UserPlus from "lucide-react/dist/esm/icons/user-plus";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import {
+    Plus,
+    Package,
+    Truck,
+    UserPlus,
+    FileText,
+    Smartphone,
+    MapPin,
+    ShoppingCart,
+    AlertCircle,
+    MessageSquare
+} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
@@ -188,6 +190,7 @@ export function QuickActionsHub() {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [quickActions]);
+
 
     return (
         <Card className="glass-card">

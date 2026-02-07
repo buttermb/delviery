@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import X from "lucide-react/dist/esm/icons/x";
+import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import FloraIQLogo from "@/components/FloraIQLogo";
 
@@ -22,15 +21,7 @@ export function MarketingNav() {
     <nav
       className={`sticky top-0 z-50 transition-all bg-[hsl(var(--marketing-bg))] ${isScrolled ? 'border-b border-[hsl(var(--marketing-border))] shadow-sm' : ''
         }`}
-      aria-label="Main navigation"
     >
-      {/* Skip to main content link */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[hsl(var(--marketing-primary))] focus:text-white focus:rounded-lg focus:shadow-lg"
-      >
-        Skip to main content
-      </a>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <FloraIQLogo size="lg" />
@@ -75,8 +66,7 @@ export function MarketingNav() {
           <button
             className="p-2 text-[hsl(var(--marketing-text))]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>

@@ -1,14 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Key from "lucide-react/dist/esm/icons/key";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import User from "lucide-react/dist/esm/icons/user";
+import { Settings, Key, Bell, Shield, User } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -168,8 +163,9 @@ export default function SuperAdminSettingsPage() {
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--super-admin-text))]">Current Password</Label>
-                <PasswordInput
-                  placeholder="Current Password"
+                <Input 
+                  type="password" 
+                  placeholder="Current Password" 
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
@@ -178,8 +174,9 @@ export default function SuperAdminSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--super-admin-text))]">New Password</Label>
-                <PasswordInput
-                  placeholder="New Password (min. 8 characters)"
+                <Input 
+                  type="password" 
+                  placeholder="New Password (min. 8 characters)" 
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
@@ -188,8 +185,9 @@ export default function SuperAdminSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--super-admin-text))]">Confirm New Password</Label>
-                <PasswordInput
-                  placeholder="Confirm New Password"
+                <Input 
+                  type="password" 
+                  placeholder="Confirm New Password" 
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}

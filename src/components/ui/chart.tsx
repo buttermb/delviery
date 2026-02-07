@@ -1,8 +1,7 @@
 import * as React from "react";
-import * as RechartsPrimitive from "./lazy-recharts";
+import * as RechartsPrimitive from "recharts";
 
 import { cn } from "@/lib/utils";
-import { sanitizeColor } from "@/lib/utils/sanitize";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -66,26 +65,20 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  // Sanitize chart ID to prevent CSS injection
-  const safeId = id.replace(/[^a-zA-Z0-9-_]/g, '');
-
   return (
     <style
       dangerouslySetInnerHTML={{
+        // Safe usage: Generates CSS variables for chart colors from config.
+        // Config is typically defined in code, but if user-provided, colors should be sanitized.
         __html: Object.entries(THEMES)
           .map(
             ([theme, prefix]) => `
-${prefix} [data-chart=${safeId}] {
+${prefix} [data-chart=${id}] {
 ${colorConfig
                 .map(([key, itemConfig]) => {
                   const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-                  // Sanitize color values to prevent CSS injection
-                  const safeColor = color ? sanitizeColor(color) : null;
-                  // Sanitize key to only allow valid CSS variable names
-                  const safeKey = key.replace(/[^a-zA-Z0-9-_]/g, '');
-                  return safeColor ? `  --color-${safeKey}: ${safeColor};` : null;
+                  return color ? `  --color-${key}: ${color};` : null;
                 })
-                .filter(Boolean)
                 .join("\n")}
 }
 `,

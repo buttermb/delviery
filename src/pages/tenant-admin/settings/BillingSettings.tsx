@@ -27,26 +27,28 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Download from "lucide-react/dist/esm/icons/download";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Check from "lucide-react/dist/esm/icons/check";
-import Star from "lucide-react/dist/esm/icons/star";
-import Crown from "lucide-react/dist/esm/icons/crown";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Diamond from "lucide-react/dist/esm/icons/diamond";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import {
+  CreditCard,
+  Receipt,
+  TrendingUp,
+  Download,
+  Plus,
+  Check,
+  Star,
+  Crown,
+  Calendar,
+  ExternalLink,
+  Loader2,
+  AlertCircle,
+  Zap,
+  Diamond,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
+  ArrowUp,
+  Coins,
+  Sparkles,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';

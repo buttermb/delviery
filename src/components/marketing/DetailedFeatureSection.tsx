@@ -1,10 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import { ArrowRight, CheckCircle2, ShieldCheck, Truck, ShoppingCart } from 'lucide-react';
 import { ComplianceDemo } from './demos/ComplianceDemo';
 import { LiveMapDemo } from './demos/LiveMapDemo';
 import { LogisticsDemo } from './demos/LogisticsDemo';
@@ -86,9 +82,9 @@ export function DetailedFeatureSection() {
                                     {feature.title}
                                 </div>
 
-                                <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[hsl(var(--marketing-text))] leading-tight">
+                                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[hsl(var(--marketing-text))] leading-tight">
                                     {feature.title}
-                                </h3>
+                                </h2>
 
                                 <p className="text-xl text-[hsl(var(--marketing-text-light))] leading-relaxed">
                                     {feature.description}

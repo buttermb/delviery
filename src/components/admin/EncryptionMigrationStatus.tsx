@@ -7,11 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { getOverallMigrationProgress, type MigrationStatus } from '@/lib/utils/migrationStatus';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Unlock from "lucide-react/dist/esm/icons/unlock";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { Loader2, Lock, Unlock, CheckCircle2, Clock } from 'lucide-react';
 
 export function EncryptionMigrationStatus() {
   const [loading, setLoading] = useState(true);

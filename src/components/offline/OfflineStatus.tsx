@@ -17,14 +17,16 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
-import Wifi from "lucide-react/dist/esm/icons/wifi";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import CloudOff from "lucide-react/dist/esm/icons/cloud-off";
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import {
+    WifiOff,
+    Wifi,
+    RefreshCw,
+    CloudOff,
+    Check,
+    X,
+    Clock,
+    AlertCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 
 /**

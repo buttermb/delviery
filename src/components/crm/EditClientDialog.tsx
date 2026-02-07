@@ -31,8 +31,7 @@ import { Button } from '@/components/ui/button';
 import { useUpdateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
 import { logger } from '@/lib/logger';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Pencil from "lucide-react/dist/esm/icons/pencil";
+import { Loader2, Pencil } from 'lucide-react';
 import type { CRMClient } from '@/types/crm';
 
 const formSchema = z.object({

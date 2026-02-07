@@ -3,20 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { logger } from '@/lib/logger';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Store from "lucide-react/dist/esm/icons/store";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+    Trash2,
+    Minus,
+    Plus,
+    ShoppingCart,
+    CreditCard,
+    ArrowRight,
+    Store,
+    Loader2
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { PageHeader } from '@/components/shared/PageHeader';
 
@@ -65,11 +66,7 @@ export default function MarketplaceCartPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-cart'] });
             toast({ title: "Item removed" });
-        },
-        onError: (error: Error) => {
-            logger.error('Failed to remove cart item', { error });
-            toast({ title: "Failed to remove item", description: error.message, variant: "destructive" });
-        },
+        }
     });
 
     // Calculate Totals

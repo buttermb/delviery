@@ -10,14 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Send from "lucide-react/dist/esm/icons/send";
-import ArrowDownCircle from "lucide-react/dist/esm/icons/arrow-down-circle";
-import ArrowUpCircle from "lucide-react/dist/esm/icons/arrow-up-circle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import {
+  Mail,
+  MessageSquare,
+  Send,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';

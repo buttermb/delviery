@@ -4,12 +4,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useActiveStore } from "@/hooks/useActiveStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Check from "lucide-react/dist/esm/icons/check";
-import Circle from "lucide-react/dist/esm/icons/circle";
-import Package from "lucide-react/dist/esm/icons/package";
-import Palette from "lucide-react/dist/esm/icons/palette";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import { Check, Circle, Package, Palette, Globe, ArrowRight } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { cn } from "@/lib/utils";
 

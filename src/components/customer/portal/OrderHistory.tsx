@@ -10,10 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import Package from "lucide-react/dist/esm/icons/package";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import { Package, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { PortalOrder } from '@/types/portal';
 

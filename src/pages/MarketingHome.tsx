@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import {
+  ArrowRight,
+  CheckCircle,
+  HelpCircle,
+  AlertCircle,
+} from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -37,6 +38,7 @@ const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingCha
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 
+
 // Loading fallback component
 const SectionLoader = () => (
   <SectionSkeleton />
@@ -59,7 +61,7 @@ export default function MarketingHome() {
 
   return (
     <ForceLightMode>
-      <div id="main-content" className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans">
+      <div className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans overflow-x-hidden">
 
         <SEOHead
           title="FloraIQ - Secure Disposable Menus for Cannabis Operators"
@@ -102,6 +104,9 @@ export default function MarketingHome() {
 
         {/* STATS SECTION */}
         <StatsSection />
+
+
+
 
         {/* SECTION 5: TESTIMONIALS CAROUSEL */}
         <MarketingErrorBoundary section="Testimonials">
@@ -182,6 +187,7 @@ export default function MarketingHome() {
             </section>
           </SectionTransition>
         </MarketingErrorBoundary>
+
 
         {/* SECTION 9: PRICING PREVIEW */}
         <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
@@ -315,7 +321,7 @@ export default function MarketingHome() {
                   </Link>
                   {plan.name !== "ENTERPRISE" && (
                     <div className="text-[10px] text-center mt-2 text-[hsl(var(--marketing-text-light))] flex justify-center gap-1">
-                      <AlertTriangle className="w-3 h-3 inline-block mr-1" aria-hidden="true" /> Credit card required for trial
+                      ⚠️ Credit card required for trial
                     </div>
                   )}
                 </div>

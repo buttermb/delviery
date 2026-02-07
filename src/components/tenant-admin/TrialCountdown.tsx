@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface TrialCountdownProps {

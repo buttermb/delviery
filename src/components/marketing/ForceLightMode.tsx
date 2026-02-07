@@ -8,14 +8,14 @@
  * on their device but the marketing site is designed for light mode only.
  */
 
-import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 
 interface ForceLightModeProps {
     children: React.ReactNode;
 }
 
 export function ForceLightMode({ children }: ForceLightModeProps) {
-    useLayoutEffect(() => {
+    useEffect(() => {
         // Store original theme class
         const root = document.documentElement;
         const originalTheme = root.classList.contains('dark') ? 'dark' : 'light';

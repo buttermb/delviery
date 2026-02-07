@@ -21,13 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Package from "lucide-react/dist/esm/icons/package";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Flower2 from "lucide-react/dist/esm/icons/flower-2";
-import Cookie from "lucide-react/dist/esm/icons/cookie";
-import Cloud from "lucide-react/dist/esm/icons/cloud";
-import Diamond from "lucide-react/dist/esm/icons/diamond";
+import { Package, Loader2, ArrowRight, Flower2, Cookie, Cloud, Diamond } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Database } from '@/integrations/supabase/types';
 

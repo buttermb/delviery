@@ -1,8 +1,5 @@
 import { useState } from "react";
-import Check from "lucide-react/dist/esm/icons/check";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Star from "lucide-react/dist/esm/icons/star";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { Check, Plus, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

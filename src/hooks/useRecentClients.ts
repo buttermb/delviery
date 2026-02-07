@@ -81,7 +81,6 @@ export function useRecentClients() {
             .from('wholesale_orders')
             .select('created_at, total_amount')
             .eq('client_id', client.id)
-            .eq('tenant_id', tenant.id)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();

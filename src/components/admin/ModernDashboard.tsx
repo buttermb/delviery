@@ -3,12 +3,8 @@
  * Comprehensive dashboard with stat cards, charts, and activity feeds
  */
 
-import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { DollarSign, Package, Truck, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, subDays } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -21,11 +17,9 @@ import { ActivityFeedWidget } from './dashboard/ActivityFeedWidget';
 import { QuickActionsBar } from './dashboard/QuickActionsBar';
 import { LocationMapWidget } from './dashboard/LocationMapWidget';
 import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
-import { RealtimeRevenueChart } from './analytics/RealtimeRevenueChart';
+import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
-import { RecentCustomersWidget } from './dashboard/RecentCustomersWidget';
-import { AutoReorderSuggestionsWidget } from './dashboard/AutoReorderSuggestionsWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
 import { DashboardLayoutEditor } from './dashboard/DashboardLayoutEditor';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,7 +39,7 @@ export function ModernDashboard() {
   const navigateTenant = useTenantNavigate();
 
   // Fetch dashboard data with proper error handling
-  const { data: dashboardData, isLoading } = useQuery<DashboardData | null>({
+  const { data: dashboardData, isLoading, error } = useQuery<DashboardData | null>({
     queryKey: ['modern-dashboard', tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
@@ -107,9 +101,9 @@ export function ModernDashboard() {
   });
 
   // Handle navigation with tenant context
-  const handleNavigate = useCallback((path: string) => {
+  const handleNavigate = (path: string) => {
     navigateTenant(path);
-  }, [navigateTenant]);
+  };
 
   // Loading skeleton
   if (isLoading) {
@@ -199,8 +193,6 @@ export function ModernDashboard() {
 
         <div className="space-y-4 sm:space-y-6">
           <InventoryAlertsWidget />
-          <RecentCustomersWidget />
-          <AutoReorderSuggestionsWidget />
           <ActivityFeedWidget />
         </div>
       </div>
@@ -213,7 +205,7 @@ export function ModernDashboard() {
 
       {/* Additional Widgets Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <RealtimeRevenueChart />
+        <RevenueChartWidget />
         <TopProductsWidget />
       </div>
 

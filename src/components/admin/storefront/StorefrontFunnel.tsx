@@ -9,12 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
-import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { ArrowDown, Eye, Package, ShoppingCart, CreditCard, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StorefrontFunnelProps {
@@ -244,4 +239,7 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
 }
 
 export default StorefrontFunnel;
+
+
+
 

@@ -6,9 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Key from "lucide-react/dist/esm/icons/key";
+import { RefreshCw, Copy, Key } from 'lucide-react';
 
 interface CourierPinManagementProps {
   courierId: string;

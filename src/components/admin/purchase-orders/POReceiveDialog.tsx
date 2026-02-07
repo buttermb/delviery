@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Package from "lucide-react/dist/esm/icons/package";
+import { Loader2, CheckCircle2, Package } from "lucide-react";
 import { useReceivePurchaseOrder } from "@/hooks/useReceivePurchaseOrder";
 import type { Database } from "@/integrations/supabase/types";
 

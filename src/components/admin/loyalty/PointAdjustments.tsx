@@ -9,8 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Loader2, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,

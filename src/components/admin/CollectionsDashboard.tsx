@@ -1,12 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import { Badge } from "@/components/ui/badge";
+import { AlertCircle, Phone, MessageSquare, DollarSign } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleData";
-import { differenceInDays } from "date-fns";
-import { useState, useMemo } from "react";
+import { format, differenceInDays } from "date-fns";
+import { useState } from "react";
 import { PaymentDialog } from "./PaymentDialog";
 // SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -22,58 +20,49 @@ export function CollectionsDashboard() {
   const { data: orders = [] } = useWholesaleOrders();
 
   // Calculate aging buckets
-  const now = useMemo(() => new Date(), []);
+  const now = new Date();
+  
+  const clientsWithAging = clients
+    .filter(c => Number(c.outstanding_balance) > 0)
+    .map(client => {
+      const clientOrders = orders.filter(o => 
+        o.client_id === client.id && 
+        o.status !== "delivered" && 
+        o.status !== "cancelled"
+      );
 
-  const clientsWithAging = useMemo(() => {
-    return clients
-      .filter(c => Number(c.outstanding_balance) > 0)
-      .map(client => {
-        const clientOrders = orders.filter(o =>
-          o.client_id === client.id &&
-          o.status !== "delivered" &&
-          o.status !== "cancelled"
-        );
+      const oldestOrder = clientOrders
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
+      
+      const daysOutstanding = oldestOrder 
+        ? differenceInDays(now, new Date(oldestOrder.created_at))
+        : 0;
 
-        const oldestOrder = clientOrders
-          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
+      let agingBucket: "current" | "1-7" | "8-14" | "15-30" | "30+" = "current";
+      if (daysOutstanding > 30) agingBucket = "30+";
+      else if (daysOutstanding > 14) agingBucket = "15-30";
+      else if (daysOutstanding > 7) agingBucket = "8-14";
+      else if (daysOutstanding > 0) agingBucket = "1-7";
 
-        const daysOutstanding = oldestOrder
-          ? differenceInDays(now, new Date(oldestOrder.created_at))
-          : 0;
+      return {
+        ...client,
+        daysOutstanding,
+        agingBucket,
+        orderCount: clientOrders.length
+      };
+    })
+    .sort((a, b) => b.daysOutstanding - a.daysOutstanding);
 
-        let agingBucket: "current" | "1-7" | "8-14" | "15-30" | "30+" = "current";
-        if (daysOutstanding > 30) agingBucket = "30+";
-        else if (daysOutstanding > 14) agingBucket = "15-30";
-        else if (daysOutstanding > 7) agingBucket = "8-14";
-        else if (daysOutstanding > 0) agingBucket = "1-7";
+  const criticalAccounts = clientsWithAging.filter(c => c.agingBucket === "30+" || c.agingBucket === "15-30");
+  const watchList = clientsWithAging.filter(c => c.agingBucket === "8-14");
 
-        return {
-          ...client,
-          daysOutstanding,
-          agingBucket,
-          orderCount: clientOrders.length
-        };
-      })
-      .sort((a, b) => b.daysOutstanding - a.daysOutstanding);
-  }, [clients, orders, now]);
-
-  const criticalAccounts = useMemo(() => {
-    return clientsWithAging.filter(c => c.agingBucket === "30+" || c.agingBucket === "15-30");
-  }, [clientsWithAging]);
-
-  const watchList = useMemo(() => {
-    return clientsWithAging.filter(c => c.agingBucket === "8-14");
-  }, [clientsWithAging]);
-
-  const agingSummary = useMemo(() => {
-    return {
-      "current": clientsWithAging.filter(c => c.agingBucket === "current").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
-      "1-7": clientsWithAging.filter(c => c.agingBucket === "1-7").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
-      "8-14": clientsWithAging.filter(c => c.agingBucket === "8-14").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
-      "15-30": clientsWithAging.filter(c => c.agingBucket === "15-30").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
-      "30+": clientsWithAging.filter(c => c.agingBucket === "30+").reduce((sum, c) => sum + Number(c.outstanding_balance), 0)
-    };
-  }, [clientsWithAging]);
+  const agingSummary = {
+    "current": clientsWithAging.filter(c => c.agingBucket === "current").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
+    "1-7": clientsWithAging.filter(c => c.agingBucket === "1-7").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
+    "8-14": clientsWithAging.filter(c => c.agingBucket === "8-14").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
+    "15-30": clientsWithAging.filter(c => c.agingBucket === "15-30").reduce((sum, c) => sum + Number(c.outstanding_balance), 0),
+    "30+": clientsWithAging.filter(c => c.agingBucket === "30+").reduce((sum, c) => sum + Number(c.outstanding_balance), 0)
+  };
 
   return (
     <div className="space-y-6">
@@ -135,7 +124,7 @@ export function CollectionsDashboard() {
                           size="sm" 
                           variant="destructive"
                           onClick={() => {
-                            setSelectedClient(client as unknown as WholesaleClient);
+                            setSelectedClient(client as WholesaleClient);
                             setPaymentDialogOpen(true);
                           }}
                         >
@@ -146,7 +135,7 @@ export function CollectionsDashboard() {
                           size="sm" 
                           variant="outline"
                           onClick={() => {
-                            setSmsClient(client as unknown as WholesaleClient);
+                            setSmsClient(client as WholesaleClient);
                             setSmsDialogOpen(true);
                           }}
                         >

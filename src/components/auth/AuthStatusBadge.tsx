@@ -1,8 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { CheckCircle2, XCircle, AlertCircle, Clock } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";

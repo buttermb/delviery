@@ -7,14 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { CreditCard, Plus, Minus, Trash2, CheckCircle2, DollarSign, ShoppingCart, Zap } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 interface Product {

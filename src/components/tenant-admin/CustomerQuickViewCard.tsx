@@ -10,14 +10,16 @@ import {
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Package from "lucide-react/dist/esm/icons/package";
+import {
+    Building2,
+    User,
+    Phone,
+    Mail,
+    Calendar,
+    DollarSign,
+    MessageSquare,
+    Package
+} from "lucide-react";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { useNavigate } from "react-router-dom";

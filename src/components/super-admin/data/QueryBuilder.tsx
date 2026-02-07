@@ -19,11 +19,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import Database from "lucide-react/dist/esm/icons/database";
-import Play from "lucide-react/dist/esm/icons/play";
-import Save from "lucide-react/dist/esm/icons/save";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Database, Play, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SavedQuery {

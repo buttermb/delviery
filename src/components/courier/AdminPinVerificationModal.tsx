@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import Shield from "lucide-react/dist/esm/icons/shield";
+import { Shield } from 'lucide-react';
 
 interface AdminPinVerificationModalProps {
   open: boolean;

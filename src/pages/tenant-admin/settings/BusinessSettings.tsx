@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
   SettingsSection,
@@ -7,10 +7,7 @@ import {
   SettingsRow,
   SaveStatusIndicator,
 } from '@/components/settings/SettingsSection';
-import { SettingsVersionHistory } from '@/components/settings/SettingsVersionHistory';
 import { useAutoSave } from '@/hooks/useAutoSave';
-import { useSettingsVersions } from '@/hooks/useSettingsVersions';
-import type { SettingsVersion } from '@/hooks/useSettingsVersions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -33,18 +30,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
-import Palette from "lucide-react/dist/esm/icons/palette";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import Database from "lucide-react/dist/esm/icons/database";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import History from "lucide-react/dist/esm/icons/history";
+import {
+  Building2,
+  MapPin,
+  Phone,
+  Globe,
+  Clock,
+  Image as ImageIcon,
+  Palette,
+  Upload,
+  Database,
+  Trash2,
+  Loader2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,25 +57,16 @@ const TIMEZONES = [
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Color presets for brand customization
-const COLOR_PRESETS = [
-  { name: 'Emerald', primary: '#10b981', accent: '#3b82f6', description: 'Fresh & modern' },
-  { name: 'Ocean', primary: '#0ea5e9', accent: '#8b5cf6', description: 'Cool & professional' },
-  { name: 'Rose', primary: '#f43f5e', accent: '#ec4899', description: 'Bold & vibrant' },
-  { name: 'Amber', primary: '#f59e0b', accent: '#84cc16', description: 'Warm & inviting' },
-];
-
 interface BusinessHours {
   [key: string]: { open: string; close: string; closed: boolean };
 }
 
 export default function BusinessSettings() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null); // Ideally fetch this from storage
   const [clearDemoDialogOpen, setClearDemoDialogOpen] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
 
   const [businessInfo, setBusinessInfo] = useState({
     name: tenant?.business_name || '',
@@ -100,23 +89,6 @@ export default function BusinessSettings() {
   const [brandColors, setBrandColors] = useState({
     primary: '#10b981',
     accent: '#3b82f6',
-  });
-
-  // Apply color preset
-  const applyColorPreset = (preset: { name: string; primary: string; accent: string }) => {
-    setBrandColors({ primary: preset.primary, accent: preset.accent });
-    toast.success(`Applied ${preset.name} color preset`);
-  };
-
-  // Settings version history
-  const {
-    versions: businessVersions,
-    isLoading: versionsLoading,
-    saveVersion,
-  } = useSettingsVersions({
-    tenantId: tenant?.id,
-    settingsKey: 'business',
-    enabled: !!tenant?.id,
   });
 
   // Clear demo data mutation
@@ -188,13 +160,6 @@ export default function BusinessSettings() {
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     },
     onSuccess: () => toast.success('Business info saved'),
-    versionTracking: {
-      enabled: !!tenant?.id,
-      tenantId: tenant?.id ?? '',
-      settingsKey: 'business',
-      userEmail: admin?.email,
-      userId: admin?.id,
-    },
   });
 
   const handleInfoChange = (field: string, value: string) => {
@@ -268,63 +233,7 @@ export default function BusinessSettings() {
       if (error) throw error;
     },
     onSuccess: () => toast.success('Business hours saved'),
-    versionTracking: {
-      enabled: !!tenant?.id,
-      tenantId: tenant?.id ?? '',
-      settingsKey: 'business_hours',
-      userEmail: admin?.email,
-      userId: admin?.id,
-    },
   });
-
-  // Handle restoring a previous version
-  const handleRestoreVersion = async (version: SettingsVersion) => {
-    if (!tenant?.id) return;
-    setIsRestoring(true);
-
-    try {
-      const snapshot = version.snapshot as Record<string, unknown>;
-
-      // First save current settings as a new version (before restoring)
-      saveVersion({
-        tenantId: tenant.id,
-        settingsKey: version.settings_key,
-        snapshot: version.settings_key === 'business'
-          ? businessInfo as unknown as Record<string, unknown>
-          : businessHours as unknown as Record<string, unknown>,
-        changedFields: ['restored_backup'],
-        changedBy: admin?.id,
-        changedByEmail: admin?.email,
-        description: `Auto-backup before restoring v${version.version_number}`,
-      });
-
-      // Apply the restored settings based on the settings key
-      if (version.settings_key === 'business') {
-        const restoredInfo = {
-          name: (snapshot.name as string) ?? '',
-          phone: (snapshot.phone as string) ?? '',
-          address: (snapshot.address as string) ?? '',
-          website: (snapshot.website as string) ?? '',
-          timezone: (snapshot.timezone as string) ?? 'America/Los_Angeles',
-        };
-        setBusinessInfo(restoredInfo);
-        await saveBusinessInfo(restoredInfo);
-      } else if (version.settings_key === 'business_hours') {
-        const restoredHours = snapshot as BusinessHours;
-        setBusinessHours(restoredHours);
-        await saveBusinessHoursDebounced(restoredHours);
-      }
-
-      toast.success('Settings restored', {
-        description: `Restored to version ${version.version_number}`,
-      });
-    } catch (error) {
-      logger.error('Failed to restore settings version', { error });
-      toast.error('Failed to restore settings');
-    } finally {
-      setIsRestoring(false);
-    }
-  };
 
   const handleHoursChange = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
     setBusinessHours((prev) => {
@@ -527,94 +436,40 @@ export default function BusinessSettings() {
         icon={Palette}
       >
         <SettingsCard>
-          {/* Color Preset Themes */}
-          <div className="mb-6">
-            <label className="text-sm font-medium mb-3 block">Quick Presets</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {COLOR_PRESETS.map((preset) => {
-                const isActive = brandColors.primary === preset.primary && brandColors.accent === preset.accent;
-                return (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyColorPreset(preset)}
-                    className={cn(
-                      'group relative p-3 rounded-lg border-2 transition-all hover:shadow-md',
-                      isActive
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                        : 'border-muted hover:border-muted-foreground/30'
-                    )}
-                  >
-                    <div className="flex gap-1.5 mb-2">
-                      <div
-                        className="h-6 w-6 rounded-full shadow-sm ring-1 ring-black/10"
-                        style={{ backgroundColor: preset.primary }}
-                      />
-                      <div
-                        className="h-6 w-6 rounded-full shadow-sm ring-1 ring-black/10"
-                        style={{ backgroundColor: preset.accent }}
-                      />
-                    </div>
-                    <p className={cn(
-                      'text-sm font-medium text-left',
-                      isActive ? 'text-primary' : 'text-foreground'
-                    )}>
-                      {preset.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground text-left">
-                      {preset.description}
-                    </p>
-                    {isActive && (
-                      <Badge
-                        variant="secondary"
-                        className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0"
-                      >
-                        Active
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="border-t pt-6">
-            <label className="text-sm font-medium mb-3 block">Custom Colors</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">Primary Color</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={brandColors.primary}
-                    onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
-                    className="h-10 w-16 rounded cursor-pointer border p-1"
-                  />
-                  <Input
-                    value={brandColors.primary}
-                    onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
-                    className="w-28 font-mono text-sm uppercase"
-                  />
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Primary Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={brandColors.primary}
+                  onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
+                  className="h-10 w-16 rounded cursor-pointer border p-1"
+                />
+                <Input
+                  value={brandColors.primary}
+                  onChange={(e) => setBrandColors({ ...brandColors, primary: e.target.value })}
+                  className="w-28 font-mono text-sm uppercase"
+                />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">Accent Color</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={brandColors.accent}
-                    onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
-                    className="h-10 w-16 rounded cursor-pointer border p-1"
-                  />
-                  <Input
-                    value={brandColors.accent}
-                    onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
-                    className="w-28 font-mono text-sm uppercase"
-                  />
-                </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Accent Color</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={brandColors.accent}
+                  onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
+                  className="h-10 w-16 rounded cursor-pointer border p-1"
+                />
+                <Input
+                  value={brandColors.accent}
+                  onChange={(e) => setBrandColors({ ...brandColors, accent: e.target.value })}
+                  className="w-28 font-mono text-sm uppercase"
+                />
               </div>
             </div>
           </div>
-
           <div className="mt-6 p-6 rounded-lg border shadow-sm" style={{ background: `linear-gradient(135deg, ${brandColors.primary}20, ${brandColors.accent}20)` }}>
             <p className="text-sm font-medium mb-3">Login Page Preview</p>
             <div className="flex gap-2">
@@ -677,40 +532,6 @@ export default function BusinessSettings() {
               </AlertDialogContent>
             </AlertDialog>
           </SettingsRow>
-        </SettingsCard>
-      </SettingsSection>
-
-      {/* Version History */}
-      <SettingsSection
-        title="Version History"
-        description="View and restore previous settings configurations (last 10 saves)"
-        icon={History}
-      >
-        <SettingsCard>
-          <SettingsVersionHistory
-            versions={businessVersions}
-            isLoading={versionsLoading}
-            onRestore={handleRestoreVersion}
-            isRestoring={isRestoring}
-            formatFieldName={(field) => {
-              const fieldLabels: Record<string, string> = {
-                name: 'Business Name',
-                phone: 'Phone Number',
-                address: 'Address',
-                website: 'Website',
-                timezone: 'Timezone',
-                business_hours: 'Business Hours',
-                Mon: 'Monday Hours',
-                Tue: 'Tuesday Hours',
-                Wed: 'Wednesday Hours',
-                Thu: 'Thursday Hours',
-                Fri: 'Friday Hours',
-                Sat: 'Saturday Hours',
-                Sun: 'Sunday Hours',
-              };
-              return fieldLabels[field] ?? field.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-            }}
-          />
         </SettingsCard>
       </SettingsSection>
     </div>

@@ -16,9 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import { Loader2, Mail, MessageSquare } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface CampaignBuilderProps {

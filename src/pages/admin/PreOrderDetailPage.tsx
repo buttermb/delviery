@@ -2,18 +2,17 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { usePreOrder, useCancelPreOrder } from "@/hooks/crm/usePreOrders";
-import { RelatedEntitiesPanel } from "@/components/admin/RelatedEntitiesPanel";
-import { useRelatedPreOrderInvoices } from "@/hooks/useRelatedEntities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
+import {
+    ArrowLeft,
+    ArrowRight,
+    Trash2,
+    Clock,
+    CheckCircle,
+    XCircle
+} from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -45,7 +44,6 @@ export default function PreOrderDetailPage() {
 
     const { data: preOrder, isLoading } = usePreOrder(preOrderId!);
     const cancelPreOrder = useCancelPreOrder();
-    const relatedInvoices = useRelatedPreOrderInvoices(preOrder?.client_id, preOrderId);
     const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
 
     if (isLoading) {
@@ -221,23 +219,6 @@ export default function PreOrderDetailPage() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    <RelatedEntitiesPanel
-                        title="Related Items"
-                        sections={[
-                            {
-                                key: 'invoices',
-                                label: 'Invoices',
-                                icon: Receipt,
-                                items: relatedInvoices.items,
-                                isLoading: relatedInvoices.isLoading,
-                                error: relatedInvoices.error,
-                                fetchItems: relatedInvoices.fetchItems,
-                                onNavigate: (id) => navigateToAdmin(`crm/invoices/${id}`),
-                                emptyMessage: 'No invoices for this client',
-                            },
-                        ]}
-                    />
 
                     <Card>
                         <CardHeader>

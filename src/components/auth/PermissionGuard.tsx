@@ -1,46 +1,37 @@
+/**
+ * Permission Guard Component
+ * Conditionally renders children based on user permissions
+ * Uses the new role-based permission system from src/lib/permissions
+ */
+
 import { ReactNode } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import type { Permission } from '@/lib/permissions/rolePermissions';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
-export interface PermissionGuardProps {
-  /** Required permission(s) - use 'required' or 'permission' (both work) */
-  required?: Permission | Permission[];
-  /** @deprecated Use 'required' instead. Alias for backwards compatibility. */
-  permission?: Permission | Permission[];
+interface PermissionGuardProps {
+  permission: Permission | Permission[];
   children: ReactNode;
   fallback?: ReactNode;
   requireAll?: boolean;
-  /** Whether to show access denied message when permission is denied */
   showMessage?: boolean;
 }
 
 export function PermissionGuard({
-  required,
   permission,
   children,
   fallback,
-  requireAll = true,
+  requireAll = false,
   showMessage = true,
 }: PermissionGuardProps) {
-  const { checkPermission, checkAnyPermission, checkAllPermissions, isLoading } = usePermissions();
+  const { checkPermission, checkAnyPermission, checkAllPermissions } = usePermissions();
 
-  // Support both 'required' and 'permission' prop names
-  const permissionToCheck = required ?? permission;
-
-  if (isLoading) {
-    return null;
-  }
-
-  if (!permissionToCheck) {
-    // No permission specified, render children
-    return <>{children}</>;
-  }
-
-  const hasAccess = Array.isArray(permissionToCheck)
+  const hasAccess = Array.isArray(permission)
     ? requireAll
-      ? checkAllPermissions(permissionToCheck)
-      : checkAnyPermission(permissionToCheck)
-    : checkPermission(permissionToCheck);
+      ? checkAllPermissions(permission)
+      : checkAnyPermission(permission)
+    : checkPermission(permission);
 
   if (hasAccess) {
     return <>{children}</>;
@@ -52,11 +43,15 @@ export function PermissionGuard({
 
   if (showMessage) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
-        You don't have permission to access this resource.
-      </div>
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          You don't have permission to access this resource.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   return null;
 }
+

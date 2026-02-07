@@ -10,11 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import { MessageSquare, AlertCircle, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
 

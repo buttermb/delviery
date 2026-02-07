@@ -2,8 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { logger } from "@/lib/logger";
-import { invalidateOnEvent } from "@/lib/invalidation";
 
 /**
  * Fetch active wholesale clients (excludes soft-deleted)
@@ -19,7 +17,7 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
 
       let query = supabase
         .from('wholesale_clients')
-        .select('id, tenant_id, business_name, contact_name, phone, email, outstanding_balance, credit_limit, payment_terms, last_payment_date, status, deleted_at, created_at')
+        .select('*')
         .eq('tenant_id', tenant.id);
 
       // Only include active clients by default
@@ -32,9 +30,7 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id,
-    staleTime: 30_000,
-    gcTime: 300_000,
+    enabled: !!tenant?.id
   });
 };
 
@@ -46,29 +42,25 @@ export const useWholesaleOrders = () => {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_orders")
         .select(`
-          id, tenant_id, client_id, runner_id, order_number, status, total_amount, created_at, updated_at,
+          *,
           client:wholesale_clients(business_name, contact_name),
           runner:wholesale_runners(full_name, phone)
         `)
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false })
-        .limit(100);
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id,
-    staleTime: 15_000,
-    gcTime: 120_000,
+    enabled: !!tenant?.id
   });
 };
 
 export const useCreateWholesaleOrder = () => {
   const queryClient = useQueryClient();
-  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (orderData: Record<string, unknown>) => {
@@ -86,36 +78,19 @@ export const useCreateWholesaleOrder = () => {
 
       return data;
     },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-orders"] });
-      const previousOrders = queryClient.getQueryData(["wholesale-orders"]);
-      return { previousOrders };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousOrders) {
-        queryClient.setQueryData(["wholesale-orders"], context.previousOrders);
-      }
-      const message = error instanceof Error ? error.message : "Failed to create order";
-      logger.error('Failed to create wholesale order', error, { component: 'useCreateWholesaleOrder' });
-      showErrorToast("Order Failed", message);
-    },
     onSuccess: () => {
-      showSuccessToast("Order Created", "Wholesale order created successfully");
-      // Cross-panel invalidation - wholesale order affects inventory, dashboard, CRM
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'WHOLESALE_ORDER_CREATED', tenant.id);
-      }
-    },
-    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
       queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
+      showSuccessToast("Order Created", "Wholesale order created successfully");
     },
+    onError: (error) => {
+      showErrorToast("Order Failed", error instanceof Error ? error.message : "Failed to create order");
+    }
   });
 };
 
 export const useProcessPayment = () => {
   const queryClient = useQueryClient();
-  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (paymentData: Record<string, unknown>) => {
@@ -133,43 +108,19 @@ export const useProcessPayment = () => {
 
       return data;
     },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-clients"] });
-      await queryClient.cancelQueries({ queryKey: ["wholesale-payments"] });
-      const previousClients = queryClient.getQueryData(["wholesale-clients"]);
-      const previousPayments = queryClient.getQueryData(["wholesale-payments"]);
-      return { previousClients, previousPayments };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousClients) {
-        queryClient.setQueryData(["wholesale-clients"], context.previousClients);
-      }
-      if (context?.previousPayments) {
-        queryClient.setQueryData(["wholesale-payments"], context.previousPayments);
-      }
-      const message = error instanceof Error ? error.message : "Failed to process payment";
-      logger.error('Failed to process payment', error, { component: 'useProcessPayment' });
-      showErrorToast("Payment Failed", message);
-    },
-    onSuccess: (_data, variables) => {
-      showSuccessToast("Payment Processed", "Payment recorded successfully");
-      // Cross-panel invalidation - payment affects finance, collections, dashboard
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', tenant.id, {
-          customerId: variables.client_id as string | undefined,
-        });
-      }
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
       queryClient.invalidateQueries({ queryKey: ["wholesale-payments"] });
+      showSuccessToast("Payment Processed", "Payment recorded successfully");
     },
+    onError: (error) => {
+      showErrorToast("Payment Failed", error instanceof Error ? error.message : "Failed to process payment");
+    }
   });
 };
 
 export const useAssignDelivery = () => {
   const queryClient = useQueryClient();
-  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (data: { order_id: string; runner_id: string }) => {
@@ -187,44 +138,20 @@ export const useAssignDelivery = () => {
 
       return result;
     },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-orders"] });
-      await queryClient.cancelQueries({ queryKey: ["wholesale-deliveries"] });
-      const previousOrders = queryClient.getQueryData(["wholesale-orders"]);
-      const previousDeliveries = queryClient.getQueryData(["wholesale-deliveries"]);
-      return { previousOrders, previousDeliveries };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousOrders) {
-        queryClient.setQueryData(["wholesale-orders"], context.previousOrders);
-      }
-      if (context?.previousDeliveries) {
-        queryClient.setQueryData(["wholesale-deliveries"], context.previousDeliveries);
-      }
-      const message = error instanceof Error ? error.message : "Failed to assign delivery";
-      logger.error('Failed to assign delivery', error, { component: 'useAssignDelivery' });
-      showErrorToast("Assignment Failed", message);
-    },
-    onSuccess: (_data, variables) => {
-      showSuccessToast("Delivery Assigned", "Runner assigned successfully");
-      // Cross-panel invalidation - driver assignment affects fulfillment, orders, dashboard
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'DRIVER_ASSIGNED', tenant.id, {
-          courierId: variables.runner_id,
-        });
-      }
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
       queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
       queryClient.invalidateQueries({ queryKey: ["runners"] });
+      showSuccessToast("Delivery Assigned", "Runner assigned successfully");
     },
+    onError: (error) => {
+      showErrorToast("Assignment Failed", error instanceof Error ? error.message : "Failed to assign delivery");
+    }
   });
 };
 
 export const useUpdateDeliveryStatus = () => {
   const queryClient = useQueryClient();
-  const { tenant } = useTenantAdminAuth();
 
   return useMutation({
     mutationFn: async (data: { delivery_id: string; status: string; location?: { lat?: number; lng?: number;[key: string]: unknown } | null; notes?: string }) => {
@@ -242,35 +169,14 @@ export const useUpdateDeliveryStatus = () => {
 
       return result;
     },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-deliveries"] });
-      await queryClient.cancelQueries({ queryKey: ["active-deliveries"] });
-      const previousDeliveries = queryClient.getQueryData(["wholesale-deliveries"]);
-      const previousActiveDeliveries = queryClient.getQueryData(["active-deliveries"]);
-      return { previousDeliveries, previousActiveDeliveries };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousDeliveries) {
-        queryClient.setQueryData(["wholesale-deliveries"], context.previousDeliveries);
-      }
-      if (context?.previousActiveDeliveries) {
-        queryClient.setQueryData(["active-deliveries"], context.previousActiveDeliveries);
-      }
-      const message = error instanceof Error ? error.message : "Failed to update status";
-      logger.error('Failed to update delivery status', error, { component: 'useUpdateDeliveryStatus' });
-      showErrorToast("Update Failed", message);
-    },
     onSuccess: () => {
-      showSuccessToast("Status Updated", "Delivery status updated successfully");
-      // Cross-panel invalidation - delivery status affects orders, fulfillment, dashboard
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'DELIVERY_STATUS_CHANGED', tenant.id);
-      }
-    },
-    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
       queryClient.invalidateQueries({ queryKey: ["active-deliveries"] });
+      showSuccessToast("Status Updated", "Delivery status updated successfully");
     },
+    onError: (error) => {
+      showErrorToast("Update Failed", error instanceof Error ? error.message : "Failed to update status");
+    }
   });
 };
 
@@ -323,16 +229,14 @@ export const useWholesaleRunners = () => {
 
       const { data, error } = await supabase
         .from("wholesale_runners")
-        .select("id, tenant_id, full_name, phone, vehicle_type, is_active, created_at")
+        .select("*")
         .eq("tenant_id", tenant.id)
         .order("full_name");
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id,
-    staleTime: 60_000,
-    gcTime: 300_000,
+    enabled: !!tenant?.id
   });
 };
 
@@ -375,21 +279,21 @@ export const useProductsForWholesale = () => {
 
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, price, wholesale_price, cost_per_unit, stock_quantity, available_quantity, category, image_url, in_stock")
+        .select("id, name, price, wholesale_price, cost_per_unit, stock_quantity, category, image_url, in_stock")
         .eq("tenant_id", tenant.id)
+        .eq("in_stock", true)
         .order("name");
 
       if (error) throw error;
-
+      
       // Map to consistent format for wholesale orders
-      // Include all products so out-of-stock items are shown as disabled
       return (data || []).map(product => ({
         id: product.id,
         product_name: product.name,
         base_price: product.wholesale_price || product.price || 0,
         retail_price: product.price || 0,
         cost_per_unit: product.cost_per_unit || 0,
-        quantity_available: product.available_quantity ?? product.stock_quantity ?? 0,
+        quantity_available: product.stock_quantity || 0,
         category: product.category,
         image_url: product.image_url,
         source: 'products' as const,
@@ -420,20 +324,33 @@ export const useWholesalePayments = () => {
     queryFn: async (): Promise<WholesalePaymentWithClient[]> => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      // Use JOIN to fetch client data in a single query (eliminates N+1 pattern)
-      const { data, error } = await (supabase as any)
+      // @ts-expect-error - Supabase type instantiation depth issue
+      const paymentsResult = await supabase
         .from("wholesale_payments")
-        .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at, client:wholesale_clients(business_name)")
+        .select("*")
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false })
-        .limit(100);
+        .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return (data || []) as WholesalePaymentWithClient[];
+      if (paymentsResult.error) throw paymentsResult.error;
+      const payments = (paymentsResult.data || []) as WholesalePaymentWithClient[];
+      if (!payments.length) return [];
+
+      const clientIds: string[] = [...new Set(payments.map(p => p.client_id).filter(Boolean) as string[])];
+      
+      const clientsResult = await supabase
+        .from("wholesale_clients")
+        .select("id, business_name")
+        .in("id", clientIds);
+
+      const clients = (clientsResult.data || []) as Array<{ id: string; business_name: string }>;
+      const clientMap = new Map(clients.map(c => [c.id, c]));
+
+      return payments.map(p => ({
+        ...p,
+        client: clientMap.get(p.client_id) || null
+      }));
     },
-    enabled: !!tenant?.id,
-    staleTime: 30_000,
-    gcTime: 300_000,
+    enabled: !!tenant?.id
   });
 };
 
@@ -445,23 +362,20 @@ export const useWholesaleDeliveries = () => {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_deliveries")
         .select(`
-          id, tenant_id, order_id, runner_id, status, current_location, notes, created_at, updated_at,
-          order:wholesale_orders(order_number, total_amount, delivery_address),
+          *,
+          order:wholesale_orders(order_number, total_amount),
           runner:wholesale_runners(full_name, phone, vehicle_type)
         `)
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false })
-        .limit(100);
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!tenant?.id,
-    staleTime: 15_000,
-    gcTime: 120_000,
+    enabled: !!tenant?.id
   });
 };
 
@@ -475,7 +389,7 @@ export const useClientDetail = (clientId: string) => {
 
       const { data, error } = await supabase
         .from("wholesale_clients")
-        .select("id, tenant_id, business_name, contact_name, phone, email, address, outstanding_balance, credit_limit, payment_terms, last_payment_date, notes, status, deleted_at, created_at, updated_at")
+        .select("*")
         .eq("id", clientId)
         .eq("tenant_id", tenant.id)
         .maybeSingle();
@@ -483,9 +397,7 @@ export const useClientDetail = (clientId: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!clientId && !!tenant?.id,
-    staleTime: 30_000,
-    gcTime: 300_000,
+    enabled: !!clientId && !!tenant?.id
   });
 };
 
@@ -499,7 +411,7 @@ export const useClientOrders = (clientId: string) => {
 
       const { data, error } = await supabase
         .from("wholesale_orders")
-        .select("id, order_number, status, total_amount, notes, created_at")
+        .select("*")
         .eq("client_id", clientId)
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
@@ -508,9 +420,7 @@ export const useClientOrders = (clientId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clientId && !!tenant?.id,
-    staleTime: 15_000,
-    gcTime: 120_000,
+    enabled: !!clientId && !!tenant?.id
   });
 };
 
@@ -522,10 +432,10 @@ export const useClientPayments = (clientId: string) => {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase
         .from("wholesale_payments")
-        .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at")
+        .select("*")
         .eq("client_id", clientId)
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
@@ -534,8 +444,6 @@ export const useClientPayments = (clientId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!clientId && !!tenant?.id,
-    staleTime: 30_000,
-    gcTime: 300_000,
+    enabled: !!clientId && !!tenant?.id
   });
 };

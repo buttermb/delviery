@@ -3,9 +3,7 @@
  * Warning banner displayed when super admin is impersonating a tenant
  */
 
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
+import { AlertTriangle, ExternalLink, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { formatDistanceToNow } from 'date-fns';

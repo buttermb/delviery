@@ -8,15 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Users from "lucide-react/dist/esm/icons/users";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Info from "lucide-react/dist/esm/icons/info";
+import {
+  TrendingDown, TrendingUp, Users, Package, DollarSign,
+  ArrowRight, AlertTriangle, CheckCircle2, Info
+} from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { useNavigate, useParams } from 'react-router-dom';
 // SendSMS removed per plan - can be re-added if needed

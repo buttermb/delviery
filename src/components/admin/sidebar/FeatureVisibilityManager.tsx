@@ -14,10 +14,7 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import type { FeatureId } from '@/lib/featureConfig';
 import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import { ChevronDown, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

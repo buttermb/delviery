@@ -1,19 +1,14 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { useQueryClient } from '@tanstack/react-query';
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
-import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
-import { clearPreAuthSessionData, establishFreshSession, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
 import { getTokenExpiration } from "@/lib/auth/jwt";
-import { createRefreshTimer, tokenNeedsRefresh, type RefreshTimerHandle } from "@/lib/auth/tokenRefresh";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
-import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface Customer {
   id: string;
@@ -63,7 +58,7 @@ const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -79,7 +74,6 @@ const validateEnvironment = (): { valid: boolean; error?: string } => {
 };
 
 export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
-  const queryClient = useQueryClient();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -130,12 +124,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         // Verify token is still valid
         verifyToken(storedToken);
       } catch (e) {
-        // Invalid stored data (e.g., corrupted JSON), clear it
-        logger.warn('Failed to parse stored customer auth data, clearing storage', e instanceof Error ? e : new Error(String(e)), {
-          component: 'CustomerAuthContext',
-          hasStoredCustomer: !!storedCustomer,
-          hasStoredTenant: !!storedTenant,
-        });
+        // Invalid stored data, clear it
         safeStorage.removeItem(TOKEN_KEY);
         safeStorage.removeItem(CUSTOMER_KEY);
         safeStorage.removeItem(TENANT_KEY);
@@ -153,7 +142,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const { response } = await resilientFetch(
         `${supabaseUrl}/functions/v1/customer-auth?action=verify`,
         {
@@ -205,11 +194,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      // Session fixation protection: Clear all pre-auth session data
-      // This prevents an attacker from setting tokens before the user authenticates
-      clearPreAuthSessionData('customer');
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
       const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, {
         email,
@@ -283,9 +268,6 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       safeStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
       safeStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
 
-      // Session fixation protection: Establish a fresh session after successful auth
-      establishFreshSession('customer');
-
       // Store user ID for encryption
       if (data.customer?.id) {
         safeStorage.setItem('floraiq_user_id', data.customer.id);
@@ -335,9 +317,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    // Session fixation protection: Invalidate session nonce on logout
-    invalidateSessionNonce();
-
+    // Debug: Log logout attempt
     logAuth('Customer logout initiated', {
       customerId: customer?.id,
       customerEmail: customer?.email,
@@ -347,7 +327,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       if (token) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
         await resilientFetch(
           `${supabaseUrl}/functions/v1/customer-auth?action=logout`,
           {
@@ -376,41 +356,37 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         hadToken: !!token,
       });
     } finally {
-      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
-      await performFullLogout();
+      // Destroy encryption session before logout
+      clientEncryption.destroy();
 
-      // Clear context-specific React state
       setToken(null);
       setCustomer(null);
       setTenant(null);
+      safeStorage.removeItem(TOKEN_KEY);
+      safeStorage.removeItem(CUSTOMER_KEY);
+      safeStorage.removeItem(TENANT_KEY);
 
+      // Clear user ID from storage
+      safeStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
+
+      // Debug: Log logout complete
       logAuth('Customer logout completed', { source: 'CustomerAuthContext' });
     }
   };
 
   const refreshToken = async () => {
-    // For customers, tokens last 30 days, so we verify the token is still valid
-    // and refresh it proactively before expiry
+    // For customers, tokens last 30 days, so refresh might not be needed
+    // But we can verify the token is still valid
     if (!token) return;
-
-    // Verify the token directly
     await verifyToken(token);
   };
 
-  // Token expiration monitoring with visibility-aware refresh timer.
-  // Uses createRefreshTimer for robust handling of:
-  // - Tab backgrounding (visibility change detection)
-  // - Wake-from-sleep (time drift detection)
-  // - Scheduled proactive refresh before expiry
-  const refreshTimerHandleRef = useRef<RefreshTimerHandle | null>(null);
+  // Token expiration monitoring - check and verify token before expiry
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!token) {
-      if (refreshTimerHandleRef.current) {
-        refreshTimerHandleRef.current.cleanup();
-        refreshTimerHandleRef.current = null;
-      }
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
         refreshIntervalRef.current = null;
@@ -418,56 +394,39 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Clean up previous timer
-    if (refreshTimerHandleRef.current) {
-      refreshTimerHandleRef.current.cleanup();
-    }
-
-    // Customer tokens last 30 days, so refresh 5 minutes before expiry
-    // and warn 5 minutes before expiry
-    const CUSTOMER_REFRESH_BUFFER_MS = 5 * 60 * 1000;
-    const CUSTOMER_WARNING_BUFFER_MS = 5 * 60 * 1000;
-
-    refreshTimerHandleRef.current = createRefreshTimer({
-      token,
-      onRefresh: async () => {
-        await refreshToken();
-        return true;
-      },
-      onWarning: (secondsLeft) => {
-        setSecondsUntilLogout(secondsLeft > 0 ? secondsLeft : 300);
-        setShowTimeoutWarning(true);
-      },
-      bufferMs: CUSTOMER_REFRESH_BUFFER_MS,
-      warningBufferMs: CUSTOMER_WARNING_BUFFER_MS,
-    });
-
-    // Also check periodically as a safety net (every hour for customer tokens)
     const checkAndRefreshToken = () => {
-      if (tokenNeedsRefresh(token, CUSTOMER_REFRESH_BUFFER_MS)) {
-        logger.info("Customer token expiring soon, verifying...", { component: 'CustomerAuth' });
-        refreshToken();
-      }
-
-      // Check if token is fully expired
       const expiration = getTokenExpiration(token);
-      if (expiration && expiration.getTime() <= Date.now()) {
-        logger.warn("Customer token expired, logging out...", { component: 'CustomerAuth' });
+      if (!expiration) return;
+
+      const now = new Date();
+      const timeUntilExpiry = expiration.getTime() - now.getTime();
+      const oneDay = 24 * 60 * 60 * 1000;
+      const fiveMinutes = 5 * 60 * 1000;
+
+      // Show warning if less than 5 minutes until expiry
+      if (timeUntilExpiry < fiveMinutes && timeUntilExpiry > 0) {
+        setSecondsUntilLogout(Math.floor(timeUntilExpiry / 1000));
+        setShowTimeoutWarning(true);
+      } else if (timeUntilExpiry < oneDay && timeUntilExpiry >= fiveMinutes) {
+        // Auto-verify between 5 minutes and 1 day before expiry
+        logger.info("Token expiring soon, verifying...", { component: 'CustomerAuth' });
+        refreshToken();
+      } else if (timeUntilExpiry <= 0) {
+        logger.warn("Token expired, logging out...", { component: 'CustomerAuth' });
         setShowTimeoutWarning(false);
         logout();
       }
     };
 
+    // Check immediately
+    checkAndRefreshToken();
+
+    // Check every hour for customer tokens (they last 30 days)
     refreshIntervalRef.current = setInterval(checkAndRefreshToken, 60 * 60 * 1000);
 
     return () => {
-      if (refreshTimerHandleRef.current) {
-        refreshTimerHandleRef.current.cleanup();
-        refreshTimerHandleRef.current = null;
-      }
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
-        refreshIntervalRef.current = null;
       }
     };
   }, [token]);

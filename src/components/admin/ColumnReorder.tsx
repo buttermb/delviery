@@ -3,7 +3,7 @@
  * Drag-to-reorder column configuration using @dnd-kit
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 import {
   DndContext,
@@ -22,16 +22,15 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Settings2 from "lucide-react/dist/esm/icons/settings-2";
+import { GripVertical, Eye, EyeOff, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export interface ColumnConfig {
@@ -203,9 +202,7 @@ export function ColumnReorder({
     onColumnsChange(columns);
   }, [columns, storageKey, onColumnsChange]);
 
-  const visibleCount = useMemo(() => {
-    return localColumns.filter((c) => c.visible).length;
-  }, [localColumns]);
+  const visibleCount = localColumns.filter((c) => c.visible).length;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

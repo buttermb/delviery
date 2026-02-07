@@ -4,8 +4,7 @@ import { WorkflowDiagram } from './WorkflowDiagram';
 import { LiveMapDemo } from './LiveMapDemo';
 import { QRMenuDemo } from './QRMenuDemo';
 import { StorefrontDemo } from './StorefrontDemo';
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Users from "lucide-react/dist/esm/icons/users";
+import { BarChart3, Users } from 'lucide-react';
 
 interface FeatureDemoPreviewProps {
   featureId: string;

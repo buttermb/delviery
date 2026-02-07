@@ -11,11 +11,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, ComposedChart, Area
 } from 'recharts';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Activity from "lucide-react/dist/esm/icons/activity";
+import { DollarSign, TrendingUp, Calendar, ShoppingBag, Activity } from 'lucide-react';
 import { subDays, startOfYear, format, parseISO, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
@@ -88,41 +84,25 @@ export default function RevenueReports() {
   });
 
   // Analytics Processing
-  // Only count completed/delivered orders towards revenue totals
   const analytics = useMemo(() => {
     if (!rawOrders || rawOrders.length === 0) return null;
 
     let totalRevenue = 0;
-    let completedOrderCount = 0;
     const orderCount = rawOrders.length;
     const productSales: Record<string, number> = {};
     const statusCounts: Record<string, number> = {};
     const revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
 
     rawOrders.forEach(order => {
+      // Revenue
       const orderTotal = parseFloat(order.total_amount?.toString() || order.total?.toString() || '0');
-      const status = order.status || 'unknown';
+      totalRevenue += orderTotal;
 
-      // Status counts include all orders
+      // Status
+      const status = order.status || 'unknown';
       statusCounts[status] = (statusCounts[status] || 0) + 1;
 
-      // Revenue and chart data only count completed/delivered orders
-      const isCompleted = status === 'completed' || status === 'delivered';
-
-      if (isCompleted) {
-        totalRevenue += orderTotal;
-        completedOrderCount += 1;
-
-        // Chart Data Grouping - only completed orders contribute to revenue
-        const dateKey = format(parseISO(order.created_at || new Date().toISOString()), 'yyyy-MM-dd');
-        if (!revenueByDate[dateKey]) {
-          revenueByDate[dateKey] = { date: dateKey, revenue: 0, orders: 0 };
-        }
-        revenueByDate[dateKey].revenue += orderTotal;
-        revenueByDate[dateKey].orders += 1;
-      }
-
-      // Products - count all orders for product analytics
+      // Products
       // @ts-ignore - Supabase type inference for join is tricky
       if (order.order_items && Array.isArray(order.order_items)) {
         // @ts-ignore
@@ -131,6 +111,14 @@ export default function RevenueReports() {
           productSales[name] = (productSales[name] || 0) + (item.quantity || 0);
         });
       }
+
+      // Chart Data Grouping
+      const dateKey = format(parseISO(order.created_at || new Date().toISOString()), 'yyyy-MM-dd');
+      if (!revenueByDate[dateKey]) {
+        revenueByDate[dateKey] = { date: dateKey, revenue: 0, orders: 0 };
+      }
+      revenueByDate[dateKey].revenue += orderTotal;
+      revenueByDate[dateKey].orders += 1;
     });
 
     // Format Chart Data
@@ -146,13 +134,11 @@ export default function RevenueReports() {
     const statusData = Object.entries(statusCounts)
       .map(([name, value]) => ({ name, value }));
 
-    // Average order value based on completed orders only
-    const avgOrderValue = completedOrderCount > 0 ? totalRevenue / completedOrderCount : 0;
+    const avgOrderValue = totalRevenue / orderCount;
 
     return {
       totalRevenue,
-      orderCount: completedOrderCount, // Show completed order count for revenue context
-      totalOrders: orderCount, // Keep total for reference
+      orderCount,
       avgOrderValue,
       chartData,
       topProducts,

@@ -1,15 +1,11 @@
 /**
  * Modern Data Table Component
- * Reusable table with filtering, sorting, pagination, and bulk actions.
- * Automatically virtualizes when data exceeds threshold for optimal performance.
+ * Reusable table with filtering, sorting, pagination, and bulk actions
  */
 
 import { useState, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Search from "lucide-react/dist/esm/icons/search";
-import Download from "lucide-react/dist/esm/icons/download";
-import Filter from "lucide-react/dist/esm/icons/filter";
+import { Eye, EyeOff } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +35,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Download,
+  Filter,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VirtualizedTable } from './VirtualizedTable';
 
@@ -105,9 +110,8 @@ export function DataTable<TData, TValue>({
   }, [data, searchValue, searchColumn]);
 
   // Determine if virtualization should be used
-  // Virtualize large datasets (skip pagination when virtualized for smooth scrolling)
   const shouldVirtualize = virtualized ?? (filteredData.length > virtualizedThreshold);
-  const useVirtual = shouldVirtualize && !pagination;
+  const useVirtual = shouldVirtualize && !pagination; // Don't virtualize if pagination is enabled
 
   // Use standardized pagination hook
   const {
@@ -272,7 +276,7 @@ export function DataTable<TData, TValue>({
           getRowId={getRowId}
         />
       ) : (
-        <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-100">
+        <div className="overflow-x-auto">
           <Table>
           <TableHeader>
             <TableRow>

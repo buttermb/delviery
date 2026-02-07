@@ -168,58 +168,12 @@ export function cancelIdleCallback(id: number): void {
 
 /**
  * Batch DOM updates for better performance
- *
- * Uses View Transitions API when available for smooth visual updates.
- * Automatically falls back to immediate execution in unsupported browsers
- * and respects user's reduced motion preferences.
- *
- * @param callback - Function to execute during the update
- * @param options - Optional configuration
- * @returns Promise that resolves when the transition completes
- *
- * @example
- * ```ts
- * batchUpdates(() => {
- *   // Update DOM here
- *   setItems(newItems);
- * });
- * ```
  */
-export function batchUpdates(
-  callback: () => void,
-  options?: { skipTransition?: boolean }
-): Promise<void> {
-  const { skipTransition = false } = options || {};
-
-  // Skip transitions if user prefers reduced motion
-  const shouldSkip = skipTransition || prefersReducedMotion();
-
-  // Check for View Transitions API support
-  const hasSupport = typeof document !== 'undefined' && 'startViewTransition' in document;
-
-  if (hasSupport && !shouldSkip) {
-    // Use View Transitions API
-    return new Promise((resolve) => {
-      const transition = (document as Document & {
-        startViewTransition: (cb: () => void) => {
-          finished: Promise<void>;
-          ready: Promise<void>;
-          updateCallbackDone: Promise<void>;
-        }
-      }).startViewTransition(callback);
-
-      // Wait for transition to complete
-      transition.finished
-        .then(() => resolve())
-        .catch(() => {
-          // Fallback if transition fails
-          resolve();
-        });
-    });
+export function batchUpdates(callback: () => void): void {
+  if ('startViewTransition' in document) {
+    (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(callback);
   } else {
-    // Fallback: execute callback immediately
     callback();
-    return Promise.resolve();
   }
 }
 
@@ -265,7 +219,6 @@ export function measurePerformance(name: string): () => void {
     const duration = performance.now() - start;
     if (duration > 16) {
       // Log slow renders (> 1 frame at 60fps)
-      // eslint-disable-next-line no-console
       console.debug(`[Perf] ${name} took ${duration.toFixed(2)}ms`);
     }
   };
@@ -305,9 +258,9 @@ export function getNetworkInfo(): {
  */
 export function getAdaptiveQuality(): 'high' | 'medium' | 'low' {
   const { effectiveType, saveData } = getNetworkInfo();
-
+  
   if (saveData) return 'low';
-
+  
   switch (effectiveType) {
     case '4g':
       return 'high';
@@ -315,128 +268,6 @@ export function getAdaptiveQuality(): 'high' | 'medium' | 'low' {
       return 'medium';
     default:
       return 'low';
-  }
-}
-
-/**
- * Check if View Transitions API is supported by the browser
- */
-export function supportsViewTransitions(): boolean {
-  return typeof document !== 'undefined' && 'startViewTransition' in document;
-}
-
-/**
- * Execute a callback with View Transitions API support and automatic fallback
- *
- * This is a comprehensive utility that:
- * - Detects View Transitions API support
- * - Respects prefers-reduced-motion preferences
- * - Provides graceful fallback for unsupported browsers
- * - Returns a promise for async handling
- *
- * @param callback - Function to execute during the transition
- * @param options - Configuration options
- * @returns Promise that resolves when transition completes
- *
- * @example
- * ```ts
- * import { withViewTransition } from '@/lib/performance';
- *
- * // Navigate with transition
- * await withViewTransition(() => {
- *   navigate('/new-page');
- * });
- *
- * // Update state with transition
- * await withViewTransition(() => {
- *   setItems(newItems);
- * }, { skipTransition: false });
- * ```
- */
-export function withViewTransition(
-  callback: () => void | Promise<void>,
-  options?: {
-    /** Skip transition even if supported */
-    skipTransition?: boolean;
-    /** Callback when transition is ready */
-    onReady?: () => void;
-    /** Callback when transition fails */
-    onError?: (error: Error) => void;
-  }
-): Promise<void> {
-  const { skipTransition = false, onReady, onError } = options || {};
-
-  // Skip transitions if user prefers reduced motion or explicitly requested
-  const shouldSkip = skipTransition || prefersReducedMotion();
-
-  // Check for View Transitions API support
-  const hasSupport = supportsViewTransitions();
-
-  if (hasSupport && !shouldSkip) {
-    return new Promise((resolve, reject) => {
-      try {
-        const transition = (document as Document & {
-          startViewTransition: (cb: () => void | Promise<void>) => {
-            finished: Promise<void>;
-            ready: Promise<void>;
-            updateCallbackDone: Promise<void>;
-          }
-        }).startViewTransition(callback);
-
-        // Call onReady when transition is ready
-        if (onReady) {
-          transition.ready
-            .then(() => onReady())
-            .catch(() => {
-              // Ignore ready errors
-            });
-        }
-
-        // Wait for transition to complete
-        transition.finished
-          .then(() => resolve())
-          .catch((error) => {
-            // Handle transition errors
-            const err = error instanceof Error ? error : new Error(String(error));
-            if (onError) {
-              onError(err);
-            }
-            // Still resolve to prevent breaking the app
-            resolve();
-          });
-      } catch (error) {
-        // Catch any synchronous errors
-        const err = error instanceof Error ? error : new Error(String(error));
-        if (onError) {
-          onError(err);
-        }
-        reject(err);
-      }
-    });
-  } else {
-    // Fallback: execute callback immediately
-    try {
-      const result = callback();
-      // Handle async callbacks
-      if (result instanceof Promise) {
-        return result
-          .then(() => undefined)
-          .catch((error) => {
-            const err = error instanceof Error ? error : new Error(String(error));
-            if (onError) {
-              onError(err);
-            }
-            return Promise.reject(err);
-          });
-      }
-      return Promise.resolve();
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      if (onError) {
-        onError(err);
-      }
-      return Promise.reject(err);
-    }
   }
 }
 

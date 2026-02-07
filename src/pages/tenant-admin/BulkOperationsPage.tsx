@@ -8,16 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import Package from "lucide-react/dist/esm/icons/package";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import Download from "lucide-react/dist/esm/icons/download";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import {
+  Package,
+  Upload,
+  Download,
+  Zap,
+  RefreshCw,
+  Tag,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,

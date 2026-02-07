@@ -3,8 +3,7 @@
 
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import { Badge } from '@/components/ui/badge';
-import Lock from "lucide-react/dist/esm/icons/lock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Lock, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface EncryptionIndicatorProps {

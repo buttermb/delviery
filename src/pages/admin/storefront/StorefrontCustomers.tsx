@@ -15,28 +15,20 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Search from "lucide-react/dist/esm/icons/search";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Link2 from "lucide-react/dist/esm/icons/link-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import {
+  ArrowLeft,
+  Search,
+  Users,
+  ShoppingCart,
+  DollarSign,
+  Mail,
+  Phone,
+  Calendar,
+  TrendingUp
+} from 'lucide-react';
 import { ExportButton } from '@/components/ui/ExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { useMarketplaceCustomerSync } from '@/hooks/useMarketplaceCustomerSync';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -76,9 +68,6 @@ export default function StorefrontCustomers() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || 'total_spent');
-
-  // Marketplace customer sync hook
-  const { sync: syncCustomers, isSyncing, syncResult } = useMarketplaceCustomerSync();
 
   // Persist sort preference
   useEffect(() => {
@@ -242,36 +231,11 @@ export default function StorefrontCustomers() {
             {stats.totalCustomers} customers · {formatCurrency(stats.totalRevenue)} total revenue
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  onClick={() => store?.id && syncCustomers(store.id)}
-                  disabled={isSyncing || !store?.id}
-                >
-                  {isSyncing ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : syncResult?.synced_count ? (
-                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
-                  ) : (
-                    <Link2 className="w-4 h-4 mr-2" />
-                  )}
-                  Sync to CRM
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Sync storefront customers to your Customer Hub for unified CRM management</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <ExportButton
-            data={filteredCustomers}
-            filename="storefront-customers"
-            columns={exportColumns}
-          />
-        </div>
+        <ExportButton
+          data={filteredCustomers}
+          filename="storefront-customers"
+          columns={exportColumns}
+        />
       </div>
 
       {/* Stats Cards */}

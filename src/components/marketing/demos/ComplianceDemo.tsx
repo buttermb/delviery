@@ -7,14 +7,7 @@
  */
 
 import { motion } from 'framer-motion';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Database from "lucide-react/dist/esm/icons/database";
+import { FileText, CheckCircle2, RefreshCw, ShieldCheck, Lock, Zap, Clock, Database } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
@@ -55,7 +48,7 @@ function ComplianceDemoMobile() {
                         <span className="text-xs text-slate-500">Last Sync</span>
                     </div>
                     <div className="text-sm font-bold text-slate-900">Just now</div>
-                    <div className="text-xs text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Success</div>
+                    <div className="text-xs text-emerald-600">✓ Success</div>
                 </div>
             </div>
 

@@ -11,10 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import { Loader2, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/utils/apiClient';
 

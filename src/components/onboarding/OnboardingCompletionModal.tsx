@@ -13,9 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import PartyPopper from "lucide-react/dist/esm/icons/party-popper";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import { CheckCircle2, PartyPopper, ArrowRight } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";

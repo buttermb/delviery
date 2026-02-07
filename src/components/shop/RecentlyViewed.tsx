@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import Package from "lucide-react/dist/esm/icons/package";
+import { Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface RecentlyViewedProps {
@@ -133,4 +133,6 @@ export function trackRecentlyViewed(storeId: string, productId: string) {
 }
 
 export default RecentlyViewed;
+
+
 

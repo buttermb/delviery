@@ -19,8 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble, type Message } from './MessageBubble';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import Send from "lucide-react/dist/esm/icons/send";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Send, Loader2 } from 'lucide-react';
 
 interface ChatDrawerProps {
     isOpen: boolean;

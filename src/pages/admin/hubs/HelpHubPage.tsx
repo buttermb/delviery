@@ -9,18 +9,20 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
-import BookOpen from "lucide-react/dist/esm/icons/book-open";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import MessageSquareText from "lucide-react/dist/esm/icons/message-square-text";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Video from "lucide-react/dist/esm/icons/video";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Bug from "lucide-react/dist/esm/icons/bug";
-import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import {
+    PlayCircle,
+    BookOpen,
+    Headphones,
+    MessageSquareText,
+    CheckCircle2,
+    Video,
+    HelpCircle,
+    Mail,
+    MessageSquare,
+    Bug,
+    Lightbulb,
+    ExternalLink,
+} from 'lucide-react';
 import { lazy, Suspense, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -146,42 +148,8 @@ export default function HelpHubPage() {
         setFeedbackText('');
     };
 
-    const handleViewGuide = () => {
-        // Open documentation in new tab (placeholder URL)
-        window.open('https://docs.floraiq.com/user-guide', '_blank');
-    };
-
-    const handleViewApiDocs = () => {
-        // Open API documentation in new tab
-        window.open('https://docs.floraiq.com/api', '_blank');
-    };
-
-    const handleWatchVideos = () => {
-        // Switch to getting-started tab where videos are
-        handleTabChange('getting-started');
-        toast({
-            title: 'Video Library',
-            description: 'Scroll down to see all available tutorials.',
-        });
-    };
-
-    const handleStartChat = () => {
-        toast({
-            title: 'Live Chat',
-            description: 'Live chat is available during business hours (9 AM - 6 PM EST).',
-        });
-    };
-
-    const handleUpgradeEnterprise = () => {
-        // Navigate to pricing page or open upgrade modal
-        toast({
-            title: 'Enterprise Upgrade',
-            description: 'Contact sales@floraiq.com for enterprise pricing.',
-        });
-    };
-
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
@@ -304,7 +272,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Complete documentation for all features
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleViewGuide}>
+                                    <Button variant="outline" className="w-full">
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         View Guide
                                     </Button>
@@ -320,7 +288,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Technical documentation for developers
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleViewApiDocs}>
+                                    <Button variant="outline" className="w-full">
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         View API Docs
                                     </Button>
@@ -336,7 +304,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         All tutorial videos in one place
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleWatchVideos}>
+                                    <Button variant="outline" className="w-full">
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         Watch Videos
                                     </Button>
@@ -415,7 +383,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Chat with our support team in real-time
                                     </p>
-                                    <Button variant="outline" className="w-full" onClick={handleStartChat}>
+                                    <Button variant="outline" className="w-full">
                                         Start Chat
                                     </Button>
                                 </CardContent>
@@ -446,7 +414,7 @@ export default function HelpHubPage() {
                                     <p className="text-sm text-muted-foreground mb-4">
                                         Dedicated support with 1-hour response time
                                     </p>
-                                    <Button className="w-full" onClick={handleUpgradeEnterprise}>
+                                    <Button className="w-full">
                                         Upgrade to Enterprise
                                     </Button>
                                 </CardContent>

@@ -26,13 +26,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
 import { queryKeys } from '@/lib/queryKeys';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Bitcoin from "lucide-react/dist/esm/icons/bitcoin";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import Info from "lucide-react/dist/esm/icons/info";
-import Undo2 from "lucide-react/dist/esm/icons/undo-2";
+import { Loader2, DollarSign, Bitcoin, Zap, Wallet, Info, Undo2 } from 'lucide-react';
 import type { DisposableMenu } from '@/types/admin';
 
 interface MenuPaymentSettingsDialogProps {

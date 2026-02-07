@@ -1,26 +1,11 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import CopyPlus from "lucide-react/dist/esm/icons/copy-plus";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Store from "lucide-react/dist/esm/icons/store";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Monitor from "lucide-react/dist/esm/icons/monitor";
+import {
+  Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
+  Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store
+} from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -43,50 +28,15 @@ import { QRCodeDialog } from './QRCodeDialog';
 import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { MenuPaymentSettingsDialog } from './MenuPaymentSettingsDialog';
-import { MenuPreview } from './MenuPreview';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import type { DisposableMenu } from '@/types/admin';
-import type { Json } from '@/integrations/supabase/types';
-
-// Extended Menu type with computed/joined fields from queries
-// Simplified interface that accepts what the database actually returns
-export interface Menu {
-  id: string;
-  tenant_id: string;
-  name: string;
-  status: string;
-  encrypted_url_token: string;
-  access_code: string | null;
-  description: Json;
-  is_encrypted: boolean;
-  device_locking_enabled: boolean;
-  security_settings: Json;
-  expiration_date: string | null;
-  never_expires: boolean;
-  created_at: string;
-  // Extended properties from joins/computed fields
-  view_count?: number;
-  customer_count?: number;
-  order_count?: number;
-  total_revenue?: number;
-  disposable_menu_products?: Array<unknown>;
-  max_views_per_period?: number;
-  // Schedule fields
-  is_scheduled?: boolean;
-  scheduled_activation_time?: string | null;
-  scheduled_deactivation_time?: string | null;
-  schedule_timezone?: string | null;
-  recurrence_pattern?: string | null;
-  // Allow any additional DB fields
-  [key: string]: unknown;
-}
 
 interface MenuCardProps {
-  menu: Menu;
+  menu: DisposableMenu;
   compact?: boolean;
 }
 
@@ -99,20 +49,17 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
 
-  const viewCount = menu.view_count || 0;
-  const customerCount = menu.customer_count || 0;
-  const orderCount = menu.order_count || 0;
-  const totalRevenue = menu.total_revenue || 0;
+  const viewCount = (menu as any).view_count || 0;
+  const customerCount = (menu as any).customer_count || 0;
+  const orderCount = (menu as any).order_count || 0;
+  const totalRevenue = (menu as any).total_revenue || 0;
+  // @ts-ignore - disposable_menu_products exists in DisposableMenu type
   const productCount = menu.disposable_menu_products?.length || 0;
 
   const isActive = menu.status === 'active';
   const isBurned = menu.status === 'soft_burned' || menu.status === 'hard_burned';
   const isForumMenu = extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum';
-  const isScheduled = menu.is_scheduled && menu.scheduled_activation_time;
-  const scheduledTime = isScheduled ? new Date(menu.scheduled_activation_time as string) : null;
-  const isUpcoming = scheduledTime && scheduledTime > new Date();
 
   const statusConfig = {
     active: { label: 'Active', color: 'bg-success text-success-foreground' },
@@ -141,8 +88,8 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
     securityFeatures.push({ icon: MapPin, label: 'Geofenced' });
   }
   if (menu.device_locking_enabled) securityFeatures.push({ icon: Shield, label: 'Device Lock' });
-  if (menu.max_views_per_period) {
-    securityFeatures.push({ icon: Clock, label: `${menu.max_views_per_period} views` });
+  if ((menu as any).max_views_per_period) {
+    securityFeatures.push({ icon: Clock, label: `${(menu as any).max_views_per_period} views` });
   }
 
   return (
@@ -168,12 +115,6 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                   <Badge variant="secondary" className="text-xs bg-success/10 text-success shrink-0">
                     <MessageSquare className="h-3 w-3 mr-1" />
                     Forum
-                  </Badge>
-                )}
-                {isScheduled && isUpcoming && (
-                  <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 shrink-0">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Scheduled
                   </Badge>
                 )}
               </div>
@@ -295,21 +236,6 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                 <TooltipContent>Share</TooltipContent>
               </Tooltip>
 
-              {/* Customer Preview */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => setPreviewOpen(true)}
-                  >
-                    <Monitor className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Customer Preview</TooltipContent>
-              </Tooltip>
-
               {/* Open in new tab */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -322,7 +248,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Open in Browser</TooltipContent>
+                <TooltipContent>Preview Menu</TooltipContent>
               </Tooltip>
 
               {/* Spacer */}
@@ -336,11 +262,6 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setPreviewOpen(true)}>
-                    <Monitor className="h-4 w-4 mr-2" />
-                    Customer Preview
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setAccessDetailsOpen(true)}>
                     <Lock className="h-4 w-4 mr-2" />
                     Access Details
@@ -397,18 +318,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
           {!compact && (
             <div className="text-xs text-muted-foreground flex items-center justify-between">
               <span>Created {format(new Date(menu.created_at), 'MMM d, yyyy')}</span>
-              {isScheduled && isUpcoming && scheduledTime && (
-                <span className="text-blue-600 flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Activates {format(scheduledTime, 'MMM d, h:mm a')}
-                </span>
-              )}
-              {!isScheduled && menu.expiration_date && !menu.never_expires && (
+              {menu.expiration_date && !menu.never_expires && (
                 <span className="text-warning">
                   Expires {format(new Date(menu.expiration_date), 'MMM d')}
                 </span>
               )}
-              {!isScheduled && menu.never_expires && !isUpcoming && (
+              {menu.never_expires && (
                 <span className="text-success">Never expires</span>
               )}
             </div>
@@ -418,13 +333,13 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
 
       {/* Dialogs */}
       <BurnMenuDialog
-        menu={menu as any}
+        menu={menu}
         open={burnDialogOpen}
         onOpenChange={setBurnDialogOpen}
       />
 
       <ManageAccessDialog
-        menu={menu as any}
+        menu={menu}
         open={manageAccessOpen}
         onOpenChange={setManageAccessOpen}
       />
@@ -437,7 +352,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       />
 
       <MenuAnalyticsDialog
-        menu={menu as any}
+        menu={menu}
         open={analyticsOpen}
         onOpenChange={setAnalyticsOpen}
       />
@@ -453,7 +368,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       <CloneMenuDialog
         open={cloneDialogOpen}
         onClose={() => setCloneDialogOpen(false)}
-        menu={menu as any}
+        menu={menu}
         onComplete={() => window.location.reload()}
       />
 
@@ -462,19 +377,13 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         onOpenChange={setAccessDetailsOpen}
         accessCode={menu.access_code || 'N/A'}
         shareableUrl={menuUrl}
-        menuName={menu.name || 'Menu'}
+        menuName={menu.name}
       />
 
       <MenuPaymentSettingsDialog
         open={paymentSettingsOpen}
         onOpenChange={setPaymentSettingsOpen}
-        menu={menu as any}
-      />
-
-      <MenuPreview
-        menu={menu as any}
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
+        menu={menu}
       />
     </>
   );

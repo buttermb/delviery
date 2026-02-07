@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import PanelLeft from "lucide-react/dist/esm/icons/panel-left";
+import { PanelLeft } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -18,85 +18,6 @@ const SIDEBAR_WIDTH = "17rem";
 const SIDEBAR_WIDTH_MOBILE = "20rem";
 const SIDEBAR_WIDTH_ICON = "3.5rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
-
-// Swipe gesture configuration
-const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
-const SWIPE_VELOCITY_THRESHOLD = 0.3; // Minimum velocity to trigger close
-
-/**
- * Hook to handle swipe-to-close gesture for mobile sidebar
- */
-function useSwipeToClose(
-  onClose: () => void,
-  side: "left" | "right" = "left",
-  enabled: boolean = true
-) {
-  const touchStartX = React.useRef<number | null>(null);
-  const touchStartY = React.useRef<number | null>(null);
-  const touchStartTime = React.useRef<number | null>(null);
-  const isHorizontalSwipe = React.useRef<boolean | null>(null);
-
-  const handleTouchStart = React.useCallback((e: React.TouchEvent) => {
-    if (!enabled) return;
-    const touch = e.touches[0];
-    touchStartX.current = touch.clientX;
-    touchStartY.current = touch.clientY;
-    touchStartTime.current = Date.now();
-    isHorizontalSwipe.current = null;
-  }, [enabled]);
-
-  const handleTouchMove = React.useCallback((e: React.TouchEvent) => {
-    if (!enabled || touchStartX.current === null || touchStartY.current === null) return;
-
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStartX.current;
-    const deltaY = touch.clientY - touchStartY.current;
-
-    // Determine if this is a horizontal swipe on first significant movement
-    if (isHorizontalSwipe.current === null) {
-      const absX = Math.abs(deltaX);
-      const absY = Math.abs(deltaY);
-      if (absX > 10 || absY > 10) {
-        isHorizontalSwipe.current = absX > absY;
-      }
-    }
-  }, [enabled]);
-
-  const handleTouchEnd = React.useCallback((e: React.TouchEvent) => {
-    if (!enabled || touchStartX.current === null || touchStartTime.current === null) {
-      return;
-    }
-
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartX.current;
-    const deltaTime = Date.now() - touchStartTime.current;
-    const velocity = Math.abs(deltaX) / deltaTime;
-
-    // Only trigger if it was a horizontal swipe
-    if (isHorizontalSwipe.current) {
-      // For left sidebar: swipe left (negative deltaX) to close
-      // For right sidebar: swipe right (positive deltaX) to close
-      const isClosingSwipe = side === "left" ? deltaX < 0 : deltaX > 0;
-      const swipeDistance = Math.abs(deltaX);
-
-      if (isClosingSwipe && (swipeDistance > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD)) {
-        onClose();
-      }
-    }
-
-    // Reset state
-    touchStartX.current = null;
-    touchStartY.current = null;
-    touchStartTime.current = null;
-    isHorizontalSwipe.current = null;
-  }, [enabled, onClose, side]);
-
-  return {
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-    onTouchEnd: handleTouchEnd,
-  };
-}
 
 type SidebarContext = {
   state: "expanded" | "collapsed";
@@ -195,7 +116,7 @@ const SidebarProvider = React.forwardRef<
               ...style,
             } as React.CSSProperties
           }
-          className={cn("group/sidebar-wrapper flex h-dvh w-full has-[[data-variant=inset]]:bg-sidebar", className)}
+          className={cn("group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar", className)}
           ref={ref}
           {...props}
         >
@@ -216,13 +137,6 @@ const Sidebar = React.forwardRef<
   }
 >(({ side = "left", variant = "sidebar", collapsible = "offcanvas", className, children, ...props }, ref) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-
-  // Swipe-to-close gesture handler for mobile sidebar
-  const handleSwipeClose = React.useCallback(() => {
-    setOpenMobile(false);
-  }, [setOpenMobile]);
-
-  const swipeHandlers = useSwipeToClose(handleSwipeClose, side, isMobile && openMobile);
 
   if (collapsible === "none") {
     return (
@@ -252,12 +166,7 @@ const Sidebar = React.forwardRef<
           }
           side={side}
         >
-          <div
-            className="flex h-full w-full flex-col overflow-hidden touch-pan-y"
-            {...swipeHandlers}
-          >
-            {children}
-          </div>
+          <div className="flex h-full w-full flex-col overflow-hidden">{children}</div>
         </SheetContent>
       </Sheet>
     );

@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput } from "@/lib/utils/sanitize";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -34,8 +33,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import UserPlus from "lucide-react/dist/esm/icons/user-plus";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { UserPlus, Loader2 } from "lucide-react";
 
 const courierSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),
@@ -105,15 +103,7 @@ export const AddCourierDialog = ({
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          full_name: sanitizeFormInput(data.full_name, 200),
-          email: sanitizeEmail(data.email),
-          phone: sanitizePhoneInput(data.phone),
-          license_number: sanitizeFormInput(data.license_number, 50),
-          vehicle_type: data.vehicle_type,
-          vehicle_make: sanitizeFormInput(data.vehicle_make, 100),
-          vehicle_model: sanitizeFormInput(data.vehicle_model, 100),
-          vehicle_plate: sanitizeFormInput(data.vehicle_plate, 20),
-          age_verified: data.age_verified,
+          ...data,
           tenant_id: tenant?.id, // Include tenant_id for multi-tenant isolation
         }),
         skipAuth: true, // Manual auth header
@@ -164,7 +154,7 @@ export const AddCourierDialog = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="full_name"
@@ -194,7 +184,7 @@ export const AddCourierDialog = ({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="phone"
@@ -248,7 +238,7 @@ export const AddCourierDialog = ({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="vehicle_make"

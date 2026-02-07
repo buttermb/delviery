@@ -3,15 +3,17 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Home from "lucide-react/dist/esm/icons/home";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Package from "lucide-react/dist/esm/icons/package";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import User from "lucide-react/dist/esm/icons/user";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
+import {
+  Menu,
+  Home,
+  ShoppingBag,
+  Package,
+  Settings,
+  User,
+  LogOut,
+  ShoppingCart,
+  Building2,
+} from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";

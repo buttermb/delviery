@@ -7,21 +7,21 @@ import { NotesPanel } from '@/components/crm/NotesPanel';
 import { MessagesThread } from '@/components/crm/MessagesThread';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { EditClientDialog } from '@/components/crm/EditClientDialog';
-import { RelatedEntitiesPanel } from '@/components/admin/RelatedEntitiesPanel';
-import { useRelatedClientInvoices, useRelatedClientPreOrders } from '@/hooks/useRelatedEntities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import {
+    Loader2,
+    ArrowLeft,
+    Mail,
+    Phone,
+    ExternalLink,
+    Copy,
+    FileText,
+    Receipt,
+    DollarSign
+} from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -34,9 +34,6 @@ export default function ClientDetailPage() {
     const { data: client, isLoading } = useClient(clientId);
     const { data: invoices } = useClientInvoices(clientId);
     const { data: preOrders } = useClientPreOrders(clientId);
-
-    const relatedInvoices = useRelatedClientInvoices(clientId);
-    const relatedPreOrders = useRelatedClientPreOrders(clientId);
 
     if (isLoading) {
         return (
@@ -263,35 +260,6 @@ export default function ClientDetailPage() {
                         <ActivityTimeline clientId={client.id} />
                     </TabsContent>
                 </Tabs>
-
-                {/* Related Entities */}
-                <RelatedEntitiesPanel
-                    title="Related Items"
-                    sections={[
-                        {
-                            key: 'invoices',
-                            label: 'Invoices',
-                            icon: Receipt,
-                            items: relatedInvoices.items,
-                            isLoading: relatedInvoices.isLoading,
-                            error: relatedInvoices.error,
-                            fetchItems: relatedInvoices.fetchItems,
-                            onNavigate: (id) => navigateToAdmin(`crm/invoices/${id}`),
-                            emptyMessage: 'No invoices for this client',
-                        },
-                        {
-                            key: 'pre-orders',
-                            label: 'Pre-Orders',
-                            icon: FileText,
-                            items: relatedPreOrders.items,
-                            isLoading: relatedPreOrders.isLoading,
-                            error: relatedPreOrders.error,
-                            fetchItems: relatedPreOrders.fetchItems,
-                            onNavigate: (id) => navigateToAdmin(`crm/pre-orders/${id}`),
-                            emptyMessage: 'No pre-orders for this client',
-                        },
-                    ]}
-                />
             </div>
         </SwipeBackWrapper>
     );

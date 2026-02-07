@@ -4,21 +4,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import RefreshCcw from "lucide-react/dist/esm/icons/refresh-ccw";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+    ShoppingBag,
+    Search,
+    Filter,
+    Eye,
+    CheckCircle,
+    Truck,
+    MoreVertical,
+    RefreshCcw,
+    Loader2
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
@@ -103,11 +104,7 @@ export default function MarketplacePurchasesPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-purchases'] });
             toast({ title: 'Order marked as received' });
-        },
-        onError: (error: Error) => {
-            logger.error('Failed to mark order as received', { error });
-            toast({ title: 'Failed to mark as received', description: error.message, variant: 'destructive' });
-        },
+        }
     });
 
     const getStatusBadge = (status: string) => {

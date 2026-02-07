@@ -1,10 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useMenuCart } from '@/contexts/MenuCartContext';
 
 interface CartDrawerProps {

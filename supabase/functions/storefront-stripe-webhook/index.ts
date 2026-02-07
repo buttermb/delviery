@@ -121,35 +121,6 @@ serve(async (req) => {
                 .single();
 
             if (order && order.customer_email) {
-                // Award loyalty points for completed payment
-                let loyaltyPointsEarned = 0;
-                try {
-                    const { data: pointsData, error: pointsError } = await supabaseClient.rpc(
-                        'add_marketplace_loyalty_points',
-                        {
-                            p_store_id: order.store_id,
-                            p_customer_email: order.customer_email,
-                            p_order_total: order.total || 0,
-                        }
-                    );
-
-                    if (pointsError) {
-                        console.error("Failed to award loyalty points:", pointsError);
-                    } else {
-                        loyaltyPointsEarned = pointsData || 0;
-                        console.log(`Awarded ${loyaltyPointsEarned} loyalty points to ${order.customer_email}`);
-
-                        // Update order with points earned
-                        await supabaseClient
-                            .from("storefront_orders")
-                            .update({ loyalty_points_earned: loyaltyPointsEarned })
-                            .eq("id", orderId);
-                    }
-                } catch (loyaltyError) {
-                    console.error("Error awarding loyalty points:", loyaltyError);
-                    // Don't fail the webhook for loyalty errors
-                }
-
                 // Trigger order confirmation email
                 try {
                     const emailPayload = {
@@ -163,7 +134,6 @@ serve(async (req) => {
                         total: order.total || 0,
                         store_name: order.marketplace_stores?.store_name || "Store",
                         tracking_url: `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com')}/order/${orderId}`,
-                        loyalty_points_earned: loyaltyPointsEarned,
                     };
 
                     // Call send-order-confirmation function

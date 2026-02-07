@@ -16,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import { ArrowLeft, CreditCard } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
 import { useRecordPayment } from '@/hooks/useRecordPayment';

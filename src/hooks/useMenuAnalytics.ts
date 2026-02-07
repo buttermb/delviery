@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface MenuAnalytics {
   total_views: number;
@@ -29,13 +28,9 @@ interface ProductImageAnalytics {
  * Hook to fetch menu analytics including image performance
  */
 export const useMenuAnalytics = (menuId: string) => {
-  const { tenant } = useTenantAdminAuth();
-
   return useQuery({
-    queryKey: ['menu-analytics', tenant?.id, menuId],
+    queryKey: ['menu-analytics', menuId],
     queryFn: async () => {
-      if (!tenant?.id) throw new Error('No tenant');
-
       // Get basic menu stats
       const { data: menu } = await supabase
         .from('disposable_menus')
@@ -49,7 +44,6 @@ export const useMenuAnalytics = (menuId: string) => {
           menu_orders(total_amount)
         `)
         .eq('id', menuId)
-        .eq('tenant_id', tenant.id)
         .maybeSingle();
 
       if (!menu) throw new Error('Menu not found');
@@ -95,7 +89,7 @@ export const useMenuAnalytics = (menuId: string) => {
 
       return analytics;
     },
-    enabled: !!menuId && !!tenant?.id
+    enabled: !!menuId
   });
 };
 

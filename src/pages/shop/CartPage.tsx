@@ -18,18 +18,20 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
+import {
+  ShoppingCart,
+  ShoppingBag,
+  Plus,
+  Minus,
+  Trash2,
+  ArrowRight,
+  Package,
+  Truck,
+  Tag,
+  Loader2,
+  Zap,
+  QrCode
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CartItemStockWarning, CartStockSummary, useCartStockCheck } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
@@ -232,7 +234,7 @@ export default function CartPage() {
                   className="rounded-full px-8 h-12 text-base font-medium transition-all hover:scale-105"
                   style={{ backgroundColor: themeColor, color: isLuxuryTheme ? '#000' : '#fff' }}
                 >
-                  Continue Shopping
+                  Continuue Shopping
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>

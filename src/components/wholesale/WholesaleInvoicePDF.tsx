@@ -3,10 +3,9 @@
  * Generates professional PDF invoices for wholesale orders
  */
 
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@/components/ui/lazy-react-pdf';
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import { Button } from '@/components/ui/button';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { FileText, Loader2 } from 'lucide-react';
 
 interface WholesaleOrderItem {
   id: string;

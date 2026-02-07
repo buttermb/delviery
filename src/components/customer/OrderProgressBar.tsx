@@ -1,8 +1,4 @@
-import Check from "lucide-react/dist/esm/icons/check";
-import Package from "lucide-react/dist/esm/icons/package";
-import ChefHat from "lucide-react/dist/esm/icons/chef-hat";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Home from "lucide-react/dist/esm/icons/home";
+import { Check, Package, ChefHat, Truck, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface OrderProgressBarProps {
@@ -35,7 +31,7 @@ export function OrderProgressBar({ status }: OrderProgressBarProps) {
         <div className="w-full py-6">
             <div className="relative flex items-center justify-between w-full">
                 {/* Progress Line Background */}
-                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full -z-10" />
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200 rounded-full -z-10" />
 
                 {/* Active Progress Line */}
                 <div
@@ -49,13 +45,13 @@ export function OrderProgressBar({ status }: OrderProgressBarProps) {
                     const isCurrent = index === currentStepIndex;
 
                     return (
-                        <div key={step.id} className="flex flex-col items-center gap-2 bg-white dark:bg-zinc-900 px-2">
+                        <div key={step.id} className="flex flex-col items-center gap-2 bg-white px-2">
                             <div
                                 className={cn(
                                     "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500",
                                     isActive
                                         ? "bg-primary border-primary text-white shadow-lg scale-110"
-                                        : "bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-400 dark:text-zinc-500"
+                                        : "bg-white border-gray-300 text-gray-400"
                                 )}
                             >
                                 <Icon className="h-5 w-5" />
@@ -63,7 +59,7 @@ export function OrderProgressBar({ status }: OrderProgressBarProps) {
                             <span
                                 className={cn(
                                     "text-xs font-medium transition-colors duration-300",
-                                    isActive ? "text-primary" : "text-gray-400 dark:text-zinc-500",
+                                    isActive ? "text-primary" : "text-gray-400",
                                     isCurrent && "font-bold scale-105"
                                 )}
                             >

@@ -6,36 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import MapIcon from "lucide-react/dist/esm/icons/map";
-import Search from "lucide-react/dist/esm/icons/search";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Users from "lucide-react/dist/esm/icons/users";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Maximize2 from "lucide-react/dist/esm/icons/maximize-2";
-import Minimize2 from "lucide-react/dist/esm/icons/minimize-2";
-import UserPlus from "lucide-react/dist/esm/icons/user-plus";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Car from "lucide-react/dist/esm/icons/car";
-import Focus from "lucide-react/dist/esm/icons/focus";
-import Package from "lucide-react/dist/esm/icons/package";
-import Route from "lucide-react/dist/esm/icons/route";
-import Timer from "lucide-react/dist/esm/icons/timer";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import {
+  MapPin, Truck, Layers, Map as MapIcon, Search,
+  Phone, Navigation, Clock, Users, Activity,
+  ChevronRight, RefreshCw, Maximize2, Minimize2, UserPlus, AlertCircle,
+  CheckCircle, XCircle, Car, Focus
+} from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
-import type mapboxgl from 'mapbox-gl';
-import { loadMapbox } from '@/lib/mapbox-loader';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { cn } from '@/lib/utils';
 import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -52,47 +33,23 @@ interface CourierLocation {
   last_updated?: string;
 }
 
-interface ActiveOrder {
-  id: string;
-  order_number: string | null;
-  status: string;
-  customer_name: string | null;
-  customer_phone: string | null;
-  delivery_address: string;
-  dropoff_lat: number | null;
-  dropoff_lng: number | null;
-  pickup_lat: number | null;
-  pickup_lng: number | null;
-  courier_id: string | null;
-  eta_minutes: number | null;
-  total_amount: number;
-  created_at: string | null;
-}
-
 export default function LiveMap() {
   const { tenant } = useTenantAdminAuth();
   const [couriers, setCouriers] = useState<CourierLocation[]>([]);
   const [allCouriers, setAllCouriers] = useState<CourierLocation[]>([]);
-  const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ordersLoading, setOrdersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('dark');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourier, setSelectedCourier] = useState<string | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
-  const [showRoutes, setShowRoutes] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [showOffline, setShowOffline] = useState(false);
-  const [activeTab, setActiveTab] = useState<'couriers' | 'orders'>('couriers');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
-  const orderMarkers = useRef<{ [key: string]: mapboxgl.Marker }>({});
-  const routeLayers = useRef<Set<string>>(new Set());
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const { token: mapboxToken, loading: tokenLoading } = useMapboxToken();
@@ -120,26 +77,6 @@ export default function LiveMap() {
     active: couriers.filter(c => c.status === 'delivering').length,
     offline: allCouriers.length - couriers.length,
   }), [couriers, allCouriers]);
-
-  // Order stats
-  const orderStats = useMemo(() => ({
-    total: activeOrders.length,
-    pending: activeOrders.filter(o => o.status === 'pending').length,
-    preparing: activeOrders.filter(o => o.status === 'preparing').length,
-    ready: activeOrders.filter(o => o.status === 'ready_for_pickup').length,
-    inTransit: activeOrders.filter(o => ['in_transit', 'out_for_delivery'].includes(o.status)).length,
-    assigned: activeOrders.filter(o => o.courier_id !== null).length,
-  }), [activeOrders]);
-
-  // Filtered orders based on search
-  const filteredOrders = useMemo(() => {
-    if (!searchQuery) return activeOrders;
-    return activeOrders.filter(o =>
-      o.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.delivery_address.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [activeOrders, searchQuery]);
 
   // Load couriers - memoized to prevent re-creation
   const loadCourierLocations = useCallback(async () => {
@@ -185,66 +122,31 @@ export default function LiveMap() {
     }
   }, [tenant?.id]);
 
-  // Load active orders with delivery locations
-  const loadActiveOrders = useCallback(async () => {
-    if (!tenant?.id) {
-      setOrdersLoading(false);
-      return;
-    }
-
-    try {
-      // Load orders that are in active delivery states
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select('id, order_number, status, customer_name, customer_phone, delivery_address, dropoff_lat, dropoff_lng, pickup_lat, pickup_lng, courier_id, eta_minutes, total_amount, created_at')
-        .eq('tenant_id', tenant.id)
-        .in('status', ['pending', 'confirmed', 'preparing', 'ready_for_pickup', 'assigned', 'out_for_delivery', 'in_transit'])
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (ordersError) {
-        logger.error('Error loading active orders', ordersError, { component: 'LiveMap' });
-        return;
-      }
-
-      setActiveOrders(ordersData || []);
-    } catch (err) {
-      logger.error('Error loading active orders', err, { component: 'LiveMap' });
-    } finally {
-      setOrdersLoading(false);
-    }
-  }, [tenant?.id]);
-
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || map.current) return;
 
-    const initMap = async () => {
-      try {
-        const mapboxgl = await loadMapbox();
+    try {
+      mapboxgl.accessToken = mapboxToken;
 
-        if (!mapContainer.current) return;
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: mapStyles[mapStyle],
+        center: [-73.935242, 40.730610], // NYC center
+        zoom: 12,
+        pitch: 45,
+        bearing: -17.6,
+        antialias: true,
+      });
 
-        mapboxgl.accessToken = mapboxToken;
-
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: mapStyles[mapStyle],
-          center: [-73.935242, 40.730610], // NYC center
-          zoom: 12,
-          pitch: 45,
-          bearing: -17.6,
-          antialias: true,
-        });
-
-        // Add controls
-        map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
-        map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-        map.current.addControl(new mapboxgl.GeolocateControl({
-          positionOptions: { enableHighAccuracy: true },
-          trackUserLocation: true,
-          showUserHeading: true
-        }), 'top-right');
+      // Add controls
+      map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+      map.current.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true
+      }), 'top-right');
 
       map.current.on('load', () => {
         setMapLoaded(true);
@@ -305,21 +207,19 @@ export default function LiveMap() {
         }
       });
 
-        map.current.on('error', (e) => {
-          logger.error('Mapbox error', e.error, { component: 'LiveMap' });
-        });
+      map.current.on('error', (e) => {
+        logger.error('Mapbox error', e.error, { component: 'LiveMap' });
+      });
 
-        return () => {
-          map.current?.remove();
-          map.current = null;
-        };
-      } catch (err) {
-        logger.error('Failed to initialize map', err, { component: 'LiveMap' });
-        setError('Failed to initialize map');
-      }
+    } catch (err) {
+      logger.error('Failed to initialize map', err, { component: 'LiveMap' });
+      setError('Failed to initialize map');
+    }
+
+    return () => {
+      map.current?.remove();
+      map.current = null;
     };
-
-    initMap();
   }, [mapboxToken]);
 
   // Change map style
@@ -329,13 +229,12 @@ export default function LiveMap() {
     }
   }, [mapStyle, mapLoaded]);
 
-  // Load couriers and orders on mount and set up realtime subscriptions
+  // Load couriers on mount and set up realtime subscription
   useEffect(() => {
     loadCourierLocations();
-    loadActiveOrders();
 
-    // Set up realtime subscription for couriers
-    const couriersChannel = supabase
+    // Set up realtime subscription
+    const channel = supabase
       .channel('couriers-changes')
       .on(
         'postgres_changes',
@@ -360,38 +259,16 @@ export default function LiveMap() {
         }
       });
 
-    // Set up realtime subscription for orders
-    const ordersChannel = supabase
-      .channel('orders-map-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders'
-        },
-        () => {
-          loadActiveOrders();
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          logger.info('Realtime subscription active', { component: 'LiveMap', table: 'orders' });
-        }
-      });
-
     // Auto-refresh every 30 seconds
     const refreshInterval = setInterval(() => {
       loadCourierLocations();
-      loadActiveOrders();
     }, 30000);
 
     return () => {
-      supabase.removeChannel(couriersChannel);
-      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(channel);
       clearInterval(refreshInterval);
     };
-  }, [loadCourierLocations, loadActiveOrders]);
+  }, [loadCourierLocations]);
 
   // Focus on a specific courier
   const focusOnCourier = (courier: CourierLocation) => {
@@ -401,7 +278,6 @@ export default function LiveMap() {
     }
 
     setSelectedCourier(courier.id);
-    setSelectedOrder(null);
     if (map.current) {
       map.current.flyTo({
         center: [courier.current_lng, courier.current_lat],
@@ -420,74 +296,13 @@ export default function LiveMap() {
     }
   };
 
-  // Focus on a specific order/customer location
-  const focusOnOrder = (order: ActiveOrder) => {
-    if (!order.dropoff_lat || !order.dropoff_lng) {
-      toast.error('No delivery location available for this order');
-      return;
-    }
-
-    setSelectedOrder(order.id);
-    setSelectedCourier(null);
-    if (map.current) {
-      map.current.flyTo({
-        center: [order.dropoff_lng, order.dropoff_lat],
-        zoom: 16,
-        pitch: 60,
-        bearing: Math.random() * 360,
-        duration: 2000,
-        essential: true
-      });
-
-      // Open the popup for this marker
-      const marker = orderMarkers.current[order.id];
-      if (marker) {
-        marker.togglePopup();
-      }
-    }
-  };
-
-  // Get status color for orders
-  const getOrderStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return { bg: 'bg-yellow-500', text: 'text-yellow-600', hex: '#eab308' };
-      case 'confirmed':
-      case 'preparing':
-        return { bg: 'bg-blue-500', text: 'text-blue-600', hex: '#3b82f6' };
-      case 'ready_for_pickup':
-        return { bg: 'bg-purple-500', text: 'text-purple-600', hex: '#a855f7' };
-      case 'assigned':
-      case 'out_for_delivery':
-      case 'in_transit':
-        return { bg: 'bg-emerald-500', text: 'text-emerald-600', hex: '#10b981' };
-      default:
-        return { bg: 'bg-gray-500', text: 'text-gray-600', hex: '#6b7280' };
-    }
-  };
-
-  // Get readable status label
-  const getOrderStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending': return 'Pending';
-      case 'confirmed': return 'Confirmed';
-      case 'preparing': return 'Preparing';
-      case 'ready_for_pickup': return 'Ready';
-      case 'assigned': return 'Assigned';
-      case 'out_for_delivery': return 'Out for Delivery';
-      case 'in_transit': return 'In Transit';
-      default: return status;
-    }
-  };
-
   // Center map on all active couriers
-  const centerOnActivity = useCallback(async () => {
+  const centerOnActivity = useCallback(() => {
     if (!map.current || couriers.length === 0) {
       toast.info('No active couriers to center on');
       return;
     }
 
-    const mapboxgl = await loadMapbox();
     const bounds = new mapboxgl.LngLatBounds();
     couriers.forEach((courier) => {
       if (courier.current_lat && courier.current_lng) {
@@ -522,9 +337,6 @@ export default function LiveMap() {
   // Update markers when couriers change
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-
-    const updateCourierMarkers = async () => {
-      const mapboxgl = await loadMapbox();
 
     // Remove markers that no longer exist
     Object.keys(markers.current).forEach((courierId) => {
@@ -602,199 +414,22 @@ export default function LiveMap() {
           .addTo(map.current!);
 
         markers.current[courier.id] = marker;
+      }
+    });
+
+    // Fit bounds to show all couriers
+    if (couriers.length > 0 && !selectedCourier) {
+      const bounds = new mapboxgl.LngLatBounds();
+      couriers.forEach((courier) => {
+        if (courier.current_lat && courier.current_lng) {
+          bounds.extend([courier.current_lng, courier.current_lat]);
         }
       });
-
-      // Fit bounds to show all couriers
-      if (couriers.length > 0 && !selectedCourier && !selectedOrder) {
-        const bounds = new mapboxgl.LngLatBounds();
-        couriers.forEach((courier) => {
-          if (courier.current_lat && courier.current_lng) {
-            bounds.extend([courier.current_lng, courier.current_lat]);
-          }
-        });
-        if (!bounds.isEmpty()) {
-          map.current!.fitBounds(bounds, { padding: 100, maxZoom: 15 });
-        }
+      if (!bounds.isEmpty()) {
+        map.current.fitBounds(bounds, { padding: 100, maxZoom: 15 });
       }
-    };
-
-    updateCourierMarkers();
-  }, [couriers, mapLoaded, selectedCourier, selectedOrder]);
-
-  // Update order markers and routes when orders change
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-
-    const updateOrderMarkers = async () => {
-      const mapboxgl = await loadMapbox();
-
-    // Remove order markers that no longer exist
-    Object.keys(orderMarkers.current).forEach((orderId) => {
-      if (!activeOrders.find((o) => o.id === orderId)) {
-        orderMarkers.current[orderId].remove();
-        delete orderMarkers.current[orderId];
-
-        // Remove associated route
-        const routeId = `route-${orderId}`;
-        if (map.current!.getLayer(routeId)) {
-          map.current!.removeLayer(routeId);
-        }
-        if (map.current!.getSource(routeId)) {
-          map.current!.removeSource(routeId);
-        }
-        routeLayers.current.delete(routeId);
-      }
-    });
-
-    // Add or update order markers
-    activeOrders.forEach((order) => {
-      if (!order.dropoff_lat || !order.dropoff_lng) return;
-
-      const statusColor = getOrderStatusColor(order.status);
-      const statusLabel = getOrderStatusLabel(order.status);
-
-      if (orderMarkers.current[order.id]) {
-        // Update existing marker position
-        orderMarkers.current[order.id].setLngLat([order.dropoff_lng, order.dropoff_lat]);
-      } else {
-        // Create new customer/order marker
-        const el = document.createElement('div');
-        el.className = 'order-marker';
-        el.innerHTML = `
-          <div class="relative group cursor-pointer">
-            <div class="absolute inset-0 rounded-full animate-pulse scale-125" style="background-color: ${statusColor.hex}20;"></div>
-            <div class="relative rounded-full w-10 h-10 flex items-center justify-center shadow-lg border-2 border-white/80 hover:scale-110 transition-all duration-300" style="background: linear-gradient(135deg, ${statusColor.hex}, ${statusColor.hex}dd);">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-            </div>
-          </div>
-        `;
-
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-          className: 'order-popup'
-        }).setHTML(`
-          <div class="p-4 min-w-[220px]">
-            <div class="flex items-center justify-between mb-3">
-              <div class="font-bold text-sm">#${order.order_number || 'N/A'}</div>
-              <span class="px-2 py-1 text-xs font-medium rounded-full" style="background-color: ${statusColor.hex}20; color: ${statusColor.hex};">
-                ${statusLabel}
-              </span>
-            </div>
-            <div class="space-y-2 text-xs text-gray-600">
-              ${order.customer_name ? `
-                <div class="flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                  </svg>
-                  <span class="font-medium">${order.customer_name}</span>
-                </div>
-              ` : ''}
-              <div class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                </svg>
-                <span class="line-clamp-2">${order.delivery_address}</span>
-              </div>
-              ${order.eta_minutes ? `
-                <div class="flex items-center gap-2 text-emerald-600 font-medium">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span>ETA: ${order.eta_minutes} mins</span>
-                </div>
-              ` : ''}
-              <div class="pt-2 border-t mt-2">
-                <div class="font-semibold text-gray-900">$${order.total_amount.toFixed(2)}</div>
-              </div>
-              ${order.customer_phone ? `
-                <a href="tel:${order.customer_phone}" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium pt-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                  </svg>
-                  Call Customer
-                </a>
-              ` : ''}
-            </div>
-          </div>
-        `);
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([order.dropoff_lng, order.dropoff_lat])
-          .setPopup(popup)
-          .addTo(map.current!);
-
-        orderMarkers.current[order.id] = marker;
-      }
-
-      // Draw route from courier to order destination if showRoutes is enabled and order has assigned courier
-      if (showRoutes && order.courier_id) {
-        const assignedCourier = couriers.find(c => c.id === order.courier_id);
-        if (assignedCourier?.current_lat && assignedCourier?.current_lng && order.dropoff_lat && order.dropoff_lng) {
-          const routeId = `route-${order.id}`;
-          const routeData = {
-            type: 'Feature' as const,
-            properties: {},
-            geometry: {
-              type: 'LineString' as const,
-              coordinates: [
-                [assignedCourier.current_lng, assignedCourier.current_lat],
-                [order.dropoff_lng, order.dropoff_lat]
-              ]
-            }
-          };
-
-          if (map.current!.getSource(routeId)) {
-            // Update existing route
-            (map.current!.getSource(routeId) as mapboxgl.GeoJSONSource).setData(routeData);
-          } else {
-            // Create new route
-            map.current!.addSource(routeId, {
-              type: 'geojson',
-              data: routeData
-            });
-
-            map.current!.addLayer({
-              id: routeId,
-              type: 'line',
-              source: routeId,
-              layout: {
-                'line-join': 'round',
-                'line-cap': 'round'
-              },
-              paint: {
-                'line-color': statusColor.hex,
-                'line-width': 3,
-                'line-dasharray': [2, 2],
-                'line-opacity': 0.8
-              }
-            });
-
-            routeLayers.current.add(routeId);
-          }
-        }
-      }
-    });
-
-      // Remove routes for orders that no longer have assigned couriers or routes disabled
-      if (!showRoutes) {
-        routeLayers.current.forEach((routeId) => {
-          if (map.current!.getLayer(routeId)) {
-            map.current!.removeLayer(routeId);
-          }
-          if (map.current!.getSource(routeId)) {
-            map.current!.removeSource(routeId);
-          }
-        });
-        routeLayers.current.clear();
-      }
-    };
-
-    updateOrderMarkers();
-  }, [activeOrders, couriers, mapLoaded, showRoutes, getOrderStatusColor, getOrderStatusLabel]);
+    }
+  }, [couriers, mapLoaded, selectedCourier]);
 
   // Toggle heatmap
   useEffect(() => {

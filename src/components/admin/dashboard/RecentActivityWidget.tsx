@@ -5,10 +5,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import User from "lucide-react/dist/esm/icons/user";
+import { Activity, Clock, User } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
@@ -36,7 +33,7 @@ export function RecentActivityWidget() {
     return href;
   };
 
-  const { data: activities, isLoading } = useQuery({
+  const { data: activities } = useQuery({
     queryKey: ['recent-activity', account?.id],
     queryFn: async () => {
       if (!account?.id) return [];
@@ -124,19 +121,7 @@ export function RecentActivityWidget() {
         </h3>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-3 p-2">
-              <Skeleton className="h-6 w-6 rounded-full mt-0.5" />
-              <div className="flex-1 space-y-1">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : activities && activities.length > 0 ? (
+      {activities && activities.length > 0 ? (
         <div className="space-y-3">
           {activities.map((activity) => (
             <div

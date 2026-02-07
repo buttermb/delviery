@@ -6,17 +6,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Info from "lucide-react/dist/esm/icons/info";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Users from "lucide-react/dist/esm/icons/users";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import X from "lucide-react/dist/esm/icons/x";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import {
+  AlertTriangle,
+  Info,
+  AlertCircle,
+  Package,
+  ShoppingCart,
+  CreditCard,
+  Users,
+  Shield,
+  ChevronRight,
+  X,
+  Clock,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';

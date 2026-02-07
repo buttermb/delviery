@@ -7,7 +7,7 @@ import { JWTDecoder } from '@/components/admin/tools/JWTDecoder';
 import { URLEncoder } from '@/components/admin/tools/URLEncoder';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
-import Code2 from "lucide-react/dist/esm/icons/code-2";
+import { Code2 } from 'lucide-react';
 
 export default function DeveloperTools() {
   return (

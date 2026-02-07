@@ -1,10 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useShop } from '@/pages/shop/ShopLayout';
-import Facebook from "lucide-react/dist/esm/icons/facebook";
-import Twitter from "lucide-react/dist/esm/icons/twitter";
-import Instagram from "lucide-react/dist/esm/icons/instagram";
-import Linkedin from "lucide-react/dist/esm/icons/linkedin";
-import Mail from "lucide-react/dist/esm/icons/mail";
+import { Facebook, Twitter, Instagram, Linkedin, Mail } from 'lucide-react';
 
 interface LuxuryFooterProps {
   accentColor?: string;

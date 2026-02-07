@@ -9,15 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import Search from "lucide-react/dist/esm/icons/search";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Shield from "lucide-react/dist/esm/icons/shield";
+import {
+  Search,
+  Upload,
+  FileText,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Package,
+  Loader2,
+  Shield,
+} from "lucide-react";
 import {
   Table,
   TableBody,

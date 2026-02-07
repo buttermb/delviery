@@ -13,18 +13,20 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Crown from "lucide-react/dist/esm/icons/crown";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Calculator from "lucide-react/dist/esm/icons/calculator";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import X from "lucide-react/dist/esm/icons/x";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import {
+  AlertTriangle,
+  Coins,
+  Crown,
+  ArrowRight,
+  Calculator,
+  Sparkles,
+  Clock,
+  X,
+  CheckCircle,
+  Zap,
+  Settings,
+  ExternalLink,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -340,4 +342,10 @@ export function OutOfCreditsModal({
     </Dialog>
   );
 }
+
+
+
+
+
+
 

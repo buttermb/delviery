@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Save from "lucide-react/dist/esm/icons/save";
+import { 
+  Shield, 
+  Ban, 
+  Bell, 
+  Zap, 
+  Lock,
+  AlertTriangle,
+  Save
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 

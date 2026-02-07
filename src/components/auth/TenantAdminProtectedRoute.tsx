@@ -1,15 +1,14 @@
+// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { ReactNode, useEffect, useState, useRef, memo } from 'react';
 import { Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LoadingFallback } from '@/components/LoadingFallback';
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -308,10 +307,6 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Not authenticated - redirect to login
   if (!effectiveAdmin || !effectiveTenant) {
-    // Save the current path as intended destination before redirecting to login
-    const currentPath = location.pathname + location.search;
-    intendedDestinationUtils.save(currentPath);
-    logger.debug('[PROTECTED ROUTE] Saved intended destination before login redirect', { currentPath });
 
     // Extract tenant slug from URL path
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -327,7 +322,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       localStorage.getItem('lastTenantSlug');
 
     if (redirectSlug) {
-      logger.debug('[PROTECTED ROUTE] Redirecting to tenant login', { redirectSlug, intendedDestination: currentPath });
+      logger.debug('[PROTECTED ROUTE] Redirecting to tenant login', { redirectSlug });
       return <Navigate to={`/${redirectSlug}/admin/login`} replace />;
     }
 

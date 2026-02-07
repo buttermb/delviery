@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import Package from "lucide-react/dist/esm/icons/package";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import {
+  Package,
+  ArrowLeft,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Truck,
+  RefreshCw,
+} from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";

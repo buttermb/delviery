@@ -3,11 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Volume2 from "lucide-react/dist/esm/icons/volume-2";
-import VolumeX from "lucide-react/dist/esm/icons/volume-x";
-import Wifi from "lucide-react/dist/esm/icons/wifi";
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
+import { RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -16,7 +12,6 @@ import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
-import { queryKeys } from '@/lib/queryKeys';
 
 // Type Definitions matching Supabase response
 interface MenuOrderRaw {
@@ -26,8 +21,7 @@ interface MenuOrderRaw {
   total_amount: number;
   synced_order_id: string | null;
   disposable_menus: {
-    name: string;
-    title?: string | null;
+    title: string;
   } | null;
 }
 
@@ -48,7 +42,7 @@ export default function LiveOrders() {
     timeout: 5000,
     onUndo: () => {
       toast.info('Status change undone');
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: ['live-orders'] });
     },
     onCommit: () => {
       // Action is finalized, no additional work needed
@@ -82,7 +76,7 @@ export default function LiveOrders() {
 
   // Fetch Orders Query
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.orders.live(tenant?.id),
+    queryKey: ['live-orders', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -100,7 +94,7 @@ export default function LiveOrders() {
             .from('menu_orders')
             .select(`
               id, created_at, status, total_amount, synced_order_id,
-              disposable_menus (name, title)
+              disposable_menus (title)
             `)
             .eq('tenant_id', tenant.id)
             .in('status', [
@@ -134,6 +128,7 @@ export default function LiveOrders() {
         }));
 
         // Transform Menu Orders
+        // Transform Menu Orders
         const normMenuOrders: LiveOrder[] = (menuOrdersRes.data as unknown as MenuOrderRaw[] || []).map((mo) => ({
           id: mo.id,
           order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
@@ -141,7 +136,7 @@ export default function LiveOrders() {
           created_at: mo.created_at,
           user_id: 'guest',
           source: 'menu',
-          menu_title: mo.disposable_menus?.name || mo.disposable_menus?.title || undefined,
+          menu_title: mo.disposable_menus?.title,
           total_amount: Number(mo.total_amount || 0)
         }));
 
@@ -220,20 +215,18 @@ export default function LiveOrders() {
         execute: async () => {
           await updateStatusInDb(orderId, newStatus, source);
           // Invalidate all related queries to ensure inventory and stats are up to date
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenant?.id) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
-          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenant?.id) });
+          queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+          queryClient.invalidateQueries({ queryKey: ['inventory'] }); // Legacy support
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
           queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         },
         undo: async () => {
           await updateStatusInDb(orderId, previousStatus, source);
           // Re-invalidate on undo to restore state
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenant?.id) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
-          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenant?.id) });
+          queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+          queryClient.invalidateQueries({ queryKey: ['inventory'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
           queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         },

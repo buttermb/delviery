@@ -1,6 +1,5 @@
-import { useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import Keyboard from "lucide-react/dist/esm/icons/keyboard";
+import { Keyboard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Shortcut {
@@ -34,16 +33,14 @@ const shortcuts: Shortcut[] = [
   { keys: ["Cmd/Ctrl", "B"], description: "Toggle Sidebar", category: "General" },
 ];
 
-export function AdminKeyboardShortcutsDialog({
-  open,
-  onOpenChange
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void
+export function AdminKeyboardShortcutsDialog({ 
+  open, 
+  onOpenChange 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void 
 }) {
-  const categories = useMemo(() => {
-    return Array.from(new Set(shortcuts.map(s => s.category)));
-  }, []);
+  const categories = Array.from(new Set(shortcuts.map(s => s.category)));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

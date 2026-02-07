@@ -6,6 +6,7 @@
  * with upgrade prompts for higher-tier features.
  */
 
+import { logger } from '@/lib/logger';
 import { NavLink, useParams, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -24,64 +25,69 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Star from "lucide-react/dist/esm/icons/star";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Building from "lucide-react/dist/esm/icons/building";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Box from "lucide-react/dist/esm/icons/box";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import UserCog from "lucide-react/dist/esm/icons/user-cog";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import Download from "lucide-react/dist/esm/icons/download";
-import MapPinned from "lucide-react/dist/esm/icons/map-pinned";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Key from "lucide-react/dist/esm/icons/key";
-import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import Store from "lucide-react/dist/esm/icons/store";
-import Brain from "lucide-react/dist/esm/icons/brain";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import {
+  LayoutDashboard,
+  ChevronDown,
+  Settings,
+  LogOut,
+  Menu,
+  Package,
+  Users,
+  BarChart3,
+  FileText,
+  Barcode,
+  ShoppingCart,
+  CreditCard,
+  Warehouse,
+  TrendingUp,
+  Lock,
+  Star,
+  Diamond,
+  Truck,
+  MapPin,
+  DollarSign,
+  PieChart,
+  Zap,
+  Globe,
+  HelpCircle,
+  Bell,
+  Building,
+  Shield,
+  Box,
+  AlertCircle,
+  ArrowRightLeft,
+  Receipt,
+  UserCog,
+  Activity,
+  FileSpreadsheet,
+  Download,
+  MapPinned,
+  Building2,
+  Key,
+  ScrollText,
+  Headphones,
+  Store,
+  Brain,
+  Tag,
+  Mail,
+  Calendar,
+  Flame,
+  ChevronUp,
+  Wallet,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeModal } from "./UpgradeModal";
-import { LockedFeatureItem, LockedSectionBadge } from "@/components/sidebar/LockedFeatureItem";
 import { useState, useMemo } from "react";
 import {
   type FeatureId,
   type SubscriptionTier,
   FEATURES,
+  TIER_NAMES,
+  hasFeatureAccess,
 } from "@/lib/featureConfig";
 
 // Icon mapping for features
@@ -250,11 +256,12 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
 ];
 
+
 export function TenantAdminSidebar() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const { tenant, logout } = useTenantAdminAuth();
-  const { canAccess, currentTier } = useFeatureAccess();
+  const { canAccess, currentTier, subscriptionValid } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
   // Build filtered sidebar based on current tier
@@ -291,7 +298,7 @@ export function TenantAdminSidebar() {
       // But always show categories with accessible features
       return category.hasAccessibleFeatures || category.upgradeHints.length > 0;
     });
-  }, [canAccess, tenantSlug]);
+  }, [canAccess]);
 
   const isActive = (url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
@@ -308,6 +315,26 @@ export function TenantAdminSidebar() {
 
   const getIcon = (featureId: FeatureId) => {
     return ICON_MAP[featureId] || Package;
+  };
+
+  const getTierBadge = (tier: SubscriptionTier) => {
+    if (tier === 'enterprise') {
+      return (
+        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0 h-5 border-purple-500/50 text-purple-600 dark:text-purple-400">
+          <Diamond className="h-2.5 w-2.5" />
+          Pro+
+        </Badge>
+      );
+    }
+    if (tier === 'professional') {
+      return (
+        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0 h-5 border-blue-500/50 text-blue-600 dark:text-blue-400">
+          <Star className="h-2.5 w-2.5" />
+          Pro
+        </Badge>
+      );
+    }
+    return null;
   };
 
   // Get current tier display info
@@ -354,11 +381,9 @@ export function TenantAdminSidebar() {
                       <div className="flex items-center gap-2">
                         <span>{category.label}</span>
                         {category.hasLockedFeatures && category.lockedFeatures.length > 2 && (
-                          <LockedSectionBadge
-                            count={category.lockedFeatures.length}
-                            lowestTier={FEATURES[category.lockedFeatures[0]]?.tier || 'professional'}
-                            onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
-                          />
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 opacity-50">
+                            +{category.lockedFeatures.length}
+                          </Badge>
                         )}
                       </div>
                       <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
@@ -387,7 +412,7 @@ export function TenantAdminSidebar() {
                           );
                         })}
 
-                        {/* Upgrade hint features (locked) - with tooltip */}
+                        {/* Upgrade hint features (locked) */}
                         {category.upgradeHints.map((featureId) => {
                           const feature = FEATURES[featureId];
                           if (!feature) return null;
@@ -396,14 +421,15 @@ export function TenantAdminSidebar() {
 
                           return (
                             <SidebarMenuItem key={`locked-${featureId}`}>
-                              <LockedFeatureItem
-                                name={feature.name}
-                                icon={Icon}
-                                requiredTier={feature.tier}
-                                currentTier={currentTier}
+                              <SidebarMenuButton
                                 onClick={() => handleLockedItemClick(featureId)}
-                                description={feature.description}
-                              />
+                                className="cursor-pointer opacity-50 hover:opacity-80 transition-opacity"
+                              >
+                                <Icon className="h-4 w-4" />
+                                <span className="truncate min-w-0">{feature.name}</span>
+                                <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
+                                {getTierBadge(feature.tier)}
+                              </SidebarMenuButton>
                             </SidebarMenuItem>
                           );
                         })}
@@ -411,15 +437,15 @@ export function TenantAdminSidebar() {
                         {/* Show "View more" if there are additional locked features */}
                         {category.lockedFeatures.length > 2 && (
                           <SidebarMenuItem>
-                            <LockedFeatureItem
-                              name={`${category.lockedFeatures.length - 2} more feature${category.lockedFeatures.length - 2 !== 1 ? 's' : ''}`}
-                              icon={ChevronUp}
-                              requiredTier={FEATURES[category.lockedFeatures[2]]?.tier || 'professional'}
-                              currentTier={currentTier}
-                              onClick={() => handleLockedItemClick(category.lockedFeatures[2])}
-                              description={`Unlock additional ${category.label.toLowerCase()} features by upgrading your plan.`}
-                              className="text-xs"
-                            />
+                            <SidebarMenuButton
+                              onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
+                              className="cursor-pointer opacity-40 hover:opacity-60 text-xs"
+                            >
+                              <ChevronUp className="h-3 w-3 rotate-180" />
+                              <span className="text-muted-foreground">
+                                Upgrade to unlock {category.lockedFeatures.length - 2} more
+                              </span>
+                            </SidebarMenuButton>
                           </SidebarMenuItem>
                         )}
                       </SidebarMenu>

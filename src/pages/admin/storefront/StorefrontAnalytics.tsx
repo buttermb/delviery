@@ -6,10 +6,7 @@
 
 import { useState } from 'react';
 import { subDays } from 'date-fns';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Package from "lucide-react/dist/esm/icons/package";
+import { ShoppingCart, DollarSign, TrendingUp, Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

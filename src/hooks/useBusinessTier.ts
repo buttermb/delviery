@@ -20,7 +20,6 @@ import {
 } from '@/lib/presets/businessTiers';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { toast } from 'sonner';
 import { TenantMetrics } from '@/types/hotbox';
 
 import {
@@ -157,14 +156,8 @@ export function useBusinessTier() {
       if (error) throw error;
       return tier;
     },
-    onSuccess: (tier) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
-      toast.success('Business tier updated successfully');
-    },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to set business tier', error, { component: 'useBusinessTier' });
-      toast.error('Failed to update business tier', { description: errorMessage });
     },
   });
 
@@ -201,12 +194,6 @@ export function useBusinessTier() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
-      toast.success('Business tier recalculated successfully');
-    },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to recalculate business tier', error, { component: 'useBusinessTier' });
-      toast.error('Failed to recalculate business tier', { description: errorMessage });
     },
   });
 

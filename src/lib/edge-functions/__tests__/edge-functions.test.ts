@@ -14,7 +14,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const SUPABASE_URL = 'https://aejugtmhwwknrowfyzie.supabase.co';
+const SUPABASE_URL = 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
 // Mock fetch globally

@@ -7,14 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Send from "lucide-react/dist/esm/icons/send";
-import Users from "lucide-react/dist/esm/icons/users";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { 
+  Send, 
+  Users, 
+  MessageSquare, 
+  Mail,
+  Phone,
+  Filter,
+  Loader2,
+  CheckCircle
+} from 'lucide-react';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { toast } from '@/hooks/use-toast';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';

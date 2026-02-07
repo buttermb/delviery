@@ -21,20 +21,10 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { TEMPLATES, type MenuTemplate } from './MenuTemplates';
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Check from "lucide-react/dist/esm/icons/check";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Crown from "lucide-react/dist/esm/icons/crown";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import {
+  ChevronDown, ChevronUp, Loader2, Check, Package, Users,
+  Shield, Calendar, Copy, Sparkles, Truck, Zap, Crown, MapPin
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

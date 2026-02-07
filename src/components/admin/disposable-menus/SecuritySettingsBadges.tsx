@@ -1,9 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Shield from "lucide-react/dist/esm/icons/shield";
+import { MapPin, Clock, Eye, Lock, Shield } from 'lucide-react';
 
 interface SecuritySettings {
   require_geofence?: boolean;

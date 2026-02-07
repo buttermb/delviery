@@ -9,9 +9,7 @@ import { RevenueForecastChart } from '@/components/super-admin/analytics/Revenue
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import { DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
 
 export default function RevenueAnalyticsPage() {
   return (

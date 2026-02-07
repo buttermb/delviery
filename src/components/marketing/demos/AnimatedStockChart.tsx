@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Package from "lucide-react/dist/esm/icons/package";
+import { TrendingUp, Package } from 'lucide-react';
 
 const stockData = [
   { name: 'Product A', stock: 85, trend: 'up' },

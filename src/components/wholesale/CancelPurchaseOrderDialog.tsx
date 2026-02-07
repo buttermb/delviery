@@ -16,8 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface PurchaseOrder {

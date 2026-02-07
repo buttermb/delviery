@@ -1,12 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMenuAnalytics, useProductImageAnalytics } from '@/hooks/useMenuAnalytics';
-import Image from "lucide-react/dist/esm/icons/image";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Image, Eye, ZoomIn, ShoppingCart, TrendingUp, AlertCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { AnalyticsExportButton } from './AnalyticsExportButton';

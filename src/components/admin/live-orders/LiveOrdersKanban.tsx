@@ -1,25 +1,26 @@
-import { useMemo, useState } from 'react';
+
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-import PauseCircle from "lucide-react/dist/esm/icons/pause-circle";
+import {
+    Clock,
+    CheckCircle,
+    Package,
+    Truck,
+    MapPin,
+    AlertCircle,
+    ChevronRight,
+    MoreHorizontal
+} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 
 // Types
 export interface LiveOrder {
@@ -33,7 +34,6 @@ export interface LiveOrder {
     menu_title?: string;
     total_amount?: number;
     customer_name?: string;
-    delivery_address?: string;
 }
 
 interface LiveOrdersKanbanProps {
@@ -83,14 +83,6 @@ const COLUMNS = [
         color: 'bg-green-50 dark:bg-green-950/20',
         borderColor: 'border-green-200 dark:border-green-800',
         icon: MapPin
-    },
-    {
-        id: 'on_hold',
-        label: 'ON HOLD',
-        statuses: ['on_hold'],
-        color: 'bg-amber-50 dark:bg-amber-950/20',
-        borderColor: 'border-amber-200 dark:border-amber-800',
-        icon: PauseCircle
     }
 ];
 
@@ -116,8 +108,6 @@ function SLATimer({ createdAt }: { createdAt: string }) {
 }
 
 function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'] }) {
-    const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
-
     // Determine next logical status
     const getNextStatus = (current: string) => {
         switch (current) {
@@ -132,100 +122,61 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
 
     const nextStatus = getNextStatus(order.status);
 
-    // Show "Assign to Fleet" button for orders that are ready for pickup and don't have a courier assigned
-    const showAssignToFleet = (order.status === 'ready_for_pickup' || order.status === 'ready') && !order.courier_id;
-
     return (
-        <>
-            <Card className="mb-3 hover:shadow-md transition-all border-l-4 overflow-hidden relative group">
-                <CardContent className="p-3 space-y-3">
-                    {/* Header */}
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm">#{order.order_number}</span>
-                                {order.source === 'menu' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5 px-1">Menu</Badge>
-                                )}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{order.menu_title || 'App Order'}</p>
-                        </div>
-                    </div>
-
-                    {/* Info Grid */}
-                    <div className="flex items-center justify-between text-xs">
-                        <SLATimer createdAt={order.created_at} />
-                        {order.total_amount && (
-                            <span className="font-semibold">${Number(order.total_amount).toFixed(2)}</span>
-                        )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                                {order.status !== 'on_hold' && (
-                                    <DropdownMenuItem onClick={() => onStatusChange(order.id, 'on_hold', order.source || 'app')}>
-                                        <PauseCircle className="h-4 w-4 mr-2 text-amber-600" />
-                                        Hold Order
-                                    </DropdownMenuItem>
-                                )}
-                                {order.status === 'on_hold' && (
-                                    <DropdownMenuItem onClick={() => onStatusChange(order.id, 'pending', order.source || 'app')}>
-                                        Resume Order
-                                    </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => onStatusChange(order.id, 'rejected', order.source || 'app')}>
-                                    Reject Order
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onStatusChange(order.id, 'cancelled', order.source || 'app')}>
-                                    Cancel Order
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
+        <Card className="mb-3 hover:shadow-md transition-all border-l-4 overflow-hidden relative group">
+            <CardContent className="p-3 space-y-3">
+                {/* Header */}
+                <div className="flex justify-between items-start">
+                    <div>
                         <div className="flex items-center gap-2">
-                            {showAssignToFleet && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 text-xs gap-1 border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                                    onClick={() => setFleetDialogOpen(true)}
-                                >
-                                    <Truck className="h-3 w-3" />
-                                    Fleet
-                                </Button>
-                            )}
-                            {nextStatus && (
-                                <Button
-                                    size="sm"
-                                    className="h-7 text-xs gap-1"
-                                    onClick={() => onStatusChange(order.id, nextStatus, order.source || 'app')}
-                                >
-                                    Next Stage
-                                    <ChevronRight className="h-3 w-3" />
-                                </Button>
+                            <span className="font-bold text-sm">#{order.order_number}</span>
+                            {order.source === 'menu' && (
+                                <Badge variant="secondary" className="text-[10px] h-5 px-1">Menu</Badge>
                             )}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{order.menu_title || 'App Order'}</p>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Fleet Assignment Dialog */}
-            <AssignToFleetDialog
-                open={fleetDialogOpen}
-                onOpenChange={setFleetDialogOpen}
-                orderId={order.id}
-                orderNumber={order.order_number}
-                isWholesale={false}
-                deliveryAddress={order.delivery_address}
-            />
-        </>
+                {/* Info Grid */}
+                <div className="flex items-center justify-between text-xs">
+                    <SLATimer createdAt={order.created_at} />
+                    {order.total_amount && (
+                        <span className="font-semibold">${Number(order.total_amount).toFixed(2)}</span>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            <DropdownMenuItem onClick={() => onStatusChange(order.id, 'rejected', order.source || 'app')}>
+                                Reject Order
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onStatusChange(order.id, 'cancelled', order.source || 'app')}>
+                                Cancel Order
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {nextStatus && (
+                        <Button
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => onStatusChange(order.id, nextStatus, order.source || 'app')}
+                        >
+                            Next Stage
+                            <ChevronRight className="h-3 w-3" />
+                        </Button>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
     );
 }
 

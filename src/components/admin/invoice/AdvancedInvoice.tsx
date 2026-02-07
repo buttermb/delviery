@@ -19,14 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Download from "lucide-react/dist/esm/icons/download";
-import Send from "lucide-react/dist/esm/icons/send";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Save from "lucide-react/dist/esm/icons/save";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import {
+  FileText,
+  Download,
+  Send,
+  Plus,
+  Trash2,
+  Save,
+  Eye,
+  ArrowLeft,
+} from 'lucide-react';
 import { InvoicePDF, InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
 import { useToast } from '@/hooks/use-toast';
 

@@ -18,28 +18,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import Plug from "lucide-react/dist/esm/icons/plug";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Key from "lucide-react/dist/esm/icons/key";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Brain from "lucide-react/dist/esm/icons/brain";
+import {
+  Plug,
+  CreditCard,
+  MessageSquare,
+  BarChart3,
+  Webhook,
+  Key,
+  Copy,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  ExternalLink,
+  RefreshCw,
+  Plus,
+  Trash2,
+  Loader2,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useNavigate } from 'react-router-dom';
 
 interface Integration {
   id: string;
@@ -85,15 +85,6 @@ const INTEGRATIONS: Integration[] = [
   },
 ];
 
-interface AIIntegration {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  status: 'available' | 'demo';
-  features: string[];
-}
-
 interface WebhookEndpoint {
   id: string;
   url: string;
@@ -103,28 +94,12 @@ interface WebhookEndpoint {
 }
 
 export default function IntegrationsSettings() {
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [integrations, setIntegrations] = useState(INTEGRATIONS);
   const [showApiKey, setShowApiKey] = useState(false);
   const [addWebhookOpen, setAddWebhookOpen] = useState(false);
   const [newWebhookUrl, setNewWebhookUrl] = useState('');
-
-  // AI Assistant configuration
-  const aiAssistant: AIIntegration = {
-    id: 'local-ai',
-    name: 'Local AI Assistant',
-    description: 'Run AI models locally without API fees',
-    icon: <Brain className="h-5 w-5" />,
-    status: 'available',
-    features: [
-      'Sentiment Analysis',
-      'Text Summarization',
-      'Message Classification',
-      'Translation',
-    ],
-  };
 
   const apiKey = 'your_api_key_will_appear_here';
 
@@ -219,10 +194,6 @@ export default function IntegrationsSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
-    },
-    onError: (error: Error) => {
-      logger.error('Failed to toggle webhook', { error });
-      toast({ title: 'Failed to toggle webhook', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -354,63 +325,6 @@ export default function IntegrationsSettings() {
             </SettingsCard>
           ))}
         </div>
-      </SettingsSection>
-
-      {/* AI Assistant Settings */}
-      <SettingsSection
-        title="AI Assistant"
-        description="Local AI processing for intelligent automation"
-        icon={Brain}
-      >
-        <SettingsCard>
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-purple-500/10 text-purple-600">
-                {aiAssistant.icon}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-semibold">{aiAssistant.name}</h4>
-                  <Badge variant="outline" className="bg-orange-500/10 text-orange-700 border-orange-500">
-                    Demo Mode
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {aiAssistant.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {aiAssistant.features.map((feature) => (
-                    <Badge key={feature} variant="secondary" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-            <p className="flex items-start gap-2">
-              <Brain className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span>
-                Run AI models locally in your browser or on your server.
-                No data is sent to external services, ensuring complete privacy and no API fees.
-              </span>
-            </p>
-          </div>
-          <div className="flex gap-2 mt-4 pt-4 border-t">
-            <Button
-              size="sm"
-              onClick={() => navigate(`/${tenantSlug}/admin/integrations-hub?tab=ai`)}
-            >
-              <Brain className="h-4 w-4 mr-2" />
-              Open AI Assistant
-            </Button>
-            <Button variant="outline" size="sm">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Documentation
-            </Button>
-          </div>
-        </SettingsCard>
       </SettingsSection>
 
       {/* API Keys */}

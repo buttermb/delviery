@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import { Loader2, Package, TrendingUp, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { logger } from '@/lib/logger';
 

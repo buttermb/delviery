@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
-import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface VendorProfile {
     id: string;
@@ -23,7 +21,6 @@ interface VendorAuthContextType {
 const VendorAuthContext = createContext<VendorAuthContextType | undefined>(undefined);
 
 export const VendorAuthProvider = ({ children }: { children: ReactNode }) => {
-    const queryClient = useQueryClient();
     const [vendor, setVendor] = useState<VendorProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -102,10 +99,7 @@ export const VendorAuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const logout = async () => {
-        // Perform complete state cleanup (encryption, Supabase, storage, query cache)
-        await performFullLogout();
-
-        // Clear context-specific React state
+        await supabase.auth.signOut();
         setVendor(null);
         setIsAuthenticated(false);
     };

@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 
 interface RippleButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  /** Ripple color - defaults to white with opacity for dark backgrounds, auto-adjusts for light/dark mode */
   rippleColor?: string;
 }
 

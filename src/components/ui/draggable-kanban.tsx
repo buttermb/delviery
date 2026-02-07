@@ -27,7 +27,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
-import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
+import { GripVertical } from 'lucide-react';
 
 // Generic item type
 export interface DraggableItem {

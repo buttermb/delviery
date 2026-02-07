@@ -6,11 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Check, X, Minus, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface InlineStockEditProps {

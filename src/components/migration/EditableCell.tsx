@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import Edit3 from "lucide-react/dist/esm/icons/edit-3";
+import { Check, X, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EditableCellProps {
@@ -97,4 +95,7 @@ export function EditableCell({
     </div>
   );
 }
+
+
+
 

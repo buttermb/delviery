@@ -1,15 +1,17 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import Package from "lucide-react/dist/esm/icons/package";
-import Search from "lucide-react/dist/esm/icons/search";
-import FileQuestion from "lucide-react/dist/esm/icons/file-question";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Inbox from "lucide-react/dist/esm/icons/inbox";
-import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import type { LucideIcon } from "lucide-react";
+import {
+  Package,
+  Search,
+  FileQuestion,
+  Users,
+  ShoppingCart,
+  Inbox,
+  FolderOpen,
+  AlertCircle,
+  type LucideIcon,
+} from "lucide-react";
 
 /**
  * Predefined illustrations for common empty states
@@ -296,4 +298,5 @@ function ErrorState({
 
 export { EmptyState, EmptyStateCompact, ErrorState, illustrations };
 export type { EmptyStateProps, EmptyStateCompactProps, ErrorStateProps, IllustrationType };
+
 

@@ -14,16 +14,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Leaf from "lucide-react/dist/esm/icons/leaf";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import FlaskConical from "lucide-react/dist/esm/icons/flask-conical";
-import Store from "lucide-react/dist/esm/icons/store";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Calculator from "lucide-react/dist/esm/icons/calculator";
+import { 
+  HelpCircle, 
+  Leaf, 
+  Package, 
+  DollarSign, 
+  Sparkles,
+  ArrowRight,
+  FlaskConical,
+  Store,
+  Truck,
+  Calculator,
+} from 'lucide-react';
 import type { QuickAnswers } from '@/lib/migration/text-parser';
 import type { CannabisCategory, QualityTier } from '@/types/migration';
 

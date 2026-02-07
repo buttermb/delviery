@@ -1,11 +1,6 @@
 import { motion } from 'framer-motion';
 import { CountUpNumber } from './CountUpNumber';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Users from "lucide-react/dist/esm/icons/users";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Star from "lucide-react/dist/esm/icons/star";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
+import { TrendingUp, Users, DollarSign, Clock, Star, Headphones } from 'lucide-react';
 
 interface StatCardProps {
   value: string | number;

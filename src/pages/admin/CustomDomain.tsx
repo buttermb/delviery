@@ -8,12 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { Globe, Plus, Check, X } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
@@ -98,12 +93,8 @@ export default function CustomDomain() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Custom Domain</h1>
-          <p className="text-muted-foreground">Configure custom domains for your platform</p>
-        </div>
-        <EnhancedLoadingState variant="card" count={2} />
+      <div className="p-6">
+        <div className="text-center">Loading domains...</div>
       </div>
     );
   }
@@ -133,12 +124,8 @@ export default function CustomDomain() {
               />
             </div>
             <Button type="submit" disabled={addDomainMutation.isPending}>
-              {addDomainMutation.isPending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              {addDomainMutation.isPending ? 'Adding...' : 'Add Domain'}
+              <Plus className="h-4 w-4 mr-2" />
+              Add Domain
             </Button>
           </form>
         </CardContent>

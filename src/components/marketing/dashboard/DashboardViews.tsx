@@ -1,47 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
-import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Download from "lucide-react/dist/esm/icons/download";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import X from "lucide-react/dist/esm/icons/x";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Edit2 from "lucide-react/dist/esm/icons/edit-2";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import User from "lucide-react/dist/esm/icons/user";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MousePointer2 from "lucide-react/dist/esm/icons/mouse-pointer-2";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Award from "lucide-react/dist/esm/icons/award";
-import Heart from "lucide-react/dist/esm/icons/heart";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
-import Activity from "lucide-react/dist/esm/icons/activity";
+import {
+  ArrowUpRight, ArrowDownRight, MoreVertical, Search, Filter,
+  Download, Plus, CheckCircle2, AlertCircle, Clock, MapPin,
+  DollarSign, Package, ShoppingCart, Truck, X, ExternalLink, Settings,
+  Edit2, Trash2, Mail, Phone, User, Calendar, MousePointer2, TrendingUp,
+  QrCode, Copy, Eye, Lock, ShieldCheck, ChevronRight, MessageSquare, Shield,
+  Zap, Navigation, Share2, Flame, Award, Heart, PieChart, Activity
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useShouldReduceAnimations } from '@/hooks/useReducedMotion';

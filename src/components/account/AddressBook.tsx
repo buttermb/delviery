@@ -1,22 +1,18 @@
 /**
  * Address Book Component
- * Manage saved delivery addresses (persisted to Supabase)
+ * Manage saved delivery addresses
  */
 
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Home from "lucide-react/dist/esm/icons/home";
-import Building from "lucide-react/dist/esm/icons/building";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { 
+  Plus, Edit, Trash2, MapPin, Home, 
+  Building, CheckCircle2
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -27,8 +23,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface Address {
   id: string;
@@ -42,41 +36,12 @@ interface Address {
   apt?: string;
 }
 
-// Map database row to component interface
-interface DbAddress {
-  id: string;
-  street: string;
-  apartment: string | null;
-  city: string;
-  state: string;
-  borough: string;
-  neighborhood: string | null;
-  is_default: boolean | null;
-}
-
-function mapDbToAddress(row: DbAddress): Address {
-  // Extract zip from street if included, or use neighborhood
-  const zipMatch = row.street.match(/\b(\d{5})\b/);
-  return {
-    id: row.id,
-    label: row.neighborhood || 'Address',
-    address: row.street,
-    apt: row.apartment || undefined,
-    city: row.city,
-    state: row.state,
-    zip: zipMatch?.[1] || '',
-    borough: row.borough,
-    is_primary: row.is_default ?? false,
-  };
-}
-
 export default function AddressBook() {
   const { toast } = useToast();
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [editing, setEditing] = useState<Address | null>(null);
   const [showDialog, setShowDialog] = useState(false);
-
+  
   const [formData, setFormData] = useState({
     label: 'Home',
     address: '',
@@ -88,93 +53,32 @@ export default function AddressBook() {
     is_primary: false
   });
 
-  // Fetch addresses from database
-  const { data: addresses = [], isLoading } = useQuery({
-    queryKey: ['user-addresses', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('addresses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('is_default', { ascending: false });
-      if (error) throw error;
-      return (data || []).map(mapDbToAddress);
-    },
-    enabled: !!user?.id,
-  });
-
-  // Save/update address mutation
-  const saveMutation = useMutation({
-    mutationFn: async (data: { editing: Address | null; formData: typeof formData }) => {
-      if (!user?.id) throw new Error('Not authenticated');
-
-      const dbData = {
-        user_id: user.id,
-        street: data.formData.address,
-        apartment: data.formData.apt || null,
-        city: data.formData.city,
-        state: data.formData.state,
-        borough: data.formData.borough,
-        neighborhood: data.formData.label,
-        is_default: addresses.length === 0 || data.formData.is_primary,
-      };
-
-      if (data.editing) {
-        const { error } = await supabase
-          .from('addresses')
-          .update(dbData)
-          .eq('id', data.editing.id);
-        if (error) throw error;
-      } else {
-        // Insert requires zip_code field
-        const insertData = {
-          ...dbData,
-          zip_code: data.formData.zip || '00000',
-        };
-        const { error } = await supabase
-          .from('addresses')
-          .insert(insertData);
-        if (error) throw error;
-      }
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
-      toast({ title: variables.editing ? 'Address updated' : 'Address saved' });
-      resetForm();
-    },
-    onError: (error) => {
+  const handleSave = async () => {
+    if (!formData.address || !formData.zip) {
       toast({
-        title: 'Error saving address',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        title: 'Missing information',
+        description: 'Please fill in all required fields',
         variant: 'destructive'
       });
+      return;
     }
-  });
 
-  // Delete address mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('addresses')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
-      toast({ title: 'Address deleted' });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error deleting address',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive'
-      });
+    // Here you would save to database
+    const newAddress: Address = {
+      id: editing?.id || Math.random().toString(),
+      ...formData,
+      state: 'NY',
+      is_primary: addresses.length === 0 || formData.is_primary
+    };
+
+    if (editing) {
+      setAddresses(addresses.map(a => a.id === editing.id ? newAddress : a));
+      toast({ title: 'Address updated' });
+    } else {
+      setAddresses([...addresses, newAddress]);
+      toast({ title: 'Address saved' });
     }
-  });
 
-  const resetForm = () => {
     setFormData({
       label: 'Home',
       address: '',
@@ -189,20 +93,9 @@ export default function AddressBook() {
     setShowDialog(false);
   };
 
-  const handleSave = async () => {
-    if (!formData.address || !formData.zip) {
-      toast({
-        title: 'Missing information',
-        description: 'Please fill in all required fields',
-        variant: 'destructive'
-      });
-      return;
-    }
-    saveMutation.mutate({ editing, formData });
-  };
-
   const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+    setAddresses(addresses.filter(a => a.id !== id));
+    toast({ title: 'Address deleted' });
   };
 
   const handleEdit = (address: Address) => {
@@ -294,7 +187,7 @@ export default function AddressBook() {
                     placeholder="Apt 4B"
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="city">City</Label>
                     <Input
@@ -312,7 +205,7 @@ export default function AddressBook() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="zip">ZIP Code *</Label>
                     <Input
@@ -338,8 +231,7 @@ export default function AddressBook() {
                 <Button variant="outline" onClick={() => setShowDialog(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saveMutation.isPending}>
-                  {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <Button onClick={handleSave}>
                   {editing ? 'Update' : 'Save'} Address
                 </Button>
               </DialogFooter>
@@ -348,11 +240,7 @@ export default function AddressBook() {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : addresses.length === 0 ? (
+        {addresses.length === 0 ? (
           <div className="text-center py-8">
             <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-sm text-muted-foreground mb-4">

@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,24 +23,26 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Check from "lucide-react/dist/esm/icons/check";
-import Package from "lucide-react/dist/esm/icons/package";
-import User from "lucide-react/dist/esm/icons/user";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Package,
+  User,
+  MapPin,
+  CreditCard,
+  ShoppingCart,
+  Loader2,
+  ChevronUp,
+  ChevronDown
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Clock } from 'lucide-react';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -72,10 +74,9 @@ const STEPS = [
   { id: 4, name: 'Review', icon: Check },
 ];
 
-export function CheckoutPage() {
+export default function CheckoutPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText } = useLuxuryTheme();
   const { toast } = useToast();
@@ -83,20 +84,6 @@ export function CheckoutPage() {
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
-
-  // Handle cancelled Stripe checkout return
-  useEffect(() => {
-    if (searchParams.get('cancelled') === 'true') {
-      toast({
-        title: 'Payment cancelled',
-        description: 'Your payment was not completed. You can try again or choose a different payment method.',
-      });
-      // Remove the cancelled param from URL without navigation
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('cancelled');
-      window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
-    }
-  }, [searchParams, toast]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CheckoutData>({
@@ -578,18 +565,15 @@ export function CheckoutPage() {
       if (formData.paymentMethod === 'card' && store?.id) {
         try {
           const checkoutItems = cartItems.map((item) => ({
-            product_id: item.productId,
             name: item.name,
+            price: item.price,
             quantity: item.quantity,
             image_url: item.imageUrl,
           }));
 
           const origin = window.location.origin;
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}&token=${data.tracking_token}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
-          const cancelUrl = `${origin}/shop/${storeSlug}/checkout?cancelled=true`;
-
-          // Calculate total discount applied (coupon + loyalty + deals)
-          const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
+          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_number}&token=${data.tracking_token}&total=${total}`;
+          const cancelUrl = `${origin}/shop/${storeSlug}/checkout`;
 
           const response = await supabase.functions.invoke('storefront-checkout', {
             body: {
@@ -599,8 +583,7 @@ export function CheckoutPage() {
               customer_email: formData.email,
               customer_name: `${formData.firstName} ${formData.lastName}`,
               subtotal,
-              delivery_fee: effectiveDeliveryFee,
-              discount_amount: totalDiscountAmount,
+              delivery_fee: deliveryFee,
               success_url: successUrl,
               cancel_url: cancelUrl,
             },
@@ -612,12 +595,6 @@ export function CheckoutPage() {
 
           const { url } = response.data;
           if (url) {
-            // Clear cart before redirecting to Stripe (order already created)
-            localStorage.removeItem(`shop_cart_${store.id}`);
-            if (formStorageKey) {
-              localStorage.removeItem(formStorageKey);
-            }
-            setCartItemCount(0);
             // Redirect to Stripe checkout
             window.location.href = url;
             return;
@@ -937,7 +914,7 @@ export function CheckoutPage() {
                     className="space-y-4"
                   >
                     <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name *</Label>
                         <Input
@@ -1034,7 +1011,7 @@ export function CheckoutPage() {
                         placeholder="Apt 4B"
                       />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="city">City *</Label>
                         <Input
@@ -1211,15 +1188,15 @@ export function CheckoutPage() {
               </AnimatePresence>
 
               {/* Navigation Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8">
+              <div className="flex justify-between mt-8">
                 {currentStep > 1 ? (
-                  <Button variant="outline" onClick={prevStep} className="w-full sm:w-auto">
+                  <Button variant="outline" onClick={prevStep}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
                   </Button>
                 ) : (
-                  <Link to={`/shop/${storeSlug}/cart`} className="w-full sm:w-auto">
-                    <Button variant="outline" className="w-full sm:w-auto">
+                  <Link to={`/shop/${storeSlug}/cart`}>
+                    <Button variant="outline">
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Back to Cart
                     </Button>
@@ -1230,7 +1207,6 @@ export function CheckoutPage() {
                   <Button
                     onClick={nextStep}
                     style={{ backgroundColor: store.primary_color }}
-                    className="w-full sm:w-auto"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -1240,7 +1216,6 @@ export function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={placeOrderMutation.isPending}
                     style={{ backgroundColor: store.primary_color }}
-                    className="w-full sm:w-auto"
                   >
                     {placeOrderMutation.isPending ? (
                       <>
@@ -1478,5 +1453,3 @@ export function CheckoutPage() {
     </div>
   );
 }
-
-export default CheckoutPage;

@@ -3,10 +3,7 @@
  * Reusable empty states for forum pages
  */
 
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Search from "lucide-react/dist/esm/icons/search";
-import FileQuestion from "lucide-react/dist/esm/icons/file-question";
-import Users from "lucide-react/dist/esm/icons/users";
+import { MessageSquare, Search, FileQuestion, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 

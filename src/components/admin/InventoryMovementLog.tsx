@@ -4,13 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import FileDown from "lucide-react/dist/esm/icons/file-down";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowRight, Package, TrendingUp, TrendingDown, RefreshCw, FileDown } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface InventoryMovement {
@@ -151,21 +145,9 @@ export function InventoryMovementLog() {
 
       <div className="space-y-2">
         {isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-3 flex-1">
-                <Skeleton className="w-10 h-10 rounded-full" />
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </div>
-                  <Skeleton className="h-3 w-48" />
-                </div>
-              </div>
-              <Skeleton className="h-5 w-20" />
-            </div>
-          ))
+          <div className="text-center py-8 text-muted-foreground">
+            Loading movements...
+          </div>
         ) : movements.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />

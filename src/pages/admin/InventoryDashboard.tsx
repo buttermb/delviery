@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { queryKeys } from '@/lib/queryKeys';
-import Package from "lucide-react/dist/esm/icons/package";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
+import {
+  Package,
+  Warehouse,
+  Truck,
+  MapPin,
+  AlertTriangle,
+  Plus,
+  ArrowRightLeft,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { triggerHaptic } from '@/lib/utils/mobile';
 
@@ -65,8 +65,7 @@ export default function InventoryDashboard() {
           table: 'products'
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
         }
       )
       .subscribe((status) => {
@@ -83,15 +82,14 @@ export default function InventoryDashboard() {
   const handleManualRefresh = async () => {
     setRefreshing(true);
     triggerHaptic('light');
-    await queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
-    await queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+    await queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
     await new Promise(resolve => setTimeout(resolve, 500));
     setRefreshing(false);
   };
 
   // Fetch inventory summary from products table
   const { data: summary, isLoading: summaryLoading } = useQuery({
-    queryKey: queryKeys.inventory.summary(tenantId),
+    queryKey: ['inventory-summary', tenantId],
     queryFn: async (): Promise<InventorySummary | null> => {
       if (!tenantId) return null;
 
@@ -140,7 +138,7 @@ export default function InventoryDashboard() {
 
   // Fetch locations (warehouses) with product counts
   const { data: locations = [], isLoading: locationsLoading } = useQuery({
-    queryKey: queryKeys.inventory.locations(tenantId),
+    queryKey: ['inventory-locations', tenantId],
     queryFn: async (): Promise<LocationInventory[]> => {
       if (!tenantId) return [];
 
@@ -348,28 +346,7 @@ export default function InventoryDashboard() {
 
           <TabsContent value="locations" className="space-y-4">
             {locationsLoading ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                {[1, 2, 3, 4].map(i => (
-                  <Card key={i} className="border-none shadow-sm p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-20" />
-                      </div>
-                      <Skeleton className="h-8 w-16" />
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-2 w-full" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 pt-3 border-t">
-                      <Skeleton className="h-16 w-full rounded-lg" />
-                      <Skeleton className="h-16 w-full rounded-lg" />
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <div className="text-center py-8">Loading locations...</div>
             ) : locations && locations.length > 0 ? (
               <div className="grid gap-4 md:grid-cols-2">
                 {locations.map((location, index) => {

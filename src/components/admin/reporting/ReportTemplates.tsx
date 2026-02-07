@@ -1,9 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import { LayoutDashboard, BarChart3, TrendingUp, DollarSign } from "lucide-react";
 
 const templates = [
   {

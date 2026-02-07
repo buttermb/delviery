@@ -17,12 +17,7 @@ import {
   Area,
   AreaChart
 } from 'recharts';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Users from "lucide-react/dist/esm/icons/users";
+import { TrendingUp, TrendingDown, Eye, ShoppingCart, DollarSign, Users } from 'lucide-react';
 
 interface AccessLog {
   accessed_at: string;

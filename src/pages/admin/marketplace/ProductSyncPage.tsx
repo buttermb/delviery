@@ -14,16 +14,17 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
-import RefreshCcw from "lucide-react/dist/esm/icons/refresh-ccw";
-import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
+import {
+    RefreshCcw,
+    ArrowRightLeft,
+    AlertCircle,
+    CheckCircle2,
+    Clock,
+    Search,
+    Filter
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
-import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
@@ -142,8 +143,6 @@ export default function ProductSyncPage() {
                 toast.success("Product synced successfully");
                 queryClient.invalidateQueries({ queryKey: ['products-sync'] });
                 queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
-                // Invalidate storefront product caches for instant sync
-                queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
             } else {
                 toast.error(`Sync failed: ${(error as Error).message}`);
             }

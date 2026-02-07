@@ -1,8 +1,5 @@
 import { motion } from 'framer-motion';
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import User from "lucide-react/dist/esm/icons/user";
-import Package from "lucide-react/dist/esm/icons/package";
+import { Truck, Clock, User, Package } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { mockDashboardData } from '../mockDashboardData';

@@ -11,13 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Store from "lucide-react/dist/esm/icons/store";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Users from "lucide-react/dist/esm/icons/users";
-import Coins from "lucide-react/dist/esm/icons/coins";
+import { Loader2, CheckCircle2, ArrowRight, Store, Truck, Users, Coins } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -125,43 +119,6 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         }
     };
 
-    const handleShortcut = async (path: string) => {
-        if (!tenant?.id) return;
-        setLoading(true);
-        try {
-            // Mark onboarding as complete
-            const { error } = await supabase
-                .from("tenants")
-                .update({
-                    onboarding_completed: true,
-                    onboarding_completed_at: new Date().toISOString(),
-                })
-                .eq("id", tenant.id);
-
-            if (error) throw error;
-
-            toast({
-                title: "Setup Saved",
-                description: "Redirecting you now...",
-            });
-
-            onOpenChange(false);
-
-            // Short delay to ensure dialog closes smoothly
-            setTimeout(() => {
-                navigate(path);
-            }, 300);
-
-        } catch (error: any) {
-            logger.error("Failed to save shortcut progress", error, { component: "OnboardingWizard" });
-            // Navigate anyway so user isn't stuck
-            onOpenChange(false);
-            navigate(path);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const nextStep = () => {
         if (step < totalSteps) {
             setStep(step + 1);
@@ -211,11 +168,15 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            handleShortcut(`/${tenant?.slug}/admin/settings`);
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/settings`);
                                         }
                                     }}
                                 >
@@ -226,11 +187,15 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            handleShortcut(`/${tenant?.slug}/admin/settings`);
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/settings`);
                                         }
                                     }}
                                 >
@@ -258,11 +223,15 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            handleShortcut(`/${tenant?.slug}/admin/settings`);
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/settings`);
                                         }
                                     }}
                                 >
@@ -273,11 +242,15 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => handleShortcut(`/${tenant?.slug}/admin/team`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/team`);
+                                    }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
-                                            handleShortcut(`/${tenant?.slug}/admin/team`);
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/team`);
                                         }
                                     }}
                                 >

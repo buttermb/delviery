@@ -13,13 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import Package from "lucide-react/dist/esm/icons/package";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Package, Plus, Edit, Trash2, Mail, Phone, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -87,7 +81,7 @@ export function VendorManagement() {
         .order('name');
 
       if (error) throw error;
-      setVendors((data || []) as unknown as Vendor[]);
+      setVendors((data || []) as Vendor[]);
     } catch (error) {
       handleError(error, {
         component: 'VendorManagement.loadVendors',
@@ -138,7 +132,7 @@ export function VendorManagement() {
           description: 'Vendor updated successfully'
         });
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('vendors')
           .insert({
             ...vendorData,

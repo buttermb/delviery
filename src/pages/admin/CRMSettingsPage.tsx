@@ -15,8 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Save from "lucide-react/dist/esm/icons/save";
+import { Loader2, Save } from "lucide-react";
 import { useCRMSettings, useUpdateCRMSettings } from "@/hooks/crm/useCRMSettings";
 
 const formSchema = z.object({

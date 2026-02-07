@@ -12,16 +12,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Check from "lucide-react/dist/esm/icons/check";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  ArrowLeft,
+  ShoppingCart,
+  Truck,
+  CreditCard,
+  CheckCircle2,
+  MapPin,
+  Calendar,
+  MessageSquare,
+  Check,
+  Loader2
+} from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";
@@ -410,7 +412,7 @@ export default function CheckoutPage() {
                                 className="border-[hsl(var(--customer-border))]"
                               />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="new-city" className="text-[hsl(var(--customer-text))]">City</Label>
                                 <Input
@@ -432,7 +434,7 @@ export default function CheckoutPage() {
                                 />
                               </div>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="new-zip" className="text-[hsl(var(--customer-text))]">ZIP Code</Label>
                                 <Input

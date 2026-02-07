@@ -7,7 +7,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ReviewModerationQueue } from '@/components/reviews/ReviewModerationQueue';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import { MessageSquare } from 'lucide-react';
 
 export default function ReviewsPage() {
     const { tenant } = useTenantAdminAuth();

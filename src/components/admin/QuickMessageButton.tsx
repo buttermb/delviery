@@ -3,10 +3,7 @@
  * Reduces messaging friction from 4-5 clicks to 2-3
  */
 import { useState } from 'react';
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Send from "lucide-react/dist/esm/icons/send";
-import X from "lucide-react/dist/esm/icons/x";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { MessageSquare, Send, X, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {

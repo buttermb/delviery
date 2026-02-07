@@ -11,14 +11,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import X from "lucide-react/dist/esm/icons/x";
-import User from "lucide-react/dist/esm/icons/user";
-import Search from "lucide-react/dist/esm/icons/search";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Leaf from "lucide-react/dist/esm/icons/leaf";
+import {
+  ShoppingCart,
+  Menu,
+  X,
+  User,
+  Search,
+  Clock,
+  AlertTriangle,
+  Leaf
+} from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';
@@ -30,7 +32,6 @@ import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 
 interface StoreInfo {
   id: string;
-  tenant_id: string;
   store_name: string;
   slug: string;
   tagline: string | null;
@@ -205,17 +206,17 @@ export default function ShopLayout() {
       loadCart();
 
       // Listen for cart updates from useShopCart hook
-      const handleCartUpdate = ((event: CustomEvent<{ storeId: string; count: number }>) => {
+      const handleCartUpdate = (event: CustomEvent) => {
         if (event.detail?.storeId === store.id && typeof event.detail?.count === 'number') {
           setCartItemCount(event.detail.count);
         } else {
           // Fallback: reload from localStorage
           loadCart();
         }
-      }) as EventListener;
+      };
 
-      window.addEventListener('cartUpdated', handleCartUpdate);
-      return () => window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
+      return () => window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
     }
   }, [store?.id]);
 
@@ -489,12 +490,6 @@ export default function ShopLayout() {
                 >
                   Products
                 </Link>
-                <Link
-                  to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
-                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
-                >
-                  Deals
-                </Link>
                 {!isStoreOpen() && !isPreviewMode && (
                   <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800'}>
                     <Clock className="w-3 h-3 mr-1" />
@@ -553,13 +548,6 @@ export default function ShopLayout() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Products
-                  </Link>
-                  <Link
-                    to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
-                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Deals & Promos
                   </Link>
                   {!isPreviewMode && (
                     <>

@@ -5,21 +5,12 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import { ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
-import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
-import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
-import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
-import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { Tenant } from "@/types/tenant-extended";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { AuthErrorAlert, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 
 export default function CustomerSignUpPage() {
   const navigate = useNavigate();
@@ -44,14 +35,6 @@ export default function CustomerSignUpPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
-  const [signupError, setSignupError] = useState<string | null>(null);
-  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
-    storageKey: 'floraiq_customer_signup_rate_limit',
-  });
-  const { validateToken } = useCsrfToken();
-
-  // Password breach checking
-  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(formData.password);
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -76,34 +59,31 @@ export default function CustomerSignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSignupError(null);
-
-    if (!validateToken()) {
-      setSignupError("Invalid security token. Please refresh the page and try again.");
-      return;
-    }
-
-    if (isLocked) {
-      return;
-    }
 
     if (!tenantSlug) {
-      setSignupError("Store information is missing. Please check the URL and try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Tenant slug is required",
+      });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setSignupError("Passwords do not match. Please ensure both password fields are identical.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Passwords do not match",
+      });
       return;
     }
 
     if (formData.password.length < 8) {
-      setSignupError("Password must be at least 8 characters long.");
-      return;
-    }
-
-    if (breachResult?.blocked) {
-      setSignupError("This password has been found in data breaches. Please choose a different, more secure password.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Password must be at least 8 characters",
+      });
       return;
     }
 
@@ -135,8 +115,6 @@ export default function CustomerSignUpPage() {
 
       const result = await response.json();
 
-      resetOnSuccess();
-
       toast({
         title: "Account created!",
         description: result.message || "Please check your email to verify your account",
@@ -145,10 +123,12 @@ export default function CustomerSignUpPage() {
       // Redirect to verification page
       navigate(`/${tenantSlug}/customer/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error: unknown) {
-      recordAttempt();
       logger.error("Customer signup error", error, { component: "CustomerSignUpPage" });
-      const errorMessage = getAuthErrorMessage(error, "Signup failed. Please try again.");
-      setSignupError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: error instanceof Error ? error.message : "Please try again",
+      });
     } finally {
       setLoading(false);
     }
@@ -226,15 +206,7 @@ export default function CustomerSignUpPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
-            <AuthErrorAlert
-              message={signupError || ''}
-              type="error"
-              variant="dark"
-              className="mb-2"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-medium text-slate-200">
                   First Name
@@ -324,8 +296,9 @@ export default function CustomerSignUpPage() {
               <Label htmlFor="password" className="text-sm font-medium text-slate-200">
                 Password
               </Label>
-              <PasswordInput
+              <Input
                 id="password"
+                type="password"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -336,22 +309,15 @@ export default function CustomerSignUpPage() {
                 className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               <PasswordStrengthIndicator password={formData.password} />
-              {formData.password.length >= 8 && (
-                <PasswordBreachWarning
-                  checking={breachChecking}
-                  result={breachResult}
-                  suggestPassword={suggestPassword}
-                  onGeneratePassword={(pw) => setFormData({ ...formData, password: pw, confirmPassword: pw })}
-                />
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-200">
                 Confirm Password
               </Label>
-              <PasswordInput
+              <Input
                 id="confirmPassword"
+                type="password"
                 placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -365,7 +331,7 @@ export default function CustomerSignUpPage() {
 
             <Button
               type="submit"
-              disabled={loading || isLocked}
+              disabled={loading}
               className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
             >
               {loading ? (

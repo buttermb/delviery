@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -21,23 +21,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Users from "lucide-react/dist/esm/icons/users";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Award from "lucide-react/dist/esm/icons/award";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import UserCircle from "lucide-react/dist/esm/icons/user-circle";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Download from "lucide-react/dist/esm/icons/download";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Trash from "lucide-react/dist/esm/icons/trash";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-import Edit from "lucide-react/dist/esm/icons/edit";
+import {
+  Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar, Lock
+} from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";
@@ -45,14 +32,16 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { SwipeableItem } from "@/components/mobile/SwipeableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
 import { VirtualList } from "@/components/ui/virtual-list";
+import { useSwipeBack, useLongPress } from "@/hooks/useGestures";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import CopyButton from "@/components/CopyButton";
 
 interface Customer {
   id: string;
@@ -88,7 +77,7 @@ export default function CustomerManagement() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { tenant, loading: accountLoading } = useTenantAdminAuth();
+  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,14 +91,22 @@ export default function CustomerManagement() {
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
-  const loadCustomers = useCallback(async () => {
+  useEffect(() => {
+    if (tenant && !accountLoading) {
+      loadCustomers();
+    } else if (!accountLoading && !tenant) {
+      setLoading(false);
+    }
+  }, [tenant, accountLoading, filterType, filterStatus]);
+
+  const loadCustomers = async () => {
     if (!tenant) return;
 
     try {
       setLoading(true);
       let query = supabase
         .from("customers")
-        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
+        .select("*")
         .eq("tenant_id", tenant.id)
         .is("deleted_at", null); // Exclude soft-deleted customers
 
@@ -126,8 +123,8 @@ export default function CustomerManagement() {
       if (error) throw error;
 
       // Decrypt customer data if encryption is ready and encrypted fields exist
-      let decryptedCustomers: Customer[] = data || [];
-      if (encryptionIsReady && data && data.length > 0 && ((data[0] as Record<string, unknown>).phone_encrypted || (data[0] as Record<string, unknown>).email_encrypted)) {
+      let decryptedCustomers = data || [];
+      if (encryptionIsReady && data && data.length > 0 && (data[0].phone_encrypted || data[0].email_encrypted)) {
         try {
           decryptedCustomers = data.map((customer: Record<string, unknown>) => {
             try {
@@ -140,7 +137,7 @@ export default function CustomerManagement() {
                 last_name: nameParts.slice(1).join(' ') || customer.last_name || '',
                 email: decrypted.email || customer.email || null,
                 phone: decrypted.phone || customer.phone || null,
-              } as Customer;
+              };
             } catch (decryptError) {
               // Decryption failed - check if data looks encrypted (key mismatch)
               logger.warn('Failed to decrypt customer, checking for encryption key mismatch', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement' });
@@ -155,7 +152,7 @@ export default function CustomerManagement() {
                 email: hasEncryptedData && looksLikeEncryptedData(emailValue) ? null : emailValue,
                 phone: hasEncryptedData && looksLikeEncryptedData(phoneValue) ? null : phoneValue,
                 _encryptedIndicator: hasEncryptedData,
-              } as Customer;
+              };
             }
           });
         } catch (error) {
@@ -175,9 +172,9 @@ export default function CustomerManagement() {
               email: looksLikeEncryptedData(emailValue) ? null : emailValue,
               phone: looksLikeEncryptedData(phoneValue) ? null : phoneValue,
               _encryptedIndicator: true,
-            } as Customer;
+            };
           }
-          return customer as unknown as Customer;
+          return customer;
         });
       }
 
@@ -191,23 +188,15 @@ export default function CustomerManagement() {
     } finally {
       setLoading(false);
     }
-  }, [tenant, encryptionIsReady, filterType, filterStatus, decryptObject]);
+  };
 
-  useEffect(() => {
-    if (tenant && !accountLoading) {
-      loadCustomers();
-    } else if (!accountLoading && !tenant) {
-      setLoading(false);
-    }
-  }, [tenant, accountLoading, filterType, filterStatus, loadCustomers]);
-
-  const handleDeleteClick = useCallback((customerId: string, customerName: string) => {
+  const handleDeleteClick = (customerId: string, customerName: string) => {
     triggerHaptic('medium');
     setCustomerToDelete({ id: customerId, name: customerName });
     setDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const handleDelete = useCallback(async () => {
+  const handleDelete = async () => {
     if (!customerToDelete || !tenant) return;
 
     try {
@@ -260,27 +249,9 @@ export default function CustomerManagement() {
     } finally {
       setIsDeleting(false);
     }
-  }, [customerToDelete, tenant, loadCustomers]);
+  };
 
-  const handleSelectChange = useCallback((customerId: string, isChecked: boolean) => {
-    if (isChecked) {
-      setSelectedCustomers(prev => [...prev, customerId]);
-    } else {
-      setSelectedCustomers(prev => prev.filter(id => id !== customerId));
-    }
-  }, []);
-
-  const filteredCustomers = customers.filter((customer) => {
-    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
-    const search = searchTerm.toLowerCase();
-    return (
-      fullName.includes(search) ||
-      customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.includes(search)
-    );
-  });
-
-  const handleExport = useCallback(() => {
+  const handleExport = () => {
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
@@ -301,10 +272,21 @@ export default function CustomerManagement() {
     a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     toast.success("Customer data exported");
-  }, [filteredCustomers]);
+  };
+
+  const filteredCustomers = customers.filter((customer) => {
+    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return (
+      fullName.includes(search) ||
+      customer.email?.toLowerCase().includes(search) ||
+      customer.phone?.includes(search)
+    );
+  });
 
   // Use standardized pagination
   const {
+    paginatedItems: paginatedCustomers,
     currentPage,
     pageSize,
     totalPages,
@@ -512,78 +494,67 @@ export default function CustomerManagement() {
         </CardContent>
       </Card>
 
-      {/* Customer Table (Desktop) - Virtual Scrolling */}
+      {/* Customer Table (Desktop) */}
       <Card className="hidden md:block border-none shadow-md">
         <CardContent className="p-0">
-          {filteredCustomers.length === 0 ? (
-            <EnhancedEmptyState
-              icon={Users}
-              title={searchTerm ? "No Customers Found" : "No Customers Yet"}
-              description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
-              primaryAction={!searchTerm ? {
-                label: "Add Your First Customer",
-                onClick: () => navigateToAdmin('customers/new'),
-                icon: Plus
-              } : undefined}
-            />
-          ) : (
-            <div className="overflow-hidden">
-              {/* Header with select all checkbox */}
-              <div className="flex bg-muted/50 border-b sticky top-0 z-10">
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '60px' }}>
-                  <input
-                    type="checkbox"
-                    className="rounded"
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedCustomers(filteredCustomers.map(c => c.id));
-                      } else {
-                        setSelectedCustomers([]);
-                      }
-                    }}
-                  />
-                </div>
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider flex-1">
-                  Customer
-                </div>
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '140px' }}>
-                  Type
-                </div>
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '120px' }}>
-                  Total Spent
-                </div>
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '100px' }}>
-                  Points
-                </div>
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '140px' }}>
-                  Last Order
-                </div>
-                <div className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '120px' }}>
-                  Status
-                </div>
-                <div className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: '100px' }}>
-                  Actions
-                </div>
-              </div>
-
-              {/* Virtual scrolling list */}
-              <VirtualList
-                items={filteredCustomers}
-                itemHeight={73}
-                containerHeight={600}
-                overscan={5}
-                keyExtractor={(customer) => customer.id}
-                renderItem={(customer) => (
-                  <div className="flex items-center border-b hover:bg-muted/50 transition-colors h-full">
-                    <div className="px-6 py-4" style={{ width: '60px' }}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      className="rounded"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCustomers(paginatedCustomers.map(c => c.id));
+                        } else {
+                          setSelectedCustomers([]);
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Total Spent
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Points
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Last Order
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-background divide-y divide-border">
+                {paginatedCustomers.map((customer) => (
+                  <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
+                    <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         className="rounded"
                         checked={selectedCustomers.includes(customer.id)}
-                        onChange={(e) => handleSelectChange(customer.id, e.target.checked)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCustomers([...selectedCustomers, customer.id]);
+                          } else {
+                            setSelectedCustomers(selectedCustomers.filter(id => id !== customer.id));
+                          }
+                        }}
                       />
-                    </div>
-                    <div className="px-6 py-4 flex-1">
+                    </td>
+                    <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                           {customer.first_name?.[0]}{customer.last_name?.[0]}
@@ -599,35 +570,40 @@ export default function CustomerManagement() {
                                 <span className="italic">Encrypted</span>
                               </span>
                             ) : (
-                              customer.email || customer.phone || 'No contact'
+                              <>
+                                {customer.email || customer.phone || 'No contact'}
+                                {customer.email && (
+                                  <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="px-6 py-4" style={{ width: '140px' }}>
+                    </td>
+                    <td className="px-6 py-4">
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
                         {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
                       </Badge>
-                    </div>
-                    <div className="px-6 py-4 text-sm font-semibold" style={{ width: '120px' }}>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-semibold">
                       ${customer.total_spent?.toFixed(2) || '0.00'}
-                    </div>
-                    <div className="px-6 py-4 text-sm" style={{ width: '100px' }}>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
                       <span className="flex items-center gap-1">
                         <Award className="w-4 h-4 text-yellow-600" />
                         {customer.loyalty_points || 0}
                       </span>
-                    </div>
-                    <div className="px-6 py-4 text-sm text-muted-foreground" style={{ width: '140px' }}>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
                       {customer.last_purchase_at
                         ? new Date(customer.last_purchase_at).toLocaleDateString()
                         : 'Never'}
-                    </div>
-                    <div className="px-6 py-4" style={{ width: '120px' }}>
+                    </td>
+                    <td className="px-6 py-4">
                       {getCustomerStatus(customer)}
-                    </div>
-                    <div className="px-6 py-4 text-right" style={{ width: '100px' }}>
+                    </td>
+                    <td className="px-6 py-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
@@ -656,20 +632,13 @@ export default function CustomerManagement() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </div>
-                  </div>
-                )}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-      {/* Mobile Swipeable List View - Virtual Scrolling */}
-      <Card className="md:hidden border-none shadow-sm">
-        <CardContent className="p-0">
-          {filteredCustomers.length === 0 ? (
-            <div className="p-4">
+            {filteredCustomers.length === 0 && (
               <EnhancedEmptyState
                 icon={Users}
                 title={searchTerm ? "No Customers Found" : "No Customers Yet"}
@@ -680,81 +649,90 @@ export default function CustomerManagement() {
                   icon: Plus
                 } : undefined}
               />
-            </div>
-          ) : (
-            <VirtualList
-              items={filteredCustomers}
-              itemHeight={120}
-              containerHeight={600}
-              overscan={3}
-              keyExtractor={(customer) => customer.id}
-              className="p-3"
-              renderItem={(customer) => (
-                <div className="mb-3">
-                  <SwipeableItem
-                    leftAction={{
-                      icon: <Trash className="h-5 w-5" />,
-                      color: 'bg-red-500',
-                      label: 'Delete',
-                      onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
-                    }}
-                    rightAction={{
-                      icon: <Eye className="h-5 w-5" />,
-                      color: 'bg-blue-500',
-                      label: 'View',
-                      onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
-                    }}
-                  >
-                    <div
-                      className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
-                      onClick={() => {
-                        triggerHaptic('light');
-                        setSelectedCustomerForDrawer(customer);
-                      }}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
-                            {customer.first_name?.[0]}{customer.last_name?.[0]}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-base truncate">
-                              {customer.first_name} {customer.last_name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {customer._encryptedIndicator ? (
-                                <span className="flex items-center gap-1 text-amber-600">
-                                  <Lock className="w-3 h-3" />
-                                  <span className="italic">Encrypted</span>
-                                </span>
-                              ) : (
-                                customer.email || customer.phone || 'No contact'
-                              )}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
-                                {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
-                              </Badge>
-                              {getCustomerStatus(customer)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
-                          <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Award className="w-3 h-3 text-yellow-600" />
-                            {customer.loyalty_points || 0}
-                          </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mobile Swipeable List View */}
+      <div className="md:hidden space-y-3">
+        {filteredCustomers.length === 0 ? (
+          <EnhancedEmptyState
+            icon={Users}
+            title={searchTerm ? "No Customers Found" : "No Customers Yet"}
+            description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
+            primaryAction={!searchTerm ? {
+              label: "Add Your First Customer",
+              onClick: () => navigateToAdmin('customers/new'),
+              icon: Plus
+            } : undefined}
+          />
+        ) : (
+          <AnimatePresence>
+            {filteredCustomers.map((customer) => (
+              <SwipeableItem
+                key={customer.id}
+                leftAction={{
+                  icon: <Trash className="h-5 w-5" />,
+                  color: 'bg-red-500',
+                  label: 'Delete',
+                  onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
+                }}
+                rightAction={{
+                  icon: <Eye className="h-5 w-5" />,
+                  color: 'bg-blue-500',
+                  label: 'View',
+                  onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
+                }}
+              >
+                <div
+                  className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setSelectedCustomerForDrawer(customer);
+                  }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+                        {customer.first_name?.[0]}{customer.last_name?.[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">
+                          {customer.first_name} {customer.last_name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {customer._encryptedIndicator ? (
+                            <span className="flex items-center gap-1 text-amber-600">
+                              <Lock className="w-3 h-3" />
+                              <span className="italic">Encrypted</span>
+                            </span>
+                          ) : (
+                            customer.email || customer.phone || 'No contact'
+                          )}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
+                            {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
+                          </Badge>
+                          {getCustomerStatus(customer)}
                         </div>
                       </div>
                     </div>
-                  </SwipeableItem>
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Award className="w-3 h-3 text-yellow-600" />
+                        {customer.loyalty_points || 0}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-            />
-          )}
-        </CardContent>
-      </Card>
+              </SwipeableItem>
+            ))}
+          </AnimatePresence>
+        )}
+      </div>
 
       {/* Pagination */}
       {filteredCustomers.length > 0 && (

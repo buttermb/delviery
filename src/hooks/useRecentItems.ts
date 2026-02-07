@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
-import { STORAGE_KEYS, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
-import { safeStorage } from '@/utils/safeStorage';
 
 export interface RecentItem {
     id: string;
@@ -13,41 +11,19 @@ export interface RecentItem {
 }
 
 const MAX_ITEMS = 10;
+const STORAGE_KEY = 'admin-recent-items';
 
-/**
- * Hook for tracking recently used items with localStorage persistence
- * - Limits to 10 items maximum
- * - Syncs across browser tabs via storage event
- * - Uses safe storage utilities to handle incognito/private mode
- */
 export function useRecentItems() {
     const [items, setItems] = useState<RecentItem[]>([]);
 
-    // Load items from localStorage on mount
     useEffect(() => {
-        const stored = safeStorage.getItem(STORAGE_KEYS.RECENTLY_USED_ITEMS);
+        const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            const parsed = safeJsonParse<RecentItem[]>(stored, []);
-            // Ensure we never exceed MAX_ITEMS limit
-            setItems(parsed.slice(0, MAX_ITEMS));
-        }
-    }, []);
-
-    // Sync across tabs using storage event
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === STORAGE_KEYS.RECENTLY_USED_ITEMS && e.newValue) {
-                const parsed = safeJsonParse<RecentItem[]>(e.newValue, []);
-                setItems(parsed.slice(0, MAX_ITEMS));
-            } else if (e.key === STORAGE_KEYS.RECENTLY_USED_ITEMS && e.newValue === null) {
-                // Storage was cleared in another tab
-                setItems([]);
+            try {
+                setItems(JSON.parse(stored));
+            } catch (e) {
+                logger.error('Failed to parse recent items', e instanceof Error ? e : new Error(String(e)), { component: 'useRecentItems' });
             }
-        };
-
-        if (typeof window !== 'undefined') {
-            window.addEventListener('storage', handleStorageChange);
-            return () => window.removeEventListener('storage', handleStorageChange);
         }
     }, []);
 
@@ -56,24 +32,17 @@ export function useRecentItems() {
             const newItem = { ...item, timestamp: Date.now() };
             // Remove duplicates (by id and type)
             const filtered = prev.filter(i => !(i.id === item.id && i.type === item.type));
-            // Add to top and limit to MAX_ITEMS (10)
+            // Add to top
             const updated = [newItem, ...filtered].slice(0, MAX_ITEMS);
 
-            // Persist to localStorage
-            const json = safeJsonStringify(updated);
-            if (json) {
-                safeStorage.setItem(STORAGE_KEYS.RECENTLY_USED_ITEMS, json);
-            } else {
-                logger.warn('Failed to stringify recent items for storage', { component: 'useRecentItems' });
-            }
-
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
             return updated;
         });
     }, []);
 
     const clearRecentItems = useCallback(() => {
         setItems([]);
-        safeStorage.removeItem(STORAGE_KEYS.RECENTLY_USED_ITEMS);
+        localStorage.removeItem(STORAGE_KEY);
     }, []);
 
     return {

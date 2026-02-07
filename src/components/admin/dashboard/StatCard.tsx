@@ -2,12 +2,10 @@
  * Stat Card Component - Modern dashboard stat card
  */
 
-import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
-import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
-import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
+import { ArrowUp, ArrowDown } from 'lucide-react';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 
 interface StatCardProps {
@@ -43,7 +41,7 @@ const iconColors = {
   purple: 'text-purple-500 dark:text-purple-400 bg-purple-500/10',
 };
 
-export const StatCard = React.memo(function StatCard({
+export function StatCard({
   title,
   value,
   change,
@@ -124,5 +122,5 @@ export const StatCard = React.memo(function StatCard({
   }
 
   return cardContent;
-});
+}
 

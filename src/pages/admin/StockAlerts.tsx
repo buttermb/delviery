@@ -5,136 +5,78 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import PackagePlus from "lucide-react/dist/esm/icons/package-plus";
-import X from "lucide-react/dist/esm/icons/x";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import { AlertTriangle, TrendingDown, CheckCircle, PackagePlus, X, RefreshCw } from 'lucide-react';
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
+import { useState } from 'react';
 
 interface StockAlert {
   id: string;
-  product_id: string;
   product_name: string;
   current_quantity: number;
   threshold: number;
-  severity: 'critical' | 'warning' | 'info';
-  status: 'active' | 'acknowledged' | 'resolved';
+  severity: 'critical' | 'warning';
   created_at: string;
-  updated_at: string;
 }
 
-export function StockAlerts() {
+export default function StockAlerts() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   const { data: alerts, isLoading, refetch } = useQuery({
-    queryKey: queryKeys.stockAlerts.active(tenantId),
-    queryFn: async (): Promise<StockAlert[]> => {
+    queryKey: ['stock-alerts', tenantId],
+    queryFn: async () => {
       if (!tenantId) return [];
 
-      // Query the stock_alerts table for active alerts
-      const { data, error } = await (supabase as any)
-        .from('stock_alerts')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+      try {
+        // Try stock_alerts table first
+        const { data, error } = await supabase
+          .from('stock_alerts' as any)
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        // If table doesn't exist yet, fall back to products-based calculation
-        if (error.code === '42P01') {
-          logger.warn('stock_alerts table not found, falling back to products query');
-          return await fetchAlertsFromProducts(tenantId);
-        }
-        throw error;
-      }
-
-      return (data || []) as StockAlert[];
-    },
-    enabled: !!tenantId,
-  });
-
-  // Fallback function to calculate alerts from products table
-  async function fetchAlertsFromProducts(tid: string): Promise<StockAlert[]> {
-    const { data: products, error: prodError } = await (supabase as any)
-      .from('products')
-      .select('id, name, stock_quantity, available_quantity, low_stock_alert, created_at')
-      .eq('tenant_id', tid);
-
-    if (prodError) {
-      if (prodError.code === '42P01') return [];
-      throw prodError;
-    }
-
-    return (products || [])
-      .filter((item) => {
-        const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
-        const threshold = item.low_stock_alert ?? 10;
-        return quantity <= threshold;
-      })
-      .map((item) => {
-        const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
-        const threshold = item.low_stock_alert ?? 10;
-        let severity: 'critical' | 'warning' | 'info' = 'warning';
-        if (quantity <= 0 || quantity <= threshold * 0.5) {
-          severity = 'critical';
-        }
-        return {
-          id: item.id,
-          product_id: item.id,
-          product_name: item.name || 'Unknown',
-          current_quantity: quantity,
-          threshold: threshold,
-          severity,
-          status: 'active' as const,
-          created_at: item.updated_at || item.created_at,
-          updated_at: item.updated_at || item.created_at,
-        };
-      });
-  }
-
-  // Mutation to acknowledge an alert
-  const acknowledgeMutation = useMutation({
-    mutationFn: async (alertId: string) => {
-      const { data, error } = await (supabase as any).rpc('acknowledge_stock_alert', {
-        p_alert_id: alertId,
-      });
-
-      if (error) {
-        // Fallback: try direct update if RPC doesn't exist
-        if (error.code === '42883') {
-          const { error: updateError } = await (supabase as any)
-            .from('stock_alerts')
-            .update({
-              status: 'acknowledged',
-              acknowledged_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', alertId)
+        if (error && error.code === '42P01') {
+          // Table doesn't exist, calculate from products table
+          const { data: products, error: prodError } = await supabase
+            .from('products')
+            .select('id, name, stock_quantity, available_quantity, low_stock_alert, updated_at, created_at')
             .eq('tenant_id', tenantId);
 
-          if (updateError) throw updateError;
-          return { id: alertId, status: 'acknowledged' };
+          if (prodError && prodError.code === '42P01') return [];
+          if (prodError) throw prodError;
+
+          // Generate alerts from products
+          return (products || [])
+            .filter((item: any) => {
+              const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
+              const threshold = item.low_stock_alert ?? 10;
+              return quantity <= threshold;
+            })
+            .map((item: any) => {
+              const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
+              const threshold = item.low_stock_alert ?? 10;
+              return {
+                id: item.id,
+                product_name: item.name || 'Unknown',
+                current_quantity: quantity,
+                threshold: threshold,
+                severity: quantity <= threshold * 0.5 ? 'critical' : 'warning',
+                created_at: item.updated_at || item.created_at,
+              } as StockAlert;
+            });
         }
+        if (error) throw error;
+        return (data || []) as unknown as StockAlert[];
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
-      return data;
     },
-    onSuccess: () => {
-      toast.success('Alert acknowledged');
-      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
-    },
-    onError: (error) => {
-      toast.error('Failed to acknowledge alert');
-      logger.error('Acknowledge error', error);
-    },
+    enabled: !!tenantId,
   });
 
   // Mutation to mark item as restocked (increase stock)
@@ -154,7 +96,7 @@ export function StockAlerts() {
       const currentQty = product.available_quantity ?? product.stock_quantity ?? 0;
       const newQty = currentQty + addQuantity;
 
-      // Update stock - this will trigger the stock alert update automatically
+      // Update stock
       const { error: updateError } = await supabase
         .from('products')
         .update({
@@ -170,9 +112,8 @@ export function StockAlerts() {
     },
     onSuccess: (data) => {
       toast.success(`Stock updated to ${data.newQty} units`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (error) => {
       toast.error('Failed to update stock');
@@ -180,18 +121,20 @@ export function StockAlerts() {
     }
   });
 
+  // Dismiss an alert (client-side only, lasts until refresh)
+  const handleDismiss = (alertId: string) => {
+    setDismissedIds(prev => new Set([...prev, alertId]));
+    toast.info('Alert dismissed until next refresh');
+  };
+
   // Quick restock - adds threshold amount to current stock
   const handleQuickRestock = (alert: StockAlert) => {
     const addAmount = Math.max(alert.threshold * 2, 10); // Add double threshold or minimum 10
-    restockMutation.mutate({ productId: alert.product_id, addQuantity: addAmount });
+    restockMutation.mutate({ productId: alert.id, addQuantity: addAmount });
   };
 
-  // Acknowledge alert
-  const handleAcknowledge = (alertId: string) => {
-    acknowledgeMutation.mutate(alertId);
-  };
-
-  const visibleAlerts = alerts || [];
+  // Filter out dismissed alerts
+  const visibleAlerts = alerts?.filter(a => !dismissedIds.has(a.id)) || [];
   const criticalAlerts = visibleAlerts.filter(a => a.severity === 'critical').length;
   const warningAlerts = visibleAlerts.filter(a => a.severity === 'warning').length;
 
@@ -284,7 +227,7 @@ export function StockAlerts() {
                       {alert.severity}
                     </Badge>
 
-                    {/* Quick Restock Button */}
+                    {/* Action Buttons */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -296,16 +239,14 @@ export function StockAlerts() {
                       Restock
                     </Button>
 
-                    {/* Acknowledge Button */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleAcknowledge(alert.id)}
-                      disabled={acknowledgeMutation.isPending}
+                      onClick={() => handleDismiss(alert.id)}
                       className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                      title="Acknowledge alert"
+                      title="Dismiss alert"
                     >
-                      <CheckCheck className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -320,8 +261,12 @@ export function StockAlerts() {
           )}
         </CardContent>
       </Card>
+
+      {dismissedIds.size > 0 && (
+        <p className="text-xs text-muted-foreground text-center">
+          {dismissedIds.size} alert(s) dismissed. <button onClick={() => setDismissedIds(new Set())} className="text-primary hover:underline">Show all</button>
+        </p>
+      )}
     </div>
   );
 }
-
-export default StockAlerts;

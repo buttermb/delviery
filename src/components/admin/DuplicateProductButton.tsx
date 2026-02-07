@@ -5,9 +5,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Check from "lucide-react/dist/esm/icons/check";
+import { Copy, Loader2, Check } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,

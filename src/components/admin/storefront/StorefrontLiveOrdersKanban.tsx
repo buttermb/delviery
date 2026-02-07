@@ -9,16 +9,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Store from "lucide-react/dist/esm/icons/store";
+import {
+    Clock,
+    Package,
+    Truck,
+    User,
+    Phone,
+    ChevronRight,
+    Bell,
+    MessageSquare,
+    Loader2,
+    Store,
+} from 'lucide-react';
 
 // Types
 interface StorefrontOrder {
@@ -44,8 +46,6 @@ interface StorefrontKanbanProps {
     onViewDetails: (orderId: string) => void;
     onNotifyCustomer?: (orderId: string, phone: string, email?: string) => Promise<boolean>;
     isLoading?: boolean;
-    /** ID of order currently being updated (for loading state) */
-    updatingOrderId?: string | null;
 }
 
 // Column Configuration
@@ -125,14 +125,12 @@ function KanbanCard({
     onStatusChange,
     onViewDetails,
     onNotifyCustomer,
-    isUpdating,
 }: {
     order: StorefrontOrder;
     column: typeof COLUMNS[0];
     onStatusChange: StorefrontKanbanProps['onStatusChange'];
     onViewDetails: StorefrontKanbanProps['onViewDetails'];
     onNotifyCustomer?: StorefrontKanbanProps['onNotifyCustomer'];
-    isUpdating?: boolean;
 }) {
     const items = Array.isArray(order.items) ? order.items : [];
     const itemCount = items.length;
@@ -275,22 +273,12 @@ function KanbanCard({
                             e.stopPropagation();
                             onStatusChange(order.id, column.nextStatus!);
                         }}
-                        disabled={isUpdating}
                     >
-                        {isUpdating ? (
-                            <>
-                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                Updating...
-                            </>
-                        ) : (
-                            <>
-                                {column.nextStatus === 'preparing' && 'Start Preparing'}
-                                {column.nextStatus === 'ready' && 'Mark Ready'}
-                                {column.nextStatus === 'out_for_delivery' && 'Out for Delivery'}
-                                {column.nextStatus === 'delivered' && 'Mark Delivered'}
-                                <ChevronRight className="h-3 w-3 ml-1" />
-                            </>
-                        )}
+                        {column.nextStatus === 'preparing' && 'Start Preparing'}
+                        {column.nextStatus === 'ready' && 'Mark Ready'}
+                        {column.nextStatus === 'out_for_delivery' && 'Out for Delivery'}
+                        {column.nextStatus === 'delivered' && 'Mark Delivered'}
+                        <ChevronRight className="h-3 w-3 ml-1" />
                     </Button>
                 )}
             </CardContent>
@@ -305,7 +293,6 @@ export function StorefrontLiveOrdersKanban({
     onViewDetails,
     onNotifyCustomer,
     isLoading,
-    updatingOrderId,
 }: StorefrontKanbanProps) {
     // Group orders by column
     const ordersByColumn = useMemo(() => {
@@ -344,7 +331,7 @@ export function StorefrontLiveOrdersKanban({
                     <div
                         key={column.id}
                         className={cn(
-                            'rounded-lg p-4 min-h-[400px] flex flex-col',
+                            'rounded-lg p-4 min-h-[400px]',
                             column.color
                         )}
                     >
@@ -360,8 +347,8 @@ export function StorefrontLiveOrdersKanban({
                             </div>
                         </div>
 
-                        {/* Orders - scrollable container */}
-                        <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
+                        {/* Orders */}
+                        <div className="space-y-3">
                             {columnOrders.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground text-sm">
                                     No orders
@@ -375,7 +362,6 @@ export function StorefrontLiveOrdersKanban({
                                         onStatusChange={onStatusChange}
                                         onViewDetails={onViewDetails}
                                         onNotifyCustomer={onNotifyCustomer}
-                                        isUpdating={updatingOrderId === order.id}
                                     />
                                 ))
                             )}

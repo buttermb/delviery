@@ -12,19 +12,10 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import User from "lucide-react/dist/esm/icons/user";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Star from "lucide-react/dist/esm/icons/star";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Shield from "lucide-react/dist/esm/icons/shield";
+import {
+  ArrowLeft, User, Mail, Phone, MapPin, Calendar,
+  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare, Shield
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,7 +27,6 @@ import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoicesTab';
 
 interface Customer {
   id: string;
@@ -338,7 +328,6 @@ export default function CustomerDetails() {
             <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))]">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="orders">Purchase History</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="communications">Communications</TabsTrigger>
               <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
               <TabsTrigger value="medical">Medical Info</TabsTrigger>
@@ -515,16 +504,6 @@ export default function CustomerDetails() {
                 </CardContent>
               </Card>
             </TabsContent>
-
-            {/* Invoices Tab */}
-            {customer && (
-              <TabsContent value="invoices">
-                <CustomerInvoicesTab
-                  customerId={customer.id}
-                  onCreateInvoice={() => navigateToAdmin(`customers/${id}/invoices`)}
-                />
-              </TabsContent>
-            )}
 
             {/* Communications Tab */}
             {tenantId && customer && (

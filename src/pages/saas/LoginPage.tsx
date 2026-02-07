@@ -13,13 +13,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { resilientFetch, ErrorCategory, getErrorMessage, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
 import { authFlowLogger, AuthFlowStep, AuthAction } from '@/lib/utils/authFlowLogger';
-import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
 import {
   Form,
   FormControl,
@@ -30,41 +28,16 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Wand2 from "lucide-react/dist/esm/icons/wand-2";
-import Flower2 from "lucide-react/dist/esm/icons/flower-2";
-import Leaf from "lucide-react/dist/esm/icons/leaf";
-import Star from "lucide-react/dist/esm/icons/star";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
+import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2, Flower2, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
-import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
-import { useAuthRateLimit } from '@/hooks/useAuthRateLimit';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import ThemeToggle from '@/components/ThemeToggle';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloraIQLogo from '@/components/FloraIQLogo';
-import { useCsrfToken } from '@/hooks/useCsrfToken';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -80,17 +53,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
-  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
-    storageKey: 'floraiq_saas_login_rate_limit',
-  });
-  const { validateToken } = useCsrfToken();
-
-  // Forgot password state
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  const [isSendingReset, setIsSendingReset] = useState(false);
-  const [resetEmailSent, setResetEmailSent] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
 
   // Monitor connection status
   useEffect(() => {
@@ -121,59 +83,12 @@ export default function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
-      rememberMe: false,
     },
   });
 
-  const handleForgotPassword = async () => {
-    if (!forgotPasswordEmail || !forgotPasswordEmail.includes('@')) {
-      toast({
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSendingReset(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail.toLowerCase().trim(), {
-        redirectTo: `${window.location.origin}/saas/reset-password`,
-      });
-
-      if (error) throw error;
-
-      setResetEmailSent(true);
-      toast({
-        title: 'Reset Email Sent',
-        description: 'Check your inbox for password reset instructions.',
-      });
-    } catch (error: any) {
-      logger.error('Password reset error', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to send reset email. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSendingReset(false);
-    }
-  };
-
   const onSubmit = async (data: LoginFormData) => {
-    setLoginError(null);
-
-    if (!validateToken()) {
-      setLoginError('Invalid security token. Please refresh the page and try again.');
-      return;
-    }
-
-    if (isLocked) {
-      return;
-    }
-
     if (isOffline()) {
-      setLoginError('No internet connection. Please check your connection and try again.');
+      toast({ title: 'No Internet Connection', description: 'Please check your connection.', variant: 'destructive' });
       return;
     }
 
@@ -192,14 +107,34 @@ export default function LoginPage() {
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
 
-    // Clear any other auth-related keys (pattern-based cleanup) - REMOVED to prevent Supabase session loss
-    // We only clear tenant-specific data above to ensure clean state for the new tenant
+    // Clear Supabase-specific tokens that may cause conflicts
+    localStorage.removeItem('sb-access-token');
+    localStorage.removeItem('sb-refresh-token');
+    localStorage.removeItem('supabase.auth.token');
+
+    // Clear any other auth-related keys (pattern-based cleanup)
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('sb-') && key.includes('auth')) {
+        localStorage.removeItem(key);
+      }
+    });
 
     // Clear sessionStorage auth data
     sessionStorage.removeItem('floraiq_user_id');
 
-    // Clear stale cookies - REMOVED to prevent session loss
-    // The previous aggressive cleanup was causing 401s on redirect
+    // Clear stale cookies to prevent 401 errors during token refresh
+    // This includes Supabase cookies and tenant-specific cookies
+    document.cookie.split(';').forEach((c) => {
+      const cookieName = c.split('=')[0].trim();
+      if (cookieName.startsWith('sb-') || cookieName.startsWith('tenant_') ||
+          cookieName.includes('access') || cookieName.includes('refresh')) {
+        // Clear cookie for current path
+        document.cookie = `${cookieName}=;expires=${new Date(0).toUTCString()};path=/`;
+        // Also try clearing with domain for cross-subdomain cookies
+        document.cookie = `${cookieName}=;expires=${new Date(0).toUTCString()};path=/;domain=${window.location.hostname}`;
+      }
+    });
 
     // Small delay to ensure cleanup is complete before login attempt
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -236,7 +171,7 @@ export default function LoginPage() {
       if (tenantError || !tenant) throw new Error('Invalid tenant configuration');
 
       // 3. Tenant Auth Edge Function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       const { response } = await resilientFetch(url, {
@@ -246,7 +181,6 @@ export default function LoginPage() {
           email: data.email,
           password: data.password,
           tenantSlug: tenant.slug.toLowerCase(),
-          rememberMe: data.rememberMe,
         }),
         timeout: 30000,
         retryConfig: { maxRetries: 3, initialDelay: 1000 },
@@ -278,30 +212,25 @@ export default function LoginPage() {
       }
 
       authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
-      resetOnSuccess();
 
       toast({
         title: 'Welcome back!',
         description: `Redirecting to ${authResponse.tenant.business_name}...`,
       });
 
-      // Check for intended destination (user tried to access a protected page before login)
-      const intendedDestination = intendedDestinationUtils.consume();
-      const defaultDashboard = `/${tenant.slug}/admin/dashboard`;
-      const redirectTo = intendedDestination || defaultDashboard;
-      logger.debug('[SaasLogin] Redirecting after successful login', { intendedDestination, redirectTo });
-
       // Smooth redirect delay
       setTimeout(() => {
-        navigate(redirectTo, { replace: true });
+        navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
       }, 500);
 
-    } catch (error: unknown) {
-      recordAttempt();
+    } catch (error: any) {
       logger.error('Login error', error);
       authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
-      const errorMessage = getAuthErrorMessage(error, 'Invalid email or password. Please try again.');
-      setLoginError(errorMessage);
+      toast({
+        title: 'Login Failed',
+        description: error.message || 'Invalid email or password',
+        variant: 'destructive',
+      });
       form.setValue('password', '');
     } finally {
       setIsSubmitting(false);
@@ -356,16 +285,6 @@ export default function LoginPage() {
                 )}
               </AnimatePresence>
 
-              <RateLimitWarning remainingSeconds={remainingSeconds} variant="light" className="mb-4" />
-
-              {/* Login Error Alert */}
-              <AuthErrorAlert
-                message={loginError || ''}
-                type={loginError ? getAuthErrorType(loginError) : 'error'}
-                variant="light"
-                className="mb-4"
-              />
-
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                   <FormField
@@ -404,7 +323,6 @@ export default function LoginPage() {
                               type={showPassword ? "text" : "password"}
                               className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="••••••••"
-                              autoComplete="current-password"
                             />
                             <button
                               type="button"
@@ -421,46 +339,17 @@ export default function LoginPage() {
                   />
 
                   <div className="flex items-center justify-between pt-1">
-                    <FormField
-                      control={form.control}
-                      name="rememberMe"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={isSubmitting}
-                              id="remember-me"
-                            />
-                          </FormControl>
-                          <FormLabel
-                            htmlFor="remember-me"
-                            className="text-sm font-normal text-foreground/80 hover:text-primary cursor-pointer transition-colors"
-                            title="Stay signed in for 30 days instead of 7 days"
-                          >
-                            Remember me
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowForgotPassword(true);
-                        setResetEmailSent(false);
-                        setForgotPasswordEmail(form.getValues('email') || '');
-                      }}
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </button>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-[#1B4332] transition-colors" />
+                      <span className="text-sm text-foreground/80 group-hover:text-primary">Remember me</span>
+                    </label>
+                    <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
                   </div>
 
                   <Button
                     type="submit"
                     className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 mt-2"
-                    disabled={isSubmitting || isLocked}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
@@ -582,76 +471,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-
-      {/* Forgot Password Dialog */}
-      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Reset Password</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {resetEmailSent
-                ? "We've sent a password reset link to your email."
-                : "Enter your email address and we'll send you a link to reset your password."
-              }
-            </DialogDescription>
-          </DialogHeader>
-
-          {resetEmailSent ? (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <CheckCircle2 className="h-12 w-12 text-primary" />
-              <p className="text-center text-sm text-muted-foreground">
-                Check your inbox at <strong>{forgotPasswordEmail}</strong> for the reset link.
-              </p>
-              <Button
-                onClick={() => setShowForgotPassword(false)}
-                className="w-full"
-              >
-                Back to Login
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="space-y-2">
-                <label htmlFor="reset-email" className="text-sm font-medium">
-                  Email Address
-                </label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  className="h-11"
-                  autoComplete="email"
-                />
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowForgotPassword(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleForgotPassword}
-                  disabled={isSendingReset}
-                  className="flex-1"
-                >
-                  {isSendingReset ? (
-                    <span className="flex items-center gap-2">
-                      <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      Sending...
-                    </span>
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </ForceLightMode>
   );
 }

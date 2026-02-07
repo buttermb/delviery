@@ -20,9 +20,6 @@ export interface Order {
   courier_id?: string;
   dropoff_lat?: number;
   dropoff_lng?: number;
-  is_rush?: boolean;
-  rushed_at?: string | null;
-  rushed_by?: string | null;
   [key: string]: unknown;
 }
 

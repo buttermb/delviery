@@ -16,28 +16,6 @@ serve(async (req) => {
   }
 
   try {
-    // Health check endpoint - no auth required, verifies function is deployed and running
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
-
-    if (action === 'health') {
-      const hasSupabaseUrl = !!Deno.env.get('SUPABASE_URL');
-      const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-      return new Response(
-        JSON.stringify({
-          status: 'ok',
-          function: 'revoke-all-sessions',
-          timestamp: new Date().toISOString(),
-          env: {
-            SUPABASE_URL: hasSupabaseUrl,
-            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
-          },
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);

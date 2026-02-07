@@ -13,10 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import Download from "lucide-react/dist/esm/icons/download";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { Download, FileText, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 

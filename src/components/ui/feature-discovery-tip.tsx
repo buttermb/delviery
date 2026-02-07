@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import X from "lucide-react/dist/esm/icons/x";
-import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Keyboard from "lucide-react/dist/esm/icons/keyboard";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { X, Lightbulb, Sparkles, Keyboard, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

@@ -2,7 +2,6 @@ import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,15 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import User from "lucide-react/dist/esm/icons/user";
-import Package from "lucide-react/dist/esm/icons/package";
+import {
+  Truck, MapPin, Clock, CheckCircle2, XCircle,
+  Navigation, Phone, User, Package
+} from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -27,8 +21,6 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
-import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
-import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 
 interface Delivery {
   id: string;
@@ -58,16 +50,10 @@ export default function DeliveryManagement() {
   const { tenant } = useTenantAdminAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
-  const [selectedDeliveryForFleet, setSelectedDeliveryForFleet] = useState<{
-    id: string;
-    orderNumber: string;
-    address: string;
-  } | null>(null);
 
   // Fetch Deliveries
   const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
-    queryKey: queryKeys.deliveries.list({ tenantId: tenant?.id }),
+    queryKey: ['deliveries', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -113,7 +99,7 @@ export default function DeliveryManagement() {
 
   // Fetch Couriers
   const { data: couriers = [] } = useQuery({
-    queryKey: queryKeys.couriers.list({ tenantId: tenant?.id, active: true }),
+    queryKey: ['active-couriers', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
@@ -255,56 +241,38 @@ export default function DeliveryManagement() {
       cell: (d) => (
         <div className="flex gap-2 justify-end">
           {!d.courier_id ? (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                onClick={() => {
-                  setSelectedDeliveryForFleet({
-                    id: d.id,
-                    orderNumber: d.order_id.slice(0, 8),
-                    address: d.address,
-                  });
-                  setFleetDialogOpen(true);
-                }}
-              >
-                <Truck className="w-4 h-4 mr-2" />
-                Fleet
-              </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    <User className="w-4 h-4 mr-2" />
-                    Courier
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Assign Courier</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3">
-                    {couriers.map(courier => (
-                      <div
-                        key={courier.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
-                        onClick={() => assignCourier(d.id, courier.id)}
-                      >
-                        <div>
-                          <p className="font-medium">{courier.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {courier.vehicle_type} • {courier.phone}
-                          </p>
-                        </div>
-                        {courier.is_online && (
-                          <Badge variant="default">Online</Badge>
-                        )}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <User className="w-4 h-4 mr-2" />
+                  Assign
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Assign Courier</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  {couriers.map(courier => (
+                    <div
+                      key={courier.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
+                      onClick={() => assignCourier(d.id, courier.id)}
+                    >
+                      <div>
+                        <p className="font-medium">{courier.full_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {courier.vehicle_type} • {courier.phone}
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </>
+                      {courier.is_online && (
+                        <Badge variant="default">Online</Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
           ) : (
             <Button
               size="sm"
@@ -484,12 +452,6 @@ export default function DeliveryManagement() {
         </Card>
       </div>
 
-      {/* Courier Availability Panel */}
-      <CourierAvailabilityPanel
-        maxCouriers={4}
-        className="mb-6"
-      />
-
       {/* Filters */}
       <Card className="mb-6">
         <CardContent className="pt-6">
@@ -573,21 +535,6 @@ export default function DeliveryManagement() {
           />
         </TabsContent>
       </Tabs>
-
-      {/* Fleet Assignment Dialog */}
-      {selectedDeliveryForFleet && (
-        <AssignToFleetDialog
-          open={fleetDialogOpen}
-          onOpenChange={(open) => {
-            setFleetDialogOpen(open);
-            if (!open) setSelectedDeliveryForFleet(null);
-          }}
-          orderId={selectedDeliveryForFleet.id}
-          orderNumber={selectedDeliveryForFleet.orderNumber}
-          isWholesale={false}
-          deliveryAddress={selectedDeliveryForFleet.address}
-        />
-      )}
     </div>
   );
 }

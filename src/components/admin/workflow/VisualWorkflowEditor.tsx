@@ -24,16 +24,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ActionConfigForm } from './ActionConfigForm';
-import Play from "lucide-react/dist/esm/icons/play";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Database from "lucide-react/dist/esm/icons/database";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import GitBranch from "lucide-react/dist/esm/icons/git-branch";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { 
+  Play, 
+  Zap, 
+  Mail, 
+  MessageSquare, 
+  Database, 
+  Webhook,
+  GitBranch,
+  CheckCircle,
+  XCircle,
+  Trash2,
+} from 'lucide-react';
 
 interface NodeData {
   label?: string;

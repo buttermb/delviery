@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,37 +10,30 @@ import { useOptimisticList } from "@/hooks/useOptimisticUpdate";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
-import { useProductMutations } from "@/hooks/useProductMutations";
-import { useProductDuplicate } from "@/hooks/useProductDuplicate";
-import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { toast } from "sonner";
-import Package from "lucide-react/dist/esm/icons/package";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
-import List from "lucide-react/dist/esm/icons/list";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Download from "lucide-react/dist/esm/icons/download";
-import Archive from "lucide-react/dist/esm/icons/archive";
-import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Store from "lucide-react/dist/esm/icons/store";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import FileUp from "lucide-react/dist/esm/icons/file-up";
+import {
+  Package,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Barcode,
+  DollarSign,
+  LayoutGrid,
+  List,
+  Filter,
+  Loader2,
+  Printer,
+  MoreVertical,
+  Eye,
+  EyeOff,
+  Store
+} from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
   Dialog,
@@ -53,7 +46,6 @@ import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { ConfirmArchiveDialog } from "@/components/shared/ConfirmArchiveDialog";
 import {
   Select,
   SelectContent,
@@ -67,10 +59,8 @@ import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
-import { ProductBulkImportDialog } from "@/components/admin/ProductBulkImportDialog";
-// Upload and FileUp icons imported from main lucide-react import above
+import { Upload } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
-import { ProductDuplicateButton } from "@/components/admin/products/ProductDuplicateButton";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -79,20 +69,13 @@ import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import CopyButton from "@/components/CopyButton";
-import { ProductBulkExportDialog } from "@/components/admin/ProductBulkExportDialog";
+import { ExportButton } from "@/components/ui/ExportButton";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 
-type Product = Database['public']['Tables']['products']['Row'] & {
-  // Add fields that might be missing from generated types or are dynamic
-  metrc_retail_id?: string | null;
-  exclude_from_discounts?: boolean;
-  minimum_price?: number;
-  version?: number;
-  deleted_at?: string | null;
-};
+type Product = Database['public']['Tables']['products']['Row'];
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
-const mapProductToForm = (product: Product): Partial<ProductFormData> => ({
+const mapProductToForm = (product: Product): ProductFormData => ({
   name: product.name || "",
   sku: product.sku || "",
   category: product.category || "flower",
@@ -110,10 +93,10 @@ const mapProductToForm = (product: Product): Partial<ProductFormData> => ({
   image_url: product.image_url || "",
 
   low_stock_alert: product.low_stock_alert?.toString() || "10",
-  metrc_retail_id: product.metrc_retail_id || "",
+  metrc_retail_id: (product as any).metrc_retail_id || "",
 
-  exclude_from_discounts: product.exclude_from_discounts || false,
-  minimum_price: product.minimum_price?.toString() || "",
+  exclude_from_discounts: (product as any).exclude_from_discounts || false,
+  minimum_price: (product as any).minimum_price?.toString() || "",
 });
 
 export default function ProductManagement() {
@@ -121,13 +104,6 @@ export default function ProductManagement() {
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
-  const queryClient = useQueryClient();
-  const { invalidateProductCaches } = useProductMutations();
-  const { duplicateProduct, isPending: isDuplicating } = useProductDuplicate({
-    onSuccess: (newProduct) => {
-      setProducts(prev => [newProduct, ...prev]);
-    }
-  });
 
   // Read URL search params for filtering
   const urlSearch = searchParams.get('search') || '';
@@ -143,7 +119,7 @@ export default function ProductManagement() {
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -177,14 +153,14 @@ export default function ProductManagement() {
 
       if (!profile) return null;
 
-      // Get store settings - cast to any to bypass column mismatch
-      const { data: store } = await (supabase as any)
+      // Get store settings
+      const { data: store } = await supabase
         .from('marketplace_stores')
-        .select('id')
+        .select('potency_limit_thc, potency_limit_cbd')
         .eq('id', profile.id)
         .maybeSingle();
 
-      return store ? { potency_limit_thc: null, potency_limit_cbd: null } : null;
+      return store;
     },
     enabled: !!tenant?.id
   });
@@ -208,10 +184,6 @@ export default function ProductManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
-  const [productToArchive, setProductToArchive] = useState<Product | null>(null);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
   const [labelDialogOpen, setLabelDialogOpen] = useState(false);
   const [labelProduct, setLabelProduct] = useState<Product | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -221,7 +193,6 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
   const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
@@ -248,40 +219,37 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Fetch products from database
-  const fetchProducts = useCallback(async () => {
-    if (!tenant?.id) return;
-    setLoading(true);
+  // Load products
+  const loadProducts = async () => {
+    if (!tenant?.id) {
+      toast.error('Tenant not found. Please refresh.');
+      setLoading(false);
+      return;
+    }
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        logger.error('Failed to fetch products', error);
-        toast.error('Failed to load products');
-        return;
-      }
-      setProducts(data as Product[] || []);
-    } catch (error) {
-      logger.error('Error fetching products', error instanceof Error ? error : new Error(String(error)));
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      logger.error('Error loading products:', { error: errorMessage });
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
-  }, [tenant?.id, setProducts]);
+  };
 
-  // Load products on mount using the fetchProducts function
   useEffect(() => {
     if (tenant?.id) {
-      fetchProducts();
+      loadProducts();
     }
-  }, [tenant?.id, fetchProducts]);
-
-  // Alias for external usage
-  const loadProducts = fetchProducts;
+  }, [tenant?.id]);
 
   // Derived state for categories
   const categories = useMemo(() => {
@@ -404,8 +372,8 @@ export default function ProductManagement() {
     return data === null;
   };
 
-  // Handlers - wrapped in useCallback for performance
-  const handleProductSubmit = useCallback(async (data: ProductFormData) => {
+  // Handlers
+  const handleProductSubmit = async (data: ProductFormData) => {
     // Validate tenant context first
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -462,7 +430,7 @@ export default function ProductManagement() {
         if (!tenant?.id) throw new Error('No tenant context');
 
         // Use optimistic locking to prevent concurrent edit conflicts
-        const expectedVersion = editingProduct.version || 1;
+        const expectedVersion = (editingProduct as any).version || 1;
         const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
 
         if (!result.success) {
@@ -476,41 +444,12 @@ export default function ProductManagement() {
         toast.success("Product updated");
         // Update state with new version
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
-
-        // Invalidate all product caches so storefront reflects changes instantly
-        invalidateProductCaches({
-          tenantId: tenant.id,
-          storeId: store?.id || undefined,
-          productId: editingProduct.id,
-          category: productData.category || undefined,
-        });
       } else {
         const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
         if (error) throw error;
         toast.success("Product created");
         // Manually update state
         setProducts(prev => [newProduct, ...prev]);
-
-        // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
-        // this handles marketplace_products with additional fields like slug)
-        if (store?.id && newProduct) {
-          const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
-            p_product_id: newProduct.id,
-            p_store_id: store.id,
-          });
-          if (syncError) {
-            // Don't block on sync error - product was created successfully
-            logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
-          }
-        }
-
-        // Invalidate all product caches so storefront reflects changes instantly
-        invalidateProductCaches({
-          tenantId: tenant.id,
-          storeId: store?.id || undefined,
-          productId: newProduct.id,
-          category: productData.category || undefined,
-        });
       }
       setIsDialogOpen(false);
       setEditingProduct(null);
@@ -519,17 +458,17 @@ export default function ProductManagement() {
     } finally {
       setIsGenerating(false);
     }
-  }, [tenant, editingProduct, validateProductData, checkSkuUniqueness, updateWithLock, setProducts, invalidateProductCaches, store]);
+  };
 
-  const handleDelete = useCallback((id: string) => {
+  const handleDelete = (id: string) => {
     const product = products.find(p => p.id === id);
     if (product) {
       setProductToDelete(product);
       setDeleteDialogOpen(true);
     }
-  }, [products]);
+  }
 
-  const confirmDelete = useCallback(async () => {
+  const confirmDelete = async () => {
     if (!productToDelete) return;
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -559,21 +498,11 @@ export default function ProductManagement() {
         return;
       }
 
-      const deletedCategory = productToDelete.category;
       const { error } = await supabase.from('products').delete().eq('id', productToDelete.id).eq('tenant_id', tenant.id);
       if (error) throw error;
 
       setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
       toast.success("Product deleted");
-
-      // Invalidate all product caches so storefront reflects deletion instantly
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId: productToDelete.id,
-        category: deletedCategory || undefined,
-      });
-
       setDeleteDialogOpen(false);
       setProductToDelete(null);
     } catch (e: any) {
@@ -581,103 +510,35 @@ export default function ProductManagement() {
     } finally {
       setIsDeleting(false);
     }
-  }, [productToDelete, tenant, setProducts, invalidateProductCaches, store]);
+  }
 
-  // Archive handlers
-  const handleArchive = useCallback((id: string) => {
-    const product = products.find(p => p.id === id);
-    if (product) {
-      setProductToArchive(product);
-      setArchiveDialogOpen(true);
-    }
-  }, [products]);
-
-  const confirmArchive = useCallback(async () => {
-    if (!productToArchive) return;
-    if (!tenant?.id) {
-      toast.error('Tenant not found. Please refresh.');
-      return;
-    }
-    setIsArchiving(true);
-    try {
-      const isRestore = !!(productToArchive as any).is_active === false;
-
-      if (isRestore || (productToArchive as any).deleted_at) {
-        // Restore product - use is_active flag instead of deleted_at
-        const { error } = await (supabase as any)
-          .from('products')
-          .update({ is_active: true })
-          .eq('id', productToArchive.id)
-          .eq('tenant_id', tenant.id);
-
-        if (error) throw error;
-
-        toast.success(`"${productToArchive.name}" restored`, {
-          description: 'Product is now active and visible again.',
-        });
-      } else {
-        // Archive product - use is_active flag instead of deleted_at
-        const { error } = await (supabase as any)
-          .from('products')
-          .update({ is_active: false })
-          .eq('id', productToArchive.id)
-          .eq('tenant_id', tenant.id);
-
-        if (error) throw error;
-
-        toast.success(`"${productToArchive.name}" archived`, {
-          description: 'Product hidden from active inventory. Can be restored anytime.',
-        });
-      }
-
-      // Refresh the list
-      await fetchProducts();
-
-      // Invalidate all product caches so storefront reflects changes instantly
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId: productToArchive.id,
-        category: productToArchive.category || undefined,
-      });
-
-      setArchiveDialogOpen(false);
-      setProductToArchive(null);
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : 'Failed to archive/restore product';
-      toast.error(errorMessage);
-    } finally {
-      setIsArchiving(false);
-    }
-  }, [productToArchive, tenant, fetchProducts, invalidateProductCaches, store]);
-
-  const handleToggleSelect = useCallback((id: string) => {
+  const handleToggleSelect = (id: string) => {
     setSelectedProducts(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
-  }, []);
+  }
 
-  const handleSelectAll = useCallback(() => {
+  const handleSelectAll = () => {
     if (selectedProducts.length === filteredProducts.length) {
       setSelectedProducts([]);
     } else {
       setSelectedProducts(filteredProducts.map(p => p.id));
     }
-  }, [selectedProducts.length, filteredProducts]);
+  }
 
-  const handleCombinedBatchRemove = useCallback((id: string) => {
+  const handleCombinedBatchRemove = (id: string) => {
     // Remove from selectedProducts
     if (selectedProducts.includes(id)) {
       handleToggleSelect(id);
     }
-  }, [selectedProducts, handleToggleSelect]);
+  };
 
-  const handleCombinedBatchClear = useCallback(() => {
+  const handleCombinedBatchClear = () => {
     setSelectedProducts([]);
     setBatchProducts([]);
-  }, []);
+  };
 
-  const handleCombinedBatchDelete = useCallback(() => {
+  const handleCombinedBatchDelete = () => {
     if (combinedBatchProducts.length === 0) return;
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -736,13 +597,6 @@ export default function ProductManagement() {
           }
 
           setProducts(prev => prev.filter(p => !deletableIds.includes(p.id)));
-
-          // Invalidate all product caches so storefront reflects batch deletion
-          invalidateProductCaches({
-            tenantId: tenant.id,
-            storeId: store?.id || undefined,
-          });
-
           handleCombinedBatchClear();
           closeBatchDeleteDialog();
         } catch (err: any) {
@@ -752,38 +606,32 @@ export default function ProductManagement() {
         }
       }
     });
-  }, [combinedBatchProducts, tenant, confirmBatchDelete, setBatchDeleteLoading, setProducts, invalidateProductCaches, store, handleCombinedBatchClear, closeBatchDeleteDialog]);
+  };
 
-  const handleCombinedBatchCategory = useCallback(() => {
+  const handleCombinedBatchCategory = () => {
     setBatchProducts(combinedBatchProducts);
     setBatchCategoryEditorOpen(true);
-  }, [combinedBatchProducts]);
+  };
 
-  const handleCombinedBatchPrice = useCallback(() => {
+  const handleCombinedBatchPrice = () => {
     setBatchProducts(combinedBatchProducts);
     setBulkPriceEditorOpen(true);
-  }, [combinedBatchProducts]);
+  };
 
-  const handleBulkPriceUpdate = useCallback(async (updates: unknown) => {
-    // Component handles the DB update; we refresh and invalidate caches
+  const handleBulkPriceUpdate = async (updates: any) => {
+    // Logic for bulk update would go here or inside the component
+    // Since component handles it, we just refresh
     await loadProducts();
-    invalidateProductCaches({
-      tenantId: tenant?.id || undefined,
-      storeId: store?.id || undefined,
-    });
     setBulkPriceEditorOpen(false);
-  }, [loadProducts, invalidateProductCaches, tenant, store]);
+  }
 
-  const handleBulkCategoryUpdate = useCallback(async () => {
+  const handleBulkCategoryUpdate = async () => {
     await loadProducts();
-    invalidateProductCaches({
-      tenantId: tenant?.id || undefined,
-      storeId: store?.id || undefined,
-    });
     setBatchCategoryEditorOpen(false);
-  }, [loadProducts, invalidateProductCaches, tenant, store]);
+  }
 
-  const handleScanSuccess = useCallback(async (code: string) => {
+
+  const handleScanSuccess = async (code: string) => {
     // Logic to find product by barcode or SKU and add to batch
     const product = products.find(p => p.sku === code || p.id === code); // Simplified matching
     if (product) {
@@ -792,14 +640,14 @@ export default function ProductManagement() {
     } else {
       toast.error("Product not found");
     }
-  }, [products]);
+  }
 
-  const startBatchScan = useCallback(() => {
+  const startBatchScan = () => {
     setBatchScanMode(true);
     setScannerOpen(true);
-  }, []);
+  }
 
-  const handlePublish = useCallback(async (productId: string) => {
+  const handlePublish = async (productId: string) => {
     if (!store?.id) {
       toast.error("Storefront not configured. Please set up your store first.");
       return;
@@ -814,12 +662,6 @@ export default function ProductManagement() {
 
       if ((data as any)?.success) {
         toast.success("Product published to storefront");
-        // Invalidate storefront caches so the new product appears instantly
-        invalidateProductCaches({
-          tenantId: tenant?.id || undefined,
-          storeId: store?.id || undefined,
-          productId,
-        });
       } else {
         toast.error((data as any)?.error || "Failed to publish product");
       }
@@ -827,10 +669,10 @@ export default function ProductManagement() {
       logger.error('Failed to publish product', err);
       toast.error(err.message || "Failed to publish product");
     }
-  }, [store, tenant, invalidateProductCaches]);
+  };
 
   // Inline quick edit handler
-  const handleInlineUpdate = useCallback(async (productId: string, field: keyof Product, value: string) => {
+  const handleInlineUpdate = async (productId: string, field: keyof Product, value: string) => {
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
       return;
@@ -874,51 +716,13 @@ export default function ProductManagement() {
         prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
       );
       toast.success('Updated!');
-
-      // Invalidate storefront caches for instant sync
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId,
-      });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Update failed';
       toast.error(errorMessage);
       throw err;
     }
-  }, [tenant, setProducts, invalidateProductCaches, store]);
+  };
 
-  // ProductCard event handlers - wrapped in useCallback for stable references
-  const handleEditProduct = useCallback((productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      setEditingProduct(product);
-      setIsDialogOpen(true);
-    }
-  }, [products]);
-
-  const handleDeleteProduct = useCallback((productId: string) => {
-    handleDelete(productId);
-  }, [handleDelete]);
-
-  const handleDuplicateProduct = useCallback((productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      duplicateProduct(product);
-    }
-  }, [products, duplicateProduct]);
-
-  const handlePrintLabelForProduct = useCallback((productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      setLabelProduct(product);
-      setLabelDialogOpen(true);
-    }
-  }, [products]);
-
-  const handlePublishProduct = useCallback((productId: string) => {
-    handlePublish(productId);
-  }, [handlePublish]);
 
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
@@ -1025,28 +829,17 @@ export default function ProductManagement() {
             <DropdownMenuItem onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <ProductDuplicateButton
-              product={product}
-              variant="dropdown"
-              onSuccess={(newProduct) => {
-                setProducts(prev => [newProduct, ...prev]);
-              }}
-            />
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => handleDelete(product.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlePublish(product.id)}>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className={product.deleted_at ? "text-primary focus:text-primary" : "text-warning focus:text-warning"}
-              onClick={() => handleArchive(product.id)}
-            >
-              {product.deleted_at ? (
-                <><ArchiveRestore className="mr-2 h-4 w-4" /> Restore</>
-              ) : (
-                <><Archive className="mr-2 h-4 w-4" /> Archive</>
-              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -1054,16 +847,16 @@ export default function ProductManagement() {
     }
   ];
 
-  const renderMobileProduct = useCallback((product: Product) => (
+  const renderMobileProduct = (product: Product) => (
     <ProductCard
       product={product}
-      onEdit={handleEditProduct}
-      onDelete={handleDeleteProduct}
-      onDuplicate={handleDuplicateProduct}
-      onPrintLabel={() => handlePrintLabelForProduct(product.id)}
-      onPublish={handlePublishProduct}
+      onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+      onDelete={() => handleDelete(product.id)}
+      onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
+      onPublish={() => handlePublish(product.id)}
     />
-  ), [handleEditProduct, handleDeleteProduct, handleDuplicateProduct, handlePrintLabelForProduct, handlePublishProduct]);
+  );
+
 
   if (tenantLoading) {
     return (
@@ -1142,19 +935,24 @@ export default function ProductManagement() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <ExportButton
+            data={filteredProducts}
+            filename="products"
+            columns={[
+              { key: "name", label: "Name" },
+              { key: "sku", label: "SKU" },
+              { key: "category", label: "Category" },
+              { key: "wholesale_price", label: "Price" },
+              { key: "available_quantity", label: "Stock" },
+              { key: "strain_name", label: "Strain" },
+              { key: "vendor_name", label: "Vendor" },
+            ]}
+          />
           <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
             <Barcode className="h-4 w-4 mr-2" />
             Generate Barcodes
           </Button>
-          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import CSV
-          </Button>
-          <ProductBulkImportDialog
+          <ProductImportDialog
             open={importDialogOpen}
             onOpenChange={setImportDialogOpen}
             onSuccess={loadProducts}
@@ -1186,8 +984,6 @@ export default function ProductManagement() {
                   onCancel={() => setIsDialogOpen(false)}
                   isLoading={isGenerating}
                   isEditMode={!!editingProduct}
-                  productId={editingProduct?.id}
-                  storeSettings={storeSettings}
                 />
               </div>
             </DialogContent>
@@ -1334,16 +1130,6 @@ export default function ProductManagement() {
                 <SelectItem value="margin">Margin (High-Low)</SelectItem>
               </SelectContent>
             </Select>
-
-            {/* Show Archived Toggle */}
-            <Toggle
-              pressed={showArchived}
-              onPressedChange={setShowArchived}
-              className="h-9 px-3 data-[state=on]:bg-warning/20 data-[state=on]:text-warning"
-            >
-              <Archive className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{showArchived ? 'Archived' : 'Show Archived'}</span>
-            </Toggle>
           </div>
 
           {/* View Mode Toggle */}
@@ -1388,11 +1174,13 @@ export default function ProductManagement() {
                   >
                     <ProductCard
                       product={product}
-                      onEdit={handleEditProduct}
-                      onDelete={handleDeleteProduct}
-                      onDuplicate={handleDuplicateProduct}
-                      onPrintLabel={() => handlePrintLabelForProduct(product.id)}
-                      onPublish={handlePublishProduct}
+                      onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+                      onDelete={() => handleDelete(product.id)}
+                      onPrintLabel={() => {
+                        setLabelProduct(product);
+                        setLabelDialogOpen(true);
+                      }}
+                      onPublish={() => handlePublish(product.id)}
                     />
                   </div>
                 ))}
@@ -1507,13 +1295,6 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
-      />
-
-      {/* Product Bulk Export Dialog */}
-      <ProductBulkExportDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        products={filteredProducts}
       />
     </div>
   );

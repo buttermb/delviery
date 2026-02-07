@@ -1,9 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import { Package, Users, Truck, ArrowRight } from "lucide-react";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 export default function WholesaleSetup() {

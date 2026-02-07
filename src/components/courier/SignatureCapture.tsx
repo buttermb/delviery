@@ -2,9 +2,7 @@ import SignatureCanvasLib from 'react-signature-canvas';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PenTool from "lucide-react/dist/esm/icons/pen-tool";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { PenTool, RotateCcw, CheckCircle } from 'lucide-react';
 
 interface SignatureCaptureProps {
   orderId: string;

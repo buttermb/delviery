@@ -2,10 +2,7 @@ import { useCallback, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Check from "lucide-react/dist/esm/icons/check";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Phone from "lucide-react/dist/esm/icons/phone";
+import { Copy, Check, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PortalClient } from '@/types/portal';
 

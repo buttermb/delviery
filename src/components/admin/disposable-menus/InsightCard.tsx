@@ -1,10 +1,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { Sparkles, ArrowRight, AlertTriangle, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface InsightCardProps {

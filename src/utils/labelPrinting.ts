@@ -1,29 +1,28 @@
 /**
  * Label Printing Service
  * Generates printable labels for products, packages, batches, and transfers
- * Supports multiple label sizes and formats for cannabis compliance
  */
 
-import { logger } from '@/lib/logger';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { PackageQRData, TransferQRData, BatchQRData } from './barcodeService';
 
-// ============================================================================
-// TYPES
-// ============================================================================
+export type LabelType = 'product' | 'batch' | 'package' | 'transfer_manifest' | 'small_package';
+export type LabelSize = '4x6' | '2x1' | 'standard';
 
-export type LabelType = 'product' | 'batch' | 'package' | 'transfer_manifest' | 'small_package' | 'shelf';
-export type LabelSize = '4x6' | '4x3' | '2x1' | '1x1' | 'standard';
-
-export interface LabelPrintOptions {
+interface LabelPrintOptions {
   size?: LabelSize;
   copies?: number;
-  showBorder?: boolean;
-  darkMode?: boolean;
+  printerName?: string;
 }
 
-export interface ProductLabelData {
+/**
+ * Generate product label HTML
+ */
+export function generateProductLabelHTML(data: {
   companyName: string;
   productName: string;
-  strainType?: 'Indica' | 'Sativa' | 'Hybrid' | 'CBD';
+  strainType?: string;
   thcPercent?: number;
   cbdPercent?: number;
   weight: number;
@@ -32,13 +31,99 @@ export interface ProductLabelData {
   packageNumber: string;
   packagedDate: string;
   expirationDate?: string;
-  barcodeDataUrl?: string;
-  qrCodeDataUrl?: string;
-  licenseNumber?: string;
-  warnings?: string[];
+  barcodeDataUrl: string;
+  qrCodeDataUrl: string;
+}): string {
+  return `
+    <div style="
+      width: 4in;
+      height: 6in;
+      padding: 0.25in;
+      font-family: Arial, sans-serif;
+      border: 1px solid #000;
+      box-sizing: border-box;
+    ">
+      <!-- Header -->
+      <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.1in; margin-bottom: 0.15in;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: bold;">${data.companyName}</h1>
+      </div>
+
+      <!-- Product Info -->
+      <div style="text-align: center; margin-bottom: 0.2in;">
+        <h2 style="margin: 0; font-size: 32px; font-weight: bold;">${data.productName}</h2>
+        ${data.strainType ? `<p style="margin: 0.1in 0; font-size: 16px; color: #666;">Type: ${data.strainType}</p>` : ''}
+      </div>
+
+      <!-- Details -->
+      <div style="margin-bottom: 0.2in; font-size: 14px;">
+        ${data.thcPercent ? `<p style="margin: 0.05in 0;"><strong>THC:</strong> ${data.thcPercent}%</p>` : ''}
+        ${data.cbdPercent ? `<p style="margin: 0.05in 0;"><strong>CBD:</strong> ${data.cbdPercent}%</p>` : ''}
+        <p style="margin: 0.05in 0;"><strong>Weight:</strong> ${data.weight} ${data.unit}</p>
+        <p style="margin: 0.05in 0;"><strong>Batch:</strong> ${data.batchNumber}</p>
+      </div>
+
+      <!-- Barcode -->
+      <div style="text-align: center; margin: 0.2in 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 0.15in 0;">
+        <div style="font-family: monospace; font-size: 16px; margin-bottom: 0.1in;">${data.packageNumber}</div>
+        <img src="${data.barcodeDataUrl}" style="max-width: 100%; height: auto;" alt="Barcode" />
+      </div>
+
+      <!-- QR Code -->
+      <div style="text-align: center; margin: 0.2in 0;">
+        <img src="${data.qrCodeDataUrl}" style="width: 1.5in; height: 1.5in;" alt="QR Code" />
+      </div>
+
+      <!-- Footer -->
+      <div style="font-size: 12px; text-align: center; margin-top: 0.2in; padding-top: 0.1in; border-top: 1px solid #ccc;">
+        <p style="margin: 0.05in 0;"><strong>Pkg:</strong> ${new Date(data.packagedDate).toLocaleDateString()}</p>
+        ${data.expirationDate ? `<p style="margin: 0.05in 0;"><strong>Exp:</strong> ${new Date(data.expirationDate).toLocaleDateString()}</p>` : ''}
+      </div>
+    </div>
+  `;
 }
 
-export interface BatchLabelData {
+/**
+ * Generate small package label HTML
+ */
+export function generateSmallPackageLabelHTML(data: {
+  productName: string;
+  weight: number;
+  unit: string;
+  thcPercent?: number;
+  packageNumber: string;
+  qrCodeDataUrl: string;
+}): string {
+  return `
+    <div style="
+      width: 2in;
+      height: 1in;
+      padding: 0.1in;
+      font-family: Arial, sans-serif;
+      border: 1px solid #000;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    ">
+      <div style="flex: 1;">
+        <div style="font-size: 12px; font-weight: bold; margin-bottom: 0.05in;">${data.productName}</div>
+        <div style="font-size: 10px;">
+          ${data.weight} ${data.unit}
+          ${data.thcPercent ? ` | ${data.thcPercent}%` : ''}
+        </div>
+        <div style="font-size: 9px; font-family: monospace; margin-top: 0.05in;">${data.packageNumber}</div>
+      </div>
+      <div>
+        <img src="${data.qrCodeDataUrl}" style="width: 0.75in; height: 0.75in;" alt="QR Code" />
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Generate batch label HTML
+ */
+export function generateBatchLabelHTML(data: {
   companyName: string;
   batchNumber: string;
   productName: string;
@@ -50,540 +135,263 @@ export interface BatchLabelData {
   thcPercent?: number;
   cbdPercent?: number;
   labName?: string;
-  labTestDate?: string;
-  qrCodeDataUrl?: string;
+  qrCodeDataUrl: string;
+}): string {
+  return `
+    <div style="
+      width: 4in;
+      height: 6in;
+      padding: 0.25in;
+      font-family: Arial, sans-serif;
+      border: 1px solid #000;
+      box-sizing: border-box;
+    ">
+      <!-- Header -->
+      <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.1in; margin-bottom: 0.15in;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: bold;">BATCH INFORMATION</h1>
+      </div>
+
+      <!-- Batch Details -->
+      <div style="margin-bottom: 0.2in;">
+        <p style="margin: 0.1in 0; font-size: 18px;"><strong>Batch:</strong> ${data.batchNumber}</p>
+        <p style="margin: 0.1in 0; font-size: 18px;"><strong>Product:</strong> ${data.productName}</p>
+      </div>
+
+      <div style="border-top: 1px solid #ccc; padding-top: 0.15in; margin-bottom: 0.2in;">
+        <p style="margin: 0.05in 0; font-size: 14px;"><strong>Received:</strong> ${new Date(data.receivedDate).toLocaleDateString()}</p>
+        <p style="margin: 0.05in 0; font-size: 14px;"><strong>Quantity:</strong> ${data.quantity} ${data.unit}</p>
+        ${data.supplierName ? `<p style="margin: 0.05in 0; font-size: 14px;"><strong>Supplier:</strong> ${data.supplierName}</p>` : ''}
+        ${data.harvestDate ? `<p style="margin: 0.05in 0; font-size: 14px;"><strong>Harvest:</strong> ${new Date(data.harvestDate).toLocaleDateString()}</p>` : ''}
+      </div>
+
+      ${data.thcPercent || data.cbdPercent || data.labName ? `
+      <div style="border-top: 1px solid #ccc; padding-top: 0.15in; margin-bottom: 0.2in;">
+        ${data.thcPercent ? `<p style="margin: 0.05in 0; font-size: 14px;"><strong>THC:</strong> ${data.thcPercent}%</p>` : ''}
+        ${data.cbdPercent ? `<p style="margin: 0.05in 0; font-size: 14px;"><strong>CBD:</strong> ${data.cbdPercent}%</p>` : ''}
+        ${data.labName ? `<p style="margin: 0.05in 0; font-size: 14px;"><strong>Lab:</strong> ${data.labName}</p>` : ''}
+      </div>
+      ` : ''}
+
+      <!-- QR Code -->
+      <div style="text-align: center; margin: 0.3in 0;">
+        <img src="${data.qrCodeDataUrl}" style="width: 2in; height: 2in;" alt="QR Code" />
+        <p style="font-size: 12px; margin-top: 0.1in;">Scan for full data</p>
+      </div>
+    </div>
+  `;
 }
 
-export interface SmallPackageLabelData {
-  productName: string;
-  weight: number;
-  unit: string;
-  thcPercent?: number;
-  cbdPercent?: number;
-  packageNumber: string;
-  qrCodeDataUrl?: string;
-}
-
-export interface ShelfLabelData {
-  productName: string;
-  sku: string;
-  price: number;
-  unit: string;
-  category?: string;
-  barcodeDataUrl?: string;
-}
-
-export interface TransferManifestData {
+/**
+ * Generate transfer manifest HTML
+ */
+export function generateTransferManifestHTML(data: {
   companyName: string;
-  manifestNumber: string;
-  originFacility: string;
-  originLicense: string;
-  destinationFacility: string;
-  destinationLicense: string;
-  departureDate: string;
-  estimatedArrival: string;
-  vehicleInfo?: string;
-  driverName: string;
-  driverLicense?: string;
+  transferNumber: string;
+  fromLocation: string;
+  toLocation: string;
   items: Array<{
     packageNumber: string;
     productName: string;
     quantity: number;
     unit: string;
   }>;
-  qrCodeDataUrl?: string;
-}
-
-// ============================================================================
-// LABEL SIZE DIMENSIONS (in inches)
-// ============================================================================
-
-const LABEL_DIMENSIONS: Record<LabelSize, { width: string; height: string }> = {
-  '4x6': { width: '4in', height: '6in' },
-  '4x3': { width: '4in', height: '3in' },
-  '2x1': { width: '2in', height: '1in' },
-  '1x1': { width: '1in', height: '1in' },
-  standard: { width: '3.5in', height: '5in' },
-};
-
-// ============================================================================
-// COMMON STYLES
-// ============================================================================
-
-const getBaseStyles = (size: LabelSize, options: LabelPrintOptions = {}) => {
-  const { width, height } = LABEL_DIMENSIONS[size];
-  const border = options.showBorder ? '1px solid #000' : 'none';
-  const bg = options.darkMode ? '#1a1a1a' : '#fff';
-  const text = options.darkMode ? '#fff' : '#000';
-
-  return `
-    width: ${width};
-    height: ${height};
-    padding: 0.15in;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    line-height: 1.3;
-    color: ${text};
-    background: ${bg};
-    border: ${border};
-    box-sizing: border-box;
-    overflow: hidden;
-  `;
-};
-
-// ============================================================================
-// PRODUCT LABEL (4x6)
-// ============================================================================
-
-export function generateProductLabelHTML(data: ProductLabelData, options: LabelPrintOptions = {}): string {
-  const size = options.size || '4x6';
-  const strainColors: Record<string, string> = {
-    Indica: '#6b21a8',
-    Sativa: '#ea580c',
-    Hybrid: '#16a34a',
-    CBD: '#0ea5e9',
-  };
-  const strainColor = data.strainType ? strainColors[data.strainType] || '#666' : '#666';
-
-  return `
-    <div style="${getBaseStyles(size, options)}">
-      <!-- Header -->
-      <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.1in; margin-bottom: 0.1in;">
-        <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px;">${escapeHtml(data.companyName)}</div>
-        ${data.licenseNumber ? `<div style="font-size: 9px; color: #666;">License: ${escapeHtml(data.licenseNumber)}</div>` : ''}
-      </div>
-
-      <!-- Product Name & Strain -->
-      <div style="text-align: center; margin-bottom: 0.15in;">
-        <div style="font-size: 22px; font-weight: bold; margin-bottom: 0.05in;">${escapeHtml(data.productName)}</div>
-        ${data.strainType ? `
-          <span style="
-            display: inline-block;
-            background: ${strainColor};
-            color: white;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-          ">${data.strainType}</span>
-        ` : ''}
-      </div>
-
-      <!-- Cannabinoid Content -->
-      <div style="display: flex; justify-content: center; gap: 0.3in; margin-bottom: 0.15in; font-size: 14px;">
-        ${data.thcPercent !== undefined ? `
-          <div style="text-align: center;">
-            <div style="font-size: 20px; font-weight: bold;">${data.thcPercent}%</div>
-            <div style="font-size: 10px; color: #666;">THC</div>
-          </div>
-        ` : ''}
-        ${data.cbdPercent !== undefined ? `
-          <div style="text-align: center;">
-            <div style="font-size: 20px; font-weight: bold;">${data.cbdPercent}%</div>
-            <div style="font-size: 10px; color: #666;">CBD</div>
-          </div>
-        ` : ''}
-        <div style="text-align: center;">
-          <div style="font-size: 20px; font-weight: bold;">${data.weight}</div>
-          <div style="font-size: 10px; color: #666;">${escapeHtml(data.unit)}</div>
-        </div>
-      </div>
-
-      <!-- Details Grid -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.05in; font-size: 11px; margin-bottom: 0.15in;">
-        <div><strong>Batch:</strong> ${escapeHtml(data.batchNumber)}</div>
-        <div><strong>Pkg:</strong> ${new Date(data.packagedDate).toLocaleDateString()}</div>
-        ${data.expirationDate ? `<div style="grid-column: span 2;"><strong>Exp:</strong> ${new Date(data.expirationDate).toLocaleDateString()}</div>` : ''}
-      </div>
-
-      <!-- Barcode Section -->
-      <div style="text-align: center; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 0.1in 0; margin-bottom: 0.1in;">
-        <div style="font-family: monospace; font-size: 12px; letter-spacing: 2px; margin-bottom: 0.05in;">${escapeHtml(data.packageNumber)}</div>
-        ${data.barcodeDataUrl ? `<img src="${data.barcodeDataUrl}" style="max-width: 100%; height: 0.5in;" alt="Barcode" />` : ''}
-      </div>
-
-      <!-- QR Code -->
-      ${data.qrCodeDataUrl ? `
-        <div style="text-align: center; margin-bottom: 0.1in;">
-          <img src="${data.qrCodeDataUrl}" style="width: 1in; height: 1in;" alt="QR Code" />
-          <div style="font-size: 8px; color: #666;">Scan for lab results</div>
-        </div>
-      ` : ''}
-
-      <!-- Warnings -->
-      ${data.warnings && data.warnings.length > 0 ? `
-        <div style="font-size: 8px; color: #666; border-top: 1px solid #ccc; padding-top: 0.05in;">
-          ${data.warnings.map(w => `<div>⚠️ ${escapeHtml(w)}</div>`).join('')}
-        </div>
-      ` : ''}
-    </div>
-  `;
-}
-
-// ============================================================================
-// SMALL PACKAGE LABEL (2x1)
-// ============================================================================
-
-export function generateSmallPackageLabelHTML(data: SmallPackageLabelData, options: LabelPrintOptions = {}): string {
-  const size = options.size || '2x1';
-
-  return `
-    <div style="${getBaseStyles(size, options)} display: flex; align-items: center; justify-content: space-between; padding: 0.05in;">
-      <div style="flex: 1; overflow: hidden;">
-        <div style="font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(data.productName)}</div>
-        <div style="font-size: 9px; color: #666;">
-          ${data.weight}${data.unit}
-          ${data.thcPercent !== undefined ? ` | THC: ${data.thcPercent}%` : ''}
-          ${data.cbdPercent !== undefined ? ` | CBD: ${data.cbdPercent}%` : ''}
-        </div>
-        <div style="font-size: 8px; font-family: monospace;">${escapeHtml(data.packageNumber)}</div>
-      </div>
-      ${data.qrCodeDataUrl ? `
-        <div style="flex-shrink: 0; margin-left: 0.05in;">
-          <img src="${data.qrCodeDataUrl}" style="width: 0.7in; height: 0.7in;" alt="QR" />
-        </div>
-      ` : ''}
-    </div>
-  `;
-}
-
-// ============================================================================
-// BATCH LABEL (4x6)
-// ============================================================================
-
-export function generateBatchLabelHTML(data: BatchLabelData, options: LabelPrintOptions = {}): string {
-  const size = options.size || '4x6';
-
-  return `
-    <div style="${getBaseStyles(size, options)}">
-      <!-- Header -->
-      <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.1in; margin-bottom: 0.15in;">
-        <div style="font-size: 16px; font-weight: bold;">${escapeHtml(data.companyName)}</div>
-        <div style="font-size: 12px; color: #666;">BATCH LABEL</div>
-      </div>
-
-      <!-- Batch Number (Large) -->
-      <div style="text-align: center; margin-bottom: 0.2in;">
-        <div style="font-size: 11px; color: #666;">Batch Number</div>
-        <div style="font-size: 28px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">${escapeHtml(data.batchNumber)}</div>
-      </div>
-
-      <!-- Product Info -->
-      <div style="background: #f5f5f5; padding: 0.1in; border-radius: 4px; margin-bottom: 0.15in;">
-        <div style="font-size: 16px; font-weight: bold; margin-bottom: 0.05in;">${escapeHtml(data.productName)}</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.05in; font-size: 11px;">
-          <div><strong>Qty:</strong> ${data.quantity} ${escapeHtml(data.unit)}</div>
-          <div><strong>Received:</strong> ${new Date(data.receivedDate).toLocaleDateString()}</div>
-          ${data.supplierName ? `<div><strong>Supplier:</strong> ${escapeHtml(data.supplierName)}</div>` : ''}
-          ${data.harvestDate ? `<div><strong>Harvest:</strong> ${new Date(data.harvestDate).toLocaleDateString()}</div>` : ''}
-        </div>
-      </div>
-
-      <!-- Lab Results -->
-      ${data.thcPercent !== undefined || data.cbdPercent !== undefined ? `
-        <div style="display: flex; justify-content: center; gap: 0.4in; margin-bottom: 0.15in;">
-          ${data.thcPercent !== undefined ? `
-            <div style="text-align: center;">
-              <div style="font-size: 24px; font-weight: bold;">${data.thcPercent}%</div>
-              <div style="font-size: 10px; color: #666;">THC</div>
-            </div>
-          ` : ''}
-          ${data.cbdPercent !== undefined ? `
-            <div style="text-align: center;">
-              <div style="font-size: 24px; font-weight: bold;">${data.cbdPercent}%</div>
-              <div style="font-size: 10px; color: #666;">CBD</div>
-            </div>
-          ` : ''}
-        </div>
-      ` : ''}
-
-      <!-- Lab Info -->
-      ${data.labName ? `
-        <div style="font-size: 10px; color: #666; text-align: center; margin-bottom: 0.1in;">
-          Tested by: ${escapeHtml(data.labName)}
-          ${data.labTestDate ? ` on ${new Date(data.labTestDate).toLocaleDateString()}` : ''}
-        </div>
-      ` : ''}
-
-      <!-- QR Code -->
-      ${data.qrCodeDataUrl ? `
-        <div style="text-align: center;">
-          <img src="${data.qrCodeDataUrl}" style="width: 1.2in; height: 1.2in;" alt="QR Code" />
-          <div style="font-size: 8px; color: #666;">Scan for full batch info</div>
-        </div>
-      ` : ''}
-    </div>
-  `;
-}
-
-// ============================================================================
-// SHELF LABEL (2x1)
-// ============================================================================
-
-export function generateShelfLabelHTML(data: ShelfLabelData, options: LabelPrintOptions = {}): string {
-  const size = options.size || '2x1';
-
-  return `
-    <div style="${getBaseStyles(size, options)} display: flex; align-items: center; justify-content: space-between; padding: 0.05in;">
-      <div style="flex: 1;">
-        <div style="font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(data.productName)}</div>
-        <div style="font-size: 8px; color: #666;">SKU: ${escapeHtml(data.sku)}</div>
-        ${data.category ? `<div style="font-size: 8px; color: #666;">${escapeHtml(data.category)}</div>` : ''}
-      </div>
-      <div style="text-align: right;">
-        <div style="font-size: 16px; font-weight: bold;">$${data.price.toFixed(2)}</div>
-        <div style="font-size: 8px; color: #666;">/ ${escapeHtml(data.unit)}</div>
-      </div>
-    </div>
-  `;
-}
-
-// ============================================================================
-// TRANSFER MANIFEST (Full Page)
-// ============================================================================
-
-export function generateTransferManifestHTML(data: TransferManifestData, options: LabelPrintOptions = {}): string {
+  totalQuantity: number;
+  unit: string;
+  totalValue: number;
+  runnerName: string;
+  vehicleInfo?: string;
+  scheduledDate: string;
+  qrCodeDataUrl: string;
+}): string {
   return `
     <div style="
-      width: 8.5in;
-      min-height: 11in;
-      padding: 0.5in;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 11px;
-      line-height: 1.4;
+      width: 4in;
+      height: 6in;
+      padding: 0.25in;
+      font-family: Arial, sans-serif;
+      border: 1px solid #000;
+      box-sizing: border-box;
     ">
       <!-- Header -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 0.2in; margin-bottom: 0.3in;">
-        <div>
-          <div style="font-size: 24px; font-weight: bold;">${escapeHtml(data.companyName)}</div>
-          <div style="font-size: 14px; color: #666;">TRANSFER MANIFEST</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 14px; font-weight: bold;">Manifest #${escapeHtml(data.manifestNumber)}</div>
-          <div style="font-size: 10px; color: #666;">Generated: ${new Date().toLocaleString()}</div>
-        </div>
+      <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.1in; margin-bottom: 0.15in;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: bold;">🚗 TRANSFER MANIFEST</h1>
+        <p style="margin: 0.05in 0; font-size: 16px; font-weight: bold;">${data.transferNumber}</p>
       </div>
 
-      <!-- Origin & Destination -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5in; margin-bottom: 0.3in;">
-        <div style="border: 1px solid #ccc; padding: 0.15in; border-radius: 4px;">
-          <div style="font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 0.05in;">Origin Facility</div>
-          <div style="font-size: 14px; font-weight: bold;">${escapeHtml(data.originFacility)}</div>
-          <div style="font-size: 10px;">License: ${escapeHtml(data.originLicense)}</div>
-        </div>
-        <div style="border: 1px solid #ccc; padding: 0.15in; border-radius: 4px;">
-          <div style="font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 0.05in;">Destination Facility</div>
-          <div style="font-size: 14px; font-weight: bold;">${escapeHtml(data.destinationFacility)}</div>
-          <div style="font-size: 10px;">License: ${escapeHtml(data.destinationLicense)}</div>
-        </div>
+      <!-- Locations -->
+      <div style="margin-bottom: 0.2in;">
+        <p style="margin: 0.1in 0; font-size: 14px;"><strong>FROM:</strong> ${data.fromLocation}</p>
+        <p style="text-align: center; font-size: 20px; margin: 0.05in 0;">↓</p>
+        <p style="margin: 0.1in 0; font-size: 14px;"><strong>TO:</strong> ${data.toLocation}</p>
       </div>
 
-      <!-- Transport Info -->
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2in; margin-bottom: 0.3in; font-size: 10px;">
-        <div>
-          <div style="color: #666;">Departure</div>
-          <div style="font-weight: bold;">${new Date(data.departureDate).toLocaleString()}</div>
-        </div>
-        <div>
-          <div style="color: #666;">Est. Arrival</div>
-          <div style="font-weight: bold;">${new Date(data.estimatedArrival).toLocaleString()}</div>
-        </div>
-        <div>
-          <div style="color: #666;">Driver</div>
-          <div style="font-weight: bold;">${escapeHtml(data.driverName)}</div>
-          ${data.driverLicense ? `<div style="font-size: 9px;">License: ${escapeHtml(data.driverLicense)}</div>` : ''}
-        </div>
-        ${data.vehicleInfo ? `
-          <div>
-            <div style="color: #666;">Vehicle</div>
-            <div style="font-weight: bold;">${escapeHtml(data.vehicleInfo)}</div>
-          </div>
-        ` : ''}
+      <div style="border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 0.1in 0; margin: 0.15in 0;"></div>
+
+      <!-- Items -->
+      <div style="margin-bottom: 0.15in;">
+        <p style="font-size: 14px; font-weight: bold; margin-bottom: 0.1in;">ITEMS (${data.items.length} packages):</p>
+        ${data.items.map(item => `
+          <p style="margin: 0.05in 0; font-size: 12px;">
+            • ${item.packageNumber} - ${item.productName} (${item.quantity} ${item.unit})
+          </p>
+        `).join('')}
       </div>
 
-      <!-- Items Table -->
-      <div style="margin-bottom: 0.3in;">
-        <div style="font-size: 12px; font-weight: bold; margin-bottom: 0.1in;">Package Contents</div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-          <thead>
-            <tr style="background: #f5f5f5;">
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Package #</th>
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Product</th>
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: right;">Quantity</th>
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Unit</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${data.items.map(item => `
-              <tr>
-                <td style="border: 1px solid #ccc; padding: 0.1in; font-family: monospace;">${escapeHtml(item.packageNumber)}</td>
-                <td style="border: 1px solid #ccc; padding: 0.1in;">${escapeHtml(item.productName)}</td>
-                <td style="border: 1px solid #ccc; padding: 0.1in; text-align: right;">${item.quantity}</td>
-                <td style="border: 1px solid #ccc; padding: 0.1in;">${escapeHtml(item.unit)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-          <tfoot>
-            <tr style="font-weight: bold;">
-              <td colspan="2" style="border: 1px solid #ccc; padding: 0.1in;">Total Packages: ${data.items.length}</td>
-              <td style="border: 1px solid #ccc; padding: 0.1in; text-align: right;">${data.items.reduce((sum, i) => sum + i.quantity, 0)}</td>
-              <td style="border: 1px solid #ccc; padding: 0.1in;"></td>
-            </tr>
-          </tfoot>
-        </table>
+      <div style="border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 0.1in 0; margin: 0.15in 0;"></div>
+
+      <div style="margin-bottom: 0.15in;">
+        <p style="margin: 0.05in 0; font-size: 14px;"><strong>TOTAL:</strong> ${data.totalQuantity} ${data.unit} | Value: $${data.totalValue.toLocaleString()}</p>
+      </div>
+
+      <div style="border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 0.1in 0; margin: 0.15in 0;"></div>
+
+      <!-- Runner Info -->
+      <div style="margin-bottom: 0.2in; font-size: 14px;">
+        <p style="margin: 0.05in 0;"><strong>Runner:</strong> ${data.runnerName}</p>
+        ${data.vehicleInfo ? `<p style="margin: 0.05in 0;"><strong>Vehicle:</strong> ${data.vehicleInfo}</p>` : ''}
+        <p style="margin: 0.05in 0;"><strong>Scheduled:</strong> ${new Date(data.scheduledDate).toLocaleString()}</p>
+      </div>
+
+      <!-- QR Code -->
+      <div style="text-align: center; margin: 0.2in 0;">
+        <img src="${data.qrCodeDataUrl}" style="width: 1.5in; height: 1.5in;" alt="QR Code" />
+        <p style="font-size: 11px; margin-top: 0.05in;">Scan to track transfer status</p>
       </div>
 
       <!-- Signatures -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5in; margin-top: 0.5in;">
-        <div>
-          <div style="border-bottom: 1px solid #000; height: 0.4in; margin-bottom: 0.05in;"></div>
-          <div style="font-size: 10px;">Origin Signature & Date</div>
-        </div>
-        <div>
-          <div style="border-bottom: 1px solid #000; height: 0.4in; margin-bottom: 0.05in;"></div>
-          <div style="font-size: 10px;">Destination Signature & Date</div>
-        </div>
+      <div style="border-top: 1px solid #ccc; padding-top: 0.1in; margin-top: 0.2in; font-size: 12px;">
+        <p style="margin: 0.05in 0;"><strong>Released By:</strong> ____________________</p>
+        <p style="margin: 0.05in 0;">Date/Time: ____________________</p>
+        <p style="margin: 0.15in 0 0.05in 0;"><strong>Received By:</strong> ____________________</p>
+        <p style="margin: 0.05in 0;">Date/Time: ____________________</p>
       </div>
-
-      <!-- QR Code -->
-      ${data.qrCodeDataUrl ? `
-        <div style="position: absolute; bottom: 0.5in; right: 0.5in; text-align: center;">
-          <img src="${data.qrCodeDataUrl}" style="width: 1in; height: 1in;" alt="QR Code" />
-          <div style="font-size: 8px; color: #666;">Scan to verify</div>
-        </div>
-      ` : ''}
     </div>
   `;
 }
 
-// ============================================================================
-// PRINT FUNCTIONS
-// ============================================================================
+/**
+ * Print label to PDF
+ */
+export async function printLabelToPDF(
+  htmlContent: string,
+  options: LabelPrintOptions = {}
+): Promise<Blob> {
+  // Create a temporary container
+  const container = document.createElement('div');
+  container.innerHTML = htmlContent;
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  document.body.appendChild(container);
+
+  try {
+    // Convert HTML to canvas
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      logging: false,
+      useCORS: true,
+    });
+
+    // Calculate PDF dimensions based on label size
+    const width = options.size === '2x1' ? 2 : 4;
+    const height = options.size === '2x1' ? 1 : 6;
+    
+    const pdf = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'in',
+      format: [width, height],
+    });
+
+    // Add canvas to PDF
+    const imgData = canvas.toDataURL('image/png');
+    pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+
+    // Generate multiple copies if specified
+    const copies = options.copies || 1;
+    const finalPdf = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'in',
+      format: [width, height],
+    });
+
+    for (let i = 0; i < copies; i++) {
+      if (i > 0) {
+        finalPdf.addPage([width, height], width > height ? 'landscape' : 'portrait');
+      }
+      finalPdf.addImage(imgData, 'PNG', 0, 0, width, height);
+    }
+
+    // Generate blob
+    const blob = finalPdf.output('blob');
+    return blob;
+  } finally {
+    // Clean up
+    document.body.removeChild(container);
+  }
+}
 
 /**
- * Print label(s) in a new window
+ * Print label (opens print dialog)
  */
-export function printLabel(html: string, options: LabelPrintOptions = {}): void {
-  const { copies = 1 } = options;
-
-  const printWindow = window.open('', '_blank', 'width=600,height=800');
+export async function printLabel(
+  htmlContent: string,
+  options: LabelPrintOptions = {}
+): Promise<void> {
+  // Create print window
+  const printWindow = window.open('', '_blank');
   if (!printWindow) {
-    logger.error('Failed to open print window - popup blocked?');
-    throw new Error('Could not open print window. Please allow popups.');
+    throw new Error('Unable to open print window. Please allow popups.');
   }
-
-  const content = Array(copies).fill(html).join('<div style="page-break-after: always;"></div>');
 
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Print Label</title>
+        <title>Label Print</title>
         <style>
           @media print {
-            body { margin: 0; padding: 0; }
-            @page { margin: 0; }
-          }
-          body {
-            margin: 0;
-            padding: 0.25in;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25in;
+            @page {
+              size: ${options.size === '2x1' ? '2in 1in' : '4in 6in'};
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+            }
           }
         </style>
       </head>
       <body>
-        ${content}
-        <script>
-          window.onload = function() {
-            window.print();
-            window.onafterprint = function() { window.close(); };
-          };
-        </script>
+        ${htmlContent}
       </body>
     </html>
   `);
 
   printWindow.document.close();
+
+  // Wait for content to load, then print
+  setTimeout(() => {
+    printWindow.print();
+    // Close after printing (optional)
+    // printWindow.close();
+  }, 250);
 }
 
 /**
- * Download label as PDF (requires jsPDF)
+ * Download label as PDF
  */
-export async function downloadLabelAsPDF(
-  html: string,
-  filename: string = 'label.pdf',
+export async function downloadLabelPDF(
+  htmlContent: string,
+  filename: string,
   options: LabelPrintOptions = {}
 ): Promise<void> {
-  try {
-    // Dynamic import to reduce bundle size
-    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-      import('jspdf'),
-      import('html2canvas'),
-    ]);
-
-    // Create temporary container
-    const container = document.createElement('div');
-    container.innerHTML = html;
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    document.body.appendChild(container);
-
-    const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    });
-
-    document.body.removeChild(container);
-
-    const imgData = canvas.toDataURL('image/png');
-    const size = options.size || '4x6';
-    const { width, height } = LABEL_DIMENSIONS[size];
-
-    const pdf = new jsPDF({
-      orientation: parseFloat(width) > parseFloat(height) ? 'landscape' : 'portrait',
-      unit: 'in',
-      format: [parseFloat(width), parseFloat(height)],
-    });
-
-    pdf.addImage(imgData, 'PNG', 0, 0, parseFloat(width), parseFloat(height));
-    pdf.save(filename);
-  } catch (error) {
-    logger.error('Failed to generate PDF', error as Error);
-    throw error;
-  }
+  const blob = await printLabelToPDF(htmlContent, options);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
-// ============================================================================
-// UTILITIES
-// ============================================================================
-
-function escapeHtml(str: string): string {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-/**
- * Generate multiple labels at once
- */
-export function generateBatchLabels(
-  items: ProductLabelData[],
-  options: LabelPrintOptions = {}
-): string {
-  return items.map(item => generateProductLabelHTML(item, options)).join('\n');
-}
-
-/**
- * Preview label in a container
- */
-export function previewLabel(containerId: string, html: string): void {
-  const container = document.getElementById(containerId);
-  if (container) {
-    container.innerHTML = html;
-  }
-}

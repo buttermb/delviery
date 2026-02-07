@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { ArrowRight, CheckCircle } from 'lucide-react';
 
 interface FlippableFeatureCardProps {
   icon: React.ElementType;

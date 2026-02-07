@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Check from "lucide-react/dist/esm/icons/check";
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Eye, Check, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
@@ -43,11 +41,6 @@ interface StorefrontProductCardProps {
     onQuickView: () => void;
     index: number;
     accentColor?: string;
-    // Feature toggles from Easy Mode
-    showSaleBadge?: boolean;
-    showNewBadge?: boolean;
-    showStrainBadge?: boolean;
-    showStockWarning?: boolean;
 }
 
 export function StorefrontProductCard({
@@ -60,12 +53,7 @@ export function StorefrontProductCard({
     isInWishlist,
     onQuickView,
     index,
-    accentColor = '#015358',
-    // Feature toggles - default to true for backwards compatibility
-    showSaleBadge = true,
-    showNewBadge = true,
-    showStrainBadge = true,
-    showStockWarning = true,
+    accentColor = '#015358'
 }: StorefrontProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const cleanedName = cleanProductName(product.product_name);
@@ -130,19 +118,19 @@ export function StorefrontProductCard({
                         </button>
                     </div>
 
-                    {/* Stock / Type / Sale / New Badges - controlled by feature toggles */}
+                    {/* Stock / Type / Sale / New Badges */}
                     <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
-                        {showNewBadge && isNew && !hasSalePrice && (
+                        {isNew && !hasSalePrice && (
                             <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 New
                             </span>
                         )}
-                        {showSaleBadge && hasSalePrice && (
+                        {hasSalePrice && (
                             <span className="bg-red-500 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 Sale
                             </span>
                         )}
-                        {showStrainBadge && product.strain_type && (
+                        {product.strain_type && (
                             <span className={cn(
                                 "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md shadow-sm border",
                                 product.strain_type === 'Indica' ? "bg-purple-100/90 text-purple-700 border-purple-200" :
@@ -152,7 +140,7 @@ export function StorefrontProductCard({
                                 {product.strain_type}
                             </span>
                         )}
-                        {showStockWarning && isLowStock && (
+                        {isLowStock && (
                             <span className="bg-orange-500/90 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 Low Stock
                             </span>
@@ -207,7 +195,7 @@ export function StorefrontProductCard({
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
+                <div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (

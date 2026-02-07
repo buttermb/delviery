@@ -4,10 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import Star from "lucide-react/dist/esm/icons/star";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Quote from "lucide-react/dist/esm/icons/quote";
+import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Testimonial {
@@ -129,8 +126,8 @@ export function TestimonialsCarousel() {
         </div>
 
         {/* Testimonial carousel - CSS transitions only */}
-        <div className="max-w-4xl mx-auto" role="region" aria-label="Customer testimonials" aria-roledescription="carousel">
-          <div className="relative min-h-[380px] md:min-h-[320px]" aria-live="polite" aria-atomic="true">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative min-h-[380px] md:min-h-[320px]">
             {testimonials.map((testimonial, index) => (
               <div
                 key={testimonial.id}
@@ -190,32 +187,22 @@ export function TestimonialsCarousel() {
               size="icon"
               onClick={handlePrev}
               className="rounded-full border-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:border-[hsl(var(--marketing-primary))]"
-              aria-label="Previous testimonial"
             >
-              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+              <ChevronLeft className="w-5 h-5" />
             </Button>
 
             {/* Dots */}
-            <div className="flex gap-2" role="tablist" aria-label="Testimonial navigation">
-              {testimonials.map((t, index) => (
+            <div className="flex gap-2">
+              {testimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => handleDotClick(index)}
-                  role="tab"
-                  aria-selected={index === activeIndex}
-                  aria-label={`Testimonial ${index + 1} of ${testimonials.length}: ${t.name}`}
-                  className={`rounded-full transition-all duration-300 min-w-[44px] min-h-[44px] flex items-center justify-center ${
-                    index === activeIndex
-                      ? ""
-                      : ""
-                  }`}
-                >
-                  <span className={`block h-2 rounded-full transition-all duration-300 ${
+                  className={`h-2 rounded-full transition-all duration-300 ${
                     index === activeIndex
                       ? "w-8 bg-[hsl(var(--marketing-primary))]"
                       : "w-2 bg-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-text-light))]"
-                  }`} />
-                </button>
+                  }`}
+                />
               ))}
             </div>
 
@@ -224,9 +211,8 @@ export function TestimonialsCarousel() {
               size="icon"
               onClick={handleNext}
               className="rounded-full border-[hsl(var(--marketing-border))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:border-[hsl(var(--marketing-primary))]"
-              aria-label="Next testimonial"
             >
-              <ChevronRight className="w-5 h-5" aria-hidden="true" />
+              <ChevronRight className="w-5 h-5" />
             </Button>
           </div>
         </div>

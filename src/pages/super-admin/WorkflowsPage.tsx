@@ -9,9 +9,7 @@ import { AlertConfig } from '@/components/super-admin/automation/AlertConfig';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Workflow from "lucide-react/dist/esm/icons/workflow";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Bell from "lucide-react/dist/esm/icons/bell";
+import { Workflow, Clock, Bell } from 'lucide-react';
 
 export default function WorkflowsPage() {
   return (

@@ -1,46 +1,23 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import ShieldAlert from "lucide-react/dist/esm/icons/shield-alert";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Target from "lucide-react/dist/esm/icons/target";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import History from "lucide-react/dist/esm/icons/history";
-import Send from "lucide-react/dist/esm/icons/send";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
-import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
+import {
+  Package, DollarSign, TrendingUp, AlertTriangle,
+  Eye, CreditCard, MessageCircle, Calendar
+} from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { format, differenceInDays, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { cn } from '@/lib/utils';
 
 interface FrontedItem {
   id: string;
@@ -57,39 +34,9 @@ interface FrontedItem {
   quantity_sold: number;
   quantity_returned: number;
   quantity_damaged: number;
-  cost_per_unit?: number;
   product: {
     name: string;
   };
-  // Risk assessment fields
-  riskScore?: number;
-  riskLevel?: 'low' | 'medium' | 'high' | 'critical';
-  daysOut?: number;
-  daysOverdue?: number;
-  collectionScore?: number;
-}
-
-interface CollectionActivity {
-  id: string;
-  fronted_inventory_id: string;
-  activity_type: 'call' | 'text' | 'email' | 'visit' | 'payment_promise' | 'note';
-  notes?: string;
-  performed_at: string;
-  performed_by?: string;
-  follow_up_date?: string;
-  result?: string;
-}
-
-interface RiskMetrics {
-  totalAtRisk: number;
-  criticalCount: number;
-  highRiskCount: number;
-  mediumRiskCount: number;
-  lowRiskCount: number;
-  averageRiskScore: number;
-  healthScore: number;
-  collectionRate: number;
-  avgDaysOut: number;
 }
 
 export default function FrontedInventory() {

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { HealthIndicator } from './dashboard/HealthIndicator';
-import Activity from "lucide-react/dist/esm/icons/activity";
+import { Activity } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

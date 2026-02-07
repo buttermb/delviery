@@ -4,14 +4,16 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Database from "lucide-react/dist/esm/icons/database";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Play from "lucide-react/dist/esm/icons/play";
-import GitBranch from "lucide-react/dist/esm/icons/git-branch";
-import Package from "lucide-react/dist/esm/icons/package";
-import Bell from "lucide-react/dist/esm/icons/bell";
+import { 
+  Mail, 
+  MessageSquare, 
+  Database, 
+  Webhook,
+  Play,
+  GitBranch,
+  Package,
+  Bell,
+} from 'lucide-react';
 
 interface NodePaletteProps {
   onNodeDragStart: (event: React.DragEvent, nodeType: string, config: Record<string, unknown>) => void;

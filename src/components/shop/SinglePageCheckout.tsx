@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -25,15 +24,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { StockWarning } from '@/components/shop/StockWarning';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
+import {
+  ArrowLeft,
+  Package,
+  Truck,
+  CreditCard,
+  ShoppingCart,
+  Loader2,
+  AlertTriangle,
+  Check,
+  X,
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -203,22 +204,14 @@ export function SinglePageCheckout() {
         image_url: item.imageUrl,
       }));
 
-      const sanitizedFirstName = sanitizeFormInput(formData.firstName, 100);
-      const sanitizedLastName = sanitizeFormInput(formData.lastName, 100);
-      const sanitizedStreet = sanitizeFormInput(formData.street, 200);
-      const sanitizedApt = formData.apartment ? sanitizeFormInput(formData.apartment, 100) : '';
-      const sanitizedCity = sanitizeFormInput(formData.city, 100);
-      const sanitizedState = sanitizeFormInput(formData.state, 50);
-      const sanitizedZip = sanitizeFormInput(formData.zip, 20);
-
       const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
         p_store_id: store.id,
         p_items: orderItems,
-        p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,
-        p_customer_email: sanitizeEmail(formData.email),
-        p_customer_phone: formData.phone ? sanitizePhoneInput(formData.phone) : null,
-        p_delivery_address: `${sanitizedStreet}${sanitizedApt ? ', ' + sanitizedApt : ''}, ${sanitizedCity}, ${sanitizedState} ${sanitizedZip}`,
-        p_delivery_notes: formData.deliveryNotes ? sanitizeTextareaInput(formData.deliveryNotes, 500) : null,
+        p_customer_name: `${formData.firstName} ${formData.lastName}`,
+        p_customer_email: formData.email,
+        p_customer_phone: formData.phone || null,
+        p_delivery_address: `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`,
+        p_delivery_notes: formData.deliveryNotes || null,
         p_subtotal: subtotal,
         p_tax: 0,
         p_delivery_fee: deliveryFee,

@@ -1,6 +1,5 @@
 // Edge Function: customer-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
@@ -25,7 +24,7 @@ async function verifyCustomerToken(token: string): Promise<CustomerJWTPayload | 
   return payload as unknown as CustomerJWTPayload;
 }
 
-serve(secureHeadersMiddleware(async (req) => {
+serve(async (req) => {
   // Get origin from request for CORS
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
@@ -83,33 +82,12 @@ serve(secureHeadersMiddleware(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const action = url.searchParams.get("action");
-
-    // Health check endpoint - no auth required, verifies function is deployed and running
-    if (action === 'health') {
-      const hasSupabaseUrl = !!Deno.env.get('SUPABASE_URL');
-      const hasServiceRoleKey = !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      const hasJwtSecret = !!Deno.env.get('JWT_SECRET');
-
-      return new Response(
-        JSON.stringify({
-          status: 'ok',
-          function: 'customer-auth',
-          timestamp: new Date().toISOString(),
-          env: {
-            SUPABASE_URL: hasSupabaseUrl,
-            SUPABASE_SERVICE_ROLE_KEY: hasServiceRoleKey,
-            JWT_SECRET: hasJwtSecret,
-          },
-        }),
-        { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
 
     let requestBody: any = {};
     if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
@@ -432,20 +410,6 @@ serve(secureHeadersMiddleware(async (req) => {
         customer = data;
       }
 
-      // Session fixation protection: Invalidate all pre-existing sessions for this customer
-      // This ensures a fresh session state on authentication, preventing session hijacking
-      try {
-        await supabase
-          .from('customer_sessions')
-          .delete()
-          .eq('customer_user_id', customerUser.id)
-          .eq('tenant_id', tenant.id);
-        console.log('[SESSION_FIXATION] Previous customer sessions invalidated:', customerUser.id);
-      } catch (sessionCleanupError) {
-        // Log but don't block login - session cleanup is best-effort
-        console.warn('[SESSION_FIXATION] Failed to invalidate previous customer sessions:', sessionCleanupError);
-      }
-
       // Generate JWT token
       const token = await createCustomerToken({
         customer_user_id: customerUser.id,
@@ -682,5 +646,5 @@ serve(secureHeadersMiddleware(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-}));
+});
 

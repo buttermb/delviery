@@ -5,16 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Fingerprint from "lucide-react/dist/esm/icons/fingerprint";
+import { 
+  Shield, Lock, MapPin, CheckCircle, XCircle, Loader2, 
+  Sparkles, Eye, Clock, Fingerprint
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 

@@ -4,7 +4,7 @@
  * Generate professional invoices without external services
  */
 
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, PDFViewer } from '@/components/ui/lazy-react-pdf';
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 
 interface InvoiceLineItem {
   description: string;

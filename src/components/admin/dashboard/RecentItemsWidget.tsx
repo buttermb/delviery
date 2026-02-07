@@ -1,9 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRecentItems } from "@/hooks/useRecentItems";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Users from "lucide-react/dist/esm/icons/users";
+import { Clock, Package, ShoppingCart, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 

@@ -194,10 +194,15 @@ export interface CRMInvite {
 }
 
 /**
- * CRM Activity Type - all supported activity types
+ * CRM Activity Log record
  */
-export type CRMActivityType =
-    // Original CRM activities
+export interface CRMActivityLog {
+    id: string;
+    account_id: string;
+    client_id: string;
+
+    // Activity Info
+    activity_type:
     | 'pre_order_created'
     | 'invoice_created'
     | 'invoice_updated'
@@ -207,28 +212,7 @@ export type CRMActivityType =
     | 'invite_accepted'
     | 'client_created'
     | 'client_updated'
-    | 'client_archived'
-    // Customer sync activities
-    | 'customer_created'
-    | 'customer_updated'
-    | 'customer_linked'
-    | 'customer_unlinked'
-    | 'loyalty_points_updated'
-    | 'loyalty_tier_changed'
-    | 'order_placed'
-    | 'payment_received';
-
-/**
- * CRM Activity Log record
- */
-export interface CRMActivityLog {
-    id: string;
-    account_id: string;
-    client_id: string;
-    contact_id?: string | null; // Optional reference to unified contacts
-
-    // Activity Info
-    activity_type: CRMActivityType;
+    | 'client_archived';
 
     description: string;
 
@@ -236,18 +220,11 @@ export interface CRMActivityLog {
     reference_id: string | null;
     reference_type: string | null;
 
-    // Metadata for rich context
-    metadata?: Record<string, unknown>;
-
     // Metadata
     performed_by_user_id: string | null;
     performed_by_name: string | null;
 
     created_at: string;
-
-    // Optional joined data
-    client?: CRMClient;
-    client_name?: string;
 }
 
 /**
@@ -367,48 +344,4 @@ export interface ClientPortalAuth {
     client_id: string;
     client_name: string;
     account_id: string;
-}
-
-// ============================================================================
-// CRM-Customer Sync Types
-// ============================================================================
-
-/**
- * Link between a unified contact and a CRM client
- */
-export interface CRMCustomerLink {
-    id: string;
-    account_id: string;
-    tenant_id: string;
-    contact_id: string;
-    crm_client_id: string;
-    sync_enabled: boolean;
-    last_synced_at: string | null;
-    created_at: string;
-    created_by: string | null;
-
-    // Optional joined data
-    contact?: {
-        id: string;
-        name: string | null;
-        email: string | null;
-        phone: string | null;
-    };
-    crm_client?: CRMClient;
-}
-
-/**
- * Input for linking a customer to CRM
- */
-export interface LinkCustomerToCRMInput {
-    contact_id: string;
-    crm_client_id: string;
-    sync_enabled?: boolean;
-}
-
-/**
- * Customer CRM timeline entry (with client name joined)
- */
-export interface CustomerCRMTimelineEntry extends CRMActivityLog {
-    client_name?: string;
 }

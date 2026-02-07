@@ -1,11 +1,4 @@
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Award from "lucide-react/dist/esm/icons/award";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import Star from "lucide-react/dist/esm/icons/star";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { Shield, Award, Clock, Package, Users, Star, Lock, CheckCircle } from "lucide-react";
 
 const TrustBadges = () => {
   const badges = [

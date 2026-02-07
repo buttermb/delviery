@@ -4,13 +4,11 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import { MapPin, Warehouse, Truck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
-import { LeafletMapWidget } from '@/components/ui/lazy-leaflet';
+import { LeafletMapWidget } from './LeafletMapWidget';
 
 // Deterministic hash for stable coordinates based on string
 const getDeterministicOffset = (str: string) => {

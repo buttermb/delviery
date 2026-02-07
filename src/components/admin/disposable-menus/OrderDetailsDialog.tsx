@@ -12,24 +12,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Package from "lucide-react/dist/esm/icons/package";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { 
+  ShoppingBag, 
+  User, 
+  Phone, 
+  Mail, 
+  MapPin,
+  Package,
+  Clock,
+  DollarSign,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Loader2
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
-import { OrderAuditLog } from '@/components/admin/orders/OrderAuditLog';
 
 interface OrderItem {
   product_name?: string;
@@ -339,11 +340,6 @@ export const OrderDetailsDialog = ({
                 </div>
               )}
             </div>
-
-            <Separator />
-
-            {/* Activity History */}
-            <OrderAuditLog orderId={order.id} maxHeight="200px" />
           </div>
         </ScrollArea>
       </DialogContent>

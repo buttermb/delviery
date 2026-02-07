@@ -7,12 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Package from "lucide-react/dist/esm/icons/package";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import { ArrowLeft, MapPin, CreditCard, Truck, Package, Calendar } from 'lucide-react';
 import { CartItem } from './MenuCart';
 import { cleanProductName } from '@/utils/productName';
 

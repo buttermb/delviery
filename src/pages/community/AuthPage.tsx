@@ -8,14 +8,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { User, Session } from '@supabase/supabase-js';
@@ -207,19 +204,18 @@ export function AuthPage() {
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      autoComplete="email"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
-                    <PasswordInput
+                    <Input
                       id="login-password"
+                      type="password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      autoComplete="current-password"
                     />
                   </div>
 
@@ -258,33 +254,32 @@ export function AuthPage() {
                       onChange={(e) => setSignupEmail(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      autoComplete="email"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <PasswordInput
+                    <Input
                       id="signup-password"
+                      type="password"
                       placeholder="At least 6 characters"
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      autoComplete="new-password"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-password-confirm">Confirm Password</Label>
-                    <PasswordInput
+                    <Input
                       id="signup-password-confirm"
+                      type="password"
                       placeholder="Confirm your password"
                       value={signupPasswordConfirm}
                       onChange={(e) => setSignupPasswordConfirm(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      autoComplete="new-password"
                     />
                   </div>
 

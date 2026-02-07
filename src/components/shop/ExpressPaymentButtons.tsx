@@ -12,7 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ExpressPaymentButtonsProps {

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import { ChevronDown } from 'lucide-react';
 
 export function ScrollIndicator() {
   const scrollToNext = () => {

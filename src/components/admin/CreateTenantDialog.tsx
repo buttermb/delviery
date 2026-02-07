@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeSlugInput } from '@/lib/utils/sanitize';
 import {
   Dialog,
   DialogContent,
@@ -38,7 +37,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Plus } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type TenantLimits = {
@@ -166,19 +165,14 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
           : null;
 
       // Create tenant
-      const sanitizedBusinessName = sanitizeFormInput(data.business_name, 200);
-      const sanitizedOwnerEmail = sanitizeEmail(data.owner_email);
-      const sanitizedOwnerName = sanitizeFormInput(data.owner_name, 200);
-      const sanitizedPhone = data.phone ? sanitizePhoneInput(data.phone) : null;
-
       const { data: tenant, error } = await supabase
         .from('tenants')
         .insert({
-          business_name: sanitizedBusinessName,
+          business_name: data.business_name,
           slug,
-          owner_email: sanitizedOwnerEmail,
-          owner_name: sanitizedOwnerName,
-          phone: sanitizedPhone,
+          owner_email: data.owner_email,
+          owner_name: data.owner_name,
+          phone: data.phone || null,
           subscription_plan: data.subscription_plan,
           subscription_status: data.subscription_status,
           trial_ends_at: trialEndsAt,
@@ -201,10 +195,10 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
 
       // Create owner user
       const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-        email: sanitizedOwnerEmail,
+        email: data.owner_email,
         email_confirm: true,
         user_metadata: {
-          name: sanitizedOwnerName,
+          name: data.owner_name,
         },
       });
 
@@ -214,8 +208,8 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         // Add user to tenant_users table
         await supabase.from('tenant_users').insert({
           tenant_id: tenant.id,
-          email: sanitizedOwnerEmail,
-          name: sanitizedOwnerName,
+          email: data.owner_email,
+          name: data.owner_name,
           role: 'owner',
           status: 'active',
           email_verified: true,

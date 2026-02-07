@@ -17,15 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import User from "lucide-react/dist/esm/icons/user";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import X from "lucide-react/dist/esm/icons/x";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
@@ -290,14 +282,6 @@ export default function CustomerInvoices() {
         // Fallback to timestamp-based number
       }
 
-      // Map line items to edge function expected format (unit_price, total instead of rate, amount)
-      const mappedLineItems = lineItems.map(item => ({
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.rate,  // Edge function expects unit_price
-        total: item.amount,     // Edge function expects total
-      }));
-
       const invoiceData = {
         tenant_id: tenant.id,
         customer_id: formData.customer_id,
@@ -308,7 +292,7 @@ export default function CustomerInvoices() {
         amount_paid: 0,
         amount_due: total,
         status: 'draft',
-        line_items: mappedLineItems,
+        line_items: lineItems,
         issue_date: new Date().toISOString().split('T')[0],
         due_date: formData.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       };

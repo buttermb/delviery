@@ -8,14 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Download from "lucide-react/dist/esm/icons/download";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import {
+  BarChart3, FileText, Package, DollarSign, Download,
+  TrendingUp, Loader2, ArrowLeft
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

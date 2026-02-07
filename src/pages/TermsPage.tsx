@@ -1,10 +1,6 @@
 import { ModernPage } from '@/templates/ModernPageTemplate';
 import { Card, CardContent } from '@/components/ui/card';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Scale from "lucide-react/dist/esm/icons/scale";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+import { FileText, AlertCircle, Scale, Ban, CreditCard } from 'lucide-react';
 
 export default function TermsPage() {
   return (

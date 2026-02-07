@@ -11,17 +11,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import X from "lucide-react/dist/esm/icons/x";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import {
+  Building2,
+  Calendar,
+  DollarSign,
+  Package,
+  Edit,
+  X,
+  FileText,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Truck,
+} from "lucide-react";
 import {
   Select,
   SelectContent,

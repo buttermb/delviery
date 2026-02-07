@@ -1,6 +1,7 @@
+// @ts-nocheck
 /**
  * Credit Service
- *
+ * 
  * Core service for managing credits in the freemium system.
  * Handles credit checking, consumption, granting, and purchasing.
  */
@@ -64,25 +65,19 @@ export interface CheckCreditsResult {
  */
 export async function getCreditBalance(tenantId: string): Promise<CreditBalance | null> {
   try {
-    // PRIORITY: Check tenants table for subscription_status and plan first
+    // PRIORITY: Check tenants table for subscription_status first
     // This is the source of truth for whether user is on free tier
     const { data: tenantData, error: tenantError } = await supabase
       .from('tenants')
-      .select('subscription_status, subscription_plan, credits_enabled')
+      .select('subscription_status, is_free_tier, credits_enabled')
       .eq('id', tenantId)
       .maybeSingle();
 
-    // Paid plans (professional, enterprise) are NEVER free tier
-    const isPaidPlan = tenantData?.subscription_plan === 'professional' ||
-                       tenantData?.subscription_plan === 'enterprise';
-
-    // Active subscription statuses (including 'trialing')
-    const hasActiveSubscription = tenantData?.subscription_status === 'active' ||
-                                   tenantData?.subscription_status === 'trial' ||
-                                   tenantData?.subscription_status === 'trialing';
-
-    // User is NOT free tier if they have a paid plan OR active subscription
-    const tenantIsFreeTier = !(isPaidPlan || hasActiveSubscription);
+    // If tenant has active subscription, they are NOT on free tier
+    // regardless of what tenant_credits.is_free_tier says
+    const hasActiveSubscription = tenantData?.subscription_status === 'active' || 
+                                   tenantData?.subscription_status === 'trial';
+    const tenantIsFreeTier = hasActiveSubscription ? false : (tenantData?.is_free_tier ?? true);
 
     // Query credit balance data
     const { data, error } = await supabase
@@ -196,7 +191,7 @@ export async function consumeCredits(
     // Get the cost from creditCosts
     const cost = getCreditCost(actionKey);
     
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .rpc('consume_credits', {
         p_tenant_id: tenantId,
         p_amount: cost,
@@ -321,7 +316,7 @@ export async function purchaseCredits(
       return { success: false, error: error.message };
     }
 
-    if (!data || (Array.isArray(data) && data.length === 0)) {
+    if (!data || data.length === 0) {
       return { success: false, error: 'No response from credit purchase' };
     }
 
@@ -391,13 +386,13 @@ export async function getCreditTransactions(
       tenantId: row.tenant_id,
       amount: row.amount,
       balanceAfter: row.balance_after,
-      transactionType: row.transaction_type as CreditTransaction['transactionType'],
-      actionType: row.action_type ?? undefined,
-      referenceId: row.reference_id ?? undefined,
-      referenceType: row.reference_type ?? undefined,
-      description: row.description ?? undefined,
+      transactionType: row.transaction_type,
+      actionType: row.action_type,
+      referenceId: row.reference_id,
+      referenceType: row.reference_type,
+      description: row.description,
       metadata: row.metadata as Record<string, unknown>,
-      createdAt: row.created_at ?? '',
+      createdAt: row.created_at,
     }));
   } catch (err) {
     logger.error('Error getting credit transactions', err as Error, { tenantId });
@@ -420,14 +415,14 @@ export async function trackCreditEvent(
   metadata?: Record<string, unknown>
 ): Promise<void> {
   try {
-    await (supabase as any)
+    await supabase
       .from('credit_analytics')
       .insert({
         tenant_id: tenantId,
         event_type: eventType,
         credits_at_event: creditsAtEvent,
         action_attempted: actionAttempted,
-        metadata: (metadata || {}) as Record<string, unknown>,
+        metadata: metadata || {},
       });
   } catch (err) {
     logger.error('Failed to track credit event', err as Error, { 

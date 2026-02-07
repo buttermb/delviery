@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
@@ -12,20 +11,21 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import {
+  Search,
+  Plus,
+  FileText,
+  Calendar,
+  DollarSign,
+  Package,
+  Edit,
+  Trash2,
+  Eye,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -66,7 +66,6 @@ const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 export default function PurchaseOrdersPage() {
   const { tenant } = useTenantAdminAuth();
-  const [, setSearchParams] = useSearchParams();
   const { deletePurchaseOrder, updatePurchaseOrderStatus } = usePurchaseOrders();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -147,10 +146,7 @@ export default function PurchaseOrdersPage() {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await deleteMutation.mutateAsync({
-            id: po.id,
-            poNumber: po.po_number || undefined,
-          });
+          await deleteMutation.mutateAsync(po.id);
           closeDialog();
         } finally {
           setLoading(false);
@@ -160,11 +156,7 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleStatusChange = async (po: PurchaseOrder, newStatus: string) => {
-    await updateStatusMutation.mutateAsync({
-      id: po.id,
-      status: newStatus,
-      poNumber: po.po_number || undefined,
-    });
+    await updateStatusMutation.mutateAsync({ id: po.id, status: newStatus });
   };
 
   return (
@@ -179,23 +171,13 @@ export default function PurchaseOrdersPage() {
             Create and manage purchase orders from suppliers
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="min-h-[44px] touch-manipulation"
-            onClick={() => setSearchParams({ tab: 'receiving' })}
-          >
-            <Truck className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline text-sm sm:text-base">Receiving</span>
-          </Button>
-          <Button
-            className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
-            onClick={handleCreate}
-          >
-            <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="text-sm sm:text-base">New Purchase Order</span>
-          </Button>
-        </div>
+        <Button
+          className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
+          onClick={handleCreate}
+        >
+          <Plus className="h-4 w-4 sm:mr-2" />
+          <span className="text-sm sm:text-base">New Purchase Order</span>
+        </Button>
       </div>
 
       {/* Filters */}

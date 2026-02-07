@@ -8,17 +8,19 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format } from 'date-fns';
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Search from "lucide-react/dist/esm/icons/search";
-import Download from "lucide-react/dist/esm/icons/download";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import {
+  ShoppingBag,
+  Search,
+  Download,
+  Eye,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ArrowLeft,
+  Package,
+  TrendingUp,
+  FileText
+} from 'lucide-react';
 import { exportOrders } from '@/utils/exportHelpers';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { OrderDetailsDialog } from '@/components/admin/disposable-menus/OrderDetailsDialog';

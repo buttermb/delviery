@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import Bell from "lucide-react/dist/esm/icons/bell";
-import X from "lucide-react/dist/esm/icons/x";
+import { Bell, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 

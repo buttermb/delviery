@@ -21,11 +21,7 @@ import {
   type FeatureId,
   type SubscriptionTier,
 } from '@/lib/featureConfig';
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Star from "lucide-react/dist/esm/icons/star";
-import Diamond from "lucide-react/dist/esm/icons/diamond";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { CheckCircle2, Lock, Star, Diamond, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { TierComparisonModal } from './TierComparisonModal';
 import { subscriptionTierToBusinessTier } from '@/lib/tierMapping';

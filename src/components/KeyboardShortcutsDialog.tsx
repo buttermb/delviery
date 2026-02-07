@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import Keyboard from "lucide-react/dist/esm/icons/keyboard";
+import { Keyboard } from "lucide-react";
 
 interface Shortcut {
   keys: string[];

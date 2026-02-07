@@ -1,9 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import { Copy, Share2, QrCode, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";

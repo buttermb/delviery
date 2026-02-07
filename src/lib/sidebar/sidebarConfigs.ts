@@ -9,53 +9,55 @@
  */
 
 import type { SidebarSection } from '@/types/sidebar';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import Box from "lucide-react/dist/esm/icons/box";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Star from "lucide-react/dist/esm/icons/star";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import UserCog from "lucide-react/dist/esm/icons/user-cog";
-import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Brain from "lucide-react/dist/esm/icons/brain";
-import Download from "lucide-react/dist/esm/icons/download";
-import Store from "lucide-react/dist/esm/icons/store";
-import MapPinned from "lucide-react/dist/esm/icons/map-pinned";
-import FolderKanban from "lucide-react/dist/esm/icons/folder-kanban";
-import Key from "lucide-react/dist/esm/icons/key";
-import Building from "lucide-react/dist/esm/icons/building";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import Briefcase from "lucide-react/dist/esm/icons/briefcase";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  ShoppingCart,
+  DollarSign,
+  TrendingUp,
+  Warehouse,
+  Barcode,
+  AlertCircle,
+  CreditCard,
+  Wallet,
+  Box,
+  Settings,
+  FileText,
+  Building2,
+  Truck,
+  Mail,
+  MapPin,
+  Bell,
+  BarChart3,
+  PieChart,
+  Activity,
+  Calendar,
+  Star,
+  Tag,
+  Shield,
+  FileSpreadsheet,
+  Receipt,
+  UserCog,
+  ScrollText,
+  Headphones,
+  HelpCircle,
+  Globe,
+  Zap,
+  Brain,
+  Download,
+  Store,
+  MapPinned,
+  FolderKanban,
+  Key,
+  Building,
+  Flame,
+  Menu,
+  ArrowRightLeft,
+  MessageSquare,
+  Layers,
+  Briefcase,
+} from 'lucide-react';
 import { FEATURES, type FeatureId, type SubscriptionTier } from '@/lib/featureConfig';
 
 /**
@@ -123,7 +125,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
   {
     section: 'Operations',
     items: [
-      createItem('suppliers', 'Suppliers', '/admin/operations-hub', Building2),
+      createItem('suppliers', 'Suppliers', '/admin/suppliers', Building2),
     ],
   },
   {
@@ -137,7 +139,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
-      createItem('billing', 'Billing', '/admin/settings?section=billing', CreditCard),
+      createItem('billing', 'Billing', '/admin/billing', CreditCard),
       createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
@@ -186,7 +188,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
   {
     section: 'Operations',
     items: [
-      createItem('suppliers', 'Suppliers', '/admin/operations-hub', Building2),
+      createItem('suppliers', 'Suppliers', '/admin/suppliers', Building2),
       createItem('team-members', 'Team', '/admin/staff-management', Users),
     ],
   },
@@ -201,7 +203,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Integrations',
     collapsed: true,
     items: [
-      createItem('bulk-operations', 'Bulk Operations', '/admin/settings-hub?tab=integrations', FolderKanban),
+      createItem('bulk-operations', 'Bulk Operations', '/admin/integrations-hub', FolderKanban),
     ],
   },
   {
@@ -209,7 +211,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
-      createItem('billing', 'Billing', '/admin/settings?section=billing', CreditCard),
+      createItem('billing', 'Billing', '/admin/billing', CreditCard),
       createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
@@ -365,6 +367,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     ],
   },
 ];
+
 
 /**
  * Map feature IDs to sidebar item IDs for reverse lookup

@@ -20,12 +20,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Save from "lucide-react/dist/esm/icons/save";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { CalendarIcon, ArrowLeft, Loader2, Save } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { cn } from "@/lib/utils";
@@ -46,41 +41,11 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreatePreOrderPage() {
-    const { tenant, loading: tenantLoading } = useTenantAdminAuth();
+    const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
     const createPreOrder = useCreatePreOrder();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
-
-    const tenantSlug = tenant?.slug;
-    const isContextReady = !tenantLoading && !!tenant?.id && !!tenantSlug;
-    const contextError = !tenantLoading && (!tenant?.id || !tenantSlug)
-        ? 'Tenant context not available. Please refresh the page or contact support.'
-        : null;
-
-    // Show loading state while context initializes
-    if (tenantLoading) {
-        return (
-            <div className="flex items-center justify-center p-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-        );
-    }
-
-    // Show error if context not available
-    if (!isContextReady || contextError) {
-        return (
-            <div className="space-y-6 p-6 max-w-5xl mx-auto">
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                        {contextError || 'Unable to load tenant context. Please refresh the page.'}
-                    </AlertDescription>
-                </Alert>
-                <Button onClick={() => navigate(-1)}>Go Back</Button>
-            </div>
-        );
-    }
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -119,8 +84,9 @@ export default function CreatePreOrderPage() {
             });
 
             toast.success("Pre-order created successfully");
-            // Use validated tenantSlug (guaranteed to exist at this point)
-            navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
+            if (tenant?.slug) {
+                navigate(`/${tenant.slug}/admin/crm/pre-orders/${preOrder.id}`);
+            }
         } catch (error) {
             // Error handled by hook
         }

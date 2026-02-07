@@ -7,19 +7,10 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import FloraIQLogo from '@/components/FloraIQLogo';
-import Check from "lucide-react/dist/esm/icons/check";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import BarChart from "lucide-react/dist/esm/icons/bar-chart";
-import Users from "lucide-react/dist/esm/icons/users";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Star from "lucide-react/dist/esm/icons/star";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import {
+  Check, ArrowRight, Zap, Shield, BarChart, Users,
+  Globe, Lock, TrendingUp, Star, Menu, Activity, HelpCircle
+} from 'lucide-react';
 
 import {
   Accordion,

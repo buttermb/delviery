@@ -24,21 +24,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Send from "lucide-react/dist/esm/icons/send";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import {
+    Plus,
+    Search,
+    MoreHorizontal,
+    FileText,
+    Filter,
+    ExternalLink,
+    CheckCircle,
+    AlertCircle,
+    Clock,
+    DollarSign,
+    Send,
+    Copy,
+    Ban,
+    Printer,
+    TrendingUp
+} from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
@@ -925,7 +927,7 @@ export function InvoicesPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                (paginatedInvoices as CRMInvoice[])?.map((invoice) => (
+                                paginatedInvoices?.map((invoice) => (
                                     <TableRow
                                         key={invoice.id}
                                         className="cursor-pointer hover:bg-muted/50"
@@ -1050,5 +1052,3 @@ export function InvoicesPage() {
         </div>
     );
 }
-
-export default InvoicesPage;

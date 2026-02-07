@@ -13,20 +13,22 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import X from "lucide-react/dist/esm/icons/x";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import ClipboardList from "lucide-react/dist/esm/icons/clipboard-list";
-import Calculator from "lucide-react/dist/esm/icons/calculator";
-import Boxes from "lucide-react/dist/esm/icons/boxes";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
+import {
+  Plus,
+  X,
+  ShoppingCart,
+  DollarSign,
+  Package,
+  Users,
+  FileText,
+  Truck,
+  MapPin,
+  CreditCard,
+  ClipboardList,
+  Calculator,
+  Boxes,
+  Receipt,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -333,4 +335,12 @@ export function QuickActionsButton({ className }: QuickActionsButtonProps) {
 }
 
 export default QuickActionsButton;
+
+
+
+
+
+
+
+
 

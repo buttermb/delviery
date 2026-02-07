@@ -3,17 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
+import { 
+  GripVertical, Edit, Copy, Trash2, Eye, EyeOff, 
+  Check, X, DollarSign, Package, Image as ImageIcon 
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -171,7 +164,7 @@ export function ProductTableView({
   };
 
   return (
-    <div className="border rounded-lg dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+    <div className="border rounded-lg">
       <Table>
         <TableHeader>
           <TableRow>

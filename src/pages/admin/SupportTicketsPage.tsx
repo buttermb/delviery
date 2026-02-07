@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Search from "lucide-react/dist/esm/icons/search";
+import {
+  MessageSquare,
+  Plus,
+  Loader2,
+  Filter,
+  Search,
+} from "lucide-react";
 import { TicketList } from "@/components/admin/support/TicketList";
 import { TicketForm } from "@/components/admin/support/TicketForm";
 import { TicketDetail } from "@/components/admin/support/TicketDetail";

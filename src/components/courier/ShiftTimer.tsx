@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Play from "lucide-react/dist/esm/icons/play";
-import Pause from "lucide-react/dist/esm/icons/pause";
+import { Clock, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 

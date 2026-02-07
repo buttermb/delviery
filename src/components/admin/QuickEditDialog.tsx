@@ -15,13 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { invalidateOnEvent } from "@/lib/invalidation";
+import { Loader2 } from "lucide-react";
 
 interface Product {
   id: string;
@@ -33,27 +31,17 @@ interface Product {
 }
 
 interface QuickEditDialogProps {
-  product: Product | null;
+  product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialogProps) {
-  const [price, setPrice] = useState(0);
-  const [stock, setStock] = useState(0);
-  const [status, setStatus] = useState<"active" | "inactive">("inactive");
+  const [price, setPrice] = useState(product?.price || 0);
+  const [stock, setStock] = useState(product?.stock_quantity || 0);
+  const [status, setStatus] = useState(product?.in_stock ? "active" : "inactive");
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { tenant } = useTenantAdminAuth();
-
-  // Sync state when product changes
-  useEffect(() => {
-    if (product) {
-      setPrice(product.price || 0);
-      setStock(product.stock_quantity || 0);
-      setStatus(product.in_stock ? "active" : "inactive");
-    }
-  }, [product]);
 
   const updateProduct = useMutation({
     mutationFn: async () => {
@@ -72,13 +60,6 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
       await queryClient.refetchQueries({ queryKey: ["admin-products"] });
       toast({ title: "✓ Product updated successfully" });
       onOpenChange(false);
-
-      // Cross-panel invalidation - product update affects POS, storefront, inventory, wholesale
-      if (tenant?.id && product) {
-        invalidateOnEvent(queryClient, 'PRODUCT_UPDATED', tenant.id, {
-          productId: product.id,
-        });
-      }
     },
     onError: (error: unknown) => {
       logger.error('Failed to update product', error, { component: 'QuickEditDialog' });
@@ -90,16 +71,11 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
     }
   });
 
-  // Don't render if product is null - prevents SelectItem mismatch
-  if (!product) {
-    return null;
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Quick Edit: {product.name}</DialogTitle>
+          <DialogTitle>Quick Edit: {product?.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
@@ -129,7 +105,7 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
 
           <div>
             <Label htmlFor="quick-status">Status</Label>
-            <Select value={status} onValueChange={(val) => setStatus(val as "active" | "inactive")}>
+            <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className="mt-1.5">
                 <SelectValue />
               </SelectTrigger>

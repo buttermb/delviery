@@ -1,8 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import { Copy, ExternalLink } from "lucide-react";
 import { CodeBlock } from "./CodeBlock";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface AppointmentFormProps {
@@ -105,11 +104,11 @@ export function AppointmentForm({
     }
 
     await createMutation.mutateAsync({
-      customer_id: sanitizeFormInput(formData.customer_id),
+      customer_id: formData.customer_id,
       scheduled_at: formData.scheduled_at,
       duration_minutes: parseInt(formData.duration_minutes, 10),
       appointment_type: formData.appointment_type,
-      notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : null,
+      notes: formData.notes || null,
       status: "scheduled",
     });
   };
@@ -138,7 +137,7 @@ export function AppointmentForm({
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="scheduled_at">
                 Date & Time <span className="text-destructive">*</span>

@@ -7,12 +7,7 @@
  * - Margin Trend Sparkline
  */
 
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Users from "lucide-react/dist/esm/icons/users";
-import LineChart from "lucide-react/dist/esm/icons/line-chart";
+import { TrendingUp, TrendingDown, Minus, BarChart3, Users, LineChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';

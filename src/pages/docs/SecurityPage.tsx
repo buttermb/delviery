@@ -2,11 +2,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeBlock } from "@/components/docs/CodeBlock";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import FileCheck from "lucide-react/dist/esm/icons/file-check";
+import { Shield, Lock, Eye, AlertTriangle, FileCheck } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SecurityPage() {
@@ -47,10 +43,10 @@ export default function SecurityPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   All API requests must use HTTPS with TLS 1.2 or higher. We reject all HTTP requests to ensure data is always encrypted during transmission.
                 </p>
-                <CodeBlock 
-                   code="# All requests must use HTTPS\nhttps://aejugtmhwwknrowfyzie.supabase.co/functions/v1/...\n\n# HTTP requests will be rejected\nhttp://... ❌"
-                   language="text"
-                 />
+              <CodeBlock 
+                  code="# All requests must use HTTPS\nhttps://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/...\n\n# HTTP requests will be rejected\nhttp://... ❌"
+                  language="text"
+                />
               </div>
               <div>
                 <h4 className="font-semibold mb-2 text-foreground">Encryption at Rest</h4>

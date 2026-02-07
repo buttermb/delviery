@@ -25,12 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { Plus, DollarSign, Tag, TrendingDown, Edit, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

@@ -18,8 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
+import { Search, Filter } from 'lucide-react';
 
 interface ReviewModerationQueueProps {
     tenantId: string;

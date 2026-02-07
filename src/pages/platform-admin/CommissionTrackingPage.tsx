@@ -2,10 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Users from "lucide-react/dist/esm/icons/users";
+import { Loader2, DollarSign, Activity, Users } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

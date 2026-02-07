@@ -19,17 +19,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { BarcodeGenerator } from '@/components/inventory/BarcodeGenerator';
 import { QRCodeSVG } from 'qrcode.react';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Download from "lucide-react/dist/esm/icons/download";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import Package from "lucide-react/dist/esm/icons/package";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Grid3x3 from "lucide-react/dist/esm/icons/grid-3x3";
+import {
+  ArrowLeft,
+  Download,
+  Printer,
+  Barcode,
+  QrCode,
+  Package,
+  Layers,
+  FileText,
+  Settings,
+  Eye,
+  Grid3x3
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   generateBarcodeDataURL,

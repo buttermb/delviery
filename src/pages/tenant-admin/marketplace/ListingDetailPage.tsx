@@ -12,18 +12,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import Package from "lucide-react/dist/esm/icons/package";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package2 from "lucide-react/dist/esm/icons/package-2";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { 
+  Package, 
+  Edit, 
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  DollarSign,
+  Package2,
+  Lock,
+  FileText,
+  Calendar,
+  MapPin,
+  TrendingUp
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { MarketplaceListing } from '@/types/marketplace-extended';

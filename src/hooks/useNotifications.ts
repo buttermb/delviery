@@ -38,14 +38,11 @@ export const useSendNotification = () => {
         return { success: false, message: 'Notification disabled for this event' };
       }
 
-      if (!tenant?.id) throw new Error('No tenant');
-
       // Get order details
       const { data: order, error: orderError } = await supabase
         .from('menu_orders')
         .select('*')
         .eq('id', orderId)
-        .eq('tenant_id', tenant.id)
         .maybeSingle();
 
       if (orderError) {

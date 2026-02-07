@@ -4,7 +4,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import Heart from "lucide-react/dist/esm/icons/heart";
+import { Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WishlistButtonProps {

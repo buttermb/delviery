@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Package from "lucide-react/dist/esm/icons/package";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Users from "lucide-react/dist/esm/icons/users";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import {
+  Package,
+  Zap,
+  Users,
+  BarChart3,
+  Lock,
+  Truck,
+} from 'lucide-react';
 import { AnimatedIcon } from './AnimatedIcon';
 import { FeatureDemoPreview } from './demos/FeatureDemoPreview';
 

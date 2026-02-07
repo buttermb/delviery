@@ -1,9 +1,5 @@
 import { motion } from 'framer-motion';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Star from "lucide-react/dist/esm/icons/star";
-import type { LucideIcon } from "lucide-react";
+import { Clock, Shield, Lock, Star, LucideIcon } from 'lucide-react';
 
 export interface FeaturesSectionProps {
     content: {

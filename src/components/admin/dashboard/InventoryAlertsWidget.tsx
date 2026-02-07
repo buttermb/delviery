@@ -6,10 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Package from "lucide-react/dist/esm/icons/package";
+import { AlertTriangle, ArrowRight, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
@@ -26,7 +23,7 @@ export function InventoryAlertsWidget() {
     return href;
   };
 
-  const { data: alerts, isLoading } = useQuery({
+  const { data: alerts } = useQuery({
     queryKey: ['inventory-alerts-widget', account?.id],
     queryFn: async () => {
       if (!account?.id) return [];
@@ -71,20 +68,7 @@ export function InventoryAlertsWidget() {
       </div>
 
       <div className="space-y-2">
-        {isLoading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-2 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4" />
-                <div className="space-y-1">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-              <Skeleton className="h-5 w-16 rounded-full" />
-            </div>
-          ))
-        ) : alerts && alerts.length > 0 ? (
+        {alerts && alerts.length > 0 ? (
           alerts.map((alert, index: number) => (
             <div
               key={index}

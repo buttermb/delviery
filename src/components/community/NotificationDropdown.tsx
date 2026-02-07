@@ -15,8 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Check from "lucide-react/dist/esm/icons/check";
+import { Bell, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';

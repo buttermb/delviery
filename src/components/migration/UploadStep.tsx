@@ -2,12 +2,14 @@ import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Upload from "lucide-react/dist/esm/icons/upload";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Image from "lucide-react/dist/esm/icons/image";
-import ClipboardPaste from "lucide-react/dist/esm/icons/clipboard-paste";
-import X from "lucide-react/dist/esm/icons/x";
+import { 
+  Upload, 
+  FileSpreadsheet, 
+  FileText, 
+  Image,
+  ClipboardPaste,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface UploadStepProps {
@@ -235,4 +237,7 @@ Gelato 41 - Greenhouse - 1.8k - 22% THC`}
     </div>
   );
 }
+
+
+
 

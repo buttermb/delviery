@@ -7,7 +7,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { sanitizeFormInput, sanitizeEmail, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,10 +20,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import Star from "lucide-react/dist/esm/icons/star";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import PenLine from "lucide-react/dist/esm/icons/pen-line";
+import { Star, Loader2, CheckCircle, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -71,11 +67,11 @@ export function ReviewForm({
           store_id: storeId,
           product_id: productId,
           customer_id: customerId,
-          customer_name: sanitizeFormInput(customerName, 100) || 'Anonymous',
-          customer_email: customerEmail ? sanitizeEmail(customerEmail) : null,
+          customer_name: customerName || 'Anonymous',
+          customer_email: customerEmail || null,
           rating,
-          title: title ? sanitizeFormInput(title, 100) : null,
-          comment: comment ? sanitizeTextareaInput(comment, 1000) : null,
+          title: title || null,
+          comment: comment || null,
           is_verified_purchase: !!customerId, // Verified if logged in
           is_approved: false, // Requires moderation
         });
@@ -252,4 +248,6 @@ export function ReviewForm({
 }
 
 export default ReviewForm;
+
+
 

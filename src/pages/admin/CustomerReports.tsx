@@ -6,14 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import Download from "lucide-react/dist/esm/icons/download";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Users from "lucide-react/dist/esm/icons/users";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Award from "lucide-react/dist/esm/icons/award";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import {
+  Download, TrendingUp, Users, DollarSign, ShoppingBag,
+  Award, Calendar, BarChart3
+} from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { handleError } from "@/utils/errorHandling/handlers";
 

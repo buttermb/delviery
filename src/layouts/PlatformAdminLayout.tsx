@@ -1,6 +1,6 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { PlatformSidebar } from '@/components/admin/PlatformSidebar';
 import { Toaster } from '@/components/ui/toaster';

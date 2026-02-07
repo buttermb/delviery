@@ -1,11 +1,13 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import FileDown from "lucide-react/dist/esm/icons/file-down";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { 
+  Plus, 
+  FileDown, 
+  RefreshCw, 
+  Shield,
+  TrendingUp,
+  AlertTriangle
+} from 'lucide-react';
 
 interface QuickActionsProps {
   onCreateMenu: () => void;

@@ -101,7 +101,6 @@ export function useDeadLetterQueue() {
 
   const ignoreEntry = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes?: string }) => {
-      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('workflow_dead_letter_queue')
         .update({
@@ -110,8 +109,7 @@ export function useDeadLetterQueue() {
           resolved_by: (await supabase.auth.getUser()).data.user?.id,
           resolution_notes: notes
         })
-        .eq('id', id)
-        .eq('tenant_id', tenant.id);
+        .eq('id', id);
 
       if (error) throw error;
     },
@@ -126,12 +124,10 @@ export function useDeadLetterQueue() {
 
   const deleteEntry = useMutation({
     mutationFn: async (id: string) => {
-      if (!tenant?.id) throw new Error('No tenant');
       const { error } = await supabase
         .from('workflow_dead_letter_queue')
         .delete()
-        .eq('id', id)
-        .eq('tenant_id', tenant.id);
+        .eq('id', id);
 
       if (error) throw error;
     },

@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { type BackgroundStyle } from '../DynamicBackground';
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
+import { ChevronRight, ChevronDown } from 'lucide-react';
 
 export interface LuxuryHeroSectionProps {
   content: {

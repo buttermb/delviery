@@ -1,10 +1,7 @@
 import { useCredits } from "@/contexts/CreditContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import { Coins, Plus, TrendingDown, Calendar } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -28,7 +25,12 @@ export function CreditBalance({
   const { credits, isFreeTier, setIsPurchaseModalOpen } = useCredits();
   const { tenant } = useTenantAdminAuth();
 
-  // Fetch usage stats for tooltip (must be before conditional return per rules-of-hooks)
+  // Don't show credit balance for paid users (non-free tier)
+  if (!isFreeTier) {
+    return null;
+  }
+
+  // Fetch usage stats for tooltip
   const { data: usageStats } = useQuery({
     queryKey: ['credit-usage-quick', tenant?.id],
     queryFn: async () => {
@@ -59,7 +61,7 @@ export function CreditBalance({
 
       return { avgDailyUsage, daysUntilDepletion, depletionDate };
     },
-    enabled: isFreeTier && !!tenant?.id && credits > 0,
+    enabled: !!tenant?.id && credits > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

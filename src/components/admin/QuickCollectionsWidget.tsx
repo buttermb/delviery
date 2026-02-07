@@ -1,8 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Phone from "lucide-react/dist/esm/icons/phone";
+import { AlertCircle, Phone } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleData";
 import { differenceInDays } from "date-fns";
 import { useState } from "react";
@@ -72,7 +71,7 @@ export function QuickCollectionsWidget() {
                   size="sm" 
                   variant="outline"
                   onClick={() => {
-                    setSelectedClient(client as unknown as WholesaleClient);
+                    setSelectedClient(client as WholesaleClient);
                     setPaymentDialogOpen(true);
                   }}
                 >

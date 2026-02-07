@@ -5196,140 +5196,6 @@ export type Database = {
         }
         Relationships: []
       }
-      global_product_imports: {
-        Row: {
-          auto_sync_enabled: boolean | null
-          global_product_id: string
-          id: string
-          imported_at: string | null
-          last_synced_at: string | null
-          listing_id: string | null
-          tenant_id: string
-        }
-        Insert: {
-          auto_sync_enabled?: boolean | null
-          global_product_id: string
-          id?: string
-          imported_at?: string | null
-          last_synced_at?: string | null
-          listing_id?: string | null
-          tenant_id: string
-        }
-        Update: {
-          auto_sync_enabled?: boolean | null
-          global_product_id?: string
-          id?: string
-          imported_at?: string | null
-          last_synced_at?: string | null
-          listing_id?: string | null
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "global_product_imports_global_product_id_fkey"
-            columns: ["global_product_id"]
-            isOneToOne: false
-            referencedRelation: "global_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "global_product_imports_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      global_products: {
-        Row: {
-          brand: string | null
-          category: string
-          cbd_percent: number | null
-          created_at: string | null
-          description: string | null
-          effects: string[] | null
-          id: string
-          images: string[] | null
-          is_verified: boolean | null
-          metadata: Json | null
-          name: string
-          short_description: string | null
-          sku: string
-          status: string
-          strain_type: string | null
-          submission_notes: string | null
-          submitted_by_tenant_id: string | null
-          terpenes: Json | null
-          thc_percent: number | null
-          unit_type: string | null
-          updated_at: string | null
-          verified_at: string | null
-          verified_by: string | null
-          weight_grams: number | null
-        }
-        Insert: {
-          brand?: string | null
-          category: string
-          cbd_percent?: number | null
-          created_at?: string | null
-          description?: string | null
-          effects?: string[] | null
-          id?: string
-          images?: string[] | null
-          is_verified?: boolean | null
-          metadata?: Json | null
-          name: string
-          short_description?: string | null
-          sku: string
-          status?: string
-          strain_type?: string | null
-          submission_notes?: string | null
-          submitted_by_tenant_id?: string | null
-          terpenes?: Json | null
-          thc_percent?: number | null
-          unit_type?: string | null
-          updated_at?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
-          weight_grams?: number | null
-        }
-        Update: {
-          brand?: string | null
-          category?: string
-          cbd_percent?: number | null
-          created_at?: string | null
-          description?: string | null
-          effects?: string[] | null
-          id?: string
-          images?: string[] | null
-          is_verified?: boolean | null
-          metadata?: Json | null
-          name?: string
-          short_description?: string | null
-          sku?: string
-          status?: string
-          strain_type?: string | null
-          submission_notes?: string | null
-          submitted_by_tenant_id?: string | null
-          terpenes?: Json | null
-          thc_percent?: number | null
-          unit_type?: string | null
-          updated_at?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
-          weight_grams?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "global_products_submitted_by_tenant_id_fkey"
-            columns: ["submitted_by_tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       gps_anomalies: {
         Row: {
           accuracy_meters: number | null
@@ -11072,47 +10938,6 @@ export type Database = {
         }
         Relationships: []
       }
-      roles: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          is_system: boolean
-          name: string
-          permissions: Json | null
-          tenant_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_system?: boolean
-          name: string
-          permissions?: Json | null
-          tenant_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_system?: boolean
-          name?: string
-          permissions?: Json | null
-          tenant_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "roles_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       runner_location_history: {
         Row: {
           accuracy: number | null
@@ -11818,72 +11643,6 @@ export type Database = {
           },
         ]
       }
-      suspicious_login_alerts: {
-        Row: {
-          account_secured: boolean | null
-          alert_type: string
-          browser: string | null
-          created_at: string
-          device_fingerprint: string
-          device_type: string | null
-          email_sent: boolean | null
-          email_sent_at: string | null
-          geo_city: string | null
-          geo_country: string | null
-          id: string
-          ip_address: string | null
-          os: string | null
-          responded_at: string | null
-          secure_token: string | null
-          severity: string | null
-          status: string | null
-          user_id: string
-          user_response: string | null
-        }
-        Insert: {
-          account_secured?: boolean | null
-          alert_type: string
-          browser?: string | null
-          created_at?: string
-          device_fingerprint: string
-          device_type?: string | null
-          email_sent?: boolean | null
-          email_sent_at?: string | null
-          geo_city?: string | null
-          geo_country?: string | null
-          id?: string
-          ip_address?: string | null
-          os?: string | null
-          responded_at?: string | null
-          secure_token?: string | null
-          severity?: string | null
-          status?: string | null
-          user_id: string
-          user_response?: string | null
-        }
-        Update: {
-          account_secured?: boolean | null
-          alert_type?: string
-          browser?: string | null
-          created_at?: string
-          device_fingerprint?: string
-          device_type?: string | null
-          email_sent?: boolean | null
-          email_sent_at?: string | null
-          geo_city?: string | null
-          geo_country?: string | null
-          id?: string
-          ip_address?: string | null
-          os?: string | null
-          responded_at?: string | null
-          secure_token?: string | null
-          severity?: string | null
-          status?: string | null
-          user_id?: string
-          user_response?: string | null
-        }
-        Relationships: []
-      }
       system_metrics: {
         Row: {
           created_at: string | null
@@ -12036,59 +11795,6 @@ export type Database = {
           },
         ]
       }
-      tenant_invitations: {
-        Row: {
-          accepted_at: string | null
-          accepted_by: string | null
-          created_at: string | null
-          email: string
-          expires_at: string
-          id: string
-          invited_by: string | null
-          role: string
-          status: string
-          tenant_id: string
-          token: string
-          updated_at: string | null
-        }
-        Insert: {
-          accepted_at?: string | null
-          accepted_by?: string | null
-          created_at?: string | null
-          email: string
-          expires_at?: string
-          id?: string
-          invited_by?: string | null
-          role: string
-          status?: string
-          tenant_id: string
-          token: string
-          updated_at?: string | null
-        }
-        Update: {
-          accepted_at?: string | null
-          accepted_by?: string | null
-          created_at?: string | null
-          email?: string
-          expires_at?: string
-          id?: string
-          invited_by?: string | null
-          role?: string
-          status?: string
-          tenant_id?: string
-          token?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tenant_invitations_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tenant_payment_settings: {
         Row: {
           accept_bitcoin: boolean | null
@@ -12167,45 +11873,6 @@ export type Database = {
             foreignKeyName: "tenant_payment_settings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tenant_role_permissions: {
-        Row: {
-          created_at: string | null
-          id: string
-          permission: string
-          role_id: string
-          tenant_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          permission: string
-          role_id: string
-          tenant_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          permission?: string
-          role_id?: string
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tenant_role_permissions_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "roles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tenant_role_permissions_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -12842,60 +12509,6 @@ export type Database = {
           is_blocked?: boolean | null
           last_seen?: string | null
           times_used?: number | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_known_devices: {
-        Row: {
-          browser: string | null
-          device_fingerprint: string
-          device_name: string | null
-          device_type: string | null
-          first_seen_at: string
-          geo_city: string | null
-          geo_country: string | null
-          id: string
-          ip_address: string | null
-          is_trusted: boolean | null
-          last_seen_at: string
-          os: string | null
-          trust_confirmed_at: string | null
-          user_agent: string | null
-          user_id: string
-        }
-        Insert: {
-          browser?: string | null
-          device_fingerprint: string
-          device_name?: string | null
-          device_type?: string | null
-          first_seen_at?: string
-          geo_city?: string | null
-          geo_country?: string | null
-          id?: string
-          ip_address?: string | null
-          is_trusted?: boolean | null
-          last_seen_at?: string
-          os?: string | null
-          trust_confirmed_at?: string | null
-          user_agent?: string | null
-          user_id: string
-        }
-        Update: {
-          browser?: string | null
-          device_fingerprint?: string
-          device_name?: string | null
-          device_type?: string | null
-          first_seen_at?: string
-          geo_city?: string | null
-          geo_country?: string | null
-          id?: string
-          ip_address?: string | null
-          is_trusted?: boolean | null
-          last_seen_at?: string
-          os?: string | null
-          trust_confirmed_at?: string | null
-          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -13717,7 +13330,6 @@ export type Database = {
           payment_method: string
           reference_number: string | null
           status: string
-          tenant_id: string | null
         }
         Insert: {
           amount: number
@@ -13729,7 +13341,6 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
-          tenant_id?: string | null
         }
         Update: {
           amount?: number
@@ -13741,7 +13352,6 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
-          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -13749,13 +13359,6 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "wholesale_clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "wholesale_payments_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -15173,20 +14776,6 @@ export type Database = {
         Args: { p_action_key: string; p_tenant_id: string }
         Returns: Json
       }
-      check_device_suspicious_login: {
-        Args: {
-          p_browser?: string
-          p_device_fingerprint: string
-          p_device_type?: string
-          p_geo_city?: string
-          p_geo_country?: string
-          p_ip_address?: string
-          p_os?: string
-          p_user_agent?: string
-          p_user_id: string
-        }
-        Returns: Json
-      }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
       check_platform_admin_access: { Args: never; Returns: Json }
       check_rate_limit: {
@@ -15818,29 +15407,6 @@ export type Database = {
       retry_from_dead_letter_queue: {
         Args: { p_dlq_id: string; p_user_id?: string }
         Returns: string
-      }
-      search_global_products: {
-        Args: {
-          p_brand?: string
-          p_category?: string
-          p_limit?: number
-          p_offset?: number
-          p_query?: string
-        }
-        Returns: {
-          brand: string
-          category: string
-          cbd_percent: number
-          description: string
-          effects: string[]
-          id: string
-          images: string[]
-          is_verified: boolean
-          name: string
-          sku: string
-          strain_type: string
-          thc_percent: number
-        }[]
       }
       snooze_inventory_alert: {
         Args: { p_alert_id: string; p_snooze_hours?: number }

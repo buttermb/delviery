@@ -1,9 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Users from "lucide-react/dist/esm/icons/users";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import { MapPin, TrendingUp, Users, DollarSign, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';

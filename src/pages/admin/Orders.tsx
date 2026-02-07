@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -9,27 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Archive from "lucide-react/dist/esm/icons/archive";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Download from "lucide-react/dist/esm/icons/download";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import X from "lucide-react/dist/esm/icons/x";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Merge from "lucide-react/dist/esm/icons/merge";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
@@ -39,22 +21,17 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
-import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
-import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
-import { OrderCloneToB2BDialog } from "@/components/admin/orders/OrderCloneToB2BDialog";
-import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
-import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
+import { BulkActions } from "@/components/shared/BulkActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/CopyButton";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useExport } from "@/hooks/useExport";
-import type { ExportField } from "@/components/admin/ExportOptionsDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { formatSmartDate } from "@/lib/utils/formatDate";
-import { useOrderDuplicate } from "@/hooks/useOrderDuplicate";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
   DropdownMenu,
@@ -65,19 +42,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
-// Lazy load dialogs for better performance
-const OrderMergeDialog = lazy(() =>
-  import('@/components/admin/orders/OrderMergeButton').then(module => ({
-    default: module.OrderMergeDialog
-  }))
-);
-
-const ExportOptionsDialog = lazy(() =>
-  import('@/components/admin/ExportOptionsDialog').then(module => ({
-    default: module.ExportOptionsDialog
-  }))
-);
-
 interface Order {
   id: string;
   order_number: string;
@@ -87,19 +51,12 @@ interface Order {
   delivery_method?: string;
   user_id: string;
   courier_id?: string;
-  order_source?: string;
   user?: {
     full_name: string | null;
     email: string | null;
     phone: string | null;
   };
-  order_items?: Array<{
-    id: string;
-    product_id: string;
-    quantity: number;
-    price: number;
-    product_name?: string;
-  }>;
+  order_items?: unknown[];
 }
 
 export default function Orders() {
@@ -107,6 +64,7 @@ export default function Orders() {
   const { tenant } = useTenantAdminAuth();
   const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useAdminKeyboardShortcuts({
     onSearch: () => {
@@ -121,12 +79,6 @@ export default function Orders() {
   });
 
   const { exportCSV } = useExport();
-
-  // Order duplication hook
-  const { duplicateOrder, isLoading: isDuplicating } = useOrderDuplicate();
-
-  // Real-time subscription stub - the hook may not exist yet
-  const newOrderIds = new Set<string>();
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,36 +95,13 @@ export default function Orders() {
     type: 'single' | 'bulk';
     id?: string;
   }>({ open: false, type: 'single' });
-  const [bulkStatusConfirm, setBulkStatusConfirm] = useState<{
-    open: boolean;
-    targetStatus: string;
-  }>({ open: false, targetStatus: '' });
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
-  const [cloneToB2BDialogOpen, setCloneToB2BDialogOpen] = useState(false);
-  const [orderToClone, setOrderToClone] = useState<Order | null>(null);
-  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
-
-  // Stub components for missing imports
-  const OrderSourceBadge = ({ source }: { source?: string }) => (
-    <Badge variant="outline" className="text-xs">{source || 'admin'}</Badge>
-  );
-  // OrderSMSButton stub - accepts props but renders nothing when actual component isn't available
-  const OrderSMSButton = (_props: Record<string, unknown>) => null;
-
-  // Bulk status update hook
-  const bulkStatusUpdate = useOrderBulkStatusUpdate({
-    tenantId: tenant?.id,
-    onSuccess: () => {
-      setSelectedOrders([]);
-    },
-  });
 
   // Save preferences when filter changes
   useEffect(() => {
     savePreferences({ customFilters: { status: statusFilter } });
   }, [statusFilter, savePreferences]);
 
-  // Data Fetching - includes both regular orders and POS orders from unified_orders
+  // Data Fetching
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: ['orders', tenant?.id, statusFilter],
     queryFn: async () => {
@@ -184,19 +113,17 @@ export default function Orders() {
         source: 'Orders'
       });
 
-      // Fetch regular orders
-      let regularQuery = supabase
+      let query = supabase
         .from('orders')
-        .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
+        .select('*, order_items(*)')
         .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
-        regularQuery = regularQuery.eq('status', statusFilter);
+        query = query.eq('status', statusFilter);
       }
 
-      const { data: ordersData, error: ordersError } = await regularQuery;
+      const { data: ordersData, error: ordersError } = await query;
 
       if (ordersError) {
         logRLSFailure('Orders query failed', {
@@ -209,46 +136,7 @@ export default function Orders() {
 
       logSelectQuery('orders', { tenant_id: tenant.id, status: statusFilter }, ordersData, 'Orders');
 
-      // Fetch POS orders from unified_orders
-      let posQuery = supabase
-        .from('unified_orders')
-        .select('id, order_number, created_at, status, total_amount, payment_method, customer_id, shift_id, metadata')
-        .eq('tenant_id', tenant.id)
-        .eq('order_type', 'pos')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (statusFilter !== 'all') {
-        posQuery = posQuery.eq('status', statusFilter);
-      }
-
-      const { data: posOrdersData, error: posError } = await posQuery;
-
-      if (posError) {
-        // Non-fatal - just log and continue with regular orders
-        logger.warn('Failed to fetch POS orders from unified_orders', { error: posError.message });
-      }
-
-      // Transform POS orders to match Order interface
-      const transformedPosOrders: Order[] = (posOrdersData || []).map(posOrder => ({
-        id: posOrder.id,
-        order_number: posOrder.order_number,
-        created_at: posOrder.created_at,
-        status: posOrder.status,
-        total_amount: posOrder.total_amount || 0,
-        delivery_method: 'pickup', // POS orders are typically pickup/in-store
-        user_id: posOrder.customer_id || '',
-        courier_id: undefined,
-        order_source: 'pos',
-        order_items: [], // Items stored in metadata for POS orders
-        user: {
-          full_name: 'POS Sale',
-          email: null,
-          phone: null,
-        }
-      }));
-
-      // Fetch profiles for regular orders
+      // Fetch profiles
       const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];
       let profilesMap: Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }> = {};
 
@@ -273,23 +161,12 @@ export default function Orders() {
         }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }>);
       }
 
-      // Merge regular orders with user info
-      const regularOrdersWithUsers = (ordersData || []).map(order => ({
+      return (ordersData || []).map(order => ({
         ...order,
-        delivery_method: (order as Record<string, unknown>).delivery_method as string || '',
-        user: order.user_id ? profilesMap[order.user_id] : undefined
+        user: profilesMap[order.user_id]
       })) as Order[];
-
-      // Combine and sort by date (most recent first)
-      const allOrders = [...regularOrdersWithUsers, ...transformedPosOrders]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 100); // Limit total results
-
-      return allOrders;
     },
     enabled: !!tenant?.id,
-    staleTime: 15_000,
-    gcTime: 120_000,
   });
 
   // Mutations
@@ -370,36 +247,31 @@ export default function Orders() {
     return result;
   }, [orders, searchQuery, dateRange]);
 
-  // Get selected orders with full data for merge functionality
-  const selectedOrdersData = useMemo(() => {
-    return filteredOrders.filter(order => selectedOrders.includes(order.id));
-  }, [filteredOrders, selectedOrders]);
-
   // Handlers
-  const handleRefresh = useCallback(async () => {
+  const handleRefresh = async () => {
     await refetch();
     triggerHaptic('light');
-  }, [refetch]);
+  };
 
-  const handleSelectAll = useCallback((checked: boolean) => {
+  const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(filteredOrders.map(o => o.id));
+      setSelectedOrders(orders.map(o => o.id));
     } else {
       setSelectedOrders([]);
     }
-  }, [filteredOrders]);
+  };
 
-  const handleSelectOrder = useCallback((orderId: string, checked: boolean) => {
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
     setSelectedOrders(prev =>
       checked ? [...prev, orderId] : prev.filter(id => id !== orderId)
     );
-  }, []);
+  };
 
-  const handleStatusChange = useCallback((orderId: string, newStatus: string) => {
+  const handleStatusChange = (orderId: string, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
-  }, [updateStatusMutation]);
+  };
 
-  const handleBulkStatusChange = useCallback(async (status: string) => {
+  const handleBulkStatusChange = async (status: string) => {
     if (!tenant?.id) {
       toast.error("No tenant context available");
       return;
@@ -442,110 +314,38 @@ export default function Orders() {
       logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update orders");
     }
-    setBulkStatusConfirm({ open: true, targetStatus: status });
-  }, [tenant?.id, orders, queryClient, statusFilter, selectedOrders]);
+  };
 
-  const handleConfirmBulkStatusUpdate = useCallback(async () => {
-    if (!tenant?.id) return;
-
-    setBulkStatusConfirm({ open: false, targetStatus: '' });
-
-    // Execute the bulk status update using the proper method name
-    await bulkStatusUpdate.executeBulkUpdate(
-      selectedOrders.map(id => ({ id, order_number: id })),
-      bulkStatusConfirm.targetStatus
-    );
-  }, [tenant?.id, bulkStatusUpdate, selectedOrders, bulkStatusConfirm.targetStatus]);
-
-  const handleClearFilters = useCallback(() => {
+  const handleClearFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
     setDateRange({ from: undefined, to: undefined });
-  }, []);
+  };
 
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
 
-  const handleDelete = useCallback((id: string) => {
+  const handleDelete = (id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
-  }, []);
+  };
 
-  const handleBulkDelete = useCallback(() => {
+  const handleBulkDelete = () => {
     setDeleteConfirmation({ open: true, type: 'bulk' });
-  }, []);
+  };
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = () => {
     if (deleteConfirmation.type === 'single' && deleteConfirmation.id) {
       deleteMutation.mutate([deleteConfirmation.id]);
     } else if (deleteConfirmation.type === 'bulk') {
       deleteMutation.mutate(selectedOrders);
     }
     setDeleteConfirmation({ ...deleteConfirmation, open: false });
-  }, [deleteConfirmation, deleteMutation, selectedOrders]);
+  };
 
-  const orderExportFields: ExportField[] = [
-    {
-      value: 'customer_name',
-      label: 'Customer Name',
-      description: 'Include the customer full name for each order',
-      recommended: true,
-    },
-    {
-      value: 'customer_email',
-      label: 'Customer Email',
-      description: 'Include the customer email address',
-      recommended: true,
-    },
-    {
-      value: 'line_items',
-      label: 'Line Items',
-      description: 'Include product names, quantities, and prices for each order item',
-    },
-  ];
+  const handleExport = () => {
+    exportCSV(filteredOrders, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
+  };
 
-  const handleExportWithOptions = useCallback((selectedFields: string[]) => {
-    const includeCustomerName = selectedFields.includes('customer_name');
-    const includeCustomerEmail = selectedFields.includes('customer_email');
-    const includeLineItems = selectedFields.includes('line_items');
-
-    if (includeLineItems) {
-      // Flatten: one row per line item
-      const flatRows = filteredOrders.flatMap(order => {
-        const items = order.order_items && order.order_items.length > 0
-          ? order.order_items
-          : [{ product_name: '', quantity: 0, price: 0, id: '', product_id: '' }];
-
-        return items.map(item => ({
-          order_number: order.order_number || order.id.slice(0, 8),
-          status: order.status,
-          total_amount: order.total_amount,
-          delivery_method: order.delivery_method || '',
-          created_at: order.created_at,
-          ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
-          ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-          item_product_name: item.product_name || '',
-          item_quantity: item.quantity || 0,
-          item_price: item.price || 0,
-        }));
-      });
-      exportCSV(flatRows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
-    } else {
-      // Standard: one row per order
-      const rows = filteredOrders.map(order => ({
-        order_number: order.order_number || order.id.slice(0, 8),
-        status: order.status,
-        total_amount: order.total_amount,
-        delivery_method: order.delivery_method || '',
-        created_at: order.created_at,
-        ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
-        ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-      }));
-      exportCSV(rows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
-    }
-
-    setExportDialogOpen(false);
-  }, [filteredOrders, exportCSV]);
-
-  const handlePrintOrder = useCallback((order: Order) => {
+  const handlePrintOrder = (order: Order) => {
     // Open print dialog with order details
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -574,14 +374,14 @@ export default function Orders() {
       printWindow.print();
     }
     triggerHaptic('light');
-  }, []);
+  };
 
-  const handleGenerateInvoice = useCallback((order: Order) => {
+  const handleGenerateInvoice = (order: Order) => {
     toast.success(`Invoice generated for order #${order.order_number || order.id.slice(0, 8)}`);
     triggerHaptic('light');
-  }, []);
+  };
 
-  const handleCancelOrder = useCallback(async (order: Order) => {
+  const handleCancelOrder = async (order: Order) => {
     if (!tenant?.id) return;
 
     try {
@@ -600,15 +400,9 @@ export default function Orders() {
       logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to cancel order");
     }
-  }, [tenant?.id, queryClient]);
+  };
 
-  const handleCloneToB2B = useCallback((order: Order) => {
-    setOrderToClone(order);
-    setCloneToB2BDialogOpen(true);
-    triggerHaptic('light');
-  }, []);
-
-  const handleOrderClick = useCallback((order: Order) => {
+  const handleOrderClick = (order: Order) => {
     if (window.innerWidth < 768) {
       setSelectedOrder(order);
       setIsDrawerOpen(true);
@@ -616,7 +410,7 @@ export default function Orders() {
     } else {
       navigate(`orders/${order.id}`);
     }
-  }, [navigate]);
+  };
 
   // Helper
   const getStatusBadge = (status: string) => {
@@ -655,17 +449,10 @@ export default function Orders() {
       header: "Order #",
       cell: (order) => (
         <div className="flex items-center gap-2">
-          <span className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}>
-            {order.order_number || order.id.slice(0, 8)}
-          </span>
+          {order.order_number || order.id.slice(0, 8)}
           <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )
-    },
-    {
-      header: "Source",
-      cell: (order) => <OrderSourceBadge source={order.order_source} />,
-      className: "w-[120px]"
     },
     {
       header: "Customer",
@@ -722,17 +509,6 @@ export default function Orders() {
       header: "Actions",
       cell: (order) => (
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <OrderSMSButton
-            order={{
-              id: order.id,
-              order_number: order.order_number,
-              status: order.status,
-              total_amount: order.total_amount,
-              user: order.user,
-            }}
-            tenantId={tenant?.id}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-          />
           <Button
             size="sm"
             variant="ghost"
@@ -764,10 +540,6 @@ export default function Orders() {
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCloneToB2B(order)}>
-                <Building2 className="mr-2 h-4 w-4" />
-                Clone to B2B
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
@@ -792,12 +564,12 @@ export default function Orders() {
     }
   ];
 
-  const stats = useMemo(() => [
+  const stats = [
     { label: 'Total Orders', value: orders.length, icon: Package, color: 'text-blue-500' },
     { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, icon: Clock, color: 'text-yellow-500' },
     { label: 'In Progress', value: orders.filter(o => ['confirmed', 'preparing', 'in_transit'].includes(o.status)).length, icon: TrendingUp, color: 'text-green-500' },
     { label: 'Cancelled', value: orders.filter(o => o.status === 'cancelled').length, icon: XCircle, color: 'text-red-500' },
-  ], [orders]);
+  ];
 
   return (
     <>
@@ -819,20 +591,12 @@ export default function Orders() {
               <Button
                 variant="outline"
                 className="min-h-[48px] touch-manipulation"
-                onClick={() => setExportDialogOpen(true)}
+                onClick={handleExport}
                 disabled={filteredOrders.length === 0}
               >
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
-                <Button
-                  variant="outline"
-                  className="min-h-[48px] touch-manipulation"
-                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
-                >
-                  <WifiOff className="mr-2 h-4 w-4" />
-                  Offline Order
-                </Button>
                 <Button
                   variant="default"
                   className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
@@ -913,7 +677,18 @@ export default function Orders() {
               </div>
             </div>
 
-            {/* Bulk Actions - handled by floating BulkActionsBar below */}
+            {/* Bulk Actions */}
+            <BulkActions
+              selectedCount={selectedOrders.length}
+              actions={[
+                { label: 'Mark as Confirmed', onClick: () => handleBulkStatusChange('confirmed') },
+                { label: 'Mark as Preparing', onClick: () => handleBulkStatusChange('preparing') },
+                { label: 'Mark as Delivered', onClick: () => handleBulkStatusChange('delivered') },
+                { label: 'Mark as Cancelled', onClick: () => handleBulkStatusChange('cancelled'), variant: 'destructive' },
+              ]}
+              onDelete={handleBulkDelete}
+              className="mb-4 sticky bottom-4 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 rounded-lg border shadow-lg md:static md:bg-transparent md:border-none md:shadow-none md:p-0"
+            />
 
             {/* Responsive Table */}
             <ResponsiveTable<Order>
@@ -922,11 +697,6 @@ export default function Orders() {
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
               onRowClick={handleOrderClick}
-              rowClassName={(order) =>
-                newOrderIds.has(order.id)
-                  ? 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary'
-                  : undefined
-              }
               emptyState={{
                 icon: Package,
                 title: "No orders found",
@@ -957,7 +727,7 @@ export default function Orders() {
                     onClick: () => toast.success("Order archived")
                   }}
                 >
-                  <div className={`flex items-start justify-between ${newOrderIds.has(order.id) ? 'animate-new-order-highlight rounded-lg' : ''}`}>
+                  <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <Checkbox
@@ -969,7 +739,6 @@ export default function Orders() {
                         <span className="font-mono font-bold text-primary">
                           #{order.order_number || order.id.slice(0, 8)}
                         </span>
-                        <OrderSourceBadge source={order.order_source} />
                       </div>
                       <p className="text-sm font-medium">
                         {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
@@ -990,133 +759,12 @@ export default function Orders() {
         </div>
       </PullToRefresh>
 
-      {/* Floating Bulk Actions Bar */}
-      <BulkActionsBar
-        selectedIds={selectedOrders}
-        onClearSelection={() => setSelectedOrders([])}
-        actions={[
-          {
-            id: 'mark-confirmed',
-            label: 'Confirmed',
-            icon: <CheckCircle className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('confirmed'); },
-          },
-          {
-            id: 'mark-delivered',
-            label: 'Delivered',
-            icon: <CheckCircle className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('delivered'); },
-          },
-          {
-            id: 'mark-preparing',
-            label: 'Preparing',
-            icon: <Package className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('preparing'); },
-          },
-          {
-            id: 'mark-in-transit',
-            label: 'In Transit',
-            icon: <Truck className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('in_transit'); },
-          },
-          {
-            id: 'merge',
-            label: 'Merge',
-            icon: <Merge className="h-4 w-4" />,
-            onClick: async () => { setMergeDialogOpen(true); },
-          },
-          {
-            id: 'mark-cancelled',
-            label: 'Cancel',
-            icon: <XCircle className="h-4 w-4" />,
-            variant: 'destructive',
-            onClick: async () => { handleBulkStatusChange('cancelled'); },
-          },
-          {
-            id: 'delete',
-            label: 'Delete',
-            icon: <Trash2 className="h-4 w-4" />,
-            variant: 'destructive',
-            onClick: async () => { handleBulkDelete(); },
-          },
-        ]}
-      />
-
-      {/* Order Merge Dialog */}
-      <Suspense fallback={null}>
-        <OrderMergeDialog
-          selectedOrders={selectedOrdersData}
-          open={mergeDialogOpen}
-          onOpenChange={setMergeDialogOpen}
-          onSuccess={() => setSelectedOrders([])}
-        />
-      </Suspense>
-
-      {/* Bulk Status Update Confirmation */}
-      <OrderBulkStatusConfirmDialog
-        open={bulkStatusConfirm.open}
-        onOpenChange={(open) => setBulkStatusConfirm(prev => ({ ...prev, open }))}
-        onConfirm={handleConfirmBulkStatusUpdate}
-        selectedCount={selectedOrders.length}
-        targetStatus={bulkStatusConfirm.targetStatus}
-        isLoading={bulkStatusUpdate.isRunning}
-      />
-
-      {/* Bulk Status Update Progress */}
-      <BulkOperationProgress
-        open={bulkStatusUpdate.showProgress}
-        onOpenChange={(open) => { if (!open) bulkStatusUpdate.closeProgress(); }}
-        title="Updating Order Status"
-        description={`Changing status to "${bulkStatusConfirm.targetStatus}"`}
-        total={bulkStatusUpdate.total}
-        completed={bulkStatusUpdate.completed}
-        succeeded={bulkStatusUpdate.succeeded}
-        failed={bulkStatusUpdate.failed}
-        failedItems={bulkStatusUpdate.failedItems}
-        isRunning={bulkStatusUpdate.isRunning}
-        isComplete={bulkStatusUpdate.isComplete}
-        onCancel={bulkStatusUpdate.cancel}
-      />
-
       <ConfirmDeleteDialog
         open={deleteConfirmation.open}
         onOpenChange={(open) => setDeleteConfirmation(prev => ({ ...prev, open }))}
         onConfirm={handleConfirmDelete}
         itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} orders` : 'this order'}
         description="This action cannot be undone."
-      />
-
-      {exportDialogOpen && (
-        <Suspense fallback={
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Loading export options...</p>
-            </div>
-          </div>
-        }>
-          <ExportOptionsDialog
-            open={exportDialogOpen}
-            onOpenChange={setExportDialogOpen}
-            onExport={handleExportWithOptions}
-            fields={orderExportFields}
-            title="Export Orders"
-            description="Choose which related data to include in the CSV export."
-            itemCount={filteredOrders.length}
-          />
-        </Suspense>
-      )}
-
-      <OrderCloneToB2BDialog
-        order={orderToClone}
-        open={cloneToB2BDialogOpen}
-        onOpenChange={(open) => {
-          setCloneToB2BDialogOpen(open);
-          if (!open) setOrderToClone(null);
-        }}
-        onSuccess={() => {
-          refetch();
-        }}
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -1168,19 +816,7 @@ export default function Orders() {
 
               {/* Quick Actions */}
               <div className="border-t pt-3 space-y-2">
-                <div className="grid grid-cols-3 gap-2">
-                  <OrderSMSButton
-                    order={{
-                      id: selectedOrder.id,
-                      order_number: selectedOrder.order_number,
-                      status: selectedOrder.status,
-                      total_amount: selectedOrder.total_amount,
-                      user: selectedOrder.user,
-                    }}
-                    tenantId={tenant?.id}
-                    variant="button"
-                    size="sm"
-                  />
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1196,15 +832,6 @@ export default function Orders() {
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => duplicateOrder(selectedOrder)}
-                    disabled={isDuplicating}
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Duplicate
                   </Button>
                 </div>
               </div>

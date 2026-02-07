@@ -8,14 +8,8 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import MousePointer2 from "lucide-react/dist/esm/icons/mouse-pointer-2";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Play from "lucide-react/dist/esm/icons/play";
-import { lazy, Suspense } from "react";
-// Lazy load the heavy demo component
-const BusinessAdminDemo = lazy(() => import("./demos/BusinessAdminDemo").then(module => ({ default: module.BusinessAdminDemo })));
+import { ArrowRight, ShieldCheck, MousePointer2, Smartphone, Play } from "lucide-react";
+import { BusinessAdminDemo } from "./demos/BusinessAdminDemo";
 import { useMobileOptimized } from "@/hooks/useMobileOptimized";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -54,7 +48,7 @@ export function ModernHero() {
         {/* Centered Hero Content */}
         <div className="max-w-5xl mx-auto text-center mb-10 md:mb-16">
           {/* Rotating Badge */}
-          <div className="h-12 mb-6 md:mb-8 flex items-center justify-center" aria-live="polite" aria-atomic="true">
+          <div className="h-12 mb-6 md:mb-8 flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={featureIndex}
@@ -154,16 +148,7 @@ export function ModernHero() {
 
               {/* Live Demo Component */}
               <div className="absolute inset-0 z-0">
-                <Suspense fallback={
-                  <div className="w-full h-full bg-slate-50 flex items-center justify-center">
-                    <div className="animate-pulse flex flex-col items-center gap-4">
-                      <div className="h-8 w-32 bg-slate-200 rounded"></div>
-                      <div className="h-64 w-96 bg-slate-200 rounded"></div>
-                    </div>
-                  </div>
-                }>
-                  <BusinessAdminDemo />
-                </Suspense>
+                <BusinessAdminDemo />
               </div>
 
               {/* Interaction Overlay */}

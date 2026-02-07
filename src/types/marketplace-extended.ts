@@ -62,80 +62,6 @@ export type MarketplaceProfile = {
   updated_at?: string;
 };
 
-/**
- * Feature toggles for Easy Mode storefront configuration
- */
-export interface FeatureToggles {
-  showSaleBadges: boolean;
-  showNewBadges: boolean;
-  showStrainBadges: boolean;
-  showStockWarnings: boolean;
-  enableSearch: boolean;
-  showCategories: boolean;
-  showPremiumFilter: boolean;
-  showHero: boolean;
-  showFeatures: boolean;
-  showTestimonials: boolean;
-  showNewsletter: boolean;
-  showFAQ: boolean;
-}
-
-/**
- * Simple content editable in Easy Mode
- */
-export interface SimpleContent {
-  announcementBanner?: string;
-  heroHeadline: string;
-  heroSubheadline: string;
-  heroCtaText: string;
-  heroCtaLink: string;
-}
-
-/**
- * Easy Mode configuration stored in theme_config.easy_mode
- */
-export interface EasyModeConfig {
-  enabled: boolean;
-  preset_id: string | null;
-  feature_toggles: FeatureToggles;
-  simple_content: SimpleContent;
-  custom_modifications: string[];
-  last_preset_applied_at?: string;
-}
-
-/**
- * Extended theme config with Easy Mode support
- */
-export interface ExtendedThemeConfig {
-  colors?: {
-    primary?: string;
-    secondary?: string;
-    accent?: string;
-    background?: string;
-    text?: string;
-  };
-  typography?: {
-    fontFamily?: string;
-  };
-  easy_mode?: EasyModeConfig;
-}
-
-/**
- * Section configuration for storefront layout
- */
-export interface SectionConfig {
-  id: string;
-  type: string;
-  content: Record<string, unknown>;
-  styles: Record<string, unknown>;
-  visible?: boolean;
-  responsive?: {
-    mobile?: { padding_y?: string; hidden?: boolean };
-    tablet?: { padding_y?: string; hidden?: boolean };
-    desktop?: { padding_y?: string; hidden?: boolean };
-  };
-}
-
 export type MarketplaceStore = {
   id: string;
   tenant_id: string;
@@ -151,10 +77,10 @@ export type MarketplaceStore = {
   font_family?: string | null;
   is_active?: boolean;
   is_public?: boolean;
-  layout_config?: SectionConfig[] | null;
-  theme_config?: ExtendedThemeConfig | null;
-  operating_hours?: Record<string, unknown> | null;
-  checkout_settings?: Record<string, unknown> | null;
+  layout_config?: any[] | null;
+  theme_config?: any | null;
+  operating_hours?: any | null;
+  checkout_settings?: any | null;
   created_at?: string;
   updated_at?: string;
 };

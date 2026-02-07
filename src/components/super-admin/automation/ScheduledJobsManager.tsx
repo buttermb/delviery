@@ -11,11 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Play from "lucide-react/dist/esm/icons/play";
-import Pause from "lucide-react/dist/esm/icons/pause";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Clock, Play, Pause, Trash2, Plus } from 'lucide-react';
 import {
   Table,
   TableBody,

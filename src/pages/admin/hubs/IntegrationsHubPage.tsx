@@ -9,13 +9,15 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Key from "lucide-react/dist/esm/icons/key";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Workflow from "lucide-react/dist/esm/icons/workflow";
-import Database from "lucide-react/dist/esm/icons/database";
-import Plug from "lucide-react/dist/esm/icons/plug";
-import Brain from "lucide-react/dist/esm/icons/brain";
-import Wrench from "lucide-react/dist/esm/icons/wrench";
+import {
+    Key,
+    Webhook,
+    Workflow,
+    Database,
+    Plug,
+    Brain,
+    Wrench,
+} from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
@@ -60,7 +62,7 @@ export default function IntegrationsHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="border-b bg-card px-4 py-4">
                     <HubBreadcrumbs

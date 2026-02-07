@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { ShoppingCart, Trash2, Plus, Minus, AlertCircle } from 'lucide-react';
 import { cleanProductName } from '@/utils/productName';
 import { cn } from '@/lib/utils';
 

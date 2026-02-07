@@ -1,16 +1,13 @@
 import { logger } from '@/lib/logger';
 /**
  * Unified Realtime Sync Hook
- * Subscribes to multiple tables and uses the invalidation system
- * for consistent cross-panel data synchronization.
- *
+ * Subscribes to multiple tables and invalidates TanStack Query caches
  * Phase 3: Implement Real-Time Synchronization
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { InvalidationEvent } from '@/lib/invalidation';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface UseRealtimeSyncOptions {
@@ -20,26 +17,23 @@ interface UseRealtimeSyncOptions {
 }
 
 const DEFAULT_TABLES = [
-  'orders',           // Critical: Live orders
-  'wholesale_orders', // Critical: B2B orders
-  'products',         // Critical: Stock changes
-  'menu_orders',      // Critical: Menu-based orders
-  // Removed for performance: deliveries, customers, payments,
-  // inventory_transfers, courier_earnings, invoices, storefront_orders
-  // These can be subscribed individually on pages that need them
+  'wholesale_orders',
+  'products',
+  'deliveries',
+  'courier_earnings',
+  'storefront_orders',
+  'marketplace_stores',
+  'orders',
+  'menu_orders',
 ];
 
 // Track failed connection attempts per table
 const connectionFailures = new Map<string, number>();
 const MAX_FAILURES = 3; // Disable after 3 failures
 
-// Type guards for payload inspection
+// Type guards
 function hasId(obj: unknown): obj is { id: string } {
   return typeof obj === 'object' && obj !== null && 'id' in obj;
-}
-
-function hasCustomerId(obj: unknown): obj is { customer_id: string } {
-  return typeof obj === 'object' && obj !== null && 'customer_id' in obj;
 }
 
 function hasProductId(obj: unknown): obj is { product_id: string } {
@@ -50,171 +44,9 @@ function hasCourierId(obj: unknown): obj is { courier_id: string } {
   return typeof obj === 'object' && obj !== null && 'courier_id' in obj;
 }
 
-function hasStatus(obj: unknown): obj is { status: string } {
-  return typeof obj === 'object' && obj !== null && 'status' in obj;
-}
-
-// Map table changes to invalidation events
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getInvalidationEvent(
-  table: string,
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE',
-  oldRecord: unknown,
-  newRecord: unknown
-): { event: InvalidationEvent; metadata?: Record<string, string> } | null {
-  switch (table) {
-    // ============================================================================
-    // ORDERS
-    // ============================================================================
-    case 'orders':
-    case 'menu_orders':
-      if (eventType === 'INSERT') {
-        return {
-          event: 'ORDER_CREATED',
-          metadata: hasCustomerId(newRecord) ? { customerId: newRecord.customer_id } : undefined,
-        };
-      }
-      if (eventType === 'UPDATE') {
-        // Check if status changed
-        if (hasStatus(oldRecord) && hasStatus(newRecord) && oldRecord.status !== newRecord.status) {
-          return {
-            event: 'ORDER_STATUS_CHANGED',
-            metadata: {
-              ...(hasId(newRecord) ? { orderId: newRecord.id } : {}),
-              ...(hasCustomerId(newRecord) ? { customerId: newRecord.customer_id } : {}),
-            },
-          };
-        }
-        return {
-          event: 'ORDER_UPDATED',
-          metadata: hasId(newRecord) ? { orderId: newRecord.id } : undefined,
-        };
-      }
-      if (eventType === 'DELETE') {
-        return { event: 'ORDER_DELETED' };
-      }
-      break;
-
-    // ============================================================================
-    // PRODUCTS & INVENTORY
-    // ============================================================================
-    case 'products':
-      if (eventType === 'INSERT') {
-        return { event: 'PRODUCT_CREATED' };
-      }
-      if (eventType === 'UPDATE') {
-        return {
-          event: 'PRODUCT_UPDATED',
-          metadata: hasId(newRecord) ? { productId: newRecord.id } : undefined,
-        };
-      }
-      if (eventType === 'DELETE') {
-        return { event: 'PRODUCT_DELETED' };
-      }
-      break;
-
-    case 'inventory':
-    case 'inventory_adjustments':
-      return {
-        event: 'INVENTORY_ADJUSTED',
-        metadata: hasProductId(newRecord) ? { productId: newRecord.product_id } : undefined,
-      };
-
-    case 'inventory_transfers':
-      if (hasStatus(newRecord) && newRecord.status === 'completed') {
-        return { event: 'INVENTORY_TRANSFER_COMPLETED' };
-      }
-      return { event: 'INVENTORY_ADJUSTED' };
-
-    // ============================================================================
-    // CUSTOMERS
-    // ============================================================================
-    case 'customers':
-    case 'b2b_clients':
-      if (eventType === 'INSERT') {
-        return { event: 'CUSTOMER_CREATED' };
-      }
-      if (eventType === 'UPDATE') {
-        return {
-          event: 'CUSTOMER_UPDATED',
-          metadata: hasId(newRecord) ? { customerId: newRecord.id } : undefined,
-        };
-      }
-      if (eventType === 'DELETE') {
-        return { event: 'CUSTOMER_DELETED' };
-      }
-      break;
-
-    // ============================================================================
-    // PAYMENTS & FINANCE
-    // ============================================================================
-    case 'refunds':
-      if (eventType === 'INSERT') {
-        return { event: 'REFUND_PROCESSED' };
-      }
-      break;
-
-    // ============================================================================
-    // DELIVERIES & FULFILLMENT
-    // ============================================================================
-    case 'couriers':
-      if (eventType === 'UPDATE') {
-        return {
-          event: 'COURIER_STATUS_CHANGED',
-          metadata: hasId(newRecord) ? { courierId: newRecord.id } : undefined,
-        };
-      }
-      break;
-
-    // ============================================================================
-    // WHOLESALE / B2B
-    // ============================================================================
-    case 'wholesale_orders':
-      if (eventType === 'INSERT') {
-        return { event: 'WHOLESALE_ORDER_CREATED' };
-      }
-      if (eventType === 'UPDATE') {
-        return { event: 'WHOLESALE_ORDER_UPDATED' };
-      }
-      break;
-
-    // ============================================================================
-    // MENUS & STOREFRONT
-    // ============================================================================
-    case 'disposable_menus':
-      if (hasStatus(newRecord) && newRecord.status === 'published') {
-        return { event: 'MENU_PUBLISHED' };
-      }
-      return {
-        event: 'MENU_UPDATED',
-        metadata: hasId(newRecord) ? { menuId: newRecord.id } : undefined,
-      };
-
-    // ============================================================================
-    // POS SHIFTS
-    // ============================================================================
-    case 'pos_shifts':
-      if (eventType === 'INSERT') {
-        return {
-          event: 'SHIFT_STARTED',
-          metadata: hasId(newRecord) ? { shiftId: newRecord.id } : undefined,
-        };
-      }
-      if (eventType === 'UPDATE' && hasStatus(newRecord) && newRecord.status === 'closed') {
-        return {
-          event: 'SHIFT_ENDED',
-          metadata: hasId(newRecord) ? { shiftId: newRecord.id } : undefined,
-        };
-      }
-      break;
-  }
-
-  return null;
-}
-
 /**
  * Unified hook for real-time synchronization across multiple tables
- * Uses the centralized invalidation system for consistent cache updates
+ * Handles INSERT, UPDATE, DELETE events and invalidates relevant query caches
  */
 export function useRealtimeSync({
   tenantId,
@@ -225,52 +57,6 @@ export function useRealtimeSync({
   const channelsRef = useRef<RealtimeChannel[]>([]);
   const isConnectingRef = useRef(false);
   const cleanupRef = useRef<(() => void) | null>(null);
-  const [isTabVisible, setIsTabVisible] = useState(!document.hidden);
-  const isTabVisibleRef = useRef(isTabVisible);
-
-  // Keep ref in sync with state
-  useEffect(() => {
-    isTabVisibleRef.current = isTabVisible;
-  }, [isTabVisible]);
-
-  // Setup visibility change listener
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      const isVisible = !document.hidden;
-      const wasVisible = isTabVisible;
-      setIsTabVisible(isVisible);
-
-      if (!enabled || !tenantId) {
-        return;
-      }
-
-      if (isVisible && !wasVisible) {
-        // Tab became visible - refresh data and resume subscriptions
-        logger.debug('Tab became visible, refreshing data', {
-          component: 'useRealtimeSync',
-          tenantId,
-        });
-
-        // Invalidate all subscribed tables to fetch fresh data
-        tables.forEach((table) => {
-          queryClient.invalidateQueries({ queryKey: [table] });
-          queryClient.invalidateQueries({ queryKey: [table, tenantId] });
-        });
-      } else if (!isVisible && wasVisible) {
-        // Tab became hidden - pause subscriptions (they'll naturally pause)
-        logger.debug('Tab became hidden, subscriptions will pause', {
-          component: 'useRealtimeSync',
-          tenantId,
-        });
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [enabled, tenantId, tables, queryClient, isTabVisible]);
 
   useEffect(() => {
     if (!enabled || !tenantId) {
@@ -282,31 +68,23 @@ export function useRealtimeSync({
       return;
     }
 
-    // Don't connect if tab is hidden
-    if (!isTabVisible) {
-      logger.debug('Skipping realtime connection while tab is hidden', {
-        component: 'useRealtimeSync',
-        tenantId,
-      });
-      return;
-    }
-
-    // Prevent multiple simultaneous connection attempts
+    // Prevent multiple simultaneous connection attempts using ref
     if (isConnectingRef.current) {
       return;
     }
 
     isConnectingRef.current = true;
 
-    // Cleanup function
+    // Cleanup function - silently handle WebSocket errors during cleanup
     const cleanup = () => {
-      channelsRef.current.forEach((channel) => {
+      channelsRef.current.forEach(channel => {
         try {
+          // Suppress WebSocket errors during cleanup (they're expected when channels close)
           supabase.removeChannel(channel).catch(() => {
-            // Silently ignore cleanup errors
+            // Silently ignore cleanup errors - WebSocket disconnects are expected
           });
-        } catch {
-          // Silently ignore cleanup errors
+        } catch (error) {
+          // Silently ignore cleanup errors - these are not critical
         }
       });
       channelsRef.current = [];
@@ -317,24 +95,23 @@ export function useRealtimeSync({
     // Clear any existing channels first
     cleanup();
 
-    // Subscribe to each table
-    tables.forEach((table) => {
+    // Subscribe to each table (skip if too many failures)
+    tables.forEach(table => {
       const failureKey = `${table}-${tenantId}`;
       const failures = connectionFailures.get(failureKey) || 0;
 
-      // Skip if too many failures
+      // Skip if too many failures (disable realtime for this table)
       if (failures >= MAX_FAILURES) {
-        logger.debug(`Skipping realtime for ${table} (too many failures)`, {
-          failures,
-          component: 'useRealtimeSync',
-        });
+        logger.debug(`Skipping realtime for ${table} (too many failures)`, { failures, component: 'useRealtimeSync' });
         return;
       }
 
       const channelKey = `realtime-sync-${table}-${tenantId}`;
 
+      let channel: RealtimeChannel;
+
       try {
-        const channel = supabase
+        channel = supabase
           .channel(channelKey, {
             config: {
               broadcast: { self: false },
@@ -347,23 +124,12 @@ export function useRealtimeSync({
               event: '*',
               schema: 'public',
               table,
-              // Don't filter by tenant_id to avoid 400 errors
-              // RLS policies handle tenant isolation
-              filter: undefined,
+              // Don't filter by tenant_id if column doesn't exist - this causes 400 errors
+              // The filter will be applied server-side by RLS policies if they exist
+              filter: undefined, // Remove tenant_id filter to avoid 400 errors
             },
             (payload) => {
               try {
-                // Skip processing updates if tab is hidden
-                if (!isTabVisibleRef.current) {
-                  logger.debug(`Skipping realtime update while tab hidden: ${table}`, {
-                    event: payload.eventType,
-                    table,
-                    tenantId,
-                    component: 'useRealtimeSync',
-                  });
-                  return;
-                }
-
                 logger.debug(`Realtime update: ${table}`, {
                   event: payload.eventType,
                   table,
@@ -377,9 +143,6 @@ export function useRealtimeSync({
                     queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
-                    // Invalidate finance queries for real-time revenue updates
-                    queryClient.invalidateQueries({ queryKey: ['finance'] });
-                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
                     // Also invalidate related queries
                     if (payload.new && hasId(payload.new)) {
                       queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
@@ -397,6 +160,17 @@ export function useRealtimeSync({
                     // Invalidate product-specific queries
                     if (payload.new && hasId(payload.new)) {
                       queryClient.invalidateQueries({ queryKey: ['product', payload.new.id] });
+                    }
+                    break;
+
+                  case 'deliveries':
+                    queryClient.invalidateQueries({ queryKey: ['deliveries'] });
+                    queryClient.invalidateQueries({ queryKey: ['active-deliveries'] });
+                    queryClient.invalidateQueries({ queryKey: ['delivery-map'] });
+                    queryClient.invalidateQueries({ queryKey: ['fleet-management'] });
+                    // Invalidate delivery-specific queries
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['delivery', payload.new.id] });
                     }
                     break;
 
@@ -429,9 +203,6 @@ export function useRealtimeSync({
                     queryClient.invalidateQueries({ queryKey: ['live-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
-                    // Invalidate finance queries for real-time revenue updates
-                    queryClient.invalidateQueries({ queryKey: ['finance'] });
-                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
                     if (payload.new && hasId(payload.new)) {
                       queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
                     }
@@ -452,50 +223,70 @@ export function useRealtimeSync({
                     queryClient.invalidateQueries({ queryKey: [table] });
                     queryClient.invalidateQueries({ queryKey: [table, tenantId] });
                 }
+
+                // Also invalidate dashboard and summary queries
+                queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+                queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+                queryClient.invalidateQueries({ queryKey: ['summary'] });
               } catch (error) {
-                logger.error(`Error processing realtime update for ${table}`, error, {
-                  component: 'useRealtimeSync',
-                });
+                logger.error(`Error processing realtime update for ${table}`, error, { component: 'useRealtimeSync' });
               }
             }
           )
           .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
+              // Reset failure count on successful subscription
               connectionFailures.delete(failureKey);
-              logger.debug(`Realtime subscription active: ${table}`, {
-                tenantId,
-                component: 'useRealtimeSync',
-              });
-            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              logger.debug(`Realtime subscription active: ${table}`, { tenantId, component: 'useRealtimeSync' });
+            } else if (status === 'CHANNEL_ERROR') {
+              // Increment failure count
+              const currentFailures = connectionFailures.get(failureKey) || 0;
+              connectionFailures.set(failureKey, currentFailures + 1);
+
+              // Only log if not too many failures (to reduce noise)
+              if (currentFailures < MAX_FAILURES) {
+                logger.warn(
+                  `Realtime subscription error: ${table} (tenant: ${tenantId})`,
+                  { table, tenantId, failures: currentFailures + 1, component: 'useRealtimeSync' }
+                );
+              }
+
+              // Invalidate queries to trigger refetch
+              queryClient.invalidateQueries({ queryKey: [table] });
+              queryClient.invalidateQueries({ queryKey: [table, tenantId] });
+            } else if (status === 'TIMED_OUT') {
+              // Increment failure count
               const currentFailures = connectionFailures.get(failureKey) || 0;
               connectionFailures.set(failureKey, currentFailures + 1);
 
               if (currentFailures < MAX_FAILURES) {
-                logger.warn(`Realtime subscription ${status.toLowerCase()}: ${table}`, {
-                  table,
-                  tenantId,
-                  failures: currentFailures + 1,
-                  component: 'useRealtimeSync',
-                });
+                logger.warn(
+                  `Realtime subscription timed out: ${table}`,
+                  { tenantId, table, failures: currentFailures + 1, component: 'useRealtimeSync' }
+                );
               }
+
+              // Invalidate queries to trigger refetch
+              queryClient.invalidateQueries({ queryKey: [table] });
+              queryClient.invalidateQueries({ queryKey: [table, tenantId] });
             }
           });
 
         channelsRef.current.push(channel);
       } catch (error) {
+        // Catch any errors during channel creation
         const currentFailures = connectionFailures.get(failureKey) || 0;
         connectionFailures.set(failureKey, currentFailures + 1);
 
         if (currentFailures < MAX_FAILURES) {
-          logger.warn(`Failed to create realtime channel for ${table}`, error, {
-            component: 'useRealtimeSync',
-          });
+          logger.warn(`Failed to create realtime channel for ${table}`, error, { component: 'useRealtimeSync' });
         }
       }
     });
 
     isConnectingRef.current = false;
 
+    // Cleanup function
     return () => {
       if (cleanupRef.current) {
         cleanupRef.current();
@@ -503,15 +294,11 @@ export function useRealtimeSync({
       }
       isConnectingRef.current = false;
     };
-    // Note: isTabVisible is intentionally not in the dependency array
-    // We don't want to recreate subscriptions when visibility changes
-    // Instead, we skip processing updates when hidden and refresh data when visible
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId, tables, enabled, queryClient]);
 
   return {
     isActive: channelsRef.current.length > 0,
     channelCount: channelsRef.current.length,
-    isTabVisible,
   };
 }
+

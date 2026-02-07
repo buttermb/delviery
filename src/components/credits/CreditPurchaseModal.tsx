@@ -1,9 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Check from "lucide-react/dist/esm/icons/check";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Check, Coins, Loader2 } from "lucide-react";
 import { useCredits } from "@/contexts/CreditContext";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";

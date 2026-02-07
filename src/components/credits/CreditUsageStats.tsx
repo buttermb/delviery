@@ -7,14 +7,16 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Coins from "lucide-react/dist/esm/icons/coins";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import {
+  Coins,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Activity,
+  BarChart3,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -488,4 +490,10 @@ export function CreditUsageStats({
     </div>
   );
 }
+
+
+
+
+
+
 

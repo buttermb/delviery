@@ -14,17 +14,19 @@ import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { CTASection } from '@/components/marketing/CTASection';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Package from "lucide-react/dist/esm/icons/package";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Play from "lucide-react/dist/esm/icons/play";
-import Terminal from "lucide-react/dist/esm/icons/terminal";
+import {
+    LayoutDashboard,
+    ShoppingCart,
+    Package,
+    CreditCard,
+    QrCode,
+    BarChart3,
+    Truck,
+    ArrowRight,
+    CheckCircle2,
+    Play,
+    Terminal
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Demo components

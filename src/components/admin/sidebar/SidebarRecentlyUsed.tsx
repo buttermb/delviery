@@ -7,18 +7,18 @@
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
-import { matchesSearchQuery } from './SidebarSearch';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { useParams, useLocation } from 'react-router-dom';
+import type { FeatureId } from '@/lib/featureConfig';
 import type { SidebarItem } from '@/types/sidebar';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import { useMemo, memo } from 'react';
+import { Clock } from 'lucide-react';
+import { useMemo } from 'react';
 
-export const SidebarRecentlyUsed = memo(function SidebarRecentlyUsed() {
+export function SidebarRecentlyUsed() {
     const { tenantSlug } = useParams();
     const location = useLocation();
-    const { preferences, searchQuery } = useSidebar();
+    const { preferences, trackFeatureClick } = useSidebar();
     const { sidebarConfig } = useSidebarConfig();
     const { canAccess } = useFeatureAccess();
 
@@ -70,25 +70,29 @@ export const SidebarRecentlyUsed = memo(function SidebarRecentlyUsed() {
         return foundItems;
     }, [lastAccessed, sidebarConfig]);
 
-    // Filter recent items based on search query
-    const filteredRecentItems = useMemo(() => {
-        if (!searchQuery.trim()) return recentItems;
-        return recentItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
-    }, [recentItems, searchQuery]);
-
-    if (filteredRecentItems.length === 0) return null;
+    if (recentItems.length === 0) return null;
 
     const isActive = (url: string) => {
         const fullPath = `/${tenantSlug}${url}`;
         return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
     };
 
-    const handleItemClick = () => {
+    const handleItemClick = (itemId: string, featureId?: string) => {
         // Tracking is handled by SidebarMenuItem context call
+        // But we can add extra logic here if needed
     };
 
-    const handleLockedItemClick = () => {
-        // Upgrade modal is handled by parent AdaptiveSidebar
+    const handleLockedItemClick = (featureId: FeatureId) => {
+        // Handled by parent usually, but we can just emit event or ignore
+        // For now, we'll dispatch the upgrade modal event if we can, 
+        // or just let the user know. 
+        // Actually AdaptiveSidebar handles this via state. 
+        // We might need to accept a prop or context for this.
+        // But SidebarRecentlyUsed is inside AdaptiveSidebar, so we can't easily pass it up 
+        // unless we use context or props.
+        // Let's check if we can get setUpgradeFeatureId from context? 
+        // SidebarContext doesn't have it.
+        // We'll leave it empty for now, as recently used items are usually accessible.
     };
 
     return (
@@ -99,7 +103,7 @@ export const SidebarRecentlyUsed = memo(function SidebarRecentlyUsed() {
             </SidebarGroupLabel>
             <SidebarGroupContent className="mt-1">
                 <SidebarMenu>
-                    {filteredRecentItems.map((item) => (
+                    {recentItems.map((item) => (
                         <SidebarMenuItem
                             key={`recent-${item.id}`}
                             item={item}
@@ -113,4 +117,4 @@ export const SidebarRecentlyUsed = memo(function SidebarRecentlyUsed() {
             </SidebarGroupContent>
         </SidebarGroup>
     );
-});
+}

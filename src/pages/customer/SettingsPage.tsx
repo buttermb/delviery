@@ -2,16 +2,9 @@ import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Key from "lucide-react/dist/esm/icons/key";
-import User from "lucide-react/dist/esm/icons/user";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Download from "lucide-react/dist/esm/icons/download";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Settings, Key, User, Bell, Trash2, Download, AlertTriangle } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -22,8 +15,6 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
-import { PasswordBreachWarning } from "@/components/auth/PasswordBreachWarning";
-import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 import { SessionManagement } from "@/components/customer/SessionManagement";
 import { safeFetch } from "@/utils/safeFetch";
 import { BusinessVerificationCard } from "@/components/customer/BusinessVerificationCard";
@@ -41,9 +32,6 @@ export default function CustomerSettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
-
-  // Password breach checking
-  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(passwordData.newPassword);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,16 +63,6 @@ export default function CustomerSettingsPage() {
         toast({
           title: "Password Too Short",
           description: "Password must be at least 8 characters long",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (breachResult?.blocked) {
-        toast({
-          title: "Password not allowed",
-          description: "This password has been found in too many data breaches. Please choose a different password.",
           variant: "destructive",
         });
         setLoading(false);
@@ -308,8 +286,9 @@ export default function CustomerSettingsPage() {
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">Current Password</Label>
-                <PasswordInput
-                  placeholder="Current Password"
+                <Input 
+                  type="password" 
+                  placeholder="Current Password" 
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
@@ -318,8 +297,9 @@ export default function CustomerSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">New Password</Label>
-                <PasswordInput
-                  placeholder="New Password (min. 8 characters)"
+                <Input 
+                  type="password" 
+                  placeholder="New Password (min. 8 characters)" 
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
@@ -328,19 +308,12 @@ export default function CustomerSettingsPage() {
                 {passwordData.newPassword && (
                   <PasswordStrengthIndicator password={passwordData.newPassword} />
                 )}
-                {passwordData.newPassword.length >= 8 && (
-                  <PasswordBreachWarning
-                    checking={breachChecking}
-                    result={breachResult}
-                    suggestPassword={suggestPassword}
-                    onGeneratePassword={(pw) => setPasswordData({ ...passwordData, newPassword: pw, confirmPassword: pw })}
-                  />
-                )}
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">Confirm New Password</Label>
-                <PasswordInput
-                  placeholder="Confirm New Password"
+                <Input 
+                  type="password" 
+                  placeholder="Confirm New Password" 
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}

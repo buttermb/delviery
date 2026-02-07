@@ -8,12 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "@/hooks/use-toast";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import { Loader2, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 interface StripeConfig {
   secretKey: string;

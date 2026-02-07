@@ -9,10 +9,7 @@
 
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Utensils from "lucide-react/dist/esm/icons/utensils";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import { Clock, ShoppingBag, Utensils, CheckCircle2 } from 'lucide-react';
 
 export interface TVOrder {
     id: string;

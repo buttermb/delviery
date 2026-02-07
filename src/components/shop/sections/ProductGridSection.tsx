@@ -1,39 +1,14 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Leaf from "lucide-react/dist/esm/icons/leaf";
-import Cookie from "lucide-react/dist/esm/icons/cookie";
-import Cigarette from "lucide-react/dist/esm/icons/cigarette";
-import Droplets from "lucide-react/dist/esm/icons/droplets";
-import Wind from "lucide-react/dist/esm/icons/wind";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import type { LucideIcon } from "lucide-react";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, ChevronRight, ChevronLeft, AlertTriangle, LucideIcon } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
-
-// Local product type for data from RPC/queries that gets normalized
-interface LocalProduct {
-    id?: string;
-    product_id?: string;
-    name?: string;
-    product_name?: string;
-    price?: number;
-    base_price?: number;
-    description?: string;
-    images?: string[];
-    category?: string;
-    in_stock?: boolean;
-    strain_type?: string;
-    quantity_available?: number;
-}
 
 export interface ProductGridSectionProps {
     content: {
@@ -43,11 +18,6 @@ export interface ProductGridSectionProps {
         show_categories: boolean;
         initial_categories_shown: number;
         show_premium_filter: boolean;
-        // Feature toggles from Easy Mode
-        show_sale_badges?: boolean;
-        show_new_badges?: boolean;
-        show_strain_badges?: boolean;
-        show_stock_warnings?: boolean;
     };
     styles: {
         background_color: string;
@@ -64,12 +34,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         show_search = true,
         show_categories = true,
         initial_categories_shown = 2,
-        show_premium_filter = true,
-        // Feature toggles - default to true if not specified
-        show_sale_badges = true,
-        show_new_badges = true,
-        show_strain_badges = true,
-        show_stock_warnings = true,
+        show_premium_filter = true
     } = content || {};
 
     const {
@@ -108,8 +73,8 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         });
     };
 
-    // Fetch products - normalized to LocalProduct[]
-    const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
+    // Fetch products
+    const { data: allProducts = [], isLoading, error } = useQuery<any[]>({
         queryKey: ["products", storeId],
         queryFn: async () => {
             if (storeId) {
@@ -137,18 +102,16 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         if (fallbackError) throw fallbackError;
 
                         return ((fallbackData as any[]) || []).map((item: any) => ({
+                            ...item.products,
                             id: item.product_id,
-                            name: item.products?.name,
                             price: item.custom_price || item.products?.price || 0,
                             images: item.products?.images || [],
-                            category: item.products?.category,
-                            description: item.products?.description,
-                            in_stock: item.products?.in_stock,
-                        })) as LocalProduct[];
+                        }));
                     }
 
-                    // Normalize RPC data to LocalProduct interface
+                    // Normalize RPC data to match Product interface
                     return ((data as any[]) || []).map((p: any) => ({
+                        ...p,
                         id: p.product_id || p.id,
                         name: p.product_name || p.name,
                         price: p.base_price || p.price || 0,
@@ -156,8 +119,8 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         images: p.images || [],
                         category: p.category,
                         in_stock: (p.quantity_available || 0) > 0,
-                        strain_type: p.strain_type || '',
-                    })) as LocalProduct[];
+                        vendor_name: ''
+                    }));
                 } catch (err) {
                     logger.error('Error fetching marketplace products', err);
                     return [];
@@ -170,29 +133,17 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     .eq("in_stock", true)
                     .limit(20);
                 if (error) throw error;
-                // Map generic products to LocalProduct shape
-                return (data || []).map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    description: p.description,
-                    images: p.images,
-                    category: p.category,
-                    in_stock: p.in_stock,
-                    strain_type: p.strain_type || '',
-                })) as LocalProduct[];
+                return (data || []) as any[];
             }
         },
         retry: 1,
     });
 
-    const productIds = allProducts.map(p => p.id).filter((id): id is string => !!id);
+    const productIds = allProducts.map(p => p.id);
     const { data: inventoryMap = {} } = useInventoryBatch(productIds);
 
     // Dynamic Categories
-    const uniqueCategories = useMemo(() => {
-        return Array.from(new Set(allProducts.map((p: any) => p.category))).filter((c): c is string => !!c);
-    }, [allProducts]);
+    const uniqueCategories = Array.from(new Set(allProducts.map((p: any) => p.category))).filter((c): c is string => !!c);
 
     // Icon Mapping Helper
     const getCategoryIcon = (category: string) => {
@@ -205,35 +156,29 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         return Leaf; // Default
     };
 
-    const categories = useMemo(() => {
-        return uniqueCategories.map(cat => ({
-            key: cat,
-            label: cat.charAt(0).toUpperCase() + cat.slice(1),
-            icon: getCategoryIcon(cat),
-            desc: "" // Could map descriptions if needed
-        }));
-    }, [uniqueCategories]);
+    const categories = uniqueCategories.map(cat => ({
+        key: cat,
+        label: cat.charAt(0).toUpperCase() + cat.slice(1),
+        icon: getCategoryIcon(cat),
+        desc: "" // Could map descriptions if needed
+    }));
 
-    const filteredProducts: LocalProduct[] = useMemo(() => {
-        let filtered = searchQuery
-            ? allProducts.filter((p) => {
-                const query = searchQuery.toLowerCase();
-                return (
-                    (p.name || '').toLowerCase().includes(query) ||
-                    (p.description || '').toLowerCase().includes(query)
-                );
-            })
-            : allProducts;
+    let filteredProducts = searchQuery
+        ? allProducts.filter((p) => {
+            const query = searchQuery.toLowerCase();
+            return (
+                p.name?.toLowerCase().includes(query) ||
+                p.description?.toLowerCase().includes(query)
+            );
+        })
+        : allProducts;
 
-        if (premiumFilter) {
-            filtered = filtered.filter((p) => {
-                const price = typeof p.price === 'number' ? p.price : parseFloat(p.price);
-                return price >= 40 || p.description?.toLowerCase().includes('premium');
-            });
-        }
-
-        return filtered;
-    }, [allProducts, searchQuery, premiumFilter]);
+    if (premiumFilter) {
+        filteredProducts = filteredProducts.filter((p) => {
+            const price = typeof p.price === 'number' ? p.price : parseFloat(p.price);
+            return price >= 40 || p.description?.toLowerCase().includes('premium');
+        });
+    }
 
     const scrollContainerRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -331,19 +276,19 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                                         {/* Horizontal Scrollable Row */}
                                         <div className="relative group">
-                                        <div
+                                            <div
                                                 ref={(el) => scrollContainerRef.current[category.key] = el}
                                                 className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-4 md:px-0"
                                             >
                                                 {products.map((product, index) => (
-                                                    <div key={product.id || index} className="w-[280px] md:w-[320px] flex-shrink-0">
+                                                    <div key={product.id} className="w-[280px] md:w-[320px] flex-shrink-0">
                                                         <StorefrontProductCard
                                                             product={{
-                                                                product_id: product.id || '',
-                                                                product_name: product.name || '',
+                                                                product_id: product.id,
+                                                                product_name: product.name,
                                                                 category: product.category || '',
-                                                                strain_type: product.strain_type || '',
-                                                                price: Number(product.price) || 0,
+                                                                strain_type: product.strain_type || '', // Fallback
+                                                                price: Number(product.price),
                                                                 description: product.description || '',
                                                                 image_url: product.images?.[0] || null,
                                                                 images: product.images || [],
@@ -351,21 +296,17 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                                 cbd_content: null,
                                                                 is_visible: true,
                                                                 display_order: 0,
-                                                                stock_quantity: product.in_stock ? 100 : 0
+                                                                stock_quantity: product.in_stock ? 100 : 0 // Fallback if accurate quantity unknown
                                                             }}
-                                                            storeSlug=""
+                                                            storeSlug="" // Optional or fetch from context if needed for links
                                                             isPreviewMode={false}
-                                                            onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
+                                                            onQuickAdd={(e) => handleQuickAdd(e, product)}
                                                             isAdded={false}
                                                             onToggleWishlist={() => { }}
                                                             isInWishlist={false}
                                                             onQuickView={() => { }}
                                                             index={index}
                                                             accentColor={accent_color}
-                                                            showSaleBadge={show_sale_badges}
-                                                            showNewBadge={show_new_badges}
-                                                            showStrainBadge={show_strain_badges}
-                                                            showStockWarning={show_stock_warnings}
                                                         />
                                                     </div>
                                                 ))}

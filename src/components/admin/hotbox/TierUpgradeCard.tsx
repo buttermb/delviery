@@ -30,15 +30,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Users from "lucide-react/dist/esm/icons/users";
-import Crown from "lucide-react/dist/esm/icons/crown";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Unlock from "lucide-react/dist/esm/icons/unlock";
+import { 
+  TrendingUp, 
+  MapPin, 
+  Users, 
+  Crown,
+  Settings,
+  ChevronRight,
+  Sparkles,
+  Lock,
+  Unlock,
+} from 'lucide-react';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { 
   BusinessTier, 

@@ -8,18 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import Package from "lucide-react/dist/esm/icons/package";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  Search,
+  Plus,
+  RotateCcw,
+  Package,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Edit,
+  Trash2,
+  Eye,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -38,7 +40,6 @@ import {
 import { RACreateForm } from "@/components/admin/returns/RACreateForm";
 import { RADetail } from "@/components/admin/returns/RADetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -124,34 +125,19 @@ export default function ReturnsManagementPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async ({ id, raNumber }: { id: string; raNumber: string }) => {
+    mutationFn: async (id: string) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await (supabase as any)
-        .from('returns')
+      const { error } = await supabase
+        .from("returns" as any)
         .delete()
         .eq("id", id)
         .eq("tenant_id", tenant.id);
 
       if (error && error.code !== "42P01") throw error;
-      return { id, raNumber };
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.returns.lists() });
       toast.success("Return authorization deleted successfully");
-
-      // Log activity for audit trail
-      if (tenant?.id) {
-        logActivityAuto(
-          tenant.id,
-          ActivityActions.DELETE_RETURN,
-          'return_authorization',
-          data.id,
-          {
-            ra_number: data.raNumber,
-            deleted_at: new Date().toISOString(),
-          }
-        );
-      }
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete return authorization', error, { component: 'ReturnsManagementPage' });
@@ -201,10 +187,7 @@ export default function ReturnsManagementPage() {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await deleteMutation.mutateAsync({
-            id: ra.id,
-            raNumber: ra.ra_number,
-          });
+          await deleteMutation.mutateAsync(ra.id);
           closeDialog();
         } finally {
           setLoading(false);

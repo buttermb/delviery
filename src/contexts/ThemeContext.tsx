@@ -1,22 +1,20 @@
 import { logger } from '@/lib/logger';
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { safeStorage } from "@/utils/safeStorage";
-import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 type Theme = "light" | "dark";
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
     // Get stored theme or determine default
-    const stored = localStorage.getItem(STORAGE_KEYS.THEME);
+    const stored = safeStorage.getItem("theme");
     let initialTheme: Theme = "light"; // Default to light mode
 
     if (stored === "light" || stored === "dark") {
@@ -38,23 +36,15 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-    safeStorage.setItem(STORAGE_KEYS.THEME, theme);
+    safeStorage.setItem("theme", theme);
     logger.debug('Theme applied', { theme, component: 'ThemeContext' });
   }, [theme]);
 
-  const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === "light" ? "dark" : "light"));
-  }, []);
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
 
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
-  }, []);
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {

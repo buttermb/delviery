@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Award from "lucide-react/dist/esm/icons/award";
+import { ShieldCheck, Truck, Award } from "lucide-react";
 import { motion, useTransform } from "framer-motion";
 import { useThrottledScroll } from "@/hooks/useThrottledScroll";
 

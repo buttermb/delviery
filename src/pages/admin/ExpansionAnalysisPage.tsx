@@ -7,13 +7,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Globe from "lucide-react/dist/esm/icons/globe";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Users from "lucide-react/dist/esm/icons/users";
-import Calculator from "lucide-react/dist/esm/icons/calculator";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Globe, MapPin, TrendingUp, DollarSign, Users, Calculator, AlertCircle } from 'lucide-react';
 
 export default function ExpansionAnalysisPage() {
     return (

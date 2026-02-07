@@ -12,10 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { MapPin, DollarSign, Package, Loader2 } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 
 interface AssignDeliveryToRunnerDialogProps {

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import Calculator from "lucide-react/dist/esm/icons/calculator";
+import { Calculator } from 'lucide-react';
 import { useState } from 'react';
 
 interface LTVMetrics {

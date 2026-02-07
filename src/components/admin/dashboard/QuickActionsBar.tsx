@@ -4,11 +4,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Package from "lucide-react/dist/esm/icons/package";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import { Plus, Package, Menu, Truck, FileText } from 'lucide-react';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 
 export function QuickActionsBar() {

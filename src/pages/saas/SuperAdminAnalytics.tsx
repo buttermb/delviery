@@ -15,15 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Users from "lucide-react/dist/esm/icons/users";
-import Download from "lucide-react/dist/esm/icons/download";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
-import LineChart from "lucide-react/dist/esm/icons/line-chart";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import {
+  DollarSign,
+  TrendingUp,
+  Users,
+  Download,
+  Calendar,
+  BarChart3,
+  PieChart,
+  LineChart,
+  ArrowLeft,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';

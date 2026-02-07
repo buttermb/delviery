@@ -5,8 +5,7 @@
 
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
-import Check from "lucide-react/dist/esm/icons/check";
-import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import { Check, CheckCheck } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export interface Message {

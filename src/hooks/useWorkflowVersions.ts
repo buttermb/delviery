@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 
 interface WorkflowAction {
   id?: string;
@@ -48,21 +47,20 @@ export function useWorkflowVersions(workflowId: string | null) {
   const queryClient = useQueryClient();
 
   const { data: versions, isLoading } = useQuery<WorkflowVersion[]>({
-    queryKey: ['workflow-versions', workflowId, tenant?.id],
+    queryKey: ['workflow-versions', workflowId],
     queryFn: async () => {
-      if (!workflowId || !tenant?.id) return [];
+      if (!workflowId) return [];
 
       const { data, error } = await supabase
         .from('workflow_versions')
         .select('*')
         .eq('workflow_id', workflowId)
-        .eq('tenant_id', tenant.id)
         .order('version_number', { ascending: false });
 
       if (error) throw error;
       return (data as WorkflowVersion[]) || [];
     },
-    enabled: !!workflowId && !!tenant?.id,
+    enabled: !!workflowId,
   });
 
   const restoreVersion = useMutation({
@@ -73,11 +71,9 @@ export function useWorkflowVersions(workflowId: string | null) {
       workflowId: string;
       versionNumber: number;
     }) => {
-      if (!tenant?.id) throw new Error('No tenant');
       const { data, error } = await supabase.rpc('restore_workflow_version', {
         p_workflow_id: workflowId,
         p_version_number: versionNumber,
-        p_tenant_id: tenant.id,
       });
 
       if (error) throw error;
@@ -120,24 +116,14 @@ export function useWorkflowVersions(workflowId: string | null) {
       versionA: number;
       versionB: number;
     }) => {
-      if (!tenant?.id) throw new Error('No tenant');
       const { data, error } = await supabase.rpc('compare_workflow_versions', {
         p_workflow_id: workflowId,
         p_version_a: versionA,
         p_version_b: versionB,
-        p_tenant_id: tenant.id,
       });
 
       if (error) throw error;
       return data;
-    },
-    onError: (error: unknown) => {
-      logger.error('Failed to compare workflow versions', { error });
-      toast({
-        title: 'Comparison Failed',
-        description: error instanceof Error ? error.message : 'Failed to compare versions',
-        variant: 'destructive',
-      });
     },
   });
 
@@ -150,24 +136,21 @@ export function useWorkflowVersions(workflowId: string | null) {
 }
 
 export function useWorkflowVersionStats(workflowId: string | null) {
-  const { tenant } = useTenantAdminAuth();
-
   const { data: versions } = useQuery<WorkflowVersion[]>({
-    queryKey: ['workflow-versions', workflowId, tenant?.id],
+    queryKey: ['workflow-versions', workflowId],
     queryFn: async () => {
-      if (!workflowId || !tenant?.id) return [];
+      if (!workflowId) return [];
 
       const { data, error } = await supabase
         .from('workflow_versions')
         .select('*')
         .eq('workflow_id', workflowId)
-        .eq('tenant_id', tenant.id)
         .order('version_number', { ascending: false });
 
       if (error) throw error;
       return (data as WorkflowVersion[]) || [];
     },
-    enabled: !!workflowId && !!tenant?.id,
+    enabled: !!workflowId,
   });
 
   const stats = {

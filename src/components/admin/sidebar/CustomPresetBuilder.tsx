@@ -34,11 +34,7 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import type { CustomPreset } from '@/types/sidebar';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Save from "lucide-react/dist/esm/icons/save";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Check from "lucide-react/dist/esm/icons/check";
+import { Plus, Save, Trash2, Edit, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CustomPresetBuilder() {

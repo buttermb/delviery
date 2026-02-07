@@ -2,9 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Info from "lucide-react/dist/esm/icons/info";
+import { Copy, ExternalLink, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export function CourierLoginInfo() {

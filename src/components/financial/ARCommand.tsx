@@ -8,14 +8,7 @@
  */
 
 import { useState } from 'react';
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Send from "lucide-react/dist/esm/icons/send";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import { Phone, MessageSquare, Mail, Clock, AlertCircle, Send, FileText, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

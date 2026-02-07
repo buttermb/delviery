@@ -8,15 +8,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';
-import Shield from "lucide-react/dist/esm/icons/shield";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { 
+  Shield, 
+  AlertTriangle, 
+  Ban, 
+  Eye, 
+  MapPin, 
+  Smartphone,
+  Activity,
+  Lock,
+  CheckCircle
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 

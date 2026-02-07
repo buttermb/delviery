@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
 interface Recall {
@@ -149,9 +148,9 @@ export function RecallForm({
 
     await createMutation.mutateAsync({
       batch_id: formData.batch_id || null,
-      batch_number: sanitizeFormInput(formData.batch_number, 100),
-      product_name: sanitizeFormInput(productName, 200),
-      recall_reason: sanitizeTextareaInput(formData.reason, 2000),
+      batch_number: formData.batch_number,
+      product_name: productName,
+      recall_reason: formData.reason,
       severity: formData.severity,
       status: formData.status,
       affected_customers: 0, // Would be calculated from traceability

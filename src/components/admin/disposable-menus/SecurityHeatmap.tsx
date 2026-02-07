@@ -1,10 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { AlertTriangle, Shield, Eye, Lock, MapPin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface SecurityEvent {

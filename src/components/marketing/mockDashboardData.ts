@@ -1,9 +1,4 @@
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
+import { ShoppingCart, Eye, AlertTriangle, Truck, DollarSign, Package } from 'lucide-react';
 
 export const mockDashboardData = {
   metrics: [

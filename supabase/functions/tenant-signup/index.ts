@@ -250,7 +250,6 @@ serve(async (req) => {
     if (signInError || !signInData.session) {
       console.error('[SIGNUP] Failed to generate session', signInError);
       // Continue with signup but warn about login requirement
-      console.warn('[SIGNUP] Auto-login failed, user will need to log in manually');
     } else {
       console.log('[SIGNUP] Supabase session generated successfully');
     }
@@ -373,9 +372,6 @@ serve(async (req) => {
           access_token: signInData.session.access_token,
           refresh_token: signInData.session.refresh_token,
         } : null,
-        // Explicitly signal if auto-login failed so frontend can redirect to login page
-        auto_login_failed: !signInData?.session,
-        auto_login_error: signInError?.message,
       }),
       {
         status: 200,

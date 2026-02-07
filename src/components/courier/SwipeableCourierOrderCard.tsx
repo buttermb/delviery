@@ -6,8 +6,7 @@
  */
 
 import { memo } from 'react';
-import Check from "lucide-react/dist/esm/icons/check";
-import X from "lucide-react/dist/esm/icons/x";
+import { Check, X } from 'lucide-react';
 import { CourierOrderCard } from './CourierOrderCard';
 import SwipeableRow from '@/components/mobile/SwipeableRow';
 import { triggerHaptic } from '@/lib/utils/mobile';

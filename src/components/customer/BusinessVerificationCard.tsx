@@ -15,14 +15,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { 
+  Building2, 
+  Upload, 
+  FileText, 
+  CheckCircle2, 
+  XCircle, 
+  Clock,
+  AlertCircle,
+  Loader2
+} from 'lucide-react';
 import {
   Select,
   SelectContent,

@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Calculator from "lucide-react/dist/esm/icons/calculator";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { CheckCircle, ArrowRight, Coins, Sparkles, TrendingUp, Calculator, Zap } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";

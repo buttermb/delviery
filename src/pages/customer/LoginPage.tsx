@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -6,49 +7,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import { ShoppingBag, Loader2, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
-import { useAuthOffline } from "@/hooks/useAuthOffline";
-import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
-import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
+
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login } = useCustomerAuth();
   const { user } = useAuth();
-  const { validateToken } = useCsrfToken();
 
   // State declarations (RAMS fix: missing state)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
-
-  const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
-    async (qEmail, qPassword, qSlug) => {
-      await login(qEmail, qPassword, qSlug || '');
-      toast({
-        title: "Welcome!",
-        description: "Logged in successfully",
-      });
-      navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
-    }
-  );
 
   useAuthRedirect(); // Redirect if already logged in
 
@@ -99,31 +78,16 @@ export default function CustomerLoginPage() {
   }, [tenantSlug]);
 
   const [isMagicLinkMode, setIsMagicLinkMode] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
-    storageKey: 'floraiq_customer_login_rate_limit',
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError(null);
-
-    if (!validateToken()) {
-      setLoginError("Invalid security token. Please refresh the page and try again.");
-      return;
-    }
-
-    if (isLocked) {
-      return;
-    }
 
     if (!tenantSlug) {
-      setLoginError("Store information is missing. Please check the URL and try again.");
-      return;
-    }
-
-    if (!isOnline) {
-      queueLoginAttempt(email, password, tenantSlug);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Tenant slug is required",
+      });
       return;
     }
 
@@ -162,8 +126,6 @@ export default function CustomerLoginPage() {
         // Standard Password Login
         await login(email, password, tenantSlug);
 
-        resetOnSuccess();
-
         toast({
           title: "Welcome!",
           description: `Logged in successfully`,
@@ -175,16 +137,22 @@ export default function CustomerLoginPage() {
       logger.error("Customer login error", error);
 
       // Handle email verification error
-      if (error instanceof Error && (error as { requires_verification?: boolean }).requires_verification) {
-        setLoginError("Please verify your email address before logging in.");
+      if (error instanceof Error && (error as any).requires_verification) {
+        toast({
+          variant: "destructive",
+          title: "Email Not Verified",
+          description: error.message || "Please verify your email address before logging in.",
+        });
         navigate(`/${tenantSlug}/customer/verify-email?email=${encodeURIComponent(email)}`);
         setLoading(false);
         return;
       }
 
-      recordAttempt();
-      const errorMessage = getAuthErrorMessage(error, "Invalid email or password. Please try again.");
-      setLoginError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid credentials",
+      });
     } finally {
       setLoading(false);
     }
@@ -242,16 +210,7 @@ export default function CustomerLoginPage() {
 
         {/* Card with better contrast */}
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
-          <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
           <form onSubmit={handleSubmit} className="space-y-5">
-            <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
-            <AuthErrorAlert
-              message={loginError || ''}
-              type={loginError ? getAuthErrorType(loginError) : 'error'}
-              variant="dark"
-              className="mb-2"
-            />
-
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-slate-200">
                 Email Address
@@ -276,7 +235,7 @@ export default function CustomerLoginPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
-                  disabled={loading || !isOnline || isLocked}
+                  disabled={loading}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -304,33 +263,22 @@ export default function CustomerLoginPage() {
                   <Label htmlFor="password" className="text-sm font-medium text-slate-200">
                     Password
                   </Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete="current-password"
-                      enterKeyHint="done"
-                      className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                      tabIndex={-1}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    enterKeyHint="done"
+                    className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                  />
                 </div>
 
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-[1.02] rounded-lg"
-                  disabled={loading || !isOnline || isLocked}
+                  disabled={loading}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -367,7 +315,7 @@ export default function CustomerLoginPage() {
             {/* Google Sign In */}
             <GoogleSignInButton
               redirectTo={`${window.location.origin}/${tenantSlug}/customer/auth/callback`}
-              disabled={loading || !isOnline}
+              disabled={loading}
               className="h-12 bg-slate-900/50 border-slate-700 text-white hover:bg-slate-900/70 rounded-lg"
             />
 
@@ -377,15 +325,11 @@ export default function CustomerLoginPage() {
           {/* Footer Links */}
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-center gap-3 text-sm">
-              <ForgotPasswordDialog 
-                userType="customer" 
-                tenantSlug={tenantSlug}
-                trigger={
-                  <button className="text-slate-400 hover:text-white font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm">
-                    Forgot password?
-                  </button>
-                }
-              />
+              <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug}>
+                <button className="text-slate-400 hover:text-white font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded-sm">
+                  Forgot password?
+                </button>
+              </ForgotPasswordDialog>
               <span className="text-slate-600">•</span>
               <Link
                 to={`/${tenantSlug}/customer/signup`}

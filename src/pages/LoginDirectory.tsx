@@ -3,13 +3,15 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import LockKeyhole from "lucide-react/dist/esm/icons/lock-keyhole";
-import Check from "lucide-react/dist/esm/icons/check";
+import {
+  Building2,
+  ShoppingCart,
+  ArrowRight,
+  Package,
+  Truck,
+  LockKeyhole,
+  Check
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { safeStorage } from "@/utils/safeStorage";

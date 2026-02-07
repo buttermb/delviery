@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Users from "lucide-react/dist/esm/icons/users";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { Users, TrendingUp, Zap } from 'lucide-react';
 
 interface Activity {
   id: string;

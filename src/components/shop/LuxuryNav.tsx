@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
-import Search from "lucide-react/dist/esm/icons/search";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import X from "lucide-react/dist/esm/icons/x";
-import User from "lucide-react/dist/esm/icons/user";
+import { Search, ShoppingBag, Menu, X, User } from 'lucide-react';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -91,12 +87,6 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                   className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
                 >
                   Shop
-                </Link>
-                <Link
-                  to={`/shop/${storeSlug}/deals${previewParam}`}
-                  className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
-                >
-                  Deals
                 </Link>
                 {!isPreviewMode && (
                   <>
@@ -222,15 +212,6 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
               >
                 Shop Collection
                 <span className="bg-[#0EC7BA] w-2 h-2 rounded-full"></span>
-              </Link>
-
-              <Link
-                to={`/shop/${storeSlug}/deals${previewParam}`}
-                className="flex items-center justify-between text-lg text-white/90 font-medium py-2 border-b border-white/10"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Deals & Promos
-                <span className="bg-[#0EC7BA] w-2 h-2 rounded-full animate-pulse"></span>
               </Link>
 
               {!isPreviewMode && (

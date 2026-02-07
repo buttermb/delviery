@@ -4,12 +4,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import Activity from "lucide-react/dist/esm/icons/activity";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import User from "lucide-react/dist/esm/icons/user";
-import Box from "lucide-react/dist/esm/icons/box";
+import { Activity, CheckCircle2, Package, DollarSign, User, Box } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +22,7 @@ interface ActivityItem {
 export function ActivityFeedWidget() {
   const { tenant } = useTenantAdminAuth();
 
-  const { data: activities = [], isLoading, refetch } = useQuery<ActivityItem[]>({
+  const { data: activities = [], refetch } = useQuery<ActivityItem[]>({
     queryKey: ['activity-feed', tenant?.id],
     queryFn: async (): Promise<ActivityItem[]> => {
       if (!tenant?.id) return [];
@@ -89,14 +84,15 @@ export function ActivityFeedWidget() {
       });
 
       // Recent customers (simplified - basic fields only)
-      const { data: customers } = await (supabase as any)
+      // @ts-ignore - Avoid type instantiation
+      const { data: customers } = await supabase
         .from('customers')
         .select('id, email, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(2);
 
-      customers?.forEach((customer: { id: string; email: string; created_at: string }) => {
+      customers?.forEach((customer: any) => {
         allActivities.push({
           id: customer.id,
           type: 'customer',
@@ -153,17 +149,7 @@ export function ActivityFeedWidget() {
       </div>
 
       <div className="space-y-3">
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-3 p-2">
-              <Skeleton className="h-4 w-4 mt-0.5 rounded-full" />
-              <div className="flex-1 space-y-1">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-            </div>
-          ))
-        ) : activities.length === 0 ? (
+        {activities.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No recent activity</p>
@@ -192,7 +178,4 @@ export function ActivityFeedWidget() {
     </Card>
   );
 }
-
-// Export alias for consistency
-export { ActivityFeedWidget as ActivityWidget };
 

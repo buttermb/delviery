@@ -1,9 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import { AlertCircle, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 export type ClientStatus = 'active' | 'inactive' | 'suspended' | 'pending';
 export type CreditStatus = 'good' | 'warning' | 'critical' | 'paid';

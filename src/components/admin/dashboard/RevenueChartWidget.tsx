@@ -4,10 +4,7 @@
  */
 
 import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import { TrendingUp, DollarSign, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
@@ -19,7 +16,7 @@ import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 export function RevenueChartWidget() {
   const { account } = useAccount();
 
-  const { data: revenueData, isLoading } = useQuery({
+  const { data: revenueData } = useQuery({
     queryKey: ['revenue-chart', account?.id],
     queryFn: async () => {
       if (!account?.id) return null;
@@ -34,7 +31,8 @@ export function RevenueChartWidget() {
       }
 
       // Get orders from last 30 days
-      const { data: orders } = await (supabase as any)
+      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
+      const { data: orders } = await supabase
         .from('wholesale_orders')
         .select('total_amount, created_at, status')
         .eq('account_id', account.id)
@@ -110,25 +108,7 @@ export function RevenueChartWidget() {
         <Calendar className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-[200px] w-full rounded-lg" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-6 w-24" />
-            </div>
-            <div className="space-y-1">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-6 w-24" />
-            </div>
-          </div>
-        </div>
-      ) : revenueData ? (
+      {revenueData ? (
         <>
           <div className="mb-4">
             <div className="text-3xl font-bold mb-1">

@@ -262,9 +262,6 @@ verify_jwt = true
 [functions.purchase-credits]
 verify_jwt = true
 
-[functions.credits-balance]
-verify_jwt = false
-
 [functions.grant-free-credits]
 verify_jwt = true
 

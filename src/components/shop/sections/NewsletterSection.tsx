@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Send from "lucide-react/dist/esm/icons/send";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import { Send, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 export interface NewsletterSectionProps {

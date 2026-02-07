@@ -164,28 +164,6 @@ export default {
             opacity: "1"
           }
         },
-        "pulse-ring": {
-          "0%": {
-            transform: "scale(1)",
-            opacity: "1"
-          },
-          "50%": {
-            transform: "scale(1.05)",
-            opacity: "0.8"
-          },
-          "100%": {
-            transform: "scale(1)",
-            opacity: "1"
-          }
-        },
-        "pulse-dot": {
-          "0%, 100%": {
-            opacity: "1"
-          },
-          "50%": {
-            opacity: "0.5"
-          }
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -194,8 +172,6 @@ export default {
         "scale-in": "scale-in 0.3s ease-out",
         "fade-in-delayed": "fade-in-delayed 0.6s ease-out 30s forwards",
         "pulse-slow": "pulse-slow 3s ease-in-out infinite",
-        "pulse-ring": "pulse-ring 2s ease-in-out infinite",
-        "pulse-dot": "pulse-dot 1.5s ease-in-out infinite",
       },
     },
   },

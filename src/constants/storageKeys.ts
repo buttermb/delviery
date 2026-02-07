@@ -92,35 +92,9 @@ export const STORAGE_KEYS = {
   FEATURE_USAGE: 'feature_usage',
   BUSINESS_TIER_OVERRIDE: 'business_tier_override',
   
-  // Command Palette
-  COMMAND_PALETTE_RECENT_SEARCHES: 'command_palette_recent_searches',
-
-  // Order Search
-  ORDER_SEARCH_RECENT: 'order_search_recent',
-
-  // Recently Used Items
-  RECENTLY_USED_ITEMS: 'admin_recently_used_items',
-
-  // Dashboard
-  DASHBOARD_WIDGETS: 'dashboard_widgets',
-  DASHBOARD_TOUR_COMPLETED: 'dashboard_tour_completed',
-
   // Performance
   NETWORK_QUALITY: 'network_quality',
   REDUCED_MOTION: 'reduced_motion',
-
-  // Credits
-  INSUFFICIENT_CREDITS_DISMISSED: 'insufficient_credits_dismissed',
-
-  // Navigation
-  SCROLL_POSITIONS: 'scroll_positions',
-
-  // Session preferences
-  REMEMBER_ME: 'remember_me',
-
-  // Weather widget
-  WEATHER_LOCATION: 'weather_location',
-  WEATHER_UNIT: 'weather_unit',
 } as const;
 
 /**
@@ -174,32 +148,16 @@ export const safeStorage = {
 };
 
 /**
- * Safe JSON parse with error handling - returns null on error
- *
- * CRITICAL: Always parse JSON safely
- */
-export const safeJsonParseOrNull = <T>(json: string | null): T | null => {
-  if (!json) return null;
-
-  try {
-    return JSON.parse(json) as T;
-  } catch {
-    // Invalid JSON, return null
-    return null;
-  }
-};
-
-/**
- * Safe JSON parse with error handling - returns defaultValue on error
- *
+ * Safe JSON parse with error handling
+ * 
  * CRITICAL: Always parse JSON safely
  */
 export const safeJsonParse = <T>(json: string | null, defaultValue: T): T => {
   if (!json) return defaultValue;
-
+  
   try {
     return JSON.parse(json) as T;
-  } catch {
+  } catch (error) {
     // Invalid JSON, return default
     return defaultValue;
   }

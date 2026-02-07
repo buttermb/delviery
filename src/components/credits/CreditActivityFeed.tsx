@@ -7,18 +7,20 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  TrendingDown,
+  TrendingUp,
+  Gift,
+  CreditCard,
+  RefreshCw,
+  Coins,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight,
+  Calendar,
+  Filter,
+  Loader2,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -460,4 +462,10 @@ export function CreditActivityFeed({
     </div>
   );
 }
+
+
+
+
+
+
 

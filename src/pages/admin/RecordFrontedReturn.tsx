@@ -10,11 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/inventory/BarcodeScanner";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Package from "lucide-react/dist/esm/icons/package";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { ArrowLeft, Package, AlertTriangle, CheckCircle, Trash2 } from "lucide-react";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import {
   Select,

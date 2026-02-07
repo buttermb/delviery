@@ -15,35 +15,35 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
-import Users from "lucide-react/dist/esm/icons/users";
-import UserCog from "lucide-react/dist/esm/icons/user-cog";
-import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import {
+    Building2,
+    FileText,
+    ArrowLeftRight,
+    Users,
+    UserCog,
+    ScrollText,
+    Shield,
+    Calendar,
+    Headphones,
+    MapPin,
+} from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
 // Lazy load tab content for performance
-const VendorOperationsPage = lazy(() => import('@/pages/admin/operations/VendorOperationsPage'));
+const SupplierManagementPage = lazy(() => import('@/pages/admin/SupplierManagementPage'));
 const PurchaseOrdersPage = lazy(() => import('@/pages/admin/PurchaseOrdersPage'));
 const ReturnsManagementPage = lazy(() => import('@/pages/admin/ReturnsManagementPage'));
 const TeamManagement = lazy(() => import('@/pages/admin/TeamManagement'));
 const RoleManagement = lazy(() => import('@/pages/admin/RoleManagement'));
 const InvitesPage = lazy(() => import('@/pages/admin/InvitesPage'));
-const ActivityLogsPage = lazy(() => import('@/pages/tenant-admin/ActivityLogsPage').then(m => ({ default: m.ActivityLogsPage })));
+const ActivityLogsPage = lazy(() => import('@/pages/tenant-admin/ActivityLogsPage'));
 const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
 const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSchedulerPage'));
 const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LocationsManagement = lazy(() => import('@/pages/admin/LocationsManagement'));
 const CompliancePage = lazy(() => import('@/pages/tenant-admin/CompliancePage'));
-const POReceivingPage = lazy(() => import('@/pages/admin/operations/POReceivingPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -60,7 +60,6 @@ const tabs = [
     // Supply Chain
     { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
     { id: 'purchase-orders', label: 'POs', icon: FileText, group: 'Supply' },
-    { id: 'receiving', label: 'Receiving', icon: Truck, group: 'Supply' },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
@@ -85,7 +84,7 @@ export default function OperationsHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">
@@ -123,10 +122,10 @@ export default function OperationsHubPage() {
                     </div>
                 </div>
 
-                {/* Vendors Tab */}
+                {/* Suppliers Tab */}
                 <TabsContent value="suppliers" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <VendorOperationsPage />
+                        <SupplierManagementPage />
                     </Suspense>
                 </TabsContent>
 
@@ -134,13 +133,6 @@ export default function OperationsHubPage() {
                 <TabsContent value="purchase-orders" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <PurchaseOrdersPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Receiving Tab */}
-                <TabsContent value="receiving" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <POReceivingPage />
                     </Suspense>
                 </TabsContent>
 

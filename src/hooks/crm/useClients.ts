@@ -4,7 +4,6 @@ import type { CRMClient, ClientFormValues } from '@/types/crm';
 import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
-import { invalidateOnEvent } from '@/lib/invalidation';
 
 /**
  * Query key factory for CRM clients
@@ -33,7 +32,7 @@ export function useClients(status?: 'active' | 'archived') {
 
             let query = supabase
                 .from('crm_clients')
-                .select('id, account_id, name, email, phone, open_balance, status, created_at, updated_at')
+                .select('*')
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
 
@@ -50,8 +49,6 @@ export function useClients(status?: 'active' | 'archived') {
             return data as CRMClient[];
         },
         enabled: !!accountId,
-        staleTime: 30_000,
-        gcTime: 300_000,
     });
 }
 
@@ -69,7 +66,7 @@ export function useClient(clientId: string | undefined) {
 
             const { data, error } = await supabase
                 .from('crm_clients')
-                .select('id, account_id, name, email, phone, open_balance, status, portal_password_hash, portal_last_login, notified_about_menu_update, created_at, updated_at')
+                .select('*')
                 .eq('id', clientId)
                 .eq('account_id', accountId)
                 .maybeSingle();
@@ -81,8 +78,6 @@ export function useClient(clientId: string | undefined) {
             return data as CRMClient;
         },
         enabled: !!clientId && !!accountId,
-        staleTime: 30_000,
-        gcTime: 300_000,
     });
 }
 
@@ -120,49 +115,14 @@ export function useCreateClient() {
             }
             return data as CRMClient;
         },
-        onMutate: async (values: { account_id?: string; name: string; email?: string | null; phone?: string | null; status?: string }) => {
-            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
-            const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
-
-            const optimisticClient = {
-                id: `temp-${Date.now()}`,
-                account_id: values.account_id || accountId || '',
-                name: values.name,
-                email: values.email || null,
-                phone: values.phone || null,
-                status: values.status || 'active',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            } as CRMClient;
-
-            queryClient.setQueriesData<CRMClient[]>(
-                { queryKey: crmClientKeys.lists() },
-                (old) => old ? [optimisticClient, ...old] : [optimisticClient]
-            );
-
-            return { previousClients };
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            toast.success('Client created successfully');
         },
-        onError: (error: unknown, _variables: unknown, context: { previousClients?: [unknown, CRMClient[] | undefined][] } | undefined) => {
-            if (context?.previousClients) {
-                context.previousClients.forEach(([queryKey, data]) => {
-                    queryClient.setQueryData(queryKey as readonly unknown[], data);
-                });
-            }
+        onError: (error: unknown) => {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client creation failed', error, { component: 'useCreateClient' });
-            toast.error('Client creation failed', { description: errorMessage });
-        },
-        onSuccess: (data) => {
-            toast.success('Client created successfully');
-            // Cross-panel invalidation - CRM client creation affects dashboard, analytics
-            if (accountId) {
-                invalidateOnEvent(queryClient, 'CUSTOMER_CREATED', accountId, {
-                    customerId: data?.id,
-                });
-            }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            toast.error(`Failed to create client: ${errorMessage}`);
         },
     });
 }
@@ -200,56 +160,15 @@ export function useUpdateClient() {
             }
             return data as CRMClient;
         },
-        onMutate: async ({ id, values }) => {
-            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
-            await queryClient.cancelQueries({ queryKey: crmClientKeys.detail(id) });
-
-            const previousLists = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
-            const previousDetail = queryClient.getQueryData<CRMClient>(crmClientKeys.detail(id));
-
-            queryClient.setQueriesData<CRMClient[]>(
-                { queryKey: crmClientKeys.lists() },
-                (old) => old?.map(client =>
-                    client.id === id ? { ...client, ...values, updated_at: new Date().toISOString() } : client
-                )
-            );
-
-            if (previousDetail) {
-                queryClient.setQueryData<CRMClient>(
-                    crmClientKeys.detail(id),
-                    { ...previousDetail, ...values, updated_at: new Date().toISOString() }
-                );
-            }
-
-            return { previousLists, previousDetail, clientId: id };
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(variables.id) });
+            toast.success('Client updated successfully');
         },
-        onError: (error: unknown, _variables: unknown, context: { previousLists?: [unknown, CRMClient[] | undefined][]; previousDetail?: CRMClient; clientId?: string } | undefined) => {
-            if (context?.previousLists) {
-                context.previousLists.forEach(([queryKey, data]) => {
-                    queryClient.setQueryData(queryKey as readonly unknown[], data);
-                });
-            }
-            if (context?.previousDetail && context.clientId) {
-                queryClient.setQueryData(crmClientKeys.detail(context.clientId), context.previousDetail);
-            }
+        onError: (error: unknown) => {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client update failed', error, { component: 'useUpdateClient' });
-            toast.error('Client update failed', { description: errorMessage });
-        },
-        onSuccess: (data: CRMClient | null) => {
-            toast.success('Client updated successfully');
-            // Cross-panel invalidation - CRM client update affects invoices, collections
-            if (accountId && data) {
-                invalidateOnEvent(queryClient, 'CUSTOMER_UPDATED', accountId, {
-                    customerId: data.id,
-                });
-            }
-        },
-        onSettled: (_data: unknown, _error: unknown, variables: { id: string; values: Partial<ClientFormValues> } | undefined) => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            if (variables) {
-                queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(variables.id) });
-            }
+            toast.error(`Failed to update client: ${errorMessage}`);
         },
     });
 }
@@ -282,42 +201,15 @@ export function useArchiveClient() {
             }
             return data as CRMClient;
         },
-        onMutate: async (clientId) => {
-            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
-            const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
-
-            // Optimistically remove from active lists
-            queryClient.setQueriesData<CRMClient[]>(
-                { queryKey: crmClientKeys.lists() },
-                (old) => old?.filter(client => client.id !== clientId)
-            );
-
-            return { previousClients };
+        onSuccess: (_, clientId) => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
+            toast.success('Client archived successfully');
         },
-        onError: (error: unknown, _clientId: unknown, context: { previousClients?: [unknown, CRMClient[] | undefined][] } | undefined) => {
-            if (context?.previousClients) {
-                context.previousClients.forEach(([queryKey, data]) => {
-                    queryClient.setQueryData(queryKey as readonly unknown[], data);
-                });
-            }
+        onError: (error: unknown) => {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client archive failed', error, { component: 'useArchiveClient' });
-            toast.error('Client archive failed', { description: errorMessage });
-        },
-        onSuccess: (data: CRMClient | null) => {
-            toast.success('Client archived successfully');
-            // Cross-panel invalidation - CRM client deletion affects analytics
-            if (accountId && data) {
-                invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', accountId, {
-                    customerId: data.id,
-                });
-            }
-        },
-        onSettled: (_data: unknown, _error: unknown, clientId: string | undefined) => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            if (clientId) {
-                queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
-            }
+            toast.error(`Failed to archive client: ${errorMessage}`);
         },
     });
 }
@@ -350,38 +242,15 @@ export function useRestoreClient() {
             }
             return data as CRMClient;
         },
-        onMutate: async (clientId) => {
-            await queryClient.cancelQueries({ queryKey: crmClientKeys.lists() });
-            const previousClients = queryClient.getQueriesData<CRMClient[]>({ queryKey: crmClientKeys.lists() });
-
-            // Optimistically update status in cached lists
-            queryClient.setQueriesData<CRMClient[]>(
-                { queryKey: crmClientKeys.lists() },
-                (old) => old?.map(client =>
-                    client.id === clientId ? { ...client, status: 'active' } : client
-                )
-            );
-
-            return { previousClients };
-        },
-        onError: (error: unknown, _clientId: unknown, context: { previousClients?: [unknown, CRMClient[] | undefined][] } | undefined) => {
-            if (context?.previousClients) {
-                context.previousClients.forEach(([queryKey, data]) => {
-                    queryClient.setQueryData(queryKey as readonly unknown[], data);
-                });
-            }
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            logger.error('Client restore failed', error, { component: 'useRestoreClient' });
-            toast.error('Client restore failed', { description: errorMessage });
-        },
-        onSuccess: () => {
+        onSuccess: (_, clientId) => {
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
             toast.success('Client restored successfully');
         },
-        onSettled: (_data: unknown, _error: unknown, clientId: string | undefined) => {
-            queryClient.invalidateQueries({ queryKey: crmClientKeys.lists() });
-            if (clientId) {
-                queryClient.invalidateQueries({ queryKey: crmClientKeys.detail(clientId) });
-            }
+        onError: (error: unknown) => {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            logger.error('Client restore failed', error, { component: 'useRestoreClient' });
+            toast.error(`Failed to restore client: ${errorMessage}`);
         },
     });
 }
@@ -402,7 +271,7 @@ export function useSearchClients(searchTerm: string) {
 
             const { data, error } = await supabase
                 .from('crm_clients')
-                .select('id, account_id, name, email, phone, open_balance, status, created_at, updated_at')
+                .select('*')
                 .eq('account_id', accountId)
                 .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`)
                 .limit(10);

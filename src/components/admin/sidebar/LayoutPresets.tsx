@@ -10,12 +10,7 @@ import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
 import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
-import Check from "lucide-react/dist/esm/icons/check";
-import Download from "lucide-react/dist/esm/icons/download";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Star from "lucide-react/dist/esm/icons/star";
+import { Check, Download, Upload, RotateCcw, Eye, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useMemo } from 'react';
 import { CustomPresetBuilder } from './CustomPresetBuilder';
@@ -25,6 +20,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+
+
 
 export function LayoutPresets() {
   const { preferences, updatePreferences } = useSidebarPreferences();

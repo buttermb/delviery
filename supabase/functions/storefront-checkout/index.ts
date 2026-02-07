@@ -6,9 +6,14 @@
  * It uses the store's tenant's Stripe credentials to process payments.
  */
 
-import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
-import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 interface CheckoutItem {
     product_id: string;  // REQUIRED: Product ID for DB lookup
@@ -24,14 +29,13 @@ interface CheckoutRequest {
     items: CheckoutItem[];
     customer_email: string;
     customer_name: string;
-    subtotal?: number;        // IGNORED: Will be recalculated
-    delivery_fee?: number;    // IGNORED: Will be fetched from store settings
-    discount_amount?: number; // Client-reported discount (coupon + loyalty + deals)
+    subtotal?: number;    // IGNORED: Will be recalculated
+    delivery_fee?: number; // IGNORED: Will be fetched from store settings
     success_url: string;
     cancel_url: string;
 }
 
-serve(secureHeadersMiddleware(async (req) => {
+serve(async (req) => {
     // Handle CORS preflight
     if (req.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
@@ -50,7 +54,8 @@ serve(secureHeadersMiddleware(async (req) => {
             items,
             customer_email,
             customer_name,
-            discount_amount,
+            subtotal,
+            delivery_fee,
             success_url,
             cancel_url
         } = body;
@@ -204,20 +209,6 @@ serve(secureHeadersMiddleware(async (req) => {
             });
         }
 
-        // Create a Stripe coupon for discounts (coupon + loyalty + deals) if applicable
-        let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
-        if (discount_amount && discount_amount > 0) {
-            // Cap discount at subtotal to prevent negative charges
-            const cappedDiscount = Math.min(discount_amount, calculatedSubtotal);
-            const coupon = await stripe.coupons.create({
-                amount_off: Math.round(cappedDiscount * 100),
-                currency: "usd",
-                name: "Order Discount",
-                duration: "once",
-            });
-            discounts = [{ coupon: coupon.id }];
-        }
-
         // Create Stripe Checkout session
         const session = await stripe.checkout.sessions.create({
             customer_email,
@@ -225,7 +216,6 @@ serve(secureHeadersMiddleware(async (req) => {
             mode: "payment",
             success_url: success_url || `${req.headers.get("origin")}/order-confirmation/${order_id}`,
             cancel_url: cancel_url || `${req.headers.get("origin")}/checkout`,
-            ...(discounts ? { discounts } : {}),
             metadata: {
                 store_id,
                 order_id,
@@ -265,4 +255,4 @@ serve(secureHeadersMiddleware(async (req) => {
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
-}));
+});

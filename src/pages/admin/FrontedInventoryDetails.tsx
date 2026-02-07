@@ -10,15 +10,17 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { LoadingFallback } from "@/components/LoadingFallback";
 import { toast } from "sonner";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import {
+  ArrowLeft,
+  DollarSign,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  MapPin,
+  FileText,
+} from "lucide-react";
 import { format } from "date-fns";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

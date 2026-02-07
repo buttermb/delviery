@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -15,9 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import type { Database } from "@/integrations/supabase/types";
 
 type Supplier = Database['public']['Tables']['wholesale_suppliers']['Row'];
@@ -67,34 +65,15 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
 
   const createMutation = useMutation({
     mutationFn: async (data: SupplierInsert) => {
-      const { data: newSupplier, error } = await supabase
+      const { error } = await supabase
         .from("wholesale_suppliers")
-        .insert([data])
-        .select()
-        .single();
+        .insert([data]);
 
       if (error) throw error;
-      return newSupplier;
     },
-    onSuccess: (newSupplier) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.lists() });
       toast.success("Supplier created successfully");
-
-      // Log activity for audit trail
-      if (tenant?.id) {
-        logActivityAuto(
-          tenant.id,
-          ActivityActions.CREATE_SUPPLIER,
-          'supplier',
-          newSupplier.id,
-          {
-            supplier_name: newSupplier.supplier_name,
-            contact_person: newSupplier.contact_person,
-            email: newSupplier.email,
-          }
-        );
-      }
-
       onSuccess?.();
     },
     onError: (error: unknown) => {
@@ -107,38 +86,17 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
     mutationFn: async (data: SupplierUpdate) => {
       if (!supplier?.id) throw new Error("Supplier ID is required");
 
-      const { data: updatedSupplier, error } = await supabase
+      const { error } = await supabase
         .from("wholesale_suppliers")
         .update(data)
-        .eq("id", supplier.id)
-        .select()
-        .single();
+        .eq("id", supplier.id);
 
       if (error) throw error;
-      return updatedSupplier;
     },
-    onSuccess: (updatedSupplier) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.detail(supplier!.id) });
       toast.success("Supplier updated successfully");
-
-      // Log activity for audit trail
-      if (tenant?.id) {
-        logActivityAuto(
-          tenant.id,
-          ActivityActions.UPDATE_SUPPLIER,
-          'supplier',
-          supplier!.id,
-          {
-            supplier_name: updatedSupplier.supplier_name,
-            changes: {
-              previous_name: supplier!.supplier_name,
-              new_name: updatedSupplier.supplier_name,
-            },
-          }
-        );
-      }
-
       onSuccess?.();
     },
     onError: (error: unknown) => {
@@ -157,24 +115,27 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
 
     const isEditing = !!supplier;
 
-    const sanitizedData = {
-      supplier_name: sanitizeFormInput(formData.supplier_name, 200),
-      contact_person: formData.contact_person ? sanitizeFormInput(formData.contact_person, 200) : null,
-      email: formData.email ? sanitizeEmail(formData.email) : null,
-      phone: formData.phone ? sanitizePhoneInput(formData.phone) : null,
-      address: formData.address ? sanitizeTextareaInput(formData.address, 500) : null,
-      payment_terms: formData.payment_terms ? sanitizeFormInput(formData.payment_terms, 200) : null,
-    };
-
     if (isEditing) {
       const updateData: SupplierUpdate = {
-        ...sanitizedData,
+        supplier_name: formData.supplier_name,
+        contact_person: formData.contact_person || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        payment_terms: formData.payment_terms || null,
         updated_at: new Date().toISOString(),
       };
 
       await updateMutation.mutateAsync(updateData);
     } else {
-      const insertData: SupplierInsert = sanitizedData;
+      const insertData: SupplierInsert = {
+        supplier_name: formData.supplier_name,
+        contact_person: formData.contact_person || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        payment_terms: formData.payment_terms || null,
+      };
 
       await createMutation.mutateAsync(insertData);
     }

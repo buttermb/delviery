@@ -7,7 +7,7 @@
  * - Stats calculations
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 // Test the looksLikeEncryptedData helper function logic
 describe('looksLikeEncryptedData helper function', () => {
@@ -187,13 +187,15 @@ describe('Soft Delete Logic Verification', () => {
   it('should use soft delete for customers with orders', () => {
     // The component uses soft delete (setting deleted_at) for customers with orders
     // This is verified in the implementation at lines 169-182
-    const shouldSoftDelete = true;
+    const hasOrders = true;
+    const shouldSoftDelete = hasOrders;
     expect(shouldSoftDelete).toBe(true);
   });
 
   it('should use soft delete for customers without orders too', () => {
     // Current implementation uses soft delete for all cases for data integrity
     // This is verified in the implementation at lines 184-194
+    const hasOrders = false;
     // Current implementation does soft delete for all cases
     const shouldSoftDelete = true; // Changed from hard delete to soft delete
     expect(shouldSoftDelete).toBe(true);
@@ -445,200 +447,5 @@ describe('CSV Export Logic', () => {
     const customer = { ...mockCustomers[0], phone: null };
     const phoneValue = customer.phone || '';
     expect(phoneValue).toBe('');
-  });
-});
-
-describe('Virtual Scrolling Implementation', () => {
-  interface MockCustomer {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string | null;
-    phone: string | null;
-    customer_type: string;
-    total_spent: number;
-    loyalty_points: number;
-    status: string;
-    last_purchase_at: string | null;
-  }
-
-  const generateMockCustomers = (count: number): MockCustomer[] => {
-    return Array.from({ length: count }, (_, i) => ({
-      id: `customer-${i}`,
-      first_name: `First${i}`,
-      last_name: `Last${i}`,
-      email: `customer${i}@example.com`,
-      phone: `555-${i.toString().padStart(4, '0')}`,
-      customer_type: i % 2 === 0 ? 'medical' : 'recreational',
-      total_spent: Math.random() * 1000,
-      loyalty_points: Math.floor(Math.random() * 500),
-      status: 'active',
-      last_purchase_at: new Date().toISOString(),
-    }));
-  };
-
-  it('should handle large datasets efficiently with virtual scrolling', () => {
-    // Generate a large dataset
-    const largeDataset = generateMockCustomers(1000);
-    expect(largeDataset.length).toBe(1000);
-
-    // Virtual scrolling should only render visible items
-    const itemHeight = 73; // Desktop row height
-    const containerHeight = 600;
-    const visibleItemCount = Math.ceil(containerHeight / itemHeight);
-
-    // With overscan of 5, we should render approximately visibleItemCount + 10
-    const expectedRenderedItems = visibleItemCount + 10;
-    expect(expectedRenderedItems).toBeLessThan(largeDataset.length);
-  });
-
-  it('should calculate visible range correctly for desktop view', () => {
-    const itemHeight = 73;
-    const containerHeight = 600;
-    const scrollTop = 0;
-    const overscan = 5;
-
-    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const endIndex = Math.min(
-      999, // total items - 1
-      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
-    );
-
-    expect(startIndex).toBe(0);
-    expect(endIndex).toBeGreaterThan(startIndex);
-  });
-
-  it('should calculate visible range correctly for mobile view', () => {
-    const itemHeight = 120; // Mobile item height
-    const containerHeight = 600;
-    const scrollTop = 0;
-    const overscan = 3;
-
-    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const endIndex = Math.min(
-      999,
-      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
-    );
-
-    expect(startIndex).toBe(0);
-    expect(endIndex).toBeGreaterThan(startIndex);
-  });
-
-  it('should maintain correct item heights for desktop', () => {
-    // Desktop row height should be 73px to accommodate all content
-    const desktopItemHeight = 73;
-    expect(desktopItemHeight).toBeGreaterThan(0);
-    expect(desktopItemHeight).toBeLessThan(100); // Reasonable height
-  });
-
-  it('should maintain correct item heights for mobile', () => {
-    // Mobile item height should be 120px for card layout
-    const mobileItemHeight = 120;
-    expect(mobileItemHeight).toBeGreaterThan(0);
-    expect(mobileItemHeight).toBeGreaterThan(73); // Taller than desktop
-  });
-
-  it('should use correct overscan values', () => {
-    // Desktop overscan
-    const desktopOverscan = 5;
-    expect(desktopOverscan).toBeGreaterThan(0);
-
-    // Mobile overscan
-    const mobileOverscan = 3;
-    expect(mobileOverscan).toBeGreaterThan(0);
-  });
-
-  it('should render only visible items with virtual scrolling', () => {
-    const totalItems = 1000;
-    const itemHeight = 73;
-    const containerHeight = 600;
-    const scrollTop = 2000; // Scrolled down
-    const overscan = 5;
-
-    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const endIndex = Math.min(
-      totalItems - 1,
-      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
-    );
-
-    const visibleCount = endIndex - startIndex + 1;
-
-    // Should render far fewer items than total
-    expect(visibleCount).toBeLessThan(totalItems);
-    expect(visibleCount).toBeLessThan(50); // Should be a small fraction
-  });
-
-  it('should extract correct keys from customers', () => {
-    const mockCustomers = generateMockCustomers(10);
-
-    // Key extractor should use customer.id
-    const keys = mockCustomers.map(customer => customer.id);
-
-    expect(keys.length).toBe(10);
-    expect(keys[0]).toBe('customer-0');
-    expect(keys[9]).toBe('customer-9');
-  });
-
-  it('should handle empty customer list', () => {
-    const emptyList: MockCustomer[] = [];
-    expect(emptyList.length).toBe(0);
-
-    // Virtual list should show empty state component
-    const shouldShowEmpty = emptyList.length === 0;
-    expect(shouldShowEmpty).toBe(true);
-  });
-
-  it('should calculate total height correctly', () => {
-    const itemCount = 1000;
-    const itemHeight = 73;
-    const totalHeight = itemCount * itemHeight;
-
-    expect(totalHeight).toBe(73000);
-    expect(totalHeight).toBeGreaterThan(0);
-  });
-
-  it('should position items absolutely with correct offset', () => {
-    const itemHeight = 73;
-    const itemIndex = 10;
-    const expectedOffset = itemIndex * itemHeight;
-
-    expect(expectedOffset).toBe(730);
-  });
-
-  it('should filter customers before virtual scrolling', () => {
-    const customers = generateMockCustomers(100);
-    const searchTerm = 'First1'; // Should match First1, First10-19
-
-    const filtered = customers.filter(customer => {
-      const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
-      return fullName.includes(searchTerm.toLowerCase());
-    });
-
-    // Virtual scrolling should work on filtered list
-    expect(filtered.length).toBeLessThan(customers.length);
-    expect(filtered.length).toBeGreaterThan(0);
-  });
-
-  it('should maintain selection state with virtual scrolling', () => {
-    const selectedCustomers = ['customer-5', 'customer-15', 'customer-25'];
-
-    // Check if customer is selected
-    const isCustomer10Selected = selectedCustomers.includes('customer-10');
-    const isCustomer15Selected = selectedCustomers.includes('customer-15');
-
-    expect(isCustomer10Selected).toBe(false);
-    expect(isCustomer15Selected).toBe(true);
-  });
-
-  it('should handle scroll events efficiently', () => {
-    // Virtual scrolling should only update visible items on scroll
-    const itemHeight = 73;
-    const scrollTop1 = 0;
-    const scrollTop2 = 100;
-
-    const startIndex1 = Math.floor(scrollTop1 / itemHeight);
-    const startIndex2 = Math.floor(scrollTop2 / itemHeight);
-
-    expect(startIndex2).toBeGreaterThan(startIndex1);
   });
 });

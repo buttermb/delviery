@@ -14,16 +14,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { 
+  Shield, 
+  Search, 
+  Filter,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Building2,
+  FileText,
+  Eye,
+  AlertTriangle
+} from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
   Select,

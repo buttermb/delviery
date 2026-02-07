@@ -4,9 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useMemo } from "react";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import { useState } from "react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { logger } from '@/lib/logger';
 
 interface AverageOrderValueChartProps {
@@ -21,12 +20,6 @@ interface AOVDataPoint {
 
 export function AverageOrderValueChart({ storeId, className }: AverageOrderValueChartProps) {
     const [timeRange, setTimeRange] = useState<'7' | '30' | '90'>('30');
-
-    // Memoize tooltip formatter to prevent recreation on every render
-    const tooltipFormatter = useMemo(
-        () => (value: number) => [`$${value.toLocaleString()}`, 'AOV'],
-        []
-    );
 
     const { data: aovData, isLoading, error } = useQuery({
         queryKey: ['average-order-value', storeId, timeRange],
@@ -120,16 +113,13 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
     const TrendIcon = aovData.trend >= 0 ? TrendingUp : TrendingDown;
     const trendColor = aovData.trend >= 0 ? 'text-emerald-500' : 'text-red-500';
 
-    // Format AOV for display (memoized via component render optimization)
-    const formattedAOV = `$${aovData.currentAOV.toLocaleString()}`;
-
     return (
         <Card className={className}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
                     <CardTitle>Average Order Value</CardTitle>
                     <CardDescription className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-foreground">{formattedAOV}</span>
+                        <span className="text-2xl font-bold text-foreground">${aovData.currentAOV.toLocaleString()}</span>
                         <span className={`flex items-center gap-1 text-sm ${trendColor}`}>
                             <TrendIcon className="h-4 w-4" />
                             {Math.abs(aovData.trend)}%
@@ -172,7 +162,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                                 width={60}
                             />
                             <Tooltip
-                                formatter={tooltipFormatter}
+                                formatter={(value: number) => [`$${value.toLocaleString()}`, 'AOV']}
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--card))',
                                     borderColor: 'hsl(var(--border))',

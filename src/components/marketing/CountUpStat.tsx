@@ -1,6 +1,6 @@
 import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useRef } from "react";
-import LucideIcon from "lucide-react/dist/esm/icons/lucide-icon";
+import { LucideIcon } from "lucide-react";
 
 interface CountUpStatProps {
   icon: LucideIcon;

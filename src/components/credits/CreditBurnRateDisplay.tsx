@@ -5,12 +5,7 @@
  * Helps users understand their usage patterns.
  */
 
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Minus from "lucide-react/dist/esm/icons/minus";
+import { TrendingDown, TrendingUp, Calendar, Activity, AlertTriangle, Minus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -261,4 +256,8 @@ export function CreditBurnRateDisplay({
 }
 
 export default CreditBurnRateDisplay;
+
+
+
+
 

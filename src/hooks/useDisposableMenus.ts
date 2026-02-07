@@ -2,22 +2,20 @@ import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
-import { invalidateOnEvent } from '@/lib/invalidation';
-import { ADMIN_PANEL_QUERY_CONFIG } from '@/lib/react-query-config';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
     queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
-      // Optimized query - select specific columns, use count for orders
-      let query = (supabase as any)
+      // Simplified query - remove nested FK joins that don't exist in schema
+      let query = supabase
         .from('disposable_menus')
         .select(`
           *,
-          disposable_menu_products(id, product_id, custom_price, display_order),
+          disposable_menu_products(*),
           menu_access_whitelist(count),
           menu_access_logs(count),
-          menu_orders(id, total_amount)
+          menu_orders(*)
         `);
 
       if (tenantId) {
@@ -33,17 +31,15 @@ export const useDisposableMenus = (tenantId?: string) => {
       }
       
       // Add computed stats for each menu
-      return (data || []).map((menu: Record<string, unknown>) => ({
+      return (data || []).map((menu: any) => ({
         ...menu,
-        view_count: (menu.menu_access_logs as Array<{ count: number }> | undefined)?.[0]?.count || 0,
-        customer_count: (menu.menu_access_whitelist as Array<{ count: number }> | undefined)?.[0]?.count || 0,
-        order_count: Array.isArray(menu.menu_orders) ? menu.menu_orders.length : 0,
-        total_revenue: Array.isArray(menu.menu_orders)
-          ? menu.menu_orders.reduce((sum: number, o: { total_amount?: number }) => sum + Number(o.total_amount || 0), 0)
-          : 0,
+        view_count: menu.menu_access_logs?.[0]?.count || 0,
+        customer_count: menu.menu_access_whitelist?.[0]?.count || 0,
+        order_count: menu.menu_orders?.length || 0,
+        total_revenue: menu.menu_orders?.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) || 0,
       }));
     },
-    enabled: !!tenantId,
+    enabled: tenantId !== undefined,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   });
@@ -200,14 +196,14 @@ export const useMenuWhitelist = (menuId: string) => {
   return useQuery({
     queryKey: ['menu-whitelist', menuId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_access_whitelist')
-        .select('id, menu_id, customer_name, customer_email, customer_phone, unique_access_token, invited_at, last_access_at, view_count, revoked_at, revoked_reason, status')
+        .select('*, customer:wholesale_clients(*)')
         .eq('menu_id', menuId)
         .order('invited_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data;
     },
     enabled: !!menuId,
     staleTime: 30 * 1000,
@@ -262,63 +258,29 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
   return useQuery({
     queryKey: ['menu-orders', menuId, tenantId],
     queryFn: async () => {
-      if (!tenantId) return [];
-
-      let query = (supabase as any)
+      let query = supabase
         .from('menu_orders')
         .select(`
-          id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at, updated_at,
+          *,
           menu:disposable_menus(name)
         `)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
 
       if (menuId) {
         query = query.eq('menu_id', menuId);
+      } else if (tenantId) {
+        // When no menuId, filter by tenant for security
+        query = query.eq('tenant_id', tenantId);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!tenantId,
+    enabled: !!menuId || !!tenantId,
     // Performance: cache for 15 seconds (orders change more frequently)
     staleTime: 15 * 1000,
     gcTime: 2 * 60 * 1000,
-  });
-};
-
-export const useUpdateOrderStatus = (tenantId?: string) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const { data, error } = await (supabase as any)
-        .from('menu_orders')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', orderId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
-      showSuccessToast('Order Updated', `Order marked as ${variables.status}`);
-
-      // Cross-panel invalidation - menu order status affects dashboard, orders list
-      if (tenantId) {
-        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenantId, {
-          orderId: variables.orderId,
-        });
-      }
-    },
-    onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Order status update failed', { error, errorMessage, component: 'useDisposableMenus' });
-      showErrorToast('Update Failed', errorMessage);
-    }
   });
 };
 
@@ -326,29 +288,29 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
   return useQuery({
     queryKey: ['menu-security-events', menuId, tenantId],
     queryFn: async () => {
-      if (!tenantId) return [];
-
-      let query = (supabase as any)
+      let query = supabase
         .from('menu_security_events')
         .select(`
           *,
           menu:disposable_menus(name)
         `)
-        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (menuId) {
         query = query.eq('menu_id', menuId);
+      } else if (tenantId) {
+        // When no menuId, filter by tenant for security
+        query = (query as any).eq('tenant_id', tenantId);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!tenantId,
+    enabled: !!menuId || !!tenantId,
     staleTime: 60 * 1000, // Security events change less frequently
-    gcTime: ADMIN_PANEL_QUERY_CONFIG.gcTime, // 15 minutes for admin queries
+    gcTime: 10 * 60 * 1000,
   });
 };
 

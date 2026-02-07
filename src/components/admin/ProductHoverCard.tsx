@@ -9,12 +9,7 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Layers from "lucide-react/dist/esm/icons/layers";
+import { Package, DollarSign, TrendingUp, AlertTriangle, Tag, Layers } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 

@@ -22,19 +22,21 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import Download from "lucide-react/dist/esm/icons/download";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Link from "lucide-react/dist/esm/icons/link";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import {
+  Copy,
+  ExternalLink,
+  QrCode,
+  Download,
+  Loader2,
+  CheckCircle2,
+  Link,
+  MessageCircle,
+  Mail,
+  Share2,
+  Eye,
+  Lock,
+  Smartphone
+} from 'lucide-react';
 import { generateQRCodeDataURL, downloadQRCodePNG } from '@/lib/utils/qrCode';
 
 interface Store {

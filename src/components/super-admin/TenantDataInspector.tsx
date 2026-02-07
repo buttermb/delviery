@@ -18,10 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import Search from "lucide-react/dist/esm/icons/search";
-import Download from "lucide-react/dist/esm/icons/download";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Database from "lucide-react/dist/esm/icons/database";
+import { Search, Download, Eye, Database } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 

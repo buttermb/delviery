@@ -17,20 +17,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Users from "lucide-react/dist/esm/icons/users";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import X from "lucide-react/dist/esm/icons/x";
+import {
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle2,
+  Package,
+  DollarSign,
+  Truck,
+  Plus,
+  Minus,
+  Search,
+  Users,
+  Loader2,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -624,44 +625,27 @@ export default function NewWholesaleOrder() {
                         filteredInventory.map((product: any) => {
                           const inCart = orderData.products.find((p) => p.id === product.id);
                           const stockQty = product.quantity_available ?? 0;
-                          const isOutOfStock = stockQty <= 0;
                           return (
                             <Card
                               key={product.id}
                               className={cn(
-                                'p-3 transition-all',
-                                isOutOfStock
-                                  ? 'opacity-50 cursor-not-allowed border-destructive/30'
-                                  : 'cursor-pointer',
-                                !isOutOfStock && inCart
+                                'p-3 cursor-pointer transition-all',
+                                inCart
                                   ? 'border-emerald-500 bg-emerald-500/5'
-                                  : !isOutOfStock && 'hover:border-muted-foreground/50'
+                                  : 'hover:border-muted-foreground/50'
                               )}
-                              onClick={() => !isOutOfStock && handleAddProduct(product)}
+                              onClick={() => handleAddProduct(product)}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="min-w-0 flex-1">
-                                  <div className="font-medium truncate flex items-center gap-1.5">
-                                    {product.product_name}
-                                    {isOutOfStock && (
-                                      <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
-                                    )}
-                                  </div>
+                                  <div className="font-medium truncate">{product.product_name}</div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                    {isOutOfStock ? (
-                                      <span className="text-destructive font-medium">Out of Stock</span>
-                                    ) : (
-                                      <span>Stock: {stockQty} units</span>
-                                    )}
+                                    <span>Stock: {stockQty} units</span>
                                     <span>|</span>
                                     <span className="font-mono">{formatCurrency(product.base_price)}/unit</span>
                                   </div>
                                 </div>
-                                {isOutOfStock ? (
-                                  <Badge variant="destructive" className="shrink-0 text-xs">
-                                    Unavailable
-                                  </Badge>
-                                ) : inCart ? (
+                                {inCart ? (
                                   <Badge className="bg-emerald-500 shrink-0">
                                     {inCart.qty} in cart
                                   </Badge>

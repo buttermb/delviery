@@ -6,8 +6,7 @@
  * Changes color based on user's ability to afford the action.
  */
 
-import Coins from "lucide-react/dist/esm/icons/coins";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { Coins, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -257,4 +256,7 @@ export function CreditCostIndicator({
     </div>
   );
 }
+
+
+
 

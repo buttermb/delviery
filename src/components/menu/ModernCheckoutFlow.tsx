@@ -11,46 +11,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import User from "lucide-react/dist/esm/icons/user";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Check from "lucide-react/dist/esm/icons/check";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Home from "lucide-react/dist/esm/icons/home";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Store from "lucide-react/dist/esm/icons/store";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import Banknote from "lucide-react/dist/esm/icons/banknote";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Bitcoin from "lucide-react/dist/esm/icons/bitcoin";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import Edit2 from "lucide-react/dist/esm/icons/edit-2";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import Locate from "lucide-react/dist/esm/icons/locate";
-import Building from "lucide-react/dist/esm/icons/building";
-import Key from "lucide-react/dist/esm/icons/key";
+import { 
+  ShoppingCart, User, MapPin, CreditCard, Check, ArrowRight, ArrowLeft,
+  Loader2, Package, Minus, Plus, Trash2, Phone, Mail, Home, 
+  Truck, Store, Wallet, Banknote, Shield, Clock, ChevronRight,
+  Sparkles, AlertCircle, CheckCircle, Bitcoin, Zap, Coins, Copy,
+  Navigation, Tag, ChevronDown, Edit2, Calendar, Share2, MessageCircle,
+  Gift, Locate, Building, Key
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';
@@ -1458,20 +1426,16 @@ function ConfirmStep({
 }
 
 // Success State
-function OrderSuccess({
+function OrderSuccess({ 
   orderId,
   formData,
-  onClose,
-  menuId
-}: {
+  onClose 
+}: { 
   orderId: string;
-  formData: { deliveryMethod: string; firstName: string; phone: string };
+  formData: { deliveryMethod: string; firstName: string };
   onClose: () => void;
-  menuId: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const [smsLoading, setSmsLoading] = useState(false);
-  const [smsConfirmed, setSmsConfirmed] = useState(false);
 
   useEffect(() => {
     // Trigger confetti
@@ -1519,27 +1483,8 @@ function OrderSuccess({
     }
   };
 
-  const handleSmsOptIn = async () => {
-    setSmsLoading(true);
-    try {
-      await supabase.functions.invoke('menu-order-sms-subscribe', {
-        body: {
-          order_id: orderId,
-          menu_id: menuId,
-          phone: formData.phone.replace(/\D/g, ''),
-        }
-      });
-      setSmsConfirmed(true);
-      toast.success('You will receive SMS updates for your order');
-    } catch {
-      toast.error('Could not enable SMS notifications');
-    } finally {
-      setSmsLoading(false);
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center py-8 px-4 text-center overflow-y-auto">
+    <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
       {/* Success animation */}
       <div className="relative mb-6">
         <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse" />
@@ -1554,7 +1499,7 @@ function OrderSuccess({
       </p>
 
       {/* Order ID */}
-      <Card className="w-full max-w-xs bg-muted/50 mb-4">
+      <Card className="w-full max-w-xs bg-muted/50 mb-6">
         <CardContent className="p-4">
           <div className="text-xs text-muted-foreground mb-1">Order Reference</div>
           <div className="flex items-center justify-center gap-2">
@@ -1567,53 +1512,14 @@ function OrderSuccess({
       </Card>
 
       {/* ETA */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
         <Clock className="h-4 w-4" />
         <span>
-          {formData.deliveryMethod === 'delivery'
+          {formData.deliveryMethod === 'delivery' 
             ? 'Estimated delivery: 30-60 minutes'
             : 'Ready for pickup: 15-20 minutes'}
         </span>
       </div>
-
-      {/* SMS Notifications Opt-in */}
-      {formData.phone && !smsConfirmed && (
-        <Card className="w-full max-w-xs mb-4 border-primary/20 bg-primary/5">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Phone className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-sm">Get SMS Updates</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Receive order status notifications via text message
-                </p>
-                <Button
-                  size="sm"
-                  className="mt-2 gap-1.5"
-                  onClick={handleSmsOptIn}
-                  disabled={smsLoading}
-                >
-                  {smsLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <MessageCircle className="h-3.5 w-3.5" />
-                  )}
-                  Enable SMS Alerts
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {smsConfirmed && (
-        <div className="flex items-center gap-2 text-sm text-emerald-600 mb-4 w-full max-w-xs justify-center">
-          <CheckCircle className="h-4 w-4" />
-          <span>SMS notifications enabled</span>
-        </div>
-      )}
 
       {/* Action buttons */}
       <div className="grid grid-cols-2 gap-3 w-full max-w-xs mb-6">
@@ -1833,11 +1739,10 @@ export function ModernCheckoutFlow({
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0">
           {orderId ? (
-            <OrderSuccess
-              orderId={orderId}
+            <OrderSuccess 
+              orderId={orderId} 
               formData={formData}
-              onClose={handleClose}
-              menuId={menuId}
+              onClose={handleClose} 
             />
           ) : (
             <>

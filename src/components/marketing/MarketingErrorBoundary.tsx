@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { Component, ReactNode } from 'react';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -35,7 +35,7 @@ export class MarketingErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="py-12 px-4" role="alert">
+        <div className="py-12 px-4">
           <div className="max-w-md mx-auto text-center">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="h-8 w-8 text-red-500" />

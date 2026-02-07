@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Search from "lucide-react/dist/esm/icons/search";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
+import {
+  MessageSquare,
+  Phone,
+  Mail,
+  Clock,
+  Search,
+  HelpCircle
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SupportPage() {

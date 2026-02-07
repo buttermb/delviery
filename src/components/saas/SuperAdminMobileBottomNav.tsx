@@ -7,12 +7,14 @@ import { logger } from '@/lib/logger';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/mobile';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import X from "lucide-react/dist/esm/icons/x";
+import {
+  LayoutDashboard,
+  Building2,
+  Activity,
+  BarChart3,
+  Menu,
+  X
+} from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SidebarProvider } from '@/components/ui/sidebar';

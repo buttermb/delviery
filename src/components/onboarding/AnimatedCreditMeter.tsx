@@ -7,12 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useSpring, useTransform, animate } from 'framer-motion';
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import { Coins, Sparkles, Zap, MessageSquare, ShoppingCart, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, ReactNode } from 'react';
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import { RefreshCw } from 'lucide-react';
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>;

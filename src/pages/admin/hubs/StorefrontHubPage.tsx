@@ -11,18 +11,20 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Users from "lucide-react/dist/esm/icons/users";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Brush from "lucide-react/dist/esm/icons/brush";
-import Boxes from "lucide-react/dist/esm/icons/boxes";
-import Radio from "lucide-react/dist/esm/icons/radio";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import {
+    LayoutDashboard,
+    Package,
+    ShoppingCart,
+    Users,
+    Tag,
+    Settings,
+    Brush,
+    Boxes,
+    Radio,
+    BarChart3,
+    Gift,
+    ExternalLink,
+} from 'lucide-react';
 import { lazy, Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -34,7 +36,7 @@ const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontO
 const StorefrontCustomers = lazy(() => import('@/pages/admin/storefront/StorefrontCustomers'));
 const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/StorefrontCoupons'));
 const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
-const StorefrontDesignPage = lazy(() => import('@/pages/admin/storefront/StorefrontDesignPage').then(m => ({ default: m.StorefrontDesignPage })));
+const StorefrontBuilder = lazy(() => import('@/pages/admin/storefront/StorefrontBuilder'));
 const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
 const StorefrontAnalytics = lazy(() => import('@/pages/admin/storefront/StorefrontAnalytics'));
@@ -146,7 +148,7 @@ export default function StorefrontHubPage() {
                         <Suspense fallback={<TabSkeleton />}><StorefrontCoupons /></Suspense>
                     </TabsContent>
                     <TabsContent value="builder" className="m-0 h-full overflow-hidden">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontDesignPage /></Suspense>
+                        <Suspense fallback={<TabSkeleton />}><StorefrontBuilder /></Suspense>
                     </TabsContent>
                     <TabsContent value="bundles" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense>

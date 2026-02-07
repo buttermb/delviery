@@ -30,7 +30,6 @@ interface OrderEmailRequest {
     total: number;
     store_name: string;
     tracking_url?: string;
-    loyalty_points_earned?: number;
 }
 
 serve(async (req) => {
@@ -51,7 +50,6 @@ serve(async (req) => {
             total,
             store_name,
             tracking_url,
-            loyalty_points_earned,
         } = body;
 
         if (!customer_email || !order_number) {
@@ -115,14 +113,6 @@ serve(async (req) => {
                 <span style="color: #10b981;">$${total.toFixed(2)}</span>
               </div>
             </div>
-
-            ${loyalty_points_earned && loyalty_points_earned > 0 ? `
-              <div style="margin-top: 24px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); border-radius: 12px; padding: 20px; text-align: center;">
-                <div style="color: white; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">🎉 Loyalty Points Earned</div>
-                <div style="color: white; font-size: 32px; font-weight: bold;">+${loyalty_points_earned}</div>
-                <div style="color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px;">Points added to your account!</div>
-              </div>
-            ` : ''}
 
             ${tracking_url ? `
               <div style="margin-top: 24px; text-align: center;">

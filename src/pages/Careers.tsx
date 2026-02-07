@@ -4,12 +4,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Briefcase from "lucide-react/dist/esm/icons/briefcase";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Users from "lucide-react/dist/esm/icons/users";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Heart from "lucide-react/dist/esm/icons/heart";
+import { Briefcase, MapPin, Clock, Users, TrendingUp, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Careers() {

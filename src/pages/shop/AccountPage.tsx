@@ -17,28 +17,26 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useStorefrontOrders, type OrderStatusFilter, type OrderFilters } from '@/hooks/useStorefrontOrders';
-import User from "lucide-react/dist/esm/icons/user";
-import Package from "lucide-react/dist/esm/icons/package";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import Search from "lucide-react/dist/esm/icons/search";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Heart from "lucide-react/dist/esm/icons/heart";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import {
+  User,
+  Package,
+  MapPin,
+  Settings,
+  LogOut,
+  Search,
+  ChevronRight,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Heart,
+  RefreshCw,
+  ShoppingCart,
+  Trash2,
+  Plus,
+  Mail,
+  Loader2
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
@@ -90,28 +88,25 @@ export default function AccountPage() {
     }
   }, [store?.id]);
 
-  // Order filters state
-  const [orderFilters, setOrderFilters] = useState<OrderFilters>({
-    status: 'all',
-    search: '',
-    dateRange: 'all',
-  });
-  const [orderSearchInput, setOrderSearchInput] = useState('');
+  // Fetch customer orders
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ['customer-orders', store?.id, customerId],
+    queryFn: async (): Promise<CustomerOrder[]> => {
+      if (!store?.id || !customerId) return [];
 
-  // Use unified storefront orders hook
-  const { orders, isLoading: ordersLoading, orderStats } = useStorefrontOrders({
-    storeId: store?.id,
-    customerId,
-    filters: orderFilters,
-  });
+      // @ts-ignore - Supabase types issue with marketplace_orders
+      const { data, error } = await supabase
+        .from('marketplace_orders')
+        .select('*')
+        .eq('store_id', store.id)
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
 
-  // Debounced search handler
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setOrderFilters((prev) => ({ ...prev, search: orderSearchInput }));
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [orderSearchInput]);
+      if (error) throw error;
+      return (data as unknown as CustomerOrder[]) || [];
+    },
+    enabled: !!store?.id && !!customerId,
+  });
 
   // Quick login/lookup by email
   const handleEmailLookup = async () => {
@@ -512,77 +507,12 @@ export default function AccountPage() {
         <TabsContent value="orders">
           <Card>
             <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <CardTitle>Order History</CardTitle>
-                  <CardDescription>
-                    {orderStats.total > 0
-                      ? `${orderStats.total} order${orderStats.total !== 1 ? 's' : ''} • ${formatCurrency(orderStats.totalSpent)} spent`
-                      : 'View and track your past orders'}
-                  </CardDescription>
-                </div>
-                {orderStats.total > 0 && (
-                  <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="secondary" className="bg-yellow-50 text-yellow-700">
-                      {orderStats.active} active
-                    </Badge>
-                    <Badge variant="secondary" className="bg-green-50 text-green-700">
-                      {orderStats.completed} delivered
-                    </Badge>
-                  </div>
-                )}
-              </div>
+              <CardTitle>Order History</CardTitle>
+              <CardDescription>
+                View and track your past orders
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Filters */}
-              {orderStats.total > 0 && (
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search orders..."
-                      value={orderSearchInput}
-                      onChange={(e) => setOrderSearchInput(e.target.value)}
-                      className="pl-9 h-9"
-                    />
-                  </div>
-                  <Select
-                    value={orderFilters.status}
-                    onValueChange={(value) =>
-                      setOrderFilters((prev) => ({ ...prev, status: value as OrderStatusFilter }))
-                    }
-                  >
-                    <SelectTrigger className="w-[140px] h-9">
-                      <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Orders</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="completed">Delivered</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    value={orderFilters.dateRange}
-                    onValueChange={(value) =>
-                      setOrderFilters((prev) => ({ ...prev, dateRange: value as OrderFilters['dateRange'] }))
-                    }
-                  >
-                    <SelectTrigger className="w-[130px] h-9">
-                      <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-                      <SelectValue placeholder="Period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                      <SelectItem value="90days">Last 90 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
               {ordersLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
@@ -592,36 +522,18 @@ export default function AccountPage() {
               ) : orders.length === 0 ? (
                 <div className="text-center py-16 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
                   <Package className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-                  <h3 className="text-xl font-bold mb-2 text-neutral-900">
-                    {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
-                      ? 'No matching orders'
-                      : 'No orders yet'}
-                  </h3>
+                  <h3 className="text-xl font-bold mb-2 text-neutral-900">No orders yet</h3>
                   <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
-                    {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
-                      ? 'Try adjusting your filters to see more orders.'
-                      : 'You haven\'t placed any orders yet. Start exploring our collection today.'}
+                    You haven't placed any orders yet. Start exploring our collection today.
                   </p>
-                  {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all' ? (
+                  <Link to={`/shop/${storeSlug}/products`}>
                     <Button
-                      variant="outline"
-                      onClick={() => {
-                        setOrderFilters({ status: 'all', search: '', dateRange: 'all' });
-                        setOrderSearchInput('');
-                      }}
+                      className="rounded-full px-8 py-6 font-bold shadow-lg hover:shadow-xl transition-all"
+                      style={{ backgroundColor: store.primary_color }}
                     >
-                      Clear Filters
+                      Start Shopping
                     </Button>
-                  ) : (
-                    <Link to={`/shop/${storeSlug}/products`}>
-                      <Button
-                        className="rounded-full px-8 py-6 font-bold shadow-lg hover:shadow-xl transition-all"
-                        style={{ backgroundColor: store.primary_color }}
-                      >
-                        Start Shopping
-                      </Button>
-                    </Link>
-                  )}
+                  </Link>
                 </div>
               ) : (
               <div className="space-y-4">
@@ -1018,18 +930,11 @@ function OrderCard({
                 storeId={storeId}
                 primaryColor={primaryColor}
               />
-              <Link to={`/shop/${storeSlug}/orders/${order.id}`}>
-                <Button size="sm" variant="outline">
-                  View Details
+              <Link to={`/shop/${storeSlug}/track/${order.tracking_token}`}>
+                <Button size="sm" variant="ghost">
+                  Track Order
                 </Button>
               </Link>
-              {order.tracking_token && (
-                <Link to={`/shop/${storeSlug}/track/${order.tracking_token}`}>
-                  <Button size="sm" variant="ghost">
-                    Track
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
         )}
@@ -1116,4 +1021,8 @@ function QuickReorderButton({
     </Button>
   );
 }
+
+
+
+
 

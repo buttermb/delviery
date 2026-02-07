@@ -4,16 +4,13 @@
  * Individual menu item with tracking, favorites, and active state
  */
 
-import { memo, useEffect, useRef } from 'react';
+import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { SidebarMenuButton, SidebarMenuItem as UISidebarMenuItem, useSidebar as useUiSidebar } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Star from "lucide-react/dist/esm/icons/star";
+import { Lock, Star } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useSidebar } from './SidebarContext';
-import { useLiveBadge } from './LiveBadgeContext';
-import { LiveCountBadge } from './LiveCountBadge';
 import { useRoutePrefetch } from '@/hooks/useRoutePrefetch';
 import type { SidebarItem } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
@@ -36,34 +33,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
 }: SidebarMenuItemProps) {
   const { tenantSlug } = useParams();
   const { favorites, toggleFavorite, trackFeatureClick } = useSidebar();
-  const liveBadgeContext = useLiveBadge();
   const { prefetchRoute } = useRoutePrefetch();
-  const itemRef = useRef<HTMLLIElement>(null);
-
-  // Scroll into view when item becomes active
-  // Using requestAnimationFrame to ensure DOM is ready after section expansion
-  useEffect(() => {
-    if (isActive && itemRef.current) {
-      // Use requestAnimationFrame to wait for any layout changes (e.g., section expansion)
-      const rafId = requestAnimationFrame(() => {
-        // Additional small delay to allow collapsible animations to complete
-        const timeoutId = setTimeout(() => {
-          if (itemRef.current) {
-            itemRef.current.scrollIntoView({
-              behavior: 'smooth',
-              block: 'nearest',
-              inline: 'nearest',
-            });
-          }
-        }, 100);
-
-        // Cleanup timeout on unmount
-        return () => clearTimeout(timeoutId);
-      });
-
-      return () => cancelAnimationFrame(rafId);
-    }
-  }, [isActive]);
 
   // Guard: Ensure favorites is an array
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
@@ -100,11 +70,10 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   if (!hasAccess && item.featureId) {
     const IconComponent = item.icon;
     return (
-      <UISidebarMenuItem ref={itemRef}>
+      <UISidebarMenuItem>
         <SidebarMenuButton
           onClick={() => onLockedItemClick(item.featureId!)}
           className="cursor-pointer opacity-60 hover:opacity-100"
-          tooltip={item.name}
         >
           {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
           <span className="flex-1 truncate text-sm">{item.name}</span>
@@ -116,16 +85,12 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
 
   const IconComponent = item.icon;
 
-  // Check for live badge data
-  const liveBadge = liveBadgeContext?.getBadge(item.path) ?? null;
-
   return (
-    <UISidebarMenuItem ref={itemRef}>
+    <UISidebarMenuItem>
       <SidebarMenuButton
         asChild
         isActive={isActive}
         onMouseEnter={handleMouseEnter}
-        tooltip={item.name}
       >
         <NavLink
           to={`/${tenantSlug}${item.path}`}
@@ -138,14 +103,8 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
           <span className="flex-1 truncate text-sm">{item.name}</span>
 
-          {/* Priority: live count badge > static badge > hot > favorite */}
-          {liveBadge ? (
-            <LiveCountBadge
-              count={liveBadge.count}
-              level={liveBadge.level}
-              pulse={liveBadge.pulse}
-            />
-          ) : item.badge ? (
+          {/* Show only the most important indicator */}
+          {item.badge ? (
             <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs flex-shrink-0">
               {item.badge}
             </Badge>

@@ -8,14 +8,7 @@
  */
 
 import { useState } from 'react';
-import Package from "lucide-react/dist/esm/icons/package";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Package, Clock, AlertTriangle, RefreshCw, DollarSign, Eye, ArrowRight, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

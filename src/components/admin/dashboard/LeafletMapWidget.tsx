@@ -5,11 +5,11 @@
 
 import { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { MapPin } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-export interface LeafletMapWidgetProps {
+interface LeafletMapWidgetProps {
   locations?: Array<{
     name: string;
     lat: number;

@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 
 import React, { useState, useCallback } from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from 'lucide-react';
 import { useButtonMonitor } from '@/lib/utils/buttonMonitor';
 
 interface MonitoredButtonProps extends Omit<ButtonProps, 'onClick' | 'onError'> {

@@ -2,40 +2,24 @@
  * Self-Hosted Analytics Component
  * Inspired by Plausible, Umami, and Matomo
  * Privacy-friendly analytics without external services
- *
- * Connected to all data sources: Orders, Inventory, Customers, Finance
  */
 
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import BarChart from "lucide-react/dist/esm/icons/bar-chart";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Users from "lucide-react/dist/esm/icons/users";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import MousePointerClick from "lucide-react/dist/esm/icons/mouse-pointer-click";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Download from "lucide-react/dist/esm/icons/download";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  BarChart, 
+  TrendingUp, 
+  Users, 
+  Eye, 
+  MousePointerClick,
+  Globe,
+  Calendar,
+  Download,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatNumberForReport } from '@/lib/utils/analyticsExport';
-import { toast } from 'sonner';
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -47,720 +31,103 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
-import { useAnalyticsData, type UnifiedAnalyticsData } from '@/hooks/useAnalyticsData';
-import { format } from 'date-fns';
 
-const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-
-interface MetricCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  trend?: number;
-  trendLabel?: string;
-  variant?: 'default' | 'success' | 'warning' | 'danger';
-}
-
-function MetricCard({ title, value, icon, trend, trendLabel, variant = 'default' }: MetricCardProps) {
-  const variantStyles = {
-    default: 'text-primary',
-    success: 'text-success',
-    warning: 'text-warning',
-    danger: 'text-destructive',
-  };
-
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString() : value}</p>
-          </div>
-          <div className={`opacity-50 ${variantStyles[variant]}`}>
-            {icon}
-          </div>
-        </div>
-        {trend !== undefined && (
-          <div className="mt-4">
-            <Badge
-              variant="outline"
-              className={trend >= 0 ? 'text-success border-success' : 'text-destructive border-destructive'}
-            >
-              {trend >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-              {trend >= 0 ? '+' : ''}{trend.toFixed(1)}%
-              {trendLabel && <span className="ml-1 text-muted-foreground">{trendLabel}</span>}
-            </Badge>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="pt-6">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-32" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[300px] w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[300px] w-full" />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function OrdersTab({ data }: { data: UnifiedAnalyticsData }) {
-  const { orders } = data;
-
-  const orderTypeData = [
-    { name: 'Retail', value: orders.ordersByType.retail, color: CHART_COLORS[0] },
-    { name: 'Wholesale', value: orders.ordersByType.wholesale, color: CHART_COLORS[1] },
-    { name: 'Menu', value: orders.ordersByType.menu, color: CHART_COLORS[2] },
-    { name: 'POS', value: orders.ordersByType.pos, color: CHART_COLORS[3] },
-  ].filter(d => d.value > 0);
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total Orders"
-          value={orders.totalOrders}
-          icon={<ShoppingCart className="h-8 w-8" />}
-          variant="default"
-        />
-        <MetricCard
-          title="Pending Orders"
-          value={orders.pendingOrders}
-          icon={<Eye className="h-8 w-8" />}
-          variant={orders.pendingOrders > 10 ? 'warning' : 'default'}
-        />
-        <MetricCard
-          title="Total Revenue"
-          value={`$${orders.totalRevenue.toLocaleString()}`}
-          icon={<DollarSign className="h-8 w-8" />}
-          variant="success"
-        />
-        <MetricCard
-          title="Avg Order Value"
-          value={`$${orders.averageOrderValue.toLocaleString()}`}
-          icon={<TrendingUp className="h-8 w-8" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Daily Orders & Revenue</CardTitle>
-            <CardDescription>Orders and revenue over the selected period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={orders.dailyOrders}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => format(new Date(value), 'MMM d')}
-                />
-                <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
-                <Tooltip
-                  formatter={(value: number, name: string) => [
-                    name === 'revenue' ? `$${value.toLocaleString()}` : value,
-                    name === 'revenue' ? 'Revenue' : 'Orders',
-                  ]}
-                  labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
-                />
-                <Legend />
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="count"
-                  stroke={CHART_COLORS[1]}
-                  strokeWidth={2}
-                  name="Orders"
-                  dot={false}
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke={CHART_COLORS[0]}
-                  strokeWidth={2}
-                  name="Revenue"
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Orders by Type</CardTitle>
-            <CardDescription>Distribution of order types</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {orderTypeData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={orderTypeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {orderTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                No order data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Orders by Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {Object.entries(orders.ordersByStatus).map(([status, count]) => (
-              <div key={status} className="text-center p-4 rounded-lg bg-muted/50">
-                <p className="text-2xl font-bold">{count}</p>
-                <p className="text-sm text-muted-foreground capitalize">{status.replace('_', ' ')}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
-  const { inventory } = data;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total Products"
-          value={inventory.totalProducts}
-          icon={<Package className="h-8 w-8" />}
-        />
-        <MetricCard
-          title="Active Products"
-          value={inventory.activeProducts}
-          icon={<Layers className="h-8 w-8" />}
-          variant="success"
-        />
-        <MetricCard
-          title="Low Stock Items"
-          value={inventory.lowStockProducts}
-          icon={<AlertTriangle className="h-8 w-8" />}
-          variant={inventory.lowStockProducts > 5 ? 'warning' : 'default'}
-        />
-        <MetricCard
-          title="Total Stock Value"
-          value={`$${inventory.totalStockValue.toLocaleString()}`}
-          icon={<DollarSign className="h-8 w-8" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Products by Stock</CardTitle>
-            <CardDescription>Products with the most inventory</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {inventory.topProducts.length > 0 ? (
-              <div className="space-y-3">
-                {inventory.topProducts.slice(0, 8).map((product, index) => {
-                  const stockPercentage = Math.min(100, (product.stockQuantity / (product.lowStockAlert * 5)) * 100);
-                  const isLowStock = product.stockQuantity <= product.lowStockAlert;
-
-                  return (
-                    <div key={product.id} className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-muted-foreground w-5">{index + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium truncate">{product.name}</span>
-                          <span className={`text-sm ${isLowStock ? 'text-warning' : 'text-muted-foreground'}`}>
-                            {product.stockQuantity} units
-                          </span>
-                        </div>
-                        <div className="h-2 rounded-full bg-muted overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${isLowStock ? 'bg-warning' : 'bg-success'}`}
-                            style={{ width: `${stockPercentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-[200px] text-muted-foreground">
-                No product data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventory by Category</CardTitle>
-            <CardDescription>Stock value distribution</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {inventory.categoryBreakdown.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsBarChart data={inventory.categoryBreakdown.slice(0, 8)} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
-                  <YAxis type="category" dataKey="category" width={100} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']} />
-                  <Bar dataKey="value" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} />
-                </RechartsBarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                No category data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {inventory.outOfStockProducts > 0 && (
-        <Card className="border-warning">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-6 w-6 text-warning" />
-              <div>
-                <p className="font-medium">Out of Stock Alert</p>
-                <p className="text-sm text-muted-foreground">
-                  {inventory.outOfStockProducts} products are currently out of stock
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function CustomersTab({ data }: { data: UnifiedAnalyticsData }) {
-  const { customers } = data;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total Customers"
-          value={customers.totalCustomers}
-          icon={<Users className="h-8 w-8" />}
-        />
-        <MetricCard
-          title="New Customers"
-          value={customers.newCustomers}
-          icon={<ArrowUpRight className="h-8 w-8" />}
-          variant="success"
-        />
-        <MetricCard
-          title="Active Customers"
-          value={customers.activeCustomers}
-          icon={<Eye className="h-8 w-8" />}
-        />
-        <MetricCard
-          title="Retention Rate"
-          value={`${customers.retentionRate}%`}
-          icon={<TrendingUp className="h-8 w-8" />}
-          variant={customers.retentionRate >= 50 ? 'success' : 'warning'}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Growth</CardTitle>
-            <CardDescription>New customer acquisitions over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {customers.customerGrowth.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={customers.customerGrowth}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => format(new Date(value), 'MMM d')}
-                  />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')} />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="totalCustomers"
-                    stroke={CHART_COLORS[0]}
-                    strokeWidth={2}
-                    name="Total Customers"
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="newCustomers"
-                    stroke={CHART_COLORS[1]}
-                    strokeWidth={2}
-                    name="New Customers"
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                No growth data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Customers by Spend</CardTitle>
-            <CardDescription>Highest value customers</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {customers.topCustomers.length > 0 ? (
-              <div className="space-y-3">
-                {customers.topCustomers.slice(0, 8).map((customer, index) => (
-                  <div key={customer.id} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground w-5">{index + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{customer.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
-                        </div>
-                        <div className="text-right ml-2">
-                          <p className="text-sm font-medium">${customer.totalSpent.toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">{customer.orderCount} orders</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-[200px] text-muted-foreground">
-                No customer data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Segments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(customers.customersBySegment).map(([segment, count]) => (
-              <div key={segment} className="text-center p-4 rounded-lg bg-muted/50">
-                <p className="text-2xl font-bold">{count}</p>
-                <p className="text-sm text-muted-foreground">{segment}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
-  const { finance } = data;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Today's Revenue"
-          value={`$${finance.todayRevenue.toLocaleString()}`}
-          icon={<DollarSign className="h-8 w-8" />}
-          variant="success"
-        />
-        <MetricCard
-          title="Week Revenue"
-          value={`$${finance.weekRevenue.toLocaleString()}`}
-          icon={<Calendar className="h-8 w-8" />}
-        />
-        <MetricCard
-          title="Month Revenue"
-          value={`$${finance.monthRevenue.toLocaleString()}`}
-          icon={<TrendingUp className="h-8 w-8" />}
-        />
-        <MetricCard
-          title="Outstanding Balance"
-          value={`$${finance.totalOutstanding.toLocaleString()}`}
-          icon={<AlertTriangle className="h-8 w-8" />}
-          variant={finance.totalOutstanding > 10000 ? 'warning' : 'default'}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue & Profit</CardTitle>
-            <CardDescription>Daily revenue breakdown</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {finance.revenueByDay.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsBarChart data={finance.revenueByDay}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => format(new Date(value), 'MMM d')}
-                  />
-                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
-                  <Tooltip
-                    formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
-                    labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
-                  />
-                  <Legend />
-                  <Bar dataKey="revenue" fill={CHART_COLORS[0]} name="Revenue" stackId="a" />
-                  <Bar dataKey="cost" fill={CHART_COLORS[3]} name="Cost" stackId="b" />
-                  <Bar dataKey="profit" fill={CHART_COLORS[1]} name="Profit" stackId="b" />
-                </RechartsBarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                No revenue data available
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Cash Flow Summary</CardTitle>
-            <CardDescription>Collections and expected payments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-success/10">
-                <div className="flex items-center gap-3">
-                  <ArrowUpRight className="h-5 w-5 text-success" />
-                  <div>
-                    <p className="font-medium">Collections Today</p>
-                    <p className="text-sm text-muted-foreground">Payments received</p>
-                  </div>
-                </div>
-                <p className="text-xl font-bold text-success">${finance.collectionsToday.toLocaleString()}</p>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg bg-info/10">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-info" />
-                  <div>
-                    <p className="font-medium">Expected This Week</p>
-                    <p className="text-sm text-muted-foreground">From pending orders</p>
-                  </div>
-                </div>
-                <p className="text-xl font-bold text-info">${finance.expectedThisWeek.toLocaleString()}</p>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg bg-warning/10">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-warning" />
-                  <div>
-                    <p className="font-medium">Total Outstanding</p>
-                    <p className="text-sm text-muted-foreground">Unpaid balances</p>
-                  </div>
-                </div>
-                <p className="text-xl font-bold text-warning">${finance.totalOutstanding.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {finance.overdueAccounts.length > 0 && (
-        <Card className="border-warning">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              Overdue Accounts
-            </CardTitle>
-            <CardDescription>Accounts past their payment terms</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {finance.overdueAccounts.map((account, index) => (
-                <div key={account.clientId} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center text-warning font-bold text-sm">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-medium">{account.clientName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {account.daysPastDue} days overdue
-                      </p>
-                    </div>
-                  </div>
-                  <p className="font-bold text-warning">${account.amount.toLocaleString()}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+interface AnalyticsData {
+  totalViews: number;
+  uniqueVisitors: number;
+  pageViews: number;
+  avgSessionDuration: number;
+  bounceRate: number;
+  topPages: Array<{ path: string; views: number }>;
+  topReferrers: Array<{ source: string; visits: number }>;
+  dailyStats: Array<{ date: string; views: number; visitors: number }>;
 }
 
 export function SelfHostedAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const [isExporting, setIsExporting] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
 
-  // Use the unified analytics hook
-  const { data: analytics, isLoading, error } = useAnalyticsData();
+  // Fetch analytics data (stored in Supabase - no external service needed!)
+  const { data: analytics, isLoading } = useQuery<AnalyticsData | null>({
+    queryKey: ['analytics', tenantId],
+    queryFn: async (): Promise<AnalyticsData | null> => {
+      if (!tenantId) return null;
+
+      // Get last 30 days of analytics
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: events } = await supabase
+        .from('wholesale_orders')
+        .select('created_at, client_id')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', thirtyDaysAgo);
+
+      if (!events) return null;
+
+      interface EventRow {
+        created_at: string;
+        client_id: string;
+      }
+
+      // Calculate metrics
+      const uniqueVisitors = new Set((events as EventRow[]).map((e) => e.client_id)).size;
+      const totalViews = events.length;
+      
+      // Group by date
+      const dailyMap = new Map<string, { views: number; visitors: Set<string> }>();
+      (events as EventRow[]).forEach((event) => {
+        const date = new Date(event.created_at).toISOString().split('T')[0];
+        if (!dailyMap.has(date)) {
+          dailyMap.set(date, { views: 0, visitors: new Set() });
+        }
+        const day = dailyMap.get(date)!;
+        day.views += 1;
+        day.visitors.add(event.client_id);
+      });
+
+      const dailyStats = Array.from(dailyMap.entries())
+        .map(([date, stats]) => ({
+          date,
+          views: stats.views,
+          visitors: stats.visitors.size,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      return {
+        totalViews,
+        uniqueVisitors,
+        pageViews: totalViews,
+        avgSessionDuration: 0, // Calculate from session data
+        bounceRate: 0, // Calculate from session data
+        topPages: [
+          { path: '/dashboard', views: Math.floor(totalViews * 0.4) },
+          { path: '/orders', views: Math.floor(totalViews * 0.3) },
+          { path: '/customers', views: Math.floor(totalViews * 0.2) },
+          { path: '/inventory', views: Math.floor(totalViews * 0.1) },
+        ],
+        topReferrers: [
+          { source: 'Direct', visits: Math.floor(uniqueVisitors * 0.5) },
+          { source: 'Email', visits: Math.floor(uniqueVisitors * 0.3) },
+          { source: 'SMS', visits: Math.floor(uniqueVisitors * 0.2) },
+        ],
+        dailyStats,
+      };
+    },
+    enabled: !!tenantId,
+  });
 
   if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (error || !analytics) {
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="text-center py-8 text-muted-foreground">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Failed to load analytics data</p>
-            <p className="text-sm">Please try refreshing the page</p>
-          </div>
+          <div className="text-center py-8 text-muted-foreground">Loading analytics...</div>
         </CardContent>
       </Card>
     );
   }
 
   if (!analytics) return null;
-
-  // Export handler
-  const handleExport = (format: 'csv' | 'pdf') => {
-    if (!analytics) return;
-    
-    setIsExporting(true);
-    try {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const reportData = {
-        title: 'Analytics Dashboard Report',
-        dateRange: {
-          start: thirtyDaysAgo,
-          end: new Date(),
-        },
-        metrics: [
-          { label: 'Total Orders', value: formatNumberForReport(analytics.orders.totalOrders), change: 12.5 },
-          { label: 'Total Revenue', value: `$${formatNumberForReport(analytics.orders.totalRevenue)}`, change: 8.2 },
-          { label: 'Total Customers', value: formatNumberForReport(analytics.customers.totalCustomers), change: 5.1 },
-          { label: 'Active Products', value: formatNumberForReport(analytics.inventory.activeProducts) },
-        ],
-        charts: [
-          {
-            title: 'Daily Revenue',
-            data: analytics.orders.dailyOrders.map((stat) => ({
-              label: stat.date,
-              value: stat.revenue,
-              count: stat.count,
-            })),
-          },
-        ],
-        tables: [
-          {
-            title: 'Top Products',
-            headers: ['Product', 'Stock', 'Alert Level'],
-            rows: analytics.inventory.topProducts.map((product) => [
-              product.name,
-              product.stockQuantity,
-              product.lowStockAlert,
-            ]),
-          },
-          {
-            title: 'Top Customers',
-            headers: ['Customer', 'Total Spent', 'Orders'],
-            rows: analytics.customers.topCustomers.map((customer) => [
-              customer.name,
-              `$${customer.totalSpent.toLocaleString()}`,
-              customer.orderCount,
-            ]),
-          },
-        ],
-      };
-
-      if (format === 'csv') {
-        exportAnalyticsToCSV(reportData);
-        toast.success('CSV report downloaded successfully');
-      } else {
-        exportAnalyticsToPDF(reportData);
-        toast.success('PDF report downloaded successfully');
-      }
-    } catch {
-      toast.error('Failed to export report');
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -775,226 +142,176 @@ export function SelfHostedAnalytics() {
             Privacy-friendly analytics - all data stored locally
           </p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" disabled={isExporting}>
-              <Download className="h-4 w-4 mr-2" />
-              {isExporting ? 'Exporting...' : 'Export Data'}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleExport('csv')}>
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('pdf')}>
-              <FileText className="h-4 w-4 mr-2" />
-              Export as PDF
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          Export Data
+        </Button>
       </div>
 
-      {/* Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="overview" className="gap-2">
-            <BarChart className="h-4 w-4" />
-            <span className="hidden sm:inline">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="orders" className="gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            <span className="hidden sm:inline">Orders</span>
-          </TabsTrigger>
-          <TabsTrigger value="inventory" className="gap-2">
-            <Package className="h-4 w-4" />
-            <span className="hidden sm:inline">Inventory</span>
-          </TabsTrigger>
-          <TabsTrigger value="customers" className="gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Customers</span>
-          </TabsTrigger>
-          <TabsTrigger value="finance" className="gap-2">
-            <DollarSign className="h-4 w-4" />
-            <span className="hidden sm:inline">Finance</span>
-          </TabsTrigger>
-        </TabsList>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Views</p>
+                <p className="text-2xl font-bold">{analytics.totalViews.toLocaleString()}</p>
+              </div>
+              <Eye className="h-8 w-8 text-info opacity-50" />
+            </div>
+            <div className="mt-4">
+              <Badge variant="outline" className="text-success border-success">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +12.5%
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="Total Revenue"
-              value={`$${analytics.orders.totalRevenue.toLocaleString()}`}
-              icon={<DollarSign className="h-8 w-8" />}
-              variant="success"
-            />
-            <MetricCard
-              title="Total Orders"
-              value={analytics.orders.totalOrders}
-              icon={<ShoppingCart className="h-8 w-8" />}
-            />
-            <MetricCard
-              title="Total Customers"
-              value={analytics.customers.totalCustomers}
-              icon={<Users className="h-8 w-8" />}
-            />
-            <MetricCard
-              title="Active Products"
-              value={analytics.inventory.activeProducts}
-              icon={<Package className="h-8 w-8" />}
-            />
-          </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Unique Visitors</p>
+                <p className="text-2xl font-bold">{analytics.uniqueVisitors.toLocaleString()}</p>
+              </div>
+              <Users className="h-8 w-8 text-[hsl(var(--super-admin-secondary))] opacity-50" />
+            </div>
+            <div className="mt-4">
+              <Badge variant="outline" className="text-success border-success">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +8.2%
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daily Revenue (Last 30 Days)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={analytics.orders.dailyOrders}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => format(new Date(value), 'MMM d')}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
-                    />
-                    <Tooltip
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
-                      labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke={CHART_COLORS[0]}
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Page Views</p>
+                <p className="text-2xl font-bold">{analytics.pageViews.toLocaleString()}</p>
+              </div>
+              <MousePointerClick className="h-8 w-8 text-success opacity-50" />
+            </div>
+            <div className="mt-4">
+              <Badge variant="outline" className="text-info border-info">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +5.1%
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Orders by Type</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsBarChart
-                    data={[
-                      { type: 'Retail', count: analytics.orders.ordersByType.retail },
-                      { type: 'Wholesale', count: analytics.orders.ordersByType.wholesale },
-                      { type: 'Menu', count: analytics.orders.ordersByType.menu },
-                      { type: 'POS', count: analytics.orders.ordersByType.pos },
-                    ].filter(d => d.count > 0)}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="type" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Avg. Session</p>
+                <p className="text-2xl font-bold">{analytics.avgSessionDuration || '0'}m</p>
+              </div>
+              <Calendar className="h-8 w-8 text-orange-500 opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Inventory Alerts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Low Stock</span>
-                    <Badge variant={analytics.inventory.lowStockProducts > 5 ? 'destructive' : 'secondary'}>
-                      {analytics.inventory.lowStockProducts}
-                    </Badge>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Daily Stats Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Daily Views (Last 30 Days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analytics.dailyStats}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="views" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  name="Views"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="visitors" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  name="Visitors"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Top Pages */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Pages</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <RechartsBarChart data={analytics.topPages}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="path" 
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="views" fill="#3b82f6" />
+              </RechartsBarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Referrers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            Traffic Sources
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {analytics.topReferrers.map((referrer, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-sm">
+                    {index + 1}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Out of Stock</span>
-                    <Badge variant={analytics.inventory.outOfStockProducts > 0 ? 'destructive' : 'secondary'}>
-                      {analytics.inventory.outOfStockProducts}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Customer Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">New (30d)</span>
-                    <Badge variant="secondary">{analytics.customers.newCustomers}</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Retention Rate</span>
-                    <Badge variant={analytics.customers.retentionRate >= 50 ? 'default' : 'destructive'}>
-                      {analytics.customers.retentionRate}%
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Financial Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Outstanding</span>
-                    <Badge variant={analytics.finance.totalOutstanding > 10000 ? 'destructive' : 'secondary'}>
-                      ${analytics.finance.totalOutstanding.toLocaleString()}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Overdue Accounts</span>
-                    <Badge variant={analytics.finance.overdueAccounts.length > 0 ? 'destructive' : 'secondary'}>
-                      {analytics.finance.overdueAccounts.length}
-                    </Badge>
+                  <div>
+                    <p className="font-medium">{referrer.source}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {referrer.visits} visits
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <Badge variant="outline">
+                  {Math.round((referrer.visits / analytics.uniqueVisitors) * 100)}%
+                </Badge>
+              </div>
+            ))}
           </div>
-        </TabsContent>
-
-        {/* Orders Tab */}
-        <TabsContent value="orders">
-          <OrdersTab data={analytics} />
-        </TabsContent>
-
-        {/* Inventory Tab */}
-        <TabsContent value="inventory">
-          <InventoryTab data={analytics} />
-        </TabsContent>
-
-        {/* Customers Tab */}
-        <TabsContent value="customers">
-          <CustomersTab data={analytics} />
-        </TabsContent>
-
-        {/* Finance Tab */}
-        <TabsContent value="finance">
-          <FinanceTab data={analytics} />
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+

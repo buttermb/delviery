@@ -2,11 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { DollarSign, Calendar, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 interface Payment {
   id: string;

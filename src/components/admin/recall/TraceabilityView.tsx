@@ -2,11 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import Search from "lucide-react/dist/esm/icons/search";
-import Package from "lucide-react/dist/esm/icons/package";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import { Search, Package, ArrowRight, Users, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

@@ -7,10 +7,9 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import {
+  Navigation, Phone, CheckCircle2, MapPin
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { showErrorToast } from '@/utils/toastHelpers';

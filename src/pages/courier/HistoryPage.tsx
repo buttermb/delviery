@@ -8,11 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { RoleIndicator } from '@/components/courier/RoleIndicator';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Package from "lucide-react/dist/esm/icons/package";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
+import { ArrowLeft, Package, MapPin, Truck, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface DeliveryRecord {

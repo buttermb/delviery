@@ -23,13 +23,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import History from "lucide-react/dist/esm/icons/history";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import GitBranch from "lucide-react/dist/esm/icons/git-branch";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Check from "lucide-react/dist/esm/icons/check";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import {
+  History,
+  RotateCcw,
+  GitBranch,
+  Clock,
+  ChevronRight,
+  Check,
+  AlertCircle,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface WorkflowAction {

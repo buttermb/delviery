@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Clock, AlertCircle } from 'lucide-react';
 
 interface OrderCountdownTimerProps {
   orderNumber: string;

@@ -11,10 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Play from "lucide-react/dist/esm/icons/play";
+import { Zap, Plus, Edit, Play } from 'lucide-react';
 
 interface AutomationRule {
   id: string;

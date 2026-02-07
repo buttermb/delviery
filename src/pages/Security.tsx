@@ -3,14 +3,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Key from "lucide-react/dist/esm/icons/key";
-import Database from "lucide-react/dist/esm/icons/database";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Server from "lucide-react/dist/esm/icons/server";
+import { Shield, Lock, Key, Database, Eye, AlertTriangle, CheckCircle, Server } from "lucide-react";
 
 export default function Security() {
   const securityFeatures = [

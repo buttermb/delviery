@@ -6,10 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Package from "lucide-react/dist/esm/icons/package";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
+import { Package, AlertTriangle, Search, Filter } from 'lucide-react';
 
 interface InventoryProduct {
     id: string;

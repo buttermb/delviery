@@ -20,13 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Eye from "lucide-react/dist/esm/icons/eye";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Monitor from "lucide-react/dist/esm/icons/monitor";
-import Tablet from "lucide-react/dist/esm/icons/tablet";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Check from "lucide-react/dist/esm/icons/check";
+import { Eye, ExternalLink, Smartphone, Monitor, Tablet, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface StorePreviewButtonProps {
@@ -164,4 +158,7 @@ export function StorePreviewButton({ storeSlug, storeName }: StorePreviewButtonP
 }
 
 export default StorePreviewButton;
+
+
+
 

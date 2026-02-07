@@ -21,17 +21,19 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Percent from "lucide-react/dist/esm/icons/percent";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import {
+  ArrowLeft,
+  Plus,
+  Tag,
+  Percent,
+  DollarSign,
+  Calendar,
+  Copy,
+  Trash2,
+  Edit,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {

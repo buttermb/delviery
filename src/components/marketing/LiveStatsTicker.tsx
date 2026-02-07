@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { TrendingUp } from 'lucide-react';
 
 interface Stat {
   id: number;

@@ -10,16 +10,18 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Package from "lucide-react/dist/esm/icons/package";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Globe from "lucide-react/dist/esm/icons/globe";
+import {
+    Package,
+    BarChart3,
+    ArrowLeftRight,
+    AlertTriangle,
+    Truck,
+    Plus,
+    CreditCard,
+    Barcode,
+    Menu,
+    Globe,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { lazy, Suspense } from 'react';
@@ -72,7 +74,7 @@ export default function InventoryHubPage() {
     };
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
                 <div className="border-b bg-card px-4 py-4">

@@ -2,22 +2,19 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import X from "lucide-react/dist/esm/icons/x";
-import File from "lucide-react/dist/esm/icons/file";
-import FileImage from "lucide-react/dist/esm/icons/file-image";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import FileArchive from "lucide-react/dist/esm/icons/file-archive";
-import FileAudio from "lucide-react/dist/esm/icons/file-audio";
-import FileVideo from "lucide-react/dist/esm/icons/file-video";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import {
-  validateImageDimensions,
-  formatDimensionConstraints,
-  type ImageDimensionConstraints,
-} from "@/lib/utils/validation";
+  Upload,
+  X,
+  File,
+  FileImage,
+  FileText,
+  FileArchive,
+  FileAudio,
+  FileVideo,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 
 /**
  * File type icons mapping
@@ -107,11 +104,6 @@ interface FileUploadProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "on
    * Whether to show file previews for images
    */
   showPreview?: boolean;
-  /**
-   * Image dimension constraints (only applies to image files)
-   * Set minWidth, minHeight, maxWidth, maxHeight to validate image dimensions
-   */
-  imageDimensions?: ImageDimensionConstraints;
 }
 
 /**
@@ -143,7 +135,6 @@ function FileUpload({
   value,
   variant = "default",
   showPreview = true,
-  imageDimensions,
   className,
   ...props
 }: FileUploadProps) {
@@ -151,18 +142,6 @@ function FileUpload({
   const [isDragging, setIsDragging] = React.useState(false);
   const [files, setFiles] = React.useState<UploadedFile[]>([]);
   const [error, setError] = React.useState<string | null>(null);
-  const [isCompressing, setIsCompressing] = React.useState(false);
-
-  // Compression is disabled for now - stub implementation
-  const getCompressionOptions = React.useCallback((): Record<string, unknown> | null => {
-    return null;
-  }, []);
-
-  // Compress a file if it's a compressible image - disabled for now
-  const maybeCompressFile = React.useCallback(async (file: File): Promise<File> => {
-    // Compression disabled - return original file
-    return file;
-  }, []);
 
   // Sync with controlled value
   React.useEffect(() => {
@@ -192,7 +171,7 @@ function FileUpload({
     };
   }, []);
 
-  const validateFileBasic = (file: File): string | null => {
+  const validateFile = (file: File): string | null => {
     if (maxSize && file.size > maxSize) {
       return `File "${file.name}" exceeds maximum size of ${formatFileSize(maxSize)}`;
     }
@@ -214,22 +193,6 @@ function FileUpload({
     return null;
   };
 
-  const validateFile = async (file: File): Promise<string | null> => {
-    // Basic validation (sync)
-    const basicError = validateFileBasic(file);
-    if (basicError) return basicError;
-
-    // Image dimension validation (async)
-    if (imageDimensions && file.type.startsWith("image/")) {
-      const result = await validateImageDimensions(file, imageDimensions);
-      if (!result.valid) {
-        return `File "${file.name}": ${result.error}`;
-      }
-    }
-
-    return null;
-  };
-
   const handleFiles = async (newFiles: FileList | null) => {
     if (!newFiles || disabled) return;
 
@@ -242,10 +205,10 @@ function FileUpload({
       return;
     }
 
-    // Validate each file (including async dimension checks for images)
+    // Validate each file
     const validFiles: File[] = [];
     for (const file of fileArray) {
-      const validationError = await validateFile(file);
+      const validationError = validateFile(file);
       if (validationError) {
         setError(validationError);
         return;
@@ -253,11 +216,8 @@ function FileUpload({
       validFiles.push(file);
     }
 
-    // Skip compression for now - compression library not available
-    const processedFiles = validFiles;
-
     // Create upload entries
-    const newUploadedFiles: UploadedFile[] = processedFiles.map((file) => ({
+    const newUploadedFiles: UploadedFile[] = validFiles.map((file) => ({
       file,
       id: `${file.name}-${file.lastModified}-${Math.random()}`,
       progress: 0,
@@ -268,7 +228,7 @@ function FileUpload({
     }));
 
     setFiles((prev) => [...prev, ...newUploadedFiles]);
-    onChange?.(processedFiles);
+    onChange?.(validFiles);
 
     // Handle uploads if custom handler provided
     if (onUpload) {
@@ -356,7 +316,7 @@ function FileUpload({
           multiple={multiple && maxFiles > 1}
           onChange={(e) => handleFiles(e.target.files)}
           className="sr-only"
-          disabled={disabled || isCompressing}
+          disabled={disabled}
           aria-label="File upload"
           title="Choose files to upload"
         />
@@ -364,20 +324,11 @@ function FileUpload({
           type="button"
           variant="outline"
           onClick={openFilePicker}
-          disabled={disabled || isCompressing || files.length >= maxFiles}
+          disabled={disabled || files.length >= maxFiles}
           className="gap-2"
         >
-          {isCompressing ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Compressing...
-            </>
-          ) : (
-            <>
-              <Upload className="h-4 w-4" />
-              Choose Files
-            </>
-          )}
+          <Upload className="h-4 w-4" />
+          Choose Files
         </Button>
         {error && (
           <p className="text-sm text-destructive">{error}</p>
@@ -397,13 +348,13 @@ function FileUpload({
           className={cn(
             "flex items-center gap-4 p-3 border-2 border-dashed rounded-lg transition-colors cursor-pointer",
             isDragging && "border-primary bg-primary/5",
-            (disabled || isCompressing) && "opacity-50 cursor-not-allowed",
-            !disabled && !isCompressing && !isDragging && "hover:border-primary/50"
+            disabled && "opacity-50 cursor-not-allowed",
+            !disabled && !isDragging && "hover:border-primary/50"
           )}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={!disabled && !isCompressing ? openFilePicker : undefined}
+          onClick={!disabled ? openFilePicker : undefined}
         >
           <input
             ref={inputRef}
@@ -412,24 +363,14 @@ function FileUpload({
             multiple={multiple && maxFiles > 1}
             onChange={(e) => handleFiles(e.target.files)}
             className="sr-only"
-            disabled={disabled || isCompressing}
+            disabled={disabled}
             aria-label="File upload"
             title="Choose files to upload"
           />
-          {isCompressing ? (
-            <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
-          ) : (
-            <Upload className="h-5 w-5 text-muted-foreground" />
-          )}
+          <Upload className="h-5 w-5 text-muted-foreground" />
           <div className="flex-1 text-sm">
-            {isCompressing ? (
-              <span className="text-muted-foreground">Compressing images...</span>
-            ) : (
-              <>
-                <span className="font-medium text-primary">Click to upload</span>{" "}
-                <span className="text-muted-foreground">or drag and drop</span>
-              </>
-            )}
+            <span className="font-medium text-primary">Click to upload</span>{" "}
+            <span className="text-muted-foreground">or drag and drop</span>
           </div>
         </div>
         {error && (
@@ -449,13 +390,13 @@ function FileUpload({
         className={cn(
           "flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all cursor-pointer",
           isDragging && "border-primary bg-primary/5 scale-[1.02]",
-          (disabled || isCompressing) && "opacity-50 cursor-not-allowed",
-          !disabled && !isCompressing && !isDragging && "hover:border-primary/50 hover:bg-muted/50"
+          disabled && "opacity-50 cursor-not-allowed",
+          !disabled && !isDragging && "hover:border-primary/50 hover:bg-muted/50"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={!disabled && !isCompressing ? openFilePicker : undefined}
+        onClick={!disabled ? openFilePicker : undefined}
       >
         <input
           ref={inputRef}
@@ -464,19 +405,15 @@ function FileUpload({
           multiple={multiple && maxFiles > 1}
           onChange={(e) => handleFiles(e.target.files)}
           className="sr-only"
-          disabled={disabled || isCompressing}
+          disabled={disabled}
           aria-label="File upload"
           title="Choose files to upload"
         />
-
+        
         <div className="flex items-center justify-center h-14 w-14 rounded-full bg-muted mb-4">
-          {isCompressing ? (
-            <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
-          ) : (
-            <Upload className="h-6 w-6 text-muted-foreground" />
-          )}
+          <Upload className="h-6 w-6 text-muted-foreground" />
         </div>
-
+        
         <div className="text-center space-y-1">
           <p className="text-sm font-medium">
             <span className="text-primary">Click to upload</span>{" "}
@@ -485,7 +422,6 @@ function FileUpload({
           <p className="text-xs text-muted-foreground">
             {accept ? `Accepted: ${accept}` : "All file types accepted"}
             {maxSize && ` • Max ${formatFileSize(maxSize)}`}
-            {imageDimensions && ` • ${formatDimensionConstraints(imageDimensions)}`}
           </p>
         </div>
       </div>
@@ -607,14 +543,5 @@ function FileList({ files, onRemove, showPreview = true, compact = false }: File
 
 export { FileUpload, FileList, formatFileSize, getFileIcon };
 export type { FileUploadProps, UploadedFile };
-// Re-export compression utilities for convenience
-export {
-  compressImage,
-  compressImageWithPreset,
-  compressImages,
-  isCompressibleImage,
-  COMPRESSION_PRESETS,
-  DEFAULT_COMPRESSION_OPTIONS,
-} from "@/lib/utils/image-compression";
-export type { ImageCompressionOptions, CompressionStats } from "@/lib/utils/image-compression";
+
 

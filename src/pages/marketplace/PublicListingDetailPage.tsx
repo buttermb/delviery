@@ -11,14 +11,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import Package from "lucide-react/dist/esm/icons/package";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Star from "lucide-react/dist/esm/icons/star";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import LogIn from "lucide-react/dist/esm/icons/log-in";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import { 
+  Package, 
+  Building2,
+  Star,
+  Lock,
+  ArrowLeft,
+  LogIn,
+  ArrowRight,
+  CheckCircle2
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { SEOHead } from '@/components/SEOHead';
 

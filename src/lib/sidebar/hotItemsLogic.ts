@@ -10,14 +10,16 @@
  */
 
 import type { HotItem, BusinessContext } from '@/types/sidebar';
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
+import {
+  AlertCircle,
+  ShoppingCart,
+  Package,
+  TrendingUp,
+  FileText,
+  Calendar,
+  Zap,
+  Share2,
+} from 'lucide-react';
 
 /**
  * Generate hot items based on business context

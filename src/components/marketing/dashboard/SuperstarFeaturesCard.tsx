@@ -1,8 +1,5 @@
 import { motion } from 'framer-motion';
-import Radio from "lucide-react/dist/esm/icons/radio";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { Radio, Shield, ArrowRight, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardViewKey } from './DashboardViews';
 

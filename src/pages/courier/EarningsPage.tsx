@@ -7,11 +7,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedEarnings } from '@/hooks/useUnifiedEarnings';
 import { RoleIndicator } from '@/components/courier/RoleIndicator';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Download from "lucide-react/dist/esm/icons/download";
-import Package from "lucide-react/dist/esm/icons/package";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import {
+  ArrowLeft,
+  DollarSign,
+  Download,
+  Package,
+  Truck,
+} from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function CourierEarningsPage() {

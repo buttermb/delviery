@@ -4,11 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import Truck from "lucide-react/dist/esm/icons/truck";
+import { Minus, Plus, Trash2, ShoppingBag, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -16,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { SwipeableCartItem } from "@/components/SwipeableCartItem";
 import { haptics } from "@/utils/haptics";
-import { logger } from "@/lib/logger";
 import type { AppUser } from "@/types/auth";
 import type { Product } from "@/types/product";
 import type { DbCartItem, GuestCartItemWithProduct, RenderCartItem } from "@/types/cart";
@@ -33,13 +28,9 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-      })
-      .catch((error: unknown) => {
-        logger.error("Failed to get auth session in CartDrawer", error);
-      });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
   }, []);
 
   const { data: dbCartItems = [] } = useQuery<DbCartItem[]>({

@@ -11,10 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Download from "lucide-react/dist/esm/icons/download";
+import { FileText, Plus, Edit, Download } from 'lucide-react';
 
 interface CustomReport {
   id: string;

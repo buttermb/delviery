@@ -2,12 +2,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Code2 from "lucide-react/dist/esm/icons/code-2";
-import Database from "lucide-react/dist/esm/icons/database";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Key from "lucide-react/dist/esm/icons/key";
+import { CheckCircle, Code2, Database, Webhook, Zap, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "react-router-dom";
 

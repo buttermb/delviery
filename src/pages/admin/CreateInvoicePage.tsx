@@ -30,19 +30,14 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Save from "lucide-react/dist/esm/icons/save";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { CalendarIcon, ArrowLeft, Loader2, Save } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCreateInvoice } from "@/hooks/crm/useInvoices";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
-import { useAccount } from "@/contexts/AccountContext";
+import { useAccountIdSafe } from "@/hooks/crm/useAccountId";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import { logger } from '@/lib/logger';
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ClientSelector } from "@/components/crm/ClientSelector";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
@@ -63,12 +58,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CreateInvoicePage() {
     const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
-    const { account, loading: accountLoading } = useAccount();
-    const accountId = account?.id ?? null;
-    const isAccountReady = !accountLoading && !!accountId;
-    const accountError = !accountLoading && !accountId
-        ? 'Account context not available. Please refresh the page or contact support.'
-        : null;
+    const accountId = useAccountIdSafe();
     const createInvoice = useCreateInvoice();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -112,11 +102,12 @@ export default function CreateInvoicePage() {
                     due_date: values.due_date.toISOString().split('T')[0],
                     status: values.status,
                     line_items: lineItems,
+                    subtotal,
                     tax_rate: taxRate,
                     tax_amount: taxAmount,
                     total,
                     notes: values.notes,
-                } as any);
+                });
 
                 // Log activity
                 logActivity.mutate({
@@ -157,13 +148,6 @@ export default function CreateInvoicePage() {
                     </p>
                 </div>
             </div>
-
-            {accountError && (
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>{accountError}</AlertDescription>
-                </Alert>
-            )}
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -373,10 +357,10 @@ export default function CreateInvoicePage() {
                         <Button variant="outline" type="button" onClick={() => navigate(-1)}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
-                            {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button type="submit" disabled={createInvoice.isPending}>
+                            {createInvoice.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             <Save className="mr-2 h-4 w-4" />
-                            {accountLoading ? 'Loading...' : 'Create Invoice'}
+                            Create Invoice
                         </Button>
                     </div>
                 </form>

@@ -35,21 +35,23 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import Search from "lucide-react/dist/esm/icons/search";
-import Download from "lucide-react/dist/esm/icons/download";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import SlidersHorizontal from "lucide-react/dist/esm/icons/sliders-horizontal";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import X from "lucide-react/dist/esm/icons/x";
-import Table2 from "lucide-react/dist/esm/icons/table-2";
-import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import UserCog from "lucide-react/dist/esm/icons/user-cog";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Ban from "lucide-react/dist/esm/icons/ban";
+import {
+  Search,
+  Download,
+  Plus,
+  SlidersHorizontal,
+  ChevronDown,
+  X,
+  Table2,
+  LayoutGrid,
+  Eye,
+  UserCog,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Ban,
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';

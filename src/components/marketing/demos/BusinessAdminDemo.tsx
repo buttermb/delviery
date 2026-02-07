@@ -7,20 +7,22 @@
  */
 
 import { motion } from 'framer-motion';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Search from "lucide-react/dist/esm/icons/search";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import {
+    LayoutDashboard,
+    ShoppingCart,
+    Package,
+    Users,
+    Settings,
+    Bell,
+    Search,
+    Menu,
+    MoreVertical,
+    TrendingUp,
+    DollarSign,
+    Clock,
+    CheckCircle2,
+    Zap
+} from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 // Mobile-optimized version
@@ -216,8 +218,8 @@ export function BusinessAdminDemo() {
                         <div className="h-2 w-32 bg-slate-100 rounded-full"></div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-full relative" aria-label="Notifications">
-                            <Bell className="w-4 h-4" aria-hidden="true" />
+                        <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-full relative">
+                            <Bell className="w-4 h-4" />
                             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
                         </button>
                         <div className="w-8 h-8 rounded-full bg-[hsl(var(--marketing-primary))]/10 text-[hsl(var(--marketing-primary))] flex items-center justify-center font-bold text-xs border border-[hsl(var(--marketing-primary))]/20">

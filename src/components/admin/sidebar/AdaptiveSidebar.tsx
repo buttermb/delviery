@@ -28,18 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import User from "lucide-react/dist/esm/icons/user";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Layout from "lucide-react/dist/esm/icons/layout";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Package from "lucide-react/dist/esm/icons/package";
+import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -48,27 +37,12 @@ import { SidebarSection } from './SidebarSection';
 import { SidebarHotItems } from './SidebarHotItems';
 import { SidebarFavorites } from './SidebarFavorites';
 import { SidebarRecentlyUsed } from './SidebarRecentlyUsed';
-import { SidebarSearch } from './SidebarSearch';
 import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
-import { useState, Suspense, useMemo, useCallback } from 'react';
+import { useState, Suspense } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditBalance } from '@/components/credits';
 import { useCommandPaletteStore } from '@/components/tenant-admin/CommandPalette';
-import { SidebarLoadingSkeleton } from './SidebarLoadingSkeleton';
-
-/**
- * Static preset display names - hoisted outside component to avoid recreation on every render
- * This is a performance optimization as these values never change
- */
-const PRESET_DISPLAY_NAMES: Record<string, string> = {
-  default: 'Default',
-  minimal: 'Minimal',
-  sales_focus: 'Sales',
-  operations_focus: 'Operations',
-  financial_focus: 'Financial',
-  full_featured: 'Full'
-};
 
 interface AdaptiveSidebarInnerProps {
   collapsible?: "offcanvas" | "icon" | "none";
@@ -82,130 +56,51 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const location = useLocation();
   const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();
-  const { sidebarConfig, hotItems, favorites, operationSize, isLoading } = useSidebarConfig();
-  const { trackFeatureClick, toggleFavorite, preferences, searchQuery, setSearchQuery } = useSidebar();
+  const { sidebarConfig, hotItems, favorites, operationSize } = useSidebarConfig();
+  const { trackFeatureClick, toggleFavorite, preferences } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
   // Run storage migration on mount
   useSidebarMigration();
 
   const currentPreset = preferences?.layoutPreset || 'default';
+  const presetNames: Record<string, string> = {
+    default: 'Default',
+    minimal: 'Minimal',
+    sales_focus: 'Sales',
+    operations_focus: 'Operations',
+    financial_focus: 'Financial',
+    full_featured: 'Full'
+  };
 
-  /**
-   * Memoize navigation items to prevent unnecessary re-renders
-   *
-   * Dependencies explained:
-   * - sidebarConfig: The main navigation configuration from useSidebarConfig
-   * - hotItems: Quick access items based on business context
-   * - favorites: User's favorited navigation items
-   *
-   * All three come from useSidebarConfig() which already memoizes them internally,
-   * but we memoize the derived booleans here to avoid recalculating on each render
-   */
-  const navItems = useMemo(() => {
-    // Defensive: ensure arrays are valid (useSidebarConfig should already return arrays)
-    const safeHotItems = Array.isArray(hotItems) ? hotItems : [];
-    const safeFavorites = Array.isArray(favorites) ? favorites : [];
-    const safeSidebarConfig = Array.isArray(sidebarConfig) ? sidebarConfig : [];
-
-    return {
-      sidebarConfig: safeSidebarConfig,
-      hotItems: safeHotItems,
-      favorites: safeFavorites,
-      // Pre-compute boolean checks to avoid recalculating in JSX
-      hasHotItems: safeHotItems.length > 0,
-      hasFavorites: safeFavorites.length > 0,
-      hasSections: safeSidebarConfig.length > 0,
-    };
-  }, [sidebarConfig, hotItems, favorites]);
-
-  /**
-   * Memoize preset display name
-   * Dependencies: currentPreset (derived from preferences?.layoutPreset)
-   * Uses hoisted PRESET_DISPLAY_NAMES constant (no dependency needed for static values)
-   */
-  const currentPresetDisplayName = useMemo(
-    () => PRESET_DISPLAY_NAMES[currentPreset] || currentPreset,
-    [currentPreset]
-  );
-
-  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
-  // React requires hooks to be called in the same order on every render
-  const isActive = useCallback((url: string) => {
-    if (!tenantSlug) return false;
-    const fullPath = `/${tenantSlug}${url}`;
-    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
-  }, [tenantSlug, location.pathname]);
-
-  const handleLogout = useCallback(async () => {
-    await logout();
-  }, [logout]);
-
-  const handleLockedItemClick = useCallback((featureId: FeatureId) => {
-    setUpgradeFeatureId(featureId);
-  }, []);
-
-  const handleItemClick = useCallback((itemId: string, featureId?: string) => {
-    if (featureId) {
-      trackFeatureClick(featureId);
-    }
-  }, [trackFeatureClick]);
-
-  // Memoize navigation handlers to prevent unnecessary re-renders of child components
-  const handleNavigateToDashboard = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/dashboard`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToSettings = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/settings`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToProfile = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/profile`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToHelp = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/help`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToNewOrder = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/orders/new`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToNewProduct = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/inventory/products/new`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToPOS = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/pos`);
-  }, [navigate, tenantSlug]);
-
-  const handleNavigateToSettingsSidebar = useCallback(() => {
-    if (!tenantSlug) return;
-    navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
-  }, [navigate, tenantSlug]);
-
-  // Guard against missing tenant slug - AFTER all hooks are called
+  // Guard against missing tenant slug
   if (!tenantSlug) {
     logger.error('AdaptiveSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'AdaptiveSidebar' });
     return null;
   }
 
-  // Show loading skeleton while navigation config is loading
-  if (isLoading) {
-    return <SidebarLoadingSkeleton collapsible={collapsible} />;
-  }
+  const isActive = (url: string) => {
+    const fullPath = `/${tenantSlug}${url}`;
+    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
+  };
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const handleLockedItemClick = (featureId: FeatureId) => {
+    setUpgradeFeatureId(featureId);
+  };
+
+  const handleItemClick = (itemId: string, featureId?: string) => {
+    if (featureId) {
+      trackFeatureClick(featureId);
+    }
+  };
 
   return (
     <>
-      <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible} className="dark:bg-gray-900 dark:text-white">
+      <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible}>
         {/* Streamlined Header with Integrated Credits */}
         <SidebarHeader className="p-0 border-b">
           <DropdownMenu>
@@ -224,19 +119,19 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem onClick={handleNavigateToDashboard}>
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/dashboard`)}>
                 <LayoutDashboard className="h-4 w-4 mr-2" />
                 Dashboard
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleNavigateToSettings}>
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/settings`)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleNavigateToProfile}>
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/profile`)}>
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleNavigateToHelp}>
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/help`)}>
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Help & Support
               </DropdownMenuItem>
@@ -251,28 +146,19 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
 
         {/* Unified Search & Quick Actions Bar */}
         <div className="px-3 py-2 border-b space-y-2">
-          {/* Menu Filter Search */}
-          <SidebarSearch
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Filter menu..."
-          />
-
-          {/* Command Palette Trigger - only show when not filtering */}
-          {!searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start text-muted-foreground hover:text-foreground h-8 text-xs"
-              onClick={() => useCommandPaletteStore.getState().setOpen(true)}
-            >
-              <Search className="mr-2 h-3.5 w-3.5" />
-              <span className="flex-1 text-left">Commands & Search...</span>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                ⌘K
-              </kbd>
-            </Button>
-          )}
+          {/* Search */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start text-muted-foreground hover:text-foreground h-9"
+            onClick={() => useCommandPaletteStore.getState().setOpen(true)}
+          >
+            <Search className="mr-2 h-4 w-4" />
+            <span className="flex-1 text-left text-sm">Search...</span>
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              ⌘K
+            </kbd>
+          </Button>
 
           {/* Quick Actions */}
           <div className="flex items-center gap-1">
@@ -280,7 +166,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs gap-1.5"
-              onClick={handleNavigateToNewOrder}
+              onClick={() => navigate(`/${tenantSlug}/admin/orders/new`)}
             >
               <Plus className="h-3.5 w-3.5" />
               Order
@@ -289,7 +175,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs gap-1.5"
-              onClick={handleNavigateToNewProduct}
+              onClick={() => navigate(`/${tenantSlug}/admin/inventory/products/new`)}
             >
               <Package className="h-3.5 w-3.5" />
               Product
@@ -298,7 +184,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs gap-1.5"
-              onClick={handleNavigateToPOS}
+              onClick={() => navigate(`/${tenantSlug}/admin/pos`)}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
               POS
@@ -318,18 +204,18 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             <SidebarRecentlyUsed />
 
             {/* Hot Items Section */}
-            {navItems.hasHotItems && (
+            {Array.isArray(hotItems) && hotItems.length > 0 && (
               <SidebarHotItems />
             )}
 
             {/* Favorites Section */}
-            {navItems.hasFavorites && (
+            {Array.isArray(favorites) && favorites.length > 0 && (
               <SidebarFavorites />
             )}
 
             {/* Main Sections */}
-            {navItems.hasSections ? (
-              navItems.sidebarConfig.map((section) => (
+            {Array.isArray(sidebarConfig) && sidebarConfig.length > 0 ? (
+              sidebarConfig.map((section) => (
                 <SidebarSection
                   key={section.section}
                   section={section}
@@ -346,7 +232,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                     No menu items available
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Layout: <span className="font-semibold">{currentPresetDisplayName}</span>
+                    Layout: <span className="font-semibold">{presetNames[currentPreset] || currentPreset}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {tenant ? `Tenant: ${tenant.slug}` : 'Loading tenant...'}
@@ -367,7 +253,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleNavigateToSettingsSidebar}
+                  onClick={() => navigate(`/${tenantSlug}/admin/settings?tab=sidebar`)}
                   className="w-full"
                 >
                   <Settings className="h-4 w-4 mr-2" />
@@ -385,7 +271,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
-              onClick={handleNavigateToSettings}
+              onClick={() => navigate(`/${tenantSlug}/admin/settings`)}
             >
               <Settings className="h-3.5 w-3.5 mr-1" />
               Settings
@@ -394,7 +280,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               variant="ghost"
               size="sm"
               className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
-              onClick={handleNavigateToHelp}
+              onClick={() => navigate(`/${tenantSlug}/admin/help`)}
             >
               <HelpCircle className="h-3.5 w-3.5 mr-1" />
               Help

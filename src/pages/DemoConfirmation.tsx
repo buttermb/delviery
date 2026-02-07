@@ -1,9 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
+import { CheckCircle, Calendar, Mail, ExternalLink } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";

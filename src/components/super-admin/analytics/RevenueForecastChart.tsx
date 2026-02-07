@@ -6,7 +6,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { TrendingUp } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 import { useQuery } from '@tanstack/react-query';

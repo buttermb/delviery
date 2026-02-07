@@ -10,14 +10,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import X from "lucide-react/dist/esm/icons/x";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import {
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  DollarSign,
+  Edit,
+  X,
+  Calendar,
+} from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
 

@@ -12,13 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Save from "lucide-react/dist/esm/icons/save";
-import Store from "lucide-react/dist/esm/icons/store";
-import Palette from "lucide-react/dist/esm/icons/palette";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Upload from "lucide-react/dist/esm/icons/upload";
+import { Loader2, Save, Store, Palette, Truck, CreditCard, Upload } from "lucide-react";
 import { MarketplaceProfile } from "@/types/marketplace-extended";
 
 export default function StoreSettings() {

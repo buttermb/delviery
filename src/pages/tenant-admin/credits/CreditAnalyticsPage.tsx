@@ -23,18 +23,20 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import Coins from "lucide-react/dist/esm/icons/coins";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import {
+  Coins,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Activity,
+  BarChart3,
+  Clock,
+  ArrowLeft,
+  RefreshCw,
+  ShoppingCart,
+  Settings,
+  Zap,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

@@ -1,17 +1,14 @@
 import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
-import { useQueryClient } from '@tanstack/react-query';
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
-import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
-import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface SuperAdmin {
   id: string;
@@ -42,7 +39,6 @@ if (typeof window !== 'undefined') {
   initConnectionMonitoring();
 }
 export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) => {
-  const queryClient = useQueryClient();
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
@@ -66,7 +62,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=verify`;
 
       authFlowLogger.logFetchAttempt(flowId, url, 1);
@@ -141,24 +137,19 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
         // Restore Supabase session if available
         if (storedSupabaseSession) {
-          try {
-            const session = JSON.parse(storedSupabaseSession);
-            setSupabaseSession(session);
-            // Set the session in Supabase client for RLS access
-            supabase.auth.setSession({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token || '',
-            }).then(({ data, error }) => {
-              if (error) {
-                logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
-              } else {
-                logger.info('Supabase session restored successfully', { component: 'SuperAdminAuth' });
-              }
-            });
-          } catch (sessionParseError) {
-            logger.error('Failed to parse stored Supabase session', sessionParseError instanceof Error ? sessionParseError : new Error(String(sessionParseError)), { component: 'SuperAdminAuth' });
-            safeStorage.removeItem(SUPABASE_SESSION_KEY);
-          }
+          const session = JSON.parse(storedSupabaseSession);
+          setSupabaseSession(session);
+          // Set the session in Supabase client for RLS access
+          supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token || '',
+          }).then(({ data, error }) => {
+            if (error) {
+              logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
+            } else {
+              logger.info('Supabase session restored successfully', { component: 'SuperAdminAuth' });
+            }
+          });
         }
 
         // Verify token is still valid
@@ -180,7 +171,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=login`;
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
@@ -285,7 +276,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       if (token) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
         await resilientFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
           method: "POST",
           headers: {
@@ -309,13 +300,19 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       authFlowLogger.failFlow(flowId, error, category);
       logger.error("Logout error", error);
     } finally {
-      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
-      await performFullLogout();
+      // Destroy encryption session before logout
+      clientEncryption.destroy();
 
-      // Clear context-specific React state
       setToken(null);
       setSuperAdmin(null);
       setSupabaseSession(null);
+      safeStorage.removeItem(TOKEN_KEY);
+      safeStorage.removeItem(SUPER_ADMIN_KEY);
+      safeStorage.removeItem(SUPABASE_SESSION_KEY);
+
+      // Clear user ID from storage
+      safeStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
     }
   };
 
@@ -326,7 +323,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`;
 
       authFlowLogger.logFetchAttempt(flowId, url, 1);

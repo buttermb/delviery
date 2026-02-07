@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import Check from "lucide-react/dist/esm/icons/check";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Check, AlertCircle } from "lucide-react";
 
 interface ProductFormData {
   [key: string]: unknown;

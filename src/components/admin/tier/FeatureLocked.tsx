@@ -4,8 +4,7 @@
  * Shows a locked state for features not available in current tier
  */
 
-import Lock from "lucide-react/dist/esm/icons/lock";
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import { Lock, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';

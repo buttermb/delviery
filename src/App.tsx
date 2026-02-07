@@ -15,7 +15,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { appQueryClient } from "@/lib/react-query-config";
+import { createQueryClient } from "@/lib/react-query-config";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccountProvider } from "./contexts/AccountContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -41,9 +41,6 @@ import { SmartRootRedirect } from "./components/SmartRootRedirect";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
-import { PublicOnlyRoute } from "./components/auth/PublicOnlyRoute";
-import { RoleProtectedRoute } from "./components/auth/RoleProtectedRoute";
-import { TenantContextGuard } from "./components/auth/TenantContextGuard";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
 import { toast } from "./hooks/use-toast";
@@ -84,9 +81,6 @@ function SuspenseProgressFallback() {
   }, []);
   return <LoadingFallback />;
 }
-
-// Lazy-loaded Mapbox components for better code splitting
-import { LiveMap } from "@/components/ui/lazy-mapbox";
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -166,9 +160,6 @@ import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
-const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
-const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
-const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
 
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
@@ -191,15 +182,11 @@ const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
-const MenusListPage = lazy(() => import("./pages/admin/MenusListPage"));
 // const ProductManagement = lazy(() => import("./pages/admin/ProductManagement")); // Moved to InventoryHub
-const ProductDetailsPage = lazy(() => import("./pages/admin/ProductDetailsPage"));
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
 const NewPurchaseOrder = lazy(() => import("./pages/admin/NewPurchaseOrder"));
-const OfflineOrderCreate = lazy(() => import("./pages/admin/OfflineOrderCreate"));
-const OrderDetailsPage = lazy(() => import("./pages/admin/OrderDetailsPage"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
 const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
@@ -208,10 +195,9 @@ const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysis
 // Built pages missing routes (currently locked in sidebar)
 const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
-const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
-// LiveMap is now lazy loaded via lazy-mapbox utility for better code splitting
+const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
 
@@ -248,9 +234,9 @@ const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage")
 const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
 const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
 const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
-const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
+const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage"));
 const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
-const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage").then(m => ({ default: m.VendorOrderDetailPage })));
+const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage"));
 const ProtectedVendorRoute = lazy(() => import("./components/vendor/ProtectedVendorRoute"));
 const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnalyticsPage"));
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
@@ -307,7 +293,6 @@ const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
-const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
@@ -328,14 +313,13 @@ const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHu
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
 const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
-const DashboardHubPage = lazy(() => import("./pages/admin/hubs/DashboardHubPage").then(m => ({ default: m.DashboardHubPage })));
 
 // Smart TV Dashboard (Big Screen Operations View)
 const SmartTVDashboard = lazy(() => import("./pages/admin/SmartTVDashboard"));
 
 const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
 const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
-const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage").then(m => ({ default: m.ActivityLogsPage })));
+const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
 const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
 const BulkOperationsPage = lazy(() => import("./pages/tenant-admin/BulkOperationsPage"));
 const APIAccessPage = lazy(() => import("./pages/tenant-admin/APIAccessPage"));
@@ -353,7 +337,6 @@ const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/cred
 const CreditAnalyticsPage = lazy(() => import("./pages/tenant-admin/credits/CreditAnalyticsPage").then(m => ({ default: m.CreditAnalyticsPage })));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
-const StockHistoryPage = lazy(() => import("./pages/admin/StockHistoryPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
 const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
@@ -447,15 +430,14 @@ const SuperAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage"
 const CustomerAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.CustomerAuthCallback })));
 const MFAChallengePage = lazy(() => import("./pages/auth/MFAChallengePage"));
 const AuthConfirmPage = lazy(() => import("./pages/auth/AuthConfirmPage"));
-const SecureAccountPage = lazy(() => import("./pages/auth/SecureAccountPage").then(m => ({ default: m.SecureAccountPage })));
 
 // Feature Pages (Marketing)
 import FeatureCompliancePage from "./pages/features/CompliancePage";
 import FeatureLogisticsPage from "./pages/features/LogisticsPage";
 import FeatureEcommercePage from "./pages/features/EcommercePage";
 
-// Use the singleton QueryClient from centralized config
-const queryClient = appQueryClient;
+// Create optimized QueryClient from centralized config
+const queryClient = createQueryClient();
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
@@ -479,8 +461,20 @@ const App = () => {
   }, []);
 
   // Clear stale auth data on marketing/login pages to prevent cross-tenant contamination
-  // Note: Auth cleanup moved to explicit logout actions only
-  // to prevent redirect loops when navigating to login pages
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/marketing' || path === '/login' || path === '/saas/login' || path === '/saas/signup') {
+      // Clear tenant-specific data (preserve super admin if exists)
+      const superAdminToken = localStorage.getItem('super_admin_access_token');
+      if (!superAdminToken) {
+        localStorage.removeItem('tenant_admin_access_token');
+        localStorage.removeItem('tenant_admin_refresh_token');
+        localStorage.removeItem('tenant_admin_user');
+        localStorage.removeItem('tenant_data');
+        localStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
+      }
+    }
+  }, []);
 
   // Initialize global button monitoring
   useEffect(() => {
@@ -623,21 +617,18 @@ const App = () => {
                                         <Route path="track/:trackingToken" element={<ShopOrderTrackingPage />} />
                                         <Route path="account" element={<ShopAccountPage />} />
                                         <Route path="orders" element={<ShopAccountPage />} />
-                                        <Route path="orders/:orderId" element={<ShopOrderDetailPage />} />
                                         <Route path="wishlist" element={<ShopAccountPage />} />
                                       </Route>
 
-                                      {/* Public Authentication - Redirect authenticated users */}
-                                      <Route path="/signup" element={<PublicOnlyRoute portal="saas"><SignUpPage /></PublicOnlyRoute>} />
+                                      {/* Public Authentication */}
+                                      <Route path="/signup" element={<SignUpPage />} />
                                       <Route path="/select-plan" element={<SelectPlanPage />} />
                                       {/* Handle encoded URLs with %3F - React Router doesn't match encoded chars */}
                                       <Route path="/select-plan%3Ftenant_id/*" element={<EncodedUrlRedirect />} />
                                       <Route path="/select-plan%3F/*" element={<EncodedUrlRedirect />} />
-                                      <Route path="/saas/login" element={<PublicOnlyRoute portal="saas"><SaasLoginPage /></PublicOnlyRoute>} />
+                                      <Route path="/saas/login" element={<SaasLoginPage />} />
                                       <Route path="/verify-email" element={<VerifyEmailPage />} />
-                                      <Route path="/signup-success" element={<SignupSuccessPage />} />
                                       <Route path="/auth/confirm" element={<AuthConfirmPage />} />
-                                      <Route path="/auth/secure-account" element={<SecureAccountPage />} />
 
 
                                       {/* Redirect admin routes without tenant slug - go directly to business login */}
@@ -657,7 +648,7 @@ const App = () => {
                                       )}
 
                                       {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
-                                      <Route path="/super-admin/login" element={<PublicOnlyRoute portal="super-admin"><SuperAdminLoginPage /></PublicOnlyRoute>} />
+                                      <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
                                       <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/super-admin/auth/callback" element={<SuperAdminAuthCallback />} />
                                       <Route path="/super-admin/auth/mfa-challenge" element={<MFAChallengePage portal="super-admin" />} />
@@ -712,7 +703,7 @@ const App = () => {
                                       </Route>
 
                                       {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
-                                      <Route path="/:tenantSlug/admin/login" element={<PublicOnlyRoute portal="tenant-admin"><TenantAdminLoginPage /></PublicOnlyRoute>} />
+                                      <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
                                       <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
                                       <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />
@@ -722,9 +713,6 @@ const App = () => {
 
                                       {/* Email Verification Page */}
                                       <Route path="/:tenantSlug/admin/verify-email" element={<TenantAdminProtectedRoute><TenantAdminVerifyEmailPage /></TenantAdminProtectedRoute>} />
-
-                                      {/* Change Password Page */}
-                                      <Route path="/:tenantSlug/admin/change-password" element={<TenantAdminProtectedRoute><ChangePasswordPage /></TenantAdminProtectedRoute>} />
 
                                       {/* Trial Expired Page (must be before AdminLayout) */}
                                       <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
@@ -752,11 +740,9 @@ const App = () => {
                                         element={
                                           <Suspense fallback={<SkeletonAdminLayout />}>
                                             <TenantAdminProtectedRoute>
-                                              <TenantContextGuard>
-                                                <SubscriptionGuard>
-                                                  <AdminLayout />
-                                                </SubscriptionGuard>
-                                              </TenantContextGuard>
+                                              <SubscriptionGuard>
+                                                <AdminLayout />
+                                              </SubscriptionGuard>
                                             </TenantAdminProtectedRoute>
                                           </Suspense>
                                         }
@@ -767,16 +753,6 @@ const App = () => {
                                             <Suspense fallback={<SkeletonDashboard />}>
                                               <FeatureProtectedRoute featureId="dashboard">
                                                 <TenantAdminDashboardPage />
-                                              </FeatureProtectedRoute>
-                                            </Suspense>
-                                          }
-                                        />
-                                        <Route
-                                          path="dashboard-hub"
-                                          element={
-                                            <Suspense fallback={<SkeletonDashboard />}>
-                                              <FeatureProtectedRoute featureId="dashboard">
-                                                <DashboardHubPage />
                                               </FeatureProtectedRoute>
                                             </Suspense>
                                           }
@@ -850,7 +826,6 @@ const App = () => {
                                         <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
-                                        <Route path="menus" element={<FeatureProtectedRoute featureId="disposable-menus"><MenusListPage /></FeatureProtectedRoute>} />
                                         <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                         <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
 
@@ -873,11 +848,8 @@ const App = () => {
                                         <Route path="wholesale-orders" element={<Navigate to="orders?tab=wholesale" replace />} />
                                         <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                         <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
-                                        <Route path="orders/offline-create" element={<OfflineOrderCreate />} />
-                                        <Route path="orders/:orderId" element={<FeatureProtectedRoute featureId="basic-orders"><OrderDetailsPage /></FeatureProtectedRoute>} />
 
                                         <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
-                                        <Route path="products/:productId" element={<FeatureProtectedRoute featureId="products"><ProductDetailsPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-dashboard" element={<Navigate to="inventory-hub?tab=stock" replace />} />
                                         <Route path="inventory-monitoring" element={<Navigate to="inventory-hub?tab=monitoring" replace />} />
                                         <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
@@ -887,8 +859,7 @@ const App = () => {
                                         <Route path="credits/analytics" element={<CreditAnalyticsPage />} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
-                                        <Route path="settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="account-settings" element={<AccountSettingsPage />} />
+                                        <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
 
                                         {/* Marketplace Routes (B2B) */}
                                         <Route path="marketplace/dashboard" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
@@ -952,19 +923,16 @@ const App = () => {
 
 
                                         <Route path="live-orders" element={<Navigate to="orders?tab=live" replace />} />
-                                        <Route path="staff-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="team-members" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="team-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="staff-management" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
+                                        <Route path="team-members" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
                                         <Route path="advanced-inventory" element={<Navigate to="inventory-hub?tab=adjustments" replace />} />
                                         <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
-                                        <Route path="fronted-inventory/:id" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventoryDetails /></FeatureProtectedRoute>} />
                                         <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
-                                        <Route path="customer-invoices" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="fleet-management" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
                                         <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute featureId="delivery-management"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
-                                        <Route path="settings-hub" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="settings-hub" element={<FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="integrations-hub" element={<Navigate to="settings-hub?tab=integrations" replace />} />
                                         <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                         <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
@@ -1027,12 +995,11 @@ const App = () => {
 
                                         {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
                                         <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
-                                        <Route path="system-settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
                                         <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}
                                         <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />
-                                        <Route path="stock-history" element={<FeatureProtectedRoute featureId="stock-alerts"><StockHistoryPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfersPage /></FeatureProtectedRoute>} />
                                         <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalyticsPage /></FeatureProtectedRoute>} />
@@ -1045,8 +1012,8 @@ const App = () => {
                                         <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><POSAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="pos-shifts" element={<FeatureProtectedRoute featureId="pos-shifts"><POSShiftsPage /></FeatureProtectedRoute>} />
                                         <Route path="z-reports" element={<FeatureProtectedRoute featureId="z-reports"><ZReportPage /></FeatureProtectedRoute>} />
-                                        <Route path="role-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="activity-logs" element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager']}><FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute>} />
+                                        <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute>} />
 
                                         {/* GitHub Repos Integration Routes */}
                                         <Route path="analytics-dashboard" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
@@ -1060,13 +1027,13 @@ const App = () => {
                                         <Route path="permissions" element={<Navigate to="role-management" replace />} />
                                         <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperationsPage /></FeatureProtectedRoute>} />
                                         <Route path="operations/receiving" element={<FeatureProtectedRoute featureId="operations"><ReceivingPage /></FeatureProtectedRoute>} />
-                                        <Route path="developer-tools" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><DeveloperTools /></RoleProtectedRoute>} />
+                                        <Route path="developer-tools" element={<DeveloperTools />} />
                                         <Route path="button-tester" element={<ButtonTester />} />
-                                        <Route path="api-access" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="webhooks" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute>} />
+                                        <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute>} />
                                         <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrationsPage /></FeatureProtectedRoute>} />
                                         <Route path="data-export" element={<FeatureProtectedRoute featureId="data-export"><DataExportPage /></FeatureProtectedRoute>} />
-                                        <Route path="audit-trail" element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager']}><FeatureProtectedRoute featureId="audit-trail"><AuditTrailPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="audit-trail" element={<FeatureProtectedRoute featureId="audit-trail"><AuditTrailPage /></FeatureProtectedRoute>} />
                                         <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
                                         <Route path="white-label" element={<FeatureProtectedRoute featureId="white-label"><WhiteLabelPage /></FeatureProtectedRoute>} />
                                         <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />

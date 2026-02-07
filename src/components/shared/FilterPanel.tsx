@@ -11,8 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import X from "lucide-react/dist/esm/icons/x";
-import Filter from "lucide-react/dist/esm/icons/filter";
+import { X, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface FilterOption {

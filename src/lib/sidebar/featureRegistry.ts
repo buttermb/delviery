@@ -8,53 +8,55 @@
  * for feature tier assignments. This file provides sidebar-specific metadata.
  */
 
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Wallet from "lucide-react/dist/esm/icons/wallet";
-import Box from "lucide-react/dist/esm/icons/box";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Star from "lucide-react/dist/esm/icons/star";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import Receipt from "lucide-react/dist/esm/icons/receipt";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import Store from "lucide-react/dist/esm/icons/store";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Brain from "lucide-react/dist/esm/icons/brain";
-import Download from "lucide-react/dist/esm/icons/download";
-import FolderKanban from "lucide-react/dist/esm/icons/folder-kanban";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import ScrollText from "lucide-react/dist/esm/icons/scroll-text";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Briefcase from "lucide-react/dist/esm/icons/briefcase";
-import ArrowRightLeft from "lucide-react/dist/esm/icons/arrow-right-left";
-import UserCog from "lucide-react/dist/esm/icons/user-cog";
-import Key from "lucide-react/dist/esm/icons/key";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import MapPinned from "lucide-react/dist/esm/icons/map-pinned";
-import Building from "lucide-react/dist/esm/icons/building";
-import PieChart from "lucide-react/dist/esm/icons/pie-chart";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  ShoppingCart,
+  DollarSign,
+  TrendingUp,
+  Warehouse,
+  AlertCircle,
+  CreditCard,
+  Wallet,
+  Box,
+  Settings,
+  FileText,
+  Building2,
+  Truck,
+  Mail,
+  MapPin,
+  Bell,
+  BarChart3,
+  Star,
+  Tag,
+  Shield,
+  FileSpreadsheet,
+  Receipt,
+  Menu,
+  Store,
+  Globe,
+  Zap,
+  Brain,
+  Download,
+  FolderKanban,
+  Layers,
+  ScrollText,
+  Headphones,
+  HelpCircle,
+  Flame,
+  Activity,
+  Briefcase,
+  ArrowRightLeft,
+  UserCog,
+  Key,
+  Calendar,
+  MessageSquare,
+  Barcode,
+  MapPinned,
+  Building,
+  PieChart,
+} from 'lucide-react';
 import { type FeatureId, type SubscriptionTier, FEATURES } from '@/lib/featureConfig';
 
 export type OperationSize = 'street' | 'small' | 'medium' | 'enterprise';
@@ -121,7 +123,6 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     path: '/admin/realtime-dashboard',
     category: 'Command Center',
     minTier: 'enterprise',
-    description: 'Real-time operational monitoring dashboard',
   },
   'live-map': {
     id: 'live-map',
@@ -163,7 +164,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'loyalty-program',
     name: 'Loyalty',
     icon: Star,
-    path: '/admin/marketing-hub?tab=loyalty',
+    path: '/admin/loyalty-program',
     category: 'Sales & Orders',
     minTier: 'starter',
   },
@@ -171,7 +172,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'coupons',
     name: 'Coupons',
     icon: Tag,
-    path: '/admin/marketing-hub?tab=coupons',
+    path: '/admin/coupons',
     category: 'Sales & Orders',
     minTier: 'starter',
   },
@@ -187,7 +188,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'marketplace',
     name: 'Marketplace',
     icon: Globe,
-    path: '/admin/marketplace/dashboard',
+    path: '/admin/marketplace/listings',
     category: 'Sales & Orders',
     minTier: 'professional',
   },
@@ -239,7 +240,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'stock-alerts',
     name: 'Stock Alerts',
     icon: AlertCircle,
-    path: '/admin/inventory-hub?tab=monitoring',
+    path: '/admin/stock-alerts',
     category: 'Inventory',
     minTier: 'starter',
   },
@@ -247,7 +248,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'generate-barcodes',
     name: 'Barcodes',
     icon: Barcode,
-    path: '/admin/inventory-hub?tab=barcodes',
+    path: '/admin/generate-barcodes',
     category: 'Inventory',
     minTier: 'starter',
   },
@@ -315,7 +316,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'crm-invoices',
     name: 'Invoices',
     icon: FileText,
-    path: '/admin/customer-hub?tab=invoices',
+    path: '/admin/crm/invoices',
     category: 'Customers',
     minTier: 'professional',
   },
@@ -331,7 +332,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'marketing-automation',
     name: 'Marketing',
     icon: Mail,
-    path: '/admin/marketing-hub',
+    path: '/admin/marketing-automation',
     category: 'Customers',
     minTier: 'professional',
   },
@@ -359,7 +360,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'suppliers',
     name: 'Suppliers',
     icon: Building2,
-    path: '/admin/operations-hub?tab=suppliers',
+    path: '/admin/suppliers',
     category: 'Operations',
     minTier: 'starter',
   },
@@ -367,7 +368,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'purchase-orders',
     name: 'Purchase Orders',
     icon: FileText,
-    path: '/admin/operations-hub?tab=purchase-orders',
+    path: '/admin/purchase-orders',
     category: 'Operations',
     minTier: 'starter',
   },
@@ -375,7 +376,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'returns',
     name: 'Returns & Refunds',
     icon: ArrowRightLeft,
-    path: '/admin/operations-hub?tab=returns',
+    path: '/admin/returns',
     category: 'Operations',
     minTier: 'starter',
   },
@@ -407,7 +408,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'quality-control',
     name: 'Quality Control',
     icon: Shield,
-    path: '/admin/operations-hub?tab=quality',
+    path: '/admin/quality-control',
     category: 'Operations',
     minTier: 'professional',
   },
@@ -415,7 +416,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'appointments',
     name: 'Appointments',
     icon: Calendar,
-    path: '/admin/operations-hub?tab=appointments',
+    path: '/admin/appointments',
     category: 'Operations',
     minTier: 'professional',
   },
@@ -423,7 +424,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'support-tickets',
     name: 'Support Desk',
     icon: Headphones,
-    path: '/admin/operations-hub?tab=support',
+    path: '/admin/support-tickets',
     category: 'Operations',
     minTier: 'professional',
   },
@@ -439,7 +440,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'user-management',
     name: 'User Management',
     icon: UserCog,
-    path: '/admin/staff-management',
+    path: '/admin/user-management',
     category: 'Operations',
     minTier: 'enterprise',
   },
@@ -447,7 +448,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'permissions',
     name: 'Permissions',
     icon: Key,
-    path: '/admin/role-management',
+    path: '/admin/permissions',
     category: 'Operations',
     minTier: 'enterprise',
   },
@@ -459,7 +460,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'delivery-management',
     name: 'Delivery',
     icon: Truck,
-    path: '/admin/fulfillment-hub',
+    path: '/admin/delivery-hub?tab=dashboard',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -467,7 +468,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'fleet-management',
     name: 'Fleet',
     icon: Building2,
-    path: '/admin/fulfillment-hub?tab=fleet',
+    path: '/admin/delivery-hub?tab=fleet',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -475,7 +476,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'couriers',
     name: 'Couriers',
     icon: Users,
-    path: '/admin/fulfillment-hub?tab=couriers',
+    path: '/admin/delivery-hub?tab=couriers',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -483,7 +484,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'route-optimization',
     name: 'Route Optimizer',
     icon: MapPinned,
-    path: '/admin/fulfillment-hub?tab=routes',
+    path: '/admin/delivery-hub?tab=routes',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -491,7 +492,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'delivery-tracking',
     name: 'Tracking',
     icon: MapPin,
-    path: '/admin/fulfillment-hub?tab=tracking',
+    path: '/admin/delivery-hub?tab=tracking',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -499,7 +500,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'delivery-analytics',
     name: 'Delivery Analytics',
     icon: BarChart3,
-    path: '/admin/fulfillment-hub?tab=analytics',
+    path: '/admin/delivery-hub?tab=analytics',
     category: 'Delivery & Fleet',
     minTier: 'enterprise',
   },
@@ -547,7 +548,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'analytics',
     name: 'Analytics',
     icon: BarChart3,
-    path: '/admin/analytics-hub',
+    path: '/admin/analytics/comprehensive',
     category: 'Analytics & Finance',
     minTier: 'professional',
   },
@@ -563,7 +564,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'financial-center',
     name: 'Financial Center',
     icon: Briefcase,
-    path: '/admin/finance-hub',
+    path: '/admin/financial-center',
     category: 'Analytics & Finance',
     minTier: 'professional',
   },
@@ -619,7 +620,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'predictive-analytics',
     name: 'Forecasting',
     icon: Brain,
-    path: '/admin/analytics-hub?tab=forecasting',
+    path: '/admin/predictive-analytics',
     category: 'Analytics & Finance',
     minTier: 'professional',
   },
@@ -723,7 +724,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'batch-recall',
     name: 'Batch Recall',
     icon: AlertCircle,
-    path: '/admin/operations-hub?tab=batch-recall',
+    path: '/admin/batch-recall',
     category: 'Security & Compliance',
     minTier: 'professional',
   },
@@ -731,7 +732,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'compliance-vault',
     name: 'Compliance Vault',
     icon: FileText,
-    path: '/admin/operations-hub?tab=vault',
+    path: '/admin/compliance-vault',
     category: 'Security & Compliance',
     minTier: 'professional',
   },
@@ -747,7 +748,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'compliance',
     name: 'Compliance',
     icon: Shield,
-    path: '/admin/operations-hub?tab=compliance',
+    path: '/admin/compliance',
     category: 'Security & Compliance',
     minTier: 'enterprise',
   },
@@ -767,7 +768,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'billing',
     name: 'Billing',
     icon: CreditCard,
-    path: '/admin/settings?section=billing',
+    path: '/admin/billing',
     category: 'Settings',
     minTier: 'starter',
   },
@@ -775,7 +776,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'help',
     name: 'Help & Support',
     icon: HelpCircle,
-    path: '/admin/help-hub',
+    path: '/admin/help',
     category: 'Settings',
     minTier: 'starter',
   },

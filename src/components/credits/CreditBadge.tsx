@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import Coins from "lucide-react/dist/esm/icons/coins";
+import { Coins } from "lucide-react";
 
 interface CreditBadgeProps {
     cost: number;

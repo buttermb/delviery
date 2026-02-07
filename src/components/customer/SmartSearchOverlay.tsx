@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import Search from "lucide-react/dist/esm/icons/search";
-import X from "lucide-react/dist/esm/icons/x";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Package from "lucide-react/dist/esm/icons/package";
+import { Search, X, Clock, TrendingUp, ChevronRight, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';

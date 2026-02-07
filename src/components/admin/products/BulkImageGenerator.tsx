@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { useBulkGenerateImages } from "@/hooks/useProductImages";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import X from "lucide-react/dist/esm/icons/x";
+import { Sparkles, X } from "lucide-react";
 
 interface Product {
   id: string;

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { sanitizeCouponCode, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import { Loader2, RefreshCw } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -158,10 +156,10 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     const isEditing = !!coupon;
 
     const couponData: CouponInsert | CouponUpdate = {
-      code: sanitizeCouponCode(formData.code),
+      code: formData.code.toUpperCase(),
       discount_type: formData.discount_type,
       discount_value: formData.discount_value,
-      description: formData.description ? sanitizeTextareaInput(formData.description, 500) : null,
+      description: formData.description || null,
       start_date: formData.start_date || null,
       end_date: formData.never_expires ? null : (formData.end_date || null),
       never_expires: formData.never_expires,

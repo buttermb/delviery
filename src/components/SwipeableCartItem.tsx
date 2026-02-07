@@ -1,6 +1,6 @@
 import { useSwipeable } from 'react-swipeable';
 import { useState, memo, useCallback } from 'react';
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { Trash2 } from 'lucide-react';
 import { haptics } from '@/utils/haptics';
 
 interface SwipeableCartItemProps {

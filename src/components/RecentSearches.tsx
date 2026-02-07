@@ -1,5 +1,4 @@
-import X from "lucide-react/dist/esm/icons/x";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import { cn } from "@/lib/utils";

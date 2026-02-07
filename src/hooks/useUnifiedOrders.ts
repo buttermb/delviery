@@ -10,8 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
-import { toast } from 'sonner';
-import { queryKeys } from '@/lib/queryKeys';
 
 // Types
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
@@ -50,7 +48,6 @@ export interface UnifiedOrder {
   customer?: { id: string; first_name: string; last_name: string; email: string } | null;
   client?: { id: string; business_name: string; contact_name: string } | null;
   courier?: { id: string; full_name: string; phone: string } | null;
-  menu?: { id: string; name: string } | null;
 }
 
 export interface UnifiedOrderItem {
@@ -142,8 +139,7 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
           items:unified_order_items(*),
           customer:customers(id, first_name, last_name, email),
           client:wholesale_clients(id, business_name, contact_name),
-          courier:couriers(id, full_name, phone),
-          menu:disposable_menus(id, name)
+          courier:couriers(id, full_name, phone)
         `)
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
@@ -216,8 +212,7 @@ export function useUnifiedOrder(orderId: string | undefined) {
           items:unified_order_items(*),
           customer:customers(*),
           client:wholesale_clients(*),
-          courier:couriers(*),
-          menu:disposable_menus(id, name)
+          courier:couriers(*)
         `)
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
@@ -287,71 +282,8 @@ export function useCreateUnifiedOrder() {
 
       return order as UnifiedOrder;
     },
-    onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
-      const previousOrders = queryClient.getQueriesData<UnifiedOrder[]>({ queryKey: unifiedOrdersKeys.lists() });
-
-      // Create optimistic order
-      const optimisticOrder: UnifiedOrder = {
-        id: `temp-${Date.now()}`,
-        tenant_id: tenant?.id || '',
-        order_number: 'Creating...',
-        order_type: input.order_type,
-        source: input.source,
-        status: 'pending',
-        subtotal: input.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
-        tax_amount: 0,
-        discount_amount: 0,
-        total_amount: input.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
-        payment_method: input.payment_method || null,
-        payment_status: 'unpaid',
-        customer_id: input.customer_id || null,
-        wholesale_client_id: input.wholesale_client_id || null,
-        menu_id: input.menu_id || null,
-        shift_id: input.shift_id || null,
-        delivery_address: input.delivery_address || null,
-        delivery_notes: input.delivery_notes || null,
-        courier_id: input.courier_id || null,
-        contact_name: input.contact_name || null,
-        contact_phone: input.contact_phone || null,
-        metadata: input.metadata || {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        cancelled_at: null,
-        cancellation_reason: null,
-      };
-
-      // Add to all matching list caches
-      queryClient.setQueriesData<UnifiedOrder[]>(
-        { queryKey: unifiedOrdersKeys.lists() },
-        (old) => old ? [optimisticOrder, ...old] : [optimisticOrder]
-      );
-
-      return { previousOrders };
-    },
-    onError: (error, _input, context) => {
-      // Rollback
-      if (context?.previousOrders) {
-        context.previousOrders.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      const message = error instanceof Error ? error.message : 'Failed to create order';
-      logger.error('Failed to create order', error, { component: 'useCreateUnifiedOrder' });
-      toast.error('Order creation failed', { description: message });
-    },
-    onSuccess: (data) => {
-      toast.success('Order created successfully');
-      // Cross-panel invalidation - invalidate related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
-      // Inventory is decremented by database trigger when order is confirmed
-      // Invalidate inventory queries to reflect stock changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
     },
   });
 }
@@ -391,66 +323,9 @@ export function useUpdateOrderStatus() {
 
       return data as UnifiedOrder;
     },
-    onMutate: async ({ orderId, status, notes }) => {
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.detail(orderId) });
-
-      const previousLists = queryClient.getQueriesData<UnifiedOrder[]>({ queryKey: unifiedOrdersKeys.lists() });
-      const previousDetail = queryClient.getQueryData<UnifiedOrder>(unifiedOrdersKeys.detail(orderId));
-
-      const updateFields: Partial<UnifiedOrder> = {
-        status,
-        updated_at: new Date().toISOString(),
-      };
-      if (status === 'cancelled') {
-        updateFields.cancelled_at = new Date().toISOString();
-        updateFields.cancellation_reason = notes;
-      }
-
-      // Update list caches
-      queryClient.setQueriesData<UnifiedOrder[]>(
-        { queryKey: unifiedOrdersKeys.lists() },
-        (old) => old?.map(order => order.id === orderId ? { ...order, ...updateFields } : order)
-      );
-
-      // Update detail cache
-      if (previousDetail) {
-        queryClient.setQueryData<UnifiedOrder>(
-          unifiedOrdersKeys.detail(orderId),
-          { ...previousDetail, ...updateFields }
-        );
-      }
-
-      return { previousLists, previousDetail, orderId };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousLists) {
-        context.previousLists.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousDetail && context.orderId) {
-        queryClient.setQueryData(unifiedOrdersKeys.detail(context.orderId), context.previousDetail);
-      }
-      const message = error instanceof Error ? error.message : 'Failed to update order status';
-      logger.error('Failed to update order status', error, { component: 'useUpdateOrderStatus' });
-      toast.error('Status update failed', { description: message });
-    },
     onSuccess: (data) => {
-      toast.success(`Order status updated to ${data.status}`);
-      // Cross-panel invalidation - invalidate related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
-    },
-    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
-      // Inventory is synced by database trigger when status changes to confirmed/cancelled
-      // Invalidate inventory queries to reflect stock changes
-      if (variables.status === 'confirmed' || variables.status === 'cancelled') {
-        queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-        queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
-      }
+      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(data.id) });
     },
   });
 }
@@ -511,60 +386,9 @@ export function useCancelOrder() {
 
       return data as UnifiedOrder;
     },
-    onMutate: async ({ orderId, reason }) => {
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.detail(orderId) });
-
-      const previousLists = queryClient.getQueriesData<UnifiedOrder[]>({ queryKey: unifiedOrdersKeys.lists() });
-      const previousDetail = queryClient.getQueryData<UnifiedOrder>(unifiedOrdersKeys.detail(orderId));
-
-      const cancelFields: Partial<UnifiedOrder> = {
-        status: 'cancelled',
-        cancelled_at: new Date().toISOString(),
-        cancellation_reason: reason,
-        updated_at: new Date().toISOString(),
-      };
-
-      queryClient.setQueriesData<UnifiedOrder[]>(
-        { queryKey: unifiedOrdersKeys.lists() },
-        (old) => old?.map(order => order.id === orderId ? { ...order, ...cancelFields } : order)
-      );
-
-      if (previousDetail) {
-        queryClient.setQueryData<UnifiedOrder>(
-          unifiedOrdersKeys.detail(orderId),
-          { ...previousDetail, ...cancelFields }
-        );
-      }
-
-      return { previousLists, previousDetail, orderId };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousLists) {
-        context.previousLists.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousDetail && context.orderId) {
-        queryClient.setQueryData(unifiedOrdersKeys.detail(context.orderId), context.previousDetail);
-      }
-      const message = error instanceof Error ? error.message : 'Failed to cancel order';
-      logger.error('Failed to cancel order', error, { component: 'useCancelOrder' });
-      toast.error('Order cancellation failed', { description: message });
-    },
     onSuccess: (data) => {
-      toast.success('Order cancelled successfully');
-      // Cross-panel invalidation - cancellation affects order lists, customer stats, inventory
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
-    },
-    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
-      // Inventory is restored by database trigger when order is cancelled
-      // Invalidate inventory queries to reflect stock restoration
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(data.id) });
     },
   });
 }

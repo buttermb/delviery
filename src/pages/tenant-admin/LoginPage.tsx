@@ -6,25 +6,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
+import { Building2, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
-import { useAuthOffline } from "@/hooks/useAuthOffline";
-import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { Database } from "@/integrations/supabase/types";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
-import { AuthErrorAlert, getAuthErrorMessage, getAuthErrorType } from "@/components/auth/AuthErrorAlert";
+
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
 
@@ -35,31 +25,10 @@ export default function TenantAdminLoginPage() {
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
-  const [accountLocked, setAccountLocked] = useState(false);
-  const [lockDurationSeconds, setLockDurationSeconds] = useState(0);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const { validateToken } = useCsrfToken();
 
-  const { isOnline, hasQueuedAttempt, preventSubmit, queueLoginAttempt } = useAuthOffline(
-    async (qEmail, qPassword, qSlug) => {
-      await login(qEmail, qPassword, qSlug || '');
-      toast({
-        title: "Welcome back!",
-        description: `Logged in to ${tenant?.business_name || tenantSlug}`,
-      });
-      // Check for intended destination (user tried to access a protected page before login)
-      const intendedDestination = intendedDestinationUtils.consume();
-      const defaultDashboard = `/${tenantSlug}/admin/dashboard`;
-      const redirectTo = intendedDestination || defaultDashboard;
-      logger.debug('[TenantAdminLogin] Redirecting after queued login', { intendedDestination, redirectTo });
-      navigate(redirectTo, { replace: true });
-    }
-  );
 
   useEffect(() => {
     const fetchTenant = async (): Promise<void> => {
@@ -84,69 +53,35 @@ export default function TenantAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoginError(null);
-
-    if (!validateToken()) {
-      setLoginError("Invalid security token. Please refresh the page and try again.");
-      return;
-    }
 
     if (!tenantSlug) {
-      setLoginError("Business information is missing. Please check the URL and try again.");
-      return;
-    }
-
-    if (!isOnline) {
-      queueLoginAttempt(email, password, tenantSlug);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Tenant slug is required",
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      await login(email, password, tenantSlug, rememberMe);
+      await login(email, password, tenantSlug);
 
       toast({
         title: "Welcome back!",
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
 
-      // Check for intended destination (user tried to access a protected page before login)
-      const intendedDestination = intendedDestinationUtils.consume();
-      const defaultDashboard = `/${tenantSlug}/admin/dashboard`;
-      const redirectTo = intendedDestination || defaultDashboard;
-      logger.debug('[TenantAdminLogin] Redirecting after successful login', { intendedDestination, redirectTo });
-      navigate(redirectTo, { replace: true });
+      navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
     } catch (error: unknown) {
       logger.error("Tenant admin login error", error, { component: 'TenantAdminLoginPage' });
-
-      // Check if account is locked (429 rate limit or explicit lock)
-      const authError = error as { status?: number; retryAfter?: string; message?: string };
-      if (authError.status === 429 || authError.retryAfter) {
-        const retrySeconds = authError.retryAfter
-          ? parseInt(authError.retryAfter, 10)
-          : 900; // Default 15 minutes
-        setLockDurationSeconds(retrySeconds);
-        setAccountLocked(true);
-        setLoading(false);
-        return;
-      }
-
-      const errorMessage = getAuthErrorMessage(error, "Invalid credentials");
-
-      // Check for locked account message from server
-      if (
-        errorMessage.toLowerCase().includes('locked') ||
-        errorMessage.toLowerCase().includes('too many') ||
-        errorMessage.toLowerCase().includes('temporarily blocked')
-      ) {
-        setLockDurationSeconds(900); // Default 15 minutes
-        setAccountLocked(true);
-        setLoading(false);
-        return;
-      }
-
-      setLoginError(errorMessage);
+      const errorMessage = error instanceof Error ? error.message : "Invalid credentials";
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: errorMessage,
+      });
       setLoading(false);
     }
   };
@@ -184,43 +119,11 @@ export default function TenantAdminLoginPage() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <TwoFactorVerification
             onVerified={() => {
+              // Auth context handles state update and redirect
               toast({
                 title: "Authentication Successful",
                 description: "You have been securely logged in.",
               });
-              // Redirect to intended destination or dashboard after MFA verification
-              const intendedDestination = intendedDestinationUtils.consume();
-              const defaultDashboard = `/${tenantSlug}/admin/dashboard`;
-              const redirectTo = intendedDestination || defaultDashboard;
-              logger.debug('[TenantAdminLogin] Redirecting after MFA verification', { intendedDestination, redirectTo });
-              navigate(redirectTo, { replace: true });
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (accountLocked) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
-        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-6 sm:p-8">
-          <AccountLockedScreen
-            email={email}
-            tenantSlug={tenantSlug || ''}
-            lockDurationSeconds={lockDurationSeconds}
-            businessName={tenant.business_name || tenantSlug || ''}
-            onUnlocked={() => {
-              setAccountLocked(false);
-              setLockDurationSeconds(0);
-              toast({
-                title: "Account Unlocked",
-                description: "You can now try logging in again.",
-              });
-            }}
-            onBack={() => {
-              setAccountLocked(false);
-              setLockDurationSeconds(0);
             }}
           />
         </div>
@@ -230,6 +133,8 @@ export default function TenantAdminLoginPage() {
 
   const businessName = tenant.business_name || tenantSlug;
   const logo = null; // White label settings not implemented yet
+
+
 
   return (
     <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
@@ -286,17 +191,6 @@ export default function TenantAdminLoginPage() {
             </div>
           </div>
 
-          {/* Offline Indicator */}
-          <AuthOfflineIndicator isOnline={isOnline} hasQueuedAttempt={hasQueuedAttempt} className="mb-4" />
-
-          {/* Error Alert */}
-          <AuthErrorAlert
-            message={loginError || ''}
-            type={loginError ? getAuthErrorType(loginError) : 'error'}
-            variant="light"
-            className="mb-4"
-          />
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div className="space-y-2">
@@ -322,51 +216,23 @@ export default function TenantAdminLoginPage() {
               <Label htmlFor="password" className="text-sm sm:text-base font-medium">
                 Password
               </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  autoComplete="current-password"
-                  enterKeyHint="done"
-                  className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))] pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember-me"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 disabled={loading}
+                autoComplete="current-password"
+                enterKeyHint="done"
+                className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]"
               />
-              <Label
-                htmlFor="remember-me"
-                className="text-sm font-normal text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                title="Stay signed in for 30 days instead of 7 days"
-              >
-                Remember me
-              </Label>
             </div>
 
             <Button
               type="submit"
-              disabled={loading || !isOnline}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-white min-h-[44px] sm:h-12 font-semibold shadow-md touch-manipulation text-sm sm:text-base"
             >
               {loading ? (
@@ -392,9 +258,10 @@ export default function TenantAdminLoginPage() {
             {/* Google Sign In */}
             <GoogleSignInButton
               redirectTo={`${window.location.origin}/${tenantSlug}/admin/auth/callback`}
-              disabled={loading || !isOnline}
+              disabled={loading}
               className="bg-background/50 backdrop-blur-sm border-border hover:bg-background/80"
             />
+
 
           </form>
 

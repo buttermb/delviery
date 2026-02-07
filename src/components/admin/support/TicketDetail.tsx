@@ -2,8 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import { TicketComments } from "./TicketComments";
 
 interface Ticket {

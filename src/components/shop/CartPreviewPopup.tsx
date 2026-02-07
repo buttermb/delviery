@@ -5,10 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import X from "lucide-react/dist/esm/icons/x";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Check from "lucide-react/dist/esm/icons/check";
+import { ShoppingCart, X, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import ProductImage from '@/components/ProductImage';

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import type mapboxgl from 'mapbox-gl';
-import { loadMapbox } from '@/lib/mapbox-loader';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card } from '@/components/ui/card';
-import Navigation from "lucide-react/dist/esm/icons/navigation";
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Navigation } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { themeColors } from '@/lib/utils/colorConversion';
@@ -33,31 +35,26 @@ export function OrderTrackingMap({ order }: OrderTrackingMapProps) {
     useEffect(() => {
         if (!mapContainer.current || !token || loading) return;
 
-        const initMap = async () => {
-            const mapboxgl = await loadMapbox();
+        mapboxgl.accessToken = token;
 
-            if (!mapContainer.current) return;
+        map.current = new mapboxgl.Map({
+            container: mapContainer.current,
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [order.dropoff_lng || -73.935242, order.dropoff_lat || 40.730610],
+            zoom: 13,
+            pitch: 45,
+        });
 
-            mapboxgl.accessToken = token;
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-            map.current = new mapboxgl.Map({
-                container: mapContainer.current,
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center: [order.dropoff_lng || -73.935242, order.dropoff_lat || 40.730610],
-                zoom: 13,
-                pitch: 45,
-            });
+        map.current.on('load', () => {
+            setMapLoaded(true);
 
-            map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-            map.current.on('load', () => {
-                setMapLoaded(true);
-
-                // Add delivery marker
-                if (order.dropoff_lat && order.dropoff_lng) {
-                    const el = document.createElement('div');
-                    el.className = 'delivery-marker';
-                    el.innerHTML = `
+            // Add delivery marker
+            if (order.dropoff_lat && order.dropoff_lng) {
+                const el = document.createElement('div');
+                el.className = 'delivery-marker';
+                el.innerHTML = `
           <div style="
             width: 40px;
             height: 40px;
@@ -74,18 +71,15 @@ export function OrderTrackingMap({ order }: OrderTrackingMapProps) {
           </div>
         `;
 
-                    new mapboxgl.Marker(el)
-                        .setLngLat([order.dropoff_lng, order.dropoff_lat])
-                        .addTo(map.current!);
-                }
-            });
+                new mapboxgl.Marker(el)
+                    .setLngLat([order.dropoff_lng, order.dropoff_lat])
+                    .addTo(map.current!);
+            }
+        });
 
-            return () => {
-                map.current?.remove();
-            };
+        return () => {
+            map.current?.remove();
         };
-
-        initMap();
     }, [token, loading, order.dropoff_lat, order.dropoff_lng]);
 
     // Real-time courier updates
@@ -120,10 +114,8 @@ export function OrderTrackingMap({ order }: OrderTrackingMapProps) {
         };
     }, [mapLoaded, order.courier_id]);
 
-    const updateCourierMarker = async (lat: number, lng: number) => {
+    const updateCourierMarker = (lat: number, lng: number) => {
         if (!map.current) return;
-
-        const mapboxgl = await loadMapbox();
 
         if (!courierMarkerRef.current) {
             const el = document.createElement('div');

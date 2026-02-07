@@ -11,8 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Search from "lucide-react/dist/esm/icons/search";
+import { MessageSquare, Search } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 

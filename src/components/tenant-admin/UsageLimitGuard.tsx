@@ -3,8 +3,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { AlertTriangle, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface UsageLimitGuardProps {

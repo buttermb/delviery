@@ -6,11 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Download from "lucide-react/dist/esm/icons/download";
-import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
-import FileJson from "lucide-react/dist/esm/icons/file-json";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Download, FileSpreadsheet, FileJson, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { 
   exportToCSV, 

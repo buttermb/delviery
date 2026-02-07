@@ -12,7 +12,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { PostSkeleton } from '@/components/community/PostSkeleton';
 import { EmptyState } from '@/components/community/EmptyState';
 import { useForumRealtimePosts } from '@/hooks/useForumRealtime';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 

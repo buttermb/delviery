@@ -1,9 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
-import X from "lucide-react/dist/esm/icons/x";
-import Send from "lucide-react/dist/esm/icons/send";
-import User from "lucide-react/dist/esm/icons/user";
+import { MessageCircle, X, Send, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';

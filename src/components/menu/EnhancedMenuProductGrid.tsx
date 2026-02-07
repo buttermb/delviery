@@ -8,12 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMenuCart } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Search from "lucide-react/dist/esm/icons/search";
-import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Check from "lucide-react/dist/esm/icons/check";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { ShoppingCart, Search, ZoomIn, Plus, Check, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface Product {

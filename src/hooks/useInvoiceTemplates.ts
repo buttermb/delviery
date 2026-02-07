@@ -141,12 +141,10 @@ export function useInvoiceTemplates() {
       if (updates.is_default !== undefined) updatePayload.is_default = updates.is_default;
       if (updates.template_data !== undefined) updatePayload.template_data = updates.template_data as unknown as Json;
 
-      if (!tenant?.id) throw new Error("No tenant");
       const { data, error } = await supabase
         .from("invoice_templates")
         .update(updatePayload)
         .eq("id", id)
-        .eq("tenant_id", tenant.id)
         .select()
         .single();
 
@@ -174,8 +172,7 @@ export function useInvoiceTemplates() {
       const { error } = await supabase
         .from("invoice_templates")
         .update({ is_default: true })
-        .eq("id", templateId)
-        .eq("tenant_id", tenant.id);
+        .eq("id", templateId);
 
       if (error) throw error;
     },
@@ -188,12 +185,10 @@ export function useInvoiceTemplates() {
 
   const deleteTemplate = useMutation({
     mutationFn: async (templateId: string) => {
-      if (!tenant?.id) throw new Error("No tenant");
       const { error } = await supabase
         .from("invoice_templates")
         .delete()
-        .eq("id", templateId)
-        .eq("tenant_id", tenant.id);
+        .eq("id", templateId);
 
       if (error) throw error;
     },

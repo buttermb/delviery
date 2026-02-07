@@ -12,16 +12,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Download from "lucide-react/dist/esm/icons/download";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Percent from "lucide-react/dist/esm/icons/percent";
+import { 
+  DollarSign, 
+  FileText, 
+  Calendar, 
+  Download, 
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+  Building2,
+  Percent
+} from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';

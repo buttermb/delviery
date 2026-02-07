@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { sanitizeTextareaInput, sanitizeFormInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 
 interface ReturnItem {
   product_name: string;
@@ -152,7 +150,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
           order_id: formData.order_id,
           items: items.map(item => ({
             product_id: '',  // Would be fetched from order
-            product_name: sanitizeFormInput(item.product_name, 200),
+            product_name: item.product_name,
             quantity_lbs: item.quantity,
             price_per_lb: item.unit_price,
             subtotal: item.total_price,
@@ -161,7 +159,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
             disposition: 'restock'  // Default, could be made configurable
           })),
           reason: formData.reason,
-          notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : formData.notes
+          notes: formData.notes
         }
       });
 
@@ -178,25 +176,6 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.returns.lists() });
       toast.success(`Return ${data.ra_number} created successfully. Refund: $${data.refund_amount}`);
-
-      // Log activity for audit trail
-      if (tenant?.id) {
-        logActivityAuto(
-          tenant.id,
-          ActivityActions.CREATE_RETURN,
-          'return_authorization',
-          data.return_id || data.ra_number,
-          {
-            ra_number: data.ra_number,
-            order_id: formData.order_id,
-            order_number: formData.order_number,
-            reason: formData.reason,
-            refund_amount: data.refund_amount,
-            items_count: items.length,
-          }
-        );
-      }
-
       onSuccess?.();
     },
     onError: (error: unknown) => {

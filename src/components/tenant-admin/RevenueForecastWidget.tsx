@@ -5,10 +5,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
+import {
+    TrendingUp,
+    TrendingDown,
+    DollarSign,
+    Calendar
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

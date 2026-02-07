@@ -19,9 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { Truck, Loader2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Courier {

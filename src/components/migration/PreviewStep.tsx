@@ -10,14 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Download from "lucide-react/dist/esm/icons/download";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Edit3 from "lucide-react/dist/esm/icons/edit-3";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import { 
+  Search,
+  Filter,
+  Trash2,
+  Download,
+  AlertTriangle,
+  CheckCircle,
+  Edit3,
+  ArrowLeft,
+} from 'lucide-react';
 import type { ParsedProduct, QualityTier } from '@/types/migration';
 import { EditableCell } from './EditableCell';
 import { ConfidenceBar } from './ConfidenceBar';

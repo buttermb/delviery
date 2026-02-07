@@ -1,18 +1,20 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/mobile';
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Users from "lucide-react/dist/esm/icons/users";
-import Map from "lucide-react/dist/esm/icons/map";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import X from "lucide-react/dist/esm/icons/x";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import User from "lucide-react/dist/esm/icons/user";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Users,
+  Map,
+  Menu,
+  AlertCircle,
+  RefreshCw,
+  X,
+  Settings,
+  LogOut,
+  HelpCircle,
+  User
+} from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
 import { SidebarProvider } from '@/components/ui/sidebar';

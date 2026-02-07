@@ -164,22 +164,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-/*
 -- Create trigger to auto-sync strain
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'wholesale_inventory') THEN
-        DROP TRIGGER IF EXISTS trigger_sync_strain ON public.wholesale_inventory;
-        CREATE TRIGGER trigger_sync_strain
-            BEFORE INSERT OR UPDATE ON public.wholesale_inventory
-            FOR EACH ROW
-            EXECUTE FUNCTION sync_strain_from_product_name();
-    END IF;
-END $$;
-*/
+DROP TRIGGER IF EXISTS trigger_sync_strain ON public.wholesale_inventory;
+CREATE TRIGGER trigger_sync_strain
+    BEFORE INSERT OR UPDATE ON public.wholesale_inventory
+    FOR EACH ROW
+    EXECUTE FUNCTION sync_strain_from_product_name();
 
 -- ============================================================================
--- 6. Add comments for documentation (SKIPPED due to missing tables)
+-- 6. Add comments for documentation
 -- ============================================================================
--- Comments removed to prevent errors on missing tables logic.
+COMMENT ON COLUMN public.wholesale_orders.tenant_id IS 'Tenant isolation - ensures orders belong to specific tenant';
+COMMENT ON COLUMN public.disposable_menus.tenant_id IS 'Tenant isolation - ensures menus belong to specific tenant';
+COMMENT ON COLUMN public.wholesale_inventory.strain IS 'Product strain name (synced with product_name for backward compatibility)';
+COMMENT ON COLUMN public.wholesale_inventory.weight_lbs IS 'Current weight in pounds (synced with quantity_lbs if available)';
+COMMENT ON COLUMN public.wholesale_inventory.low_stock_threshold IS 'Threshold for low stock alerts';
 

@@ -1,10 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Clock from "lucide-react/dist/esm/icons/clock";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import User from "lucide-react/dist/esm/icons/user";
-import X from "lucide-react/dist/esm/icons/x";
+import { Clock, ShoppingBag, User, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { PendingOrder } from '@/hooks/usePendingOrders';
 

@@ -3,7 +3,8 @@
  * Edit prices for multiple products at once
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
@@ -15,10 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Percent from "lucide-react/dist/esm/icons/percent";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import { DollarSign, Percent, TrendingUp, TrendingDown } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -61,9 +59,9 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
     priceField,
   });
 
-  const calculateNewPrice = useCallback((oldPrice: number | null): number => {
+  const calculateNewPrice = (oldPrice: number | null): number => {
     if (!oldPrice || !adjustmentValue) return oldPrice || 0;
-
+    
     const value = parseFloat(adjustmentValue);
     if (isNaN(value)) return oldPrice;
 
@@ -79,9 +77,9 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
       default:
         return oldPrice;
     }
-  }, [adjustmentType, adjustmentValue]);
+  };
 
-  const previewUpdates = useCallback((): PriceUpdate[] => {
+  const previewUpdates = (): PriceUpdate[] => {
     return products.map(product => {
       const update: PriceUpdate = {
         id: product.id,
@@ -101,11 +99,11 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
 
       return update;
     });
-  }, [products, priceField, calculateNewPrice]);
+  };
 
   const handleApply = async () => {
     if (!adjustmentValue) return;
-
+    
     setIsApplying(true);
     try {
       const updates = previewUpdates();
@@ -117,8 +115,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
     }
   };
 
-  // Memoize price updates to avoid recalculation on every render
-  const updates = useMemo(() => previewUpdates(), [previewUpdates]);
+  const updates = previewUpdates();
   const isValid = adjustmentValue && !isNaN(parseFloat(adjustmentValue));
 
   return (

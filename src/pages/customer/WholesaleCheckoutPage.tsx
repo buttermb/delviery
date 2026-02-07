@@ -15,13 +15,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { 
+  ShoppingCart, 
+  ArrowLeft,
+  Building2,
+  MapPin,
+  CreditCard,
+  CheckCircle,
+  Loader2
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';

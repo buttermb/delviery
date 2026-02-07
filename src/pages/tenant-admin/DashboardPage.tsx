@@ -8,22 +8,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import Users from "lucide-react/dist/esm/icons/users";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Circle from "lucide-react/dist/esm/icons/circle";
-import Coins from "lucide-react/dist/esm/icons/coins";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import {
+  DollarSign,
+  Package,
+  ShoppingCart,
+  AlertTriangle,
+  TrendingUp,
+  ArrowRight,
+  Settings,
+  Users,
+  Activity,
+  Zap,
+  Smartphone,
+  Plus,
+  CheckCircle2,
+  Circle,
+  Coins,
+  Sparkles,
+} from "lucide-react";
 import { useCredits } from "@/hooks/useCredits";
 import { CreditBalance } from "@/components/credits/CreditBalance";
 import { CreditPurchaseCelebration } from "@/components/credits/CreditPurchaseCelebration";
@@ -54,10 +56,6 @@ import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotific
 import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
-import { DashboardQuickActionsPanel } from '@/components/dashboard/DashboardQuickActionsPanel';
-import { DashboardNotificationBell } from '@/components/dashboard/DashboardNotificationBell';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileDashboard } from '@/components/mobile/MobileDashboard';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -77,7 +75,6 @@ export default function TenantAdminDashboardPage() {
   const location = useLocation();
   const { admin, tenant, logout, loading: authLoading } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
-  const isMobile = useIsMobile();
   const { usage, hasPurchasedCredits, hasActiveCredits, limitsApply } = useFreeTierLimits();
   const tenantId = tenant?.id;
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -595,11 +592,6 @@ export default function TenantAdminDashboardPage() {
     );
   }
 
-  // Render mobile-optimized dashboard for small screens
-  if (isMobile) {
-    return <MobileDashboard />;
-  }
-
   return (
     <div className="min-h-dvh bg-background">
       {/* Header */}
@@ -618,7 +610,6 @@ export default function TenantAdminDashboardPage() {
               variant="outline"
               size="sm"
             />
-            <DashboardNotificationBell />
             <SmartNotificationsCenter />
             {admin && (
               <div className="text-xs sm:text-sm text-muted-foreground hidden md:block truncate max-w-[120px]">
@@ -833,9 +824,6 @@ export default function TenantAdminDashboardPage() {
             className="mb-4"
           />
         )}
-
-        {/* Permission-gated Quick Actions Panel */}
-        <DashboardQuickActionsPanel />
 
         {/* Demo Data Generation Banner */}
         {isEmptyAccount && (

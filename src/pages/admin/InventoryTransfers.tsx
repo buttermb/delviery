@@ -7,19 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Package from "lucide-react/dist/esm/icons/package";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Truck, Plus, Package } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
@@ -36,56 +26,6 @@ export default function InventoryTransfers() {
     to_warehouse: '',
     quantity_lbs: '',
     notes: '',
-  });
-
-  // Fetch products for dropdown
-  const { data: products = [] } = useQuery({
-    queryKey: ['products-for-transfer', tenantId],
-    queryFn: async () => {
-      if (!tenantId) return [];
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, sku')
-        .eq('tenant_id', tenantId)
-        .eq('in_stock', true)
-        .order('name');
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!tenantId,
-  });
-
-  // Fetch locations for dropdowns
-  const { data: locations = [] } = useQuery({
-    queryKey: ['inventory-locations', tenantId],
-    queryFn: async () => {
-      if (!tenantId) return [];
-      try {
-        const { data, error } = await supabase
-          .from('inventory_locations' as any)
-          .select('id, name')
-          .eq('tenant_id', tenantId)
-          .order('name');
-        if (error && error.code === '42P01') {
-          // Table doesn't exist, return default locations
-          return [
-            { id: 'warehouse-main', name: 'Main Warehouse' },
-            { id: 'warehouse-secondary', name: 'Secondary Warehouse' },
-          ];
-        }
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
-        if (isPostgrestError(error) && error.code === '42P01') {
-          return [
-            { id: 'warehouse-main', name: 'Main Warehouse' },
-            { id: 'warehouse-secondary', name: 'Secondary Warehouse' },
-          ];
-        }
-        throw error;
-      }
-    },
-    enabled: !!tenantId,
   });
 
   const { data: transfers, isLoading } = useQuery({
@@ -160,29 +100,6 @@ export default function InventoryTransfers() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validation
-    if (!formData.product_id) {
-      toast({ title: 'Error', description: 'Please select a product', variant: 'destructive' });
-      return;
-    }
-    if (!formData.from_warehouse) {
-      toast({ title: 'Error', description: 'Please select origin location', variant: 'destructive' });
-      return;
-    }
-    if (!formData.to_warehouse) {
-      toast({ title: 'Error', description: 'Please select destination location', variant: 'destructive' });
-      return;
-    }
-    if (formData.from_warehouse === formData.to_warehouse) {
-      toast({ title: 'Error', description: 'Origin and destination must be different', variant: 'destructive' });
-      return;
-    }
-    if (!formData.quantity_lbs || parseFloat(formData.quantity_lbs) <= 0) {
-      toast({ title: 'Error', description: 'Please enter a valid quantity', variant: 'destructive' });
-      return;
-    }
-
     createTransferMutation.mutate(formData);
   };
 
@@ -272,69 +189,29 @@ export default function InventoryTransfers() {
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="product_id">Product *</Label>
-                <Select
-                  value={formData.product_id}
-                  onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a product..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product: any) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        {product.name} {product.sku ? `(${product.sku})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="from_warehouse">From Location *</Label>
-                <Select
+                <Label htmlFor="from_warehouse">From Warehouse</Label>
+                <Input
+                  id="from_warehouse"
                   value={formData.from_warehouse}
-                  onValueChange={(value) => setFormData({ ...formData, from_warehouse: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select origin location..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.map((loc: any) => (
-                      <SelectItem key={loc.id} value={loc.id}>
-                        {loc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setFormData({ ...formData, from_warehouse: e.target.value })}
+                  required
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="to_warehouse">To Location *</Label>
-                <Select
+                <Label htmlFor="to_warehouse">To Warehouse</Label>
+                <Input
+                  id="to_warehouse"
                   value={formData.to_warehouse}
-                  onValueChange={(value) => setFormData({ ...formData, to_warehouse: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select destination location..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations
-                      .filter((loc: any) => loc.id !== formData.from_warehouse)
-                      .map((loc: any) => (
-                        <SelectItem key={loc.id} value={loc.id}>
-                          {loc.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setFormData({ ...formData, to_warehouse: e.target.value })}
+                  required
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="quantity_lbs">Quantity (lbs) *</Label>
+                <Label htmlFor="quantity_lbs">Quantity (lbs)</Label>
                 <Input
                   id="quantity_lbs"
                   type="number"
                   step="0.01"
-                  min="0.01"
-                  placeholder="0.00"
                   value={formData.quantity_lbs}
                   onChange={(e) => setFormData({ ...formData, quantity_lbs: e.target.value })}
                   required
@@ -344,7 +221,6 @@ export default function InventoryTransfers() {
                 <Label htmlFor="notes">Notes (optional)</Label>
                 <Input
                   id="notes"
-                  placeholder="Transfer reason or additional details..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 />
@@ -355,7 +231,6 @@ export default function InventoryTransfers() {
                 Cancel
               </Button>
               <Button type="submit" disabled={createTransferMutation.isPending}>
-                {createTransferMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Create Transfer
               </Button>
             </DialogFooter>

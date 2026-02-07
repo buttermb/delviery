@@ -7,7 +7,6 @@
  * - info (blue): Informational
  */
 
-import { memo } from 'react';
 import { cn } from '@/lib/utils';
 
 type AlertLevel = 'critical' | 'warning' | 'success' | 'info';
@@ -34,7 +33,7 @@ const sizeStyles: Record<'sm' | 'md' | 'lg', string> = {
   lg: 'h-7 min-w-7 text-sm px-2.5',
 };
 
-export const AlertBadge = memo(function AlertBadge({
+export function AlertBadge({
   level,
   count,
   label,
@@ -59,9 +58,9 @@ export const AlertBadge = memo(function AlertBadge({
       {displayText}
     </span>
   );
-});
+}
 
-export const AlertDot = memo(function AlertDot({ level, pulse = false, className }: { level: AlertLevel; pulse?: boolean; className?: string }) {
+export function AlertDot({ level, pulse = false, className }: { level: AlertLevel; pulse?: boolean; className?: string }) {
   return (
     <span
       className={cn(
@@ -72,4 +71,4 @@ export const AlertDot = memo(function AlertDot({ level, pulse = false, className
       )}
     />
   );
-});
+}

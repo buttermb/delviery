@@ -8,15 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import Users from "lucide-react/dist/esm/icons/users";
-import Star from "lucide-react/dist/esm/icons/star";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import UserCheck from "lucide-react/dist/esm/icons/user-check";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { Users, TrendingUp, Star, Eye, Plus, Trash2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { CourierLoginInfo } from '@/components/admin/CourierLoginInfo';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
@@ -33,21 +25,9 @@ interface Courier {
   vehicle_type: string;
   is_online: boolean;
   is_active: boolean;
-  age_verified: boolean;
-  current_lat: number | null;
-  current_lng: number | null;
   rating: number;
   total_deliveries: number;
   commission_rate: number;
-}
-
-type AvailabilityStatus = 'available' | 'offline' | 'inactive' | 'unverified';
-
-function getAvailabilityStatus(courier: Courier): AvailabilityStatus {
-  if (!courier.is_active) return 'inactive';
-  if (!courier.age_verified) return 'unverified';
-  if (!courier.is_online) return 'offline';
-  return 'available';
 }
 
 export default function Couriers() {
@@ -113,19 +93,14 @@ export default function Couriers() {
     courier.phone?.includes(searchQuery)
   );
 
-  const avgRating = couriers.length > 0
-    ? (couriers.reduce((acc, c) => acc + (c.rating || 0), 0) / couriers.length).toFixed(1)
+  const avgRating = couriers.length > 0 
+    ? (couriers.reduce((acc, c) => acc + (c.rating || 0), 0) / couriers.length).toFixed(1) 
     : '0.0';
-
-  // Calculate availability stats
-  const availableForAssignment = couriers.filter(c =>
-    c.is_online && c.is_active && c.age_verified
-  ).length;
 
   const stats = [
     { label: 'Total Couriers', value: couriers.length, icon: Users, color: 'text-accent' },
-    { label: 'Available', value: availableForAssignment, icon: UserCheck, color: 'text-green-600' },
-    { label: 'Offline', value: couriers.filter(c => c.is_active && !c.is_online).length, icon: Clock, color: 'text-muted-foreground' },
+    { label: 'Online Now', value: couriers.filter(c => c.is_online).length, icon: TrendingUp, color: 'text-primary' },
+    { label: 'Active', value: couriers.filter(c => c.is_active).length, icon: Star, color: 'text-primary' },
     { label: 'Avg Rating', value: avgRating, icon: Star, color: 'text-accent' },
   ];
 
@@ -150,41 +125,13 @@ export default function Couriers() {
       className: 'capitalize'
     },
     {
-      header: 'Availability',
-      cell: (courier) => {
-        const status = getAvailabilityStatus(courier);
-        const hasLocation = courier.current_lat !== null && courier.current_lng !== null;
-        return (
-          <div className="flex flex-wrap items-center gap-2">
-            {status === 'available' && (
-              <Badge variant="default" className="bg-green-600 hover:bg-green-600">
-                <span className="relative flex h-2 w-2 mr-1">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-200"></span>
-                </span>
-                Available
-              </Badge>
-            )}
-            {status === 'offline' && (
-              <Badge variant="secondary">
-                <Clock className="h-3 w-3 mr-1" />
-                Offline
-              </Badge>
-            )}
-            {status === 'inactive' && (
-              <Badge variant="destructive">Inactive</Badge>
-            )}
-            {status === 'unverified' && (
-              <Badge variant="outline" className="border-orange-500 text-orange-600">
-                Unverified
-              </Badge>
-            )}
-            {hasLocation && (
-              <MapPin className="h-3 w-3 text-green-600" aria-label="GPS location available" />
-            )}
-          </div>
-        );
-      }
+      header: 'Status',
+      cell: (courier) => (
+        <div className="flex flex-wrap gap-2">
+          {courier.is_online && <Badge variant="default">Online</Badge>}
+          {!courier.is_active && <Badge variant="destructive">Inactive</Badge>}
+        </div>
+      )
     },
     {
       header: 'Rating',
@@ -238,26 +185,12 @@ export default function Couriers() {
       <PullToRefresh onRefresh={async () => { await refetch(); }}>
         <div className="w-full max-w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-4 md:space-y-6 overflow-x-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Couriers Management</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {availableForAssignment} courier{availableForAssignment !== 1 ? 's' : ''} available for assignment
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/admin/fulfillment-hub?tab=pending')}
-              >
-                <Package className="h-4 w-4 mr-2" />
-                Assign to Orders
-              </Button>
-              <AddCourierDialog
-                open={isAddCourierOpen}
-                onOpenChange={setIsAddCourierOpen}
-                onSuccess={refetch}
-              />
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Couriers Management</h1>
+            <AddCourierDialog
+              open={isAddCourierOpen}
+              onOpenChange={setIsAddCourierOpen}
+              onSuccess={refetch}
+            />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -343,40 +276,10 @@ export default function Couriers() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Availability</div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {(() => {
-                          const status = getAvailabilityStatus(courier);
-                          const hasLocation = courier.current_lat !== null && courier.current_lng !== null;
-                          return (
-                            <>
-                              {status === 'available' && (
-                                <Badge variant="default" className="bg-green-600 hover:bg-green-600">
-                                  <span className="relative flex h-2 w-2 mr-1">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-200"></span>
-                                  </span>
-                                  Available
-                                </Badge>
-                              )}
-                              {status === 'offline' && (
-                                <Badge variant="secondary">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  Offline
-                                </Badge>
-                              )}
-                              {status === 'inactive' && <Badge variant="destructive">Inactive</Badge>}
-                              {status === 'unverified' && (
-                                <Badge variant="outline" className="border-orange-500 text-orange-600">
-                                  Unverified
-                                </Badge>
-                              )}
-                              {hasLocation && (
-                                <MapPin className="h-3 w-3 text-green-600" aria-label="GPS location available" />
-                              )}
-                            </>
-                          );
-                        })()}
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</div>
+                      <div className="flex flex-wrap gap-2">
+                        {courier.is_online && <Badge variant="default">Online</Badge>}
+                        {!courier.is_active && <Badge variant="destructive">Inactive</Badge>}
                       </div>
                     </div>
 

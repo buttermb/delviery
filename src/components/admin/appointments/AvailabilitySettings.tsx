@@ -9,9 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import X from "lucide-react/dist/esm/icons/x";
+import { Clock, Calendar, X } from "lucide-react";
 import { useState } from "react";
 import { showSuccessToast } from "@/lib/toastUtils";
 

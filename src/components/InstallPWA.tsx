@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import Download from "lucide-react/dist/esm/icons/download";
-import X from "lucide-react/dist/esm/icons/x";
+import { Download, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BeforeInstallPromptEvent extends Event {

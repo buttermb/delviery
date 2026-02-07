@@ -32,16 +32,6 @@ import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
 import { versionGeneratorPlugin } from './vite-plugins/version-generator';
 
-// Backend env fallbacks for preview/dev environments.
-// These are *public* values (URL + anon/publishable key) and prevent the app from hard-crashing
-// when the platform doesn't inject VITE_SUPABASE_* into the frontend build.
-const FALLBACK_BACKEND = {
-  url: 'https://aejugtmhwwknrowfyzie.supabase.co',
-  anonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlanVndG1od3drbnJvd2Z5emllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NDA4OTcsImV4cCI6MjA3NzQxNjg5N30.R7S5uyha_U5oNc1IBXt8bThumQJSa8FuJZdgiWRgwek',
-  projectId: 'aejugtmhwwknrowfyzie',
-} as const;
-
 // Sitemap generator plugin
 function sitemapPlugin() {
   return {
@@ -80,14 +70,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    // Ensure frontend always has backend env vars available.
-    // If the host environment provides them, we use those; otherwise we fall back.
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || FALLBACK_BACKEND.url),
-    'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify(process.env.VITE_SUPABASE_PROJECT_ID || FALLBACK_BACKEND.projectId),
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || FALLBACK_BACKEND.anonKey),
-    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
-      process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || FALLBACK_BACKEND.anonKey
-    ),
     'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString()),
     '__BUILD_TIME__': JSON.stringify(Date.now().toString())
   },
@@ -181,7 +163,7 @@ export default defineConfig(({ mode }) => ({
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'], // Force single React instance
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'remotion', '@remotion/player'],
+    include: ['react', 'react-dom', 'react-router-dom'],
     exclude: [],
     esbuildOptions: {
       target: 'es2020',
@@ -218,40 +200,28 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/asset-[hash].[ext]',
         // Ensure React is not split into separate chunks
         manualChunks: (id) => {
+          // Exclude React from chunking - keep it in vendor
+          if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+            return 'vendor';
+          }
           // Large deps into separate chunks
           if (id.includes('node_modules')) {
-            // Exclude React from chunking - keep it in vendor (must check before other packages)
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
-              return 'vendor';
-            }
             if (id.includes('@tanstack')) {
               return 'vendor-query';
             }
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }
-            if (id.includes('remotion') || id.includes('@remotion')) {
-              return 'vendor-remotion';
-            }
-            // Split map libraries (mapbox, leaflet, react-leaflet)
-            if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) {
-              return 'vendor-map';
+            if (id.includes('mapbox') || id.includes('leaflet')) {
+              return 'vendor-maps';
             }
             // Split Radix UI components into separate chunk
             if (id.includes('@radix-ui')) {
               return 'vendor-ui';
             }
-            // Split chart libraries (recharts, d3, tremor)
-            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) {
+            // Split chart libraries
+            if (id.includes('recharts') || id.includes('@tremor')) {
               return 'vendor-charts';
-            }
-            // Split PDF libraries (react-pdf, jspdf, html2canvas)
-            if (id.includes('react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) {
-              return 'vendor-pdf';
-            }
-            // Split form libraries (react-hook-form, zod, @hookform/resolvers)
-            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform/resolvers')) {
-              return 'vendor-forms';
             }
             return 'vendor';
           }

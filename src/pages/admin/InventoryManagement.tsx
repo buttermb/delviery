@@ -4,17 +4,8 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import Package from "lucide-react/dist/esm/icons/package";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import Layers from "lucide-react/dist/esm/icons/layers";
+import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse } from "lucide-react";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
-import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
 import { BulkImageGenerator } from "@/components/admin/products/BulkImageGenerator";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -24,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
+
 
 interface Product {
   id: string;
@@ -49,8 +41,6 @@ export default function InventoryManagement() {
 
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
-  const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadInventory() {
@@ -60,13 +50,12 @@ export default function InventoryManagement() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, tenant_id, name, sku, batch_number, available_quantity, low_stock_alert, category, cost_per_unit, wholesale_price, price_per_lb')
+          .select('*')
           .eq('tenant_id', tenant.id)
           .order('name');
 
         if (error) throw error;
-        // Map data to include warehouse_location as empty string for compatibility
-        setProducts(((data || []) as any[]).map(p => ({ ...p, warehouse_location: '' })) as Product[]);
+        setProducts(data || []);
       } catch (error) {
         logger.error('Error loading inventory', error, { component: 'InventoryManagement' });
         toast.error("Failed to load inventory");
@@ -175,9 +164,8 @@ export default function InventoryManagement() {
       className: 'text-center',
       cell: (item) => {
         const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
-        const badgeVariant = status.color === 'warning' ? 'secondary' : (status.color as "destructive" | "default");
         return (
-          <Badge variant={badgeVariant} className="inline-flex items-center">
+          <Badge variant={status.color as "destructive" | "warning" | "default"} className="inline-flex items-center">
             {getStatusIcon(status.status)}
             {status.label}
           </Badge>
@@ -209,12 +197,11 @@ export default function InventoryManagement() {
 
     return (
       <div className="space-y-3">
-      <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between">
           <div className="font-medium text-base">{item.name}</div>
-          {(() => {
-            const badgeVariant = status.color === 'warning' ? 'secondary' : (status.color as "destructive" | "default");
-            return <Badge variant={badgeVariant} className="flex-shrink-0">{status.label}</Badge>;
-          })()}
+          <Badge variant={status.color as "destructive" | "warning" | "default"} className="flex-shrink-0">
+            {status.label}
+          </Badge>
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -253,16 +240,6 @@ export default function InventoryManagement() {
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-          {selectedProductIds.size > 0 && (
-            <Button
-              variant="outline"
-              className="min-h-[44px] touch-manipulation text-sm sm:text-base"
-              onClick={() => setBulkModalOpen(true)}
-            >
-              <Layers className="h-4 w-4 mr-2" />
-              Bulk Adjust ({selectedProductIds.size})
-            </Button>
-          )}
           <BulkImageGenerator products={products} />
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"
@@ -377,13 +354,6 @@ export default function InventoryManagement() {
           onOpenChange={setAdjustmentDialogOpen}
         />
       )}
-
-      <BulkInventoryModal
-        open={bulkModalOpen}
-        onOpenChange={setBulkModalOpen}
-        selectedProducts={Array.from(selectedProductIds).map(id => products.find(p => p.id === id)).filter(Boolean) as Product[]}
-        onComplete={() => { setSelectedProductIds(new Set()); setBulkModalOpen(false); }}
-      />
     </div>
   );
 }

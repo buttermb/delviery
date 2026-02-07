@@ -9,16 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Package from "lucide-react/dist/esm/icons/package";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  Plus,
+  Search,
+  Calendar,
+  MapPin,
+  Package,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  ArrowLeft
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { Loader2 } from 'lucide-react';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 

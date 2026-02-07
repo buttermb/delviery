@@ -61,10 +61,11 @@ export function MarketingFooter() {
             <p className="text-slate-500 text-lg mb-6 max-w-sm leading-relaxed">
               The operating system for modern cannabis distribution. Secure, compliant, and built for scale.
             </p>
-            <div className="flex gap-4" role="list" aria-label="Social media links">
-              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on X (Twitter)" className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all font-bold duration-300 shadow-sm">X</a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on LinkedIn" className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all font-bold duration-300 shadow-sm">Li</a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all font-bold duration-300 shadow-sm">Ig</a>
+            <div className="flex gap-4">
+              {/* Social placeholders */}
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all cursor-pointer font-bold duration-300 shadow-sm">X</div>
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all cursor-pointer font-bold duration-300 shadow-sm">Li</div>
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-[hsl(var(--marketing-primary))] hover:text-white hover:border-[hsl(var(--marketing-primary))] transition-all cursor-pointer font-bold duration-300 shadow-sm">Ig</div>
             </div>
           </div>
 
@@ -117,7 +118,7 @@ export function MarketingFooter() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
           <div className="font-medium">
-            &copy; {new Date().getFullYear()} FloraIQ Inc. All rights reserved.
+            &copy; 2025 FloraIQ Inc. All rights reserved.
           </div>
           <div className="flex gap-8">
             <Link to="/privacy" className="hover:text-[hsl(var(--marketing-primary))] transition-colors font-medium">Privacy Policy</Link>

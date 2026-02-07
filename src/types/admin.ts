@@ -117,18 +117,13 @@ export interface Courier {
 // Stock Alert types
 export interface StockAlert {
   id: string;
-  product_id: string;
+  product_id?: string;
   product_name: string;
   current_quantity: number;
   threshold: number;
   severity: 'critical' | 'warning' | 'info';
-  status: 'active' | 'acknowledged' | 'resolved';
   created_at: string;
-  updated_at: string;
-  acknowledged_by?: string;
-  acknowledged_at?: string;
-  resolved_at?: string;
-  tenant_id: string;
+  tenant_id?: string;
 }
 
 // Helper type for Supabase query responses

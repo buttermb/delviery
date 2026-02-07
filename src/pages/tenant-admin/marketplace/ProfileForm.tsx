@@ -32,12 +32,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import Upload from "lucide-react/dist/esm/icons/upload";
-import X from "lucide-react/dist/esm/icons/x";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
-import { compressImage, isCompressibleImage, COMPRESSION_PRESETS } from '@/lib/utils/image-compression';
+import { Upload, X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -103,7 +98,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
     },
   });
 
-  // Upload file to Supabase Storage (with image compression)
+  // Upload file to Supabase Storage
   const uploadFile = async (file: File, type: 'logo' | 'cover' | 'license'): Promise<string> => {
     if (!tenant?.id) {
       throw new Error('Tenant ID required');
@@ -111,20 +106,6 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
 
     setUploading(type);
     try {
-      let fileToUpload = file;
-
-      // Compress images before upload (not for license documents)
-      if (type !== 'license' && isCompressibleImage(file)) {
-        const compressionPreset = type === 'logo' ? COMPRESSION_PRESETS.profile : COMPRESSION_PRESETS.cover;
-        fileToUpload = await compressImage(file, compressionPreset);
-        logger.debug('Image compressed for upload', {
-          type,
-          originalSize: file.size,
-          compressedSize: fileToUpload.size,
-          savings: `${((1 - fileToUpload.size / file.size) * 100).toFixed(1)}%`,
-        });
-      }
-
       const fileExt = file.name.split('.').pop();
       const fileName = `${type}-${Date.now()}.${fileExt}`;
       const filePath = `${tenant.id}/marketplace/${fileName}`;
@@ -134,7 +115,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, fileToUpload, {
+        .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
         });

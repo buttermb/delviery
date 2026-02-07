@@ -6,8 +6,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import { ArrowLeft, Sparkles } from "lucide-react";
 
 interface ComingSoonProps {
   featureName: string;

@@ -1,10 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Target from "lucide-react/dist/esm/icons/target";
+import { DollarSign, TrendingUp, Gift, Clock, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface TodayEarningSummaryProps {

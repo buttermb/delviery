@@ -9,14 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Package from "lucide-react/dist/esm/icons/package";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Wifi from "lucide-react/dist/esm/icons/wifi";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { TrendingUp, ShoppingBag, DollarSign, Package, Clock, Wifi, BarChart3, Zap } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 const MOCK_METRICS = [

@@ -1,12 +1,10 @@
 // @ts-nocheck - Disable type checking for Deno/Supabase client compatibility
 // Edge Function: tenant-admin-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
-import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 import { checkRateLimit, RATE_LIMITS, getRateLimitHeaders } from '../_shared/rateLimiting.ts';
-import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR, GENERIC_AUTH_DETAIL } from '../_shared/bruteForceProtection.ts';
 
-serve(secureHeadersMiddleware(async (req) => {
+serve(async (req) => {
   // Get origin from request for CORS (required when credentials are included)
   const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
@@ -69,25 +67,13 @@ serve(secureHeadersMiddleware(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
-
-    // Health check endpoint - no auth required, verifies function is deployed and running
-    if (action === 'health') {
-      return new Response(
-        JSON.stringify({
-          status: 'ok',
-          function: 'tenant-admin-auth',
-          timestamp: new Date().toISOString(),
-        }),
-        { status: 200, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const url = new URL(req.url);
+    const action = url.searchParams.get('action');
 
     // Only parse JSON body for actions that need it
     let requestBody: any = {};
@@ -114,35 +100,14 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      const { email, password, tenantSlug, rememberMe } = validationResult.data;
+      const { email, password, tenantSlug } = validationResult.data;
 
       // Extract client IP for rate limiting
-      const clientIP = getClientIP(req);
-      const userAgent = req.headers.get('user-agent') || 'unknown';
-
-      // Brute force protection: Block IP after 10 failed attempts across ANY account in 1 hour
-      const bruteForceResult = await checkBruteForce(clientIP);
-      if (bruteForceResult.blocked) {
-        // Log the blocked attempt
-        await logAuthEvent({
-          eventType: 'login_attempt',
-          ipAddress: clientIP,
-          email: email.toLowerCase(),
-          success: false,
-          failureReason: 'ip_blocked_brute_force',
-          userAgent,
-          metadata: { tenantSlug, failedAttempts: bruteForceResult.failedAttempts },
-        });
-
-        // Return generic error - do NOT reveal the IP is blocked
-        return new Response(
-          JSON.stringify({
-            error: GENERIC_AUTH_ERROR,
-            detail: GENERIC_AUTH_DETAIL,
-          }),
-          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
-        );
-      }
+      const clientIP =
+        req.headers.get('x-forwarded-for')?.split(',')[0] ||
+        req.headers.get('cf-connecting-ip') ||
+        req.headers.get('x-real-ip') ||
+        'unknown';
 
       // Rate limiting: 5 attempts per 15 minutes per IP+email combo
       const rateLimitResult = await checkRateLimit(
@@ -230,22 +195,10 @@ serve(secureHeadersMiddleware(async (req) => {
           errorCode: authError.status,
           errorMessage: authError.message
         });
-
-        // Log failed login attempt to auth_audit_log for brute force tracking
-        await logAuthEvent({
-          eventType: 'login_attempt',
-          ipAddress: clientIP,
-          email: email.toLowerCase(),
-          success: false,
-          failureReason: 'invalid_credentials',
-          userAgent,
-          metadata: { tenantSlug },
-        });
-
         return new Response(
           JSON.stringify({
-            error: GENERIC_AUTH_ERROR,
-            detail: GENERIC_AUTH_DETAIL,
+            error: 'Invalid credentials',
+            detail: 'Email or password is incorrect. Please try again.'
           }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
@@ -253,17 +206,8 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (!authData.user) {
         console.error('No user returned after authentication');
-        await logAuthEvent({
-          eventType: 'login_attempt',
-          ipAddress: clientIP,
-          email: email.toLowerCase(),
-          success: false,
-          failureReason: 'no_user_returned',
-          userAgent,
-          metadata: { tenantSlug },
-        });
         return new Response(
-          JSON.stringify({ error: GENERIC_AUTH_ERROR, detail: GENERIC_AUTH_DETAIL }),
+          JSON.stringify({ error: 'Authentication failed' }),
           { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
@@ -305,18 +249,6 @@ serve(secureHeadersMiddleware(async (req) => {
             tenantId: tenant.id,
             tenantSlug: tenant.slug
           });
-
-          // Log as a failed attempt (valid credentials but wrong tenant)
-          await logAuthEvent({
-            eventType: 'login_attempt',
-            ipAddress: clientIP,
-            email: email.toLowerCase(),
-            success: false,
-            failureReason: 'not_authorized_for_tenant',
-            userAgent,
-            metadata: { tenantSlug, tenantId: tenant.id },
-          });
-
           return new Response(
             JSON.stringify({
               error: 'You do not have access to this tenant',
@@ -350,48 +282,13 @@ serve(secureHeadersMiddleware(async (req) => {
 
       console.log('Login successful for:', email, 'tenant:', tenant.business_name);
 
-      // Log successful login to auth_audit_log
-      await logAuthEvent({
-        eventType: 'login_attempt',
-        ipAddress: clientIP,
-        email: email.toLowerCase(),
-        success: true,
-        userAgent,
-        metadata: { tenantSlug, tenantId: tenant.id },
-      });
-
-      // Session fixation protection: Invalidate any pre-existing sessions for this user
-      // This ensures a fresh session state on authentication, preventing session hijacking
-      try {
-        await serviceClient
-          .from('tenant_admin_sessions')
-          .delete()
-          .eq('user_id', authData.user.id);
-        console.log('[SESSION_FIXATION] Previous sessions invalidated for user:', authData.user.id);
-      } catch (sessionCleanupError) {
-        // Log but don't block login - session cleanup is best-effort
-        console.warn('[SESSION_FIXATION] Failed to invalidate previous sessions:', sessionCleanupError);
-      }
-
-      // Invalidate any Supabase refresh tokens from prior sessions by signing out
-      // other sessions. The current session just created by signInWithPassword is preserved.
-      try {
-        await supabase.auth.admin.signOut(authData.user.id, 'others');
-        console.log('[SESSION_FIXATION] Other Supabase sessions invalidated for user:', authData.user.id);
-      } catch (signOutError) {
-        // Log but don't block - this is a supplementary protection
-        console.warn('[SESSION_FIXATION] Failed to invalidate other Supabase sessions:', signOutError);
-      }
-
       // Prepare httpOnly cookie options
-      // Extended session: 30 days if "Remember Me" is checked, otherwise 7 days
-      const sessionDurationSeconds = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
       const cookieOptions = [
         'HttpOnly',
         'Secure',
         'SameSite=Strict',
         'Path=/',
-        `Max-Age=${sessionDurationSeconds}`
+        `Max-Age=${7 * 24 * 60 * 60}` // 7 days
       ].join('; ');
 
       // Return user data with tenant context (including limits and usage)
@@ -938,8 +835,8 @@ serve(secureHeadersMiddleware(async (req) => {
   } catch (error: any) {
     console.error('Error in tenant-admin-auth:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: error.message || 'Internal server error' }),
       { status: 500, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
     );
   }
-}));
+});

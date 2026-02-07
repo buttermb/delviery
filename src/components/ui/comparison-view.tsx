@@ -13,11 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import X from "lucide-react/dist/esm/icons/x";
-import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
-import Check from "lucide-react/dist/esm/icons/check";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import {
+  X,
+  ArrowLeftRight,
+  Check,
+  Minus,
+  AlertTriangle,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ComparisonItem {

@@ -3,7 +3,7 @@
  * Action button in mega menus (not a link, triggers onClick)
  */
 
-import type { LucideIcon } from "lucide-react";
+import { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

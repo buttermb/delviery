@@ -3,13 +3,7 @@ import { usePublicInvoice } from "@/hooks/crm/usePublicInvoice";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import Download from "lucide-react/dist/esm/icons/download";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Loader2, Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import {

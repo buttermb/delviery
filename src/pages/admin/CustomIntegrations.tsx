@@ -9,14 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import Plug from "lucide-react/dist/esm/icons/plug";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import { IntegrationWebhooks } from '@/components/integrations/IntegrationWebhooks';
-import { handleError } from '@/utils/errorHandling/handlers';
+import { Plug, Plus, Edit, Trash2 } from 'lucide-react';
 
 interface Integration {
   id: string;
@@ -43,7 +36,6 @@ export default function CustomIntegrations() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIntegration, setEditingIntegration] = useState<Integration | null>(null);
-  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: '',
@@ -109,47 +101,11 @@ export default function CustomIntegrations() {
       resetForm();
     },
     onError: (error: unknown) => {
-      handleError(error, {
-        component: 'CustomIntegrations.createIntegration',
-        toastTitle: 'Error',
-        showToast: true,
-      });
-    },
-  });
-
-  const updateIntegrationMutation = useMutation({
-    mutationFn: async ({ id, ...integration }: Integration) => {
-      if (!tenantId) throw new Error('Tenant ID required');
-
-      const { data, error } = await supabase
-        .from('custom_integrations')
-        .update({
-          name: integration.name,
-          type: integration.type,
-          config: {
-            api_key: formData.api_key,
-            api_secret: formData.api_secret,
-            ...formData.config,
-          },
-        })
-        .eq('id', id)
-        .eq('tenant_id', tenantId)
-        .select()
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-integrations', tenantId] });
-      toast({ title: 'Integration updated', description: 'Integration has been updated successfully.' });
-      resetForm();
-    },
-    onError: (error: unknown) => {
-      handleError(error, {
-        component: 'CustomIntegrations.updateIntegration',
-        toastTitle: 'Error',
-        showToast: true,
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create integration';
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
       });
     },
   });
@@ -181,76 +137,17 @@ export default function CustomIntegrations() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingIntegration) {
-      updateIntegrationMutation.mutate({
-        ...editingIntegration,
-        ...formData,
-      });
-    } else {
-      createIntegrationMutation.mutate(formData);
-    }
-  };
-
-  const handleViewIntegration = (integration: Integration) => {
-    setSelectedIntegration(integration);
-  };
-
-  const handleBackToList = () => {
-    setSelectedIntegration(null);
+    createIntegrationMutation.mutate(formData);
   };
 
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          Loading integrations...
-        </div>
+        <div className="text-center">Loading integrations...</div>
       </div>
     );
   }
 
-  // Detail view for selected integration
-  if (selectedIntegration) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={handleBackToList}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Integrations
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Plug className="h-8 w-8" />
-            <div>
-              <h1 className="text-3xl font-bold">{selectedIntegration.name}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline">
-                  {INTEGRATION_TYPES.find((t) => t.value === selectedIntegration.type)?.label || selectedIntegration.type}
-                </Badge>
-                <Badge variant={selectedIntegration.status === 'active' ? 'default' : 'secondary'}>
-                  {selectedIntegration.status || 'pending'}
-                </Badge>
-              </div>
-            </div>
-          </div>
-          <Button variant="outline" onClick={() => handleEdit(selectedIntegration)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Integration
-          </Button>
-        </div>
-
-        <IntegrationWebhooks
-          integrationId={selectedIntegration.id}
-          integrationName={selectedIntegration.name}
-        />
-      </div>
-    );
-  }
-
-  // List view
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -267,11 +164,7 @@ export default function CustomIntegrations() {
       {integrations && integrations.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {integrations.map((integration: Integration) => (
-            <Card
-              key={integration.id}
-              className="cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => handleViewIntegration(integration)}
-            >
+            <Card key={integration.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -279,33 +172,20 @@ export default function CustomIntegrations() {
                     <CardTitle>{integration.name}</CardTitle>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(integration);
-                      }}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(integration)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-                <CardDescription>
-                  {INTEGRATION_TYPES.find((t) => t.value === integration.type)?.label || integration.type}
-                </CardDescription>
+                <CardDescription>{integration.type}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
                     <Badge variant={integration.status === 'active' ? 'default' : 'secondary'}>
                       {integration.status || 'pending'}
                     </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Webhook className="h-4 w-4" />
-                    <span>Click to manage webhooks</span>
                   </div>
                 </div>
               </CardContent>
@@ -382,13 +262,7 @@ export default function CustomIntegrations() {
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={createIntegrationMutation.isPending || updateIntegrationMutation.isPending}
-              >
-                {(createIntegrationMutation.isPending || updateIntegrationMutation.isPending) && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
+              <Button type="submit" disabled={createIntegrationMutation.isPending}>
                 {editingIntegration ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>

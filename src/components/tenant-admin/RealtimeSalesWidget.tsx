@@ -6,11 +6,13 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Minus from "lucide-react/dist/esm/icons/minus";
+import {
+    DollarSign,
+    ShoppingCart,
+    TrendingUp,
+    TrendingDown,
+    Minus
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

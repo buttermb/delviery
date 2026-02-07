@@ -14,13 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Upload from "lucide-react/dist/esm/icons/upload";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { Loader2, Upload, FileText } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCreditGatedAction } from "@/hooks/useCredits";
-import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
 
 interface Batch {
   id: string;
@@ -49,7 +45,6 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
   });
   const [coaFile, setCoaFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [fileError, setFileError] = useState<string | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (data: {
@@ -92,28 +87,6 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
     },
   });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setFileError(null);
-
-    if (file) {
-      // Validate the file before accepting it
-      const validation = await validateFile(file, {
-        context: 'coaDocument',
-        maxSize: FILE_SIZE_LIMITS.document,
-      });
-
-      if (!validation.isValid) {
-        setFileError(validation.error || 'Invalid file');
-        e.target.value = '';
-        toast.error(validation.error || 'Invalid file');
-        return;
-      }
-    }
-
-    setCoaFile(file);
-  };
-
   const handleFileUpload = async (file: File) => {
     if (!tenant?.id) {
       toast.error("Tenant ID required");
@@ -122,19 +95,14 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
 
     try {
       setUploading(true);
-
-      // Generate secure storage path
-      const filePath = generateSecureStoragePath(
-        file.name,
-        'coas',
-        tenant.id
-      );
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${batch.batch_number}-coa-${Date.now()}.${fileExt}`;
+      const filePath = `${tenant.id}/coas/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("documents")
         .upload(filePath, file, {
           cacheControl: "3600",
-          contentType: file.type,
           upsert: false,
         });
 
@@ -214,23 +182,14 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
               <Input
                 id="coa_file"
                 type="file"
-                accept="application/pdf,image/jpeg,image/png"
-                onChange={handleFileChange}
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => setCoaFile(e.target.files?.[0] || null)}
                 className="min-h-[44px] touch-manipulation"
               />
-              {coaFile && !fileError && (
+              {coaFile && (
                 <FileText className="h-4 w-4 text-green-500" />
               )}
-              {fileError && (
-                <AlertCircle className="h-4 w-4 text-destructive" />
-              )}
             </div>
-            {fileError && (
-              <p className="text-sm text-destructive">{fileError}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              PDF, JPEG, or PNG. Max {formatFileSize(FILE_SIZE_LIMITS.document)}.
-            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

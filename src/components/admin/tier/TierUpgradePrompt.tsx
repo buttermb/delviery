@@ -5,10 +5,7 @@
  */
 
 import { useState } from 'react';
-import X from "lucide-react/dist/esm/icons/x";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import { X, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useBusinessTier } from '@/hooks/useBusinessTier';

@@ -19,8 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface StandardPaginationProps {
   currentPage: number;

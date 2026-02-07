@@ -1,8 +1,6 @@
 // @ts-nocheck
 import { Progress } from '@/components/ui/progress';
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import { Loader2, Package, CheckCircle2 } from 'lucide-react';
 import type { ImportProgress } from '@/types/migration';
 
 interface ImportingStepProps {
@@ -73,4 +71,7 @@ export function ImportingStep({ progress, isLoading }: ImportingStepProps) {
     </div>
   );
 }
+
+
+
 

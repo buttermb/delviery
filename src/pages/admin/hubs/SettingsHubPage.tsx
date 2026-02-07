@@ -10,11 +10,13 @@
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Settings from "lucide-react/dist/esm/icons/settings";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Plug from "lucide-react/dist/esm/icons/plug";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Headphones from "lucide-react/dist/esm/icons/headphones";
+import {
+    Settings,
+    CreditCard,
+    Plug,
+    Shield,
+    Headphones,
+} from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
@@ -54,7 +56,7 @@ export default function SettingsHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="space-y-0">
+        <div className="min-h-dvh bg-background">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="border-b bg-card px-4 py-4">
                     <HubBreadcrumbs

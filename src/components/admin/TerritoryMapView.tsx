@@ -1,12 +1,11 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from "react";
-import type mapboxgl from "mapbox-gl";
-import { loadMapbox } from "@/lib/mapbox-loader";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { MapPin, AlertCircle } from "lucide-react";
 import { themeColors } from "@/lib/utils/colorConversion";
 
 // Mapbox token
@@ -22,53 +21,42 @@ export function TerritoryMapView() {
     if (!mapContainer.current || map.current) return;
     if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') return;
 
-    const initMap = async () => {
-      try {
-        const mapboxgl = await loadMapbox();
+    try {
+      mapboxgl.accessToken = MAPBOX_TOKEN;
 
-        if (!mapContainer.current) return;
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: [-73.9808, 40.7648], // NYC center
+        zoom: 10,
+        pitch: 45,
+      });
 
-        mapboxgl.accessToken = MAPBOX_TOKEN;
+      map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: "mapbox://styles/mapbox/streets-v12",
-          center: [-73.9808, 40.7648], // NYC center
-          zoom: 10,
-          pitch: 45,
-        });
+      map.current.on("load", () => {
+        setMapLoaded(true);
+      });
 
-        map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-        map.current.on("load", () => {
-          setMapLoaded(true);
-        });
-
-        // Cleanup
-        return () => {
-          map.current?.remove();
-        };
-      } catch (error) {
-        logger.error("Mapbox initialization error", error as Error, { component: 'TerritoryMapView' });
-      }
-    };
-
-    initMap();
+      // Cleanup
+      return () => {
+        map.current?.remove();
+      };
+    } catch (error) {
+      logger.error("Mapbox initialization error", error as Error, { component: 'TerritoryMapView' });
+    }
   }, []);
 
   // Add client markers when map loads
   useEffect(() => {
     if (!map.current || !mapLoaded || clients.length === 0) return;
 
-    const addMarkers = async () => {
-      const mapboxgl = await loadMapbox();
-
     // Remove existing markers
     const existingMarkers = document.querySelectorAll('.client-marker');
     existingMarkers.forEach(marker => marker.remove());
 
     // Add markers for each client with coordinates
-    (clients as any[]).forEach((client) => {
+    clients.forEach((client) => {
       const coords = client.coordinates as { lat: number; lng: number } | undefined;
       if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') return;
 
@@ -97,10 +85,7 @@ export function TerritoryMapView() {
       el.style.justifyContent = "center";
       el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>`;
 
-      // Create popup with optional fields
-      const monthlyVolume = client.monthly_volume ?? 'N/A';
-      const reliabilityScore = client.reliability_score ?? 'N/A';
-      
+      // Create popup
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="padding: 8px; min-width: 200px;">
           <h3 style="font-weight: 600; margin-bottom: 4px;">${client.business_name}</h3>
@@ -108,73 +93,64 @@ export function TerritoryMapView() {
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Balance:</span>
             <span style="font-size: 14px; font-weight: 600; color: ${markerColor};">
-              $${(client.outstanding_balance || 0).toLocaleString()}
+              $${client.outstanding_balance.toLocaleString()}
             </span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Monthly:</span>
-            <span style="font-size: 12px;">${monthlyVolume} lbs</span>
+            <span style="font-size: 12px;">${client.monthly_volume} lbs</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <span style="font-size: 12px; font-weight: 500;">Rating:</span>
-            <span style="font-size: 12px;">${reliabilityScore}%</span>
+            <span style="font-size: 12px;">${client.reliability_score}%</span>
           </div>
         </div>
       `);
 
-        // Add marker to map
-        new mapboxgl.Marker(el)
-          .setLngLat([lng, lat])
-          .setPopup(popup)
-          .addTo(map.current!);
-      });
-    };
-
-    addMarkers();
+      // Add marker to map
+      new mapboxgl.Marker(el)
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+    });
   }, [mapLoaded, clients]);
 
   // Add warehouse markers
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    const addWarehouseMarkers = async () => {
-      const mapboxgl = await loadMapbox();
+    const warehouses = [
+      { name: "Warehouse A", location: [-73.9442, 40.6782], address: "Brooklyn" },
+      { name: "Warehouse B", location: [-73.8648, 40.8448], address: "Queens" },
+    ];
 
-      const warehouses = [
-        { name: "Warehouse A", location: [-73.9442, 40.6782], address: "Brooklyn" },
-        { name: "Warehouse B", location: [-73.8648, 40.8448], address: "Queens" },
-      ];
+    warehouses.forEach((warehouse) => {
+      const el = document.createElement("div");
+      el.className = "warehouse-marker";
+      el.style.width = "40px";
+      el.style.height = "40px";
+      el.style.backgroundColor = themeColors.marketingSecondary();
+      el.style.border = "3px solid white";
+      el.style.borderRadius = "8px";
+      el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+      el.style.cursor = "pointer";
+      el.style.display = "flex";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3 7v10h18V7L12 2 3 7zm15 8H6V9h12v6z"/></svg>`;
 
-      warehouses.forEach((warehouse) => {
-        const el = document.createElement("div");
-        el.className = "warehouse-marker";
-        el.style.width = "40px";
-        el.style.height = "40px";
-        el.style.backgroundColor = themeColors.marketingSecondary();
-        el.style.border = "3px solid white";
-        el.style.borderRadius = "8px";
-        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
-        el.style.cursor = "pointer";
-        el.style.display = "flex";
-        el.style.alignItems = "center";
-        el.style.justifyContent = "center";
-        el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3 7v10h18V7L12 2 3 7zm15 8H6V9h12v6z"/></svg>`;
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+        <div style="padding: 8px;">
+          <h3 style="font-weight: 600; margin-bottom: 4px;">${warehouse.name}</h3>
+          <p style="font-size: 12px; color: #666;">${warehouse.address}</p>
+        </div>
+      `);
 
-        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="padding: 8px;">
-            <h3 style="font-weight: 600; margin-bottom: 4px;">${warehouse.name}</h3>
-            <p style="font-size: 12px; color: #666;">${warehouse.address}</p>
-          </div>
-        `);
-
-        new mapboxgl.Marker(el)
-          .setLngLat(warehouse.location as [number, number])
-          .setPopup(popup)
-          .addTo(map.current!);
-      });
-    };
-
-    addWarehouseMarkers();
+      new mapboxgl.Marker(el)
+        .setLngLat(warehouse.location as [number, number])
+        .setPopup(popup)
+        .addTo(map.current!);
+    });
   }, [mapLoaded]);
 
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {

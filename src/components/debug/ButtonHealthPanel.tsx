@@ -10,14 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Download from "lucide-react/dist/esm/icons/download";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import Activity from "lucide-react/dist/esm/icons/activity";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Download,
+  Trash2,
+  RefreshCw,
+  Activity,
+} from 'lucide-react';
 import { buttonMonitor } from '@/lib/utils/buttonMonitor';
 
 export function ButtonHealthPanel() {
@@ -113,7 +115,7 @@ export function ButtonHealthPanel() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 dark:text-green-400" />
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -128,7 +130,7 @@ export function ButtonHealthPanel() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Error Rate</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 dark:text-red-400" />
+            <XCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -143,7 +145,7 @@ export function ButtonHealthPanel() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Broken Buttons</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400 dark:text-orange-400" />
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{healthReport.brokenButtons}</div>
@@ -202,13 +204,13 @@ export function ButtonHealthPanel() {
                           </div>
                           <div>
                             <div className="text-muted-foreground">Errors</div>
-                            <div className="font-semibold text-red-600 dark:text-red-400">
+                            <div className="font-semibold text-red-600">
                               {stat.errorCount} ({Math.round(errorRate * 100)}%)
                             </div>
                           </div>
                           <div>
                             <div className="text-muted-foreground">Success</div>
-                            <div className="font-semibold text-green-600 dark:text-green-400">
+                            <div className="font-semibold text-green-600">
                               {stat.successCount}
                             </div>
                           </div>
@@ -327,19 +329,19 @@ export function ButtonHealthPanel() {
                           </div>
                           <div>
                             <div className="text-muted-foreground">Success</div>
-                            <div className="font-semibold text-green-600 dark:text-green-400">
+                            <div className="font-semibold text-green-600">
                               {stat.successCount}
                             </div>
                           </div>
                           <div>
                             <div className="text-muted-foreground">Errors</div>
-                            <div className="font-semibold text-red-600 dark:text-red-400">
+                            <div className="font-semibold text-red-600">
                               {stat.errorCount}
                             </div>
                           </div>
                           <div>
                             <div className="text-muted-foreground">Timeouts</div>
-                            <div className="font-semibold text-orange-600 dark:text-orange-400">
+                            <div className="font-semibold text-orange-600">
                               {stat.timeoutCount}
                             </div>
                           </div>

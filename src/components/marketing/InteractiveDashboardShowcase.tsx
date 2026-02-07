@@ -3,10 +3,12 @@
  * Simple product screenshot with stats, no animations
  */
 
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Package from "lucide-react/dist/esm/icons/package";
-import Users from "lucide-react/dist/esm/icons/users";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import {
+  TrendingUp,
+  Package,
+  Users,
+  DollarSign,
+} from 'lucide-react';
 
 const stats = [
   { label: 'Orders Today', value: '1,247', icon: TrendingUp },

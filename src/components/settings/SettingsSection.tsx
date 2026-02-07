@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { LucideIcon } from "lucide-react";
+import { LucideIcon } from 'lucide-react';
 
 interface SettingsSectionProps {
   title: string;

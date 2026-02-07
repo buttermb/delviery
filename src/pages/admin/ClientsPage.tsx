@@ -11,11 +11,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Users from "lucide-react/dist/esm/icons/users";
+import { User, Phone, Mail, DollarSign, Users } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';

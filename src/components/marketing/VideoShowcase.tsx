@@ -5,49 +5,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Play from "lucide-react/dist/esm/icons/play";
-import Pause from "lucide-react/dist/esm/icons/pause";
-import LayoutDashboard from "lucide-react/dist/esm/icons/layout-dashboard";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Package from "lucide-react/dist/esm/icons/package";
-import QrCode from "lucide-react/dist/esm/icons/qr-code";
-import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Maximize2 from "lucide-react/dist/esm/icons/maximize-2";
-import Scan from "lucide-react/dist/esm/icons/scan";
-import Bell from "lucide-react/dist/esm/icons/bell";
-import Search from "lucide-react/dist/esm/icons/search";
-import Menu from "lucide-react/dist/esm/icons/menu";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Download from "lucide-react/dist/esm/icons/download";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Users from "lucide-react/dist/esm/icons/users";
-import Settings from "lucide-react/dist/esm/icons/settings";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import Map from "lucide-react/dist/esm/icons/map";
-import Grid from "lucide-react/dist/esm/icons/grid";
-import List from "lucide-react/dist/esm/icons/list";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
-import ArrowDownRight from "lucide-react/dist/esm/icons/arrow-down-right";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Lock from "lucide-react/dist/esm/icons/lock";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import Key from "lucide-react/dist/esm/icons/key";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import User from "lucide-react/dist/esm/icons/user";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
+import {
+  ChevronLeft, ChevronRight, Play, Pause,
+  LayoutDashboard, ShoppingCart, Package, QrCode, BarChart3, Truck,
+  Maximize2, Scan, Bell, Search, Menu, MoreVertical, Filter, Download,
+  Plus, Users, Settings, LogOut, Map, Grid, List, Smartphone,
+  ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertCircle,
+  DollarSign, TrendingUp, Calendar, Lock, Shield, Eye, ShieldCheck, Key,
+  MessageSquare, User, Zap, Navigation
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useShouldReduceAnimations } from "@/hooks/useReducedMotion";
 
@@ -642,6 +608,7 @@ function MenusUltra() {
     </div>
   )
 }
+
 
 // --- MAIN CONTROLLER COMPONENT ---
 

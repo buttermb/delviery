@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Loader2 } from "lucide-react";
 
 interface EditClientDialogProps {
   clientId: string;
@@ -97,15 +96,15 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       const { error } = await supabase
         .from("wholesale_clients")
         .update({
-          business_name: sanitizeFormInput(formData.business_name, 200),
-          contact_name: sanitizeFormInput(formData.contact_name, 200),
-          email: formData.email ? sanitizeEmail(formData.email) : formData.email,
-          phone: sanitizePhoneInput(formData.phone),
-          address: formData.address ? sanitizeFormInput(formData.address, 500) : formData.address,
+          business_name: formData.business_name,
+          contact_name: formData.contact_name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
           client_type: formData.client_type,
           credit_limit: parseFloat(formData.credit_limit),
           payment_terms: parseInt(formData.payment_terms),
-          notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : formData.notes,
+          notes: formData.notes,
           updated_at: new Date().toISOString()
         })
         .eq("id", clientId);
@@ -136,7 +135,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="business_name">Business Name *</Label>
                 <Input
@@ -160,7 +159,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone *</Label>
                 <Input
@@ -195,7 +194,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="client_type">Client Type</Label>
                 <Select

@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import Search from "lucide-react/dist/esm/icons/search";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import X from "lucide-react/dist/esm/icons/x";
+import { Search, Loader2, X } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

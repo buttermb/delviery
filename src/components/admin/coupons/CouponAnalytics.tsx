@@ -8,11 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Users from "lucide-react/dist/esm/icons/users";
-import Tag from "lucide-react/dist/esm/icons/tag";
+import { Loader2, TrendingUp, DollarSign, Users, Tag } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Coupon = Database['public']['Tables']['coupon_codes']['Row'];

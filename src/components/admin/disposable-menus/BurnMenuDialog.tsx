@@ -7,9 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { AlertTriangle, Flame, Loader2 } from 'lucide-react';
 import { useBurnMenu } from '@/hooks/useDisposableMenus';
 import type { DisposableMenu } from '@/types/admin';
 

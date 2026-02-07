@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import type mapboxgl from 'mapbox-gl';
-import { loadMapbox } from '@/lib/mapbox-loader';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import Route from "lucide-react/dist/esm/icons/route";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { AlertCircle, Navigation, Layers, Route, Eye, EyeOff, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStatus } from '@/utils/stringHelpers';
 import { getStatusColorInline, themeColors } from '@/lib/utils/colorConversion';
@@ -58,6 +52,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
   const [showCouriers, setShowCouriers] = useState(true);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('streets');
 
+
   const getStatusColor = (status: string) => {
     return getStatusColorInline(status);
   };
@@ -74,56 +69,48 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
   useEffect(() => {
     if (!mapContainer.current || !MAPBOX_TOKEN) return;
 
-    const initMap = async () => {
-      const mapboxgl = await loadMapbox();
+    mapboxgl.accessToken = MAPBOX_TOKEN;
 
-      if (!mapContainer.current) return;
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: getMapStyle(),
+      center: [-73.935242, 40.730610], // NYC
+      zoom: 11,
+      pitch: 45,
+      bearing: 0
+    });
 
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
 
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: getMapStyle(),
-        center: [-73.935242, 40.730610], // NYC
-        zoom: 11,
-        pitch: 45,
-        bearing: 0
-      });
+    map.current.on('load', () => {
+      setMapLoaded(true);
+      
+      // Add 3D buildings layer
+      const layers = map.current!.getStyle().layers;
+      const labelLayerId = layers?.find(
+        (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+      )?.id;
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+      map.current!.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+          'fill-extrusion-color': themeColors.muted(),
+          'fill-extrusion-height': ['get', 'height'],
+          'fill-extrusion-base': ['get', 'min_height'],
+          'fill-extrusion-opacity': 0.6
+        }
+      }, labelLayerId);
+    });
 
-      map.current.on('load', () => {
-        setMapLoaded(true);
-
-        // Add 3D buildings layer
-        const layers = map.current!.getStyle().layers;
-        const labelLayerId = layers?.find(
-          (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
-        )?.id;
-
-        map.current!.addLayer({
-          'id': '3d-buildings',
-          'source': 'composite',
-          'source-layer': 'building',
-          'filter': ['==', 'extrude', 'true'],
-          'type': 'fill-extrusion',
-          'minzoom': 15,
-          'paint': {
-            'fill-extrusion-color': themeColors.muted(),
-            'fill-extrusion-height': ['get', 'height'],
-            'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 0.6
-          }
-        }, labelLayerId);
-      });
-
-      return () => {
-        map.current?.remove();
-      };
+    return () => {
+      map.current?.remove();
     };
-
-    initMap();
   }, [mapStyle]);
 
   // Real-time courier position updates
@@ -158,20 +145,17 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    const updateMapMarkers = async () => {
-      const mapboxgl = await loadMapbox();
+    // Clear existing markers
+    Object.values(markersRef.current).forEach(marker => marker.remove());
+    markersRef.current = {};
 
-      // Clear existing markers
-      Object.values(markersRef.current).forEach(marker => marker.remove());
-      markersRef.current = {};
+    // Remove existing route layers
+    if (map.current.getLayer('routes')) map.current.removeLayer('routes');
+    if (map.current.getSource('routes')) map.current.removeSource('routes');
+    if (map.current.getLayer('heatmap')) map.current.removeLayer('heatmap');
+    if (map.current.getSource('heatmap')) map.current.removeSource('heatmap');
 
-      // Remove existing route layers
-      if (map.current!.getLayer('routes')) map.current!.removeLayer('routes');
-      if (map.current!.getSource('routes')) map.current!.removeSource('routes');
-      if (map.current!.getLayer('heatmap')) map.current!.removeLayer('heatmap');
-      if (map.current!.getSource('heatmap')) map.current!.removeSource('heatmap');
-
-      const bounds = new mapboxgl.LngLatBounds();
+    const bounds = new mapboxgl.LngLatBounds();
     let hasValidCoordinates = false;
     interface GeoJSONFeature {
       type: 'Feature';
@@ -470,23 +454,20 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
       });
     }
 
-      // Fit map to show all markers
-      if (hasValidCoordinates && !bounds.isEmpty()) {
-        map.current!.fitBounds(bounds, {
-          padding: 80,
-          maxZoom: 14,
-          duration: 1000
-        });
-      } else {
-        map.current!.flyTo({
-          center: [-73.935242, 40.730610],
-          zoom: 11,
-          duration: 1000
-        });
-      }
-    };
-
-    updateMapMarkers();
+    // Fit map to show all markers
+    if (hasValidCoordinates && !bounds.isEmpty()) {
+      map.current.fitBounds(bounds, {
+        padding: 80,
+        maxZoom: 14,
+        duration: 1000
+      });
+    } else {
+      map.current.flyTo({
+        center: [-73.935242, 40.730610],
+        zoom: 11,
+        duration: 1000
+      });
+    }
   }, [orders, mapLoaded, selectedOrderId, onOrderSelect, showRoutes, showHeatmap, showCouriers, activeCouriers]);
 
   if (!MAPBOX_TOKEN) {

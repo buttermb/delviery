@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
@@ -13,43 +12,19 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Barcode from "lucide-react/dist/esm/icons/barcode";
-import Layers from "lucide-react/dist/esm/icons/layers";
-import Scale from "lucide-react/dist/esm/icons/scale";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode } from "lucide-react";
 import { toast } from "sonner";
-import { ProductVariantsManager } from "@/components/admin/products/ProductVariantsManager";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useCategories, type Category } from "@/hooks/useCategories";
-import { ProductCategorySelect } from "@/components/admin/products/ProductCategorySelect";
-
-// Type for variant data passed to ProductVariantsManager
-interface ProductVariantsData {
-    prices: Record<string, number>;
-    weight_grams: number | null;
-    strain_name?: string;
-    strain_type?: string;
-    strain_lineage?: string;
-    thc_percent: number | null;
-    cbd_percent: number | null;
-    terpenes: Record<string, number>;
-}
 
 // Define the shape of form data
 export interface ProductFormData {
     name: string;
     sku: string;
     category: string;
-    category_id?: string; // Optional hierarchical category reference
     vendor_name: string;
     strain_name: string;
     strain_type: string;
-    strain_lineage: string;
     thc_percent: string;
     cbd_percent: string;
     batch_number: string;
@@ -63,10 +38,6 @@ export interface ProductFormData {
     metrc_retail_id: string;
     exclude_from_discounts: boolean;
     minimum_price: string;
-    // Variant fields
-    prices: Record<string, number>;
-    weight_grams: string;
-    terpenes: Record<string, number>;
 }
 
 interface ProductFormProps {
@@ -75,19 +46,16 @@ interface ProductFormProps {
     onCancel: () => void;
     isLoading: boolean;
     isEditMode: boolean;
-    storeSettings?: Record<string, unknown>; // Pass in settings for potency limits
-    productId?: string; // Required for variants tab when editing
+    storeSettings?: any; // Pass in settings for potency limits
 }
 
 const DEFAULT_FORM_DATA: ProductFormData = {
     name: "",
     sku: "",
-    category: "",
-    category_id: undefined,
+    category: "flower",
     vendor_name: "",
     strain_name: "",
     strain_type: "",
-    strain_lineage: "",
     thc_percent: "",
     cbd_percent: "",
     batch_number: "",
@@ -101,10 +69,6 @@ const DEFAULT_FORM_DATA: ProductFormData = {
     metrc_retail_id: "",
     exclude_from_discounts: false,
     minimum_price: "",
-    // Variant defaults
-    prices: {},
-    weight_grams: "",
-    terpenes: {},
 };
 
 export function ProductForm({
@@ -114,13 +78,7 @@ export function ProductForm({
     isLoading,
     isEditMode,
     storeSettings,
-    productId,
 }: ProductFormProps) {
-    const { tenant } = useTenantAdminAuth();
-    const { data: categories = [] } = useCategories();
-    const hasHierarchicalCategories = categories.length > 0;
-    const getCategoryById = (id: string) => categories.find((c: Category) => c.id === id);
-
     const [formData, setFormData] = useState<ProductFormData>(DEFAULT_FORM_DATA);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -130,9 +88,7 @@ export function ProductForm({
         const numVal = parseFloat(value);
         if (!storeSettings || isNaN(numVal)) return;
 
-        const limit = field === 'thc_percent' 
-          ? (storeSettings.potency_limit_thc as number | undefined) 
-          : (storeSettings.potency_limit_cbd as number | undefined);
+        const limit = field === 'thc_percent' ? storeSettings.potency_limit_thc : storeSettings.potency_limit_cbd;
 
         if (limit && numVal > limit) {
             toast.warning(`Potency Alert: Value exceeds store limit of ${limit}%`);
@@ -173,17 +129,7 @@ export function ProductForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const sanitizedData: ProductFormData = {
-            ...formData,
-            name: sanitizeFormInput(formData.name, 100),
-            sku: formData.sku ? sanitizeSkuInput(formData.sku) : '',
-            vendor_name: sanitizeFormInput(formData.vendor_name, 100),
-            strain_name: sanitizeFormInput(formData.strain_name, 100),
-            batch_number: sanitizeFormInput(formData.batch_number, 100),
-            description: sanitizeTextareaInput(formData.description, 1000),
-            metrc_retail_id: sanitizeFormInput(formData.metrc_retail_id, 100),
-        };
-        onSubmit(sanitizedData, imageFile);
+        onSubmit(formData, imageFile);
     };
 
     const profitMargin = (cost: string, price: string) => {
@@ -193,42 +139,12 @@ export function ProductForm({
         return (((priceNum - costNum) / priceNum) * 100).toFixed(1);
     };
 
-    // Handler for variant data changes from ProductVariantsManager
-    const handleVariantDataChange = useCallback((variantData: Partial<ProductVariantsData>) => {
-        setFormData(prev => ({
-            ...prev,
-            ...(variantData.prices !== undefined && { prices: variantData.prices }),
-            ...(variantData.weight_grams !== undefined && { weight_grams: variantData.weight_grams?.toString() ?? "" }),
-            ...(variantData.strain_name !== undefined && { strain_name: variantData.strain_name }),
-            ...(variantData.strain_type !== undefined && { strain_type: variantData.strain_type }),
-            ...(variantData.strain_lineage !== undefined && { strain_lineage: variantData.strain_lineage }),
-            ...(variantData.thc_percent !== undefined && { thc_percent: variantData.thc_percent?.toString() ?? "" }),
-            ...(variantData.cbd_percent !== undefined && { cbd_percent: variantData.cbd_percent?.toString() ?? "" }),
-            ...(variantData.terpenes !== undefined && { terpenes: variantData.terpenes }),
-        }));
-    }, []);
-
-    // Convert form data to variant data for the manager
-    const variantData: Partial<ProductVariantsData> = {
-        prices: formData.prices || {},
-        weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : null,
-        strain_name: formData.strain_name,
-        strain_type: formData.strain_type,
-        strain_lineage: formData.strain_lineage,
-        thc_percent: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
-        cbd_percent: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
-        terpenes: formData.terpenes || {},
-    };
-
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className={`grid w-full ${isEditMode && productId ? 'grid-cols-2 sm:grid-cols-5 lg:w-[500px]' : 'grid-cols-2 sm:grid-cols-4 lg:w-[400px]'}`}>
+                <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
                     <TabsTrigger value="details">
                         <FileText className="h-4 w-4 mr-2 hidden sm:block" /> Details
-                    </TabsTrigger>
-                    <TabsTrigger value="variants">
-                        <Scale className="h-4 w-4 mr-2 hidden sm:block" /> Variants
                     </TabsTrigger>
                     <TabsTrigger value="pricing">
                         <DollarSign className="h-4 w-4 mr-2 hidden sm:block" /> Pricing
@@ -239,11 +155,6 @@ export function ProductForm({
                     <TabsTrigger value="media">
                         <ImageIcon className="h-4 w-4 mr-2 hidden sm:block" /> Media
                     </TabsTrigger>
-                    {isEditMode && productId && (
-                        <TabsTrigger value="variants">
-                            <Layers className="h-4 w-4 mr-2 hidden sm:block" /> Variants
-                        </TabsTrigger>
-                    )}
                 </TabsList>
 
                 <div className="mt-4 h-[60vh] overflow-y-auto pr-1">
@@ -262,41 +173,24 @@ export function ProductForm({
 
                             <div className="space-y-2">
                                 <Label>Category *</Label>
-                                {hasHierarchicalCategories ? (
-                                    <ProductCategorySelect
-                                        value={formData.category_id}
-                                        onChange={(categoryId) => {
-                                            const category = getCategoryById(categoryId);
-                                            setFormData({
-                                                ...formData,
-                                                category_id: categoryId,
-                                                // Also set the category string for backwards compatibility
-                                                category: category?.name.toLowerCase() || '',
-                                            });
-                                        }}
-                                        placeholder="Select category"
-                                        disabled={isLoading}
-                                    />
-                                ) : (
-                                    <Select
-                                        value={formData.category}
-                                        onValueChange={(value) => setFormData({ ...formData, category: value })}
-                                        required
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="flower">Flower</SelectItem>
-                                            <SelectItem value="edibles">Edibles</SelectItem>
-                                            <SelectItem value="vapes">Vapes</SelectItem>
-                                            <SelectItem value="concentrates">Concentrates</SelectItem>
-                                            <SelectItem value="pre-rolls">Pre-Rolls</SelectItem>
-                                            <SelectItem value="topicals">Topicals</SelectItem>
-                                            <SelectItem value="gear">Gear</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                )}
+                                <Select
+                                    value={formData.category}
+                                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="flower">Flower</SelectItem>
+                                        <SelectItem value="edibles">Edibles</SelectItem>
+                                        <SelectItem value="vapes">Vapes</SelectItem>
+                                        <SelectItem value="concentrates">Concentrates</SelectItem>
+                                        <SelectItem value="pre-rolls">Pre-Rolls</SelectItem>
+                                        <SelectItem value="topicals">Topicals</SelectItem>
+                                        <SelectItem value="gear">Gear</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2">
@@ -347,18 +241,6 @@ export function ProductForm({
                                 />
                             </div>
                         </div>
-                    </TabsContent>
-
-                    {/* Variants Tab */}
-                    <TabsContent value="variants" className="space-y-4">
-                        {/* ProductVariantsManager requires productId prop for editing */}
-                        {isEditMode && productId ? (
-                            <ProductVariantsManager productId={productId} />
-                        ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <p>Save the product first to manage variants.</p>
-                            </div>
-                        )}
                     </TabsContent>
 
                     {/* Pricing Tab */}
@@ -527,7 +409,7 @@ export function ProductForm({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>THC %</Label>
                                 <Input
@@ -588,13 +470,6 @@ export function ProductForm({
                             )}
                         </div>
                     </TabsContent>
-
-                    {/* Variants Tab (only shown when editing existing product) */}
-                    {isEditMode && productId && (
-                        <TabsContent value="variants" className="space-y-4">
-                            <ProductVariantsManager productId={productId} />
-                        </TabsContent>
-                    )}
                 </div>
             </Tabs >
 

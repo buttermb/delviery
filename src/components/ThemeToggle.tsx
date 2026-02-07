@@ -1,5 +1,4 @@
-import Moon from "lucide-react/dist/esm/icons/moon";
-import Sun from "lucide-react/dist/esm/icons/sun";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -8,14 +7,14 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-export const ThemeToggle = ({ className }: ThemeToggleProps) => {
+const ThemeToggle = ({ className }: ThemeToggleProps) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleTheme} 
       aria-label="Toggle theme"
       className={cn(className)}
     >
@@ -23,3 +22,5 @@ export const ThemeToggle = ({ className }: ThemeToggleProps) => {
     </Button>
   );
 };
+
+export default ThemeToggle;

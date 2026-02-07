@@ -1,4 +1,4 @@
-import Star from "lucide-react/dist/esm/icons/star";
+import { Star } from "lucide-react";
 
 interface ReliabilityStarsProps {
   score: number; // 0-100

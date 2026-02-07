@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,17 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { Loader2, Mail } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { requestSuperAdminPasswordReset, requestTenantAdminPasswordReset, requestCustomerPasswordReset } from "@/utils/passwordReset";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { logger } from "@/lib/logger";
-
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 3;
-const COOLDOWN_MS = 30_000; // 30 second cooldown after hitting limit
 
 interface ForgotPasswordDialogProps {
   userType: "super_admin" | "tenant_admin" | "customer";
@@ -32,80 +24,9 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [rateLimited, setRateLimited] = useState(false);
-  const [cooldownRemaining, setCooldownRemaining] = useState(0);
-  const { validateToken } = useCsrfToken();
-
-  const requestTimestamps = useRef<number[]>([]);
-  const cooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (cooldownTimer.current) {
-        clearInterval(cooldownTimer.current);
-      }
-    };
-  }, []);
-
-  const startCooldown = useCallback(() => {
-    setRateLimited(true);
-    setCooldownRemaining(Math.ceil(COOLDOWN_MS / 1000));
-
-    if (cooldownTimer.current) {
-      clearInterval(cooldownTimer.current);
-    }
-
-    cooldownTimer.current = setInterval(() => {
-      setCooldownRemaining((prev) => {
-        if (prev <= 1) {
-          setRateLimited(false);
-          if (cooldownTimer.current) {
-            clearInterval(cooldownTimer.current);
-            cooldownTimer.current = null;
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
-
-  const isRateLimited = useCallback((): boolean => {
-    const now = Date.now();
-    // Remove timestamps outside the window
-    requestTimestamps.current = requestTimestamps.current.filter(
-      (ts) => now - ts < RATE_LIMIT_WINDOW_MS
-    );
-
-    if (requestTimestamps.current.length >= MAX_REQUESTS_PER_WINDOW) {
-      logger.debug("Password reset rate limit reached");
-      startCooldown();
-      return true;
-    }
-
-    return false;
-  }, [startCooldown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
-      return;
-    }
-
-    if (isRateLimited()) {
-      return;
-    }
-
-    // Track this request for rate limiting
-    requestTimestamps.current.push(Date.now());
-
     setLoading(true);
 
     try {
@@ -187,30 +108,17 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading || rateLimited}
+              disabled={loading}
               inputMode="email"
               enterKeyHint="send"
               autoComplete="email"
             />
           </div>
-
-          {rateLimited && (
-            <div className="flex items-center gap-2 text-sm text-destructive" role="alert">
-              <Clock className="h-4 w-4" aria-hidden="true" />
-              <span>Try again in {cooldownRemaining} seconds</span>
-            </div>
-          )}
-
-          <Button type="submit" className="w-full" disabled={loading || rateLimited}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 Sending...
-              </>
-            ) : rateLimited ? (
-              <>
-                <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
-                Try again in {cooldownRemaining}s
               </>
             ) : (
               <>

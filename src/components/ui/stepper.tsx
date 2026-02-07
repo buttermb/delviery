@@ -1,10 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import Check from "lucide-react/dist/esm/icons/check";
-import Circle from "lucide-react/dist/esm/icons/circle";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
+import { Check, Circle, ChevronRight, ChevronLeft } from "lucide-react";
 
 /**
  * Step status type
@@ -516,4 +513,5 @@ export {
   useStepper,
 };
 export type { Step, StepStatus, StepperProps, StepperContentProps, StepperNavigationProps };
+
 

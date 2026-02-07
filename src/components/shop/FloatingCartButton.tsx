@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag";
+import { ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

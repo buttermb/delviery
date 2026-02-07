@@ -10,19 +10,21 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import Shield from "lucide-react/dist/esm/icons/shield";
-import Key from "lucide-react/dist/esm/icons/key";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Monitor from "lucide-react/dist/esm/icons/monitor";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import LogOut from "lucide-react/dist/esm/icons/log-out";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  Shield,
+  Key,
+  Smartphone,
+  Monitor,
+  Globe,
+  Clock,
+  LogOut,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Loader2,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
@@ -30,8 +32,6 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeFetch } from '@/utils/safeFetch';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { supabase } from '@/integrations/supabase/client';
-import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
-import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
 
 interface Session {
   id: string;
@@ -93,16 +93,12 @@ export default function SecuritySettings() {
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-
-  // Password breach checking
-  const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(passwordData.newPassword);
 
   // Get current session token for comparison
   const currentToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
@@ -215,15 +211,6 @@ export default function SecuritySettings() {
       return;
     }
 
-    if (breachResult?.blocked) {
-      toast({
-        title: 'Password not allowed',
-        description: 'This password has been found in too many data breaches. Please choose a different password.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -331,38 +318,20 @@ export default function SecuritySettings() {
                   </div>
                 </div>
               )}
-              {/* Password Breach Check */}
-              {passwordData.newPassword.length >= 8 && (
-                <PasswordBreachWarning
-                  checking={breachChecking}
-                  result={breachResult}
-                  suggestPassword={suggestPassword}
-                  onGeneratePassword={(pw) => setPasswordData({ ...passwordData, newPassword: pw, confirmPassword: pw })}
-                />
-              )}
             </div>
 
             {/* Confirm Password */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm New Password</label>
-              <div className="relative">
-                <Input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={passwordData.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                  }
-                  placeholder="Confirm new password"
-                  className="pr-10 min-h-[44px]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+              <Input
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                }
+                placeholder="Confirm new password"
+                className="min-h-[44px]"
+              />
               {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
                 <p className="text-xs text-destructive flex items-center gap-1">
                   <XCircle className="h-3 w-3" /> Passwords don't match

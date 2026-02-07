@@ -5,13 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Package from "lucide-react/dist/esm/icons/package";
-import { LiveDeliveryMap } from "@/components/ui/lazy-mapbox";
+import { ArrowLeft, MapPin, Clock, Phone, Truck, Package } from "lucide-react";
+import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { SEOHead } from "@/components/SEOHead";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";

@@ -15,9 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Save from "lucide-react/dist/esm/icons/save";
-import Shield from "lucide-react/dist/esm/icons/shield";
+import { ArrowLeft, Save, Shield } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -254,7 +252,7 @@ export default function CustomerForm() {
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="first_name">First Name *</Label>
                     <Input
@@ -275,7 +273,7 @@ export default function CustomerForm() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
                     <Input
@@ -297,7 +295,7 @@ export default function CustomerForm() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="date_of_birth">Date of Birth *</Label>
                     <Input

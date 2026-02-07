@@ -14,22 +14,21 @@ import {
   ContextMenuTrigger,
   ContextMenuShortcut,
 } from '@/components/ui/context-menu';
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Send from "lucide-react/dist/esm/icons/send";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Package from "lucide-react/dist/esm/icons/package";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import PauseCircle from "lucide-react/dist/esm/icons/pause-circle";
-import PlayCircle from "lucide-react/dist/esm/icons/play-circle";
+import {
+  Eye,
+  Edit,
+  Copy,
+  FileText,
+  Send,
+  Printer,
+  Truck,
+  Ban,
+  RefreshCw,
+  CheckCircle,
+  Clock,
+  Package,
+  ChevronRight,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type OrderContextAction =
@@ -40,10 +39,7 @@ export type OrderContextAction =
   | 'send_update'
   | 'print_packing_slip'
   | 'cancel'
-  | 'status_change'
-  | 'rush'
-  | 'hold'
-  | 'resume';
+  | 'status_change';
 
 export type OrderStatus =
   | 'pending'
@@ -55,20 +51,17 @@ export type OrderStatus =
   | 'in_transit'
   | 'delivered'
   | 'completed'
-  | 'cancelled'
-  | 'on_hold';
+  | 'cancelled';
 
 interface OrderRowContextMenuProps {
   children: ReactNode;
   orderId: string;
   currentStatus?: OrderStatus | string;
-  isRush?: boolean;
   onAction: (action: OrderContextAction, data?: { status?: string }) => void;
   disabledActions?: OrderContextAction[];
   showStatusSubmenu?: boolean;
   showInvoiceAction?: boolean;
   showPrintAction?: boolean;
-  showRushAction?: boolean;
   className?: string;
 }
 
@@ -82,20 +75,17 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string; icon: typeof Clock }[
   { value: 'in_transit', label: 'In Transit', icon: Truck },
   { value: 'delivered', label: 'Delivered', icon: CheckCircle },
   { value: 'completed', label: 'Completed', icon: CheckCircle },
-  { value: 'on_hold', label: 'On Hold', icon: Ban },
 ];
 
 export function OrderRowContextMenu({
   children,
   orderId,
   currentStatus,
-  isRush = false,
   onAction,
   disabledActions = [],
   showStatusSubmenu = true,
   showInvoiceAction = true,
   showPrintAction = true,
-  showRushAction = true,
   className,
 }: OrderRowContextMenuProps) {
   const isDisabled = (action: OrderContextAction) => disabledActions.includes(action);
@@ -124,19 +114,6 @@ export function OrderRowContextMenu({
           Edit Order
           <ContextMenuShortcut>E</ContextMenuShortcut>
         </ContextMenuItem>
-
-        {/* Rush Order Action */}
-        {showRushAction && (
-          <ContextMenuItem
-            onClick={() => onAction('rush')}
-            disabled={isDisabled('rush') || currentStatus === 'cancelled' || currentStatus === 'delivered' || currentStatus === 'completed'}
-            className={cn(isRush && 'text-yellow-600 dark:text-yellow-400')}
-          >
-            <Zap className={cn('mr-2 h-4 w-4', isRush && 'fill-yellow-500 text-yellow-500')} />
-            {isRush ? 'Remove Rush Status' : 'Rush Order'}
-            <ContextMenuShortcut>R</ContextMenuShortcut>
-          </ContextMenuItem>
-        )}
 
         {/* Status Submenu */}
         {showStatusSubmenu && (
@@ -216,31 +193,6 @@ export function OrderRowContextMenu({
 
         <ContextMenuSeparator />
 
-        {/* Hold/Resume */}
-        {currentStatus !== 'on_hold' && currentStatus !== 'cancelled' && currentStatus !== 'completed' && currentStatus !== 'delivered' && (
-          <ContextMenuItem
-            onClick={() => onAction('hold')}
-            disabled={isDisabled('hold')}
-            className="text-amber-600 focus:text-amber-600"
-          >
-            <PauseCircle className="mr-2 h-4 w-4" />
-            Hold Order
-            <ContextMenuShortcut>H</ContextMenuShortcut>
-          </ContextMenuItem>
-        )}
-
-        {currentStatus === 'on_hold' && (
-          <ContextMenuItem
-            onClick={() => onAction('resume')}
-            disabled={isDisabled('resume')}
-            className="text-green-600 focus:text-green-600"
-          >
-            <PlayCircle className="mr-2 h-4 w-4" />
-            Resume Order
-            <ContextMenuShortcut>R</ContextMenuShortcut>
-          </ContextMenuItem>
-        )}
-
         {/* Cancel */}
         <ContextMenuItem
           onClick={() => onAction('cancel')}
@@ -266,10 +218,7 @@ export function useOrderContextActions(options: {
   onSendUpdate?: (orderId: string) => void;
   onPrintPackingSlip?: (orderId: string) => void;
   onCancel?: (orderId: string) => void;
-  onHold?: (orderId: string) => void;
-  onResume?: (orderId: string) => void;
   onStatusChange?: (orderId: string, status: string) => Promise<void> | void;
-  onRush?: (orderId: string) => void;
 }) {
   const handleAction = (
     orderId: string,
@@ -298,19 +247,10 @@ export function useOrderContextActions(options: {
       case 'cancel':
         options.onCancel?.(orderId);
         break;
-      case 'hold':
-        options.onHold?.(orderId);
-        break;
-      case 'resume':
-        options.onResume?.(orderId);
-        break;
       case 'status_change':
         if (data?.status) {
           options.onStatusChange?.(orderId, data.status);
         }
-        break;
-      case 'rush':
-        options.onRush?.(orderId);
         break;
     }
   };

@@ -10,10 +10,7 @@ import {
 } from '@/components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Ticket from "lucide-react/dist/esm/icons/ticket";
+import { CalendarDays, CreditCard, Activity, Ticket } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 

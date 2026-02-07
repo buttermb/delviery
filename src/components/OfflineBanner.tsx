@@ -1,6 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
-import Wifi from "lucide-react/dist/esm/icons/wifi";
+import { WifiOff, Wifi } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 

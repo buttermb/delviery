@@ -3,13 +3,17 @@ import { logger } from '@/lib/logger';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10dndteWVybnRraHJjZG5oYWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1NzQ2MDAsImV4cCI6MjA3NzE1MDYwMH0.rtBxVV_dLIvTI-6X_a7wAHakWW7OUWS-pLq8n-igbBI';
 
 // Validate environment variables
 if (!SUPABASE_URL || SUPABASE_URL === 'undefined') {
-  logger.error('[SUPABASE] VITE_SUPABASE_URL is missing. Check your .env file.');
+  logger.error('[SUPABASE] Environment variables missing:', {
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    allEnvVars: import.meta.env
+  });
   throw new Error(
     'Missing Supabase URL. Please set VITE_SUPABASE_URL environment variable.\n' +
     'Check your .env file in the project root.'
@@ -17,7 +21,10 @@ if (!SUPABASE_URL || SUPABASE_URL === 'undefined') {
 }
 
 if (!SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY === 'undefined') {
-  logger.error('[SUPABASE] VITE_SUPABASE_PUBLISHABLE_KEY is missing. Check your .env file.');
+  logger.error('[SUPABASE] Environment variables missing:', {
+    VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY
+  });
   throw new Error(
     'Missing Supabase key. Please set VITE_SUPABASE_PUBLISHABLE_KEY environment variable.\n' +
     'Check your .env file in the project root.'

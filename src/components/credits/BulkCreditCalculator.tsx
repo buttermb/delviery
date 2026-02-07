@@ -6,11 +6,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import Calculator from "lucide-react/dist/esm/icons/calculator";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import Coins from "lucide-react/dist/esm/icons/coins";
+import { Calculator, AlertTriangle, ChevronDown, ChevronUp, Coins } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -416,4 +412,10 @@ export function useBulkCreditCalculator({
     canAfford,
   };
 }
+
+
+
+
+
+
 

@@ -19,37 +19,38 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { sanitizeHtml, safeJsonParseWithDefault } from '@/lib/utils/sanitize';
-import { queryKeys } from '@/lib/queryKeys';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Heart from "lucide-react/dist/esm/icons/heart";
-import Share2 from "lucide-react/dist/esm/icons/share-2";
-import Minus from "lucide-react/dist/esm/icons/minus";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Check from "lucide-react/dist/esm/icons/check";
-import Star from "lucide-react/dist/esm/icons/star";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Shield from "lucide-react/dist/esm/icons/shield";
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-import Package from "lucide-react/dist/esm/icons/package";
-import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
-import X from "lucide-react/dist/esm/icons/x";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Facebook from "lucide-react/dist/esm/icons/facebook";
-import Twitter from "lucide-react/dist/esm/icons/twitter";
-import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Moon from "lucide-react/dist/esm/icons/moon";
-import Smile from "lucide-react/dist/esm/icons/smile";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import Target from "lucide-react/dist/esm/icons/target";
-import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import Sun from "lucide-react/dist/esm/icons/sun";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import {
+  ShoppingCart,
+  Heart,
+  Share2,
+  Minus,
+  Plus,
+  Check,
+  Star,
+  Truck,
+  Shield,
+  RotateCcw,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  X,
+  Copy,
+  Facebook,
+  Twitter,
+  MessageCircle,
+  Loader2,
+  Moon,
+  Smile,
+  Zap,
+  Target,
+  Lightbulb,
+  Activity,
+  Sun,
+  Sparkles
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
@@ -212,9 +213,7 @@ export function ProductDetailPage() {
 
   // Fetch product details - supports both UUID and slug lookups
   const { data: product, isLoading: productLoading } = useQuery({
-    queryKey: isSlugBased
-      ? queryKeys.shopProducts.detailBySlug(store?.id, identifier)
-      : queryKeys.shopProducts.detail(store?.id, identifier),
+    queryKey: ['shop-product', store?.id, identifier, isSlugBased],
     queryFn: async () => {
       if (!store?.id || !identifier) return null;
 
@@ -307,7 +306,7 @@ export function ProductDetailPage() {
 
   // Fetch related products
   const { data: relatedProducts = [] } = useQuery({
-    queryKey: queryKeys.shopProducts.related(store?.id, product?.category || undefined),
+    queryKey: ['related-products', store?.id, product?.category],
     queryFn: async () => {
       if (!store?.id || !product?.category) return [];
 
@@ -326,7 +325,7 @@ export function ProductDetailPage() {
   // Check wishlist status
   useEffect(() => {
     if (store?.id && product?.product_id) {
-      const wishlist = safeJsonParseWithDefault<string[]>(localStorage.getItem(`shop_wishlist_${store.id}`), []);
+      const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
       setIsWishlisted(wishlist.includes(product.product_id));
     }
   }, [store?.id, product?.product_id]);
@@ -436,6 +435,7 @@ export function ProductDetailPage() {
       };
     }
   }, [product, store, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
+
 
   // Handle quantity change
   const handleQuantityChange = (delta: number) => {
@@ -1119,6 +1119,7 @@ export function ProductDetailPage() {
               className="py-12 border-t border-white/5"
             />
           </div>
+
 
           {/* Enhanced Mobile Sticky Add to Cart (kept as is) */}
           <EnhancedStickyAddToCart

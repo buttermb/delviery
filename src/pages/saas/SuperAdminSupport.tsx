@@ -25,19 +25,21 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import Ticket from "lucide-react/dist/esm/icons/ticket";
-import Search from "lucide-react/dist/esm/icons/search";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import Reply from "lucide-react/dist/esm/icons/reply";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import User from "lucide-react/dist/esm/icons/user";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
+import {
+  Ticket,
+  Search,
+  Filter,
+  Plus,
+  Eye,
+  Reply,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  User,
+  Calendar,
+  MessageSquare,
+  ArrowLeft,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatSmartDate } from '@/lib/utils/formatDate';

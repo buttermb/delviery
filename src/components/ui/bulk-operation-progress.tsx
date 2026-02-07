@@ -1,10 +1,5 @@
 import React from 'react';
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import X from "lucide-react/dist/esm/icons/x";
-import Download from "lucide-react/dist/esm/icons/download";
+import { CheckCircle, XCircle, AlertCircle, RefreshCw, X, Download } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';

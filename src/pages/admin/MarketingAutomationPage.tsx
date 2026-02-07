@@ -6,12 +6,14 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import {
+  Mail,
+  Zap,
+  TrendingUp,
+  Plus,
+  Calendar,
+  MoreHorizontal
+} from "lucide-react";
 import { CampaignBuilder } from "@/components/admin/marketing/CampaignBuilder";
 import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";

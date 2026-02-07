@@ -1,8 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
+import { MapPin, AlertCircle, Smartphone } from 'lucide-react';
 import { useState } from 'react';
 
 interface LocationPermissionModalProps {

@@ -8,11 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Plus, Tag, Trash2, Calendar, Loader2 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import {
     Dialog,

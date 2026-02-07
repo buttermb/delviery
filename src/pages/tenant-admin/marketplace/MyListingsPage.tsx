@@ -14,17 +14,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import Package from "lucide-react/dist/esm/icons/package";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Search from "lucide-react/dist/esm/icons/search";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Pause from "lucide-react/dist/esm/icons/pause";
-import Play from "lucide-react/dist/esm/icons/play";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
+import {
+  Package,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
+  Pause,
+  Play,
+  Filter,
+  MoreVertical
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {

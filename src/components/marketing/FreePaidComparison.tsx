@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import X from "lucide-react/dist/esm/icons/x";
-import Check from "lucide-react/dist/esm/icons/check";
-import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
+import { X, Check, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function FreePaidComparison() {

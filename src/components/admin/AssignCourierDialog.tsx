@@ -19,9 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { Truck, Loader2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Courier {
@@ -53,14 +51,6 @@ export const AssignCourierDialog = ({
   const [assigning, setAssigning] = useState(false);
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
-
-  // Reset state when dialog opens
-  useEffect(() => {
-    if (open) {
-      setSelectedCourierId("");
-      setLoading(true);
-    }
-  }, [open]);
 
   useEffect(() => {
     const fetchAvailableCouriers = async () => {
@@ -220,7 +210,7 @@ export const AssignCourierDialog = ({
             </div>
           ) : (
             <>
-              <Select value={selectedCourierId || undefined} onValueChange={setSelectedCourierId}>
+              <Select value={selectedCourierId} onValueChange={setSelectedCourierId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a courier" />
                 </SelectTrigger>

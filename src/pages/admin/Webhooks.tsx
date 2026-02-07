@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,16 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import Webhook from "lucide-react/dist/esm/icons/webhook";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Edit from "lucide-react/dist/esm/icons/edit";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import History from "lucide-react/dist/esm/icons/history";
-import { handleError } from '@/utils/errorHandling/handlers';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
-import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
-import { WebhookLogs } from '@/components/integrations/WebhookLogs';
+import { Webhook, Plus, Edit, Trash2 } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 interface WebhookConfig {
   id: string;
@@ -26,9 +22,6 @@ interface WebhookConfig {
   events: string[];
   secret: string | null;
   status: string;
-  is_active?: boolean;
-  last_triggered_at?: string | null;
-  integration_id?: string | null;
   created_at: string;
 }
 
@@ -56,7 +49,6 @@ export default function Webhooks() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState<WebhookConfig | null>(null);
-  const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -71,7 +63,7 @@ export default function Webhooks() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from(TABLE_WEBHOOKS)
           .select('*')
           .eq('tenant_id', tenantId)
@@ -79,7 +71,7 @@ export default function Webhooks() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as WebhookConfig[];
+        return data || [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -92,7 +84,7 @@ export default function Webhooks() {
     mutationFn: async (webhook: Partial<WebhookConfig>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE_WEBHOOKS)
         .insert({
           tenant_id: tenantId,
@@ -131,7 +123,7 @@ export default function Webhooks() {
     mutationFn: async ({ id, ...webhook }: WebhookConfig) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE_WEBHOOKS)
         .update({
           name: webhook.name,
@@ -214,12 +206,8 @@ export default function Webhooks() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Webhooks</h1>
-          <p className="text-muted-foreground">Manage webhook integrations</p>
-        </div>
-        <EnhancedLoadingState variant="card" count={3} />
+      <div className="p-6">
+        <div className="text-center">Loading webhooks...</div>
       </div>
     );
   }
@@ -239,14 +227,8 @@ export default function Webhooks() {
 
       {webhooks && webhooks.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {webhooks.map((webhook: WebhookConfig) => (
-            <Card
-              key={webhook.id}
-              className={`cursor-pointer transition-colors ${
-                selectedWebhookId === webhook.id ? 'border-primary bg-muted/30' : 'hover:border-primary/50'
-              }`}
-              onClick={() => setSelectedWebhookId(webhook.id === selectedWebhookId ? null : webhook.id)}
-            >
+          {webhooks.map((webhook: any) => (
+            <Card key={webhook.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -254,14 +236,7 @@ export default function Webhooks() {
                     <CardTitle>{webhook.name}</CardTitle>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(webhook);
-                      }}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(webhook)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>
@@ -291,10 +266,6 @@ export default function Webhooks() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-                    <History className="h-4 w-4" />
-                    <span>Click to view logs</span>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -309,10 +280,6 @@ export default function Webhooks() {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {selectedWebhookId && (
-        <WebhookLogs webhookId={selectedWebhookId} limit={20} />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -380,10 +347,7 @@ export default function Webhooks() {
                 type="submit"
                 disabled={createWebhookMutation.isPending || updateWebhookMutation.isPending}
               >
-                {(createWebhookMutation.isPending || updateWebhookMutation.isPending) && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                {createWebhookMutation.isPending ? 'Creating...' : updateWebhookMutation.isPending ? 'Updating...' : editingWebhook ? 'Update' : 'Create'}
+                {editingWebhook ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>
           </form>

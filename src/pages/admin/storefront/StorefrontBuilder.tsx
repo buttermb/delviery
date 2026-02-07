@@ -1,14 +1,8 @@
-/**
- * StorefrontBuilder - Orchestrator Component
- * Dual-mode builder: Simple (Easy Mode) and Advanced (Full Builder)
- *
- * Simple Mode: Preset packs, feature toggles, basic content editing
- * Advanced Mode: Full drag-and-drop, custom sections, responsive settings
- */
+// Marketplace tables not in generated types yet
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MarketplaceStore, type SectionConfig, type ExtendedThemeConfig } from '@/types/marketplace-extended';
+import { MarketplaceStore } from '@/types/marketplace-extended';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -18,39 +12,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Plus from "lucide-react/dist/esm/icons/plus";
-import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Save from "lucide-react/dist/esm/icons/save";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Layout from "lucide-react/dist/esm/icons/layout";
-import Monitor from "lucide-react/dist/esm/icons/monitor";
-import Smartphone from "lucide-react/dist/esm/icons/smartphone";
-import Tablet from "lucide-react/dist/esm/icons/tablet";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Eye from "lucide-react/dist/esm/icons/eye";
-import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Undo2 from "lucide-react/dist/esm/icons/undo-2";
-import Redo2 from "lucide-react/dist/esm/icons/redo-2";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Image from "lucide-react/dist/esm/icons/image";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import X from "lucide-react/dist/esm/icons/x";
-import ZoomIn from "lucide-react/dist/esm/icons/zoom-in";
-import ZoomOut from "lucide-react/dist/esm/icons/zoom-out";
-import Code from "lucide-react/dist/esm/icons/code";
-import Globe from "lucide-react/dist/esm/icons/globe";
-import GlobeLock from "lucide-react/dist/esm/icons/globe-lock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Store from "lucide-react/dist/esm/icons/store";
-import Settings2 from "lucide-react/dist/esm/icons/settings-2";
-import Wand2 from "lucide-react/dist/esm/icons/wand-2";
+import { Switch } from '@/components/ui/switch';
+import {
+    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout, Palette, Type,
+    Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
+    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
+    Code, Globe, GlobeLock, AlertCircle, Store
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
-import { ModeSwitchWarningDialog } from '@/components/admin/storefront/ModeSwitchWarningDialog';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
@@ -61,21 +30,18 @@ import { FAQSection } from '@/components/shop/sections/FAQSection';
 import { CustomHTMLSection } from '@/components/shop/sections/CustomHTMLSection';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
 import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
-import { useEasyModeBuilder } from '@/hooks/useEasyModeBuilder';
-import { detectAdvancedCustomizations, generateSectionsFromPreset, getPresetById, PRESET_PACKS } from '@/lib/storefrontPresets';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
-import type { Json } from '@/integrations/supabase/types';
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -112,6 +78,14 @@ const TEMPLATES = {
         sections: ['hero', 'gallery', 'testimonials', 'newsletter']
     }
 };
+
+interface SectionConfig {
+    id: string;
+    type: string;
+    content: Record<string, unknown>;
+    styles: Record<string, unknown>;
+    visible?: boolean;
+}
 
 // Sortable section item component
 function SortableSectionItem({
@@ -197,17 +171,7 @@ function SortableSectionItem({
     );
 }
 
-interface StorefrontBuilderProps {
-    isFullScreen?: boolean;
-    onRequestClose?: () => void;
-    onDirtyChange?: (isDirty: boolean) => void;
-}
-
-export function StorefrontBuilder({
-    isFullScreen = false,
-    onRequestClose,
-    onDirtyChange,
-}: StorefrontBuilderProps) {
+export function StorefrontBuilder() {
     const { tenant } = useTenantAdminAuth();
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -238,15 +202,9 @@ export function StorefrontBuilder({
     }, [fromMenuId, menuName, toast]);
 
     const [activeTab, setActiveTab] = useState('sections');
-    const [builderMode, setBuilderMode] = useState<'simple' | 'advanced'>('simple');
     const [devicePreview, setDevicePreview] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const [previewZoom, setPreviewZoom] = useState(0.85);
-
-    // Mode switch warning dialog
-    const [showModeSwitchWarning, setShowModeSwitchWarning] = useState(false);
-    const [pendingModeSwitch, setPendingModeSwitch] = useState<'simple' | 'advanced' | null>(null);
-    const [advancedCustomizations, setAdvancedCustomizations] = useState<string[]>([]);
 
     // Store Creation Dialog State
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -260,17 +218,21 @@ export function StorefrontBuilder({
 
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
-    const [themeConfig, setThemeConfig] = useState<ExtendedThemeConfig>({
+    const [themeConfig, setThemeConfig] = useState<{
+        colors: { primary: string; secondary: string; accent: string; background: string; text: string };
+        typography: { fontFamily: string };
+    }>({
         colors: { primary: '#000000', secondary: '#ffffff', accent: '#3b82f6', background: '#ffffff', text: '#000000' },
         typography: { fontFamily: 'Inter' }
     });
     const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
-    // Handle theme selection (for advanced mode)
+    // Handle theme selection
     const handleThemeSelect = useCallback((theme: ThemePreset) => {
         logger.debug('Applying theme preset', { themeId: theme.id });
         setSelectedThemeId(theme.id);
+        // Apply theme colors to our config structure
         setThemeConfig(prevConfig => ({
             ...prevConfig,
             colors: {
@@ -309,10 +271,11 @@ export function StorefrontBuilder({
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } })
+                // @ts-expect-error - marketplace_stores table may not be in generated types
+                const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
-                    .eq('tenant_id', tenant?.id || '')
+                    .eq('tenant_id', tenant?.id)
                     .maybeSingle();
 
                 if (error) throw error;
@@ -332,94 +295,19 @@ export function StorefrontBuilder({
         enabled: !!tenant?.id,
     });
 
-    // Easy Mode Builder Hook
-    const easyModeBuilder = useEasyModeBuilder({
-        initialThemeConfig: store?.theme_config as ExtendedThemeConfig | undefined,
-        initialLayoutConfig: layoutConfig,
-    });
-
     // Hydrate state from DB
     useEffect(() => {
         if (store) {
+            // Ensure layout_config is always an array
             const rawConfig = store.layout_config;
             const config: SectionConfig[] = Array.isArray(rawConfig) ? rawConfig : [];
             setLayoutConfig(config);
-            if (store.theme_config) setThemeConfig(store.theme_config as ExtendedThemeConfig);
-
+            if (store.theme_config) setThemeConfig(store.theme_config);
             // Initialize history
             setHistory([config]);
             setHistoryIndex(0);
-
-            // Determine initial mode based on existing config
-            const hasEasyMode = (store.theme_config as ExtendedThemeConfig)?.easy_mode?.enabled;
-            const { hasCustomizations } = detectAdvancedCustomizations(config);
-
-            if (hasEasyMode && !hasCustomizations) {
-                setBuilderMode('simple');
-            } else if (config.length > 0) {
-                // Has existing config but not easy mode - probably was built in advanced
-                setBuilderMode('advanced');
-            }
         }
     }, [store]);
-
-    // Handle mode switch with warning check
-    const handleModeSwitch = useCallback((targetMode: 'simple' | 'advanced') => {
-        if (targetMode === builderMode) return;
-
-        if (targetMode === 'simple') {
-            // Switching from advanced to simple - check for customizations
-            const { hasCustomizations, customizations } = detectAdvancedCustomizations(layoutConfig);
-
-            if (hasCustomizations) {
-                setAdvancedCustomizations(customizations);
-                setPendingModeSwitch('simple');
-                setShowModeSwitchWarning(true);
-                return;
-            }
-        }
-
-        // Safe to switch
-        if (targetMode === 'advanced') {
-            // Convert easy mode config to full layout config
-            if (easyModeBuilder.selectedPreset) {
-                const sections = easyModeBuilder.derivedLayoutConfig;
-                setLayoutConfig(sections);
-                setThemeConfig(easyModeBuilder.derivedThemeConfig);
-                saveToHistory(sections);
-            }
-            toast({
-                title: 'Advanced Mode',
-                description: 'You now have full control over all sections and styles.',
-            });
-        }
-
-        setBuilderMode(targetMode);
-    }, [builderMode, layoutConfig, easyModeBuilder, toast]);
-
-    // Confirm mode switch after warning
-    const confirmModeSwitch = useCallback(() => {
-        if (pendingModeSwitch === 'simple') {
-            // Reset to a preset
-            const preset = easyModeBuilder.selectedPreset || PRESET_PACKS[0];
-            easyModeBuilder.selectPreset(preset.id);
-
-            // Apply preset sections
-            const sections = generateSectionsFromPreset(preset);
-            setLayoutConfig(sections);
-            saveToHistory(sections);
-        }
-
-        setBuilderMode(pendingModeSwitch || 'simple');
-        setShowModeSwitchWarning(false);
-        setPendingModeSwitch(null);
-    }, [pendingModeSwitch, easyModeBuilder]);
-
-    // Cancel mode switch
-    const cancelModeSwitch = useCallback(() => {
-        setShowModeSwitchWarning(false);
-        setPendingModeSwitch(null);
-    }, []);
 
     // Save to history
     const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
@@ -452,6 +340,7 @@ export function StorefrontBuilder({
             return false;
         }
 
+        // Check for valid slug format (lowercase, alphanumeric, hyphens only)
         const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
         if (!slugRegex.test(slug)) {
             setSlugError('Slug can only contain lowercase letters, numbers, and hyphens');
@@ -460,7 +349,8 @@ export function StorefrontBuilder({
 
         setIsValidatingSlug(true);
         try {
-            const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } })
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { data, error } = await supabase
                 .from('marketplace_stores')
                 .select('id')
                 .eq('slug', slug)
@@ -497,7 +387,8 @@ export function StorefrontBuilder({
     // Create store mutation (deducts 500 credits)
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            const { data: newStore, error } = await (supabase as unknown as { from: (table: string) => { insert: (obj: unknown) => { select: () => { single: () => Promise<{ data: unknown; error: unknown }> } } } })
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { data: newStore, error } = await supabase
                 .from('marketplace_stores')
                 .insert({
                     tenant_id: tenant?.id,
@@ -506,7 +397,7 @@ export function StorefrontBuilder({
                     layout_config: [],
                     theme_config: themeConfig,
                     is_active: true,
-                    is_public: false,
+                    is_public: false, // Start as draft
                 })
                 .select()
                 .single();
@@ -514,11 +405,10 @@ export function StorefrontBuilder({
             if (error) throw error;
             return newStore;
         },
-        onSuccess: (newStore: unknown) => {
-            const storeData = newStore as { store_name: string };
+        onSuccess: (newStore) => {
             toast({
                 title: "Store created!",
-                description: `Your storefront "${storeData.store_name}" has been created. 500 credits have been deducted.`
+                description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`
             });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             setShowCreateDialog(false);
@@ -537,9 +427,11 @@ export function StorefrontBuilder({
 
     // Handle store creation with credit deduction
     const handleCreateStore = async () => {
+        // Validate slug first
         const isValid = await validateSlug(newStoreSlug);
         if (!isValid) return;
 
+        // Execute with credit gating (500 credits for storefront_create)
         await executeCreditAction({
             actionKey: 'storefront_create',
             action: async () => {
@@ -557,37 +449,24 @@ export function StorefrontBuilder({
         });
     };
 
-    // Get the config to save (from easy mode or direct state)
-    const getConfigToSave = useCallback(() => {
-        if (builderMode === 'simple') {
-            return {
-                layoutConfig: easyModeBuilder.derivedLayoutConfig,
-                themeConfig: easyModeBuilder.derivedThemeConfig,
-            };
-        }
-        return { layoutConfig, themeConfig };
-    }, [builderMode, easyModeBuilder, layoutConfig, themeConfig]);
-
-    // Save draft mutation
+    // Save draft mutation (saves without publishing)
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
-            const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
-
-            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(configToSave)),
-                    theme_config: themeToSave,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
+                    theme_config: themeConfig as unknown,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id);
 
             if (error) throw error;
         },
         onSuccess: () => {
             toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
-            easyModeBuilder.markClean();
         },
         onError: (err) => {
             toast({
@@ -599,27 +478,25 @@ export function StorefrontBuilder({
         }
     });
 
-    // Publish mutation
+    // Publish mutation (makes store public)
     const publishMutation = useMutation({
         mutationFn: async () => {
-            const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
-
-            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(configToSave)),
-                    theme_config: themeToSave,
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
+                    theme_config: themeConfig as unknown,
                     is_public: true,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id);
 
             if (error) throw error;
         },
         onSuccess: () => {
             toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
-            easyModeBuilder.markClean();
         },
         onError: (err) => {
             toast({
@@ -631,16 +508,17 @@ export function StorefrontBuilder({
         }
     });
 
-    // Unpublish mutation
+    // Unpublish mutation (returns store to draft)
     const unpublishMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
                     is_public: false,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id);
 
             if (error) throw error;
         },
@@ -658,6 +536,35 @@ export function StorefrontBuilder({
         }
     });
 
+    // Deprecated - use saveDraftMutation or publishMutation instead
+    const saveMutation = useMutation({
+        mutationFn: async () => {
+            // @ts-expect-error - marketplace_stores table may not be in generated types
+            const { error } = await supabase
+                .from('marketplace_stores')
+                .update({
+                    layout_config: JSON.parse(JSON.stringify(layoutConfig)) as unknown,
+                    theme_config: themeConfig as unknown,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('tenant_id', tenant?.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: "Store saved", description: "Your storefront changes have been saved." });
+            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+        },
+        onError: (err) => {
+            toast({
+                title: "Save failed",
+                description: "Could not save changes. Is the database migration applied?",
+                variant: "destructive"
+            });
+            logger.error('Failed to save storefront', err);
+        }
+    });
+
     const addSection = (type: keyof typeof SECTION_TYPES) => {
         const newSection: SectionConfig = {
             id: crypto.randomUUID(),
@@ -672,11 +579,13 @@ export function StorefrontBuilder({
         setSelectedSectionId(newSection.id);
     };
 
+    // Request section deletion (shows confirmation dialog)
     const requestRemoveSection = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setSectionToDelete(id);
     };
 
+    // Confirm and execute section deletion
     const confirmRemoveSection = () => {
         if (!sectionToDelete) return;
         const newConfig = layoutConfig.filter(s => s.id !== sectionToDelete);
@@ -687,6 +596,7 @@ export function StorefrontBuilder({
         toast({ title: "Section deleted" });
     };
 
+    // Cancel section deletion
     const cancelRemoveSection = () => {
         setSectionToDelete(null);
     };
@@ -731,23 +641,6 @@ export function StorefrontBuilder({
         setLayoutConfig(newConfig);
     };
 
-    const updateSectionResponsive = (id: string, device: 'mobile' | 'tablet' | 'desktop', key: string, value: unknown) => {
-        const newConfig = layoutConfig.map(s => {
-            if (s.id !== id) return s;
-            return {
-                ...s,
-                responsive: {
-                    ...s.responsive,
-                    [device]: {
-                        ...(s.responsive?.[device] || {}),
-                        [key]: value
-                    }
-                }
-            };
-        });
-        setLayoutConfig(newConfig);
-    };
-
     const applyTemplate = (templateKey: keyof typeof TEMPLATES) => {
         const template = TEMPLATES[templateKey];
         const newSections: SectionConfig[] = template.sections.map(type => ({
@@ -775,54 +668,31 @@ export function StorefrontBuilder({
 
     const selectedSection = layoutConfig.find(s => s.id === selectedSectionId);
 
+    // Preview scale - use transform to fit content without breaking layout
     const getPreviewStyle = () => {
+        // Apply user-controlled zoom
         switch (devicePreview) {
-            case 'mobile': return { width: '375px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
-            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.8})`, transformOrigin: 'top center' };
-            default: return { width: '100%', maxWidth: '1000px', transform: `scale(${previewZoom * 0.75})`, transformOrigin: 'top center' };
+            case 'mobile': return { width: '375px', transform: `scale(${previewZoom * 0.9})`, transformOrigin: 'top center' };
+            case 'tablet': return { width: '768px', transform: `scale(${previewZoom * 0.85})`, transformOrigin: 'top center' };
+            default: return { width: '1200px', transform: `scale(${previewZoom})`, transformOrigin: 'top center' };
         }
     };
 
+    // Auto-open right panel when selecting a section
     const handleSelectSection = (id: string) => {
         setSelectedSectionId(id);
         if (!rightPanelOpen) setRightPanelOpen(true);
     };
 
-    // Render the appropriate layout config for preview
-    const previewConfig = builderMode === 'simple' ? easyModeBuilder.derivedLayoutConfig : layoutConfig;
-    const previewTheme = builderMode === 'simple' ? easyModeBuilder.derivedThemeConfig : themeConfig;
-
-    // Notify parent of dirty state changes
-    useEffect(() => {
-        if (onDirtyChange) {
-            onDirtyChange(easyModeBuilder.isDirty);
-        }
-    }, [easyModeBuilder.isDirty, onDirtyChange]);
-
-    // Handle close/back
-    const handleClose = useCallback(() => {
-        if (onRequestClose) {
-            onRequestClose();
-        } else {
-            window.history.back();
-        }
-    }, [onRequestClose]);
-
     return (
-        <div
-            className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : '-m-3 sm:-m-4 md:-m-6'}`}
-            style={{
-                height: isFullScreen ? '100vh' : 'calc(100vh - 56px)',
-                width: isFullScreen ? '100%' : 'calc(100% + 1.5rem)'
-            }}
-        >
+        <div className="flex flex-col bg-muted overflow-hidden -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)', width: 'calc(100% + 1.5rem)' }}>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-background border-b shrink-0 z-20">
-                <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" onClick={handleClose}>
-                        {isFullScreen ? <X className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+            <div className="flex items-center justify-between px-6 py-3 bg-background border-b shrink-0 z-20">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+                        <ArrowLeft className="w-4 h-4" />
                     </Button>
-                    <span className="font-semibold">{isFullScreen ? 'Storefront Editor' : 'Store Builder'}</span>
+                    <span className="font-semibold">Store Builder</span>
                     <div className="flex rounded-md bg-muted p-1">
                         <Button
                             variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
@@ -899,86 +769,102 @@ export function StorefrontBuilder({
                             )}
                         </div>
                     )}
-
-                    {/* Mode Toggle */}
-                    <div className="flex bg-muted p-1 rounded-md">
-                        <Button
-                            variant={builderMode === 'simple' ? 'default' : 'ghost'}
-                            size="sm"
-                            className="h-7 text-xs gap-1"
-                            onClick={() => handleModeSwitch('simple')}
-                        >
-                            <Wand2 className="w-3 h-3" /> Simple
+                    {/* Toggle right panel button when closed */}
+                    {selectedSection && !rightPanelOpen && (
+                        <Button variant="outline" size="sm" onClick={() => setRightPanelOpen(true)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Edit Section
                         </Button>
-                        <Button
-                            variant={builderMode === 'advanced' ? 'default' : 'ghost'}
-                            size="sm"
-                            className="h-7 text-xs gap-1"
-                            onClick={() => handleModeSwitch('advanced')}
-                        >
-                            <Settings2 className="w-3 h-3" /> Advanced
+                    )}
+                    {/* Create Store button when no store exists */}
+                    {!store && !isLoading && (
+                        <Button onClick={() => setShowCreateDialog(true)}>
+                            <Store className="w-4 h-4 mr-2" />
+                            Create Store (500 credits)
                         </Button>
-                    </div>
-
-                    <Button
-                        disabled={saveDraftMutation.isPending || publishMutation.isPending}
-                        onClick={() => saveDraftMutation.mutate()}
-                        variant="outline"
-                        size="sm"
-                    >
-                        {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
-                    </Button>
-                    <Button
-                        disabled={publishMutation.isPending}
-                        onClick={() => publishMutation.mutate()}
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700"
-                    >
-                        Publish
-                    </Button>
+                    )}
+                    {/* Save Draft button */}
+                    {store && (
+                        <Button
+                            variant="outline"
+                            onClick={() => saveDraftMutation.mutate()}
+                            disabled={saveDraftMutation.isPending}
+                        >
+                            <Save className="w-4 h-4 mr-2" />
+                            {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
+                        </Button>
+                    )}
+                    {/* Publish / Unpublish button */}
+                    {store && (
+                        store.is_public ? (
+                            <Button
+                                variant="outline"
+                                onClick={() => unpublishMutation.mutate()}
+                                disabled={unpublishMutation.isPending}
+                            >
+                                <GlobeLock className="w-4 h-4 mr-2" />
+                                {unpublishMutation.isPending ? 'Unpublishing...' : 'Unpublish'}
+                            </Button>
+                        ) : (
+                            <Button
+                                onClick={() => publishMutation.mutate()}
+                                disabled={publishMutation.isPending}
+                            >
+                                <Globe className="w-4 h-4 mr-2" />
+                                {publishMutation.isPending ? 'Publishing...' : 'Publish'}
+                            </Button>
+                        )
+                    )}
                 </div>
             </div>
 
-            {builderMode === 'simple' ? (
-                /* Simple Mode - Easy Mode Editor */
-                <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/20">
-                    <EasyModeEditor
-                        storeId={store?.id || ''}
-                        storeSlug={store?.slug || ''}
-                        selectedPresetId={easyModeBuilder.selectedPreset?.id || null}
-                        onSelectPreset={easyModeBuilder.selectPreset}
-                        featureToggles={easyModeBuilder.featureToggles}
-                        onUpdateToggle={easyModeBuilder.updateFeatureToggle}
-                        simpleContent={easyModeBuilder.simpleContent}
-                        onUpdateContent={easyModeBuilder.updateSimpleContent}
-                        onResetToPreset={easyModeBuilder.resetToPreset}
-                        onSave={() => saveDraftMutation.mutate()}
-                        onPublish={() => publishMutation.mutate()}
-                        isSaving={saveDraftMutation.isPending || publishMutation.isPending}
-                        isDirty={easyModeBuilder.isDirty}
-                    />
-                </div>
-            ) : (
-                /* Advanced Builder Layout */
-                <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {/* Left Sidebar - Narrower for more preview space */}
-                    <div className="w-56 bg-background border-r flex flex-col shrink-0 z-10">
-                        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
-                            <TabsList className="mx-3 mt-3 mb-2 grid grid-cols-3 h-8">
-                                <TabsTrigger value="sections" className="text-xs px-2">Sections</TabsTrigger>
-                                <TabsTrigger value="theme" className="text-xs px-2">Theme</TabsTrigger>
-                                <TabsTrigger value="templates" className="text-xs px-2">Templates</TabsTrigger>
-                            </TabsList>
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+                {/* Left Sidebar: Controls - narrower for more preview space */}
+                <div className="w-64 bg-background border-r flex flex-col shrink-0 z-10 min-h-0">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+                        <TabsList className="grid w-full grid-cols-3 p-4 pb-0 h-auto bg-transparent">
+                            <TabsTrigger value="sections">Sections</TabsTrigger>
+                            <TabsTrigger value="theme">Theme</TabsTrigger>
+                            <TabsTrigger value="templates">Templates</TabsTrigger>
+                        </TabsList>
+                        <Separator />
 
-                            {/* Sections Tab */}
-                            <TabsContent value="sections" className="flex-1 overflow-hidden m-0">
-                                <ScrollArea className="h-full">
-                                    <div className="p-3 space-y-3">
-                                        <h4 className="text-xs font-semibold uppercase text-muted-foreground">Page Sections</h4>
-                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                            <SortableContext items={layoutConfig.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                        <TabsContent value="sections" className="flex-1 overflow-hidden flex flex-col m-0">
+                            <ScrollArea className="flex-1 px-4 py-4">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Add Section</Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
+                                                <Button
+                                                    key={key}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
+                                                    className="justify-start text-xs"
+                                                >
+                                                    <Plus className="w-3 h-3 mr-1" />
+                                                    {label.split(' ')[0]}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <Separator />
+
+                                    <div className="space-y-2">
+                                        <Label>Page Sections</Label>
+                                        <DndContext
+                                            sensors={sensors}
+                                            collisionDetection={closestCenter}
+                                            onDragEnd={handleDragEnd}
+                                        >
+                                            <SortableContext
+                                                items={layoutConfig.map(s => s.id)}
+                                                strategy={verticalListSortingStrategy}
+                                            >
                                                 <div className="space-y-2">
-                                                    {layoutConfig.map(section => (
+                                                    {layoutConfig.map((section) => (
                                                         <SortableSectionItem
                                                             key={section.id}
                                                             section={section}
@@ -993,205 +879,240 @@ export function StorefrontBuilder({
                                                 </div>
                                             </SortableContext>
                                         </DndContext>
-                                        <Separator className="my-3" />
-                                        <h4 className="text-xs font-semibold uppercase text-muted-foreground">Add New Section</h4>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
-                                                <Button
-                                                    key={key}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="justify-start text-xs h-9"
-                                                    onClick={() => addSection(key as keyof typeof SECTION_TYPES)}
-                                                >
-                                                    <Icon className="w-3 h-3 mr-1.5" />
-                                                    {label}
-                                                </Button>
+                                        {layoutConfig.length === 0 && (
+                                            <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+                                                No sections added
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+
+                        <TabsContent value="theme" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <ScrollArea className="flex-1">
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <Label>Global Colors</Label>
+                                        <div className="grid gap-3">
+                                            {['primary', 'secondary', 'accent', 'background', 'text'].map(colorKey => (
+                                                <div key={colorKey} className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground capitalize">{colorKey}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <Input
+                                                            type="color"
+                                                            className="w-8 h-8 p-0 border-0 cursor-pointer"
+                                                            value={themeConfig.colors?.[colorKey] || '#000000'}
+                                                            onChange={(e) => setThemeConfig({
+                                                                ...themeConfig,
+                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
+                                                            })}
+                                                        />
+                                                        <Input
+                                                            className="w-24 h-8 text-xs"
+                                                            value={themeConfig.colors?.[colorKey] || '#000000'}
+                                                            onChange={(e) => setThemeConfig({
+                                                                ...themeConfig,
+                                                                colors: { ...themeConfig.colors, [colorKey]: e.target.value }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
-                                </ScrollArea>
-                            </TabsContent>
 
-                            {/* Theme Tab */}
-                            <TabsContent value="theme" className="flex-1 overflow-hidden m-0">
-                                <ScrollArea className="h-full">
-                                    <div className="p-3 space-y-4">
-                                        <h4 className="text-xs font-semibold uppercase text-muted-foreground">Theme Presets</h4>
-                                        <ThemePresetStrip
-                                            selectedThemeId={selectedThemeId}
-                                            onSelectTheme={handleThemeSelect}
-                                        />
-                                        <Separator className="my-3" />
-                                        <h4 className="text-xs font-semibold uppercase text-muted-foreground">Custom Colors</h4>
-                                        <div className="space-y-3">
-                                            <div className="space-y-1">
-                                                <Label className="text-xs">Primary</Label>
-                                                <Input
-                                                    type="color"
-                                                    value={themeConfig.colors?.primary || '#000000'}
-                                                    onChange={(e) => setThemeConfig({ ...themeConfig, colors: { ...themeConfig.colors, primary: e.target.value } })}
-                                                    className="h-8 w-full"
-                                                />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label className="text-xs">Accent</Label>
-                                                <Input
-                                                    type="color"
-                                                    value={themeConfig.colors?.accent || '#3b82f6'}
-                                                    onChange={(e) => setThemeConfig({ ...themeConfig, colors: { ...themeConfig.colors, accent: e.target.value } })}
-                                                    className="h-8 w-full"
-                                                />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label className="text-xs">Background</Label>
-                                                <Input
-                                                    type="color"
-                                                    value={themeConfig.colors?.background || '#ffffff'}
-                                                    onChange={(e) => setThemeConfig({ ...themeConfig, colors: { ...themeConfig.colors, background: e.target.value } })}
-                                                    className="h-8 w-full"
-                                                />
-                                            </div>
-                                        </div>
-                                        <Separator className="my-3" />
-                                        <h4 className="text-xs font-semibold uppercase text-muted-foreground">Typography</h4>
+                                    <Separator />
+
+                                    <div className="space-y-3">
+                                        <Label>Typography</Label>
                                         <Select
                                             value={themeConfig.typography?.fontFamily || 'Inter'}
-                                            onValueChange={(value) => setThemeConfig({ ...themeConfig, typography: { ...themeConfig.typography, fontFamily: value } })}
+                                            onValueChange={(value) => setThemeConfig({
+                                                ...themeConfig,
+                                                typography: { ...themeConfig.typography, fontFamily: value }
+                                            })}
                                         >
-                                            <SelectTrigger className="h-8 text-xs">
+                                            <SelectTrigger>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="Inter">Inter</SelectItem>
+                                                <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
+                                                <SelectItem value="DM Sans">DM Sans</SelectItem>
                                                 <SelectItem value="Playfair Display">Playfair Display</SelectItem>
                                                 <SelectItem value="Montserrat">Montserrat</SelectItem>
-                                                <SelectItem value="Roboto">Roboto</SelectItem>
-                                                <SelectItem value="Space Grotesk">Space Grotesk</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                </ScrollArea>
-                            </TabsContent>
-
-                            {/* Templates Tab */}
-                            <TabsContent value="templates" className="flex-1 overflow-hidden m-0">
-                                <ScrollArea className="h-full">
-                                    <div className="p-3 space-y-3">
-                                        <h4 className="text-xs font-semibold uppercase text-muted-foreground">Quick Start Templates</h4>
-                                        <div className="space-y-2">
-                                            {Object.entries(TEMPLATES).map(([key, template]) => (
-                                                <Card
-                                                    key={key}
-                                                    className="cursor-pointer hover:border-primary transition-colors"
-                                                    onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
-                                                >
-                                                    <CardHeader className="p-3">
-                                                        <CardTitle className="text-sm">{template.name}</CardTitle>
-                                                        <CardDescription className="text-xs">{template.description}</CardDescription>
-                                                    </CardHeader>
-                                                    <CardContent className="p-3 pt-0">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {template.sections.map((section) => (
-                                                                <span key={section} className="text-[10px] px-1.5 py-0.5 bg-muted rounded">
-                                                                    {SECTION_TYPES[section as keyof typeof SECTION_TYPES]?.label || section}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </ScrollArea>
-                            </TabsContent>
-                        </Tabs>
-                    </div>
-
-                    {/* Center: Live Preview - uses transform scaling */}
-                    <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
-                        <div
-                            className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
-                            style={{
-                                ...getPreviewStyle(),
-                                minHeight: '800px',
-                            }}
-                        >
-                            {/* Simulated Header */}
-                            <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
-                                <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
-                                <div className="hidden md:flex gap-6 text-sm">
-                                    <span>Home</span>
-                                    <span>Shop</span>
-                                    <span>Contact</span>
                                 </div>
-                            </div>
-
-                            {/* Sections Render */}
-                            <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
-                                {layoutConfig.filter(s => s.visible !== false).map((section) => {
-                                    const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
-                                    if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
-
-                                    return (
-                                        <div
-                                            key={section.id}
-                                            className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
-                                            onClick={() => handleSelectSection(section.id)}
-                                        >
-                                            <Component content={section.content} styles={section.styles} storeId={store?.id} />
-
-                                            {/* Hover overlay for selection */}
-                                            {selectedSectionId !== section.id && (
-                                                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors cursor-pointer" />
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {layoutConfig.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-                                        <Layout className="w-16 h-16 mb-4 opacity-50" />
-                                        <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
-                                        <p className="text-sm mb-6">Get started with a template or add sections manually</p>
-                                        <div className="flex gap-3">
-                                            <Button variant="default" onClick={() => applyTemplate('standard')}>
-                                                <Sparkles className="w-4 h-4 mr-2" />
-                                                Quick Start (Standard)
-                                            </Button>
-                                            <Button variant="outline" onClick={() => setActiveTab('templates')}>
-                                                Browse Templates
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Sidebar: Property Editor - collapsible */}
-                    {selectedSection && rightPanelOpen && (
-                        <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
-                            <div className="p-4 border-b flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
-                                    <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
-                                    <X className="w-4 h-4" />
-                                </Button>
-                            </div>
-                            <ScrollArea className="flex-1 p-4">
-                                <SectionEditor
-                                    section={selectedSection}
-                                    onUpdateContent={(key, value) => updateSection(selectedSection.id, 'content', key, value)}
-                                    onUpdateStyles={(key, value) => updateSection(selectedSection.id, 'styles', key, value)}
-                                    onUpdateResponsive={(device, key, value) => updateSectionResponsive(selectedSection.id, device, key, value)}
-                                />
                             </ScrollArea>
-                        </div>
-                    )}
+                        </TabsContent>
+
+                        <TabsContent value="templates" className="flex-1 overflow-hidden flex flex-col m-0 p-4">
+                            <ScrollArea className="flex-1">
+                                <div className="space-y-3">
+                                    <Label>Quick Templates</Label>
+                                    <p className="text-xs text-muted-foreground">Start with a pre-built layout</p>
+                                    <div className="space-y-2">
+                                        {Object.entries(TEMPLATES).map(([key, template]) => (
+                                            <Card
+                                                key={key}
+                                                className="cursor-pointer hover:border-primary transition-colors"
+                                                onClick={() => applyTemplate(key as keyof typeof TEMPLATES)}
+                                            >
+                                                <CardContent className="p-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <p className="font-medium text-sm">{template.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{template.description}</p>
+                                                        </div>
+                                                        <FileText className="w-4 h-4 text-muted-foreground" />
+                                                    </div>
+                                                    <div className="flex gap-1 mt-2 flex-wrap">
+                                                        {template.sections.map((s, i) => (
+                                                            <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded">
+                                                                {SECTION_TYPES[s as keyof typeof SECTION_TYPES]?.label.split(' ')[0]}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+                    </Tabs>
                 </div>
-            )}
+
+                {/* Center: Live Preview - uses transform scaling */}
+                <div className="flex-1 bg-muted flex items-start justify-center p-4 overflow-auto relative min-w-0 min-h-0">
+                    <div
+                        className="bg-background shadow-2xl overflow-visible transition-all duration-300 relative"
+                        style={{
+                            ...getPreviewStyle(),
+                            minHeight: '800px',
+                        }}
+                    >
+                        {/* Simulated Header */}
+                        <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
+                            <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
+                            <div className="hidden md:flex gap-6 text-sm">
+                                <span>Home</span>
+                                <span>Shop</span>
+                                <span>Contact</span>
+                            </div>
+                        </div>
+
+                        {/* Sections Render */}
+                        <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
+                            {layoutConfig.filter(s => s.visible !== false).map((section) => {
+                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
+                                if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
+
+                                return (
+                                    <div
+                                        key={section.id}
+                                        className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
+                                        onClick={() => handleSelectSection(section.id)}
+                                    >
+                                        <Component content={section.content} styles={section.styles} storeId={store?.id} />
+
+                                        {/* Hover overlay for selection */}
+                                        {selectedSectionId !== section.id && (
+                                            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors cursor-pointer" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {layoutConfig.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                                    <Layout className="w-16 h-16 mb-4 opacity-50" />
+                                    <p className="text-lg font-medium mb-2">Your store canvas is empty</p>
+                                    <p className="text-sm mb-6">Get started with a template or add sections manually</p>
+                                    <div className="flex gap-3">
+                                        <Button variant="default" onClick={() => applyTemplate('standard')}>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Quick Start (Standard)
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setActiveTab('templates')}>
+                                            Browse Templates
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Sidebar: Property Editor - collapsible */}
+                {selectedSection && rightPanelOpen && (
+                    <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <div>
+                                <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
+                                <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <ScrollArea className="flex-1 p-4">
+                            <Accordion type="single" collapsible defaultValue="content" className="w-full">
+                                <AccordionItem value="content">
+                                    <AccordionTrigger>Content</AccordionTrigger>
+                                    <AccordionContent className="space-y-4 pt-2">
+                                        {Object.keys(sectionDefaults(selectedSection.type).content).map((key) => (
+                                            <div key={key} className="space-y-2">
+                                                <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
+                                                <Input
+                                                    value={selectedSection.content[key] || ''}
+                                                    onChange={(e) => updateSection(selectedSection.id, 'content', key, e.target.value)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="styles">
+                                    <AccordionTrigger>Styles</AccordionTrigger>
+                                    <AccordionContent className="space-y-4 pt-2">
+                                        {Object.keys(sectionDefaults(selectedSection.type).styles).map((key) => {
+                                            const isColor = key.includes('color') || key.includes('gradient');
+                                            return (
+                                                <div key={key} className="space-y-2">
+                                                    <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
+                                                    {isColor ? (
+                                                        <div className="flex gap-2">
+                                                            <Input
+                                                                type="color"
+                                                                className="w-10 h-10 p-0"
+                                                                value={selectedSection.styles[key] || '#ffffff'}
+                                                                onChange={(e) => updateSection(selectedSection.id, 'styles', key, e.target.value)}
+                                                            />
+                                                            <Input
+                                                                type="text"
+                                                                value={selectedSection.styles[key] || ''}
+                                                                onChange={(e) => updateSection(selectedSection.id, 'styles', key, e.target.value)}
+                                                                className="flex-1"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <Input
+                                                            value={selectedSection.styles[key] || ''}
+                                                            onChange={(e) => updateSection(selectedSection.id, 'styles', key, e.target.value)}
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </ScrollArea>
+                    </div>
+                )}
+            </div>
 
             {/* Create Store Dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -1281,96 +1202,42 @@ export function StorefrontBuilder({
 
             {/* Out of Credits Modal */}
             <OutOfCreditsModal
-                open={showOutOfCreditsModal}
-                onOpenChange={(open) => { if (!open) closeOutOfCreditsModal(); }}
-                actionAttempted={blockedAction ?? undefined}
+                isOpen={showOutOfCreditsModal}
+                onClose={closeOutOfCreditsModal}
+                blockedAction={blockedAction ?? undefined}
             />
         </div>
     );
 }
 
-// Helper to get defaults dynamically
+// Helper to get defaults dynamically so we don't crash on new props
 function sectionDefaults(type: string) {
     if (type === 'hero') return {
-        content: {
-            heading_line_1: 'Premium',
-            heading_line_2: 'Flower',
-            heading_line_3: 'Delivered',
-            subheading: 'Curated strains. Same-day delivery.',
-            cta_primary_text: 'Explore Collection',
-            cta_primary_link: '/shop',
-            cta_secondary_text: 'View Menu',
-            cta_secondary_link: '/menu',
-            trust_badges: true
-        },
+        content: { heading_line_1: 'Premium', heading_line_2: 'Flower', heading_line_3: 'Delivered', subheading: 'Premium delivery service.' },
         styles: { background_gradient_start: '#000000', background_gradient_end: '#022c22', text_color: '#ffffff', accent_color: '#34d399' }
     };
     if (type === 'features') return {
-        content: {
-            heading_small: 'The Difference',
-            heading_large: 'Excellence in Every Detail',
-            features: [
-                { icon: 'clock', title: 'Same-Day Delivery', description: 'Order before 9 PM for delivery within the hour.' },
-                { icon: 'shield', title: 'Lab Verified', description: 'Every strain tested for purity and quality.' },
-                { icon: 'lock', title: 'Discreet Service', description: 'Unmarked packaging. Your privacy is our priority.' },
-                { icon: 'star', title: 'Premium Selection', description: 'Hand-picked strains. Top-shelf quality.' },
-            ]
-        },
+        content: { heading_small: 'The Difference', heading_large: 'Excellence' },
         styles: { background_color: '#171717', text_color: '#ffffff', icon_color: '#34d399' }
     };
     if (type === 'product_grid') return {
-        content: {
-            heading: 'Shop Premium Collection',
-            subheading: 'Premium indoor-grown flower from licensed cultivators',
-            show_search: true,
-            show_categories: true,
-            initial_categories_shown: 2,
-            show_premium_filter: true
-        },
+        content: { heading: 'Shop Collection', subheading: 'Curated selection.' },
         styles: { background_color: '#f4f4f5', text_color: '#000000', accent_color: '#10b981' }
     };
     if (type === 'testimonials') return {
-        content: {
-            heading: 'What Our Customers Say',
-            subheading: 'Join thousands of satisfied customers',
-            testimonials: [
-                { name: 'Sarah M.', role: 'Verified Customer', quote: 'The quality is unmatched. Fast delivery and exactly what I was looking for.', rating: 5 },
-                { name: 'Michael R.', role: 'Regular Customer', quote: 'Best service in the city. Professional, discreet, and always reliable.', rating: 5 },
-                { name: 'Jessica L.', role: 'New Customer', quote: 'Impressed with the selection and the speed of delivery. Highly recommend!', rating: 5 },
-            ]
-        },
+        content: { heading: 'What Our Customers Say', subheading: 'Join thousands of satisfied customers' },
         styles: { background_color: '#ffffff', text_color: '#000000', accent_color: '#10b981', card_background: '#f9fafb' }
     };
     if (type === 'newsletter') return {
-        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops, deals, and updates.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
+        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
         styles: { background_gradient_start: '#000000', background_gradient_end: '#1f2937', text_color: '#ffffff', accent_color: '#10b981', button_color: '#10b981' }
     };
     if (type === 'gallery') return {
-        content: {
-            heading: 'Gallery',
-            subheading: 'A curated visual experience',
-            images: [
-                { url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600', alt: 'Product 1' },
-                { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600', alt: 'Product 2' },
-                { url: 'https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=600', alt: 'Product 3' },
-                { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600', alt: 'Product 4' },
-                { url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600', alt: 'Product 5' },
-                { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600', alt: 'Product 6' },
-            ]
-        },
+        content: { heading: 'Gallery', subheading: 'A curated visual experience' },
         styles: { background_color: '#000000', text_color: '#ffffff', accent_color: '#10b981' }
     };
     if (type === 'faq') return {
-        content: {
-            heading: 'Frequently Asked Questions',
-            subheading: 'Got questions? We\'ve got answers.',
-            faqs: [
-                { question: 'What are your delivery hours?', answer: 'We deliver 7 days a week from 10 AM to 10 PM. Same-day delivery available.' },
-                { question: 'How do I track my order?', answer: 'You\'ll receive a tracking link via SMS and email once dispatched.' },
-                { question: 'What payment methods do you accept?', answer: 'We accept cash, debit cards, and all major credit cards.' },
-                { question: 'Is there a minimum order?', answer: 'Minimum order is $50 for delivery. Orders above $100 get free delivery.' },
-            ]
-        },
+        content: { heading: 'Frequently Asked Questions', subheading: 'Got questions? We\'ve got answers.' },
         styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' }
     };
     if (type === 'custom_html') return {

@@ -12,24 +12,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { differenceInDays, format } from 'date-fns';
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
-import ChevronUp from "lucide-react/dist/esm/icons/chevron-up";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Send from "lucide-react/dist/esm/icons/send";
-import History from "lucide-react/dist/esm/icons/history";
-import StickyNote from "lucide-react/dist/esm/icons/sticky-note";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import {
+  Phone,
+  MessageSquare,
+  Mail,
+  DollarSign,
+  Clock,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+  Calendar,
+  FileText,
+  Plus,
+  Send,
+  History,
+  StickyNote,
+  CreditCard,
+  CheckCircle2,
+  XCircle
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

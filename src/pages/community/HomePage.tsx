@@ -10,9 +10,7 @@ import { PostCard } from '@/components/community/PostCard';
 import { PostSkeleton } from '@/components/community/PostSkeleton';
 import { EmptyState } from '@/components/community/EmptyState';
 import { useForumRealtimePosts } from '@/hooks/useForumRealtime';
-import Flame from "lucide-react/dist/esm/icons/flame";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import { Flame, Sparkles, TrendingUp } from 'lucide-react';
 
 export function HomePage() {
   const [sortBy, setSortBy] = useState<'hot' | 'new' | 'top'>('hot');

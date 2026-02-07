@@ -1,9 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
-import Target from "lucide-react/dist/esm/icons/target";
-import Users from "lucide-react/dist/esm/icons/users";
-import Zap from "lucide-react/dist/esm/icons/zap";
+import { Lightbulb, Target, Users, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Insight {

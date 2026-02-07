@@ -18,10 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Send from "lucide-react/dist/esm/icons/send";
-import Save from "lucide-react/dist/esm/icons/save";
-import Clock from "lucide-react/dist/esm/icons/clock";
+import { Mail, Send, Save, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailDraft {

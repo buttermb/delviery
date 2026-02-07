@@ -23,17 +23,19 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
-import RouteIcon from "lucide-react/dist/esm/icons/route";
-import Navigation from "lucide-react/dist/esm/icons/navigation";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import Fuel from "lucide-react/dist/esm/icons/fuel";
-import Zap from "lucide-react/dist/esm/icons/zap";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
-import Truck from "lucide-react/dist/esm/icons/truck";
-import Send from "lucide-react/dist/esm/icons/send";
+import {
+  Route as RouteIcon,
+  Navigation,
+  MapPin,
+  Clock,
+  Fuel,
+  Zap,
+  CheckCircle2,
+  Trash2,
+  GripVertical,
+  Truck,
+  Send
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
@@ -43,7 +45,7 @@ import { AssignRouteDialog } from './AssignRouteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Mapbox & Map Components
-import { loadMapbox } from '@/lib/mapbox-loader';
+import 'mapbox-gl/dist/mapbox-gl.css';
 // @ts-ignore - react-map-gl types
 import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/mapbox';
 
@@ -92,13 +94,6 @@ export function RouteOptimizer() {
 
   // Mapbox Token
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-
-  // Load mapbox-gl dynamically (including CSS)
-  useEffect(() => {
-    loadMapbox().catch(error => {
-      logger.error('Failed to load Mapbox GL', error);
-    });
-  }, []);
 
   // ----------------------------------------------------------------------------
   // Helper: Calculate Bounds

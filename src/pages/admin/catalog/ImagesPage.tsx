@@ -9,17 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import Upload from "lucide-react/dist/esm/icons/upload";
-import Search from "lucide-react/dist/esm/icons/search";
-import Grid3x3 from "lucide-react/dist/esm/icons/grid-3x3";
-import List from "lucide-react/dist/esm/icons/list";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Download from "lucide-react/dist/esm/icons/download";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
-import Tag from "lucide-react/dist/esm/icons/tag";
-import Filter from "lucide-react/dist/esm/icons/filter";
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import {
+  Upload,
+  Search,
+  Grid3x3,
+  List,
+  Trash2,
+  Download,
+  Image as ImageIcon,
+  Tag,
+  Filter,
+  ArrowLeft
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/lib/queryKeys';
+import { Loader2 } from 'lucide-react';
 
 export default function ImagesPage() {
   const navigate = useNavigate();

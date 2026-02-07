@@ -12,18 +12,20 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import Search from "lucide-react/dist/esm/icons/search";
-import Plus from "lucide-react/dist/esm/icons/plus";
-import Star from "lucide-react/dist/esm/icons/star";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import {
+  Search,
+  Plus,
+  Star,
+  Clock,
+  AlertCircle,
+  TrendingUp,
+  CheckCircle2,
+  Building2,
+  Phone,
+  Mail,
+  DollarSign,
+  RefreshCw,
+} from 'lucide-react';
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useRecentClients } from '@/hooks/useRecentClients';
 import { useClientSuggestions, useToggleClientFavorite } from '@/hooks/useClientSuggestions';

@@ -3,8 +3,7 @@ import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeBlock } from "@/components/docs/CodeBlock";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function GettingStartedPage() {
   return (
@@ -37,7 +36,7 @@ export default function GettingStartedPage() {
             </CardHeader>
             <CardContent>
               <CodeBlock 
-                code="https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/" 
+                code="https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/" 
                 language="text"
               />
             </CardContent>
@@ -60,7 +59,7 @@ export default function GettingStartedPage() {
                       First, obtain an authentication token by logging in with your admin credentials.
                     </p>
                     <CodeBlock 
-                      code={`curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-auth \\
+                      code={`curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-auth \\
   -H "Content-Type: application/json" \\
   -d '{
     "action": "login",
@@ -112,7 +111,7 @@ export default function GettingStartedPage() {
                       Use the token in the Authorization header for subsequent requests.
                     </p>
                     <CodeBlock 
-                      code={`curl -X POST https://aejugtmhwwknrowfyzie.supabase.co/functions/v1/admin-api-operations \\
+                      code={`curl -X POST https://mtvwmyerntkhrcdnhahp.supabase.co/functions/v1/admin-api-operations \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \\
   -d '{

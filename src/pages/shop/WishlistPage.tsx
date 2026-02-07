@@ -8,10 +8,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import Heart from "lucide-react/dist/esm/icons/heart";
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Package from "lucide-react/dist/esm/icons/package";
+import { Heart, ShoppingCart, Trash2, Package } from 'lucide-react';
 import { WishlistButton } from '@/components/shop/WishlistButton';
 
 export default function WishlistPage() {

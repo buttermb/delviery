@@ -6,11 +6,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import X from "lucide-react/dist/esm/icons/x";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Package from "lucide-react/dist/esm/icons/package";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import FolderTree from "lucide-react/dist/esm/icons/folder-tree";
+import { X, Trash2, Package, DollarSign, FolderTree } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];

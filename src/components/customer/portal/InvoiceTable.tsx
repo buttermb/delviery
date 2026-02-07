@@ -11,9 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Download from "lucide-react/dist/esm/icons/download";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { FileText, Download, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { PortalInvoice } from '@/types/portal';
 import { generateInvoicePDF } from './InvoicePDFGenerator';
@@ -128,7 +126,7 @@ export function InvoiceTable({ invoices, clientName, clientAddress }: InvoiceTab
 
   // Desktop: Table layout
   return (
-    <div className="rounded-md border dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+    <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>

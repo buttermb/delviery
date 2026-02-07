@@ -23,19 +23,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import LifeBuoy from "lucide-react/dist/esm/icons/life-buoy";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
-import Bug from "lucide-react/dist/esm/icons/bug";
-import Lightbulb from "lucide-react/dist/esm/icons/lightbulb";
-import HelpCircle from "lucide-react/dist/esm/icons/help-circle";
-import Monitor from "lucide-react/dist/esm/icons/monitor";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import User from "lucide-react/dist/esm/icons/user";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Check from "lucide-react/dist/esm/icons/check";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
+import {
+  LifeBuoy,
+  MessageSquare,
+  Bug,
+  Lightbulb,
+  HelpCircle,
+  Monitor,
+  MapPin,
+  Clock,
+  User,
+  Copy,
+  Check,
+  ExternalLink,
+  ChevronRight,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -125,10 +127,10 @@ export function ContextAwareSupportButton({
   const context = gatherContext(userId, userEmail, userName);
 
   const ticketTypes = [
-    { type: 'question' as const, label: 'Question', icon: HelpCircle, color: 'text-blue-500 dark:text-blue-400' },
-    { type: 'bug' as const, label: 'Report Bug', icon: Bug, color: 'text-red-500 dark:text-red-400' },
-    { type: 'feature' as const, label: 'Feature Request', icon: Lightbulb, color: 'text-amber-500 dark:text-amber-400' },
-    { type: 'feedback' as const, label: 'Feedback', icon: MessageSquare, color: 'text-green-500 dark:text-green-400' },
+    { type: 'question' as const, label: 'Question', icon: HelpCircle, color: 'text-blue-500' },
+    { type: 'bug' as const, label: 'Report Bug', icon: Bug, color: 'text-red-500' },
+    { type: 'feature' as const, label: 'Feature Request', icon: Lightbulb, color: 'text-amber-500' },
+    { type: 'feedback' as const, label: 'Feedback', icon: MessageSquare, color: 'text-green-500' },
   ];
 
   const handleTypeSelect = (type: SupportTicket['type']) => {

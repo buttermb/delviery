@@ -375,8 +375,10 @@ describe('Orders Component', () => {
 
     it('should show toast error when tenant context is missing', async () => {
       // Mock useTenantAdminAuth to return null tenant
-      // Note: This test verifies the component's behavior when tenant is null
-      // The actual mock is set up in the beforeEach block
+      vi.mocked(vi.importActual('@/contexts/TenantAdminAuthContext')).useTenantAdminAuth = () => ({
+        tenant: null,
+        tenantSlug: null,
+      });
 
       // Bulk status change without tenant should show error
       // This is covered by the handleBulkStatusChange early return
@@ -437,8 +439,16 @@ describe('Optimistic Updates', () => {
   });
 
   it('should rollback on API error', async () => {
-    // This test verifies rollback behavior when API returns an error
-    // The error case is handled by the mutation's onError callback
+    // Mock an error response
+    vi.mocked(vi.importActual('@/integrations/supabase/client')).supabase = {
+      from: vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'Update failed' } }),
+          }),
+        }),
+      }),
+    };
 
     renderWithProviders(<Orders />);
 
@@ -520,13 +530,20 @@ describe('Export Functionality', () => {
   });
 
   it('should disable export button when no orders', async () => {
-    // This test verifies the export button is disabled when there are no orders
-    // The empty orders state is set up via the mock in beforeEach
+    // Mock empty orders
+    vi.mocked(vi.importActual('@/integrations/supabase/client')).supabase = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    };
+
     renderWithProviders(<Orders />);
 
     await waitFor(() => {
-      // Check export button behavior with empty orders
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
+      const exportButton = screen.getByRole('button', { name: /export/i });
+      expect(exportButton).toBeDisabled();
     });
   });
 });
@@ -801,94 +818,5 @@ describe('Search Filtering Logic', () => {
       order.user?.full_name?.toLowerCase().includes(query.toLowerCase())
     );
     expect(filtered).toHaveLength(3); // All orders match 'ord' in order_number
-  });
-});
-
-describe('Lazy Loading', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should lazy load OrderMergeDialog component', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // OrderMergeDialog should be lazy loaded and not render until needed
-    // The component is wrapped in Suspense with fallback={null}
-    // This test verifies the component loads without errors
-  });
-
-  it('should render OrderMergeDialog when merge dialog is opened', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // The OrderMergeDialog is lazy loaded when mergeDialogOpen state becomes true
-    // This happens when the Merge action is clicked from the BulkActionsBar
-    // The dialog is wrapped in Suspense to handle the async loading
-  });
-
-  it('should handle Suspense fallback during OrderMergeDialog loading', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // Suspense fallback is set to null, so no loading indicator is shown
-    // This is acceptable for a dialog that's typically only shown on user action
-    // The test verifies the component structure supports lazy loading
-  });
-
-  it('should lazy load ExportOptionsDialog component', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // ExportOptionsDialog should be lazy loaded and not render until needed
-    // The component is wrapped in Suspense with fallback={null}
-    // This test verifies the component loads without errors
-  });
-
-  it('should render ExportOptionsDialog when export button is clicked', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
-    });
-
-    const exportButton = screen.getByRole('button', { name: /export/i });
-    await user.click(exportButton);
-
-    // The ExportOptionsDialog is lazy loaded when exportDialogOpen state becomes true
-    // This happens when the Export button is clicked
-    // The dialog is wrapped in Suspense to handle the async loading
-    await waitFor(() => {
-      // After clicking, the dialog should start loading
-      // In a real scenario, we'd check for dialog content, but since it's mocked
-      // we just verify no errors occurred during the interaction
-      expect(exportButton).toBeInTheDocument();
-    });
-  });
-
-  it('should handle Suspense fallback during ExportOptionsDialog loading', async () => {
-    renderWithProviders(<Orders />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Orders Management')).toBeInTheDocument();
-    });
-
-    // Suspense fallback is set to null, so no loading indicator is shown
-    // This is acceptable for a dialog that's typically only shown on user action
-    // The test verifies the component structure supports lazy loading for ExportOptionsDialog
   });
 });

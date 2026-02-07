@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Columns from "lucide-react/dist/esm/icons/columns";
+import { Columns } from "lucide-react";
 
 interface ColumnVisibilityControlProps {
   visibleColumns: string[];

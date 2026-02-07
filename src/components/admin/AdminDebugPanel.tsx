@@ -11,7 +11,7 @@
  * - Only visible to admins or in development
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { debugLogger, LogEntry, LogCategory } from '@/lib/debug/logger';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -19,14 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import X from "lucide-react/dist/esm/icons/x";
-import Bug from "lucide-react/dist/esm/icons/bug";
-import Download from "lucide-react/dist/esm/icons/download";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import Info from "lucide-react/dist/esm/icons/info";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Search from "lucide-react/dist/esm/icons/search";
+import { X, Bug, Download, Trash2, AlertCircle, Info, AlertTriangle, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES: Array<LogCategory | 'all'> = [
@@ -79,17 +72,9 @@ function SimplifiedDebugPanel() {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredLogs = useMemo(() => {
-    return filter === 'all' ? logs : logs.filter(log => log.category === filter);
-  }, [logs, filter]);
-
-  const errorCount = useMemo(() => {
-    return logs.filter(l => l.level === 'error').length;
-  }, [logs]);
-
-  const warnCount = useMemo(() => {
-    return logs.filter(l => l.level === 'warn').length;
-  }, [logs]);
+  const filteredLogs = filter === 'all'
+    ? logs
+    : logs.filter(log => log.category === filter);
 
   const handleClear = useCallback(() => {
     debugLogger.clearLogs();
@@ -112,6 +97,9 @@ function SimplifiedDebugPanel() {
     a.click();
     URL.revokeObjectURL(url);
   }, []);
+
+  const errorCount = logs.filter(l => l.level === 'error').length;
+  const warnCount = logs.filter(l => l.level === 'warn').length;
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999]">
@@ -225,17 +213,9 @@ function FullAdminDebugPanel() {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredLogs = useMemo(() => {
-    return filter === 'all' ? logs : logs.filter(log => log.category === filter);
-  }, [logs, filter]);
-
-  const errorCount = useMemo(() => {
-    return logs.filter(l => l.level === 'error').length;
-  }, [logs]);
-
-  const warnCount = useMemo(() => {
-    return logs.filter(l => l.level === 'warn').length;
-  }, [logs]);
+  const filteredLogs = filter === 'all'
+    ? logs
+    : logs.filter(log => log.category === filter);
 
   const handleClear = useCallback(() => {
     debugLogger.clearLogs();
@@ -263,6 +243,9 @@ function FullAdminDebugPanel() {
     a.click();
     URL.revokeObjectURL(url);
   }, [admin, tenant]);
+
+  const errorCount = logs.filter(l => l.level === 'error').length;
+  const warnCount = logs.filter(l => l.level === 'warn').length;
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999]">

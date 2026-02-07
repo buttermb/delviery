@@ -1,8 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import Download from "lucide-react/dist/esm/icons/download";
+import { ExternalLink, Download } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 

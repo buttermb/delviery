@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { logger } from '@/lib/logger';
 /**
  * Production Error Logger
@@ -8,7 +9,7 @@ interface LogEntry {
   timestamp: string;
   type: 'error' | 'warning' | 'info';
   message: string;
-  context?: Record<string, unknown>;
+  context?: any;
   stack?: string;
 }
 
@@ -28,7 +29,7 @@ class ProductionLogger {
       if (stored) {
         this.logs = JSON.parse(stored);
       }
-    } catch {
+    } catch (e) {
       // Silent fail - localStorage might be unavailable
     }
   }
@@ -38,7 +39,7 @@ class ProductionLogger {
       // Keep only the most recent logs
       const recentLogs = this.logs.slice(-MAX_LOGS);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(recentLogs));
-    } catch {
+    } catch (e) {
       // Silent fail
     }
   }
@@ -93,7 +94,7 @@ class ProductionLogger {
     this.logs = [];
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch {
+    } catch (e) {
       // Silent fail
     }
   }

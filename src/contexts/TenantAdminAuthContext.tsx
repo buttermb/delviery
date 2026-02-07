@@ -1,10 +1,9 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError, logStateChange } from '@/lib/debug/logger';
-import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback, useMemo } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
-import { createRefreshTimer, isValidRefreshToken, tokenNeedsRefresh, type RefreshTimerHandle } from "@/lib/auth/tokenRefresh";
 
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
@@ -12,15 +11,11 @@ import { safeStorage } from "@/utils/safeStorage";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
-import { useQueryClient } from '@tanstack/react-query';
 import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
-import { performLogoutCleanup, broadcastLogout } from "@/lib/auth/logoutCleanup";
-import { clearPreAuthSessionData, establishFreshSession, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { FreeTierOnboardingFlow } from "@/components/onboarding/FreeTierOnboardingFlow";
 import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
-import { performFullLogout } from "@/lib/utils/authHelpers";
 
 interface TenantAdmin {
   id: string;
@@ -84,14 +79,13 @@ interface AuthError extends Error {
 interface TenantAdminAuthContextType {
   admin: TenantAdmin | null;
   tenant: Tenant | null;
-  tenantSlug: string | null;
   token: string | null; // For backwards compatibility
   accessToken: string | null; // For backwards compatibility
   refreshToken: string | null; // For backwards compatibility
   isAuthenticated: boolean; // New: cookie-based authentication state
   connectionStatus: ConnectionStatus; // Network connection status
   loading: boolean;
-  login: (email: string, password: string, tenantSlug: string, rememberMe?: boolean) => Promise<void>;
+  login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<boolean>;
   refreshTenant: () => Promise<void>; // Refresh tenant data from database
@@ -100,8 +94,6 @@ interface TenantAdminAuthContextType {
   verifyMfa: (code: string) => Promise<void>;
 }
 
-export type { TenantAdminAuthContextType };
-
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
 
 // Use centralized storage keys
@@ -109,10 +101,6 @@ const ACCESS_TOKEN_KEY = STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN;
 const REFRESH_TOKEN_KEY = STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN;
 const ADMIN_KEY = STORAGE_KEYS.TENANT_ADMIN_USER;
 const TENANT_KEY = STORAGE_KEYS.TENANT_DATA;
-
-// SessionStorage keys for instant restore (faster than localStorage)
-const SESSION_ADMIN_KEY = 'session_tenant_admin_user';
-const SESSION_TENANT_KEY = 'session_tenant_data';
 
 // Token refresh buffer (5 minutes before expiration)
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
@@ -123,7 +111,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -143,119 +131,33 @@ if (typeof window !== 'undefined') {
   initConnectionMonitoring();
 }
 
-// Synchronously hydrate initial state from sessionStorage (fastest) or localStorage to prevent flash of unauthenticated UI
-const getInitialAdminState = (): TenantAdmin | null => {
-  try {
-    // PRIORITY 1: Try sessionStorage first (instant restore within same browser session)
-    const sessionStored = sessionStorage.getItem(SESSION_ADMIN_KEY);
-    if (sessionStored) {
-      logger.debug('[AUTH] Restored admin from sessionStorage (instant restore)');
-      return JSON.parse(sessionStored) as TenantAdmin;
-    }
-
-    // PRIORITY 2: Fall back to localStorage (persists across sessions)
-    const stored = localStorage.getItem(ADMIN_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as TenantAdmin;
-      // Cache in sessionStorage for faster subsequent access
-      sessionStorage.setItem(SESSION_ADMIN_KEY, stored);
-      logger.debug('[AUTH] Restored admin from localStorage and cached to sessionStorage');
-      return parsed;
-    }
-  } catch { /* ignore parse errors */ }
-  return null;
-};
-
-const getInitialTenantState = (): Tenant | null => {
-  try {
-    // PRIORITY 1: Try sessionStorage first (instant restore within same browser session)
-    const sessionStored = sessionStorage.getItem(SESSION_TENANT_KEY);
-    if (sessionStored) {
-      const parsed = JSON.parse(sessionStored) as Tenant;
-      logger.debug('[AUTH] Restored tenant from sessionStorage (instant restore)');
-      return {
-        ...parsed,
-        limits: parsed.limits || { customers: 50, menus: 3, products: 100, locations: 2, users: 3 },
-        usage: parsed.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 },
-      };
-    }
-
-    // PRIORITY 2: Fall back to localStorage (persists across sessions)
-    const stored = localStorage.getItem(TENANT_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as Tenant;
-      // Cache in sessionStorage for faster subsequent access
-      sessionStorage.setItem(SESSION_TENANT_KEY, stored);
-      logger.debug('[AUTH] Restored tenant from localStorage and cached to sessionStorage');
-      return {
-        ...parsed,
-        limits: parsed.limits || { customers: 50, menus: 3, products: 100, locations: 2, users: 3 },
-        usage: parsed.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 },
-      };
-    }
-  } catch { /* ignore parse errors */ }
-  return null;
-};
-
-const getInitialTokenState = (): string | null => {
-  try {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
-  } catch { /* ignore */ }
-  return null;
-};
-
-const getInitialRefreshTokenState = (): string | null => {
-  try {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
-  } catch { /* ignore */ }
-  return null;
-};
-
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { shouldAutoApprove, flags } = useFeatureFlags();
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null); // For backwards compatibility
   const [accessToken, setAccessToken] = useState<string | null>(null); // For backwards compatibility
   const [refreshToken, setRefreshToken] = useState<string | null>(null); // For backwards compatibility
-  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Cookie-based auth state
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
 
-  // Track whether auth has been initialized to prevent re-running on route changes
-  const authInitializedRef = useRef(false);
-
   // Define clearAuthState first so it can be used by other functions
-  // Token validation cache: stores last validation timestamp
-  const lastValidationTimeRef = useRef<number | null>(null);
-  const VALIDATION_CACHE_MS = 5 * 60 * 1000; // 5 minutes
-
   // Helper function to clear auth state
   const clearAuthState = useCallback(() => {
     setAdmin(null);
     setTenant(null);
-    setTenantSlug(null);
     setToken(null);
     setAccessToken(null);
     setRefreshToken(null);
     setIsAuthenticated(false);
-    setLoading(false);
     safeStorage.removeItem(ADMIN_KEY);
     safeStorage.removeItem(TENANT_KEY);
-    safeStorage.removeItem('lastTenantSlug');
+    safeStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
     safeStorage.removeItem(ACCESS_TOKEN_KEY);
     safeStorage.removeItem(REFRESH_TOKEN_KEY);
-    // Clear sessionStorage cache as well
-    sessionStorage.removeItem(SESSION_ADMIN_KEY);
-    sessionStorage.removeItem(SESSION_TENANT_KEY);
-    // Clear validation cache on logout
-    lastValidationTimeRef.current = null;
-    // Allow re-initialization after logout (e.g., switching tenants)
-    authInitializedRef.current = false;
   }, []);
   useEffect(() => {
     const unsubscribe = onConnectionStatusChange((status) => {
@@ -264,17 +166,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     });
     return unsubscribe;
   }, []);
-
-  // Sync tenantSlug from tenant data
-  useEffect(() => {
-    setTenantSlug(tenant?.slug ?? null);
-  }, [tenant]);
-
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const refreshTimerHandleRef = useRef<RefreshTimerHandle | null>(null);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const hasShownOnboardingRef = useRef(false);
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -326,32 +221,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize authentication (cookie-based) - runs ONCE on mount
+  // Initialize authentication (cookie-based)
   useEffect(() => {
     const LOADING_TIMEOUT_MS = 12000; // 12-second safety timeout
+    const startTime = Date.now();
 
     const initializeAuth = async () => {
-      // Prevent re-initialization on subsequent renders/route changes
-      if (authInitializedRef.current) {
-        return;
-      }
 
       // Declare variables outside try block for catch block access
       let parsedAdmin: TenantAdmin | null = null;
       // Check if we're on a tenant admin route
       const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
 
-      // Check if we have stored session data
-      const storedAccessToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
-      const storedAdmin = safeStorage.getItem(ADMIN_KEY);
-      const hasStoredSession = !!(storedAccessToken && storedAdmin);
-
       // Skip all authentication logic if NOT on a tenant admin route
       if (!isTenantAdminRoute) {
-        // If not on admin route but have stored session, keep it (don't clear)
-        if (!hasStoredSession) {
-          setLoading(false);
-        }
+        setLoading(false);
         return;
       }
 
@@ -462,21 +346,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 setIsAuthenticated(true);
 
                 // Store in localStorage for quick access
-                const adminJson = JSON.stringify(parsedAdmin);
-                const tenantJson = JSON.stringify(parsedTenant);
-                safeStorage.setItem(ADMIN_KEY, adminJson);
-                safeStorage.setItem(TENANT_KEY, tenantJson);
-                // Also cache in sessionStorage for instant restore
-                sessionStorage.setItem(SESSION_ADMIN_KEY, adminJson);
-                sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
+                safeStorage.setItem(ADMIN_KEY, JSON.stringify(parsedAdmin));
+                safeStorage.setItem(TENANT_KEY, JSON.stringify(parsedTenant));
                 safeStorage.setItem(ACCESS_TOKEN_KEY, session.access_token);
                 if (session.refresh_token) {
                   safeStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
                 }
                 safeStorage.setItem('lastTenantSlug', parsedTenant.slug);
-
-                // Set authInitializedRef to true after successful authentication
-                authInitializedRef.current = true;
 
                 setLoading(false);
                 return; // Success - exit early
@@ -499,7 +375,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // PRIORITY 1: Try cookie-based verification first (most secure)
         try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
           // Check if token is expired before attempting verification
           let tokenToUse = storedToken;
@@ -576,23 +452,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
             // Store non-sensitive data in localStorage for quick access
             if (verifyData.admin) {
-              const adminJson = JSON.stringify(verifyData.admin);
-              safeStorage.setItem(ADMIN_KEY, adminJson);
-              // Also cache in sessionStorage for instant restore
-              sessionStorage.setItem(SESSION_ADMIN_KEY, adminJson);
+              safeStorage.setItem(ADMIN_KEY, JSON.stringify(verifyData.admin));
             }
             if (verifyData.tenant) {
-              const tenantJson = JSON.stringify(verifyData.tenant);
-              safeStorage.setItem(TENANT_KEY, tenantJson);
-              // Also cache in sessionStorage for instant restore
-              sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
+              safeStorage.setItem(TENANT_KEY, JSON.stringify(verifyData.tenant));
             }
 
             setIsAuthenticated(true);
-
-            // Set authInitializedRef to true after successful authentication
-            authInitializedRef.current = true;
-
             setLoading(false);
             return; // Success - exit early
           } else {
@@ -729,16 +595,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Use synchronous flag to prevent loading state clearing before auth state updates
         setIsAuthenticated(true);
 
-        // Set authInitializedRef to true after successful authentication
-        authInitializedRef.current = true;
-
         // CRITICAL FIX: Set loading=false immediately to unblock UI
         // The optional verification below should NOT block the dashboard from rendering
         setLoading(false);
 
         // Verify authentication via API (cookies sent automatically)
         // This is now optional and runs in background - if it fails, we already have localStorage auth
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
         try {
           const { response: verifyResponse } = await resilientFetch(
@@ -839,19 +702,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => {
       clearTimeout(safetyTimeout);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount - auth state persists across route changes
+  }, [location.pathname]); // Re-run when route changes
 
-  // Periodic token validation - acts as a safety net alongside the visibility-aware timer.
-  // The primary refresh mechanism is the createRefreshTimer (handles visibility + sleep detection).
-  // This interval provides a fallback in case the timer misses (e.g., long-running tabs).
+  // Periodic token validation (every 30 seconds)
   useEffect(() => {
     if (!isAuthenticated || !token) return;
 
     const validateToken = async () => {
       try {
-        if (tokenNeedsRefresh(token, REFRESH_BUFFER_MS)) {
-          logger.debug('[AUTH] Periodic check: token expiring soon, refreshing proactively');
+        const expiration = getTokenExpiration(token);
+        if (!expiration) return;
+
+        const timeUntilExpiry = expiration.getTime() - Date.now();
+
+        // If token expires in less than 5 minutes, refresh it
+        if (timeUntilExpiry < REFRESH_BUFFER_MS) {
+          logger.debug('[AUTH] Token expiring soon, refreshing proactively');
           await refreshAuthToken();
         }
       } catch (error) {
@@ -862,7 +728,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Initial check
     validateToken();
 
-    // Check every 2 minutes as a safety net (primary mechanism is visibility-aware timer)
+    // Check every 2 minutes (reduced from 30s to prevent excessive re-renders)
     const interval = setInterval(validateToken, 120000);
 
     return () => clearInterval(interval);
@@ -877,7 +743,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const currentRefreshToken = refreshToken || safeStorage.getItem(REFRESH_TOKEN_KEY);
 
     // STEP 2: Validate refresh token exists and is not empty/invalid
-    if (!isValidRefreshToken(currentRefreshToken)) {
+    if (!currentRefreshToken ||
+        currentRefreshToken === 'undefined' ||
+        currentRefreshToken === 'null' ||
+        currentRefreshToken.trim() === '' ||
+        currentRefreshToken.length < 10) {
       logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
       clearAuthState();
       toast.error('Your session has expired. Please log in again.', { duration: 5000 });
@@ -894,7 +764,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     const doRefresh = async (): Promise<boolean> => {
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
         // STEP 4: Attempt to refresh the session via edge function
         const { response } = await resilientFetch(
@@ -942,13 +812,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         // Handle specific error cases
         const errorData = await response.json().catch(() => ({}));
+        logger.error('[AUTH] Token refresh failed', { status: response.status, error: errorData });
 
         if (response.status === 401) {
-          // 401 is expected when using Supabase native auth (vs custom tenant sessions)
-          // Don't log as error since we have a fallback - log as debug instead
-          logger.debug('[AUTH] Edge function refresh returned 401, attempting Supabase native refresh fallback', { 
-            reason: errorData?.reason 
-          });
+          // Refresh token is invalid/expired - try Supabase native refresh as fallback
+          logger.debug('[AUTH] Edge function refresh failed with 401, trying Supabase native refresh');
 
           try {
             const { data: supabaseRefreshData, error: supabaseRefreshError } = await supabase.auth.refreshSession({
@@ -998,22 +866,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const VERIFY_TIMEOUT_MS = 8000; // 8-second timeout (fail-fast approach)
 
     try {
-      // Check if token was validated less than 5 minutes ago
-      const now = Date.now();
-      if (lastValidationTimeRef.current && (now - lastValidationTimeRef.current) < VALIDATION_CACHE_MS) {
-        logger.debug('[AUTH] Skipping token validation - validated less than 5 minutes ago', {
-          lastValidation: new Date(lastValidationTimeRef.current).toISOString(),
-          cacheRemaining: Math.round((VALIDATION_CACHE_MS - (now - lastValidationTimeRef.current)) / 1000) + 's'
-        });
-        return true;
-      }
-
       const envCheck = validateEnvironment();
       if (!envCheck.valid) {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
 
       // Check if token will expire soon (within 60 seconds)
       const tokenExpiration = getTokenExpiration(tokenToVerify);
@@ -1094,19 +952,89 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       if (!response.ok) {
-        // If token verification fails with 401, try to refresh using the centralized manager
+        // If token verification fails with 401, try to refresh
         if (response.status === 401) {
-          logger.debug("Token verification failed with 401, attempting refresh via refreshAuthToken");
+          logger.debug("Token verification failed with 401, attempting refresh");
           const storedRefreshToken = safeStorage.getItem(REFRESH_TOKEN_KEY);
           if (storedRefreshToken) {
-            const refreshSuccess = await refreshAuthToken();
-            if (refreshSuccess) {
+            try {
+              const { response: refreshResponse } = await resilientFetch(
+                `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ refresh_token: storedRefreshToken }),
+                  timeout: 10000,
+                  retryConfig: {
+                    maxRetries: 1,
+                    initialDelay: 500,
+                  },
+                });
+
+              if (!refreshResponse.ok) {
+                // Refresh token is invalid - clear all state
+                if (refreshResponse.status === 401) {
+                  logger.warn("Refresh token invalid during verification - clearing state");
+                  safeStorage.removeItem(ADMIN_KEY);
+                  safeStorage.removeItem(TENANT_KEY);
+                  safeStorage.removeItem(ACCESS_TOKEN_KEY);
+                  safeStorage.removeItem(REFRESH_TOKEN_KEY);
+                  safeStorage.removeItem('lastTenantSlug');
+
+                  clearAuthState();
+                  setLoading(false);
+
+                  toast.error("Your session has expired. Please log in again.", {
+                    duration: 5000,
+                  });
+
+                  logger.warn('[AUTH] Refresh failed with 401 during verification - cleared credentials');
+                  return false;
+                }
+
+                throw new Error("Token refresh failed");
+              }
+
+              const refreshData = await refreshResponse.json();
+
+              // Sync refreshed tokens with Supabase client
+              await supabase.auth.setSession({
+                access_token: refreshData.access_token,
+                refresh_token: refreshData.refresh_token,
+              });
+
+              setAccessToken(refreshData.access_token);
+              setRefreshToken(refreshData.refresh_token);
+              setToken(refreshData.access_token);
+
+              safeStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
+              safeStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
+
+              // Setup proactive refresh timer with new token
+              setupRefreshTimer(refreshData.access_token);
+
               setLoading(false);
-              return true;
+              return true; // Successfully refreshed
+            } catch (refreshError) {
+              logger.error("Token refresh failed during verification", refreshError);
+
+              // Clear all auth state if refresh fails
+              safeStorage.removeItem(ACCESS_TOKEN_KEY);
+              safeStorage.removeItem(REFRESH_TOKEN_KEY);
+              safeStorage.removeItem(ADMIN_KEY);
+              safeStorage.removeItem(TENANT_KEY);
+              safeStorage.removeItem('lastTenantSlug');
+
+              clearAuthState();
+
+              toast.error("Your session has expired. Please log in again.", {
+                duration: 5000,
+              });
+
+              throw new Error("Token expired and refresh failed");
             }
-            // refreshAuthToken already handles clearing state and showing toast on failure
-            setLoading(false);
-            return false;
           }
         }
 
@@ -1159,17 +1087,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         setAdmin(data.admin);
         setTenant(tenantWithDefaults);
         setIsAuthenticated(true);
-        const adminJson = JSON.stringify(data.admin);
-        const tenantJson = JSON.stringify(tenantWithDefaults);
-        safeStorage.setItem(ADMIN_KEY, adminJson);
-        safeStorage.setItem(TENANT_KEY, tenantJson);
-        // Also cache in sessionStorage for instant restore
-        sessionStorage.setItem(SESSION_ADMIN_KEY, adminJson);
-        sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
-
-        // Update last validation timestamp on successful verification
-        lastValidationTimeRef.current = Date.now();
-        logger.debug('[AUTH] Token validation successful - cache updated');
+        safeStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
+        safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       }
 
       setLoading(false);
@@ -1188,20 +1107,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setTenant(null);
       setIsAuthenticated(false);
       setLoading(false);
-      // Clear validation cache on error
-      lastValidationTimeRef.current = null;
       return false;
     }
   };
 
   const setupRefreshTimer = (token: string) => {
-    // Clean up any previous timer handle (visibility-aware timer)
-    if (refreshTimerHandleRef.current) {
-      refreshTimerHandleRef.current.cleanup();
-      refreshTimerHandleRef.current = null;
-    }
-
-    // Also clear legacy timeout refs if still active
+    // Clear existing timers
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
@@ -1211,18 +1122,41 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       warningTimerRef.current = null;
     }
 
-    // Create a robust, visibility-aware refresh timer
-    // This handles: tab backgrounding, wake-from-sleep, and regular scheduling
-    refreshTimerHandleRef.current = createRefreshTimer({
-      token,
-      onRefresh: refreshAuthToken,
-      onWarning: (secondsLeft) => {
+    // Get token expiration
+    const expiration = getTokenExpiration(token);
+    if (!expiration) {
+      logger.warn("Could not get token expiration, skipping proactive refresh");
+      return;
+    }
+
+    // Calculate time until refresh (5 minutes before expiration)
+    const timeUntilRefresh = expiration.getTime() - Date.now() - REFRESH_BUFFER_MS;
+    const timeUntilWarning = expiration.getTime() - Date.now() - (60 * 1000); // 1 minute before expiry
+
+    if (timeUntilRefresh <= 0) {
+      // Token expires very soon, refresh immediately
+      logger.debug("Token expires very soon, refreshing immediately");
+      refreshAuthToken();
+      return;
+    }
+
+    // Set timer to show warning 1 minute before expiration
+    if (timeUntilWarning > 0 && timeUntilWarning < timeUntilRefresh) {
+      logger.debug(`Setting up session timeout warning in ${Math.round(timeUntilWarning / 1000)} seconds`);
+      warningTimerRef.current = setTimeout(() => {
+        const secondsLeft = Math.floor((expiration.getTime() - Date.now()) / 1000);
         setSecondsUntilLogout(secondsLeft > 0 ? secondsLeft : 60);
         setShowTimeoutWarning(true);
-      },
-      bufferMs: REFRESH_BUFFER_MS,
-      warningBufferMs: 60 * 1000,
-    });
+      }, timeUntilWarning);
+    }
+
+    logger.debug(`Setting up proactive token refresh in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
+
+    // Set timer to refresh token before it expires
+    refreshTimerRef.current = setTimeout(() => {
+      logger.debug("Proactively refreshing token before expiration");
+      refreshAuthToken();
+    }, timeUntilRefresh);
   };
 
   const verifyMfa = async (code: string) => {
@@ -1259,17 +1193,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
   };
 
-  const login = async (email: string, password: string, tenantSlug: string, rememberMe: boolean = false) => {
+  const login = async (email: string, password: string, tenantSlug: string) => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email, tenantSlug });
 
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
 
-      // Session fixation protection: Clear all pre-auth session data
-      // This prevents an attacker from setting tokens before the user authenticates
-      clearPreAuthSessionData('tenant_admin');
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
@@ -1280,7 +1210,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, tenantSlug, rememberMe }),
+        body: JSON.stringify({ email, password, tenantSlug }),
         timeout: 30000, // 30 seconds for login
         retryConfig: {
           maxRetries: 3,
@@ -1363,17 +1293,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       // Note: With httpOnly cookies, these are not the primary auth mechanism
       safeStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
       safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      const adminJson = JSON.stringify(data.admin);
-      const tenantJson = JSON.stringify(tenantWithDefaults);
-      safeStorage.setItem(ADMIN_KEY, adminJson);
-      safeStorage.setItem(TENANT_KEY, tenantJson);
-      // Also cache in sessionStorage for instant restore
-      sessionStorage.setItem(SESSION_ADMIN_KEY, adminJson);
-      sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
+      safeStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
+      safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
 
-      // Store user ID for encryption
+      // Store user ID for encryption with fallback
       if (data.admin?.id) {
         safeStorage.setItem('floraiq_user_id', data.admin.id);
+        safeStorage.setItem('floraiq_user_id', data.admin.id); // Keep sessionStorage? No, use safeStorage for uniformity
       }
 
       // Initialize encryption with user's password
@@ -1459,20 +1385,26 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       if (event.data.type === 'LOGOUT') {
         logger.info('[AUTH] Received remote logout event', { component: 'TenantAdminAuthContext' });
 
-        // Full cleanup (don't call API - already done by the tab that initiated logout)
-        performFullLogout();
-
-        // Clear context-specific React state
+        // Clear only local state, don't trigger API logout (already done by other tab)
         clearAuthState();
+
+        // Destroy encryption session
+        clientEncryption.destroy();
+
+        // Clear user ID from storage
+        sessionStorage.removeItem('floraiq_user_id');
+        safeStorage.removeItem('floraiq_user_id');
 
         toast.info("You have been logged out from another tab.", {
           duration: 5000,
         });
 
-        // Redirect to login
+        // Redirect if we have tenant slug, but do not replace history to allow back navigation if desired, or replace to prevent loop? 
+        // Replace is better for logout.
         if (tenant?.slug) {
           navigate(`/${tenant.slug}/admin/login`, { replace: true });
         } else if (window.location.pathname.includes('/admin')) {
+          // Fallback if tenant slug is missing but we're in admin
           navigate('/');
         }
       }
@@ -1484,10 +1416,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   }, [tenant?.slug, navigate]);
 
   const logout = async () => {
-    // Session fixation protection: Invalidate session nonce on logout
-    // Prevents the old session marker from being reused
-    invalidateSessionNonce();
-
     // Clear refresh timer
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
@@ -1495,14 +1423,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
 
     // Notify other tabs immediately
-    broadcastLogout('tenant_auth_channel');
+    try {
+      const channel = new BroadcastChannel('tenant_auth_channel');
+      channel.postMessage({ type: 'LOGOUT' });
+      channel.close();
+    } catch (e) {
+      logger.warn('[AUTH] Failed to broadcast logout event', e);
+    }
 
     try {
       // Call logout endpoint to clear cookies
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
-        credentials: 'include',
+        credentials: 'include', // ⭐ Send cookies to be cleared
         headers: {
           "Content-Type": "application/json",
         },
@@ -1515,11 +1449,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     } catch (error) {
       logger.error("[AUTH] Logout error", error);
     } finally {
-      // Perform complete state cleanup (encryption, Supabase, storage, query cache)
-      await performFullLogout();
+      // Destroy encryption session before logout
+      clientEncryption.destroy();
 
-      // Also clear context-specific React state
+      // Clear Supabase session
+      await supabase.auth.signOut();
+
+      // Always clear local state
       clearAuthState();
+
+      // Clear user ID from storage
+      sessionStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
     }
   };
 
@@ -1531,13 +1472,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     setIsAuthenticated(true);
 
     // Store non-sensitive data for quick access
-    const adminJson = JSON.stringify(signupResult.user);
-    const tenantJson = JSON.stringify(signupResult.tenant);
-    safeStorage.setItem(ADMIN_KEY, adminJson);
-    safeStorage.setItem(TENANT_KEY, tenantJson);
-    // Also cache in sessionStorage for instant restore
-    sessionStorage.setItem(SESSION_ADMIN_KEY, adminJson);
-    sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
+    safeStorage.setItem(ADMIN_KEY, JSON.stringify(signupResult.user));
+    safeStorage.setItem(TENANT_KEY, JSON.stringify(signupResult.tenant));
 
     logger.info('[AUTH] Signup success, authenticated via cookies', {
       userId: signupResult.user.id,
@@ -1606,15 +1542,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             // Refresh tenant data
             const storedAdmin = safeStorage.getItem(ADMIN_KEY);
             if (storedAdmin) {
-              let adminData;
               try {
-                adminData = JSON.parse(storedAdmin);
-              } catch (parseError) {
-                logger.error('Failed to parse stored admin data', parseError);
-                return;
-              }
-              try {
-                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+                const adminData = JSON.parse(storedAdmin);
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mtvwmyerntkhrcdnhahp.supabase.co';
                 const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {
@@ -1649,10 +1579,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                     },
                   };
                   setTenant(tenantWithDefaults);
-                  const tenantJson = JSON.stringify(tenantWithDefaults);
-                  safeStorage.setItem(TENANT_KEY, tenantJson);
-                  // Also cache in sessionStorage for instant restore
-                  sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
+                  safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
 
                   // Log subscription change
                   logger.info('Subscription plan changed', {
@@ -1679,17 +1606,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     };
   }, [tenant?.id, tenant?.subscription_plan, tenant?.subscription_status, accessToken]);
 
-  // Proactive token refresh effect - sets up visibility-aware timer
+  // Proactive token refresh effect
   useEffect(() => {
     if (accessToken) {
       setupRefreshTimer(accessToken);
     }
 
     return () => {
-      if (refreshTimerHandleRef.current) {
-        refreshTimerHandleRef.current.cleanup();
-        refreshTimerHandleRef.current = null;
-      }
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
       }
@@ -1732,10 +1655,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       if (freshTenant) {
         const updatedTenant = freshTenant as unknown as Tenant;
         setTenant(updatedTenant);
-        const tenantJson = JSON.stringify(updatedTenant);
-        safeStorage.setItem(TENANT_KEY, tenantJson);
-        // Also cache in sessionStorage for instant restore
-        sessionStorage.setItem(SESSION_TENANT_KEY, tenantJson);
+        safeStorage.setItem(TENANT_KEY, JSON.stringify(updatedTenant));
         logger.info('[AUTH] Tenant data refreshed', {
           tenantId: updatedTenant.id,
           paymentMethodAdded: updatedTenant.payment_method_added,
@@ -1787,44 +1707,24 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => clearInterval(pollInterval);
   }, [isAuthenticated, tenant?.id, tenant?.subscription_status, tenant?.subscription_plan, tenant?.is_free_tier, tenant?.credits_enabled, refreshTenant]);
 
-  const value: TenantAdminAuthContextType = useMemo(() => ({
-    admin,
-    tenant,
-    tenantSlug,
-    token,
-    accessToken,
-    refreshToken: refreshToken,
-    isAuthenticated,
-    connectionStatus,
-    loading,
-    login,
-    logout,
-    refreshAuthToken,
-    refreshTenant,
-    handleSignupSuccess,
-    mfaRequired,
-    verifyMfa,
-  }), [
-    admin,
-    tenant,
-    tenantSlug,
-    token,
-    accessToken,
-    refreshToken,
-    isAuthenticated,
-    connectionStatus,
-    loading,
-    login,
-    logout,
-    refreshAuthToken,
-    refreshTenant,
-    handleSignupSuccess,
-    mfaRequired,
-    verifyMfa,
-  ]);
-
   return (
-    <TenantAdminAuthContext.Provider value={value}>
+    <TenantAdminAuthContext.Provider value={{
+      admin,
+      tenant,
+      token,
+      accessToken,
+      refreshToken: refreshToken,
+      isAuthenticated,
+      connectionStatus,
+      loading,
+      login,
+      logout,
+      refreshAuthToken,
+      refreshTenant,
+      handleSignupSuccess,
+      mfaRequired,
+      verifyMfa,
+    }}>
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}

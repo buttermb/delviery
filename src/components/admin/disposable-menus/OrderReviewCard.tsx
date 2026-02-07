@@ -1,13 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
-import Package from "lucide-react/dist/esm/icons/package";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
-import Eye from "lucide-react/dist/esm/icons/eye";
+import { User, Phone, MapPin, Package, Calendar, DollarSign, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cleanProductName } from '@/utils/productName';
 
