@@ -16,12 +16,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import FileText from "lucide-react/dist/esm/icons/file-text";
+import {
+  ArrowLeft,
+  Loader2,
+  TrendingDown,
+  TrendingUp,
+  RefreshCw,
+  FileText,
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
@@ -55,15 +57,15 @@ export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
   const { data: ledgerEntries = [], isLoading } = useQuery({
     queryKey: ['gift-card-ledger', card.id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('marketplace_gift_card_ledger')
+      const { data, error } = await (supabase
+        .from as unknown as (table: string) => ReturnType<typeof supabase.from>)('marketplace_gift_card_ledger')
         .select('*')
         .eq('gift_card_id', card.id)
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as unknown as LedgerEntry[];
+      return (data || []) as LedgerEntry[];
     },
     enabled: !!card.id && !!storeId,
   });

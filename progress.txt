@@ -1,160 +1,74 @@
-## Task: Refactor StorefrontBuilder for Modularity
+## Task: Complete StorefrontGiftCards Implementation
 
 ### What was done:
-Refactored the 1,251-line monolithic StorefrontBuilder component into 8 focused modules
-within a new `src/pages/admin/storefront/builder/` directory:
 
-1. **storefront-builder.config.ts** - Shared configuration (SECTION_TYPES, TEMPLATES,
-   sectionDefaults, SectionConfig/ThemeConfig types, DEFAULT_THEME constant)
+1. **Rewrote `src/pages/admin/storefront/StorefrontGiftCards.tsx`** - Complete admin page that:
+   - Uses `useTenantAdminAuth()` for proper tenant context (fixed from incorrect `useTenant()`)
+   - Fetches the `marketplace_stores` record by `tenant_id` to get the correct `store_id`
+   - Shows loading skeleton while store loads
+   - Composes the GiftCardTable, GiftCardBalanceCheck, and StorefrontGiftCardManager components
+   - Supports viewing transaction history for individual cards (ledger view)
+   - Responsive grid layout with table on left (3/4) and balance check on right (1/4)
 
-2. **useStorefrontBuilder.ts** - Custom hook encapsulating all state management:
-   - UI state (tabs, device preview, zoom, panel visibility)
-   - Builder state (layout config, theme config, section selection, undo/redo history)
-   - Store creation state (dialog, slug validation, credit-gated action)
-   - All mutations (create, save draft, publish, unpublish)
-   - Section actions (add, remove, duplicate, toggle visibility, reorder, update)
+2. **Created `src/components/admin/storefront/GiftCardTable.tsx`** - Full data table with:
+   - Query for all gift cards from `marketplace_gift_cards` table filtered by `store_id`
+   - Search by code, email, or recipient name
+   - Status filter (All, Active, Disabled, Depleted)
+   - Checkbox-based bulk selection with select-all
+   - Bulk actions: Deactivate and Activate cards (with confirmation dialog)
+   - Columns: Code (with copy button), Recipient, Balance, Status, Created, Expires, Actions
+   - Pagination via `usePagination` hook with `StandardPagination` component
+   - Summary stats in card description (total cards, active, depleted, outstanding balance)
+   - Empty state with contextual messaging
+   - View transaction history button per card row
 
-3. **SortableSectionItem.tsx** - Extracted draggable section list item component
+3. **Created `src/components/admin/storefront/GiftCardLedger.tsx`** - Transaction history view:
+   - Queries `marketplace_gift_card_ledger` table for a specific card
+   - Shows all transactions: Issue, Use, Adjustment, Refund, Reload
+   - Color-coded amounts (green for credits, red for debits)
+   - Transaction type badges with distinct colors
+   - Directional icons (TrendingUp/TrendingDown)
+   - Balance-after column showing running balance
+   - Back navigation button to return to main table
+   - Card info in header (code, recipient, current/initial balance)
 
-4. **BuilderHeader.tsx** - Top toolbar (back button, device preview toggles,
-   undo/redo, zoom controls, store status indicator, action buttons)
+4. **Created `src/components/admin/storefront/GiftCardBalanceCheck.tsx`** - Quick balance lookup:
+   - Input field for gift card code (auto-uppercased)
+   - Calls `validate_marketplace_gift_card` RPC for validation
+   - Shows balance and validity status with appropriate badges
+   - Error handling for invalid/disabled/depleted cards
+   - Enter key support for quick lookup
 
-5. **BuilderLeftPanel.tsx** - Left sidebar with Sections/Theme/Templates tabs,
-   including DnD context for section reordering
+5. **Rewrote `src/components/admin/storefront/StorefrontGiftCardManager.tsx`** - Issue dialog:
+   - Preset amount buttons ($25, $50, $100, $250) for quick selection
+   - Custom amount input with proper validation
+   - Recipient email and name fields
+   - Custom code input (auto-uppercased, font-mono)
+   - Internal notes field
+   - Loading state with spinner on submit button
+   - Uses `issue_marketplace_gift_card` RPC
+   - Proper error handling with logger and toast
 
-6. **BuilderPreview.tsx** - Center preview area with device-responsive scaling
-   and live section rendering
-
-7. **BuilderPropertyEditor.tsx** - Right sidebar property editor with
-   content/styles accordion panels
-
-8. **BuilderCreateStoreDialog.tsx** - Store creation dialog with slug
-   validation and credit cost display
-
-9. **index.ts** - Barrel export for all builder sub-modules
-
-The main `StorefrontBuilder.tsx` is now a ~145-line orchestrator that composes
-sub-components with shared state from useStorefrontBuilder hook.
-
-### Additional fix:
-- Added `sanitizeBasicHtml` export alias in `src/lib/utils/sanitize.ts` to fix
-  a pre-existing build error from HeroSection importing a non-existent export.
-
-### Verification:
-- [x] Build passes (npm run build - 6540 modules transformed, no errors)
-- [x] All 14 existing tests pass (StorefrontBuilder.test.tsx)
-- [x] Existing API preserved (named + default exports, lazy loading compatible)
-- [x] No behavioral changes - pure structural refactoring
-
-### Files Changed:
-- `src/pages/admin/storefront/StorefrontBuilder.tsx` (rewritten as orchestrator)
-- `src/pages/admin/storefront/builder/storefront-builder.config.ts` (new)
-- `src/pages/admin/storefront/builder/useStorefrontBuilder.ts` (new)
-- `src/pages/admin/storefront/builder/SortableSectionItem.tsx` (new)
-- `src/pages/admin/storefront/builder/BuilderHeader.tsx` (new)
-- `src/pages/admin/storefront/builder/BuilderLeftPanel.tsx` (new)
-- `src/pages/admin/storefront/builder/BuilderPreview.tsx` (new)
-- `src/pages/admin/storefront/builder/BuilderPropertyEditor.tsx` (new)
-- `src/pages/admin/storefront/builder/BuilderCreateStoreDialog.tsx` (new)
-- `src/pages/admin/storefront/builder/index.ts` (new)
-- `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export alias)
-
----
-
-## Task: Add Breadcrumb Navigation Between Panels
-
-### What was done:
-1. Created `src/components/admin/Breadcrumbs.tsx` - A dedicated breadcrumb navigation component that:
-   - Shows Home icon linking to Dashboard
-   - Parses URL path segments into readable breadcrumb labels
-   - Uses a comprehensive SEGMENT_LABELS map for human-readable display names (hubs, pages, etc.)
-   - Falls back to Title Case formatting for unknown segments
-   - Highlights current page (non-clickable, bold font)
-   - All intermediate segments are clickable links for navigation
-   - Hides on dashboard (root) since it's unnecessary there
-   - Uses proper aria attributes for accessibility
-
-2. Updated `src/pages/admin/AdminLayout.tsx` to:
-   - Replace inline breadcrumb logic with the new `Breadcrumbs` component
-   - Remove unused imports (Link, useNavigate, ChevronRight)
-   - Simplify mobile title display using a local helper function
-   - Breadcrumbs now show on all admin pages via the shared layout
+6. **Fixed pre-existing build error** in `src/lib/utils/sanitize.ts`:
+   - Added `sanitizeBasicHtml` export alias (was imported by HeroSection but not exported)
 
 ### Acceptance Criteria Met:
-- [x] Breadcrumbs show on all admin pages (via AdminLayout integration)
-- [x] Links navigate correctly (each intermediate segment links to proper admin route)
-- [x] Current page highlighted (font-medium, text-foreground, non-clickable)
+- [x] Can create gift cards with custom amounts (preset $25/$50/$100/$250 + custom)
+- [x] Can search and manage existing gift cards in table (search by code/email/name)
+- [x] Balance displays correctly (current balance with "of initial" when partially used)
+- [x] Gift card status updates (active/disabled/depleted with color-coded badges)
+- [x] Bulk actions (deactivate/activate multiple cards)
+- [x] Filter by status (all/active/disabled/depleted)
+- [x] Balance check functionality (quick code lookup via RPC)
+- [x] Redemption history view per card (full ledger with transaction types)
 
 ### Files Changed:
-- `src/components/admin/Breadcrumbs.tsx` (new)
-- `src/pages/admin/AdminLayout.tsx` (modified)
+- `src/pages/admin/storefront/StorefrontGiftCards.tsx` (rewritten)
+- `src/components/admin/storefront/StorefrontGiftCardManager.tsx` (rewritten)
+- `src/components/admin/storefront/GiftCardTable.tsx` (new)
+- `src/components/admin/storefront/GiftCardLedger.tsx` (new)
+- `src/components/admin/storefront/GiftCardBalanceCheck.tsx` (new)
+- `src/lib/utils/sanitize.ts` (fix pre-existing missing export)
 
----
-
-## Task: Fix Mobile Navigation Issues
-
-### What was done:
-
-1. **Fixed z-index conflicts between admin mobile nav components**
-   - Reduced `MobileBottomNav` (admin) z-index from 100 to 50 to align with design system
-   - Removed unused `MobileNav` import from `AdminLayout.tsx` (was imported but never rendered, had conflicting z-index of 50)
-   - Removed unused `Input` import from `AdminLayout.tsx`
-
-2. **Fixed LuxuryNav mobile menu overlay positioning**
-   - Changed from fixed `top-20` to dynamic `top-16`/`top-20` based on scroll state (nav shrinks on scroll)
-   - Added backdrop overlay for dismissing menu by tapping outside
-   - Added `maxHeight: calc(100dvh - 5rem)` to prevent content overflow off-screen
-   - Improved animation from height-based to y-translate for smoother 60fps transitions
-
-3. **Fixed global `max-width: 100%` CSS rule**
-   - Removed overly aggressive `* { max-width: 100% }` that broke tables, carousels, and scrollable content
-   - Replaced with scoped `body > #root { max-width: 100vw; overflow-x: hidden }` to contain only the root
-
-4. **Fixed double padding issue in admin layout**
-   - Admin `<main>` had both Tailwind `pb-24` AND global CSS `padding-bottom: max(100px, ...)` via `@media`
-   - Added `custom-mobile-padding` class to opt out of the global CSS rule
-   - Retained Tailwind `pb-24 lg:pb-6` for proper responsive padding
-
-5. **Fixed shop MobileBottomNav safe areas and theme support**
-   - Replaced hardcoded `bg-white` with `bg-background/95 backdrop-blur-md` for dark mode support
-   - Replaced non-standard `safe-area-pb` class with proper `env(safe-area-inset-bottom)` inline style
-   - Increased touch targets from 44px to 48px minimum (iOS/Android accessibility guidelines)
-   - Added `touch-manipulation` and `active:scale-95` for responsive touch feedback
-   - Added proper `aria-label` attributes to navigation links
-   - Removed default export (project convention: named exports only)
-
-6. **Added route-change close behavior to all mobile menus**
-   - LuxuryNav: Added `useLocation` + `useEffect` to close menu on pathname change
-   - ShopLayout (default theme): Added `useLocation` + `useEffect` to close menu on pathname change
-
-7. **Added body scroll lock when mobile menus are open**
-   - LuxuryNav: Sets `document.body.style.overflow = 'hidden'` when menu opens
-   - ShopLayout (default theme): Same scroll lock pattern
-   - Both properly clean up on unmount via effect cleanup
-
-8. **Improved ShopLayout default theme mobile menu accessibility**
-   - Added `role="navigation"` and `aria-label` to mobile nav element
-   - Increased touch targets to 44px minimum (`min-h-[44px]`, `py-3`)
-   - Added `touch-manipulation` and `active:scale-[0.98]` for responsive feedback
-
-9. **Fixed pre-existing build error**
-   - Added `sanitizeBasicHtml` export to `src/lib/utils/sanitize.ts` (was imported by HeroSection but not exported)
-
-### Acceptance Criteria Met:
-- [x] Mobile navigation menus close on route change (LuxuryNav, ShopLayout)
-- [x] Body scroll is locked when mobile menus are open
-- [x] Safe area insets properly handled on all mobile navs (notch/home indicator)
-- [x] Touch targets meet 44-48px minimum accessibility guidelines
-- [x] Z-index values consistent (50 for bottom nav, no conflicts)
-- [x] No hardcoded colors that break dark mode
-- [x] LuxuryNav overlay positions correctly relative to nav height on scroll
-- [x] Build passes without TypeScript errors
-
-### Files Changed:
-- `src/components/admin/MobileBottomNav.tsx` (z-index fix, safe area fix)
-- `src/components/shop/MobileBottomNav.tsx` (theme support, safe areas, touch targets, accessibility)
-- `src/components/shop/LuxuryNav.tsx` (menu positioning, route-close, scroll lock, backdrop)
-- `src/pages/admin/AdminLayout.tsx` (removed unused imports, fixed double padding)
-- `src/pages/shop/ShopLayout.tsx` (route-close, scroll lock, touch targets, accessibility)
-- `src/index.css` (scoped global max-width rule)
-- `src/lib/utils/sanitize.ts` (added sanitizeBasicHtml export to fix build)
+### Build Status:
+- `npm run build` passes with no errors

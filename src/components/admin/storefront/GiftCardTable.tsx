@@ -39,14 +39,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
-import Search from "lucide-react/dist/esm/icons/search";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Copy from "lucide-react/dist/esm/icons/copy";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import Ban from "lucide-react/dist/esm/icons/ban";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
-import Gift from "lucide-react/dist/esm/icons/gift";
-import History from "lucide-react/dist/esm/icons/history";
+import {
+  Search,
+  Loader2,
+  Copy,
+  Mail,
+  Ban,
+  CheckCircle,
+  Gift,
+  History,
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
@@ -82,14 +84,14 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const { data: giftCards = [], isLoading } = useQuery({
     queryKey: ['gift-cards', storeId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('marketplace_gift_cards')
+      const { data, error } = await (supabase
+        .from as unknown as (table: string) => ReturnType<typeof supabase.from>)('marketplace_gift_cards')
         .select('*')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as unknown as GiftCard[];
+      return (data || []) as GiftCard[];
     },
     enabled: !!storeId,
   });
@@ -123,8 +125,8 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
   const bulkStatusMutation = useMutation({
     mutationFn: async ({ ids, newStatus }: { ids: string[]; newStatus: 'active' | 'disabled' }) => {
-      const { error } = await (supabase as any)
-        .from('marketplace_gift_cards')
+      const { error } = await (supabase
+        .from as unknown as (table: string) => ReturnType<typeof supabase.from>)('marketplace_gift_cards')
         .update({ status: newStatus })
         .in('id', ids)
         .eq('store_id', storeId);
@@ -283,7 +285,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-100">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
