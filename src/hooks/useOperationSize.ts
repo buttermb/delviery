@@ -182,25 +182,17 @@ export function useOperationSize() {
     resetToAutoMutation.mutate();
   };
 
-  // Loading guard
-  if (!admin?.userId) {
-    return {
-      operationSize: detectedSize,
-      detectedSize,
-      isAutoDetected: true,
-      setOperationSize: () => { },
-      resetToAuto: () => { },
-      isLoading: true,
-    };
-  }
+  // Always return - handle missing user in the return values
+  // This ensures hooks are called in the same order every render
+  const hasUser = !!admin?.userId;
 
   return {
-    operationSize,
+    operationSize: hasUser ? operationSize : detectedSize,
     detectedSize,
-    isAutoDetected,
-    setOperationSize,
-    resetToAuto,
-    isLoading: preferencesLoading || !admin?.userId,
+    isAutoDetected: hasUser ? isAutoDetected : true,
+    setOperationSize: hasUser ? setOperationSize : () => { },
+    resetToAuto: hasUser ? resetToAuto : () => { },
+    isLoading: preferencesLoading || !hasUser,
   };
 }
 
