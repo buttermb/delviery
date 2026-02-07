@@ -1,17 +1,16 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Eye, 
-  ShoppingCart, 
-  AlertTriangle, 
-  Lock, 
+import {
+  Eye,
+  ShoppingCart,
+  AlertTriangle,
   MapPin,
   Clock,
   CheckCircle,
   XCircle
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
@@ -21,9 +20,9 @@ interface CustomerActivityTimelineProps {
   customerName: string;
 }
 
-export const CustomerActivityTimeline = ({ 
-  whitelistId, 
-  customerName 
+export const CustomerActivityTimeline = ({
+  whitelistId,
+  customerName: _customerName
 }: CustomerActivityTimelineProps) => {
   // Fetch access logs for this customer
   const { data: accessLogs, isLoading: logsLoading } = useQuery({

@@ -1,10 +1,10 @@
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Calendar, Mail, ExternalLink } from "lucide-react";
+import { CheckCircle, Calendar, ExternalLink } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showInfoToast } from "@/utils/toastHelpers";
 
 export default function DemoConfirmation() {

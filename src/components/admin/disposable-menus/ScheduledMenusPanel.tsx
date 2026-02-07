@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Calendar from "lucide-react/dist/esm/icons/calendar";
@@ -31,7 +30,6 @@ interface ScheduledMenuItemProps {
 function ScheduledMenuItem({ menu }: ScheduledMenuItemProps) {
   const activationTime = menu.scheduledActivationTime ? new Date(menu.scheduledActivationTime) : null;
   const deactivationTime = menu.scheduledDeactivationTime ? new Date(menu.scheduledDeactivationTime) : null;
-  const now = new Date();
 
   const getScheduleStatus = () => {
     if (!activationTime) return 'unknown';
@@ -112,7 +110,6 @@ export function ScheduledMenusPanel() {
   const { data: scheduledMenus = [], isLoading } = useScheduledMenus(tenant?.id);
 
   const { upcoming, active, past } = useMemo(() => {
-    const now = new Date();
     const categorized = {
       upcoming: [] as ScheduledMenu[],
       active: [] as ScheduledMenu[],

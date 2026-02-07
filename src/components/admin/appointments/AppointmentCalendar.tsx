@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay } from "date-fns";
-import { Calendar, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface Appointment {
   id: string;

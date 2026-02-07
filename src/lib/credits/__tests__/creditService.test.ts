@@ -5,7 +5,7 @@
  * Verifies the core credit system functionality.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   getCreditCost,
   getCreditCostInfo,
@@ -17,7 +17,6 @@ import {
   CREDIT_WARNING_THRESHOLDS,
   LOW_BALANCE_WARNING_LEVELS,
   FREE_TIER_LIMITS,
-  CREDIT_COSTS,
   FREE_ACTIONS,
   CREDIT_PACKAGES,
   getPricePerCredit,
@@ -464,7 +463,6 @@ describe('Utility Functions', () => {
     });
 
     it('should return correct exhaustion date', () => {
-      const now = new Date();
       const result = estimateCreditDuration(500, 100);
 
       const expectedDate = new Date();

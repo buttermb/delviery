@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
 import { logger } from '@/lib/logger';
 
 interface ConversionRateChartProps {
@@ -34,9 +33,6 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
                 logger.warn('Error fetching orders for conversion', ordersError);
                 return { funnel: [], overallRate: 0 };
             }
-
-            // Count unique customers
-            const uniqueCustomers = new Set(orders?.map(o => o.customer_email).filter(Boolean));
 
             // Count by status
             const statusCounts = {
@@ -161,7 +157,7 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
 
                 {/* Funnel flow indicators */}
                 <div className="flex justify-center items-center gap-2 mt-4 text-sm text-muted-foreground">
-                    {funnelData.funnel.slice(1).map((step, index) => (
+                    {funnelData.funnel.slice(1).map((step) => (
                         <div key={step.name} className="flex items-center gap-1">
                             <ArrowRight className="h-4 w-4" />
                             <span className="font-medium" style={{ color: step.color }}>{step.rate}%</span>

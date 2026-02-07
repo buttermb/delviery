@@ -10,7 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Search, TrendingUp, Sparkles } from 'lucide-react';
-import { faqCategories, searchFAQs, getPopularFAQs, FAQ } from '@/lib/faq-data';
+import { faqCategories, searchFAQs, getPopularFAQs } from '@/lib/faq-data';
 import { FAQRating } from '@/components/faq/FAQRating';
 import { FAQRelated } from '@/components/faq/FAQRelated';
 import { FAQCategoryCard } from '@/components/faq/FAQCategoryCard';

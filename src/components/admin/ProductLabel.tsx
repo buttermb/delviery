@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Download, Printer, Loader2, QrCode, Barcode as BarcodeIcon } from 'lucide-react';
-import { downloadProductLabel, generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
+import { Download, Printer, Loader2, Barcode as BarcodeIcon } from 'lucide-react';
+import { generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
@@ -51,7 +51,6 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string>('');
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
 
   // Prepare label data

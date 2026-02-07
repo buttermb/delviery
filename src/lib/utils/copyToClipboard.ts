@@ -37,7 +37,7 @@ export async function copyToClipboard(
           showSuccessToast('Copied to clipboard');
         }
         return true;
-      } catch (err) {
+      } catch {
         if (showNotification) {
           showErrorToast('Failed to copy to clipboard');
         }

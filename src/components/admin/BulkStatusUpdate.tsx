@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Check, ChevronDown, Loader2, RefreshCw } from 'lucide-react';
+import { ChevronDown, Loader2, RefreshCw } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {

@@ -36,7 +36,7 @@ export function SendAccessLinkDialog({
   open,
   onClose,
   whitelistEntry,
-  menuTitle,
+  menuTitle: _menuTitle,
 }: SendAccessLinkDialogProps) {
   const [method, setMethod] = useState<'email' | 'sms'>('email');
   const [loading, setLoading] = useState(false);

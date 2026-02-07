@@ -12,8 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Truck, MapPin, Clock, CheckCircle2, XCircle,
-  Navigation, Phone, User, Package
+  Truck, Clock, CheckCircle2, XCircle,
+  Phone, User, Package
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';

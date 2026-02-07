@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { CRMPreOrder, PreOrderFormValues, LineItem, CRMInvoice } from '@/types/crm';
+import type { CRMPreOrder, LineItem, CRMInvoice } from '@/types/crm';
 import { toast } from 'sonner';
 import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';

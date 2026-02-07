@@ -14,7 +14,7 @@ import { SecurityAuditLog } from '@/components/admin/disposable-menus/SecurityAu
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, parseISO } from 'date-fns';
 
-interface AccessLog {
+interface _AccessLog {
   id: string;
   accessed_at: string;
   access_whitelist_id?: string;
@@ -32,7 +32,7 @@ interface MenuOrder {
   status: string;
 }
 
-interface DisposableMenu {
+interface _DisposableMenu {
   id: string;
   name: string;
   menu_orders?: MenuOrder[];

@@ -117,7 +117,7 @@ export default function CreatePreOrderPage() {
             toast.success("Pre-order created successfully");
             // Use validated tenantSlug (guaranteed to exist at this point)
             navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
-        } catch (error) {
+        } catch {
             // Error handled by hook
         }
     };

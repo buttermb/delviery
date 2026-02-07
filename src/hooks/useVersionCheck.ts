@@ -8,7 +8,7 @@ const VERSION_KEY = 'app_version';
 const LAST_CHECK_KEY = 'app_version_last_check';
 
 // @ts-ignore - Injected at build time by Vite
-const BUILD_TIME: string = __BUILD_TIME__;
+const _BUILD_TIME: string = __BUILD_TIME__;
 
 async function clearAllCaches() {
   try {

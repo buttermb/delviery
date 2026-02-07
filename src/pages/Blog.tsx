@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BookOpen, Calendar, User, ArrowRight, Search } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export default function Blog() {
   const blogPosts = [

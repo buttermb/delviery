@@ -17,7 +17,6 @@ import {
   TrendingUp,
   FileText,
   Calendar,
-  Zap,
   Share2,
 } from 'lucide-react';
 

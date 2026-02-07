@@ -114,7 +114,7 @@ export function getRolePermissions(role: Role): Permission[] {
   }
 
   return Object.entries(ROLE_PERMISSIONS)
-    .filter(([_, allowedRoles]) => allowedRoles.includes(role))
+    .filter(([, allowedRoles]) => allowedRoles.includes(role))
     .map(([permission]) => permission as Permission);
 }
 

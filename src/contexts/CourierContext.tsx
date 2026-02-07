@@ -181,7 +181,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
 
       // Not a courier or runner
       setLoading(false);
-    } catch (error) {
+    } catch {
       logger.debug('Not a courier/runner user', { component: 'CourierContext' });
       setLoading(false);
     }

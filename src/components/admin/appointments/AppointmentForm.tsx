@@ -38,7 +38,7 @@ export function AppointmentForm({
   selectedDate,
   onSuccess,
 }: AppointmentFormProps) {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     customer_id: "",

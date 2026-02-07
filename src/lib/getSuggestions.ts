@@ -71,7 +71,7 @@ export const getSuggestions = async (
   if (useLeafly && localMatches.length < 3 && type === "strain") {
     try {
       leaflyMatches = await fetchLeaflySuggestions(input, type);
-    } catch (error) {
+    } catch {
       // Silently fail and use local matches
     }
   }

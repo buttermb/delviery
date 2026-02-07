@@ -31,7 +31,7 @@ export default function CopyButton({
       setCopied(true);
       toast.success(`${label} copied`);
       setTimeout(() => setCopied(false), 1500);
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy");
     }
   };

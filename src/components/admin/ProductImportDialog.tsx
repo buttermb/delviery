@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import { Upload, AlertCircle, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -32,7 +32,6 @@ const SYSTEM_FIELDS = [
 export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
     const [step, setStep] = useState<ImportStep>('upload');
-    const [file, setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
     const [rawRecords, setRawRecords] = useState<any[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});

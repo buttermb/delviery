@@ -215,9 +215,9 @@ function expandStrainName(name: string): { expandedName: string; strainInfo?: St
  * an abbreviated price in wholesale menus (15-40 = $1500-$4000/lb)
  */
 function interpretNumber(
-  num: number, 
+  num: number,
   hasSecondNumber: boolean,
-  context?: { hasPacksOrUnits?: boolean }
+  _context?: { hasPacksOrUnits?: boolean }
 ): { type: 'price' | 'thc' | 'quantity' | 'unknown'; multiplier?: number } {
   
   // If there's a second number AND packs/units mentioned, first number is abbreviated price

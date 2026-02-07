@@ -15,12 +15,14 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement;
 };
 
-const actionTypes = {
+const _ACTION_TYPES = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
   DISMISS_TOAST: "DISMISS_TOAST",
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const;
+
+type ActionType = typeof _ACTION_TYPES;
 
 let count = 0;
 
@@ -28,8 +30,6 @@ function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return count.toString();
 }
-
-type ActionType = typeof actionTypes;
 
 type Action =
   | {
@@ -160,7 +160,7 @@ function toast({ ...props }: Toast) {
         description ? { description: typeof description === "string" ? description : undefined } : undefined
       );
     }
-  } catch (_e) {
+  } catch {
     // No-op: Avoid breaking if Sonner is not mounted in some test scenarios
   }
 

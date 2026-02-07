@@ -19,7 +19,6 @@ import {
     ArrowLeft,
     Mail,
     Phone,
-    ExternalLink,
     Copy,
     FileText,
     Receipt,

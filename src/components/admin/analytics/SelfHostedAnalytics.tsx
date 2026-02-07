@@ -7,7 +7,6 @@
  */
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -20,8 +19,6 @@ import {
   TrendingDown,
   Users,
   Eye,
-  MousePointerClick,
-  Globe,
   Calendar,
   Download,
   FileText,
@@ -33,7 +30,6 @@ import {
   AlertTriangle,
   ArrowUpRight,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatNumberForReport } from '@/lib/utils/analyticsExport';
 import { toast } from 'sonner';
@@ -668,8 +664,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
 }
 
 export function SelfHostedAnalytics() {
-  const { tenant } = useTenantAdminAuth();
-  const tenantId = tenant?.id;
+  useTenantAdminAuth(); // Verify tenant admin context is available
   const [isExporting, setIsExporting] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 

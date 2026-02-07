@@ -5,7 +5,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerTrigger } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,8 +21,8 @@ import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { TEMPLATES, type MenuTemplate } from './MenuTemplates';
 import {
-  ChevronDown, ChevronUp, Loader2, Check, Package, Users,
-  Shield, Calendar, Copy, Sparkles, Truck, Zap, Crown, MapPin
+  ChevronDown, ChevronUp, Loader2, Check, Package,
+  Shield, Copy, Sparkles, Truck, Zap, Crown, MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -38,7 +37,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const { tenant } = useTenantAdminAuth();
   const createMenu = useCreateDisposableMenu();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  useMediaQuery('(max-width: 768px)');
 
   // Template state
   const [selectedTemplate, setSelectedTemplate] = useState<MenuTemplate | null>(null);
@@ -192,7 +191,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
       setDescription('');
       setSelectedProducts([]);
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

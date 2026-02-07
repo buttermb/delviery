@@ -11,14 +11,10 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
   BusinessTier,
   getTierPreset,
-  getNextTier,
   getTierRequirements,
-  qualifiesForTier,
-  detectBestTier,
   getTierColor,
   TierPreset,
 } from '@/lib/presets/businessTiers';
-import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { TenantMetrics } from '@/types/hotbox';
@@ -157,7 +153,7 @@ export function useBusinessTier() {
       if (error) throw error;
       return tier;
     },
-    onSuccess: (tier) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
       toast.success('Business tier updated successfully');
     },

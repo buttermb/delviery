@@ -92,7 +92,6 @@ const ButtonTester = () => {
     buttonElements.forEach((btn) => {
       const element = btn as HTMLElement;
       const label = element.textContent?.trim() || element.getAttribute('aria-label') || 'Unnamed Button';
-      const href = element.getAttribute('href');
       const path = window.location.pathname;
       
       // Skip dangerous buttons

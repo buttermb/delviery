@@ -73,7 +73,7 @@ class Logger {
   /**
    * Send logs to monitoring service (placeholder for Sentry integration)
    */
-  private sendToMonitoring(level: 'debug' | 'info' | 'warn' | 'error', message: string, context?: LogContext): void {
+  private sendToMonitoring(_level: 'debug' | 'info' | 'warn' | 'error', _message: string, _context?: LogContext): void {
     // Placeholder for future Sentry/monitoring integration
     // Example:
     // Sentry.captureMessage(message, {

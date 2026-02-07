@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface QuickStats {

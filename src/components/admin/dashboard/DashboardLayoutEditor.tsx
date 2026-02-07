@@ -7,7 +7,7 @@
  * - Widget visibility toggles
  */
 
-import { useDashboardLayout, type WidgetId } from '@/hooks/useDashboardLayout';
+import { useDashboardLayout } from '@/hooks/useDashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {

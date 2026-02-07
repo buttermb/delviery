@@ -332,9 +332,6 @@ export const useARCommand = () => {
   return useQuery({
     queryKey: ['financial-ar-command', tenant?.id],
     queryFn: async (): Promise<ARData> => {
-      const now = new Date();
-      const weekEnd = endOfWeek(now);
-      
       if (!tenant?.id) throw new Error('No tenant');
 
       const { data: clients, error } = await supabase

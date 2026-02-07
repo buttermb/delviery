@@ -23,14 +23,6 @@ import { toast } from '@/hooks/use-toast';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 export const SecurityMonitoringPanel = () => {
-  interface SecurityThreat {
-    id: string;
-    type: string;
-    severity: string;
-    description?: string;
-    [key: string]: unknown;
-  }
-
   interface BlockedIP {
     id: string;
     ip_address: string;
@@ -38,7 +30,6 @@ export const SecurityMonitoringPanel = () => {
     [key: string]: unknown;
   }
 
-  const [activeThreats, setActiveThreats] = useState<SecurityThreat[]>([]);
   const [blockedIPs, setBlockedIPs] = useState<BlockedIP[]>([]);
   const { data: recentEvents, refetch } = useMenuSecurityEvents();
 
@@ -115,7 +106,7 @@ export const SecurityMonitoringPanel = () => {
     if (data) setBlockedIPs(data);
   };
 
-  const handleBlockIP = async (ipAddress: string, reason: string) => {
+  const _handleBlockIP = async (ipAddress: string, reason: string) => {
     const { error } = await supabase
       .from('blocked_ips')
       .insert({

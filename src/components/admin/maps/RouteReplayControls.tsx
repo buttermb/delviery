@@ -3,11 +3,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  SkipBack, 
+import {
+  Pause,
+  RotateCcw,
+  SkipBack,
   SkipForward,
   Gauge,
   Clock,

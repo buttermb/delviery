@@ -42,12 +42,10 @@ import {
   Unlock,
 } from 'lucide-react';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
-import { 
-  BusinessTier, 
-  getTierPreset, 
-  getTierRequirements,
+import {
+  BusinessTier,
+  getTierPreset,
   getTierColor,
-  BUSINESS_TIER_PRESETS,
 } from '@/lib/presets/businessTiers';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -83,7 +81,6 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
   
   const [overrideDialogOpen, setOverrideDialogOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<BusinessTier>(tier);
-  const navigate = useNavigate();
 
   // Show skeleton instead of null when loading or no metrics
   if (isLoading) {
@@ -125,7 +122,6 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
   const overallProgress = Math.round((revenueProgress + locationsProgress + teamProgress) / 3);
 
   // How close to next tier (for showing "almost there" state)
-  const isCloseToUpgrade = overallProgress >= 70 && !qualifiesForUpgrade;
   const isAlmostThere = overallProgress >= 90 && !qualifiesForUpgrade;
 
   const handleSetTier = () => {

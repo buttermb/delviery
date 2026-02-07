@@ -47,7 +47,7 @@ export function encodeJWT(payload: JWTPayload, secret: string, expiresIn: number
 /**
  * Verify JWT token (simplified - for Edge Functions only)
  */
-export function verifyJWT(token: string, secret: string): JWTPayload | null {
+export function verifyJWT(token: string, _secret: string): JWTPayload | null {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;

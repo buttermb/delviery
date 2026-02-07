@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
-import { usePOSSale } from '@/hooks/usePOSSale';
 
 interface Product {
   id: string;

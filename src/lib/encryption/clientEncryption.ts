@@ -26,7 +26,7 @@ const safeSession = {
   getItem: (key: string) => {
     try {
       return sessionStorage.getItem(key);
-    } catch (e) {
+    } catch {
       return null;
     }
   },

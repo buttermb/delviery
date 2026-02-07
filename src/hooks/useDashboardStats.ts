@@ -257,17 +257,10 @@ export function useDashboardStats() {
 
       // Extract yesterday orders and revenue
       let totalOrdersYesterday = 0;
-      let revenueYesterday = 0;
       if (yesterdayOrdersResult.status === 'fulfilled') {
-        const { data, count, error } = yesterdayOrdersResult.value;
+        const { count, error } = yesterdayOrdersResult.value;
         if (!error) {
           totalOrdersYesterday = count ?? 0;
-          if (data) {
-            revenueYesterday = data.reduce(
-              (sum, order) => sum + (Number(order.total_amount) || 0),
-              0
-            );
-          }
         } else {
           logger.warn('Failed to fetch yesterday orders', error, { component: 'useDashboardStats' });
         }

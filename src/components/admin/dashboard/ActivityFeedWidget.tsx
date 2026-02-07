@@ -5,7 +5,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, CheckCircle2, Package, DollarSign, User, Box } from 'lucide-react';
+import { Activity, CheckCircle2, Package, User, Box } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

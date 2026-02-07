@@ -6,7 +6,6 @@
 
 import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileText, Download, TrendingUp, TrendingDown, DollarSign, Users, Package, AlertCircle } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';

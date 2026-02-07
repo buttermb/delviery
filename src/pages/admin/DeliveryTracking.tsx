@@ -1,11 +1,10 @@
-import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Clock, Phone, Truck, Package } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Truck, Package } from "lucide-react";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { SEOHead } from "@/components/SEOHead";
 

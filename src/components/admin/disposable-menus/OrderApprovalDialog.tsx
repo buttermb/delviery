@@ -22,7 +22,6 @@ import {
   MapPin,
   Calendar,
   DollarSign,
-  Package,
   AlertCircle,
   Truck
 } from 'lucide-react';

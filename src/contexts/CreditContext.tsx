@@ -54,7 +54,7 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   // Legacy deductCredits method for backwards compatibility
-  const deductCredits = useCallback((amount: number, actionName: string): boolean => {
+  const deductCredits = useCallback((amount: number, _actionName: string): boolean => {
     if (creditsHook.balance < amount) {
       toast.error('Insufficient Credits', {
         description: `You need ${amount} credits for this action, but only have ${creditsHook.balance}.`,

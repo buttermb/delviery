@@ -5,10 +5,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 
-/** Known table names from the database schema */
-type TableName = keyof Database['public']['Tables'];
 
 /** PostgreSQL error with code property */
 interface PostgresError {

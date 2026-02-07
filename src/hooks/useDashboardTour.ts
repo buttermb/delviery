@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { logger } from '@/lib/logger';
-import type { CallBackProps, STATUS, EVENTS } from 'react-joyride';
+import type { CallBackProps } from 'react-joyride';
 
 interface UseDashboardTourOptions {
   /** Delay before auto-starting the tour for new users (ms) */

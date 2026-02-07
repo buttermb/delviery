@@ -23,7 +23,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils/formatDate';
-import type { ActivityLogEntry, ActivityCategory, ActivitySeverity } from '@/hooks/useActivityFeed';
+import type { ActivityLogEntry } from '@/hooks/useActivityFeed';
 
 interface ActivityFeedTimelineProps {
   entries: ActivityLogEntry[];

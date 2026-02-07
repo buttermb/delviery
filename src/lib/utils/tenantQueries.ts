@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
  * Tenant-aware SELECT query helper
  * Automatically adds tenant_id filter to queries
  */
-export function tenantQuery<T = any>(
+export function tenantQuery(
   table: string,
   tenantId: string,
   select: string = '*'
@@ -33,10 +33,10 @@ export function tenantQuery<T = any>(
  * Tenant-aware INSERT helper
  * Automatically adds tenant_id to insert data
  */
-export async function tenantInsert<T = any>(
+export async function tenantInsert(
   table: string,
   tenantId: string,
-  data: Record<string, any> | Record<string, any>[]
+  data: Record<string, unknown> | Record<string, unknown>[]
 ) {
   if (!tenantId) {
     logger.error('tenantInsert: missing tenant ID', { table });
@@ -58,11 +58,11 @@ export async function tenantInsert<T = any>(
  * Tenant-aware UPDATE helper
  * Ensures updates only affect records in the tenant's scope
  */
-export async function tenantUpdate<T = any>(
+export async function tenantUpdate(
   table: string,
   tenantId: string,
   id: string,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ) {
   if (!tenantId) {
     logger.error('tenantUpdate: missing tenant ID', { table, id });

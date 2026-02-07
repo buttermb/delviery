@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar, Lock
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";

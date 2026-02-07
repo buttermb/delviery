@@ -40,7 +40,6 @@ vi.mock('@/contexts/TenantAdminAuthContext', () => ({
 describe('useOrdersRealtime', () => {
   let queryClient: QueryClient;
   let mockChannel: RealtimeChannel;
-  let subscribeCallback: (status: string) => void;
   let insertCallback: (payload: any) => void;
 
   beforeEach(() => {

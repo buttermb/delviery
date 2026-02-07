@@ -11,8 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatPercentage } from '@/lib/utils/formatPercentage';
-import { formatSmartDate } from '@/lib/utils/formatDate';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 
 export function RevenueChartWidget() {
   const { account } = useAccount();

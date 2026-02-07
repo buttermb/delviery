@@ -74,7 +74,7 @@ const initialState: FreeTierOnboardingState = {
 // ============================================================================
 
 export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
-    const { isFreeTier, balance } = useCredits();
+    const { isFreeTier } = useCredits();
     const { tenant, isAuthenticated } = useTenantAdminAuth();
 
     const [state, setState] = useState<FreeTierOnboardingState>(initialState);

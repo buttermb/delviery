@@ -11,22 +11,19 @@ import {
   MoreVertical,
   Zap,
   X,
-  ImageIcon,
   FileText,
   Download,
   Check,
   CheckCheck,
   Loader2
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -41,14 +38,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -169,13 +158,13 @@ const AdminLiveChat = function AdminLiveChat() {
   const [isUploading, setIsUploading] = useState(false);
   const [quickResponseCategory, setQuickResponseCategory] = useState('All');
   const [showQuickResponses, setShowQuickResponses] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const [_isTyping, setIsTyping] = useState(false);
   const [customerTyping, setCustomerTyping] = useState(false);
   const [attachmentPreview, setAttachmentPreview] = useState<{
     file: File;
     preview: string;
   } | null>(null);
-  const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
+  const [_showAttachmentDialog, setShowAttachmentDialog] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -14,12 +14,10 @@ import {
   AlertTriangle,
   CheckCircle2
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const DisposableMenusHelp = () => {
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
 
   return (

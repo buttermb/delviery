@@ -55,7 +55,7 @@ export function InlineStockEdit({
     try {
       await onSave(numValue);
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       setEditValue(value.toString());
     } finally {
       setIsSaving(false);

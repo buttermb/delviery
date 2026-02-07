@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { 
-  GripVertical, Edit, Copy, Trash2, Eye, EyeOff, 
-  Check, X, DollarSign, Package, Image as ImageIcon 
+import {
+  GripVertical, Edit, Copy, Trash2, Eye, EyeOff,
+  Check, X, DollarSign
 } from "lucide-react";
 import {
   DropdownMenu,

@@ -9,14 +9,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Plus, Shield, AlertTriangle, Flame, TrendingUp, 
-  Users, Eye, ShoppingCart, Clock, ExternalLink
+import {
+  Plus, Shield, AlertTriangle, Flame,
+  Eye, ShoppingCart, ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { MenuCard } from './MenuCard';
 import { CreateMenuDialog } from './CreateMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';

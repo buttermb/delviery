@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface OptimizedProductImageProps {
   src: string;

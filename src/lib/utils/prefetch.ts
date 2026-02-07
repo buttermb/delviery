@@ -36,7 +36,7 @@ export async function prefetchQuery<TData = unknown>(
       queryFn,
       staleTime: 60 * 1000, // 1 minute
     });
-  } catch (error) {
+  } catch {
     // Silently fail - prefetching is optional
     // Prefetch failures are expected and don't need logging
   }

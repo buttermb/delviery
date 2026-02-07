@@ -70,7 +70,7 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}): UseAuthGuardRes
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { admin, tenant, loading: authLoading, isAuthenticated } = useTenantAdminAuth();
-  const { role: userRole, checkPermission, checkAnyPermission, checkAllPermissions, isLoading: permissionsLoading } = usePermissions();
+  const { role: userRole, checkAnyPermission, checkAllPermissions, isLoading: permissionsLoading } = usePermissions();
 
   const isLoading = authLoading || permissionsLoading;
 

@@ -109,7 +109,6 @@ export function useClientSuggestions() {
 
   // Generate smart suggestions
   const suggestions = useMemo((): ClientSuggestion[] => {
-    const now = Date.now();
     const suggestions: ClientSuggestion[] = [];
 
     clientsWithHistory.forEach((client: any) => {

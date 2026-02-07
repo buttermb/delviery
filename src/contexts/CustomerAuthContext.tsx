@@ -1,12 +1,9 @@
 import { logger } from '@/lib/logger';
-import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
+import { logAuth, logAuthError } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { useQueryClient } from '@tanstack/react-query';
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
-import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
-import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { clearPreAuthSessionData, establishFreshSession, invalidateSessionNonce } from "@/lib/auth/sessionFixation";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { createRefreshTimer, tokenNeedsRefresh, type RefreshTimerHandle } from "@/lib/auth/tokenRefresh";
@@ -79,7 +76,6 @@ const validateEnvironment = (): { valid: boolean; error?: string } => {
 };
 
 export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
-  const queryClient = useQueryClient();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -219,7 +215,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
 
-      const { response, attempts, category } = await resilientFetch(
+      const { response, attempts } = await resilientFetch(
         `${supabaseUrl}/functions/v1/customer-auth?action=login`,
         {
           method: "POST",

@@ -252,8 +252,6 @@ export function useStorefrontInventorySync({
  * Call this before checkout to ensure stock is still available
  */
 export function useValidateCartInventory(storeId: string | undefined) {
-  const queryClient = useQueryClient();
-
   const validateItems = useCallback(
     async (
       items: Array<{ productId: string; quantity: number; name: string }>

@@ -7,8 +7,8 @@ import {
   LayoutDashboard, Package, FileText, Truck, Warehouse,
   Menu, Users, DollarSign, BarChart3, Image, Tag,
   Settings, Shield, Bell, Printer, Plug, TrendingUp,
-  Activity, Zap, Globe, Code, Webhook, Clock,
-  Download, MapPin, Key, LineChart, PieChart,
+  Activity, Zap, Globe, Webhook, Clock,
+  Download, MapPin, Key, LineChart,
   Building2, CheckCircle, Eye, type LucideIcon
 } from 'lucide-react';
 

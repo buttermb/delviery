@@ -8,9 +8,7 @@ import {
     X,
     Mail,
     Ban,
-    CheckCircle,
     Download,
-    Trash2
 } from 'lucide-react';
 import {
     AlertDialog,
@@ -40,9 +38,9 @@ export function BulkActionsBar({
     onClearSelection,
     onBulkEmail,
     onBulkSuspend,
-    onBulkUnsuspend,
+    onBulkUnsuspend: _onBulkUnsuspend,
     onBulkExport,
-    onBulkDelete
+    onBulkDelete: _onBulkDelete
 }: BulkActionsBarProps) {
     const [actionType, setActionType] = useState<'suspend' | 'delete' | null>(null);
 

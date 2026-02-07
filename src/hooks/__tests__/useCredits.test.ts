@@ -3,14 +3,12 @@
  * Tests for credit balance management and low balance warnings
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import {
   LOW_BALANCE_WARNING_LEVELS,
   CREDIT_WARNING_THRESHOLDS,
   LOW_CREDIT_WARNING_THRESHOLD,
   CRITICAL_CREDIT_THRESHOLD,
-  FREE_TIER_MONTHLY_CREDITS,
 } from '@/lib/credits';
 
 // Mock dependencies

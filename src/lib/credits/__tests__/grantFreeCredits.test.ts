@@ -8,7 +8,7 @@
  * - Monthly refresh logic
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // ============================================================================
 // Plan-Based Credit Amounts
@@ -526,14 +526,6 @@ describe('Warning Flag Reset on Grant', () => {
   };
 
   it('should reset all warning flags after grant', () => {
-    const flagsBefore: CreditWarningFlags = {
-      warning25Sent: true,
-      warning10Sent: true,
-      warning5Sent: true,
-      warning0Sent: true,
-      alertsSent: { depleted: true, critical: true },
-    };
-
     const flagsAfter = resetWarningFlags();
 
     expect(flagsAfter.warning25Sent).toBe(false);

@@ -24,7 +24,6 @@ import {
     Truck,
     ArrowRight,
     CheckCircle2,
-    Play,
     Terminal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -116,7 +115,6 @@ const DEMO_TABS = [
 
 export default function InteractiveDemoPage() {
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [autoPlay, setAutoPlay] = useState(false);
     const activeDemo = DEMO_TABS.find(t => t.id === activeTab)!;
 
     // Scroll to top on mount

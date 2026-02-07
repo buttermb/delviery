@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Flame, AlertTriangle, Clock, Shield } from 'lucide-react';
+import { Flame, AlertTriangle, Shield } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface AutoBurnConfig {

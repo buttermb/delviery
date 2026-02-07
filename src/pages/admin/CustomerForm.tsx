@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth, Tenant } from '@/contexts/TenantAdminAuthContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import { Database } from '@/integrations/supabase/types';
 

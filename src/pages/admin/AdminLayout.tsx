@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
@@ -90,9 +89,6 @@ const AdminLayout = () => {
   useEffect(() => {
     initBrowserNotifications();
   }, []);
-
-  // Force module refresh
-  const moduleVersion = "2.2.0";
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

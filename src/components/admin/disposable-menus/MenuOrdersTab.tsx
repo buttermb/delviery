@@ -30,8 +30,8 @@ interface MenuOrdersTabProps {
 }
 
 export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTabProps) => {
-  const navigate = useNavigate();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  useNavigate();
+  useParams<{ tenantSlug: string }>();
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const updates: Record<string, unknown> = {

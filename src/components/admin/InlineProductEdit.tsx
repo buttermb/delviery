@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Edit, Trash2, Copy, Eye, MoreVertical } from "lucide-react";
+import { Check, X, Edit, Trash2, Copy, MoreVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,

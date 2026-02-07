@@ -1,7 +1,7 @@
 // src/lib/utils/encryptionHelpers.ts
 // Helper utilities for encryption operations
 
-import { getEncryptedFields, getSearchableFields, isEncryptedField, getOriginalFieldName } from '../encryption/utils';
+import { getEncryptedFields, isEncryptedField, getOriginalFieldName } from '../encryption/utils';
 import { ENCRYPTED_TABLES } from '../encryption/constants';
 
 /**

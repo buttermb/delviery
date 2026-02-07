@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';

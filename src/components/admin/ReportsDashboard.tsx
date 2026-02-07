@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, DollarSign, Package, Users, Truck } from "lucide-react";
+import { TrendingUp, DollarSign, Package, Users } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from "@/hooks/useWholesaleData";
-import { format, startOfWeek, startOfMonth, subDays } from "date-fns";
+import { startOfWeek, startOfMonth, subDays } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export function ReportsDashboard() {

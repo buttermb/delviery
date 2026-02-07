@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { formatWeight } from '@/lib/utils/formatWeight';
 import { useNavigate, useParams } from 'react-router-dom';
-import { format, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 import { ProductLink } from '@/components/admin/cross-links';
 
 interface TopProduct {

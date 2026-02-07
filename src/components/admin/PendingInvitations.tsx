@@ -74,7 +74,7 @@ export function PendingInvitations({ invitations, tenantId, onInvitationsChange 
         title: 'Invitation Link Copied',
         description: 'Share this link with the invitee to join your team'
       });
-    } catch (error: unknown) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to copy invitation link',

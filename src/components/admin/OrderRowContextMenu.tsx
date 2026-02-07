@@ -79,7 +79,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string; icon: typeof Clock }[
 
 export function OrderRowContextMenu({
   children,
-  orderId,
+  orderId: _orderId,
   currentStatus,
   onAction,
   disabledActions = [],

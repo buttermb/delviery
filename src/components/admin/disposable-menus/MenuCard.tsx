@@ -33,7 +33,6 @@ import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
-import type { DisposableMenu } from '@/types/admin';
 import type { Json } from '@/integrations/supabase/types';
 
 // Extended Menu type with computed/joined fields from queries

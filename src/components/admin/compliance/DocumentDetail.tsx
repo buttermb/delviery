@@ -23,7 +23,7 @@ interface DocumentDetailProps {
 export function DocumentDetail({
   document,
   onBack,
-  onUpdate,
+  onUpdate: _onUpdate,
 }: DocumentDetailProps) {
   const getStatusColor = (status: string) => {
     switch (status) {

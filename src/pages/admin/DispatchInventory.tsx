@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
-import { ArrowLeft, Trash2, DollarSign, Calendar, AlertTriangle, Clock } from 'lucide-react';
+import { Trash2, DollarSign, Calendar, AlertTriangle, Clock } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
 import { calculateExpectedProfit } from '@/utils/barcodeHelpers';
@@ -56,7 +56,6 @@ const PAYMENT_DUE_PRESETS = [
 ] as const;
 
 export default function DispatchInventory() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();

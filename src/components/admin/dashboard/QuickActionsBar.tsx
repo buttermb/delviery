@@ -4,7 +4,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Package, Menu, Truck, FileText } from 'lucide-react';
+import { Plus, Package, Menu, FileText } from 'lucide-react';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 
 export function QuickActionsBar() {

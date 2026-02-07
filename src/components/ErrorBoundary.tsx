@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, Home, AlertTriangle } from 'lucide-react';
 import { analytics } from '@/utils/analytics';
 import bugFinder from '@/utils/bugFinder';

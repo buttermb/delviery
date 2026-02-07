@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
-  TrendingDown, TrendingUp, Users, Package, DollarSign,
-  ArrowRight, AlertTriangle, CheckCircle2, Info
+  TrendingUp, ArrowRight, AlertTriangle, CheckCircle2, Info
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -30,7 +29,7 @@ interface Insight {
 }
 
 export function ActionableInsights() {
-  const { account } = useAccount();
+  useAccount();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [smsOpen, setSmsOpen] = useState<{ customerId: string; phone: string; name: string } | null>(null);

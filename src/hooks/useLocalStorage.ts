@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { safeStorage } from '@/utils/safeStorage';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {

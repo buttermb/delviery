@@ -27,8 +27,6 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
-  const [filters, setFilters] = useState({});
-  
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 

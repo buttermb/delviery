@@ -27,17 +27,13 @@ import {
     Package,
     Users,
     Truck,
-    FileText,
     Settings,
     Plus,
-    Search,
     Menu,
     DollarSign,
     BarChart3,
-    MessageSquare,
     Clock,
     Flame,
-    Store,
     CreditCard,
     Bell,
     Map,
@@ -64,7 +60,7 @@ interface AdminCommandPaletteProps {
 
 export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteProps) {
     const navigate = useTenantNavigate();
-    const { tenant } = useTenantAdminAuth();
+    useTenantAdminAuth();
     const [search, setSearch] = useState('');
     const { results: dataResults, isSearching, search: searchData, clearResults } = useDataSearch();
     const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);

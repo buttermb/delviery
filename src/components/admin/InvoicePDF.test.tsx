@@ -12,7 +12,7 @@ vi.mock('@/components/ui/lazy-react-pdf', () => ({
   Page: ({ children }: { children: React.ReactNode }) => <div data-testid="pdf-page">{children}</div>,
   View: ({ children }: { children: React.ReactNode }) => <div data-testid="pdf-view">{children}</div>,
   Text: ({ children }: { children: React.ReactNode }) => <div data-testid="pdf-text">{children}</div>,
-  PDFDownloadLink: ({ children, document, fileName }: { children: React.ReactNode | ((props: any) => React.ReactNode); document: any; fileName: string }) => (
+  PDFDownloadLink: ({ children, fileName }: { children: React.ReactNode | ((_props: { loading: boolean; url: string; blob: Blob | null; error: Error | null }) => React.ReactNode); document: unknown; fileName: string }) => (
     <div data-testid="pdf-download-link" data-filename={fileName}>
       {typeof children === 'function' ? children({ loading: false, url: '', blob: null, error: null }) : children}
     </div>

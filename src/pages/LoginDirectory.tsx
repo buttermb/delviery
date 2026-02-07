@@ -170,7 +170,7 @@ export default function LoginDirectory() {
                                   return;
                                 }
                                 navigate(`/${lastTenant}/admin/login`);
-                              } catch (err) {
+                              } catch {
                                 navigate('/saas/login');
                               }
                             }

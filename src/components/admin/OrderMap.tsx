@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Navigation, Layers, Route, Eye, EyeOff, TrendingUp } from 'lucide-react';
+import { AlertCircle, Navigation, Route, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStatus } from '@/utils/stringHelpers';
 import { getStatusColorInline, themeColors } from '@/lib/utils/colorConversion';

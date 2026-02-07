@@ -278,13 +278,13 @@ export async function directRefund(
 ): Promise<RecoveryResult> {
   try {
     // Get current balance
-    const { data: credits, error: creditsError } = await supabase
+    const { data: credits, error: fetchError } = await supabase
       .from('tenant_credits')
       .select('balance')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
-    if (creditsError || !credits) {
+    if (fetchError || !credits) {
       return {
         success: false,
         refundedAmount: 0,
@@ -311,7 +311,7 @@ export async function directRefund(
     }
 
     // Create refund transaction
-    const { data: refundTx, error: txError } = await supabase
+    const { data: refundTx } = await supabase
       .from('credit_transactions')
       .insert({
         tenant_id: tenantId,

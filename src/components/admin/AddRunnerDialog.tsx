@@ -75,7 +75,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
   const onSubmit = async (data: RunnerFormData) => {
     setIsSubmitting(true);
     try {
-      const { data: runner, error } = await supabase
+      const { error } = await supabase
         .from('wholesale_runners')
         .insert({
           full_name: data.full_name,

@@ -130,7 +130,7 @@ function createAttentionItem(params: Omit<Partial<AttentionItem>, 'timestamp'> &
  */
 export async function fetchAttentionItems(
   tenantId: string,
-  tier: BusinessTier
+  _tier: BusinessTier
 ): Promise<AttentionItem[]> {
   const items: AttentionItem[] = [];
   const now = new Date();
@@ -376,14 +376,12 @@ export async function buildAttentionQueue(
   const allItems = await fetchAttentionItems(tenantId, tier);
   const sortedItems = sortAttentionQueue(allItems);
 
-  // Split by priority
-  const critical = sortedItems.filter(i => i.priority === 'critical');
-  const important = sortedItems.filter(i => i.priority === 'important');
-  const info = sortedItems.filter(i => i.priority === 'info');
+  // Count critical items
+  const criticalCount = sortedItems.filter(i => i.priority === 'critical').length;
 
   return {
     items: sortedItems,
-    criticalCount: critical.length,
+    criticalCount,
     totalCount: allItems.length,
     lastUpdated: new Date().toISOString(),
   };

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import ProductCard from "./ProductCard";
 import MobileSearch from "./MobileSearch";
 import { Loader2, Leaf, Cookie, Droplets, Cigarette, Wind, ChevronRight, ChevronLeft, AlertTriangle } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";

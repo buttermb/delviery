@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeSlugInput } from '@/lib/utils/sanitize';
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput } from '@/lib/utils/sanitize';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -39,7 +38,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
 
 type TenantLimits = {
   customers: number;

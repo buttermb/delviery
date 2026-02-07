@@ -374,7 +374,7 @@ export function withOfflineSupport<T extends Record<string, unknown>>(
 
                 const data = await response.json();
                 return { queued: false, data };
-            } catch (error) {
+            } catch {
                 // Network error - queue the action
                 const id = await queueAction(type, endpoint, method, payload);
                 return { queued: true, id };

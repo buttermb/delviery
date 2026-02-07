@@ -5,7 +5,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import { OrderLink, ProductLink } from '@/components/admin/cross-links';
-import { decryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
+import { logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

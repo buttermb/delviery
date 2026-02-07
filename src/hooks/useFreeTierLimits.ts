@@ -210,7 +210,7 @@ export function useFreeTierLimits() {
   });
 
   // Check if an action is allowed
-  const checkLimit = useCallback((actionType: string, count: number = 1): LimitCheckResult => {
+  const checkLimit = useCallback((actionType: string, _count: number = 1): LimitCheckResult => {
     // If not on free tier, or has active purchased credits, everything is allowed
     // Users who buy credits get full access - they just spend their credits
     // Once credits run out, limits re-apply

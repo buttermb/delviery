@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
-import { Loader2, ChevronRight, ChevronLeft, Eye, CheckCircle2, Users, X } from 'lucide-react';
+import { Loader2, ChevronRight, ChevronLeft, Eye, CheckCircle2, Users } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -43,7 +43,6 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
   const [menuType, setMenuType] = useState<'time_limited' | 'encrypted_link'>('time_limited');
   const [expiresIn, setExpiresIn] = useState('7');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [productPrices, setProductPrices] = useState<Record<string, number>>({});
   const [accessType, setAccessType] = useState<'specific_customers' | 'public_link'>('specific_customers');
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
@@ -188,8 +187,6 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
       logger.error('Dialog creation error', error instanceof Error ? error : new Error(String(error)), { component: 'CreateMenuSimpleDialog' });
     }
   };
-
-  const selectedProductsData = inventory?.filter(p => selectedProducts.includes(p.id)) || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

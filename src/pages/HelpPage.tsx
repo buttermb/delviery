@@ -2,7 +2,6 @@ import { ModernPage } from '@/templates/ModernPageTemplate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  PlayCircle,
   BookOpen,
   HelpCircle,
   Mail,
@@ -13,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 export default function HelpPage() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant: _tenant } = useTenantAdminAuth();
 
   // Video tutorial IDs (placeholder - replace with actual video IDs)
   const tutorials = [

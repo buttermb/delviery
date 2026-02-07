@@ -9,9 +9,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  CheckCircle, XCircle, Clock, Package, DollarSign, 
-  User, Phone, RefreshCw, Eye, FileText, ChevronRight
+import {
+  CheckCircle, XCircle, Clock, Package, DollarSign,
+  User, RefreshCw, Eye, FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
@@ -56,7 +56,7 @@ const COLUMNS = [
   },
 ];
 
-export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
+export function OrderKanban({ onViewDetails: _onViewDetails }: OrderKanbanProps) {
   const queryClient = useQueryClient();
   const { data: orders = [], isLoading, refetch } = useMenuOrders();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -131,7 +131,7 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
       showSuccessToast('Status Updated', `Order marked as ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-    } catch (error) {
+    } catch {
       showErrorToast('Update Failed', 'Could not update order status');
     } finally {
       setUpdatingOrderId(null);

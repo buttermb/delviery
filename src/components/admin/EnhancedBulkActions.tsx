@@ -13,14 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Edit, Trash2, Eye, EyeOff, Copy, Tag, 
+  Trash2, Eye, EyeOff,
   DollarSign, Package, TrendingUp, TrendingDown, Loader2
 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -50,8 +43,6 @@ export function EnhancedBulkActions({
   onBulkDelete,
   onClearSelection,
 }: EnhancedBulkActionsProps) {
-  const [bulkAction, setBulkAction] = useState<string>("");
-  const [bulkPrice, setBulkPrice] = useState("");
   const [bulkStock, setBulkStock] = useState("");
   const [priceAdjustment, setPriceAdjustment] = useState<"increase" | "decrease">("increase");
   const [adjustmentPercent, setAdjustmentPercent] = useState("");

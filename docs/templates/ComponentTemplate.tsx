@@ -111,7 +111,7 @@ export const ComponentName = ({ productId, onClose }: ComponentNameProps) => {
     try {
       setLoading(true);
       await updateProduct.mutateAsync({ name: "Updated Name" });
-    } catch (error) {
+    } catch (_error) {
       // Error handled in mutation
     } finally {
       setLoading(false);

@@ -22,7 +22,7 @@ interface NavItem {
   badge?: number;
 }
 
-const MobileBottomNav = ({ onCartClick, onAuthClick }: MobileBottomNavProps) => {
+const MobileBottomNav = ({ onCartClick: _onCartClick, onAuthClick }: MobileBottomNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();

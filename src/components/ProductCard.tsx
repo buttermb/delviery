@@ -2,11 +2,11 @@ import { useState, memo, useCallback, useMemo } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Plus, Minus, Check, Star, Flame, Sparkles, Loader2, AlertCircle, Award, Clock, TrendingUp } from "lucide-react";
+import { ShoppingCart, Check, Star, Flame, Sparkles, Loader2, AlertCircle, Award, TrendingUp } from "lucide-react";
 import { OptimizedProductImage } from "@/components/OptimizedProductImage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -36,7 +36,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   const { user } = useAuth();
   const { addToRecentlyViewed } = useRecentlyViewed();
   const { addToGuestCart } = useGuestCart();
-  const viewCount = useProductViewCount(product.id);
+  useProductViewCount(product.id);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -169,18 +169,6 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
       "pre-rolls": "bg-primary/20 text-primary border-primary/30",
     };
     return colors[product.category] || colors.flower;
-  };
-
-  const handleIncrement = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    haptics.selection();
-    setQuantity(quantity + 1);
-  };
-
-  const handleDecrement = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    haptics.selection();
-    setQuantity(Math.max(1, quantity - 1));
   };
 
   return (

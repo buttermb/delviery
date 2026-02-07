@@ -22,7 +22,6 @@ import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';

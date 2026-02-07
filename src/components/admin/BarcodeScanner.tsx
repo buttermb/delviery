@@ -82,7 +82,7 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
             handleClose();
           }
         },
-        (errorMessage) => {
+        (_errorMessage) => {
           // Error callback (fires continuously, so we don't log it)
         }
       );

@@ -5,7 +5,7 @@
  * Verifies threshold options, package matching, and rate limiting.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   getAutoTopUpOptions,
   getThresholdOptions,

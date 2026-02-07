@@ -142,7 +142,7 @@ export async function performFullLogout(): Promise<void> {
   // 5. Clear user ID from both session and local storage
   try {
     sessionStorage.removeItem('floraiq_user_id');
-  } catch (e) {
+  } catch {
     // sessionStorage may not be available
   }
   safeStorage.removeItem('floraiq_user_id');
@@ -150,7 +150,7 @@ export async function performFullLogout(): Promise<void> {
   // 6. Clear lastTenantSlug (used by TenantAdminAuth for session restoration)
   try {
     localStorage.removeItem('lastTenantSlug');
-  } catch (e) {
+  } catch {
     // localStorage may not be available
   }
 
@@ -158,8 +158,8 @@ export async function performFullLogout(): Promise<void> {
   try {
     appQueryClient.cancelQueries();
     appQueryClient.clear();
-  } catch (e) {
-    logger.warn('[AUTH] Error clearing query cache', e);
+  } catch {
+    logger.warn('[AUTH] Error clearing query cache');
   }
 
   logger.info('[AUTH] performFullLogout: all state cleaned');

@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Minus, Plus, ShoppingCart, Loader2, Package, FileText, Download, QrCode, Shield, Award, Leaf, Clock, Activity, Heart, Star, X, Check } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Loader2, Package, Download, Shield, Award, Leaf, Clock, Activity, Heart, Star, X, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,7 +171,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         setAdded(false);
         setQuantity(1);
       }, 2000);
-    } catch (error) {
+    } catch {
       haptics.error();
       toast({
         title: "Failed to add to cart",

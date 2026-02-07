@@ -60,7 +60,7 @@ export function useDeleteComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId, postId }: { commentId: string; postId: string }) =>
+    mutationFn: ({ commentId }: { commentId: string; postId: string }) =>
       forumApi.deleteComment(commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.comments.list(variables.postId) });

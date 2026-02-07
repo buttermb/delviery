@@ -13,9 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MessageSquare, Mail, Shield, Send, UserPlus, 
-  Users, CheckCircle2, AlertCircle
+import {
+  MessageSquare, Mail, Shield, Send,
+  Users
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -39,7 +39,7 @@ interface EnhancedInviteSystemProps {
 }
 
 export function EnhancedInviteSystem({
-  menuId,
+  menuId: _menuId,
   menu,
   whitelist,
   onInviteSent,
@@ -79,7 +79,6 @@ export function EnhancedInviteSystem({
 
       for (const customer of customersToInvite) {
         const custId = 'id' in customer ? customer.id : null;
-        const custToken = 'unique_access_token' in customer ? customer.unique_access_token : '';
 
         // Send via appropriate method
         if (inviteMethod === 'sms' && 'phone' in customer && customer.phone) {

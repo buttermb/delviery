@@ -13,12 +13,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import {
   SUBSCRIPTION_PLANS,
   PLAN_FEATURES,
-  type SubscriptionPlan,
 } from '@/utils/subscriptionPlans';
 import {
   SUBSCRIPTION_STATUS,
@@ -350,7 +348,6 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     const creditsPerPeriod = PLAN_CREDITS_PER_PERIOD[tenantPlan] ?? PLAN_CREDITS_PER_PERIOD[SUBSCRIPTION_PLANS.STARTER];
     const daysElapsed = getDaysElapsed(periodStart);
     const daysRemaining = getDaysRemaining(periodEnd);
-    const totalPeriodDays = daysElapsed + daysRemaining;
 
     // Calculate usage this period (credits allocated minus remaining balance)
     const creditsUsedThisPeriod = Math.max(0, creditsPerPeriod - balance);

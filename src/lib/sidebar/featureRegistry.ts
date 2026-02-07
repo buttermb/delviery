@@ -57,7 +57,7 @@ import {
   Building,
   PieChart,
 } from 'lucide-react';
-import { type FeatureId, type SubscriptionTier, FEATURES } from '@/lib/featureConfig';
+import { type FeatureId, type SubscriptionTier } from '@/lib/featureConfig';
 
 export type OperationSize = 'street' | 'small' | 'medium' | 'enterprise';
 

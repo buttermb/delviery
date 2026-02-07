@@ -16,7 +16,6 @@ import {
   BEHAVIORAL_TRIGGERS,
   projectDepletion,
 } from '@/lib/credits';
-import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Types

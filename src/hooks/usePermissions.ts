@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { hasPermission } from '@/lib/permissions/checkPermissions';
-import { ROLES, Role, Permission, mapDatabaseRoleToSystemRole, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
+import { ROLES, Role, Permission, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 /**

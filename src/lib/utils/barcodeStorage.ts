@@ -5,7 +5,6 @@ import { logger } from '@/lib/logger';
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { generateBarcodeDataURL } from '@/utils/barcodeService';
 
 export interface BarcodeGenerationResult {
   barcode_url: string;

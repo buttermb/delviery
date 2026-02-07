@@ -110,8 +110,6 @@ export function DashboardTour({
   const {
     isRunning,
     stepIndex,
-    hasCompletedTour,
-    startTour,
     handleJoyrideCallback,
   } = useDashboardTour({ autoStart, autoStartDelay });
 

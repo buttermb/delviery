@@ -15,7 +15,6 @@ import { User, Phone, Mail, DollarSign, Users } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 interface Client {
     id: string;
@@ -27,7 +26,7 @@ interface Client {
 }
 
 export default function ClientsPage() {
-    const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+    const { navigateToAdmin } = useTenantNavigation();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'active' | 'archived'>('active');
 

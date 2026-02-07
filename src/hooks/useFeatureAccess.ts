@@ -7,7 +7,6 @@
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
-  FEATURES,
   TIER_PRICES,
   TIER_NAMES,
   hasFeatureAccess,

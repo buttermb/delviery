@@ -8,12 +8,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Copy, ExternalLink, MessageCircle, Mail, QrCode } from 'lucide-react';
+import { Copy, ExternalLink, MessageCircle, Mail } from 'lucide-react';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { jsonToString, jsonToStringOrNumber, safeJsonAccess } from '@/utils/menuTypeHelpers';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 interface Menu {
   encrypted_url_token: string;
@@ -43,8 +42,6 @@ export const MenuShareDialog = ({
   menu,
   whitelistEntry
 }: MenuShareDialogProps) => {
-  const [copied, setCopied] = useState(false);
-  
   const menuUrl = formatMenuUrl(
     menu.encrypted_url_token,
     whitelistEntry?.unique_access_token

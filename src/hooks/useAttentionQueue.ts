@@ -15,7 +15,6 @@ import {
   AttentionQueue,
 } from '@/types/hotbox';
 import { PRIORITY_WEIGHTS, CATEGORY_URGENCY } from '@/lib/hotbox';
-import { queryKeys } from '@/lib/queryKeys';
 
 interface AttentionCounts {
   critical: number;
@@ -56,7 +55,7 @@ function calculateScore(item: AttentionItem): number {
 
 export function useAttentionQueue() {
   const { tenant } = useTenantAdminAuth();
-  const { tier } = useBusinessTier();
+  useBusinessTier();
   const { buildAdminUrl } = useTenantNavigation();
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -336,8 +335,6 @@ export function useAttentionQueue() {
 
       // Split by priority
       const critical = scoredItems.filter(i => i.priority === 'critical');
-      const important = scoredItems.filter(i => i.priority === 'important');
-      const info = scoredItems.filter(i => i.priority === 'info');
 
       return {
         items: scoredItems,

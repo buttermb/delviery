@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -97,7 +97,6 @@ const mockOrders = [
 ];
 
 // Mock supabase channel
-const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: vi.fn() });
 const mockOn = vi.fn().mockReturnThis();
 const mockChannel = {
   on: mockOn,
@@ -482,7 +481,6 @@ describe('StorefrontLiveOrders', () => {
     });
 
     it('displays confirmed status in the filter options', async () => {
-      const user = userEvent.setup();
       render(<StorefrontLiveOrders />, { wrapper: createWrapper() });
 
       await waitFor(() => {

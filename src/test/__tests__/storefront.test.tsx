@@ -129,7 +129,7 @@ vi.mock('@/components/pwa/OfflineIndicator', () => ({
 }));
 
 // Now import components after mocks are set up
-import ShopLayout, { useShop } from '@/pages/shop/ShopLayout';
+import ShopLayout from '@/pages/shop/ShopLayout';
 import StorefrontPage from '@/pages/shop/StorefrontPage';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 
@@ -238,7 +238,7 @@ interface TestWrapperProps {
   initialRoute?: string;
 }
 
-const TestWrapper = ({ children, initialRoute = '/shop/test-store' }: TestWrapperProps) => {
+const TestWrapper = ({ initialRoute = '/shop/test-store' }: TestWrapperProps) => {
   const queryClient = createTestQueryClient();
 
   return (

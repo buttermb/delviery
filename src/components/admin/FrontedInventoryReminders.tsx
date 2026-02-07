@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Bell, Send, Calendar, AlertTriangle } from "lucide-react";
-import { format, differenceInDays } from "date-fns";
+import { differenceInDays } from "date-fns";
 import {
   Select,
   SelectContent,

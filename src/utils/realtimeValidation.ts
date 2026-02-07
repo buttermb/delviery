@@ -4,7 +4,6 @@
  */
 
 import type { Order } from '@/types/order';
-import { isOrder } from '@/types/order';
 
 /**
  * Validates incoming order data with proper type guard

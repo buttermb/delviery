@@ -21,7 +21,6 @@ import {
   CRITICAL_CREDIT_THRESHOLD,
   FREE_TIER_MONTHLY_CREDITS,
   LOW_BALANCE_WARNING_LEVELS,
-  CREDIT_WARNING_THRESHOLDS,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -519,7 +518,7 @@ export function useCreditGatedAction() {
 
       const result = await action();
       return result;
-    } catch (err) {
+    } catch {
       toast.error('Action Failed', {
         description: 'An unexpected error occurred. Please try again.',
       });

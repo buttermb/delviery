@@ -1,9 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Phone, MessageSquare, DollarSign } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleData";
-import { format, differenceInDays } from "date-fns";
+import { differenceInDays } from "date-fns";
 import { useState } from "react";
 import { PaymentDialog } from "./PaymentDialog";
 // SendSMS removed per plan - can be re-added if needed

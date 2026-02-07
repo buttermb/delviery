@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { listAdminRecords, createAdminRecord, deleteAdminRecord } from '@/utils/adminApiClient';
+import { listAdminRecords, createAdminRecord } from '@/utils/adminApiClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Key, Plus, Copy, Trash2, Loader2 } from 'lucide-react';
+import { Key, Plus, Copy, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function ApiAccess() {

@@ -1,4 +1,4 @@
-import { Shield, Award, Lock, ChevronDown, UserCog, Truck } from "lucide-react";
+import { Shield, Award, Lock, ChevronDown, UserCog } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";

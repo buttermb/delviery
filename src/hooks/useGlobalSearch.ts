@@ -18,7 +18,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 
 export type SearchResultType =
   | 'customer'

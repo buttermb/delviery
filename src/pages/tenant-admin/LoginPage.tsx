@@ -17,10 +17,10 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
+import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
-import { AuthErrorAlert, getAuthErrorType } from "@/components/auth/AuthErrorAlert";
 
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];

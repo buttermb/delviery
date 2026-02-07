@@ -267,7 +267,7 @@ class SessionManager {
     if (this.channel) {
       try {
         this.channel.close();
-      } catch (error) {
+      } catch {
         // Channel may already be closed
       }
       this.channel = null;

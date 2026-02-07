@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';

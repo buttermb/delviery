@@ -112,7 +112,7 @@ export function useCreditGatedAction(): UseCreditGatedActionReturn {
 
       // Get credit cost info
       const cost = getCreditCost(actionKey);
-      const costInfo = getCreditCostInfo(actionKey);
+      getCreditCostInfo(actionKey);
 
       // Create idempotency key
       const idempotencyKey = `${actionKey}:${referenceId || crypto.randomUUID()}`;

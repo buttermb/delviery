@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MoneyDisplay } from '../MoneyDisplay';
 import * as React from 'react';
@@ -99,7 +99,7 @@ describe('MoneyDisplay', () => {
       render(<MoneyDisplay amount={99.49} showCents={false} />);
       expect(screen.getByText('$99')).toBeInTheDocument();
 
-      const { rerender } = render(<MoneyDisplay amount={99.50} showCents={false} />);
+      render(<MoneyDisplay amount={99.50} showCents={false} />);
       expect(screen.getByText('$100')).toBeInTheDocument();
     });
   });

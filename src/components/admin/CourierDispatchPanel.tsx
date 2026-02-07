@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Truck, MapPin, Clock, DollarSign } from 'lucide-react';
+import { Truck, MapPin } from 'lucide-react';
 import { calculateDistance } from '@/utils/geofenceHelper';
 
 interface Courier {
