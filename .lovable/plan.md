@@ -1,113 +1,67 @@
 
-# Fix Storefront Issues Plan
+# Fix Sidebar "Rendered more hooks" Error
 
-## Overview
-Based on my thorough exploration of the storefront codebase, I've identified several issues that need to be fixed to ensure the storefront works correctly. This plan addresses infrastructure issues, typos, and ensures consistent behavior across the customer-facing storefront.
+## Problem Summary
+The sidebar is crashing with the error "Rendered more hooks than during the previous render." This is a React hooks rule violation in the sidebar's underlying hooks.
 
----
+## Root Cause
+Two hooks have **early returns that come AFTER other hooks are called**, causing the number of hooks to change between renders:
 
-## Issues Identified
+1. **`useSidebarPreferences.ts` (lines 366-376)**: Early return after `useQuery` and `useMutation` hooks
+2. **`useOperationSize.ts` (lines 186-195)**: Early return after `useQuery`, `useMutation`, and other hooks
 
-### 1. Critical: Stale Supabase URL in index.html
-**Location**: `index.html` lines 33-34
-**Impact**: Slower page loads due to unnecessary DNS prefetch/preconnect to wrong server
+When `admin?.userId` changes from `undefined` to a value (or vice versa), React sees different numbers of hooks being called, which breaks the rules of hooks.
 
-The preconnect and dns-prefetch hints still reference the old Supabase project URL:
-```html
-<link rel="preconnect" href="https://mtvwmyerntkhrcdnhahp.supabase.co" crossorigin />
-<link rel="dns-prefetch" href="https://mtvwmyerntkhrcdnhahp.supabase.co" />
+## Solution
+Move the early returns to BEFORE any hooks are called, or remove them entirely by handling the "no user" case within the hooks themselves.
+
+### Changes Required
+
+#### 1. Fix `src/hooks/useSidebarPreferences.ts`
+Move the `!admin?.userId` check to the **beginning** of the hook, before any other hooks are called.
+
+```typescript
+export function useSidebarPreferences() {
+  const { tenant, admin } = useTenantAdminAuth();
+  
+  // MOVE THIS CHECK TO THE TOP - before any hooks
+  // But we can't return early before calling hooks, so we need a different approach
+  // Instead, use enabled flags and handle missing user in the return
+}
 ```
 
-**Fix**: Update to the correct Lovable Cloud URL: `https://aejugtmhwwknrowfyzie.supabase.co`
+**Approach**: Remove the early return entirely. Instead:
+- Keep all hooks called unconditionally
+- Use the `enabled` option in `useQuery` to prevent fetching when user is missing
+- Return default values when data isn't available
 
----
+#### 2. Fix `src/hooks/useOperationSize.ts`
+Same approach - remove the early return at line 186-195 and handle the missing user case through the hooks' `enabled` flags and conditional return values.
 
-### 2. Typo in CartPage.tsx
-**Location**: `src/pages/shop/CartPage.tsx` line 237
-**Impact**: Poor UX - button shows misspelled text
+### Technical Implementation
 
-The empty cart CTA button has a typo:
-```tsx
-Continuue Shopping  // Should be "Continue Shopping"
+#### `useSidebarPreferences.ts`
+```text
+Lines 366-376: DELETE the early return block
+Lines 378-385: Update to always return, handling the no-user case with defaults
 ```
 
-**Fix**: Correct the spelling to "Continue Shopping"
+The hook already handles `!admin?.userId` in the query's `enabled` flag and returns `DEFAULT_PREFERENCES` when appropriate. The early return is redundant and harmful.
 
----
-
-### 3. MobileBottomNav Has 6 Columns But Only 5 Items Defined
-**Location**: `src/components/shop/MobileBottomNav.tsx` line 44
-**Impact**: Layout confusion - the nav has 5 items + 1 theme toggle button
-
-The grid has `grid-cols-5` but there's a 6th element (theme toggle). This works but layout may be affected.
-
-**Fix**: Change to `grid-cols-6` to accommodate the theme toggle button properly
-
----
-
-### 4. LuxuryProductGridSection Uses `debouncedSearch` in Filter Logic but Wrong Variable
-**Location**: `src/components/shop/sections/LuxuryProductGridSection.tsx` line 122
-**Impact**: Potential inconsistency between displayed search term and filtered results
-
-The `useMemo` dependency array references `searchQuery` but the filter uses `debouncedSearch`:
-```tsx
-// Line 108 uses debouncedSearch for filtering
-if (debouncedSearch) { ... }
-// But line 122 dependency array uses searchQuery
-}, [products, searchQuery, selectedCategory, max_products]);
+#### `useOperationSize.ts`
+```text
+Lines 186-195: DELETE the early return block
+Lines 197-204: Update to always return, using detected defaults when user is missing
 ```
 
-**Fix**: Update the dependency array to use `debouncedSearch` instead of `searchQuery`
+The hook already uses `enabled: !!tenant?.id && !!admin?.userId` for the query. The early return is redundant.
 
----
+### Verification
+After these fixes:
+- All hooks will be called in the same order on every render
+- The sidebar will load correctly without crashing
+- Functionality remains identical (the return values handle missing user data)
 
-### 5. StorefrontProductCard Missing Padding on Footer
-**Location**: `src/components/shop/StorefrontProductCard.tsx` line 208
-**Impact**: Minor visual issue - footer content touches card edges
-
-The footer div has no horizontal padding but siblings do:
-```tsx
-<div className="pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
-```
-
-**Fix**: Add `px-5` to match the content padding above it
-
----
-
-## Implementation Summary
-
-| Priority | File | Issue | Fix |
-|----------|------|-------|-----|
-| 1 | `index.html` | Wrong Supabase preconnect URL | Update to correct URL |
-| 2 | `CartPage.tsx` | "Continuue" typo | Fix spelling |
-| 3 | `MobileBottomNav.tsx` | Grid columns mismatch | Change to `grid-cols-6` |
-| 4 | `LuxuryProductGridSection.tsx` | Wrong useMemo dependency | Use `debouncedSearch` |
-| 5 | `StorefrontProductCard.tsx` | Missing footer padding | Add `px-5` |
-
----
-
-## Technical Details
-
-### File: index.html
-- **Lines 33-34**: Replace `mtvwmyerntkhrcdnhahp` with `aejugtmhwwknrowfyzie`
-
-### File: src/pages/shop/CartPage.tsx
-- **Line 237**: Change `Continuue Shopping` → `Continue Shopping`
-
-### File: src/components/shop/MobileBottomNav.tsx
-- **Line 44**: Change `grid-cols-5` → `grid-cols-6`
-
-### File: src/components/shop/sections/LuxuryProductGridSection.tsx
-- **Line 122**: Change dependency `searchQuery` → `debouncedSearch`
-
-### File: src/components/shop/StorefrontProductCard.tsx
-- **Line 208**: Add `px-5` class to footer div
-
----
-
-## Expected Outcome
-- Faster initial page loads with correct DNS prefetch
-- Professional appearance with correct spelling
-- Proper mobile navigation layout
-- Correct search filtering behavior
-- Consistent visual spacing in product cards
+### Files to Modify
+1. `src/hooks/useSidebarPreferences.ts` - Remove early return at lines 366-376
+2. `src/hooks/useOperationSize.ts` - Remove early return at lines 186-195
