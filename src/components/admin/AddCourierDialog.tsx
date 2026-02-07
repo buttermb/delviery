@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput } from "@/lib/utils/sanitize";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -103,7 +104,15 @@ export const AddCourierDialog = ({
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          ...data,
+          full_name: sanitizeFormInput(data.full_name, 200),
+          email: sanitizeEmail(data.email),
+          phone: sanitizePhoneInput(data.phone),
+          license_number: sanitizeFormInput(data.license_number, 50),
+          vehicle_type: data.vehicle_type,
+          vehicle_make: sanitizeFormInput(data.vehicle_make, 100),
+          vehicle_model: sanitizeFormInput(data.vehicle_model, 100),
+          vehicle_plate: sanitizeFormInput(data.vehicle_plate, 20),
+          age_verified: data.age_verified,
           tenant_id: tenant?.id, // Include tenant_id for multi-tenant isolation
         }),
         skipAuth: true, // Manual auth header

@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeFormInput, sanitizeEmail, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -67,11 +68,11 @@ export function ReviewForm({
           store_id: storeId,
           product_id: productId,
           customer_id: customerId,
-          customer_name: customerName || 'Anonymous',
-          customer_email: customerEmail || null,
+          customer_name: sanitizeFormInput(customerName, 100) || 'Anonymous',
+          customer_email: customerEmail ? sanitizeEmail(customerEmail) : null,
           rating,
-          title: title || null,
-          comment: comment || null,
+          title: title ? sanitizeFormInput(title, 100) : null,
+          comment: comment ? sanitizeTextareaInput(comment, 1000) : null,
           is_verified_purchase: !!customerId, // Verified if logged in
           is_approved: false, // Requires moderation
         });

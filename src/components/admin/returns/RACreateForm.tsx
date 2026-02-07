@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeTextareaInput, sanitizeFormInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -150,7 +151,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
           order_id: formData.order_id,
           items: items.map(item => ({
             product_id: '',  // Would be fetched from order
-            product_name: item.product_name,
+            product_name: sanitizeFormInput(item.product_name, 200),
             quantity_lbs: item.quantity,
             price_per_lb: item.unit_price,
             subtotal: item.total_price,
@@ -159,7 +160,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
             disposition: 'restock'  // Default, could be made configurable
           })),
           reason: formData.reason,
-          notes: formData.notes
+          notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : formData.notes
         }
       });
 

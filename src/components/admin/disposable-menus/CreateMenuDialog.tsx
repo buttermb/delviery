@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
+import { sanitizeFormInput, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,8 +171,8 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     try {
       const result = await createMenu.mutateAsync({
         tenant_id: tenant?.id || '',
-        name,
-        description,
+        name: sanitizeFormInput(name, 200),
+        description: sanitizeTextareaInput(description, 500),
         product_ids: selectedProducts,
         min_order_quantity: parseFloat(minOrder),
         max_order_quantity: parseFloat(maxOrder),
@@ -181,7 +182,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           require_access_code: requireAccessCode,
           require_geofence: requireGeofence,
           geofence_radius: requireGeofence ? parseFloat(geofenceRadius) : null,
-          geofence_location: requireGeofence ? geofenceLocation : null,
+          geofence_location: requireGeofence ? sanitizeFormInput(geofenceLocation, 200) : null,
           time_restrictions: timeRestrictions,
           allowed_hours: timeRestrictions ? {
             start: parseInt(allowedHoursStart),
@@ -202,7 +203,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           show_product_images: showProductImages,
           show_availability: showAvailability,
           show_contact_info: showContactInfo,
-          custom_message: customMessage,
+          custom_message: sanitizeFormInput(customMessage, 500),
         }
       });
 

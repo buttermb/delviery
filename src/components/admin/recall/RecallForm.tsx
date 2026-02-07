@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import {
   Dialog,
   DialogContent,
@@ -148,9 +149,9 @@ export function RecallForm({
 
     await createMutation.mutateAsync({
       batch_id: formData.batch_id || null,
-      batch_number: formData.batch_number,
-      product_name: productName,
-      recall_reason: formData.reason,
+      batch_number: sanitizeFormInput(formData.batch_number, 100),
+      product_name: sanitizeFormInput(productName, 200),
+      recall_reason: sanitizeTextareaInput(formData.reason, 2000),
       severity: formData.severity,
       status: formData.status,
       affected_customers: 0, // Would be calculated from traceability

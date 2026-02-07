@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { Loader2 } from "lucide-react";
 
@@ -96,15 +97,15 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       const { error } = await supabase
         .from("wholesale_clients")
         .update({
-          business_name: formData.business_name,
-          contact_name: formData.contact_name,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
+          business_name: sanitizeFormInput(formData.business_name, 200),
+          contact_name: sanitizeFormInput(formData.contact_name, 200),
+          email: formData.email ? sanitizeEmail(formData.email) : formData.email,
+          phone: sanitizePhoneInput(formData.phone),
+          address: formData.address ? sanitizeFormInput(formData.address, 500) : formData.address,
           client_type: formData.client_type,
           credit_limit: parseFloat(formData.credit_limit),
           payment_terms: parseInt(formData.payment_terms),
-          notes: formData.notes,
+          notes: formData.notes ? sanitizeTextareaInput(formData.notes, 1000) : formData.notes,
           updated_at: new Date().toISOString()
         })
         .eq("id", clientId);

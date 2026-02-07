@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
@@ -129,7 +130,17 @@ export function ProductForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(formData, imageFile);
+        const sanitizedData: ProductFormData = {
+            ...formData,
+            name: sanitizeFormInput(formData.name, 100),
+            sku: formData.sku ? sanitizeSkuInput(formData.sku) : '',
+            vendor_name: sanitizeFormInput(formData.vendor_name, 100),
+            strain_name: sanitizeFormInput(formData.strain_name, 100),
+            batch_number: sanitizeFormInput(formData.batch_number, 100),
+            description: sanitizeTextareaInput(formData.description, 1000),
+            metrc_retail_id: sanitizeFormInput(formData.metrc_retail_id, 100),
+        };
+        onSubmit(sanitizedData, imageFile);
     };
 
     const profitMargin = (cost: string, price: string) => {
