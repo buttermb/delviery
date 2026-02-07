@@ -143,12 +143,6 @@ export function MobileBottomNav() {
                 >
                   <div className="relative">
                     <Icon className="h-5 w-5 mb-1" aria-hidden="true" />
-                    {/* Badge logic */}
-                    {link.badge && link.badge > 0 && (
-                      <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-in zoom-in duration-300">
-                        {link.badge}
-                      </span>
-                    )}
                   </div>
                   <span className="truncate max-w-full px-1 text-[10px] font-medium leading-tight">{link.title}</span>
                 </Link>

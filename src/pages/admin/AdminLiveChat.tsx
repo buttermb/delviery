@@ -157,7 +157,7 @@ const DEFAULT_QUICK_RESPONSES: QuickResponse[] = [
 // Quick Response Categories
 const QUICK_RESPONSE_CATEGORIES = ['All', 'General', 'Orders', 'Delivery', 'Products'];
 
-const AdminLiveChat = () => {
+const AdminLiveChat = function AdminLiveChat() {
   const { tenant } = useTenantAdminAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
@@ -1235,4 +1235,4 @@ function MessageBubble({ message, formatTime }: MessageBubbleProps) {
   );
 }
 
-export { AdminLiveChat };
+export default AdminLiveChat;

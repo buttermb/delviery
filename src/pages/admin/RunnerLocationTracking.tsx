@@ -46,7 +46,7 @@ function formatRouteDate(date: Date): string {
   return format(date, 'EEEE, MMM d');
 }
 
-export function RunnerLocationTracking() {
+export default function RunnerLocationTracking() {
   const navigate = useNavigate();
   const { tenant, tenantSlug } = useTenantAdminAuth();
   const [selectedRunnerId, setSelectedRunnerId] = useState<string>('');

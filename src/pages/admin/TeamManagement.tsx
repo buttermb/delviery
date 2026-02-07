@@ -77,7 +77,7 @@ const initialFormData: InviteFormData = {
   role: 'member',
 };
 
-export function TeamManagement() {
+export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
