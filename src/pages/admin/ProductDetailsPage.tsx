@@ -10,6 +10,7 @@ import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useProduct, useProductInventoryHistory, useProductFrontedInventory } from '@/hooks/useProduct';
 import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHistory';
+import { ProductInventoryChart } from '@/components/admin/products/ProductInventoryChart';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -565,6 +566,9 @@ export default function ProductDetailsPage() {
 
                     {/* Inventory Tab */}
                     <TabsContent value="inventory" className="space-y-4">
+                        {/* Inventory History Chart */}
+                        <ProductInventoryChart productId={productId} />
+
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Stock Levels */}
                             <Card>

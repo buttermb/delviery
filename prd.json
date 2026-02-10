@@ -513,7 +513,7 @@
     "id": "task-086",
     "title": "Create product detail page with inventory chart",
     "description": "On product detail page, add an inventory history chart showing stock levels over time. Use recharts LineChart. X-axis is dates, Y-axis is stock quantity. Plot inventory_history entries. Show restock events as green dots, order deductions as red dots. Hover shows event details. Time range selector — 7d/30d/90d.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-087",

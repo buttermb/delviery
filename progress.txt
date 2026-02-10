@@ -2423,3 +2423,26 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Updated TabsList to 4-column grid to accommodate new tab
 - No console.log used — follows project conventions with logger if needed
 - All imports use @/ alias as required
+
+## task-086: Create product detail page with inventory chart
+- Created useProductInventoryChart hook in src/hooks/useProduct.ts that fetches inventory_history for charting
+- Hook accepts productId and timeRange ('7d' | '30d' | '90d') parameters
+- Calculates running stock quantity from inventory_history entries
+- First fetches prior history before the time range to establish starting quantity
+- Determines event type (restock, deduction, adjustment) based on movement_type field
+- Returns InventoryChartDataPoint[] with date, quantity, eventType, and notes
+- Created src/components/admin/products/ProductInventoryChart.tsx component with:
+  - recharts ComposedChart using LineChart for stock levels over time
+  - X-axis shows dates, Y-axis shows stock quantity
+  - Line uses stepAfter interpolation for accurate inventory representation
+  - Green Scatter dots for restock events
+  - Red Scatter dots for order deductions
+  - Custom tooltip showing date, stock level, event type badge, and notes
+  - ToggleGroup for time range selection (7d/30d/90d)
+  - Stats summary showing current, min, max stock, restock count, deduction count
+  - Loading and error states properly handled
+- Integrated chart into ProductDetailsPage.tsx inventory tab as first element
+- Uses queryKeys.inventory.movements pattern extended with 'chart' and timeRange
+- All queries filter by tenant_id for multi-tenant isolation
+- No console.log used — follows project conventions
+- All imports use @/ alias as required
