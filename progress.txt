@@ -51,3 +51,21 @@
 - Uses `Promise.all` for parallel invalidation of independent queries
 - Exposes `queryClient` for edge cases requiring direct access
 - Imports use `@/` alias as required
+
+## task-005: Create useTenantContext unified hook
+- Created `src/hooks/useTenantContext.ts` that wraps `useTenantAdminAuth()` from TenantAdminAuthContext
+- Provides commonly needed derived state with memoization:
+  - `tenantId`, `tenantSlug`, `userId`, `userRole` — basic identity values
+  - `isAdmin`, `isStaff`, `isSuperAdmin`, `isOwner`, `isManager`, `isCourier` — role-based boolean flags
+  - `permissions` array — derived from role using `ROLE_PERMISSIONS` mapping
+  - `hasPermission(perm)`, `hasAnyPermission(perms)`, `hasAllPermissions(perms)` — permission check helpers
+  - `isReady` — convenience flag combining loading, isAuthenticated, tenantId, userId
+- All derived values use `useMemo` for optimal performance
+- Defined `Permission` type with 26 common permission strings (view:*, manage:*, access:*, impersonate:*)
+- Created `ROLE_PERMISSIONS` map for 7 roles: super_admin, admin, owner, manager, staff, viewer, courier
+- Role hierarchy: super_admin > admin/owner > manager > staff > viewer/courier
+- Exposes parent context's `logout` and `refreshTenant` actions for convenience
+- Debug logging for context not ready states using `logger` from `@/lib/logger`
+- No console.log — all logging via logger
+- Imports use `@/` alias as required
+- Existing `useTenantContextSafe.ts` provides safe access pattern — this new hook provides derived values

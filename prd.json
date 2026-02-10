@@ -27,7 +27,7 @@
     "id": "task-005",
     "title": "Create useTenantContext unified hook",
     "description": "Create src/hooks/useTenantContext.ts that wraps useTenantAdminAuth() and adds commonly needed derived state — tenantId, tenantSlug, userId, userRole, permissions array, isAdmin boolean, isStaff boolean. Every admin component should use this instead of calling useTenantAdminAuth() directly. Memoize derived values with useMemo.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-006",
