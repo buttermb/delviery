@@ -975,7 +975,7 @@
     "id": "task-163",
     "title": "Create vendor rating and review system",
     "description": "Internal vendor rating system. Rate vendors on 5 dimensions — price, quality, reliability, communication, compliance. Aggregate score displayed on vendor card and detail. Ratings linked to specific POs. History of ratings over time. Useful for deciding which vendors to prioritize. Only visible to admin staff.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-164",

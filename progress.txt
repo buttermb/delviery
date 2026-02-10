@@ -4766,3 +4766,48 @@ Created a complete vendor contact management system with the following component
 - Selection state needs to track both matched products (for cost updates) and new products (for creation)
 - Bulk operations should be separated (update costs vs create products) to avoid confusion
 - Schedule sync UI is ready but requires vendor API configuration for actual automation
+
+---
+
+## Task 163: Create vendor rating and review system
+
+### Created files:
+1. `src/hooks/useVendorRatings.ts` - Hook for managing vendor ratings with TanStack Query
+2. `src/components/admin/vendors/VendorRatingSystem.tsx` - Main component for rating vendors
+
+### Updated files:
+1. `src/lib/queryKeys.ts` - Added query keys for vendor ratings (ratings, ratingHistory, ratingAggregate)
+
+### Features implemented:
+- Rate vendors on 5 dimensions: price, quality, reliability, communication, compliance
+- Aggregate score calculation displayed with star rating and progress bars
+- Ratings can be linked to specific Purchase Orders
+- Full history of ratings over time with edit/delete capability
+- VendorRatingBadge component for use in vendor cards/lists
+- Rating sliders with 0.5 step increments (1-5 scale)
+- Color-coded ratings (green >= 4.5, yellow >= 3, red < 2)
+- Labels: Excellent, Very Good, Good, Fair, Poor
+
+### Patterns followed:
+- Used useTenantAdminAuth() for tenant context
+- All queries filter by tenant_id for multi-tenant isolation
+- logger from @/lib/logger (no console.log)
+- React Hook Form + Zod for form validation
+- TanStack Query for data fetching and caching
+- shadcn/ui components (Card, Dialog, AlertDialog, Slider, Progress, etc.)
+- toast from sonner for notifications
+- EnhancedEmptyState for empty states
+
+### Technical details:
+- calculateOverallScore() averages all 5 dimensions
+- Aggregate calculation done client-side from individual ratings
+- Uses useVendorOrders hook to list POs for linking ratings
+- Mutation invalidates both ratings and aggregate query keys
+- Query keys: vendors.ratings, vendors.ratingHistory, vendors.ratingAggregate
+
+### Learnings:
+- Rating systems benefit from tooltips explaining each dimension
+- Slider with step=0.5 provides good granularity without overwhelming users
+- Aggregate scores should be recalculated on every rating change
+- Linking ratings to POs provides context for historical analysis
+- Color-coded progress bars make dimension comparison visual and intuitive

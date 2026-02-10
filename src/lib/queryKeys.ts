@@ -852,6 +852,12 @@ export const queryKeys = {
       [...queryKeys.vendors.all, 'compliance-documents', tenantId, complianceId] as const,
     complianceAudit: (tenantId: string, complianceId: string) =>
       [...queryKeys.vendors.all, 'compliance-audit', tenantId, complianceId] as const,
+    ratings: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'ratings'] as const,
+    ratingHistory: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'rating-history'] as const,
+    ratingAggregate: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'rating-aggregate'] as const,
   },
 
   // Storefront
