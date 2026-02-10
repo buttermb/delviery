@@ -4953,3 +4953,23 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
 - Vendor pricing changes flow: PO creation → detect cost change → log to history → trigger alert if threshold exceeded
 - RPC functions use SECURITY DEFINER for proper RLS bypass when needed
 - Vendors table uses account_id as tenant identifier (same as observed in task-166)
+
+## Task 168: Create vendor communication log
+
+### Files Created:
+- supabase/migrations/20260210000001_create_vendor_communication_logs.sql - Database migration for vendor_communication_logs table with RLS
+- src/hooks/useVendorCommunications.ts - Hook for CRUD operations on vendor communications
+- src/components/admin/vendors/VendorCommunicationLog.tsx - Timeline UI component with filters and search
+
+### Files Modified:
+- src/lib/queryKeys.ts - Added communications and communicationDetail query keys
+- src/pages/admin/VendorDetailPage.tsx - Added Communications tab with VendorCommunicationLog component
+
+### What I Learned:
+- Used existing VendorContactsManager as pattern for the component structure
+- Used enum type for communication_type to ensure data consistency
+- Implemented client-side filtering for better UX (type, date range, search)
+- Added PO linkage via optional foreign key to purchase_orders table
+- Used format/formatDistanceToNow from date-fns for human-readable timestamps
+- Added color-coded icons per communication type for visual distinction
+- All queries filter by tenant_id for multi-tenant isolation

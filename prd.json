@@ -1005,7 +1005,7 @@
     "id": "task-168",
     "title": "Create vendor communication log",
     "description": "On vendor detail page, log all communications. Staff can add notes about calls, emails, meetings. Attach relevant POs to communication entries. Timeline view. Useful for team coordination — everyone sees what was discussed with vendor. Searchable. Filter by communication type and date.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-169",

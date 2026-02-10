@@ -20,6 +20,7 @@ import {
   Users,
   Shield,
   TrendingUp,
+  MessageSquare,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +34,7 @@ import { VendorPaymentTracking } from '@/components/admin/vendors/VendorPaymentT
 import { VendorContactsManager } from '@/components/admin/vendors/VendorContactsManager';
 import { VendorComplianceTracking } from '@/components/admin/vendors/VendorComplianceTracking';
 import { VendorPriceHistory } from '@/components/admin/vendors/VendorPriceHistory';
+import { VendorCommunicationLog } from '@/components/admin/vendors/VendorCommunicationLog';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -282,6 +284,10 @@ export default function VendorDetailPage() {
               <TrendingUp className="h-4 w-4" />
               Price History
             </TabsTrigger>
+            <TabsTrigger value="communications" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Communications
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -306,6 +312,10 @@ export default function VendorDetailPage() {
 
           <TabsContent value="price-history">
             <VendorPriceHistory vendorId={vendor.id} vendorName={vendor.name} />
+          </TabsContent>
+
+          <TabsContent value="communications">
+            <VendorCommunicationLog vendorId={vendor.id} vendorName={vendor.name} />
           </TabsContent>
         </Tabs>
       </div>
