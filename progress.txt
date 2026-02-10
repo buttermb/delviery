@@ -3055,3 +3055,20 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Proper loading states (Skeleton), error states (Alert), and success/error toasts
 - Used `.maybeSingle()` for optional tenant_settings data
 - Imports use `@/` alias as required
+
+## task-110: Create product-order velocity calculation
+- Created `src/hooks/useProductVelocity.ts` — calculates how fast a product sells
+- Returns `units_per_day`, `days_until_stockout`, `reorder_urgency` (normal/soon/urgent/overdue)
+- Calculates from `unified_order_items` joined with `unified_orders` over last 30 days
+- Only counts orders with valid statuses: completed, delivered, processing, confirmed
+- `useProductVelocity()` hook for single product velocity with tenant filtering
+- `useBulkProductVelocity()` hook for efficient batch calculation across multiple products
+- Added trend analysis: compares first 15 days vs last 15 days to detect increasing/decreasing/stable sales
+- Tracks weekly and monthly unit totals along with last sale date
+- Utility functions: `getVelocityUrgencyLabel()`, `getVelocityUrgencyColor()`, `getTrendLabel()`, `getTrendIcon()`
+- Custom query keys: `velocityQueryKeys.single()`, `velocityQueryKeys.bulk()` for proper cache management
+- 5-minute stale time for TanStack Query caching
+- All queries filter by `tenant_id` using `useTenantAdminAuth()`
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Used `.maybeSingle()` for product fetch
+- All imports use `@/` alias as required

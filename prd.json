@@ -657,7 +657,7 @@
     "id": "task-110",
     "title": "Create product-order velocity calculation",
     "description": "Create src/hooks/useProductVelocity.ts — calculates how fast a product sells. Returns units_per_day, days_until_stockout, reorder_urgency (normal/soon/urgent/overdue). Used in product detail, inventory dashboard, and reorder suggestions. Calculated from order history over the last 30 days. Cached with TanStack Query.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-111",
