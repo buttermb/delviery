@@ -4454,3 +4454,23 @@ Date: 2026-02-10
 - All queries filter by `tenant_id` using `useTenantAdminAuth()` context
 - No console.log — used `logger` from `@/lib/logger` throughout
 - Build passes with no TypeScript errors
+
+## task-152: Create vendor detail page with product catalog
+- Created `src/pages/admin/VendorDetailPage.tsx` — main vendor detail page
+- Created `src/components/admin/vendors/VendorProductCatalog.tsx` — product catalog component
+- VendorDetailPage shows vendor info (contact, address, business info) with Tabs for Products and Order History
+- VendorProductCatalog displays products sourced from vendor with:
+  - DataTable with product name, SKU, category, price, stock quantity, stock status badge
+  - Filters for search (by name/SKU), category dropdown, stock status (all/in_stock/low_stock/out_of_stock)
+  - Summary stats: total products, total stock value, low stock count, out of stock count
+  - Clickable rows navigate to product detail page
+  - "Add Product" button pre-fills vendor name
+  - StandardPagination for tables with 10+ items
+- Products linked to vendor via `vendor_name` field (not foreign key)
+- Used `queryKeys.vendors.products(tenantId, vendorId)` for caching
+- Used `.maybeSingle()` for vendor fetch (nullable result)
+- All queries filter by `tenant_id` (via `account_id` for vendors table)
+- Stock status badge logic: out_of_stock (red), low_stock (amber), in_stock (green)
+- All imports use `@/` alias, logging via `logger` from `@/lib/logger`
+- Used existing patterns: useTenantAdminAuth, useTenantNavigation, SwipeBackWrapper, SEOHead
+- Purchase Order tab placeholder for future task-153

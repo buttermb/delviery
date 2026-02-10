@@ -909,7 +909,7 @@
     "id": "task-152",
     "title": "Create vendor detail page with product catalog",
     "description": "On vendor detail page, show all products sourced from this vendor. DataTable with product name, SKU, price, current stock, stock status. Clickable to product detail. Total product count and total stock value from this vendor. Filter by category and stock status. Quick add product from vendor page.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-153",
