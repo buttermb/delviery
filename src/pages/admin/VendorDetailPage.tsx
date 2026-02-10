@@ -16,6 +16,7 @@ import {
   Edit,
   Loader2,
   FileText,
+  DollarSign,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +26,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { VendorProductCatalog } from '@/components/admin/vendors/VendorProductCatalog';
 import { VendorOrderHistory } from '@/components/admin/vendors/VendorOrderHistory';
+import { VendorPaymentTracking } from '@/components/admin/vendors/VendorPaymentTracking';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -253,11 +255,15 @@ export default function VendorDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Tabs for Products and Order History */}
+        {/* Tabs for Products, Order History, and Payments */}
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Payments
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -266,6 +272,10 @@ export default function VendorDetailPage() {
 
           <TabsContent value="orders">
             <VendorOrderHistory vendorId={vendor.id} vendorName={vendor.name} />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <VendorPaymentTracking vendorId={vendor.id} vendorName={vendor.name} />
           </TabsContent>
         </Tabs>
       </div>

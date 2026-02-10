@@ -32,6 +32,9 @@ import {
   AlertTriangle,
   TrendingUp,
   Package,
+  CheckCircle2,
+  Clock,
+  CircleDashed,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +52,11 @@ type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['R
 
 interface PurchaseOrderWithItems extends PurchaseOrder {
   purchase_order_items: PurchaseOrderItem[];
+}
+
+interface PurchaseOrderWithPayment extends PurchaseOrderWithItems {
+  payment_status?: string | null;
+  paid_amount?: number | null;
 }
 
 interface VendorOrderHistoryProps {
@@ -173,6 +181,33 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
       return 'bg-green-500';
     }
     return '';
+  };
+
+  const getPaymentStatusBadge = (paymentStatus: string | null | undefined) => {
+    switch (paymentStatus) {
+      case 'paid':
+        return (
+          <Badge variant="default" className="bg-green-500 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Paid
+          </Badge>
+        );
+      case 'partial':
+        return (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Partial
+          </Badge>
+        );
+      case 'unpaid':
+      default:
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 text-orange-600 border-orange-300">
+            <CircleDashed className="h-3 w-3" />
+            Unpaid
+          </Badge>
+        );
+    }
   };
 
   const getItemsCount = (po: PurchaseOrderWithItems): number => {
@@ -335,6 +370,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Total</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Payment</TableHead>
                       <TableHead className="text-center">Items</TableHead>
                       <TableHead>Expected Delivery</TableHead>
                     </TableRow>
@@ -368,6 +404,9 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
                           >
                             {po.status || 'Unknown'}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {getPaymentStatusBadge((po as PurchaseOrderWithPayment).payment_status)}
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1 text-muted-foreground">

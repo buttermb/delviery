@@ -945,7 +945,7 @@
     "id": "task-158",
     "title": "Create vendor payment tracking",
     "description": "On vendor detail page, track payments made to vendor. Link payments to purchase orders. Show outstanding balance per vendor. Payment status on PO list. Mark PO as paid with payment date and method. Dashboard shows total vendor payables. Connects vendor module to financial tracking.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-159",

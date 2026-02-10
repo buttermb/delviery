@@ -4560,3 +4560,32 @@ Date: 2026-02-10
 - Uses logger from @/lib/logger (no console.log), all queries filter by tenant_id
 - Loading, error, and empty states properly handled
 - Uses type assertion for inventory_history table access (matching StockAdjustment pattern)
+
+## Task 158: Create vendor payment tracking - 2026-02-10
+
+### What was implemented:
+1. **Database Migration** (`supabase/migrations/20260210000002_vendor_payment_tracking.sql`):
+   - Created `vendor_payments` table with tenant isolation
+   - Added payment tracking columns to `purchase_orders` (payment_status, paid_amount, payment_date)
+   - RLS policies for multi-tenant security
+   - Trigger function to automatically update PO payment status when payments are recorded
+
+2. **VendorPaymentTracking Component** (`src/components/admin/vendors/VendorPaymentTracking.tsx`):
+   - Full payment tracking UI with stats cards showing outstanding balance, total paid, monthly paid
+   - Payment form with React Hook Form + Zod validation
+   - Payment method options (cash, check, bank transfer, credit card, ACH, wire, other)
+   - Links payments to specific purchase orders
+   - Auto-fills remaining balance when selecting a PO
+   - Pagination for payment history
+
+3. **Updated VendorDetailPage**: Added new "Payments" tab alongside Products and Purchase Orders
+
+4. **Updated VendorOrderHistory**: Added payment status column showing Paid/Partial/Unpaid badges
+
+5. **Query Keys**: Added vendors.payments() and vendors.payables() query keys
+
+### Key learnings:
+- Use PurchaseOrder type from Database types, extend with custom interfaces for joined data
+- Payment status triggers in Postgres auto-update PO paid status when payments are inserted/updated/deleted
+- Used SECURITY DEFINER on trigger functions for proper RLS handling
+- React Hook Form with Zod provides excellent form validation with TypeScript integration

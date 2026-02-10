@@ -834,6 +834,10 @@ export const queryKeys = {
       [...queryKeys.vendors.detail(tenantId, vendorId), 'orders'] as const,
     products: (tenantId: string, vendorId: string) =>
       [...queryKeys.vendors.detail(tenantId, vendorId), 'products'] as const,
+    payments: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'payments'] as const,
+    payables: (tenantId?: string) =>
+      [...queryKeys.vendors.all, 'payables', tenantId] as const,
   },
 
   // Storefront
