@@ -21,6 +21,7 @@ import { OrderRelatedEntitiesPanel } from '@/components/admin/orders/OrderRelate
 import { OrderPaymentStatusSync } from '@/components/admin/orders/OrderPaymentStatusSync';
 import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDeliveryStatusSync';
 import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
+import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -427,6 +428,24 @@ export function OrderDetailsPage() {
                 Share Tracking
               </Button>
             )}
+
+            {/* Duplicate Order Button */}
+            <DuplicateOrderButton
+              orderId={order.id}
+              orderNumber={order.order_number}
+              customerId={order.customer_id}
+              wholesaleClientId={order.wholesale_client_id}
+              deliveryAddress={order.delivery_address}
+              deliveryNotes={order.delivery_notes}
+              orderItems={(order.order_items || []).map(item => ({
+                id: item.id,
+                product_id: item.product_id,
+                product_name: item.product_name,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                total_price: item.total_price,
+              }))}
+            />
 
             {!isCancelled && (
               <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>

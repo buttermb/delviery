@@ -1826,3 +1826,26 @@
 - All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
 - New dependencies added: `useRealTimeSubscription`, `useAccountIdSafe`, `useQueryClient`, `toast`
 - TypeScript interface: `StockChangeWarning` for tracking stock changes
+
+## task-062: Create order duplicate/reorder functionality
+- Created `src/components/admin/orders/DuplicateOrderButton.tsx`
+- Features implemented:
+  - "Duplicate Order" button on order detail page
+  - Dialog that validates current stock availability before creating duplicate
+  - Shows table of items with requested quantity vs available stock
+  - Status badges: OK (green), Partial (amber), Out of Stock (red)
+  - Alert banners for all-items-in-stock, stock-warning, or all-out-of-stock
+  - Checkbox option to include partial stock items (uses available quantity)
+  - Summary showing how many items will be included
+- Creates new order in `unified_orders` table with:
+  - Same customer_id, wholesale_client_id, delivery_address
+  - Notes prefixed with "[Reorder from #ORDER_NUMBER]"
+  - Status: 'pending', payment_status: 'unpaid', source: 'admin'
+- Creates order items in `unified_order_items` table
+- Navigates to new order on successful creation
+- Integrated into `OrderDetailsPage.tsx` header actions area
+- Uses TanStack Query for stock validation with `staleTime: 0` for fresh data
+- Uses `useTenantAdminAuth()` for tenant context
+- All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
+- Error handling with toast notifications
+- Loading states for stock validation and order creation

@@ -369,7 +369,7 @@
     "id": "task-062",
     "title": "Create order duplicate/reorder functionality",
     "description": "Add a \"Duplicate Order\" button on order detail page. Creates a new order with the same products and quantities, pre-filled customer. Validates current stock availability before creating. Shows dialog with any items that are now out of stock. Useful for repeat orders. Navigate to new order on creation.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-063",
