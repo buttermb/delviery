@@ -33,7 +33,7 @@
     "id": "task-006",
     "title": "Create shared TypeScript interfaces file",
     "description": "Create src/types/interconnected.ts with shared interfaces — OrderWithCustomer, OrderWithProducts, ProductWithInventory, CustomerWithOrders, VendorWithProducts, MenuWithProducts, DashboardStats, ActivityLogEntry, NotificationPayload, SyncStatus. These types connect entities across modules. Export all types.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-007",

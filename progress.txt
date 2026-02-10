@@ -69,3 +69,37 @@
 - No console.log — all logging via logger
 - Imports use `@/` alias as required
 - Existing `useTenantContextSafe.ts` provides safe access pattern — this new hook provides derived values
+
+## task-006: Create shared TypeScript interfaces file
+- Created `src/types/interconnected.ts` with shared interfaces for cross-module communication
+- Core connected entity types:
+  - `OrderWithCustomer` — Order with embedded customer relationship
+  - `OrderWithProducts` — Order with full product details for each line item
+  - `ProductWithInventory` — Product with inventory levels across all locations
+  - `CustomerWithOrders` — Customer with order history summary and lifetime value
+  - `VendorWithProducts` — Vendor with their product catalog summary
+  - `MenuWithProducts` — Menu with its associated products and display settings
+- Dashboard & Analytics types:
+  - `DashboardStats` — Aggregated statistics for orders, revenue, inventory, customers, deliveries
+  - `PartialDashboardStats` — Partial type for specific widget needs
+- Activity & Audit types:
+  - `ActivityLogEntry` — Standard audit trail entry with user, action, entity, and metadata
+  - `ActivityAction` — 18 action types (created, updated, deleted, viewed, exported, etc.)
+  - `EntityType` — 18 entity types (order, product, inventory, customer, etc.)
+- Notification types:
+  - `NotificationPayload` — Full notification with title, message, type, priority, linkage
+  - `NotificationType` — 9 notification types (info, success, warning, error, order, etc.)
+  - `NotificationPriority` — 4 priority levels (low, normal, high, urgent)
+- Sync & Status types:
+  - `SyncStatus` — Synchronization status for cross-module data sync with progress tracking
+  - `SyncType` — 10 sync operation types (inventory, products, orders, etc.)
+- Delivery & Logistics types:
+  - `DeliveryWithDetails` — Delivery with order, courier, addresses, and tracking info
+  - `CourierSummary`, `AddressInfo`, `GeoLocation` — Supporting types
+  - `DeliveryStatus` — 10 delivery status values
+- Added type guards for runtime type checking:
+  - `isOrderWithCustomer`, `isProductWithInventory`, `isActivityLogEntry`, `isNotificationPayload`, `isSyncStatus`
+- Imported existing types from `@/types/order` and `@/types/product` to extend them
+- All types exported for use across modules
+- No console.log — types file only
+- Imports use `@/` alias as required
