@@ -103,3 +103,23 @@
 - All types exported for use across modules
 - No console.log — types file only
 - Imports use `@/` alias as required
+
+## task-007: Create useRealTimeSubscription hook
+- Created `src/hooks/useRealTimeSubscription.ts` wrapping Supabase realtime subscriptions
+- Tenant isolation via required `tenantId` parameter and `filter: tenant_id=eq.${tenantId}` on subscription
+- Options interface accepts: table, tenantId, callback, event, enabled, publishToEvent, filterColumn, schema
+- Auto-cleanup on unmount via useEffect cleanup function that removes the Supabase channel
+- Publishes to eventBus when `publishToEvent` option is set — maps table changes to typed event payloads
+- `buildEventPayload` helper maps each event type (order_created, inventory_changed, etc.) to proper payload structure
+- Exponential backoff reconnection with configurable parameters:
+  - Initial delay: 1000ms, max delay: 30000ms, multiplier: 2, max retries: 10
+  - Added jitter (±20%) to prevent thundering herd on reconnect
+- Connection status tracking via React state: 'connecting' | 'connected' | 'disconnected' | 'error'
+- Returns `{ status, reconnect, disconnect }` for manual control
+- Lifecycle logging with logger.debug for: setup, cleanup, status changes, received events, errors
+- Used `mountedRef` to prevent state updates after unmount
+- Channel naming convention: `realtime:${schema}:${table}:${tenantId}` for uniqueness
+- Supports all Postgres events: INSERT, UPDATE, DELETE, or '*' for all
+- TypeScript generic `<T>` for typed payload in callback
+- No console.log — all logging via `@/lib/logger`
+- Imports use `@/` alias as required

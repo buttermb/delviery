@@ -39,7 +39,7 @@
     "id": "task-007",
     "title": "Create useRealTimeSubscription hook",
     "description": "Create src/hooks/useRealTimeSubscription.ts that wraps Supabase realtime subscriptions with tenant isolation. Accept table name, tenant_id, and callback. Auto-cleanup on unmount. Publish events to eventBus when changes arrive. Filter by tenant_id. Handle reconnection with exponential backoff. Log subscription lifecycle with logger.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-008",
