@@ -3254,3 +3254,23 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - All queries filter by tenant_id (or derive it from store), uses logger not console.log
 - Proper error handling with loading states, follows existing hook patterns
 - TypeScript strict mode compliant with ProductData interface for type safety
+
+## task-120: Create inventory low stock email digest
+- Created supabase/functions/low-stock-email-digest/index.ts Edge Function
+- Daily scheduled function (0 8 * * * cron) sends email digests to tenant admins
+- Queries wholesale_inventory for products below reorder_point threshold per tenant
+- Formats email with product name, current stock, reorder point, days until stockout
+- Days until stockout calculated from avg_daily_usage (30-day moving average from movements)
+- Sends to admin email configured in tenant.alert_settings.digest_recipients (or owner_email)
+- Configurable per-tenant: email_digest_enabled, low_stock_threshold_override, digest_recipients
+- Creates in-app notification alongside email for visibility in dashboard
+- Logs audit_events when digest is sent for tracking
+- Created migration 20260210055422_add_tenant_alert_settings.sql:
+  - Adds alert_settings JSONB column to tenants table
+  - Adds tenant_id to inventory_alerts for proper tenant scoping
+  - Creates get_low_stock_products() RPC function for dashboard use
+  - Updates RLS policy for tenant-scoped inventory alerts
+- Uses shared deps.ts and logger.ts for consistent patterns
+- Service role key auth for cron jobs, JWT validation for manual triggers
+- HTML email template with urgency colors (red/orange/yellow) based on stockout timeline
+- Summary shows critical products (≤3 days) vs warning products separately

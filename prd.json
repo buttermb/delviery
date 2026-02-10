@@ -717,7 +717,7 @@
     "id": "task-120",
     "title": "Create inventory low stock email digest",
     "description": "Create Supabase Edge Function for daily low stock email digest. Queries products below threshold per tenant. Formats email with product name, current stock, reorder point, days until stockout. Sends to admin email. Scheduled via pg_cron. Configurable in tenant alert settings. Connects inventory monitoring to external communication.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-121",
