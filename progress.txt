@@ -3556,3 +3556,15 @@ const DEFAULT_AUTO_TAG_RULES = [
 - Loading states included in all async operations
 - Error handling with toast notifications
 
+
+## task-128: Create Supabase migration for customer_tags table
+- Migration already exists at supabase/migrations/20260123000001_customer_tags_system.sql
+- Implementation uses a normalized approach with two tables:
+  - `tags` table: id, tenant_id, name, color, description, created_at, updated_at
+  - `customer_tags` junction table: id, tenant_id, contact_id, tag_id (with unique constraint)
+- Added proper indexes for performance: tenant_id, name, contact_id, tag_id
+- RLS enabled on both tables with policies for SELECT, INSERT, UPDATE, DELETE
+- Added trigger for auto-updating updated_at timestamp on tags table
+- Uses tenant_id from profiles table via auth.uid() for RLS
+- Foreign keys cascade deletes from tenants and contacts tables
+- Unique constraint on (tenant_id, name) prevents duplicate tag names within a tenant

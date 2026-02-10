@@ -765,7 +765,7 @@
     "id": "task-128",
     "title": "Create Supabase migration for customer_tags table",
     "description": "Create supabase/migrations/add_customer_tags.sql. Table customer_tags — id uuid primary key, tenant_id uuid not null, name text, color text, created_at timestamptz. Table customer_tag_assignments — id uuid primary key, customer_id uuid not null, tag_id uuid not null, unique constraint. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-129",
