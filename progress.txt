@@ -4519,3 +4519,24 @@ Date: 2026-02-10
 - Added updated_at triggers for purchase_orders and vendors tables
 - Used DO 463 blocks for safe column additions (IF NOT EXISTS pattern)
 - Followed established RLS pattern: tenant_id IN (SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid())
+
+## task-156: Create purchase order creation from low stock
+- Created src/components/admin/inventory/LowStockToPODialog.tsx — dialog for creating POs from low stock alerts
+- Groups low stock items by vendor using useMemo for efficient categorization
+- Pre-fills vendor (from product.vendor_id), product, and suggested quantity (from reorder_quantity or calculated)
+- Multiple items from same vendor grouped into one draft PO
+- Selection state managed with Set<string> for efficient add/remove operations
+- Uses Accordion UI component for vendor groups with expand/collapse
+- Checkboxes at both vendor group and individual item levels
+- Editable quantity field for each selected item
+- Items without vendor_id displayed but cannot be selected (clearly marked)
+- Creates POs via supabase.functions.invoke('create-purchase-order') with status: 'draft'
+- Updated src/pages/admin/StockAlerts.tsx to include 'Create Purchase Orders' button
+- Added item selection with checkboxes in alerts list
+- Select all/clear selection functionality
+- Pre-selected items passed to dialog via preSelectedProductIds prop
+- After PO creation, navigates to purchase orders page for review
+- All queries filter by tenant_id for multi-tenant isolation
+- Uses logger from @/lib/logger (no console.log)
+- Proper TypeScript typing throughout, no 'any' types in new code
+- Loading, error, and empty states handled

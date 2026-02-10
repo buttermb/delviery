@@ -933,7 +933,7 @@
     "id": "task-156",
     "title": "Create purchase order creation from low stock",
     "description": "When viewing low stock alerts, one-click to create purchase order. Pre-fills vendor (from product's vendor), product, suggested quantity (from reorder settings). Multiple low stock items from same vendor grouped into one PO. Creates draft PO for review before sending. Directly connects inventory alerts to vendor ordering.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-157",
