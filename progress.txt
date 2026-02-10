@@ -3383,3 +3383,54 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - All imports use @/ alias pattern
 - Uses logger (no console.log)
 - Proper TypeScript types with no 'any' usage
+
+
+---
+
+## Task 125: Create customer lifetime value calculation
+
+**Date:** 2026-02-10
+
+### What was implemented:
+Created `src/hooks/useCustomerLTV.ts` - a comprehensive customer lifetime value calculation hook.
+
+### Key Features:
+- **LTV Metrics**: Total spend, order count, average order value
+- **Order Frequency**: Calculates average days between orders
+- **Predicted Next Order**: Based on order frequency patterns
+- **Customer Since Date**: From contact creation or first order
+- **LTV Segments**: new/regular/valuable/vip based on spend and order count thresholds
+  - VIP: $10,000+ spend OR 50+ orders
+  - Valuable: $2,500+ spend OR 15+ orders
+  - Regular: $500+ spend OR 3+ orders
+  - New: Everyone else
+
+### Hooks Provided:
+- `useCustomerLTV`: Single customer LTV calculation
+- `useBulkCustomerLTV`: Efficient bulk calculation for multiple customers
+
+### Utility Functions:
+- `getSegmentLabel()`: Human-readable segment names
+- `getSegmentColor()`: Badge color variants
+- `getSegmentColorClasses()`: Tailwind classes for styling
+- `sortByLTV()`, `sortByOrderCount()`, `sortBySegment()`: Sorting helpers
+- `formatLTVCurrency()`: Currency formatting
+- `formatOrderFrequency()`: Human-readable frequency (e.g., "Weekly", "Every 3 days")
+
+### Technical Notes:
+- Uses unified_orders table for order data
+- Uses contacts table for customer data
+- Filters by tenant_id for multi-tenant security
+- Calculates daysSinceLastOrder for activity tracking
+- Stale time of 5 minutes for query caching
+- All queries filter by valid order statuses (completed, delivered, paid)
+- Properly typed Map for customer lookup in bulk operations
+
+### Project Rules Followed:
+- Uses logger from @/lib/logger (no console.log)
+- Uses @/ alias for all imports
+- All queries filter by tenant_id
+- Uses useTenantAdminAuth() for tenant context
+- Uses .maybeSingle() for optional data
+- No 'any' type usage
+- Proper error handling with logger

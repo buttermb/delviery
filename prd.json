@@ -747,7 +747,7 @@
     "id": "task-125",
     "title": "Create customer lifetime value calculation",
     "description": "Create src/hooks/useCustomerLTV.ts — calculates customer lifetime value. Total spend, order count, average order value, order frequency (days between orders), predicted next order date, customer since date. Show as prominent stat on customer detail. Used in customer list sorting. LTV segments — new/regular/valuable/vip. Based on order and payment data.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-126",
