@@ -5287,3 +5287,13 @@ Created a comprehensive menu order notification system that alerts admin when or
 - All imports use `@/` alias
 - Build passes with no TypeScript errors
 
+
+## task-178: Create Supabase migration for menu_events table
+- Migration already exists at supabase/migrations/20260210000001_add_menu_events.sql
+- Verified all required columns: id, tenant_id, menu_id, session_id, customer_id (nullable), event_type, product_id (nullable), metadata, created_at
+- RLS enabled with tenant_id filtering via tenant_users lookup
+- Indexes on menu_id, session_id, tenant_id, event_type, created_at, and composite index for funnel analysis
+- Includes helper function log_menu_event with SECURITY DEFINER for anonymous tracking
+- Includes menu_conversion_funnel view for analytics
+- Status: PASSES
+

@@ -1065,7 +1065,7 @@
     "id": "task-178",
     "title": "Create Supabase migration for menu_events table",
     "description": "Create supabase/migrations/add_menu_events.sql. Columns — id uuid primary key, tenant_id uuid, menu_id uuid, session_id text, customer_id uuid nullable, event_type text (view/product_view/add_to_cart/checkout_start/order_complete), product_id uuid nullable, metadata jsonb, created_at timestamptz. RLS by tenant_id. Index menu_id, session_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-179",
