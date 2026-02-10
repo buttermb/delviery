@@ -2321,3 +2321,26 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - logger from @/lib/logger for logging (no console.log)
 - All imports use @/ alias with proper order
 - Loading states and error handling with toast notifications
+
+## task-081: Create order SLA tracking
+- Created src/types/sla.ts with SLA type definitions (SLATargets, SLAStatus, OrderSLAResult, SLAComplianceSummary)
+- Created src/lib/sla/slaCalculations.ts with calculation utilities:
+  - calculateOrderSLA() - calculates SLA status for a single order
+  - calculateSLAComplianceSummary() - aggregates SLA metrics for multiple orders
+  - getSLAStatusDisplay() - returns display properties (label, color, className)
+  - formatRemainingTime() - formats minutes into human-readable time
+- Created src/components/admin/orders/OrderSLAIndicator.tsx:
+  - OrderSLAIndicator - full badge with tooltip showing SLA details
+  - OrderSLADot - compact dot indicator for table lists
+- Created src/components/admin/dashboard/SLAComplianceWidget.tsx:
+  - Shows overall compliance percentage with color-coded progress bar
+  - Displays on-track/approaching/overdue order counts
+  - Alerts when orders are past SLA target
+- Updated src/pages/admin/Orders.tsx to show SLA indicators in status column
+- Added SLA query keys to src/lib/queryKeys.ts
+- Exported components via index files for clean imports
+- Key patterns used:
+  - Used date-fns differenceInMinutes for time calculations
+  - Status transitions defined in STATUS_TRANSITIONS constant
+  - DEFAULT_SLA_TARGETS provides sensible defaults (can be overridden by tenant settings)
+  - Green/Yellow/Red color scheme with 80% threshold for approaching

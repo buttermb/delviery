@@ -31,7 +31,7 @@ import CopyButton from "@/components/CopyButton";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { OrderExportButton, OrderMergeDialog } from "@/components/admin/orders";
+import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
@@ -46,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import type { OrderWithSLATimestamps } from "@/types/sla";
 
 interface OrderItem {
   id: string;
@@ -65,6 +66,10 @@ interface Order {
   user_id: string;
   courier_id?: string;
   order_source?: string;
+  accepted_at?: string | null;
+  courier_assigned_at?: string | null;
+  courier_accepted_at?: string | null;
+  delivered_at?: string | null;
   user?: {
     full_name: string | null;
     email: string | null;
@@ -153,7 +158,7 @@ export default function Orders() {
       // Fetch regular orders
       let regularQuery = supabase
         .from('orders')
-        .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
+        .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, accepted_at, courier_assigned_at, courier_accepted_at, delivered_at, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -239,10 +244,14 @@ export default function Orders() {
         }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }>);
       }
 
-      // Merge regular orders with user info
+      // Merge regular orders with user info (including SLA timestamp fields)
       const regularOrdersWithUsers = (ordersData || []).map(order => ({
         ...order,
         delivery_method: order.delivery_method || '',
+        accepted_at: order.accepted_at || null,
+        courier_assigned_at: order.courier_assigned_at || null,
+        courier_accepted_at: order.courier_accepted_at || null,
+        delivered_at: order.delivered_at || null,
         user: order.user_id ? profilesMap[order.user_id] : undefined
       })) as Order[];
 
@@ -604,23 +613,38 @@ export default function Orders() {
     },
     {
       header: "Status",
-      cell: (order) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
-            <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
-              <SelectValue>{getStatusBadge(order.status)}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="preparing">Preparing</SelectItem>
-              <SelectItem value="in_transit">In Transit</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )
+      cell: (order) => {
+        // Convert to SLA-compatible format
+        const slaOrder: OrderWithSLATimestamps = {
+          id: order.id,
+          status: order.status as OrderWithSLATimestamps['status'],
+          created_at: order.created_at,
+          accepted_at: order.accepted_at,
+          courier_assigned_at: order.courier_assigned_at,
+          courier_accepted_at: order.courier_accepted_at,
+          delivered_at: order.delivered_at,
+          status_changed_at: order.accepted_at || null,
+        };
+
+        return (
+          <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+            <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
+              <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                <SelectValue>{getStatusBadge(order.status)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="preparing">Preparing</SelectItem>
+                <SelectItem value="in_transit">In Transit</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <OrderSLAIndicator order={slaOrder} compact />
+          </div>
+        );
+      }
     },
     { header: "Method", accessorKey: "delivery_method", className: "capitalize" },
     {

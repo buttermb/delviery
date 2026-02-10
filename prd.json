@@ -483,7 +483,7 @@
     "id": "task-081",
     "title": "Create order SLA tracking",
     "description": "Track time-based SLA metrics for orders. Calculate time from created to confirmed, confirmed to dispatched, dispatched to delivered. Show SLA indicators on order list — green if within target, yellow if approaching, red if overdue. SLA targets configurable in tenant settings. Dashboard widget shows SLA compliance percentage.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-082",

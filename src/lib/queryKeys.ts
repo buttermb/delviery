@@ -950,4 +950,15 @@ export const queryKeys = {
     recent: (tenantId: string, limit?: number) =>
       [...queryKeys.activity.byTenant(tenantId), 'recent', limit] as const,
   },
+
+  // SLA Tracking
+  sla: {
+    all: ['sla'] as const,
+    compliance: (tenantId?: string) =>
+      [...queryKeys.sla.all, 'compliance', tenantId] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.sla.all, 'order', orderId] as const,
+    targets: (tenantId?: string) =>
+      [...queryKeys.sla.all, 'targets', tenantId] as const,
+  },
 } as const;
