@@ -16,6 +16,8 @@ import { ProductMenuAppearances } from '@/components/admin/products/ProductMenuA
 import { ProductComplianceStatus } from '@/components/admin/products/ProductComplianceStatus';
 import { ProductReorderCard } from '@/components/admin/products/ProductReorderCard';
 import { ProductImageGallery } from '@/components/admin/products/ProductImageGallery';
+import { ProductPriceHistoryChart } from '@/components/admin/products/ProductPriceHistoryChart';
+import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDisplay';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -189,9 +191,13 @@ export default function ProductDetailsPage() {
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {product.wholesale_price ? formatCurrency(product.wholesale_price) : '-'}
-                            </div>
+                            <ProductPriceDisplay
+                                productId={productId}
+                                currentPrice={product.wholesale_price}
+                                priceType="wholesale"
+                                size="lg"
+                                showBadge={true}
+                            />
                             {wholesaleMargin && (
                                 <p className="text-xs text-muted-foreground">
                                     {wholesaleMargin}% margin
@@ -205,9 +211,13 @@ export default function ProductDetailsPage() {
                             <Tag className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {product.retail_price ? formatCurrency(product.retail_price) : '-'}
-                            </div>
+                            <ProductPriceDisplay
+                                productId={productId}
+                                currentPrice={product.retail_price}
+                                priceType="retail"
+                                size="lg"
+                                showBadge={true}
+                            />
                             {retailMargin && (
                                 <p className="text-xs text-muted-foreground">
                                     {retailMargin}% margin
@@ -443,6 +453,9 @@ export default function ProductDetailsPage() {
 
                     {/* Variants Tab (Pricing Tiers) */}
                     <TabsContent value="variants" className="space-y-4">
+                        {/* Price History Chart */}
+                        <ProductPriceHistoryChart productId={productId} />
+
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Pricing Info */}
                             <Card>
@@ -461,9 +474,12 @@ export default function ProductDetailsPage() {
                                         <div className="flex justify-between items-center py-2 border-b">
                                             <span className="text-muted-foreground">Wholesale Price</span>
                                             <div className="text-right">
-                                                <span className="font-medium">
-                                                    {product.wholesale_price ? formatCurrency(product.wholesale_price) : '-'}
-                                                </span>
+                                                <ProductPriceDisplay
+                                                    productId={productId}
+                                                    currentPrice={product.wholesale_price}
+                                                    priceType="wholesale"
+                                                    size="sm"
+                                                />
                                                 {wholesaleMargin && (
                                                     <p className="text-xs text-green-600">{wholesaleMargin}% margin</p>
                                                 )}
@@ -472,9 +488,12 @@ export default function ProductDetailsPage() {
                                         <div className="flex justify-between items-center py-2 border-b">
                                             <span className="text-muted-foreground">Retail Price</span>
                                             <div className="text-right">
-                                                <span className="font-medium">
-                                                    {product.retail_price ? formatCurrency(product.retail_price) : '-'}
-                                                </span>
+                                                <ProductPriceDisplay
+                                                    productId={productId}
+                                                    currentPrice={product.retail_price}
+                                                    priceType="retail"
+                                                    size="sm"
+                                                />
                                                 {retailMargin && (
                                                     <p className="text-xs text-green-600">{retailMargin}% margin</p>
                                                 )}

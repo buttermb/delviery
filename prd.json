@@ -561,7 +561,7 @@
     "id": "task-094",
     "title": "Create product pricing history",
     "description": "Track product price changes over time. Create pricing_history table or jsonb column. Show price history chart on product detail page. When price changes, log to activity_log. Show previous price with strikethrough in menus if recently changed. Price change affects all active menus automatically — sync via eventBus.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-095",

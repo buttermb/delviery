@@ -2644,3 +2644,56 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Proper TypeScript types: ProductImageData, PreviewMode, DevicePreview
 - Includes ProductImageGallerySkeleton for loading states
 - Import order follows convention: React → Third-party → Types → Components → Utils
+
+## Task 094: Create product pricing history
+
+### Implementation Details
+
+**Database Migration: 20260210000001_create_pricing_history.sql**
+- Created `pricing_history` table with columns for tracking old/new values of wholesale_price, retail_price, and cost_per_unit
+- Added `changed_by` (user reference), `change_reason`, and `change_source` fields
+- Implemented RLS policies for tenant isolation (tenant users can view, admins can insert)
+- Created `log_price_change()` SQL function that only inserts if prices actually changed
+- Created `get_recent_price_change()` function for efficient strikethrough display (returns most recent change within N days)
+- Added proper indexes on product_id, tenant_id, and created_at
+
+**Hook: src/hooks/usePriceHistory.ts**
+- `usePriceHistory(productId, timeRange)` - Fetches full price history for chart display
+- `usePriceHistoryChart(productId, timeRange)` - Returns chart-formatted data points with wholesale/retail/cost
+- `useRecentPriceChange(productId, withinDays)` - Fetches most recent price change for strikethrough
+- `useLogPriceChange()` - Mutation hook that logs price changes, calls activity_log, and publishes eventBus event
+- Utility functions: `calculatePriceChangePercent()`, `getPriceChangeDirection()`
+
+**Component: src/components/admin/products/ProductPriceHistoryChart.tsx**
+- Recharts LineChart with stepAfter interpolation for accurate price visualization
+- Shows wholesale (green), retail (purple), and cost (orange dashed) lines
+- Time range selector: 30d, 90d, 1y
+- Stats summary: total changes, current prices
+- Recent change summary with percentage badges
+- Loading/error/empty states
+
+**Component: src/components/admin/products/ProductPriceDisplay.tsx**
+- `ProductPriceDisplay` - Fetches recent price change and shows strikethrough for old price
+- `StaticPriceDisplay` - For menus/storefronts without data fetching
+- Shows trending up/down badge based on price direction
+- Tooltip with change date, reason, and before/after prices
+- Size variants: sm, md, lg
+
+**EventBus Integration: src/lib/eventBus.ts**
+- Added `price_changed` event type with productId, tenantId, old/new prices, and changedAt
+- Event published by useLogPriceChange mutation
+- Menus and storefronts can subscribe to sync automatically when prices change
+
+**ProductDetailsPage Integration**
+- Added ProductPriceHistoryChart to Variants tab (above pricing cards)
+- Replaced static price displays with ProductPriceDisplay in stats cards and pricing section
+- Shows strikethrough for recently changed prices with trending indicators
+
+**Key Patterns Applied**
+- All imports use `@/` alias
+- All logging uses `logger` from `@/lib/logger`
+- Database queries filter by `tenant_id`
+- Uses `useTenantAdminAuth()` for tenant context
+- Loading and error states included
+- TypeScript interfaces for all data structures
+- React Hook Form + Zod patterns (ready for future form integration)

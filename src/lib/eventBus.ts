@@ -15,6 +15,16 @@ export interface EventPayloads {
   inventory_changed: { productId: string; tenantId: string; locationId?: string; quantityChange: number; newQuantity: number };
   customer_updated: { customerId: string; tenantId: string; changes?: Record<string, unknown> };
   product_updated: { productId: string; tenantId: string; changes?: Record<string, unknown> };
+  // Price change event for syncing menus and storefronts
+  price_changed: {
+    productId: string;
+    tenantId: string;
+    wholesalePriceOld: number | null;
+    wholesalePriceNew: number | null;
+    retailPriceOld: number | null;
+    retailPriceNew: number | null;
+    changedAt: string;
+  };
   storefront_synced: { tenantId: string; storefrontId: string; syncedAt: string };
   menu_published: { menuId: string; tenantId: string; publishedAt: string };
   notification_sent: { notificationId: string; tenantId: string; userId?: string; type: string };
