@@ -2295,3 +2295,29 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - No console.log — uses logger from `@/lib/logger`
 - All imports use `@/` alias with proper order: React → Third-party → Types → Components → Utils
 - Includes loading states and error handling with toast notifications
+
+## Task 080: Create order merge functionality
+
+### Implementation
+- Integrated the existing OrderMergeDialog component into the Orders page (src/pages/admin/Orders.tsx)
+- Added 'Merge' action to the BulkActionsBar with Merge icon from lucide-react
+- Added mergeDialogOpen state to control the dialog visibility
+- Updated Order interface to properly type order_items for merge functionality
+
+### Key Features
+- OrderMergeDialog already existed with full merge logic in src/components/admin/orders/OrderMergeButton.tsx
+- Groups selected orders by customer (user_id) to find mergeable orders
+- Only allows merging 2+ orders from the same customer
+- User selects which order to keep (target) - items from other orders are transferred
+- Source orders are marked as cancelled with '[MERGED INTO #...]' note
+- Target order gets updated totals and '[MERGED]' delivery note
+- Uses RadioGroup to select target order with visual preview
+- Shows order details (order number, status, date, amount, item count)
+
+### Patterns Used
+- useTenantAdminAuth() for tenant context and tenant_id filtering
+- queryKeys.orders.all for cache invalidation
+- formatCurrency and formatSmartDate for display
+- logger from @/lib/logger for logging (no console.log)
+- All imports use @/ alias with proper order
+- Loading states and error handling with toast notifications

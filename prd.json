@@ -477,7 +477,7 @@
     "id": "task-080",
     "title": "Create order merge functionality",
     "description": "Allow merging multiple orders from the same customer into one. Select orders from order list → merge → creates new combined order with all items. Original orders marked as merged with reference to new order. Useful when customer places multiple small orders. Recalculates totals and applies any combined discounts.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-081",

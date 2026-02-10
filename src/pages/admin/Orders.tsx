@@ -31,8 +31,9 @@ import CopyButton from "@/components/CopyButton";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { OrderExportButton } from "@/components/admin/orders";
+import { OrderExportButton, OrderMergeDialog } from "@/components/admin/orders";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
+import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { formatSmartDate } from "@/lib/utils/formatDate";
@@ -45,6 +46,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+
+interface OrderItem {
+  id: string;
+  product_id: string;
+  product_name?: string;
+  quantity: number;
+  price: number;
+}
 
 interface Order {
   id: string;
@@ -61,7 +70,7 @@ interface Order {
     email: string | null;
     phone: string | null;
   };
-  order_items?: unknown[];
+  order_items?: OrderItem[];
 }
 
 export default function Orders() {
@@ -113,6 +122,7 @@ export default function Orders() {
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
   const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
 
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -916,6 +926,13 @@ export default function Orders() {
             onClick: async () => { setAssignRunnerDialogOpen(true); },
           },
           {
+            id: 'merge-orders',
+            label: 'Merge',
+            icon: <Merge className="h-4 w-4" />,
+            onClick: async () => { setMergeDialogOpen(true); },
+            disabled: selectedOrders.length < 2,
+          },
+          {
             id: 'mark-cancelled',
             label: 'Cancel',
             icon: <XCircle className="h-4 w-4" />,
@@ -973,6 +990,16 @@ export default function Orders() {
           id: o.id,
           order_number: o.order_number,
         }))}
+        onSuccess={() => {
+          setSelectedOrders([]);
+          refetch();
+        }}
+      />
+
+      <OrderMergeDialog
+        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id))}
+        open={mergeDialogOpen}
+        onOpenChange={setMergeDialogOpen}
         onSuccess={() => {
           setSelectedOrders([]);
           refetch();
