@@ -579,7 +579,7 @@
     "id": "task-097",
     "title": "Create product bulk export with full data",
     "description": "Export all products with related data — category name, vendor name, current stock, total orders, revenue generated, compliance status, active menu count. CSV and JSON formats. Use useExport hook. Include column selection dialog. Log export to activity_log. Useful for reporting and external system integration.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-098",

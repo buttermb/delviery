@@ -2787,3 +2787,25 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - All database queries filter by `tenant_id`
 - Loading and error states included
 - No TypeScript errors
+
+## task-097: Create product bulk export with full data
+- Created `src/components/admin/products/ProductExport.tsx` component for comprehensive product data export
+- Exports products with ALL related data:
+  - category_name, vendor_display_name (from product data)
+  - current_stock (calculated from available/stock/total quantity)
+  - total_orders and revenue_generated (aggregated from unified_order_items)
+  - compliance_status (derived from COA, test dates, lab results)
+  - active_menu_count (counted from disposable_menu_products for active menus)
+- Used `useProductsWithRelatedData` custom hook to fetch and aggregate all related data
+- Supports CSV and JSON export formats via `useExport` hook
+- Column selection dialog with 40+ fields organized into 7 groups:
+  - Basic Information, Related Data, Pricing, Inventory, Cannabis Details, Lab & Potency, Metadata
+- Quick actions: Select All, Select None, Select Recommended
+- Group-level toggle for batch field selection
+- Uses `useTenantAdminAuth()` for tenant context
+- Logs all exports to activity_log via EntityType.PRODUCT
+- No console.log — all logging via `@/lib/logger`
+- All imports use `@/` alias
+- Proper loading states with Skeleton components
+- Error handling for fetch failures
+- Progress indicator for large dataset exports
