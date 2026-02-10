@@ -4825,3 +4825,28 @@ Created a complete vendor contact management system with the following component
 - Added lazy import and route in App.tsx at /vendor-dashboard path
 - Learnings: Different tables use different tenant column names (account_id vs tenant_id)
 
+
+
+## Task 165: Create vendor auto-PO suggestions
+- Created src/hooks/useVendorPOSuggestions.ts for auto-PO suggestion logic
+- Created src/components/admin/vendors/VendorAutoPOSuggestions.tsx for UI
+- Hook uses useBulkInventoryForecast to get at-risk products approaching reorder point
+- Groups products by vendor for consolidated PO suggestions
+- Calculates estimated costs based on recommended quantities and unit costs
+- Shows urgency levels (critical, warning, soon) based on days until stockout
+- Provides one-click create draft PO via edge function create-purchase-order
+- Component supports widget and full page variants
+- Uses accordion for expandable vendor sections with product details
+- Shows summary stats: vendors count, critical/warning counts, total estimated cost
+- Detailed product table shows stock, velocity, recommended quantity, cost
+- Dialog for viewing full suggestion details before creating PO
+- Navigation to created PO after successful creation
+
+### Learnings:
+- Inventory forecasting data from useBulkInventoryForecast provides velocity and reorder data
+- Products table has vendor_id for vendor assignment, vendors table uses account_id
+- Edge functions can create POs via supabase.functions.invoke
+- Consolidated POs reduce ordering overhead for same-vendor products
+- Warning levels help prioritize which vendors need POs first
+- Sales velocity (units per day) enables accurate reorder quantity recommendations
+

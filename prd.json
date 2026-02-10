@@ -987,7 +987,7 @@
     "id": "task-165",
     "title": "Create vendor auto-PO suggestions",
     "description": "Based on inventory forecasting, auto-generate PO suggestions. When multiple products from same vendor approaching reorder point, suggest consolidated PO. Show estimated cost, recommended quantities based on sales velocity. One-click to create draft PO. Daily check triggered by Supabase Edge Function or dashboard load.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-166",
