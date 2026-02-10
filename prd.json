@@ -501,7 +501,7 @@
     "id": "task-084",
     "title": "Create order communication log",
     "description": "Create src/components/admin/orders/OrderComms.tsx — shows all communications related to an order. Includes SMS sent to customer, emails, internal notes, notification history. Aggregated from notifications and messages tables. Chronological view. Shows delivery status and read receipts where available. Useful for customer service inquiries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-085",

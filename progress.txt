@@ -2381,3 +2381,28 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Follows project patterns: useTenantAdminAuth context, @/ alias imports, logger (no console.log)
 - Props: orderId (required), maxHeight, showHeader, className
 - Exported types: OrderHistoryDiffProps, DiffField, ParsedDiff
+
+
+## task-084: Create order communication log
+- Created `src/components/admin/orders/OrderComms.tsx` component for viewing all order communications
+- Aggregates communications from multiple sources:
+  - `notifications_log` table: SMS, emails, and push notifications
+  - `courier_messages` table: Messages between admin and courier
+- Each communication entry displays:
+  - Type badge (SMS/Email/Notification/Courier with distinct icons and colors)
+  - Delivery status (sent/delivered/failed/pending/read) with appropriate icons
+  - Recipient info (phone and/or email when available)
+  - Message content with line-clamp for long messages
+  - Error message for failed deliveries
+  - Sender type (System/Admin/Courier/Customer) with avatar icon
+  - Timestamps (smart date format + relative time with tooltip)
+- Groups entries by date with "Today" label for current day
+- Header shows aggregate stats: SMS count, email count, total communications
+- Added `queryKeys.orderComms.byOrder(orderId)` to queryKeys.ts for cache management
+- Graceful error handling when tables don't exist (code 42P01)
+- Uses logger.warn for non-critical fetch errors
+- Loading state with skeleton placeholders
+- Empty state with helpful messaging
+- Props: orderId, maxHeight, showHeader, className
+- Exported types: OrderCommsProps, CommunicationEntry, CommType
+- Follows project patterns: useTenantAdminAuth, @/ alias imports, no console.log

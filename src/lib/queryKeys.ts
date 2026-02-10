@@ -885,6 +885,13 @@ export const queryKeys = {
       [...queryKeys.orderAuditLog.all, 'order', orderId] as const,
   },
 
+  // Order Communications
+  orderComms: {
+    all: ['order-comms'] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.orderComms.all, 'order', orderId] as const,
+  },
+
   // Order Tags
   orderTags: {
     all: ['order-tags'] as const,
