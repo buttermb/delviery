@@ -939,7 +939,7 @@
     "id": "task-157",
     "title": "Create purchase order receiving workflow",
     "description": "Create src/components/admin/vendors/POReceiving.tsx — workflow for receiving a purchase order delivery. Scan or enter products received. Compare received quantities vs ordered. Flag discrepancies. On confirm receive, increment inventory for each item. Log to inventory_history with reason restock and reference_id = PO id. Update PO status to received.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-158",
