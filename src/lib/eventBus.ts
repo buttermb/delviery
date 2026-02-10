@@ -22,6 +22,13 @@ export interface EventPayloads {
   sync_started: { tenantId: string; module: SyncModule };
   sync_completed: { tenantId: string; module: SyncModule; syncedAt: string };
   sync_error: { tenantId: string; module: SyncModule; error: string };
+  // Connection status events for offline/online awareness
+  connection_status: {
+    tenantId: string;
+    status: 'online' | 'offline' | 'reconnecting';
+    previousStatus: 'online' | 'offline' | 'reconnecting';
+    timestamp: string;
+  };
 }
 
 // Event names derived from payload types

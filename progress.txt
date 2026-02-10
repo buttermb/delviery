@@ -1403,3 +1403,41 @@
 - All logging via `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
 - Import order: React → Third-party → Types → Components → Utils
+
+## task-047: Create useOnlineStatus hook
+- Extended existing simple `src/hooks/useOnlineStatus.ts` with comprehensive features
+- Previous implementation was basic (just tracked navigator.onLine), now fully featured
+- Core features implemented:
+  - Tracks browser online/offline status via window 'online'/'offline' events
+  - Integrates with TanStack Query's `onlineManager` for mutation queueing
+  - When offline: sets `onlineManager.setOnline(false)` to pause mutations
+  - When online: sets `onlineManager.setOnline(true)` to resume queued mutations
+  - Shows sync indicator when reconnecting (5 second RECONNECTING_TIMEOUT_MS)
+  - Publishes `connection_status` events to eventBus for cross-module awareness
+- Added `connection_status` event type to `@/lib/eventBus`:
+  - Payload: `{ tenantId, status, previousStatus, timestamp }`
+  - Status values: 'online' | 'offline' | 'reconnecting'
+- State management:
+  - `isOnline` — current browser online status
+  - `isReconnecting` — transitional state after coming back online
+  - `isSyncing` — whether mutations are being replayed
+  - `showBanner` — whether offline banner should be displayed
+  - `queuedMutationsCount` — number of queued mutations
+  - `lastOnlineAt` / `lastOfflineAt` — timestamps for debugging
+- Hook returns:
+  - `state: OnlineStatusState` — combined state object
+  - `isOnline`, `isReconnecting`, `showBanner`, `isSyncing` — individual state values
+  - `queuedMutationsCount` — pending mutation count
+  - `checkConnection()` — manual connection check trigger
+  - `dismissBanner()` — temporarily dismiss the offline banner
+  - `connectionStatus` — 'online' | 'offline' | 'reconnecting' string
+- Options interface:
+  - `autoDismissBannerDelay` — ms to wait before auto-dismissing banner (default: 3000)
+  - `publishEvents` — whether to publish to eventBus (default: true)
+- Uses `useTenantContext()` for tenant context in eventBus events
+- Uses `useRef` for mounted check and timeout refs to prevent memory leaks
+- Proper cleanup on unmount: clears timeouts, removes event listeners, unsubscribes from onlineManager
+- All callbacks memoized with `useCallback`, all computed values with `useMemo`
+- All logging via `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
+- Import order: React → Third-party → Local imports

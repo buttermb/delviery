@@ -279,7 +279,7 @@
     "id": "task-047",
     "title": "Create useOnlineStatus hook",
     "description": "Create src/hooks/useOnlineStatus.ts — tracks browser online/offline status. Shows banner when offline. Queues mutations when offline, replays when online. Integrates with TanStack Query's onlineManager. Shows sync indicator when reconnecting. Publishes connection_status events to eventBus. Critical for field staff using mobile admin.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-048",
