@@ -952,3 +952,34 @@
 - No console.log — pure UI component with no logging needed
 - No tenant_id filtering — pure presentational component
 - All imports use `@/` alias as required
+
+## task-035: Create shared form field components
+- Created `src/components/admin/shared/FormFields.tsx` with 7 reusable form field components
+- All components integrate with React Hook Form via `Controller` component:
+  - TextField — standard text input (supports text, email, password, tel, url types)
+  - NumberField — numeric input with min/max/step props and proper number conversion
+  - TextareaField — multi-line text input with configurable rows
+  - SelectField — dropdown select using shadcn/ui Select primitives
+  - DateField — date picker using shadcn/ui Calendar with Popover
+  - SwitchField — toggle switch with horizontal layout (label + description on left, switch on right)
+  - ComboboxField — searchable dropdown using shadcn/ui Command primitives
+- Common base props interface `BaseFieldProps<TFieldValues, TName>`:
+  - `control: Control<TFieldValues>` — RHF control object
+  - `name: TName extends FieldPath<TFieldValues>` — type-safe field name
+  - `label: string`, `description?: string`, `required?: boolean`, `disabled?: boolean`, `className?: string`
+- Helper components created for consistency:
+  - `FieldError` — displays validation error message from Zod (shows `fieldState.error?.message`)
+  - `FieldLabel` — renders label with optional required indicator (*) and description
+- Each field component handles validation errors:
+  - Input/Select/Button shows `border-destructive` styling when error present
+  - Error message displayed below field via FieldError component
+- DateField uses date-fns `format()` for display and date-fns Calendar for selection
+- ComboboxField uses local `open` state via `useState` for popover control
+- NumberField converts string input to number via `Number(value)` in onChange
+- All fields handle null/undefined values with `?? ''` or `?? false` fallbacks
+- TypeScript generics ensure type safety: `<TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>`
+- Uses shadcn/ui components: Input, Label, Textarea, Switch, Button, Calendar, Select*, Popover*, Command*
+- Uses lucide-react icons: CalendarIcon, Check, ChevronsUpDown
+- No console.log — pure UI components
+- No tenant_id filtering — pure presentational components for form building
+- All imports use `@/` alias as required

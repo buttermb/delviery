@@ -207,7 +207,7 @@
     "id": "task-035",
     "title": "Create shared form field components",
     "description": "Create src/components/admin/shared/FormFields.tsx — reusable form field wrappers for React Hook Form. Components — TextField, SelectField, NumberField, DateField, TextareaField, SwitchField, ComboboxField. Each integrates with react-hook-form Controller and shows validation errors from Zod. Consistent styling across all admin forms.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-036",
