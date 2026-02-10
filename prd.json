@@ -597,7 +597,7 @@
     "id": "task-100",
     "title": "Create product stock adjustment modal",
     "description": "Create src/components/admin/products/StockAdjustment.tsx — modal for manually adjusting product stock. Fields — adjustment type (add/remove/set), quantity, reason (restock, damaged, correction, audit), notes. On submit, update stock_quantity and log to inventory_history. Invalidate product and inventory queries. Used from product detail and inventory list.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-101",

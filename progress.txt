@@ -2850,3 +2850,21 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - No console.log statements — uses logger from @/lib/logger
 - All queries filter by tenant_id for security
 - AlertDialog component used from shadcn/ui for confirmation pattern
+
+## task-100: Create product stock adjustment modal
+- Created `src/components/admin/products/StockAdjustment.tsx` for manually adjusting product stock
+- Modal includes fields: adjustment type (add/remove/set), quantity input, reason select, notes textarea
+- Adjustment reasons: restock, damaged, correction, audit, expired, theft, transfer, other
+- Preview section shows current quantity, change amount (with badge color), and resulting new quantity
+- Warning alert shown when removing more than current stock (quantity capped at 0)
+- On submit: updates `products.stock_quantity` and `available_quantity` via Supabase
+- Logs to `inventory_history` table with change_type, previous/new quantity, reason, notes, and metadata
+- Uses `useTenantAdminAuth()` for tenant context — all queries filter by tenant_id
+- Uses `invalidateOnEvent()` for cross-panel invalidation on INVENTORY_ADJUSTED event
+- Invalidates `queryKeys.products.all`, `queryKeys.inventory.all`, and `queryKeys.inventory.history`
+- All logging uses `logger` from `@/lib/logger` — no console.log statements
+- Proper error handling with try/catch and showErrorToast for user feedback
+- Loading state with Loader2 spinner during mutation
+- Form validation: requires quantity > 0 and reason selected
+- All imports use `@/` alias pattern
+- Used existing patterns from StockAdjustmentModal.tsx in src/components/admin/ as reference
