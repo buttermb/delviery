@@ -225,7 +225,7 @@
     "id": "task-038",
     "title": "Create useExport hook",
     "description": "Create src/hooks/useExport.ts — wraps export utility with React state. Returns exportCSV, exportJSON, isExporting boolean. Accepts data and column config. Shows toast on success/error. Logs export via useActivityLog. Progress indicator for large datasets. Used by any admin data table.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-039",

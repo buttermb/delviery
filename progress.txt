@@ -1041,3 +1041,43 @@
   - `ColumnBuilder` — factory methods for quick column definition
 - No console.log — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias as required
+
+## task-038: Create useExport hook
+- Updated existing `src/hooks/useExport.ts` to integrate with `@/lib/export.ts` utility
+- Previous implementation used `@/lib/utils/exportData.ts` — now properly uses the shared utility from task-037
+- Hook wraps export utility with React state management:
+  - `isExporting: boolean` — tracks whether export operation is in progress
+  - `progress: ExportProgress | null` — tracks progress for large datasets
+  - `clearProgress()` — manually clear progress state
+- Export functions implemented:
+  - `exportCSV(data, columns, filename?, options?)` — CSV export with column configuration
+  - `exportJSON(data, filename?, options?)` — JSON export for raw data
+- Column configuration via `ExportColumn<T>` interface from `@/lib/export`:
+  - Supports dot notation for nested object access
+  - Type-based formatting (currency, date, percent, etc.)
+  - Custom formatter functions
+- Activity logging integration:
+  - Uses `useActivityLog` hook for logging export actions
+  - Uses `useTenantContext` for tenant/user context
+  - Logs with `ActivityAction.EXPORTED` and configurable entity type
+  - Double logging: both via export utility (for standalone usage) and via hook (for React integration)
+- Progress indicator for large datasets:
+  - `LARGE_DATASET_THRESHOLD` set to 1000 rows
+  - Shows info toast with estimated time for large exports
+  - Progress phases: 'preparing', 'processing', 'downloading', 'complete'
+  - `estimateExportTime()` helper provides human-readable estimates
+- Toast notifications via `@/utils/toastHelpers`:
+  - `showInfoToast` for large dataset warnings
+  - `showSuccessToast` on completion with row count
+  - `showErrorToast` on failure with error message
+- Re-exports types and helpers for convenience:
+  - `ExportColumn`, `ExportOptions` types
+  - `generateFilename`, `ColumnBuilder` utilities
+- Error handling:
+  - Try/catch wraps all export operations
+  - Errors logged via `logger.error()` with filename context
+  - Toast shown to user with error message
+  - Error re-thrown for caller to handle if needed
+- All callbacks memoized with `useCallback` for stable references
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required
