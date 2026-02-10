@@ -1,5 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
-import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle, Package } from "lucide-react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle, Package, Radio } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import type { Product } from "@/hooks/crm/useProducts";
+import type { LineItem } from "@/types/crm";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,8 +39,9 @@ import {
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters";
 import { useProducts } from "@/hooks/crm/useProducts";
-import type { Product } from "@/hooks/crm/useProducts";
-import type { LineItem } from "@/types/crm";
+import { useRealTimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { useAccountIdSafe } from "@/hooks/crm/useAccountId";
+import { logger } from "@/lib/logger";
 
 export interface InventoryValidationResult {
     isValid: boolean;
@@ -55,8 +62,43 @@ interface LineItemsEditorProps {
     onValidationChange?: (validation: InventoryValidationResult) => void;
 }
 
+// Interface for tracking stock changes
+interface StockChangeWarning {
+    productId: string;
+    productName: string;
+    previousStock: number;
+    currentStock: number;
+    requestedQuantity: number;
+}
+
 export function LineItemsEditor({ items, onChange, onValidationChange }: LineItemsEditorProps) {
-    const { data: products = [], isLoading } = useProducts();
+    const { data: products = [], isLoading, refetch } = useProducts();
+    const accountId = useAccountIdSafe();
+    const queryClient = useQueryClient();
+
+    // Track previous stock levels to detect changes
+    const previousStockRef = useRef<Map<string, number>>(new Map());
+    // Stock change warnings
+    const [stockWarnings, setStockWarnings] = useState<StockChangeWarning[]>([]);
+
+    // Real-time subscription to products table for live stock updates
+    const { status: realtimeStatus } = useRealTimeSubscription({
+        table: 'products',
+        tenantId: accountId,
+        filterColumn: 'account_id',
+        event: 'UPDATE',
+        enabled: !!accountId && items.length > 0,
+        callback: (payload) => {
+            logger.debug('[LineItemsEditor] Product update received', {
+                productId: payload.new?.id,
+                eventType: payload.eventType,
+            });
+
+            // Invalidate and refetch products to get updated stock
+            queryClient.invalidateQueries({ queryKey: ['crm-products', accountId] });
+            refetch();
+        },
+    });
 
     // Create a map of product ID to product for quick lookups
     const productMap = useMemo(() => {
@@ -64,6 +106,61 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
         products.forEach((p) => map.set(p.id, p));
         return map;
     }, [products]);
+
+    // Check for stock changes that affect current line items
+    useEffect(() => {
+        if (products.length === 0 || items.length === 0) return;
+
+        const newWarnings: StockChangeWarning[] = [];
+        const currentStockMap = new Map<string, number>();
+
+        // Build current stock map and check for problematic changes
+        products.forEach((product) => {
+            currentStockMap.set(product.id, product.stockQuantity);
+            const previousStock = previousStockRef.current.get(product.id);
+
+            // Only check if we have a previous value (not first load)
+            if (previousStock !== undefined && previousStock !== product.stockQuantity) {
+                // Check if this product is in our line items
+                const lineItem = items.find((item) => item.item_id === product.id);
+                if (lineItem) {
+                    // Stock decreased and now below requested quantity
+                    if (product.stockQuantity < previousStock && product.stockQuantity < lineItem.quantity) {
+                        newWarnings.push({
+                            productId: product.id,
+                            productName: product.name,
+                            previousStock,
+                            currentStock: product.stockQuantity,
+                            requestedQuantity: lineItem.quantity,
+                        });
+
+                        // Show toast notification for the stock drop
+                        toast.warning(
+                            `Stock Alert: ${product.name}`,
+                            {
+                                description: `Stock dropped from ${previousStock} to ${product.stockQuantity}. You requested ${lineItem.quantity}.`,
+                                duration: 5000,
+                            }
+                        );
+
+                        logger.warn('[LineItemsEditor] Stock dropped below requested quantity', {
+                            productId: product.id,
+                            productName: product.name,
+                            previousStock,
+                            currentStock: product.stockQuantity,
+                            requestedQuantity: lineItem.quantity,
+                        });
+                    }
+                }
+            }
+        });
+
+        // Update warnings state
+        setStockWarnings(newWarnings);
+
+        // Update previous stock reference for next comparison
+        previousStockRef.current = currentStockMap;
+    }, [products, items]);
 
     // Validate inventory for all line items
     const validateInventory = useCallback((): InventoryValidationResult => {
@@ -173,14 +270,89 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
 
     const subtotal = items.reduce((sum, item) => sum + item.line_total, 0);
 
+    // Check if any current items have stock warnings
+    const hasActiveWarnings = stockWarnings.length > 0;
+
+    // Dismiss a specific stock warning
+    const dismissWarning = useCallback((productId: string) => {
+        setStockWarnings((prev) => prev.filter((w) => w.productId !== productId));
+    }, []);
+
     return (
         <div className="space-y-4">
+            {/* Real-time status indicator */}
+            {items.length > 0 && (
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Radio className={cn(
+                            "h-3 w-3",
+                            realtimeStatus === 'connected' && "text-green-500 animate-pulse",
+                            realtimeStatus === 'connecting' && "text-amber-500",
+                            realtimeStatus === 'error' && "text-destructive",
+                            realtimeStatus === 'disconnected' && "text-muted-foreground"
+                        )} />
+                        <span>
+                            {realtimeStatus === 'connected' && "Live stock updates"}
+                            {realtimeStatus === 'connecting' && "Connecting..."}
+                            {realtimeStatus === 'error' && "Connection error"}
+                            {realtimeStatus === 'disconnected' && "Stock updates paused"}
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* Stock change warning banner */}
+            {hasActiveWarnings && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50 p-3">
+                    <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                Stock Changed While Editing
+                            </p>
+                            {stockWarnings.map((warning) => (
+                                <div
+                                    key={warning.productId}
+                                    className="flex items-center justify-between text-sm text-amber-700 dark:text-amber-300"
+                                >
+                                    <span>
+                                        <strong>{warning.productName}</strong>: Stock dropped from {warning.previousStock} to{" "}
+                                        {warning.currentStock} (you requested {warning.requestedQuantity})
+                                    </span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2 text-xs"
+                                        onClick={() => dismissWarning(warning.productId)}
+                                    >
+                                        Dismiss
+                                    </Button>
+                                </div>
+                            ))}
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                                Please adjust quantities or another order may have taken this stock.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[35%]">Item / Description</TableHead>
-                            <TableHead className="w-[12%]">Stock</TableHead>
+                            <TableHead className="w-[12%]">
+                                <div className="flex items-center gap-1">
+                                    Stock
+                                    {realtimeStatus === 'connected' && (
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                                        </span>
+                                    )}
+                                </div>
+                            </TableHead>
                             <TableHead className="w-[12%]">Quantity</TableHead>
                             <TableHead className="w-[16%]">Unit Price</TableHead>
                             <TableHead className="w-[18%] text-right">Total</TableHead>

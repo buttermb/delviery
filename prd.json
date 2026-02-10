@@ -363,7 +363,7 @@
     "id": "task-061",
     "title": "Create order items with real-time stock display",
     "description": "In the order creation/edit form, each product line item should show real-time current stock level next to the quantity input. If stock drops below the requested quantity while editing (another order takes it), show warning. Use Supabase realtime subscription on products table for live stock updates. Prevent over-ordering.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-062",

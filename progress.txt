@@ -1806,3 +1806,23 @@
 - Query keys: `queryKeys.products.detail(tenantId, productId)`
 - Loading states handled with DetailPanel's built-in loading prop
 - Error handling shows friendly message when product fetch fails
+
+## task-061: Create order items with real-time stock display
+- Enhanced `src/components/crm/LineItemsEditor.tsx` with real-time stock updates
+- Added Supabase realtime subscription using `useRealTimeSubscription` hook
+- Subscription listens to `products` table UPDATE events filtered by `account_id`
+- When product stock changes, invalidates TanStack Query and refetches products
+- Tracks previous stock levels in `useRef` to detect changes
+- Shows warning banner when stock drops below requested quantity while editing
+- Toast notification alerts user immediately when stock drops
+- Visual indicators: 
+  - Green pulsing dot in table header when real-time connected
+  - "Live stock updates" status indicator above table
+  - Yellow warning banner with affected products list
+  - Dismiss button to clear individual warnings
+- Prevents over-ordering: validation shows insufficient stock errors
+- Existing features preserved: stock display per line item, tooltips, color-coded warnings
+- Connection status states: connected, connecting, error, disconnected
+- All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
+- New dependencies added: `useRealTimeSubscription`, `useAccountIdSafe`, `useQueryClient`, `toast`
+- TypeScript interface: `StockChangeWarning` for tracking stock changes
