@@ -38,7 +38,7 @@ interface CheckoutFlowProps {
   accessToken?: string;
   minOrder?: number;
   maxOrder?: number;
-  onOrderComplete: () => void;
+  onOrderComplete: (orderId?: string, orderTotal?: number) => void;
   products?: Array<{ id: string; name: string; image_url?: string }>;
 }
 
@@ -1759,7 +1759,7 @@ export function ModernCheckoutFlow({
       const newOrderId = data?.order_id || crypto.randomUUID();
       setOrderId(newOrderId);
       clearCart();
-      onOrderComplete();
+      onOrderComplete(newOrderId, finalTotal);
 
       // Get tenant_id from menu for event publishing
       const { data: menuData } = await supabase

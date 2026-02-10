@@ -1059,7 +1059,7 @@
     "id": "task-177",
     "title": "Create menu customer tracking",
     "description": "Track customer interactions with menus. When a customer visits a menu, opens product, adds to cart, starts checkout, completes order — log each step. Create menu_events table. Use for conversion funnel analysis. Link events to customer record if identified. Anonymous tracking for unidentified visitors. Session-based grouping.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-178",

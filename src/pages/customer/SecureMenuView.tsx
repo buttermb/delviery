@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
+import { useMenuEvents } from '@/hooks/useMenuEvents';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from 'sonner';
@@ -43,6 +44,7 @@ interface Product {
 
 interface MenuData {
   menu_id: string;
+  tenant_id?: string;
   whitelist_id?: string;
   name: string;
   description?: string;
@@ -56,6 +58,10 @@ interface MenuData {
   custom_prices?: Record<string, number>;
   expiration_date?: string;
   never_expires?: boolean;
+  security_settings?: {
+    menu_type?: string;
+    forum_url?: string;
+  };
 }
 
 const STRAIN_TYPES = ['All', 'Indica', 'Sativa', 'Hybrid', 'CBD'] as const;
@@ -383,14 +389,14 @@ function ProductCard({
 const SecureMenuView = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-  
+
   const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(true);
   const [zoomedImage, setZoomedImage] = useState<{ url: string; name: string } | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  
+
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStrain, setSelectedStrain] = useState<typeof STRAIN_TYPES[number]>('All');
@@ -408,19 +414,61 @@ const SecureMenuView = () => {
 
   const cleanupScreenshotProtection = useRef<(() => void) | null>(null);
 
+  // Menu event tracking for conversion funnel analysis
+  const {
+    trackView,
+    trackProductView,
+    trackAddToCart,
+    trackCheckoutStart,
+    trackOrderComplete,
+  } = useMenuEvents({
+    menuId: menuData?.menu_id || '',
+    tenantId: menuData?.tenant_id,
+  });
+
+  // Track menu view on load
+  const hasTrackedView = useRef(false);
+  useEffect(() => {
+    if (menuData?.menu_id && menuData?.tenant_id && !hasTrackedView.current) {
+      hasTrackedView.current = true;
+      trackView();
+      logger.debug('Menu view tracked', { menuId: menuData.menu_id });
+    }
+  }, [menuData?.menu_id, menuData?.tenant_id, trackView]);
+
+  // Track product view when product details are opened
+  useEffect(() => {
+    if (selectedProduct && menuData?.tenant_id) {
+      trackProductView(
+        selectedProduct.id,
+        selectedProduct.name,
+        selectedProduct.category
+      );
+    }
+  }, [selectedProduct, menuData?.tenant_id, trackProductView]);
+
+  // Track checkout start when checkout opens
+  const prevCheckoutOpen = useRef(false);
+  useEffect(() => {
+    if (checkoutOpen && !prevCheckoutOpen.current && menuData?.tenant_id) {
+      trackCheckoutStart(getTotal(), getItemCount());
+    }
+    prevCheckoutOpen.current = checkoutOpen;
+  }, [checkoutOpen, menuData?.tenant_id, trackCheckoutStart, getTotal, getItemCount]);
+
   useEffect(() => {
     // Check session storage for validated menu access
     const storedMenu = sessionStorage.getItem(`menu_${token}`);
     if (storedMenu) {
       const parsed = JSON.parse(storedMenu);
-      
+
       // Check if this is a forum menu and redirect
       if (parsed.security_settings?.menu_type === 'forum') {
         const forumUrl = parsed.security_settings?.forum_url || '/community';
         navigate(forumUrl);
         return;
       }
-      
+
       setMenuData(parsed);
       setLoading(false);
 
@@ -490,19 +538,24 @@ const SecureMenuView = () => {
     return product.price || 0;
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = useCallback((product: Product) => {
     const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
     const price = getProductPrice(product, weight);
-    
+
     addItem({
       productId: product.id,
       weight,
       price,
       productName: product.name,
     });
-    
+
+    // Track add to cart event for conversion funnel
+    if (menuData?.tenant_id) {
+      trackAddToCart(product.id, product.name, price);
+    }
+
     toast.success(`${product.name} added to cart`);
-  };
+  }, [selectedWeights, addItem, menuData?.tenant_id, trackAddToCart]);
 
   const handleUpdateQuantity = (productId: string, delta: number) => {
     const existingItem = cartItems.find(item => item.productId === productId);
@@ -516,17 +569,23 @@ const SecureMenuView = () => {
     }
   };
 
-  const handleOrderComplete = () => {
+  const handleOrderComplete = useCallback((orderId?: string, orderTotal?: number) => {
     showSuccessToast('Order Placed', 'Your order has been submitted successfully');
+
+    // Track order complete event for conversion funnel
+    if (menuData?.tenant_id && orderId) {
+      trackOrderComplete(orderId, orderTotal);
+    }
+
     clearCart();
     setSelectedWeights({});
-    
+
     // Clear session after order
     setTimeout(() => {
       sessionStorage.removeItem(`menu_${token}`);
       navigate('/');
     }, 3000);
-  };
+  }, [menuData?.tenant_id, trackOrderComplete, clearCart, token, navigate]);
 
   if (loading) {
     return (

@@ -449,6 +449,7 @@ serve(async (req) => {
           access_granted: true,
           menu_data: {
             id: menu.id,
+            tenant_id: menu.tenant_id, // Include tenant_id for event tracking
             name: menu.name,
             description: menu.description,
             products: products,

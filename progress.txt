@@ -5254,3 +5254,36 @@ Created a comprehensive menu order notification system that alerts admin when or
   - Memoized chart data with useMemo
 - Component can receive menuId as prop (embedded mode) or via selector dropdown
 - Comparison banner shows delta percentages when comparing menus
+
+## task-177: Create menu customer tracking
+- Created database migration `supabase/migrations/20260210000001_add_menu_events.sql`
+  - `menu_events` table with: id, tenant_id, menu_id, session_id, customer_id (nullable), event_type, product_id (nullable), metadata (jsonb), created_at
+  - Event types: view, product_view, add_to_cart, checkout_start, order_complete
+  - Indexes on menu_id, session_id, tenant_id, event_type, created_at for efficient querying
+  - Composite index for funnel analysis queries
+  - RLS policies for tenant admins, super admins, and system inserts
+  - Helper function `log_menu_event()` with SECURITY DEFINER for anonymous tracking
+  - `menu_conversion_funnel` view for aggregated funnel analytics
+- Created `src/hooks/useMenuEvents.ts` React hook for tracking
+  - Session-based tracking with localStorage persistence
+  - Deduplication of view and product_view events per session
+  - Methods: trackView, trackProductView, trackAddToCart, trackCheckoutStart, trackOrderComplete
+  - Enriches metadata with user_agent, screen_size, referrer
+  - Silent failure pattern — never breaks UI for analytics
+  - Standalone `trackMenuEvent()` function for imperative use outside React
+- Updated `src/pages/customer/SecureMenuView.tsx`
+  - Integrated useMenuEvents hook
+  - Tracks menu view on load (once per session)
+  - Tracks product view when product details dialog opens
+  - Tracks add to cart in handleAddToCart callback
+  - Tracks checkout start when checkout sheet opens
+  - Tracks order complete in handleOrderComplete callback
+- Updated `src/components/menu/ModernCheckoutFlow.tsx`
+  - Updated onOrderComplete prop signature to pass orderId and orderTotal
+  - Passes order data for tracking on completion
+- Updated `supabase/functions/menu-access-validate/index.ts`
+  - Added tenant_id to menu_data response for tracking context
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias
+- Build passes with no TypeScript errors
+
