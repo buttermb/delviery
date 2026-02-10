@@ -3024,3 +3024,18 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Loading skeletons, error states with retry, and empty states
 - Logger from `@/lib/logger` — no console.log usage
 - All imports use `@/` alias, lucide icons from esm paths
+
+## task-108: Create inventory valuation report
+- Created `src/components/admin/inventory/ValuationReport.tsx` — comprehensive inventory valuation component
+- Shows total inventory value by product and category using `price × stock_quantity`
+- Supports cost basis calculation using `cost_per_unit` field when available
+- Calculates margin and margin percentage for products with cost data
+- Period comparison: compares current value to 30 days ago using `inventory_history` table
+- Three view modes: Summary (category totals), By Category (collapsible product lists), By Product (flat table)
+- Summary cards show: Total Retail Value, Total Cost Value, Total Units, Avg Margin with trend indicators
+- Category filter dropdown for focused analysis
+- CSV export with all product details and summary totals
+- Follows all project patterns: `useTenantAdminAuth()`, `tenant_id` filtering, TanStack Query, logger, @/ imports
+- Uses Collapsible component for category expansion in by_category view
+- Error and loading states properly handled with skeleton loaders
+- No console.log — all logging via `@/lib/logger`

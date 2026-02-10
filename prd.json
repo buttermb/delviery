@@ -645,7 +645,7 @@
     "id": "task-108",
     "title": "Create inventory valuation report",
     "description": "Create src/components/admin/inventory/ValuationReport.tsx — shows total inventory value by product and category. Calculate using product price × quantity. Show cost basis if purchase price tracked. Compare current value to last period. Export report. Useful for financial reporting. Connects inventory to product pricing.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-109",
