@@ -273,7 +273,7 @@
     "id": "task-046",
     "title": "Create notification bell component",
     "description": "Create src/components/admin/shared/NotificationBell.tsx — bell icon in admin header. Shows unread count badge. Click opens dropdown with recent notifications grouped by type. Each notification links to related entity via useEntityNavigation. Mark as read on click. Mark all as read button. Uses useNotifications hook. Realtime updates via subscription.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-047",

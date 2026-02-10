@@ -1363,3 +1363,43 @@
 - No console.log — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias as required
 - Import order: React → Third-party → Types → Components → Utils
+
+## task-046: Create notification bell component
+- Created `src/components/admin/shared/NotificationBell.tsx` — bell icon component for admin header
+- Features implemented exactly as task specified:
+  - Bell icon button with unread count badge (shows 99+ for large counts)
+  - Click opens Popover dropdown with recent notifications
+  - Notifications grouped by type (error, warning, success, info) with priority ordering
+  - Each notification shows icon, title, message (truncated), and relative timestamp
+  - Mark as read on click — automatically marks notification as read when clicked
+  - Mark all as read button in header — clears all unread notifications
+  - Entity navigation — notifications with entity_type and entity_id link to related entity via useEntityNavigation
+- Integration with existing hooks:
+  - Uses `useNotifications` hook from `@/hooks/useNotifications` for data and mutations
+  - Uses `useEntityNavigation` hook from `@/hooks/useEntityNavigation` for cross-module navigation
+  - Realtime updates come from useNotifications subscription (already built into the hook)
+- Entity type mapping:
+  - Created `ENTITY_TYPE_MAP` to convert lowercase entity_type strings to EntityType constants
+  - Handles variants like 'order' → 'ORDER', 'orders' → 'ORDER', 'disposable_menu' → 'MENU'
+- Visual design:
+  - Notification type icons: Info, AlertTriangle, AlertCircle, CheckCircle2 from lucide-react
+  - Color coding by type: blue (info), amber (warning), red (error), green (success)
+  - Unread indicator: blue dot next to unread notifications + background highlight
+  - Read indicator: Check icon for already-read notifications
+  - External link icon for notifications with entity links
+- Grouping logic:
+  - Groups notifications by type using reduce pattern
+  - Displays groups in priority order: errors → warnings → success → info
+  - Empty groups are filtered out (no empty sections)
+  - Separator between groups for visual clarity
+- Props interface:
+  - `className` — additional styling for the button
+  - `maxNotifications` — limit displayed notifications (default: 20)
+- Uses shadcn/ui components: Button, Badge, ScrollArea, Separator, Popover/PopoverContent/PopoverTrigger
+- Uses date-fns `formatDistanceToNow` for relative time formatting
+- Accessibility: aria-label on button includes unread count, proper role on popover content
+- Loading state: spinner shown while notifications are loading
+- Empty state: bell icon with "No notifications" message
+- All logging via `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
+- Import order: React → Third-party → Types → Components → Utils
