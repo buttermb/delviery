@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,6 +111,7 @@ export default function ProductManagement() {
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   useEncryption();
+  const queryClient = useQueryClient();
   const { invalidateProductCaches } = useProductMutations();
 
   // Product duplication hook with callback to open edit dialog
@@ -260,7 +262,7 @@ export default function ProductManagement() {
 
   // Refetch products helper
   const refetchProducts = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.products.list({ tenantId: tenant?.id }) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.products.list(tenant?.id) });
   }, [queryClient, tenant?.id]);
 
   // Sync query data when component mounts
