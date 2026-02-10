@@ -66,7 +66,7 @@ interface Order {
 
 export default function Orders() {
   const navigate = useTenantNavigate();
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
 
@@ -116,9 +116,10 @@ export default function Orders() {
   }>({ open: false, targetStatus: '' });
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
-  // Bulk status update hook
+  // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
     tenantId: tenant?.id,
+    userId: admin?.id,
     onSuccess: () => {
       setSelectedOrders([]);
     },

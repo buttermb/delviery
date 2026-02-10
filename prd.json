@@ -405,7 +405,7 @@
     "id": "task-068",
     "title": "Create order bulk status update",
     "description": "In orders DataTable, allow multi-select rows and bulk status update. Select multiple orders → choose new status from dropdown → confirm → update all. Each status change triggers inventory sync, notification dispatch, and activity log. Show progress bar for bulk operations. Toast with success count and any failures.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-069",

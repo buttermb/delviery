@@ -2005,3 +2005,20 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Empty state message adjusts when filters are active
 - All imports use `@/` alias, all logging uses `logger` from `@/lib/logger`
 - No TypeScript errors, no `any` types used
+
+## task-068: Create order bulk status update
+- Enhanced `src/hooks/useOrderBulkStatusUpdate.ts` with three key features:
+  1. **Activity Logging**: Uses `logActivities` from `@/lib/activityLog` to batch-log status changes for all successfully updated orders. Each log entry includes order_number, bulk_operation flag, and total_in_batch metadata.
+  2. **Notification Dispatch**: Created `createBulkStatusNotification` function that inserts notifications to Supabase `notifications` table with tenant isolation. Shows success/warning type based on failed count.
+  3. **Inventory Sync for Cancellations**: Created `restoreInventoryForCancelledOrders` function that restores stock_quantity and available_quantity for products from cancelled orders. Logs changes to `inventory_history` table with reason `bulk_order_cancelled`.
+- Added optional `userId` parameter to hook options for activity logging attribution
+- Updated `src/components/admin/orders/BulkOrderActions.tsx` to pass `admin?.id` as userId from `useTenantAdminAuth()`
+- Updated `src/pages/admin/Orders.tsx` to also pass userId for the inline bulk status handler
+- All database queries filter by `tenant_id` for proper multi-tenant isolation
+- Uses existing progress bar via `BulkOperationProgress` component (no changes needed)
+- Toast notifications show success count and failure count
+- Cross-panel invalidation via `invalidateOnEvent` for ORDER_STATUS_CHANGED, INVENTORY_ADJUSTED
+- Additional query invalidations for activity queries after bulk updates
+- No `console.log` statements — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias
+- TypeScript compiles with no errors

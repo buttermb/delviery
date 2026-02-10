@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
+import { logActivities, ActivityAction, EntityType, createActivityMetadata } from '@/lib/activityLog';
 
 interface FailedItem {
   id: string;
@@ -30,12 +31,182 @@ interface OrderInfo {
 
 interface UseOrderBulkStatusUpdateOptions {
   tenantId: string | undefined;
+  userId?: string | undefined;
   onSuccess?: () => void;
 }
 
 const BATCH_SIZE = 10;
 
-export function useOrderBulkStatusUpdate({ tenantId, onSuccess }: UseOrderBulkStatusUpdateOptions) {
+/**
+ * Creates a notification for bulk status update
+ */
+async function createBulkStatusNotification(
+  tenantId: string,
+  count: number,
+  targetStatus: string,
+  failedCount: number
+): Promise<void> {
+  const statusLabels: Record<string, string> = {
+    pending: 'Pending',
+    confirmed: 'Confirmed',
+    preparing: 'Preparing',
+    in_transit: 'In Transit',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled',
+  };
+
+  const statusLabel = statusLabels[targetStatus] || targetStatus;
+  const successCount = count - failedCount;
+
+  const title = failedCount === 0
+    ? `Bulk Update Complete`
+    : `Bulk Update Partial`;
+
+  const message = failedCount === 0
+    ? `${successCount} order${successCount !== 1 ? 's' : ''} updated to "${statusLabel}"`
+    : `${successCount} order${successCount !== 1 ? 's' : ''} updated, ${failedCount} failed`;
+
+  const { error } = await supabase.from('notifications').insert({
+    tenant_id: tenantId,
+    user_id: null, // Notify all admins
+    title,
+    message,
+    type: failedCount === 0 ? 'success' : 'warning',
+    entity_type: 'order',
+    entity_id: null,
+    read: false,
+    metadata: {
+      action: 'bulk_status_update',
+      target_status: targetStatus,
+      total_count: count,
+      success_count: successCount,
+      failed_count: failedCount,
+    },
+  });
+
+  if (error) {
+    logger.error('Failed to create bulk status notification', error, {
+      component: 'useOrderBulkStatusUpdate',
+      tenantId,
+    });
+  }
+}
+
+/**
+ * Restores inventory for cancelled orders
+ * Similar to useOrderCancellation but handles multiple orders
+ */
+async function restoreInventoryForCancelledOrders(
+  tenantId: string,
+  orderIds: string[],
+  performedBy: string | null
+): Promise<{ success: number; failed: number }> {
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const orderId of orderIds) {
+    try {
+      // Fetch order items for the cancelled order
+      const { data: orderItems, error: itemsError } = await supabase
+        .from('order_items')
+        .select('id, product_id, quantity')
+        .eq('order_id', orderId);
+
+      if (itemsError) {
+        logger.error('Failed to fetch order items for inventory restore', itemsError, {
+          component: 'useOrderBulkStatusUpdate',
+          orderId,
+        });
+        failedCount++;
+        continue;
+      }
+
+      if (!orderItems || orderItems.length === 0) {
+        // No items to restore, count as success
+        successCount++;
+        continue;
+      }
+
+      // Restore inventory for each item
+      for (const item of orderItems) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('id, stock_quantity')
+          .eq('id', item.product_id)
+          .eq('tenant_id', tenantId)
+          .maybeSingle();
+
+        if (productError || !product) {
+          logger.warn('Product not found for inventory restore', {
+            component: 'useOrderBulkStatusUpdate',
+            productId: item.product_id,
+          });
+          continue;
+        }
+
+        const previousQuantity = product.stock_quantity || 0;
+        const newQuantity = previousQuantity + item.quantity;
+
+        // Update product stock
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({
+            stock_quantity: newQuantity,
+            available_quantity: newQuantity,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', item.product_id)
+          .eq('tenant_id', tenantId);
+
+        if (updateError) {
+          logger.error('Failed to restore inventory', updateError, {
+            component: 'useOrderBulkStatusUpdate',
+            productId: item.product_id,
+          });
+          continue;
+        }
+
+        // Log to inventory_history
+        const historyEntry = {
+          tenant_id: tenantId,
+          product_id: item.product_id,
+          change_type: 'return' as const,
+          previous_quantity: previousQuantity,
+          new_quantity: newQuantity,
+          change_amount: item.quantity,
+          reference_type: 'order_cancelled',
+          reference_id: orderId,
+          reason: 'bulk_order_cancelled',
+          notes: `Bulk cancellation - inventory restored`,
+          performed_by: performedBy,
+          metadata: {
+            order_id: orderId,
+            order_item_id: item.id,
+            source: 'bulk_status_update',
+          },
+        };
+
+        await (
+          supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> }
+        )
+          .from('inventory_history')
+          .insert(historyEntry);
+      }
+
+      successCount++;
+    } catch (err) {
+      logger.error('Error restoring inventory for order', err, {
+        component: 'useOrderBulkStatusUpdate',
+        orderId,
+      });
+      failedCount++;
+    }
+  }
+
+  return { success: successCount, failed: failedCount };
+}
+
+export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrderBulkStatusUpdateOptions) {
   const queryClient = useQueryClient();
   const abortRef = useRef(false);
 
@@ -152,8 +323,68 @@ export function useOrderBulkStatusUpdate({ tenantId, onSuccess }: UseOrderBulkSt
       isComplete: true,
     }));
 
+    // Get successfully updated order IDs (those not in failedItems)
+    const failedIds = new Set(failedItems.map(f => f.id));
+    const succeededOrders = orders.filter(o => !failedIds.has(o.id));
+
     // Handle results
     if (succeededCount > 0) {
+      // 1. Log activity for each successfully updated order
+      if (userId) {
+        const activityEntries = succeededOrders.map(order => ({
+          tenantId,
+          userId,
+          action: ActivityAction.UPDATED,
+          entityType: EntityType.ORDER,
+          entityId: order.id,
+          metadata: createActivityMetadata(
+            { status: targetStatus },
+            undefined,
+            {
+              order_number: order.order_number,
+              bulk_operation: true,
+              total_in_batch: total,
+            }
+          ),
+        }));
+
+        // Log activities in batch (non-blocking)
+        logActivities(activityEntries).catch(err => {
+          logger.error('Failed to log bulk status update activities', err, {
+            component: 'useOrderBulkStatusUpdate',
+            tenantId,
+            count: activityEntries.length,
+          });
+        });
+      }
+
+      // 2. Dispatch notification for bulk status update
+      createBulkStatusNotification(tenantId, total, targetStatus, failedCount).catch(err => {
+        logger.error('Failed to dispatch bulk status notification', err, {
+          component: 'useOrderBulkStatusUpdate',
+          tenantId,
+        });
+      });
+
+      // 3. Restore inventory for cancelled orders
+      if (targetStatus === 'cancelled' && succeededOrders.length > 0) {
+        const succeededIds = succeededOrders.map(o => o.id);
+        restoreInventoryForCancelledOrders(tenantId, succeededIds, userId || null).then(result => {
+          if (result.failed > 0) {
+            logger.warn('Some inventory restores failed during bulk cancellation', {
+              component: 'useOrderBulkStatusUpdate',
+              success: result.success,
+              failed: result.failed,
+            });
+          }
+        }).catch(err => {
+          logger.error('Failed to restore inventory for cancelled orders', err, {
+            component: 'useOrderBulkStatusUpdate',
+            tenantId,
+          });
+        });
+      }
+
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
@@ -178,6 +409,9 @@ export function useOrderBulkStatusUpdate({ tenantId, onSuccess }: UseOrderBulkSt
         }
       }
 
+      // Invalidate activity queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.activity.all });
+
       if (failedCount === 0) {
         toast.success(`Updated ${succeededCount} order${succeededCount !== 1 ? 's' : ''} to ${targetStatus}`);
         triggerHaptic('light');
@@ -197,7 +431,7 @@ export function useOrderBulkStatusUpdate({ tenantId, onSuccess }: UseOrderBulkSt
     }
 
     onSuccess?.();
-  }, [tenantId, queryClient, reset, onSuccess]);
+  }, [tenantId, userId, queryClient, reset, onSuccess]);
 
   const cancel = useCallback(() => {
     abortRef.current = true;

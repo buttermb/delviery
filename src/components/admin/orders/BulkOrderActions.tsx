@@ -65,7 +65,7 @@ export function BulkOrderActions({
   onOperationComplete,
   className,
 }: BulkOrderActionsProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   // Status update confirmation dialog state
@@ -78,9 +78,10 @@ export function BulkOrderActions({
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Bulk status update hook
+  // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
     tenantId: tenant?.id,
+    userId: admin?.id,
     onSuccess: () => {
       onClearSelection();
       onOperationComplete?.();
