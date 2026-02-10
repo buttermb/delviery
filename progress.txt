@@ -4493,3 +4493,16 @@ Date: 2026-02-10
 - Removed unused ExternalLink import from VendorDetailPage
 - Used existing patterns: usePagination, StandardPagination, EnhancedEmptyState
 - All imports use @/ alias, logging via logger
+
+## task-154: Create purchase order management page
+- Created src/pages/admin/PurchaseOrders.tsx with full purchase order management
+- PO statuses: draft, sent, confirmed, received, cancelled (with backwards compat for submitted/approved)
+- Page links to vendors and shows vendor names in table
+- Statistics cards show: total POs, drafts, pending, total value
+- Uses existing POCreateForm, PODetail, and POReceiveDialog components
+- On receive, inventory is updated via edge function (receive-purchase-order)
+- Includes search and status filtering
+- All queries filter by tenant_id for multi-tenancy
+- Updated App.tsx to route /purchase-orders to the new page
+- Uses logger from @/lib/logger (no console.log)
+- Error state handling included for failed data fetch

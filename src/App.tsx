@@ -255,6 +255,7 @@ const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement").then(m => ({ default: m.VendorManagement })));
+const PurchaseOrders = lazy(() => import("./pages/admin/PurchaseOrders"));
 const ImagesPage = lazy(() => import("./pages/admin/catalog/ImagesPage"));
 const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
 const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
@@ -989,7 +990,7 @@ const App = () => {
                                         <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                                         <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
-                                        <Route path="purchase-orders" element={<Navigate to="operations-hub?tab=purchase-orders" replace />} />
+                                        <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
                                         <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
                                         <Route path="coupons" element={<Navigate to="marketing-hub?tab=coupons" replace />} />

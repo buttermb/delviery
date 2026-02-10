@@ -921,7 +921,7 @@
     "id": "task-154",
     "title": "Create purchase order management page",
     "description": "Create src/pages/admin/PurchaseOrders.tsx — full purchase order management. Create PO linked to vendor, add products with quantities and costs. PO statuses — draft, sent, confirmed, received, cancelled. On receive, update product inventory via inventory sync. PO creates inventory_history entries with reason restock. Connects vendors to inventory.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-155",
