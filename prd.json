@@ -621,7 +621,7 @@
     "id": "task-104",
     "title": "Create product QR code generator",
     "description": "Create src/components/admin/products/ProductQR.tsx — generate QR code for any product. QR links to product on storefront or disposable menu. Options — link to specific menu, include price, include lab results URL. Download as PNG or print. Bulk QR generation for all products. Uses qrcode library.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-105",

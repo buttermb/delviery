@@ -2936,3 +2936,26 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - Proper imports using `@/` alias, lucide-react icons from esm paths
 - Query data is stale after 5 minutes for reasonable cache behavior
 - All database queries filter by tenant_id for multi-tenant isolation
+
+## Task 104: Create product QR code generator
+
+Created `src/components/admin/products/ProductQR.tsx` with comprehensive QR code generation features:
+
+- **Link Destinations**: QR codes can link to storefront product page or specific disposable menu
+- **Disposable Menu Integration**: Fetches active menus from `disposable_menus` table filtered by tenant_id
+- **Options**: Include price in QR display, include lab results URL badge
+- **Bulk Generation**: Multi-select products with search/filter, select all/clear functionality
+- **Download**: Individual PNG download or bulk download all QR codes with staggered timing
+- **Print**: Opens print window with grid layout of all generated QR codes
+- **Product Search**: Filter products by name, SKU, or category in real-time
+- **URL Copy**: Copy individual QR URLs to clipboard with visual feedback
+- **Dialog Mode**: Can render as dialog with `asDialog={true}` prop
+- **Lab Results**: Shows badge for products with `lab_results_url` field
+- Uses `QRCodeSVG` from `qrcode.react` for high-quality SVG QR rendering
+- Uses `useTenantAdminAuth()` for tenant context and slug-based URL building
+- TanStack Query for products and menus with proper queryKeys
+- ScrollArea for product list with fixed height and scrolling
+- Loading, error, and empty states with Skeleton components
+- All logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias, lucide-react icons from esm paths
+- Full tenant_id filtering on all database queries
