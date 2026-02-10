@@ -321,7 +321,7 @@
     "id": "task-054",
     "title": "Create order-customer automatic association",
     "description": "When creating an order, if a phone number or email is entered, auto-search existing customers. If found, associate the order with that customer automatically. If not found, offer to create a new customer from the order details. Use useGlobalSearch or direct customer lookup. This connects every order to the customer module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-055",

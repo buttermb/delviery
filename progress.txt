@@ -1630,3 +1630,43 @@
 - Uses @/ alias for all imports
 - Import order follows: React → Third-party → Components → Utils pattern
 - TypeScript compiles without errors
+
+
+## task-054: Create order-customer automatic association
+- Created `src/hooks/useCustomerLookup.ts` hook:
+  - Searches customers by phone or email using Supabase
+  - Debounced search (400ms) with minimum 3 characters
+  - Returns CustomerMatch interface with id, first_name, last_name, full_name, email, phone
+  - Provides selectCustomer, searchByPhone, searchByEmail, clear functions
+  - Includes createCustomer mutation to create new customer from order details
+  - Uses useTenantAdminAuth for tenant context
+  - All queries filtered by tenant_id
+  - Uses logger from @/lib/logger for error handling
+  - Uses queryKeys for cache management
+
+- Created `src/components/admin/orders/CustomerAutoAssociation.tsx` component:
+  - Auto-searches customers when phone (7+ digits) or email is entered
+  - Shows dropdown with matched customers
+  - Selected customer displayed as card with avatar, name, contact info, "Linked" badge
+  - "Create new customer" button opens dialog to create customer from order details
+  - Uses Avatar, Card, Badge, Dialog components from shadcn/ui
+  - Toast notifications for customer linked/created success
+  - Disabled state when offline
+  - getInitials() helper for avatar fallback
+
+- Updated `src/hooks/useOfflineOrderCreation.ts`:
+  - Added customerId field to OfflineOrderData interface
+  - Updated syncSingleOrder to include customer_id when inserting order to Supabase
+
+- Updated `src/pages/admin/OfflineOrderCreate.tsx`:
+  - Added linkedCustomer state to track associated customer
+  - Integrated CustomerAutoAssociation component in Customer Details section
+  - Passes customerId to createOfflineOrder when customer is linked
+  - Clears linkedCustomer on form reset
+  - Component disabled when offline (customer lookup requires network)
+
+- All logging uses logger from @/lib/logger — no console.log
+- Uses @/ alias for all imports
+- Import order follows: React → Third-party → Types → Components → Utils pattern
+- TypeScript compiles without errors
+- All Supabase queries filter by tenant_id

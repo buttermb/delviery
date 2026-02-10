@@ -2,6 +2,9 @@ import { logger } from '@/lib/logger';
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
+
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,15 +34,16 @@ import {
   CheckCircle2,
   Cloud,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { CustomerAutoAssociation } from '@/components/admin/orders/CustomerAutoAssociation';
+import { OfflineBadge } from '@/components/ui/offline-indicator';
+import { SEOHead } from '@/components/SEOHead';
+
+import type { CustomerMatch } from '@/hooks/useCustomerLookup';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useOfflineOrderCreation, OfflineOrderItem, OfflineOrderData } from '@/hooks/useOfflineOrderCreation';
 import { db as idb } from '@/lib/idb';
 import { cn } from '@/lib/utils';
-import { OfflineBadge } from '@/components/ui/offline-indicator';
-import { formatDistanceToNow } from 'date-fns';
-import { SEOHead } from '@/components/SEOHead';
 
 interface ProductForOrder {
   id: string;
@@ -60,7 +64,6 @@ export default function OfflineOrderCreate() {
     syncOfflineOrders,
     removeOfflineOrder,
     retryOrder,
-    getOfflineOrderCount,
   } = useOfflineOrderCreation(tenant?.id);
 
   // Form state
@@ -74,6 +77,7 @@ export default function OfflineOrderCreate() {
   const [productSearch, setProductSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'create' | 'pending'>('create');
+  const [linkedCustomer, setLinkedCustomer] = useState<CustomerMatch | null>(null);
 
   // Fetch products (from Supabase if online, from IndexedDB if offline)
   const { data: products = [], isLoading: productsLoading } = useQuery({
@@ -215,6 +219,7 @@ export default function OfflineOrderCreate() {
     try {
       await createOfflineOrder({
         tenantId: tenant.id,
+        customerId: linkedCustomer?.id,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim() || undefined,
         customerEmail: customerEmail.trim() || undefined,
@@ -236,6 +241,7 @@ export default function OfflineOrderCreate() {
       setDeliveryNotes('');
       setPaymentMethod('cash');
       setCart([]);
+      setLinkedCustomer(null);
 
       if (isOnline) {
         toast.success('Order created and synced');
@@ -490,6 +496,24 @@ export default function OfflineOrderCreate() {
                         <SelectItem value="credit">Credit</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Customer Auto-Association */}
+                  <div className="sm:col-span-2">
+                    <CustomerAutoAssociation
+                      phone={customerPhone}
+                      email={customerEmail}
+                      customerName={customerName}
+                      deliveryAddress={deliveryAddress}
+                      selectedCustomer={linkedCustomer}
+                      onCustomerSelect={setLinkedCustomer}
+                      onCustomerCreate={(customer) => {
+                        // Auto-fill form with created customer data
+                        if (customer.phone) setCustomerPhone(customer.phone);
+                        if (customer.email) setCustomerEmail(customer.email);
+                      }}
+                      disabled={!isOnline}
+                    />
                   </div>
                 </div>
               </Card>
