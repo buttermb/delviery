@@ -123,7 +123,7 @@
     "id": "task-021",
     "title": "Create usePermissions enhanced hook",
     "description": "Create or extend src/hooks/usePermissions.ts — wraps existing permission checks. Add canView(module), canEdit(module), canDelete(module), canExport(module). Modules include orders, products, customers, vendors, inventory, analytics, settings. Returns boolean for each check. Uses useTenantContext internally. Memoize permission calculations.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-022",

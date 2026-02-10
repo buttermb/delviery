@@ -491,3 +491,29 @@
 - Created `src/lib/notifications/` directory as first file in this location
 - No console.log — toast utility only
 - All imports use `@/` alias (none needed — only imports from sonner)
+
+## task-021: Create usePermissions enhanced hook
+- Extended existing `src/hooks/usePermissions.ts` to add module-based permission checks
+- Created `PermissionModule` type covering 14 modules:
+  - Core: orders, products, customers, vendors, inventory, analytics, settings
+  - Extended: menus, wholesale-orders, finance, team, reports, fleet, api
+- Created `MODULE_PERMISSION_MAP` constant mapping each module to its permission strings:
+  - Each module has view, edit, delete, and export permission mappings
+  - Mapped to existing permission strings from `@/lib/permissions/rolePermissions`
+  - Some modules share permissions (vendors → customers, analytics → reports)
+- Added four memoized permission check functions using `useCallback`:
+  - `canView(module)` — checks if user can view module
+  - `canEdit(module)` — checks if user can edit/modify items in module
+  - `canDelete(module)` — checks if user can delete items in module
+  - `canExport(module)` — checks if user can export data from module
+- Added `modulePermissions` object with `useMemo`:
+  - Pre-computed permissions for all modules in a single object
+  - Returns `{ canView, canEdit, canDelete, canExport }` for each module
+  - Useful for components that need to check multiple permissions at once
+- Hook uses `useTenantAdminAuth()` internally for tenant context (as existing implementation)
+- All permission calculations memoized on `role` dependency for performance
+- Logger warnings added for unknown module requests
+- Fixed import order: React → Third-party → Local components → Utils
+- Return object updated to include new functions alongside legacy `checkPermission` methods
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required
