@@ -5655,3 +5655,33 @@ Date: Tue, Feb 10, 2026 12:13:17 PM
 - Chi-square test is appropriate for comparing conversion rates
 - Connected to menu analytics via MenuAnalytics patterns
 - Used existing UI components (Card, Badge, Progress, Dialog, AlertDialog)
+
+## Task 192: Create menu feedback collection
+Date: 2026-02-10
+
+### Implemented:
+- Created src/components/admin/menus/MenuFeedback.tsx
+- Admin dashboard for viewing customer feedback on menus
+- Rating display with star visualization (1-5 stars)
+- Rating distribution breakdown showing percentage per star level
+- Aggregate statistics: average rating, total feedback count, satisfaction score (4+ stars %)
+- Recent feedback list with expandable comments
+- Delete feedback functionality with confirmation dialog
+- Menu selector dropdown when menuId not provided via props
+- Scroll area for long feedback lists
+
+### Technical patterns used:
+- useTenantAdminAuth() for tenant context
+- TanStack Query (useQuery, useMutation) for data fetching and mutations
+- Proper tenant_id filtering on all database queries
+- logger from @/lib/logger for error logging
+- Loading skeletons for async states
+- toast from sonner for success/error notifications
+- AlertDialog for delete confirmation
+
+### Key learnings:
+- Followed MenuAnalytics.tsx patterns for consistent UX
+- Rating distribution calculated client-side from feedback list
+- Satisfaction score = percentage of 4+ star ratings
+- Used ScrollArea component for long feedback lists
+- Expandable comments for long text with "Read more" toggle

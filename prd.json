@@ -1149,7 +1149,7 @@
     "id": "task-192",
     "title": "Create menu feedback collection",
     "description": "Optional feedback form on menus post-order. Simple rating (1-5) and comment. Feedback linked to order and customer. Show feedback in admin dashboard. Aggregate rating per menu. Recent feedback list on menu detail page. Useful for iterating on menu design. Connects customer experience to menu optimization.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-193",
