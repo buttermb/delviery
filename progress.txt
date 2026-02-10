@@ -456,3 +456,38 @@
 - Debug/info/error logging via `logger` from `@/lib/logger` — no console.log
 - Exported hook via hooks barrel file (`src/hooks/index.ts`)
 - All imports use `@/` alias as required
+
+## task-020: Create shared toast notification utility
+- Created `src/lib/notifications/toast.ts` wrapping sonner toast with standardized messages
+- Order notifications:
+  - `toastOrderCreated(orderNumber)` — success toast for new orders
+  - `toastOrderUpdated(orderNumber, status)` — success toast for status changes
+  - `toastOrderCancelled(orderNumber)` — info toast for cancellations
+  - `toastOrderCompleted(orderNumber)` — success toast for fulfillment
+  - `toastOrderDelivered(orderNumber)` — success toast for deliveries
+- Inventory notifications:
+  - `toastInventoryLow(productName, quantity)` — warning toast for low stock
+  - `toastInventoryUpdated(productName)` — success toast for stock updates
+  - `toastOutOfStock(productName)` — error toast for zero stock
+  - `toastInventorySynced(count)` — success toast for bulk sync
+- Sync notifications:
+  - `toastSyncComplete(module)` — success toast with module name
+  - `toastSyncStarted(module)` — info toast for sync in progress
+  - `toastSyncFailed(module)` — error toast for sync failures
+- Product/Customer notifications for CRUD operations
+- Payment notifications: `toastPaymentReceived`, `toastPaymentFailed`, `toastRefundProcessed`
+- General action notifications: `toastSaved`, `toastDeleted`, `toastCopied`, `toastExported`, `toastImported`
+- Error notifications:
+  - `toastError(action, error)` — contextual error with "Failed to {action}" format
+  - `toastValidationError(message)` — validation-specific errors
+  - `toastNetworkError()` — network connectivity errors
+  - `toastPermissionDenied(action?)` — authorization errors
+  - `toastSessionExpired()` — session timeout handling
+- Info/warning helpers: `toastInfo(title, desc)`, `toastWarning(title, desc)`
+- Loading/progress: `toastLoading(message)`, `dismissToast(id)`, `toastPromise(promise, messages)`
+- All functions accept optional `ExternalToast` for customization
+- `toastPromise` returns `{ unwrap: () => Promise<T> }` matching sonner's return type
+- Re-exports base `toast` for advanced usage cases
+- Created `src/lib/notifications/` directory as first file in this location
+- No console.log — toast utility only
+- All imports use `@/` alias (none needed — only imports from sonner)

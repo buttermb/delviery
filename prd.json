@@ -117,7 +117,7 @@
     "id": "task-020",
     "title": "Create shared toast notification utility",
     "description": "Create src/lib/notifications/toast.ts — wraps sonner toast with standardized messages for common actions. Functions like toastOrderCreated(orderNumber), toastInventoryLow(productName, quantity), toastSyncComplete(module), toastError(action, error). Each generates consistent messaging. Used across all modules for unified notification experience.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-021",
