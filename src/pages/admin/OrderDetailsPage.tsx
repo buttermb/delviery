@@ -22,6 +22,7 @@ import { OrderPaymentStatusSync } from '@/components/admin/orders/OrderPaymentSt
 import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDeliveryStatusSync';
 import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
 import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
+import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -896,6 +897,12 @@ export function OrderDetailsPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Internal Threaded Notes with @mentions */}
+            <OrderThreadedNotes
+              orderId={order.id}
+              orderNumber={order.order_number}
+            />
 
             {/* Related Entities Panel */}
             <OrderRelatedEntitiesPanel orderId={order.id} />

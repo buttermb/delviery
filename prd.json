@@ -375,7 +375,7 @@
     "id": "task-063",
     "title": "Create order notes with @mentions",
     "description": "Add an internal notes section to order detail page. Staff can add notes with @mentions of other staff members. When mentioned, that user gets a notification via useNotificationDispatcher. Notes stored in order_notes table with tenant_id, order_id, user_id, content, created_at. Display as threaded comments with user avatars.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-064",

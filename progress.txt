@@ -1849,3 +1849,34 @@
 - All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
 - Error handling with toast notifications
 - Loading states for stock validation and order creation
+
+## task-063: Create order notes with @mentions
+- Created `src/components/admin/orders/OrderThreadedNotes.tsx`
+- Features implemented:
+  - Internal notes section added to order detail page sidebar
+  - Staff can add notes with @mentions of other team members
+  - Mention popover with team member search (filters by name/email)
+  - When mentioned, users receive notification via `useNotificationDispatcher`
+  - Notes displayed as threaded comments with user avatars
+  - Avatar fallback shows initials from name or email
+  - Real-time updates via Supabase channel subscription
+  - Mentions highlighted in display with `@name` styling
+- Mention system:
+  - Type `@` to trigger mention popover
+  - Click @ button in textarea corner as shortcut
+  - Mentions stored as `@[Name](user_id)` format internally
+  - Displayed as highlighted `@name` in note content
+  - `mentioned_user_ids` array stored for notification dispatch
+- Database expectations:
+  - `order_notes` table with: id, tenant_id, order_id, user_id, content, mentioned_user_ids, created_at
+  - Join to `tenant_users` for user info display
+  - Graceful handling if table doesn't exist yet (returns empty array)
+- Integration:
+  - Added to `OrderDetailsPage.tsx` sidebar after Notes card
+  - Receives `orderId` and `orderNumber` props
+- Uses TanStack Query for data fetching and caching
+- Uses `useTenantAdminAuth()` for tenant context and current user
+- Uses `useNotificationDispatcher().dispatchNotification()` for mentions
+- All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
+- Loading and empty states with skeleton and placeholder UI
+- Error handling with toast notifications
