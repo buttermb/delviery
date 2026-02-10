@@ -3434,3 +3434,56 @@ Created `src/hooks/useCustomerLTV.ts` - a comprehensive customer lifetime value 
 - Uses .maybeSingle() for optional data
 - No 'any' type usage
 - Proper error handling with logger
+
+## task-126: Create customer segmentation engine
+- Created `src/hooks/useCustomerSegments.ts` with behavioral customer segmentation
+- Created `src/components/admin/customers/CustomerSegmentBadge.tsx` for segment display
+
+### Segments Implemented:
+- `new`: First order within 30 days
+- `active`: Ordered within 60 days  
+- `at_risk`: No order in 60-90 days
+- `churned`: No order in 90+ days
+- `vip`: Top 10% by lifetime value (spend)
+
+### Features:
+- `useCustomerSegment(customerId)` — Get segment for single customer
+- `useCustomerSegments()` — Get all customer segments in bulk (more efficient)
+- `useSegmentCounts()` — Lightweight hook for dashboard counts only
+- `filterBySegment(segment)` — Filter customer list by segment
+- `getSegment(customerId)` — Lookup segment from pre-fetched map
+- Segment counts object with new/active/at_risk/churned/vip/total
+
+### Display Components:
+- `CustomerSegmentBadge` — Shows colored badge with icon and tooltip
+- `SegmentCountsDisplay` — Shows all segment counts as clickable badges
+- Supports size variants (sm/md/lg)
+- Color-coded by segment (amber=VIP, emerald=active, blue=new, orange=at_risk, red=churned)
+
+### Utility Functions:
+- `getSegmentLabel(segment)` — Human-readable label
+- `getSegmentBadgeVariant(segment)` — Badge variant for shadcn/ui
+- `getSegmentColorClasses(segment)` — Tailwind color classes
+- `getSegmentIcon(segment)` — Icon name suggestion
+- `getSegmentPriority(segment)` — For sorting (VIP=0, churned=4)
+- `sortBySegment(a, b)` — Sort customers by segment priority
+- `getSegmentDescription(segment)` — Tooltip descriptions
+- `getSegmentThresholds()` — Get configurable threshold values
+
+### Technical Notes:
+- VIP threshold calculated dynamically as top 10% of spenders
+- ActivitySegment type separates behavioral from value-based segmentation
+- CustomerSegmentData includes both `segment` (final) and `activitySegment` + `isVip` flags
+- Uses unified_orders table with status filter (completed/delivered/paid)
+- 5-minute stale time for query caching
+- Bulk query groups orders by customer first, then calculates VIP threshold once
+
+### Project Rules Followed:
+- Uses logger from @/lib/logger (no console.log)
+- Uses @/ alias for all imports
+- All queries filter by tenant_id
+- Uses useTenantAdminAuth() for tenant context
+- Uses .maybeSingle() for optional data
+- No 'any' type usage
+- React.memo for CustomerSegmentBadge component
+- Proper useMemo for derived values (segmentMap, counts, filterBySegment)

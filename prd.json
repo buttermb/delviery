@@ -753,7 +753,7 @@
     "id": "task-126",
     "title": "Create customer segmentation engine",
     "description": "Create src/hooks/useCustomerSegments.ts — segments customers into groups. Segments include new (first order within 30d), active (ordered within 60d), at_risk (no order in 60-90d), churned (no order in 90d+), vip (top 10% by LTV). Show segment badge on customer list and detail. Filter by segment. Segment counts on customer dashboard. Auto-calculated from order dates.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-127",
