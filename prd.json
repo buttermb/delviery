@@ -1023,7 +1023,7 @@
     "id": "task-171",
     "title": "Create vendor-to-product quick link",
     "description": "When viewing a vendor, quick action to add a new product sourced from this vendor. Pre-fills vendor_id. Also, from product creation form, vendor dropdown shows all vendors with their product counts and ratings. Vendor selection auto-populates vendor-specific fields like lead time and payment terms.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-172",

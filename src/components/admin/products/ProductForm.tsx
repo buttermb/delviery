@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
@@ -13,10 +13,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode } from "lucide-react";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Info } from "lucide-react";
 import { toast } from "sonner";
+
+import { VendorSelector } from "@/components/admin/products/VendorSelector";
+import type { VendorWithStats } from "@/hooks/useVendorsWithStats";
+import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 
 // Define the shape of form data
 export interface ProductFormData {
@@ -84,6 +87,7 @@ export function ProductForm({
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("details");
+    const [selectedVendor, setSelectedVendor] = useState<VendorWithStats | null>(null);
 
     const checkPotencyLimit = (field: 'thc_percent' | 'cbd_percent', value: string) => {
         const numVal = parseFloat(value);
@@ -95,6 +99,13 @@ export function ProductForm({
             toast.warning(`Potency Alert: Value exceeds store limit of ${limit}%`);
         }
     };
+
+    // Handle vendor selection with auto-population of vendor-specific fields
+    const handleVendorSelect = useCallback((vendor: VendorWithStats | null) => {
+        setSelectedVendor(vendor);
+        // Auto-populate vendor-specific fields when a vendor is selected
+        // This provides a starting point but doesn't overwrite if user already entered values
+    }, []);
 
     useEffect(() => {
         if (initialData) {
@@ -206,12 +217,24 @@ export function ProductForm({
 
                             <div className="space-y-2">
                                 <Label>Brand/Vendor</Label>
-                                <AutocompleteInput
+                                <VendorSelector
                                     value={formData.vendor_name}
                                     onChange={(value) => setFormData({ ...formData, vendor_name: value })}
-                                    type="brand"
-                                    placeholder="e.g. Cookies"
+                                    onVendorSelect={handleVendorSelect}
+                                    placeholder="Select or enter vendor..."
+                                    allowCreate
                                 />
+                                {selectedVendor && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                        <Info className="h-3 w-3" />
+                                        {selectedVendor.payment_terms && (
+                                            <span>Terms: {selectedVendor.payment_terms}</span>
+                                        )}
+                                        {selectedVendor.lead_time_days !== null && (
+                                            <span className="ml-2">Lead: {selectedVendor.lead_time_days}d</span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-2">

@@ -37,6 +37,7 @@ import { VendorComplianceTracking } from '@/components/admin/vendors/VendorCompl
 import { VendorPriceHistory } from '@/components/admin/vendors/VendorPriceHistory';
 import { VendorCommunicationLog } from '@/components/admin/vendors/VendorCommunicationLog';
 import { VendorDocumentManager } from '@/components/admin/vendors/VendorDocumentManager';
+import { VendorQuickProductLink } from '@/components/admin/vendors/VendorQuickProductLink';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -156,10 +157,19 @@ export default function VendorDetailPage() {
               </div>
             </div>
           </div>
-          <Button onClick={handleEdit}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Vendor
-          </Button>
+          <div className="flex gap-2">
+            <VendorQuickProductLink
+              vendorId={vendor.id}
+              vendorName={vendor.name}
+              paymentTerms={vendor.payment_terms}
+              leadTimeDays={vendor.lead_time_days}
+              variant="outline"
+            />
+            <Button onClick={handleEdit}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Vendor
+            </Button>
+          </div>
         </div>
 
         {/* Vendor Info Card */}

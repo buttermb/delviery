@@ -5007,3 +5007,38 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
 - Added VENDOR to EntityType in src/lib/activityLog.ts
 - Followed existing patterns from CustomerImport and ProductBulkImport
 - Used useTenantAdminAuth for tenant context, filter by account_id
+
+## task-171: Create vendor-to-product quick link
+- Created `src/hooks/useVendorsWithStats.ts` hook:
+  - `useVendorsWithStats()` — fetches all vendors with product counts and aggregate ratings
+  - `useVendorDetails(vendorName)` — fetches single vendor details for auto-population
+  - Queries products table by vendor_name and vendor_ratings by vendor_id
+  - Calculates product_count, avg_rating, rating_count for each vendor
+  - Uses `Promise.all` pattern for parallel data fetching
+  - Returns VendorWithStats interface with all vendor fields plus computed stats
+- Created `src/components/admin/vendors/VendorQuickProductLink.tsx` component:
+  - Main component with customizable variant, size, tooltip options
+  - Builds URL with query params: vendor, vendorId, paymentTerms, leadTimeDays
+  - Navigation via useTenantNavigation().navigateToAdmin()
+  - Also exports VendorQuickProductIcon for compact icon-only usage
+- Created `src/components/admin/products/VendorSelector.tsx` component:
+  - Enhanced dropdown using Command component (shadcn/ui)
+  - Shows vendor name with product count badge and star rating badge
+  - Additional info row with contact name, payment terms, lead time
+  - Search filter across vendor name and contact name
+  - Allow creating new vendor entries if not found
+  - onVendorSelect callback provides full VendorWithStats for auto-population
+  - Color-coded ratings using getRatingColor helper
+- Updated ProductForm.tsx:
+  - Replaced AutocompleteInput with VendorSelector for Brand/Vendor field
+  - Added selectedVendor state and handleVendorSelect callback
+  - Shows vendor terms and lead time info below selector when vendor selected
+  - Added imports: VendorSelector, VendorWithStats, Info icon
+- Updated VendorDetailPage.tsx:
+  - Added VendorQuickProductLink button next to Edit Vendor button
+  - Passes vendorId, vendorName, paymentTerms, leadTimeDays props
+  - Uses outline variant for visual distinction from primary Edit button
+- All files use logger from @/lib/logger — no console.log
+- All imports use @/` alias as required
+- All database queries filter by tenant_id (account_id for vendors table)
+- TypeScript checks pass with no errors
