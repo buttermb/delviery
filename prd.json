@@ -399,7 +399,7 @@
     "id": "task-067",
     "title": "Create order filters with cross-module data",
     "description": "Enhance order list FilterBar with filters for customer name, product name, payment status, delivery status, date range, order total range, and order source (admin/storefront/menu). Each filter queries its respective module's data. Combined filters work with AND logic. Active filters shown as removable chips. Persist filter state.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-068",

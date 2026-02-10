@@ -1985,3 +1985,23 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Comparing order total to averages requires careful percentage calculations
 - Time of day can be derived from order.created_at timestamp
 - Product history analysis requires joining order_items with orders
+
+## task-067: Create order filters with cross-module data
+- Created `src/components/admin/orders/OrderFilters.tsx` component
+- Integrated with existing `FilterBar` component from `src/components/admin/shared/FilterBar.tsx`
+- Implemented filters for: status, customer name, product name, payment status, delivery status, order source, date range, and order total range (min/max)
+- Created `useCustomerOptions` hook to fetch customer names from `profiles` table
+- Created `useProductOptions` hook to fetch active products from `products` table filtered by tenant_id
+- Used `useOrderFilters` hook (wraps `useFilterBar`) for localStorage persistence
+- Updated `OrdersListPage.tsx` to fetch cross-module data:
+  - Extended order query to include `payment_status` and `order_source`
+  - Fetch `order_items` with product names for product filtering
+  - Fetch `deliveries` table for delivery status filtering
+- Client-side filtering with AND logic in `filteredOrders` useMemo
+- Date range filtering uses `isWithinInterval` from date-fns with proper day boundaries
+- Total amount range supports min and max with number inputs
+- Active filters displayed as removable chips via `FilterBar`
+- Stats cards now reflect filtered order counts
+- Empty state message adjusts when filters are active
+- All imports use `@/` alias, all logging uses `logger` from `@/lib/logger`
+- No TypeScript errors, no `any` types used
