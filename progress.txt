@@ -4506,3 +4506,16 @@ Date: 2026-02-10
 - Updated App.tsx to route /purchase-orders to the new page
 - Uses logger from @/lib/logger (no console.log)
 - Error state handling included for failed data fetch
+
+## task-155: Create Supabase migration for purchase_orders tables
+- Created supabase/migrations/20260210000001_add_purchase_orders_tenant_support.sql
+- Tables purchase_orders and purchase_order_items already existed; added tenant_id column support
+- Added tenant_id to vendors table as well for complete vendor/PO tenant isolation
+- Backfill logic populates tenant_id from accounts table for existing records
+- RLS policies for purchase_orders: SELECT, INSERT, UPDATE, DELETE via tenant_users lookup
+- RLS policies for purchase_order_items: Access through parent purchase_order tenant check
+- RLS policies for vendors: Full CRUD via tenant_users lookup
+- Added performance indexes: vendor_id, status, po_number, created_at, product_id
+- Added updated_at triggers for purchase_orders and vendors tables
+- Used DO 463 blocks for safe column additions (IF NOT EXISTS pattern)
+- Followed established RLS pattern: tenant_id IN (SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid())

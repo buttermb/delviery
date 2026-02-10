@@ -927,7 +927,7 @@
     "id": "task-155",
     "title": "Create Supabase migration for purchase_orders tables",
     "description": "Create supabase/migrations/add_purchase_orders.sql. Table purchase_orders — id uuid, tenant_id uuid, vendor_id uuid, po_number text, status text, subtotal decimal, tax decimal, total decimal, notes text, expected_date date, received_date date, created_by uuid, created_at timestamptz. Table purchase_order_items — id uuid, po_id uuid, product_id uuid, quantity integer, unit_cost decimal, received_quantity integer default 0. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-156",
