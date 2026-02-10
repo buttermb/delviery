@@ -26,6 +26,7 @@ import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
+import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,6 +81,7 @@ import Ban from "lucide-react/dist/esm/icons/ban";
 import Copy from "lucide-react/dist/esm/icons/copy";
 import Calendar from "lucide-react/dist/esm/icons/calendar";
 import FileText from "lucide-react/dist/esm/icons/file-text";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -173,6 +175,9 @@ export function OrderDetailsPage() {
   // Product quick view state
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
   const [quickViewProductName, setQuickViewProductName] = useState<string>('');
+
+  // Runner assignment dialog state
+  const [showAssignRunnerDialog, setShowAssignRunnerDialog] = useState(false);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -456,6 +461,18 @@ export function OrderDetailsPage() {
                 total_price: item.total_price,
               }))}
             />
+
+            {/* Assign Runner Button - show when order is ready for delivery */}
+            {!isCancelled && !order.courier_id && ['confirmed', 'processing', 'ready', 'pending'].includes(order.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAssignRunnerDialog(true)}
+              >
+                <UserPlus className="w-4 h-4 mr-1" />
+                Assign Runner
+              </Button>
+            )}
 
             {!isCancelled && (
               <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
@@ -946,6 +963,18 @@ export function OrderDetailsPage() {
         }}
         productId={quickViewProductId}
         productName={quickViewProductName}
+      />
+
+      {/* Assign Delivery Runner Dialog */}
+      <AssignDeliveryRunnerDialog
+        orderId={order.id}
+        orderNumber={order.order_number}
+        deliveryAddress={order.delivery_address}
+        open={showAssignRunnerDialog}
+        onOpenChange={setShowAssignRunnerDialog}
+        onAssigned={() => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+        }}
       />
     </SwipeBackWrapper>
   );

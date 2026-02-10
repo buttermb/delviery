@@ -1221,7 +1221,7 @@
     "id": "task-204",
     "title": "Create delivery runner assignment from orders",
     "description": "On order detail page, assign delivery runner. Show available runners with current load (active deliveries count). Auto-suggest best runner based on proximity to delivery address and current route. Assignment creates delivery record linked to order and runner. Notification sent to runner. Updates order status to assigned.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-205",

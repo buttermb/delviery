@@ -6018,3 +6018,26 @@ Lessons Learned:
 - deliveries table may not exist on all tenants (handle 42P01 error)
 - Always publish order_updated event after syncing for other listeners
 - Query key invalidation pattern: queryKeys.orders.detail(), queryKeys.deliveries.byOrder()
+
+=== Task 204: Create delivery runner assignment from orders ===
+Date: Tue, Feb 10, 2026  1:17:42 PM
+
+Implementation:
+- Created src/components/admin/orders/AssignDeliveryRunnerDialog.tsx
+- Integrated dialog into OrderDetailsPage.tsx with Assign Runner button
+
+Features implemented:
+1. Tenant-filtered runners query - filters wholesale_runners by tenant_id
+2. Active deliveries count - shows current load for each runner
+3. Auto-suggest best runner - sorts by: fewest active deliveries, distance (if available), then rating
+4. Delivery record creation via wholesale-delivery-assign edge function
+5. Runner notification dispatch using useNotificationDispatcher hook
+6. Order status update to 'assigned' via existing edge function
+
+Key learnings:
+- Edge function wholesale-delivery-assign already creates delivery record and updates order status
+- useDeliveryOrderSync hook provides bidirectional sync between delivery and order status
+- useNotificationDispatcher can dispatch custom notifications with dispatchNotification method
+- RadioGroup provides better UX than Select for runner selection with rich details
+- Calculate distance using Haversine formula for proximity-based suggestions
+
