@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -31,8 +31,7 @@ import CopyButton from "@/components/CopyButton";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { useExport } from "@/hooks/useExport";
-import { ExportOptionsDialog, type ExportField } from "@/components/admin/ExportOptionsDialog";
+import { OrderExportButton } from "@/components/admin/orders";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
@@ -83,8 +82,6 @@ export default function Orders() {
     }
   });
 
-  const { exportCSV } = useExport();
-
   // Real-time subscription for new orders (storefront + regular)
   const { newOrderIds } = useAdminOrdersRealtime({
     enabled: !!tenant?.id,
@@ -115,7 +112,6 @@ export default function Orders() {
     open: boolean;
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
 
   // Bulk status update hook with userId for activity logging
@@ -437,69 +433,6 @@ export default function Orders() {
     setDeleteConfirmation({ ...deleteConfirmation, open: false });
   };
 
-  const orderExportFields: ExportField[] = [
-    {
-      value: 'customer_name',
-      label: 'Customer Name',
-      description: 'Include the customer full name for each order',
-      recommended: true,
-    },
-    {
-      value: 'customer_email',
-      label: 'Customer Email',
-      description: 'Include the customer email address',
-      recommended: true,
-    },
-    {
-      value: 'line_items',
-      label: 'Line Items',
-      description: 'Include product names, quantities, and prices for each order item',
-    },
-  ];
-
-  const handleExportWithOptions = (selectedFields: string[]) => {
-    const includeCustomerName = selectedFields.includes('customer_name');
-    const includeCustomerEmail = selectedFields.includes('customer_email');
-    const includeLineItems = selectedFields.includes('line_items');
-
-    if (includeLineItems) {
-      // Flatten: one row per line item
-      const flatRows = filteredOrders.flatMap(order => {
-        const items = order.order_items && order.order_items.length > 0
-          ? order.order_items
-          : [{ product_name: '', quantity: 0, price: 0, id: '', product_id: '' }];
-
-        return items.map(item => ({
-          order_number: order.order_number || order.id.slice(0, 8),
-          status: order.status,
-          total_amount: order.total_amount,
-          delivery_method: order.delivery_method || '',
-          created_at: order.created_at,
-          ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
-          ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-          item_product_name: (item as any).product_name || '',
-          item_quantity: (item as any).quantity || 0,
-          item_price: (item as any).price || 0,
-        }));
-      });
-      exportCSV(flatRows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
-    } else {
-      // Standard: one row per order
-      const rows = filteredOrders.map(order => ({
-        order_number: order.order_number || order.id.slice(0, 8),
-        status: order.status,
-        total_amount: order.total_amount,
-        delivery_method: order.delivery_method || '',
-        created_at: order.created_at,
-        ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
-        ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-      }));
-      exportCSV(rows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
-    }
-
-    setExportDialogOpen(false);
-  };
-
   const handlePrintOrder = (order: Order) => {
     // Open print dialog with order details
     const printWindow = window.open('', '_blank');
@@ -771,15 +704,13 @@ export default function Orders() {
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex gap-2">
-              <Button
+              <OrderExportButton
+                orders={filteredOrders}
+                filenamePrefix="orders-export"
                 variant="outline"
                 className="min-h-[48px] touch-manipulation"
-                onClick={() => setExportDialogOpen(true)}
                 disabled={filteredOrders.length === 0}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
+              />
                 <Button
                   variant="outline"
                   className="min-h-[48px] touch-manipulation"
@@ -1033,16 +964,6 @@ export default function Orders() {
         onConfirm={handleConfirmDelete}
         itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} orders` : 'this order'}
         description="This action cannot be undone."
-      />
-
-      <ExportOptionsDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        onExport={handleExportWithOptions}
-        fields={orderExportFields}
-        title="Export Orders"
-        description="Choose which related data to include in the CSV export."
-        itemCount={filteredOrders.length}
       />
 
       <BulkAssignRunnerDialog

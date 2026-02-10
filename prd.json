@@ -417,7 +417,7 @@
     "id": "task-070",
     "title": "Create order export with related data",
     "description": "Enhance order export to include related data — customer name, customer email, product names, payment status, delivery status. Export as CSV or JSON with all these joined fields. Use useExport hook. Column config maps to joined data. Show loading state during export. Log export action to activity_log.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-071",

@@ -2050,3 +2050,35 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - No `console.log` statements — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias
 - TypeScript compiles with no errors, Vite build succeeds
+
+## task-070: Create order export with related data
+- Completely rewrote `src/components/admin/orders/OrderExportButton.tsx` with enhanced export functionality:
+  - Uses `useExport` hook with proper `ExportColumn<T>` configuration for CSV export
+  - Supports both CSV and JSON export formats (dropdown menu with format selection)
+  - Includes all required related data fields:
+    - Customer name (from order.user.full_name or order.customer_name)
+    - Customer email (from order.user.email or order.customer_email)
+    - Customer phone (from order.user.phone or order.customer_phone)
+    - Product names (comma-separated list of all order items)
+    - Payment status (from order.payment_status or inferred from order status)
+    - Delivery status (from order.delivery_status or mapped from order status)
+    - Order source (storefront, admin, POS, API, menu)
+  - Full line items detail option creates multiple rows per order with item-level data
+  - Column configuration uses proper types (string, currency, datetime, number)
+  - Loading state shown with progress bar for large datasets
+  - Export logged to activity_log via useExport hook's entityType: EntityType.ORDER
+  - Metadata includes orderCount, rowCount, fields, format, includeLineItems
+- Export field options are configurable with recommended/default flags
+- Dialog-based interface for advanced options, dropdown for quick export
+- Updated `src/components/admin/orders/index.ts` to export `OrderExportButton`
+- Updated `src/pages/admin/Orders.tsx`:
+  - Replaced inline export logic with `OrderExportButton` component
+  - Removed old `useExport` hook usage, `exportCSV`, `ExportOptionsDialog` imports
+  - Removed `exportDialogOpen` state and `handleExportWithOptions` function
+  - Removed `orderExportFields` definition
+  - Removed unused `Download` icon import
+  - OrderExportButton receives `filteredOrders` as orders prop
+- All database queries already filter by `tenant_id` (existing behavior preserved)
+- No `console.log` statements — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias
+- TypeScript compiles with no errors, ESLint passes
