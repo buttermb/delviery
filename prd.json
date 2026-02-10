@@ -813,7 +813,7 @@
     "id": "task-136",
     "title": "Create Supabase migration for customer_credits table",
     "description": "Create supabase/migrations/add_customer_credits.sql. Columns — id uuid primary key, tenant_id uuid not null, customer_id uuid not null, amount decimal not null, type text (credit/debit), reason text, reference_type text, reference_id uuid, balance_after decimal, user_id uuid, created_at timestamptz. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-137",

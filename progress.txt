@@ -3803,3 +3803,32 @@ Implementation follows all project rules:
 - The hook pattern follows existing hooks like `useCredits.ts` for tenant credits
 - Query keys should be namespaced to avoid collisions
 - All queries properly filter by `tenant_id` from `useTenantAdminAuth()`
+
+## task-136: Create Supabase migration for customer_credits table
+- Created `supabase/migrations/20260210000001_add_customer_credits.sql` to enhance existing `customer_credits` table
+- Added missing columns as specified:
+  - `type TEXT` with CHECK constraint for 'credit' or 'debit' — allows clear tracking of transaction direction
+  - `reference_type TEXT` — for linking to related entities (order, refund, payment, adjustment)
+  - `reference_id UUID` — foreign key to the related entity
+  - `balance_after DECIMAL(10,2)` — tracks running balance after each transaction
+  - `user_id UUID` — references auth.users for audit trail
+- Created indexes for efficient queries:
+  - `idx_customer_credits_reference` on (reference_type, reference_id) for entity lookups
+  - `idx_customer_credits_type` on type for filtering credit vs debit
+  - `idx_customer_credits_balance_after` on (customer_id, created_at DESC) for balance history
+  - `idx_customer_credits_user_id` for audit queries
+- Created `calculate_customer_credit_balance()` function with SECURITY DEFINER
+- Created trigger `trigger_calculate_credit_balance` that automatically:
+  - Calculates balance_after before insert
+  - Updates customer_credit_balance table with new running balance
+  - Handles both 'credit' (adds) and 'debit' (subtracts) transaction types
+- Used `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for safe idempotent migrations
+- Table already had RLS enabled from previous migration in `20251113044702_fc98435e-da31-446f-a316-45b4a323fedd.sql`
+
+### Key patterns learned:
+- Always check if table already exists before creating — found existing customer_credits table in batch migration
+- Use `IF NOT EXISTS` for columns and indexes to make migrations idempotent
+- SECURITY DEFINER on functions ensures they run with elevated privileges for cross-table updates
+- SET search_path = public prevents schema injection vulnerabilities
+- Triggers are powerful for maintaining denormalized data (balance_after, customer_credit_balance)
+- Comments on tables and columns improve schema documentation
