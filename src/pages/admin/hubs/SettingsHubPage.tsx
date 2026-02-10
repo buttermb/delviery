@@ -52,7 +52,7 @@ export default function SettingsHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'general';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

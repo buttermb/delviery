@@ -58,7 +58,7 @@ export default function IntegrationsHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'api';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

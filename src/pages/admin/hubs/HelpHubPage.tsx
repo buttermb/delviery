@@ -125,7 +125,7 @@ export default function HelpHubPage() {
     const [ticketMessage, setTicketMessage] = useState('');
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     const completedSteps = onboardingSteps.filter(s => s.completed).length;

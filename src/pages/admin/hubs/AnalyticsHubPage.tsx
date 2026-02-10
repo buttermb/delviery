@@ -77,7 +77,7 @@ export default function AnalyticsHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'overview';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

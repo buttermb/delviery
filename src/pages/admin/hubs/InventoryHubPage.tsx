@@ -70,7 +70,7 @@ export default function InventoryHubPage() {
     const { navigateToAdmin } = useTenantNavigation();
 
     const handleTabChange = (tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     };
 
     return (

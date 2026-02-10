@@ -83,7 +83,7 @@ export default function OperationsHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'team';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

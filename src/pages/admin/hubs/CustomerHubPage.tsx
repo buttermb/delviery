@@ -63,7 +63,7 @@ export default function CustomerHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

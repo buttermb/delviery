@@ -132,7 +132,7 @@ export default function OrdersHubPage() {
     });
 
     const handleTabChange = (tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     };
 
     const handleExport = useCallback(async () => {

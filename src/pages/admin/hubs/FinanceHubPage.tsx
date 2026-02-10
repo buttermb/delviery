@@ -63,7 +63,7 @@ export default function FinanceHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'overview';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

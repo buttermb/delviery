@@ -50,7 +50,7 @@ export default function MarketingHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'loyalty';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

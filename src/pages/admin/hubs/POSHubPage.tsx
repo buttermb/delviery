@@ -47,7 +47,7 @@ export default function POSHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'register';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     // Keyboard shortcuts for quick tab switching (1-4)

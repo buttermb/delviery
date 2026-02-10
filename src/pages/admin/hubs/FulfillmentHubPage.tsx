@@ -66,7 +66,7 @@ export default function FulfillmentHubPage() {
     const { navigateToAdmin } = useTenantNavigation();
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (

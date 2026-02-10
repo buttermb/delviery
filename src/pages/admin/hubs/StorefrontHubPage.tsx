@@ -74,7 +74,7 @@ export default function StorefrontHubPage() {
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (
