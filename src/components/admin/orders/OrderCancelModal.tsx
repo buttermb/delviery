@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,7 +5,7 @@ import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Package from "lucide-react/dist/esm/icons/package";
 import { logger } from '@/lib/logger';
-import { useCancelOrder } from '@/hooks/useUnifiedOrders';
+import { useOrderCancellation } from '@/hooks/useOrderCancellation';
 import {
   Dialog,
   DialogContent,
@@ -73,8 +72,7 @@ export function OrderCancelModal({
   orderNumber,
   onSuccess,
 }: OrderCancelModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const cancelOrder = useCancelOrder();
+  const { cancelOrder, isCancelling } = useOrderCancellation();
 
   const form = useForm<CancelOrderFormData>({
     resolver: zodResolver(cancelOrderSchema),
@@ -85,36 +83,41 @@ export function OrderCancelModal({
     },
   });
 
-  const handleSubmit = async (data: CancelOrderFormData) => {
-    setIsSubmitting(true);
-    try {
-      // Build the full cancellation reason with notes
-      const reasonLabel = CANCELLATION_REASONS.find(r => r.value === data.reason)?.label || data.reason;
-      const fullReason = data.notes
-        ? `${reasonLabel}: ${data.notes}`
-        : reasonLabel;
+  const handleSubmit = (data: CancelOrderFormData) => {
+    // Build the full cancellation reason with notes
+    const reasonLabel = CANCELLATION_REASONS.find(r => r.value === data.reason)?.label || data.reason;
+    const fullReason = data.notes
+      ? `${reasonLabel}: ${data.notes}`
+      : reasonLabel;
 
-      await cancelOrder.mutateAsync({
+    cancelOrder(
+      {
         orderId,
         reason: fullReason,
-        reverseBalance: data.restockItems,
-      });
+        restoreInventory: data.restockItems,
+      },
+      {
+        onSuccess: () => {
+          logger.info('Order cancelled successfully with inventory restore', {
+            orderId,
+            reason: data.reason,
+            restoreInventory: data.restockItems,
+          });
 
-      logger.info('Order cancelled successfully', { orderId, reason: data.reason });
-
-      // Reset form and close modal
-      form.reset();
-      onOpenChange(false);
-      onSuccess?.();
-    } catch (error) {
-      logger.error('Failed to cancel order', error as Error, {
-        component: 'OrderCancelModal',
-        orderId,
-      });
-      // Error toast is handled by useCancelOrder hook
-    } finally {
-      setIsSubmitting(false);
-    }
+          // Reset form and close modal
+          form.reset();
+          onOpenChange(false);
+          onSuccess?.();
+        },
+        onError: (error) => {
+          logger.error('Failed to cancel order', error as Error, {
+            component: 'OrderCancelModal',
+            orderId,
+          });
+          // Error toast is handled by useOrderCancellation hook
+        },
+      }
+    );
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -228,16 +231,16 @@ export function OrderCancelModal({
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
-                disabled={isSubmitting}
+                disabled={isCancelling}
               >
                 Keep Order
               </Button>
               <Button
                 type="submit"
                 variant="destructive"
-                disabled={isSubmitting || !form.formState.isValid}
+                disabled={isCancelling || !form.formState.isValid}
               >
-                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isCancelling && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Cancel Order
               </Button>
             </DialogFooter>

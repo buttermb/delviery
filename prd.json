@@ -309,7 +309,7 @@
     "id": "task-052",
     "title": "Create order cancellation inventory restore",
     "description": "When an order is cancelled, restore inventory for all line items. In the order cancellation handler, increment each product's stock_quantity by the cancelled quantity. Log to inventory_history with reason order_cancelled. Show confirmation dialog before cancelling. Toast notification on completion. Invalidate orders, products, inventory queries via useQueryInvalidation.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-053",

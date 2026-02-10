@@ -1572,3 +1572,38 @@
 - Uses useTenantAdminAuth for tenant context
 - Uses .maybeSingle() for optional data fetching
 
+
+## task-052: Create order cancellation inventory restore
+- Created `src/hooks/useOrderCancellation.ts` for order cancellation with inventory restoration
+- When order is cancelled, increments each product's stock_quantity by the cancelled quantity
+- Updated `OrderCancelModal.tsx` to use new `useOrderCancellation` hook instead of `useCancelOrder`
+- Hook implementation:
+  - Fetches order with items from unified_order_items
+  - Validates order can be cancelled (not already cancelled, not delivered)
+  - Updates order status to 'cancelled' with timestamp and reason
+  - For each order item, restores inventory:
+    - Fetches current product stock
+    - Increments stock_quantity and available_quantity by item.quantity
+    - Logs to inventory_history with:
+      - change_type: 'return'
+      - reason: 'order_cancelled'
+      - reference_type: 'order_cancelled'
+      - reference_id: orderId
+      - Includes metadata with order_id, order_number, cancellation_reason, source
+- Returns RestoreResult[] with success/failure status for each item restored
+- Implements TanStack Query mutation with:
+  - Optimistic update in onMutate (marks order as cancelled in cache)
+  - Context for rollback on error
+  - Uses invalidateOnEvent for ORDER_STATUS_CHANGED and INVENTORY_ADJUSTED
+  - Invalidates orders.all, products.all, inventory.all, stockAlerts.all, dashboard.all, analytics.all
+- OrderCancelModal already has confirmation dialog with:
+  - Cancellation reason selector
+  - Optional notes field
+  - "Restock Items" checkbox (restoreInventory option)
+- Shows success toast with count of items restored and total units
+- Shows error toast on failure
+- All logging via logger from @/lib/logger — no console.log
+- Uses @/ alias for all imports
+- Filters all queries by tenant_id
+- Uses useTenantAdminAuth for tenant context
+- Uses .maybeSingle() for optional data fetching
