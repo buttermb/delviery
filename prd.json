@@ -15,7 +15,7 @@
     "id": "task-003",
     "title": "Create cross-module query key factory",
     "description": "Create src/lib/queryKeys.ts if not exists, or extend existing one. Add query key factories for every module — orders, products, inventory, customers, vendors, menus, storefront, analytics, notifications, messages, deliveries, compliance, payments. Each factory has list, detail, byTenant, search, and related sub-keys. Example queryKeys.orders.list(tenantId), queryKeys.orders.detail(tenantId, orderId).",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-004",

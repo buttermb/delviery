@@ -22,3 +22,14 @@
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - Proper useEffect cleanup returns unsubscribe function
 - Imports use `@/` alias as required
+
+## task-003: Create cross-module query key factory
+- Extended existing `src/lib/queryKeys.ts` with standardized query key patterns
+- Added standard sub-keys to all required modules: `list`, `detail`, `byTenant`, `search`, `related`
+- Updated modules: orders, products, inventory, customers, vendors, menus, storefront, analytics, deliveries, compliance, payments
+- Added NEW factories: `notifications` and `messages` (were missing)
+- Pattern: `queryKeys.module.list(tenantId, filters)`, `queryKeys.module.detail(tenantId, entityId)`, `queryKeys.module.search(tenantId, query)`
+- All factories follow tenant-first parameter pattern for consistent tenant isolation
+- Added module-specific related queries (e.g., vendors.products, menus.products, compliance.audits)
+- Used `as const` for proper type inference with TanStack Query
+- No breaking changes to existing factories — backward compatible extensions
