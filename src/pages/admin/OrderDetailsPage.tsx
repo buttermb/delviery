@@ -24,6 +24,7 @@ import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQui
 import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
 import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
+import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -112,6 +113,8 @@ interface OrderDetails {
   delivery_notes: string | null;
   delivery_fee: number;
   order_source: string;
+  source_menu_id: string | null;
+  source_session_id: string | null;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
@@ -205,6 +208,8 @@ export function OrderDetailsPage() {
           delivery_notes: unifiedOrder.delivery_notes,
           delivery_fee: 0,
           order_source: unifiedOrder.source || 'admin',
+          source_menu_id: (unifiedOrder as Record<string, unknown>).source_menu_id as string | null,
+          source_session_id: (unifiedOrder as Record<string, unknown>).source_session_id as string | null,
           created_at: unifiedOrder.created_at,
           updated_at: unifiedOrder.updated_at,
           confirmed_at: (unifiedOrder as Record<string, unknown>).confirmed_at as string | null,
@@ -257,6 +262,8 @@ export function OrderDetailsPage() {
         ...data,
         delivery_method: (data as Record<string, unknown>).delivery_method as string | null ?? null,
         order_source: (data as Record<string, unknown>).order_source as string | null ?? 'admin',
+        source_menu_id: (data as Record<string, unknown>).source_menu_id as string | null ?? null,
+        source_session_id: (data as Record<string, unknown>).source_session_id as string | null ?? null,
         tax_amount: (data as Record<string, unknown>).tax_amount as number ?? 0,
         updated_at: (data as Record<string, unknown>).updated_at as string ?? data.created_at,
         order_items: data.order_items || [],
@@ -790,14 +797,15 @@ export function OrderDetailsPage() {
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Date Placed</p>
                   <p className="text-sm">{format(new Date(order.created_at), 'PPP p')}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Source</p>
-                  <Badge variant="outline" className="capitalize">
-                    {order.order_source || 'Manual'}
-                  </Badge>
-                </div>
               </CardContent>
             </Card>
+
+            {/* Order Source with Traceability */}
+            <OrderSourceInfo
+              source={order.order_source}
+              sourceMenuId={order.source_menu_id}
+              sourceSessionId={order.source_session_id}
+            />
 
             {/* Order Analytics Insights */}
             <OrderAnalyticsInsights

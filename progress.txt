@@ -2113,3 +2113,23 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - No `console.log` statements — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias
 - TypeScript compiles with no errors, ESLint passes
+
+## task-072: Create order source tracking
+- Built on existing order_source column migration (20260123000001_add_order_source_column.sql)
+- Created new migration (20260210000001_order_source_traceability.sql) adding source_menu_id and source_session_id for traceability
+- source_menu_id links orders to their origin disposable_menu when ordered from a menu link
+- source_session_id tracks storefront session for customer journey analysis
+- Updated OrderRow.tsx to use the proper OrderSourceBadge component instead of inline badge
+- Created OrderSourceInfo.tsx component for detailed source display on order detail page
+  - Shows source badge with description
+  - Links to source menu when available (with navigation to menu detail)
+  - Shows customer journey info (browsing time, items viewed) when session available
+- Created useOrderSourceAnalytics.ts hook for analytics breakdown by source
+  - Returns orderCount, revenue, averageOrderValue, percentageOfTotal per source
+  - Includes daily trend data for charting
+  - Identifies top source and fastest growing source
+- Updated OrderDetailsPage.tsx to show OrderSourceInfo component in sidebar
+- Added source_menu_id and source_session_id to OrderDetails interface
+- OrderFilters already had source filter (ORDER_SOURCE_OPTIONS) from existing code
+- All imports use @/ alias, logger from @/lib/logger (no console.log)
+- All queries filter by tenant_id for proper tenant isolation

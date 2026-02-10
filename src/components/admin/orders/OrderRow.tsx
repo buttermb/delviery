@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import CopyButton from '@/components/CopyButton';
 import { CustomerLink } from '@/components/admin/cross-links';
+import { OrderSourceBadge } from '@/components/admin/orders/OrderSourceBadge';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 interface OrderRowProps {
@@ -59,11 +60,6 @@ interface OrderRowProps {
   onDelete: () => void;
 }
 
-const OrderSourceBadge = ({ source }: { source?: string }) => (
-  <Badge variant="outline" className="text-xs">
-    {source || 'admin'}
-  </Badge>
-);
 
 const getStatusBadge = (status: string) => {
   const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {

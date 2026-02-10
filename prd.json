@@ -429,7 +429,7 @@
     "id": "task-072",
     "title": "Create order source tracking",
     "description": "Track where each order originates — admin_panel, storefront, disposable_menu, api, pos. Store as source field on orders table. Show source badge in order list and detail. Filter orders by source. Analytics can break down orders by source. When orders come from storefront or menu, include the menu_id or storefront_session_id for traceability.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-073",
