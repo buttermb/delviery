@@ -2751,3 +2751,39 @@ Product duplication functionality allowing users to clone an existing product wi
 - Uses `useTenantAdminAuth()` for tenant and user context
 - Loading states handled in mutation
 - Error handling with toast notifications
+
+---
+
+## Task 096: Create product bulk import from CSV
+**Date**: 2026-02-10
+**Status**: ✅ Completed
+
+### Implementation Details
+Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add missing functionality:
+
+1. **Activity Logging**: Import action is now logged to `activity_log` table using `logActivity()` from `@/lib/activityLog`
+   - Logs action as "bulk_import" with metadata including products imported count, inventory entries created, errors count, and first 10 product IDs
+
+2. **Inventory History Entries**: After successful product insert, creates `inventory_history` entries for products with initial stock
+   - Uses `.select("id, available_quantity")` to get inserted product data
+   - Creates `stock_in` entries with reason "Initial stock from CSV import"
+   - Tracks `performed_by` with admin's userId
+
+3. **Enhanced Results Summary**: Toast notification now shows both products imported and inventory entries created
+
+### Existing Features Already Present
+- CSV/Excel file upload via xlsx library
+- Field mapping with auto-detection
+- Validation with error highlighting (missing required fields, invalid categories, numeric validation)
+- Batch processing with progress indicator
+- Preview table with tabs for All/Valid/Invalid records
+- Template download
+- Error report download
+
+### Key Patterns Applied
+- All imports use `@/` alias
+- Logger from `@/lib/logger` used (not console.log)
+- Uses `useTenantAdminAuth()` for tenant and admin context
+- All database queries filter by `tenant_id`
+- Loading and error states included
+- No TypeScript errors

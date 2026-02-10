@@ -573,7 +573,7 @@
     "id": "task-096",
     "title": "Create product bulk import from CSV",
     "description": "Create src/components/admin/products/ProductImport.tsx — upload CSV file with product data. Parse CSV, validate fields, show preview with error highlighting. Support columns name, sku, price, category, vendor, stock_quantity, description. On import, create products and initial inventory entries. Log import action. Show import results summary.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-097",

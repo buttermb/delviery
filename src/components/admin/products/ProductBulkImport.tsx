@@ -24,6 +24,7 @@ import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logActivity, ActivityAction, EntityType } from "@/lib/activityLog";
 
 interface ProductBulkImportProps {
   open: boolean;
@@ -77,9 +78,9 @@ const SYSTEM_FIELDS: SystemField[] = [
 ];
 
 export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulkImportProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const [step, setStep] = useState<ImportStep>("upload");
-  const [file, setFile] = useState<File | null>(null);
+  const [_file, setFile] = useState<File | null>(null);
   const [fileHeaders, setFileHeaders] = useState<string[]>([]);
   const [rawRecords, setRawRecords] = useState<Record<string, unknown>[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -334,33 +335,39 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
     try {
       const batchSize = 10;
       let insertedCount = 0;
+      let inventoryEntriesCreated = 0;
       const importErrors: { row: number; reason: string }[] = [];
+      const importedProductIds: string[] = [];
 
       for (let i = 0; i < recordsToImport.length; i += batchSize) {
         const batch = recordsToImport.slice(i, i + batchSize);
 
-        const { error } = await supabase.from("products").insert(
-          batch.map((record) => ({
-            tenant_id: tenant.id,
-            name: record.normalized.name as string,
-            sku: record.normalized.sku as string,
-            category: record.normalized.category as string,
-            wholesale_price: (record.normalized.wholesale_price as number) ?? 0,
-            retail_price: (record.normalized.retail_price as number) ?? 0,
-            cost_per_unit: (record.normalized.cost_per_unit as number) ?? 0,
-            available_quantity: Math.floor((record.normalized.available_quantity as number) ?? 0),
-            total_quantity: Math.floor((record.normalized.available_quantity as number) ?? 0),
-            description: (record.normalized.description as string) || null,
-            strain_name: (record.normalized.strain_name as string) || null,
-            strain_type: (record.normalized.strain_type as string) || null,
-            vendor_name: (record.normalized.vendor_name as string) || null,
-            batch_number: (record.normalized.batch_number as string) || null,
-            thc_percent: (record.normalized.thc_percent as number) ?? 0,
-            cbd_percent: (record.normalized.cbd_percent as number) ?? 0,
-            thca_percentage: 0,
-            price: (record.normalized.wholesale_price as number) ?? 0, // Legacy field sync
-          }))
-        );
+        // Insert products and get the inserted IDs
+        const { data: insertedProducts, error } = await supabase
+          .from("products")
+          .insert(
+            batch.map((record) => ({
+              tenant_id: tenant.id,
+              name: record.normalized.name as string,
+              sku: record.normalized.sku as string,
+              category: record.normalized.category as string,
+              wholesale_price: (record.normalized.wholesale_price as number) ?? 0,
+              retail_price: (record.normalized.retail_price as number) ?? 0,
+              cost_per_unit: (record.normalized.cost_per_unit as number) ?? 0,
+              available_quantity: Math.floor((record.normalized.available_quantity as number) ?? 0),
+              total_quantity: Math.floor((record.normalized.available_quantity as number) ?? 0),
+              description: (record.normalized.description as string) || null,
+              strain_name: (record.normalized.strain_name as string) || null,
+              strain_type: (record.normalized.strain_type as string) || null,
+              vendor_name: (record.normalized.vendor_name as string) || null,
+              batch_number: (record.normalized.batch_number as string) || null,
+              thc_percent: (record.normalized.thc_percent as number) ?? 0,
+              cbd_percent: (record.normalized.cbd_percent as number) ?? 0,
+              thca_percentage: 0,
+              price: (record.normalized.wholesale_price as number) ?? 0, // Legacy field sync
+            }))
+          )
+          .select("id, available_quantity");
 
         if (error) {
           logger.error("Batch insert failed", error);
@@ -369,15 +376,65 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
             if (error.code === "23505") reason = "Duplicate SKU or constraint violation";
             importErrors.push({ row: r.row, reason });
           });
-        } else {
-          insertedCount += batch.length;
+        } else if (insertedProducts && insertedProducts.length > 0) {
+          insertedCount += insertedProducts.length;
+          importedProductIds.push(...insertedProducts.map((p) => p.id));
+
+          // Create initial inventory_history entries for products with stock
+          const inventoryEntries = insertedProducts
+            .filter((p) => p.available_quantity > 0)
+            .map((product) => ({
+              tenant_id: tenant.id,
+              product_id: product.id,
+              change_type: "stock_in" as const,
+              previous_quantity: 0,
+              new_quantity: product.available_quantity,
+              change_amount: product.available_quantity,
+              reason: "Initial stock from CSV import",
+              notes: "Bulk import",
+              performed_by: admin?.userId || null,
+              metadata: { source: "csv_import" },
+            }));
+
+          if (inventoryEntries.length > 0) {
+            const { error: inventoryError } = await supabase
+              .from("inventory_history")
+              .insert(inventoryEntries);
+
+            if (inventoryError) {
+              logger.warn("Failed to create inventory history entries", inventoryError, {
+                component: "ProductBulkImport",
+              });
+            } else {
+              inventoryEntriesCreated += inventoryEntries.length;
+            }
+          }
         }
 
         setProgress(Math.round(((i + batchSize) / recordsToImport.length) * 100));
       }
 
+      // Log the import action to activity_log
+      if (insertedCount > 0 && admin?.userId) {
+        await logActivity(
+          tenant.id,
+          admin.userId,
+          ActivityAction.CREATED,
+          EntityType.PRODUCT,
+          null,
+          {
+            action: "bulk_import",
+            productsImported: insertedCount,
+            inventoryEntriesCreated,
+            totalRecords: recordsToImport.length,
+            errorsCount: importErrors.length,
+            productIds: importedProductIds.slice(0, 10), // Log first 10 IDs
+          }
+        );
+      }
+
       if (importErrors.length > 0) {
-        const message = `Import complete: ${insertedCount} imported. ${importErrors.length} database errors.`;
+        const message = `Import complete: ${insertedCount} products imported, ${inventoryEntriesCreated} inventory entries created. ${importErrors.length} errors.`;
         toast.warning(message, {
           duration: 6000,
           action: {
@@ -386,7 +443,9 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
           },
         });
       } else {
-        toast.success(`Successfully imported ${insertedCount} products`);
+        toast.success(
+          `Successfully imported ${insertedCount} products with ${inventoryEntriesCreated} inventory entries`
+        );
       }
 
       if (insertedCount > 0) {
@@ -800,7 +859,7 @@ interface PreviewTableProps {
   mappedFields: string[];
 }
 
-function PreviewTable({ records, mappedFields }: PreviewTableProps) {
+function PreviewTable({ records, mappedFields: _mappedFields }: PreviewTableProps) {
   if (records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
