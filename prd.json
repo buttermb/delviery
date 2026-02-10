@@ -75,7 +75,7 @@
     "id": "task-013",
     "title": "Create useNotifications hook",
     "description": "Create src/hooks/useNotifications.ts — fetch unread notifications for current user and tenant. Return unreadCount, notifications array, markAsRead(id), markAllAsRead(), deleteNotification(id). Use TanStack Query with 15 second refetchInterval. Subscribe to realtime changes on notifications table. Invalidate on mutations.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-014",

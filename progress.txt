@@ -256,3 +256,39 @@
 - Added COMMENT statements for table and column documentation
 - Granted appropriate permissions: SELECT/INSERT/UPDATE/DELETE to authenticated, ALL to service_role
 - Note: task-011's useNotificationDispatcher hook depends on this table existing
+
+## task-013: Create useNotifications hook
+- Extended existing `src/hooks/useNotifications.ts` with the new `useNotifications` hook (file already had `useSendNotification` and `useSendBulkNotification`)
+- Hook fetches notifications for the current user and tenant using TanStack Query
+- Key features implemented:
+  - `notifications` — array of Notification objects from the database
+  - `unreadCount` — computed count of notifications where `read === false`
+  - `markAsRead(id)` — mutation to mark single notification as read
+  - `markAllAsRead()` — mutation to mark all unread notifications as read (user-specific or broadcast)
+  - `deleteNotification(id)` — mutation to delete a notification
+  - `refetch` — manual refetch function
+- TanStack Query configuration:
+  - `refetchInterval: 15000` — 15 second polling as per requirements
+  - `staleTime: 10000` — consider data stale after 10 seconds
+  - `enabled: !!tenantId` — only fetch when tenant context is ready
+- Real-time subscription via `useRealTimeSubscription` hook:
+  - Subscribes to `notifications` table with tenant_id filter
+  - On any change (INSERT/UPDATE/DELETE), invalidates queries to trigger refetch
+  - Publishes to `notification_sent` event on eventBus
+- Query filtering:
+  - Always filters by `tenant_id` for tenant isolation
+  - Uses `.or()` to get notifications targeted at current user OR broadcast (user_id is null)
+  - Orders by `created_at DESC` for most recent first
+- Error handling:
+  - Gracefully handles case where table doesn't exist (error code 42P01)
+  - Logs errors via `logger` from `@/lib/logger`
+  - Shows toast notifications on mutation errors
+- Mutation callbacks:
+  - All mutations invalidate `queryKeys.notifications.all` to refresh the list
+  - `markAllAsRead` shows success toast on completion
+- TypeScript types exported:
+  - `Notification` — matches database schema with proper type constraints
+  - `UseNotificationsResult` — return type interface for the hook
+- Imports use `@/` alias as required
+- No console.log — all logging via `logger`
+- Default export for convenient importing: `export default useNotifications`
