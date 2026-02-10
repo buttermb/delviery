@@ -423,7 +423,7 @@
     "id": "task-071",
     "title": "Create order refund with inventory restore",
     "description": "Add refund action on paid orders. Refund flow — select items to refund (partial or full), enter reason, confirm. On refund, restore inventory for refunded items (log to inventory_history with reason order_refunded). Update payment record with refund amount. Create refund activity log entry. Notify admin and customer. Update order status.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-072",

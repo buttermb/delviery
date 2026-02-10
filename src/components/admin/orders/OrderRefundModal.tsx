@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import {
   Dialog,
   DialogContent,
@@ -26,34 +26,22 @@ import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import Package from "lucide-react/dist/esm/icons/package";
-import { toast } from 'sonner';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
-import { invalidateOnEvent } from '@/lib/invalidation';
-import { unifiedOrdersKeys, type UnifiedOrder, type UnifiedOrderItem } from '@/hooks/useUnifiedOrders';
-import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
+import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 
-type RefundType = 'full' | 'partial';
-type RefundReason = 'customer_request' | 'duplicate' | 'fraudulent' | 'product_issue' | 'shipping_issue' | 'other';
-type RefundMethod = 'original_payment' | 'store_credit' | 'cash' | 'check';
+import type { UnifiedOrder } from '@/hooks/useUnifiedOrders';
+import {
+  useOrderRefund,
+  type RefundType,
+  type RefundReason,
+  type RefundMethod,
+} from '@/hooks/useOrderRefund';
+import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
 
 interface OrderRefundModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   order: UnifiedOrder | null;
   onSuccess?: () => void;
-}
-
-interface RefundInput {
-  orderId: string;
-  refundType: RefundType;
-  amount: number;
-  reason: RefundReason;
-  refundMethod: RefundMethod;
-  notes: string | null;
-  restoreInventory: boolean;
-  lineItems?: { itemId: string; quantity: number; amount: number }[];
 }
 
 const REFUND_REASONS: { value: RefundReason; label: string }[] = [
@@ -78,8 +66,8 @@ export function OrderRefundModal({
   order,
   onSuccess,
 }: OrderRefundModalProps) {
-  const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
+  // Use the refund hook with full inventory restore logic
+  const { refundOrder, isRefunding } = useOrderRefund();
 
   // Form state
   const [refundType, setRefundType] = useState<RefundType>('full');
@@ -100,6 +88,16 @@ export function OrderRefundModal({
   // Validation
   const validation = useMemo(() => {
     if (!order) return { valid: false, error: 'No order selected' };
+
+    // Cannot refund already refunded orders
+    if (order.status === 'refunded') {
+      return { valid: false, error: 'Order has already been refunded' };
+    }
+
+    // Cannot refund unpaid orders
+    if (order.payment_status === 'unpaid') {
+      return { valid: false, error: 'Cannot refund an unpaid order' };
+    }
 
     if (refundType === 'partial') {
       const numAmount = parseFloat(partialAmount);
@@ -142,138 +140,29 @@ export function OrderRefundModal({
     onOpenChange(newOpen);
   };
 
-  // Refund mutation
-  const processRefund = useMutation({
-    mutationFn: async (input: RefundInput) => {
-      if (!tenant?.id) throw new Error('No tenant');
-
-      // Update order status to refunded and store refund metadata
-      const { data: updatedOrder, error: updateError } = await supabase
-        .from('unified_orders')
-        .update({
-          status: 'refunded',
-          payment_status: input.refundType === 'full' ? 'refunded' : 'partial',
-          metadata: {
-            ...(order?.metadata || {}),
-            refund: {
-              type: input.refundType,
-              amount: input.amount,
-              reason: input.reason,
-              method: input.refundMethod,
-              notes: input.notes,
-              restoreInventory: input.restoreInventory,
-              processedAt: new Date().toISOString(),
-              lineItems: input.lineItems,
-            },
-          },
-        })
-        .eq('id', input.orderId)
-        .eq('tenant_id', tenant.id)
-        .select()
-        .single();
-
-      if (updateError) {
-        logger.error('Failed to update order for refund', { error: updateError });
-        throw updateError;
-      }
-
-      // If restoring inventory, that would typically be handled by a database trigger
-      // or a separate edge function. For now, we mark intent in metadata.
-
-      return updatedOrder;
-    },
-    onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.detail(input.orderId) });
-
-      const previousLists = queryClient.getQueriesData<UnifiedOrder[]>({
-        queryKey: unifiedOrdersKeys.lists(),
-      });
-      const previousDetail = queryClient.getQueryData<UnifiedOrder>(
-        unifiedOrdersKeys.detail(input.orderId)
-      );
-
-      // Optimistic update
-      const optimisticFields: Partial<UnifiedOrder> = {
-        status: 'refunded',
-        payment_status: input.refundType === 'full' ? 'refunded' : 'partial',
-        updated_at: new Date().toISOString(),
-      };
-
-      queryClient.setQueriesData<UnifiedOrder[]>(
-        { queryKey: unifiedOrdersKeys.lists() },
-        (old) =>
-          old?.map((o) =>
-            o.id === input.orderId ? { ...o, ...optimisticFields } : o
-          )
-      );
-
-      if (previousDetail) {
-        queryClient.setQueryData<UnifiedOrder>(
-          unifiedOrdersKeys.detail(input.orderId),
-          { ...previousDetail, ...optimisticFields }
-        );
-      }
-
-      return { previousLists, previousDetail, orderId: input.orderId };
-    },
-    onError: (error, _variables, context) => {
-      // Rollback on error
-      if (context?.previousLists) {
-        context.previousLists.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousDetail && context.orderId) {
-        queryClient.setQueryData(
-          unifiedOrdersKeys.detail(context.orderId),
-          context.previousDetail
-        );
-      }
-      const message =
-        error instanceof Error ? error.message : 'Failed to process refund';
-      logger.error('Failed to process refund', error, { component: 'OrderRefundModal' });
-      toast.error('Refund failed', { description: message });
-    },
-    onSuccess: (data) => {
-      toast.success('Refund processed successfully', {
-        description: `$${refundAmount.toFixed(2)} refunded for order ${order?.order_number}`,
-      });
-
-      // Cross-panel invalidation
-      if (tenant?.id) {
-        invalidateOnEvent(queryClient, 'REFUND_PROCESSED', tenant.id, {
-          orderId: data.id,
-          customerId: data.customer_id || undefined,
-        });
-      }
-
-      handleOpenChange(false);
-      onSuccess?.();
-    },
-    onSettled: (_data, _error, variables) => {
-      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: unifiedOrdersKeys.detail(variables.orderId),
-      });
-    },
-  });
-
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!order || !validation.valid) return;
 
-    processRefund.mutate({
-      orderId: order.id,
-      refundType,
-      amount: refundAmount,
-      reason,
-      refundMethod,
-      notes: notes ? sanitizeTextareaInput(notes, 500) : null,
-      restoreInventory,
-    });
+    refundOrder(
+      {
+        orderId: order.id,
+        refundType,
+        amount: refundAmount,
+        reason,
+        refundMethod,
+        notes: notes ? sanitizeTextareaInput(notes, 500) : null,
+        restoreInventory,
+      },
+      {
+        onSuccess: () => {
+          handleOpenChange(false);
+          onSuccess?.();
+        },
+      }
+    );
   };
 
   if (!order) return null;
@@ -305,6 +194,10 @@ export function OrderRefundModal({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Current Status</span>
               <Badge variant="outline">{order.status}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Payment Status</span>
+              <Badge variant="outline">{order.payment_status}</Badge>
             </div>
             {orderItems.length > 0 && (
               <>
@@ -442,6 +335,15 @@ export function OrderRefundModal({
             </Label>
           </div>
 
+          {restoreInventory && orderItems.length > 0 && (
+            <Alert className="bg-blue-50 border-blue-200">
+              <CheckCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                Inventory will be restored for {orderItems.length} item{orderItems.length !== 1 ? 's' : ''} and logged to inventory history.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="refund-notes">Notes (Optional)</Label>
@@ -470,17 +372,17 @@ export function OrderRefundModal({
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={processRefund.isPending}
+              disabled={isRefunding}
               className="flex-1"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={!validation.valid || processRefund.isPending}
+              disabled={!validation.valid || isRefunding}
               className="flex-1"
             >
-              {processRefund.isPending
+              {isRefunding
                 ? 'Processing...'
                 : `Process ${refundType === 'full' ? 'Full' : 'Partial'} Refund`}
             </Button>

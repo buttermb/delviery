@@ -2082,3 +2082,34 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - No `console.log` statements — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias
 - TypeScript compiles with no errors, ESLint passes
+
+## task-071: Create order refund with inventory restore
+- Created `src/hooks/useOrderRefund.ts` - dedicated hook for order refunds with full inventory restoration:
+  - Follows same patterns as `useOrderCancellation` hook for consistency
+  - Supports full and partial refunds with configurable line items
+  - Restores inventory for refunded items (increments `stock_quantity` and `available_quantity`)
+  - Logs each inventory change to `inventory_history` table with:
+    - `change_type: 'return'`
+    - `reason: 'order_refunded'`
+    - `reference_type: 'order_refunded'`
+    - Full metadata including order details, refund type, amount, and reason
+  - Creates activity log entry via `logActivity()` with action `refund_processed`
+  - Creates admin notification (all admins) for refund processed
+  - Creates customer notification if `customer_id` exists on order
+  - Updates order `status` and `payment_status` based on refund type
+  - Stores refund metadata on order including processedAt, processedBy, inventoryRestored
+  - Exports types: `RefundType`, `RefundReason`, `RefundMethod`, `RefundLineItem`, `RefundOrderOptions`
+  - Returns `RefundResult` with inventory restore details (success/failure per item)
+  - Cross-panel invalidation for orders, products, inventory, dashboard, analytics, notifications
+- Updated `src/components/admin/orders/OrderRefundModal.tsx`:
+  - Now uses `useOrderRefund` hook instead of inline mutation
+  - Removed duplicate mutation logic, now uses centralized hook
+  - Added validation for already refunded and unpaid orders
+  - Added payment status display in order summary
+  - Added inventory restore info alert when enabled with item count
+  - Added CheckCircle icon for restore confirmation message
+  - Cleaner component with proper separation of concerns
+- All database queries filter by `tenant_id` for proper multi-tenant isolation
+- No `console.log` statements — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias
+- TypeScript compiles with no errors, ESLint passes
