@@ -3151,3 +3151,15 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Graceful handling of missing tables (42P01 error code)
 - TAG_COLORS constant exported for consistent color palette across components
 - Used sonner toast for success/error notifications
+
+## task-114: Create Supabase migration for product_tags table
+- Discovered that a shared `tags` table already exists (20260123000001_customer_tags_system.sql)
+- The existing tags table has: id, tenant_id, name, color, description, created_at, updated_at
+- Similar junction tables exist: customer_tags (for contacts) and order_tags (for unified_orders)
+- Created product_tag_assignments junction table following the same pattern
+- Table structure: id UUID PK, tenant_id UUID, product_id UUID, tag_id UUID, created_at
+- Added UNIQUE constraint on (product_id, tag_id) to prevent duplicates
+- Created indexes: tenant_id, product_id, tag_id, and composite (tenant_id, tag_id)
+- RLS policies use `profiles.tenant_id` pattern for tenant isolation
+- Added SELECT, INSERT, UPDATE, DELETE policies for CRUD operations
+- Key learning: Reuse existing tables when available - no need to duplicate tags table

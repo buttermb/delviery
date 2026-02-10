@@ -681,7 +681,7 @@
     "id": "task-114",
     "title": "Create Supabase migration for product_tags table",
     "description": "Create supabase/migrations/add_product_tags.sql. Table tags — id uuid primary key, tenant_id uuid not null, name text not null, color text default '#gray', created_at timestamptz. Table product_tag_assignments — id uuid primary key, product_id uuid not null, tag_id uuid not null, unique constraint on (product_id, tag_id). RLS by tenant_id on both tables.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-115",
