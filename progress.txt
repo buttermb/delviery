@@ -5623,3 +5623,35 @@ Completed: Tue, Feb 10, 2026
 - No console.log used — all logging would go through logger if needed
 - Component uses existing Badge, Tooltip UI components from shadcn/ui
 - Lucide icons: ShieldCheck, ShieldAlert, FlaskConical, FileCheck, Award, CheckCircle, AlertTriangle
+
+## task-191: Create menu A/B testing framework
+Date: Tue, Feb 10, 2026 12:13:17 PM
+
+### What was implemented:
+- Created src/components/admin/menus/MenuABTest.tsx component
+- A/B testing framework for menu configurations
+- Features:
+  - Create/manage A/B tests with variant menus
+  - Configurable traffic split percentage (control vs variant)
+  - Track views, orders, revenue, and conversion rate per variant
+  - Statistical significance calculator using chi-square test
+  - Confidence level indicators (90%, 95%, 99%)
+  - Winner recommendation based on conversion rate
+  - Apply winning variant to base menu
+  - Visual comparison charts using Recharts
+  - Start/pause test controls
+
+### Patterns followed:
+- Used @/lib/logger instead of console.log
+- All database queries filter by tenant_id
+- Used useTenantAdminAuth() for tenant context
+- Proper @/ alias imports throughout
+- Loading states with Skeleton components
+- Error handling with toast notifications
+- TanStack Query for data fetching with caching
+
+### Key learnings:
+- Statistical significance requires minimum sample size (100 views, 10 orders)
+- Chi-square test is appropriate for comparing conversion rates
+- Connected to menu analytics via MenuAnalytics patterns
+- Used existing UI components (Card, Badge, Progress, Dialog, AlertDialog)

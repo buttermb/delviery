@@ -1143,7 +1143,7 @@
     "id": "task-191",
     "title": "Create menu A/B testing framework",
     "description": "Create src/components/admin/menus/MenuABTest.tsx — A/B test different menu configurations. Create variant menus with different product orders, pricing, or layouts. Traffic split percentage. Track conversion rate per variant. Statistical significance calculator. Winner selection. Apply winning variant. Connects to menu analytics.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-192",
