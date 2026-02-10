@@ -1127,3 +1127,30 @@
 - Uses lucide-react icons: CalendarIcon, Search, X, Filter
 - All logging via `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
+
+## task-040: Create usePagination hook
+- Hook already existed at `src/hooks/usePagination.ts` with core functionality
+- Updated return object to match PRD-specified API exactly:
+  - `page: currentPage` — current page number (1-indexed)
+  - `pageSize` — items per page
+  - `offset: startIndex` — zero-indexed offset for database queries
+  - `totalPages` — calculated from items.length / pageSize
+  - `setPage: goToPage` — function to navigate to specific page
+  - `setPageSize: changePageSize` — function to change page size (resets to page 1)
+- URL persistence via React Router:
+  - Uses `useSearchParams()` for URL search params integration
+  - Page param stored as `urlKey` (default: 'page')
+  - Page size param stored as `${urlKey}Size`
+  - Only writes non-default values to URL (keeps URLs clean)
+  - Uses `{ replace: true }` to avoid polluting browser history
+- Configurable page sizes:
+  - Default options: [10, 25, 50, 100] as specified in task
+  - Override via `pageSizeOptions` option parameter
+- Extended return object for backward compatibility:
+  - `paginatedItems` — sliced array for client-side pagination
+  - `currentPage`, `totalItems`, `startIndex`, `endIndex`, `pageSizeOptions`
+  - Navigation helpers: `goToPage`, `nextPage`, `previousPage`, `changePageSize`
+  - State booleans: `hasNextPage`, `hasPreviousPage`, `isFirstPage`, `isLastPage`
+- Type-safe generic hook: `usePagination<T>(items: T[], options)`
+- No console.log — no logging needed in this utility hook
+- All imports use `@/` alias (none needed — only React and react-router-dom)

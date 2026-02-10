@@ -237,7 +237,7 @@
     "id": "task-040",
     "title": "Create usePagination hook",
     "description": "Create src/hooks/usePagination.ts — manages pagination state for data tables. Returns page, pageSize, setPage, setPageSize, offset, totalPages. Integrates with URL search params via React Router so pagination persists on refresh. Supports configurable page sizes [10, 25, 50, 100]. Used by all data table instances.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-041",
