@@ -30,6 +30,7 @@ import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoic
 import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOrderHistoryTab';
 import { CustomerPaymentHistoryTab } from '@/components/admin/customers/CustomerPaymentHistoryTab';
 import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/CustomerDeliveryAddressesTab';
+import { CustomerDeliveryMap } from '@/components/admin/customers/CustomerDeliveryMap';
 import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
@@ -444,7 +445,11 @@ export default function CustomerDetails() {
 
             {/* Addresses Tab */}
             {customer && (
-              <TabsContent value="addresses">
+              <TabsContent value="addresses" className="space-y-6">
+                <CustomerDeliveryMap
+                  customerId={customer.id}
+                  customerName={`${customer.first_name} ${customer.last_name}`}
+                />
                 <CustomerDeliveryAddressesTab customerId={customer.id} />
               </TabsContent>
             )}

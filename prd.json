@@ -837,7 +837,7 @@
     "id": "task-140",
     "title": "Create customer detail page with delivery map",
     "description": "On customer detail page, show map with customer address and delivery zone. If multiple addresses, show all with labels. Show delivery route from closest hub. Estimated delivery time. Previous delivery routes. Uses Google Maps or similar via existing map component. Connects customer location to delivery planning.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-141",

@@ -3926,3 +3926,64 @@ Implementation follows all project rules:
 - Sorted all activities by created_at descending after fetching
 - Activity type configuration with icons, colors, and labels for consistency
 - Component supports both card-wrapped and unwrapped modes for flexibility
+
+---
+
+## Task 140: Create customer detail page with delivery map
+
+### What was implemented:
+- Created `src/components/admin/customers/CustomerDeliveryMap.tsx` - a comprehensive map component for the customer detail page
+- Integrated the map into the Addresses tab of the CustomerDetails page
+- Uses Leaflet (free, no API key required) for map rendering with OpenStreetMap tiles
+
+### Features implemented:
+1. **Customer Address Display**:
+   - Shows all customer addresses on the map with different colored markers
+   - Primary address highlighted with blue marker, others with red
+   - Popup on each marker shows address details and delivery instructions
+
+2. **Hub/Warehouse Integration**:
+   - Displays all active hubs/warehouses from `useLocations` hook
+   - Green markers for hubs with name and address in popups
+   - Integrates with existing location infrastructure
+
+3. **Delivery Route Visualization**:
+   - Calculates closest hub to selected/primary customer address
+   - Draws dashed route line between hub and address
+   - Shows distance label at route midpoint
+
+4. **Estimated Delivery Time**:
+   - Calculates ETA based on distance (assuming 30 km/h city traffic)
+   - Displays formatted time (minutes/hours)
+   - Shows in delivery info panel
+
+5. **Previous Delivery Routes**:
+   - Optional toggle to show delivery history
+   - Fetches from orders table with delivery info
+   - Shows hub name, address, status, and date
+
+6. **Address Selection**:
+   - When multiple addresses exist, user can select which to show route for
+   - Buttons for each address with primary badge indicator
+
+7. **Map Interactivity**:
+   - Zoom and pan controls
+   - Reset view button to fit all markers
+   - Open in Google Maps button for turn-by-turn navigation
+
+### Patterns followed:
+- Used `useTenantAdminAuth()` for tenant context
+- All database queries filter by `tenant_id`
+- Used `logger` from `@/lib/logger` (no console.log)
+- Used `@/` alias for all imports
+- TanStack Query for data fetching
+- Proper loading states with Skeleton components
+- Integrated with existing `useLocations` hook for hub data
+- Used Leaflet same as existing `LeafletMapWidget`
+
+### Technical decisions:
+- Used Leaflet instead of Mapbox for free, no-API-key-required mapping
+- Haversine formula for distance calculation
+- Simple speed-based ETA estimation (30 km/h average)
+- Delivery history fetched only when toggled (performance optimization)
+- Showed warnings for ungeocoded addresses that can't be displayed on map
