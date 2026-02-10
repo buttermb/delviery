@@ -199,3 +199,29 @@
 - Granted SELECT and INSERT to authenticated role, ALL to service_role
 - Note: existing `activity_logs` (plural) table in 20250101000001 migration uses `resource`/`resource_id` columns
   - New `activity_log` (singular) table uses `entity_type`/`entity_id` as specified in task-008/009 utilities
+
+## task-011: Create useNotificationDispatcher hook
+- Created `src/hooks/useNotificationDispatcher.ts` that listens to eventBus events and creates in-app notifications
+- Subscribes to three eventBus events:
+  - `order_created` — creates a success notification for admins with order ID
+  - `inventory_changed` — creates warning notification when stock <= threshold, error when stock <= 0
+  - `customer_updated` — logs the event but doesn't create notification (per task spec: "log it")
+- Tenant isolation via `useTenantContext`:
+  - Extracts `tenantId` from context for all operations
+  - Each event handler checks `payload.tenantId !== tenantId` to ignore events from other tenants
+  - All notifications are created with tenant_id set
+- Low stock threshold:
+  - Uses `METRICS_CONSTANTS.DEFAULT_LOW_STOCK_THRESHOLD` (10) from `@/lib/constants/dashboard`
+  - Configurable via options parameter: `useNotificationDispatcher({ lowStockThreshold: 5 })`
+- Notification storage:
+  - Inserts directly into `notifications` table via Supabase client
+  - Notification structure: tenant_id, user_id (null for all admins), title, message, type, entity_type, entity_id, read=false
+  - Four notification types exported: 'info' | 'warning' | 'error' | 'success'
+- Hook returns:
+  - `isReady` — boolean indicating dispatcher is active and subscribed
+  - `dispatchNotification` — manual function to create custom notifications
+- Uses `mountedRef` pattern to prevent state updates after unmount
+- Proper useEffect cleanup unsubscribes from all events
+- All logging via `logger` from `@/lib/logger` — no console.log
+- Imports use `@/` alias as required
+- Note: Assumes `notifications` table exists (task-012 creates it)

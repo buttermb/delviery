@@ -63,7 +63,7 @@
     "id": "task-011",
     "title": "Create useNotificationDispatcher hook",
     "description": "Create src/hooks/useNotificationDispatcher.ts that listens to eventBus events and creates in-app notifications. When order_created fires, notify admin. When inventory_changed fires and stock is low, notify inventory manager. When customer_updated fires, log it. Store notifications in Supabase notifications table. Use useTenantContext for tenant isolation.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-012",
