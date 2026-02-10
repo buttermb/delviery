@@ -3324,3 +3324,25 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - All imports use @/ alias pattern
 - Sorted newest first by default (order by created_at descending)
 - Empty state with action to create new order via POS
+
+## task-123: Create customer detail page with payment history
+- Created src/components/admin/customers/CustomerPaymentHistoryTab.tsx component
+- Shows all payments across all orders for a customer
+- Table columns: Date (with time), Amount, Method (with icon), Order Reference (clickable OrderLink), Status, Ref #
+- Stats cards: Total Paid, Outstanding Balance (red if >0), Pending Payments, Avg. Payment
+- Running total calculation comparing orders total vs payments received
+- Payment trends chart using Recharts LineChart showing last 6 months of payment activity
+- Filter by payment status (all/completed/pending/failed/refunded)
+- Date range filter using Calendar popover with range selection
+- Clear filters button when filters are active, shows filtered vs total count
+- Data fetched via TanStack Query with tenant_id filtering for multi-tenant security
+- Uses useTenantAdminAuth() for tenant context
+- Added new "Payment History" tab to CustomerDetails.tsx TabsList
+- Both queries (payments and orders for balance calc) filter by tenant_id
+- Proper loading states with Skeleton components
+- Error handling with logger (no console.log)
+- All imports use @/ alias pattern
+- Empty state with action to record payment
+- Quick actions: Record Payment and Create Invoice buttons
+- Payment method icons for visual distinction (card, cash, check, bank, crypto)
+- Status badges with color-coded styling (green=completed, amber=pending, red=failed, purple=refunded)

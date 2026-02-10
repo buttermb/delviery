@@ -28,6 +28,7 @@ import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoicesTab';
 import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOrderHistoryTab';
+import { CustomerPaymentHistoryTab } from '@/components/admin/customers/CustomerPaymentHistoryTab';
 
 interface Customer {
   id: string;
@@ -328,6 +329,7 @@ export default function CustomerDetails() {
             <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))]">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="orders">Purchase History</TabsTrigger>
+              <TabsTrigger value="payments">Payment History</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="communications">Communications</TabsTrigger>
               <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
@@ -452,6 +454,13 @@ export default function CustomerDetails() {
                   customerId={customer.id}
                   onCreateInvoice={() => navigateToAdmin(`customers/${id}/invoices`)}
                 />
+              </TabsContent>
+            )}
+
+            {/* Payments Tab */}
+            {customer && (
+              <TabsContent value="payments">
+                <CustomerPaymentHistoryTab customerId={customer.id} />
               </TabsContent>
             )}
 

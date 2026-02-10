@@ -735,7 +735,7 @@
     "id": "task-123",
     "title": "Create customer detail page with payment history",
     "description": "On customer detail page, show payment history. All payments across all orders. Columns — date, amount, method, order reference, status. Running total of paid vs outstanding. Payment trends chart. Links to individual order and payment records. Useful for resolving billing issues.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-124",
