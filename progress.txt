@@ -3618,3 +3618,44 @@ Implementation follows project rules:
 - No 'any' type usage
 - Loading and error states included
 - Toast notifications for user feedback
+
+---
+
+## task-130: Create customer communication history
+
+Enhanced the CommunicationHistory component (src/components/crm/CommunicationHistory.tsx) to aggregate communications from multiple sources:
+
+1. **Data Aggregation from Multiple Tables:**
+   - `customer_communications` - Direct SMS and email communications
+   - `order_status_history` (via orders) - Order status notifications sent to customer
+   - `recall_notifications` - Product recall notifications
+
+2. **New Features Added:**
+   - Channel filter (All, Email, SMS, Notifications)
+   - Date range filter (All Time, 7 days, 30 days, 90 days, Custom range)
+   - Custom date picker using Calendar component with range selection
+   - Order links - Clicking on order-related communications navigates to order detail
+   - Source badges - Visual distinction between direct communications, order updates, and recalls
+   - Count badge showing total communications
+
+3. **UI Improvements:**
+   - Collapsible filter panel toggled by Filters button
+   - Active filter indicator on the Filters button
+   - Clear filters button when filters are active
+   - Loading state with spinner
+   - Empty state messaging that adapts to filter context
+
+4. **Technical Implementation:**
+   - Used TanStack Query for parallel data fetching from 3 sources
+   - Used useMemo for efficient filtering and sorting of combined data
+   - Proper TypeScript types with CommunicationItem union type
+   - Used date-fns for date manipulation (isWithinInterval, startOfDay, endOfDay, subDays, subMonths)
+   - Uses useTenantNavigation hook for tenant-aware navigation to orders
+
+Implementation follows all project rules:
+- Uses logger from @/lib/logger
+- Uses @/ alias for all imports
+- All queries filter by tenant_id where applicable
+- Uses .maybeSingle() for optional data
+- No 'any' type usage (used proper TypeScript types)
+- Loading and error states included

@@ -777,7 +777,7 @@
     "id": "task-130",
     "title": "Create customer communication history",
     "description": "On customer detail page, show all communications — SMS, emails, notifications sent. Aggregated from multiple tables. Shows message content, date, delivery status, channel. Helps track full customer relationship. Links to related orders where applicable. Filter by channel and date.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-131",
