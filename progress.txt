@@ -2888,3 +2888,27 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - Loading states with Skeleton components, error states with Alert component
 - Proper imports using `@/` alias, lucide-react icons imported from esm paths
 - Build verification passed with `npx vite build`
+
+## task-102: Create product bundle/kit support
+- Created `src/components/admin/products/ProductBundle.tsx` for product bundle/kit management
+- `ProductBundleManager` component — main manager for creating/editing/deleting bundles
+- Bundles stored as products with category='bundle' and bundle data in prices JSON field
+- Each bundle contains: name, description, sku, bundle_price, discount_type, items array
+- Items array stores product_id, quantity, and calculated product details (name, price, stock)
+- Three discount types supported: percentage off, fixed amount off, custom price
+- `useAvailableProducts()` hook fetches products for bundle item selection (filters by tenant_id)
+- `useBundles()` hook fetches existing bundles, optional productId param filters bundles containing that product
+- `useBundleSales()` hook fetches bundle sales analytics from order_items table
+- Bundle creation validates minimum 2 products required
+- Real-time calculation of individual total, bundle price, savings amount and savings percent
+- Auto-generated SKU with BDL prefix if not provided
+- available_quantity for bundle = minimum stock across all component products
+- `BundleItemRow` sub-component handles quantity changes and removal with stock warnings
+- `ProductBundleCard` export for displaying single bundle on product detail pages
+- `ProductBundleBadge` export shows "In X bundle(s)" badge for products included in bundles
+- Loading states with Skeleton components, empty states with helpful prompts
+- All CRUD operations properly invalidate product and bundle query caches
+- Delete confirmation dialog before bundle deletion
+- All logging uses `logger` from `@/lib/logger` — no console.log statements
+- Proper imports using `@/` alias, lucide-react icons imported from esm paths
+- All database queries filter by tenant_id for multi-tenant isolation

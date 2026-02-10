@@ -609,7 +609,7 @@
     "id": "task-102",
     "title": "Create product bundle/kit support",
     "description": "Create src/components/admin/products/ProductBundle.tsx — define product bundles (kits). A bundle contains multiple products with specified quantities. Bundle has its own price (usually discounted). When bundle is ordered, decrement inventory for each component product. Show component products on bundle detail. Track bundle sales separately.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-103",
