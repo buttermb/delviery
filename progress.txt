@@ -6041,3 +6041,34 @@ Key learnings:
 - RadioGroup provides better UX than Select for runner selection with rich details
 - Calculate distance using Haversine formula for proximity-based suggestions
 
+
+=== Task 205: Create delivery route optimization ===
+Date: Tue, Feb 10, 2026
+
+Implementation:
+- Created src/hooks/useRouteOptimizer.ts
+
+Features implemented:
+1. Pending deliveries fetch - queries deliveries table with status pending/assigned
+2. Available runners fetch - queries wholesale_runners with active delivery count
+3. Nearest neighbor optimization algorithm - considers priority and time windows
+4. Mapbox Directions API integration - fetches actual route geometry and durations
+5. Stop management - add, remove, reorder, clear stops
+6. Route statistics - total distance (km/miles), total duration, per-leg breakdown
+7. Runner suggestion - auto-suggests best runner based on proximity and load
+8. One-click assignment - assigns all stops to runner with route_order
+
+Key patterns used:
+- useTenantAdminAuth() for tenant context
+- queryKeys for TanStack Query cache management
+- logger from @/lib/logger (never console.log)
+- Types from @/types/interconnected (GeoLocation)
+- Haversine formula for distance calculations
+- Priority weighting in nearest neighbor algorithm
+
+Key learnings:
+- deliveries table has delivery_lat/lng for geolocation
+- wholesale_runners has current_lat/lng for runner position
+- Mapbox Directions API returns geometry as GeoJSON LineString
+- Route legs provide per-segment distance and duration
+- Time windows can be used to add urgency factor to optimization

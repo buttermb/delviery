@@ -1227,7 +1227,7 @@
     "id": "task-205",
     "title": "Create delivery route optimization",
     "description": "Create src/hooks/useRouteOptimizer.ts — given multiple pending deliveries, suggest optimal route. Consider delivery addresses, time windows, runner location, package sizes. Show route on map. Drag-to-reorder stops. Estimated time per stop. Total route duration. One-click to assign all stops to runner. Connects delivery to map/location services.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-206",
