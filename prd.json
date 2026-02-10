@@ -327,7 +327,7 @@
     "id": "task-055",
     "title": "Create order detail page with related entities panel",
     "description": "Build or enhance the order detail page to show a RelatedEntities section. Display linked customer card, product thumbnails with quantities, payment status, delivery tracking, and order timeline. Each related entity is clickable and navigates to its detail page. Use useRelatedEntities hook. Show all data without requiring navigation away.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-056",

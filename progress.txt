@@ -1670,3 +1670,52 @@
 - Import order follows: React → Third-party → Types → Components → Utils pattern
 - TypeScript compiles without errors
 - All Supabase queries filter by tenant_id
+
+
+## task-055: Create order detail page with related entities panel
+- Created `src/components/admin/orders/OrderRelatedEntitiesPanel.tsx`:
+  - Unified panel showing all related entities for an order
+  - Uses `useRelatedEntities('order', orderId)` hook for data fetching
+  - Displays 4 main sections: Customer, Products, Payment, Delivery
+
+- Customer Section:
+  - Shows customer avatar with initials fallback (getInitials helper)
+  - Displays name, email, phone in compact card format
+  - Clickable to navigate to customer detail page via useTenantNavigation
+  - Shows "Guest Order" placeholder when no customer linked
+  - Keyboard accessible with tabIndex and onKeyDown handler
+
+- Products Section:
+  - Horizontal scrollable thumbnails using ScrollArea
+  - Each product shows image (or Package icon placeholder), name, quantity badge
+  - Products clickable to navigate to product detail page
+  - Shows empty state with Package icon when no products
+
+- Payment Section:
+  - Visual status indicator with color coding (success/warning)
+  - Shows CheckCircle for paid, Clock for pending, AlertCircle for no payment
+  - Displays amount, payment method, paid timestamp, transaction ID
+  - Status badge with appropriate background colors
+
+- Delivery Section:
+  - Status with color-coded background (pending, assigned, in_transit, delivered, failed)
+  - Shows courier name and phone if assigned
+  - Scheduled and delivered timestamps
+  - Track button opens tracking_url in new tab
+
+- Updated `src/pages/admin/OrderDetailsPage.tsx`:
+  - Added import for OrderRelatedEntitiesPanel
+  - Added component to sidebar section after Notes card
+  - Component receives orderId from order state
+
+- Technical implementation:
+  - Uses TypeScript generics with OrderRelatedEntities type guard
+  - Loading skeleton shows while data fetches
+  - Error state with AlertCircle icon on fetch failure
+  - Uses Separator between sections for visual clarity
+  - All navigation via useTenantNavigation for tenant-aware routing
+
+- No console.log — all error handling via component state
+- Uses @/ alias for all imports
+- Import order follows: React → Third-party → Types → Components → Hooks → Utils
+- TypeScript compiles without errors

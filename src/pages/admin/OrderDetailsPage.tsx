@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
+import { OrderRelatedEntitiesPanel } from '@/components/admin/orders/OrderRelatedEntitiesPanel';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,7 +60,6 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Clock from "lucide-react/dist/esm/icons/clock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import User from "lucide-react/dist/esm/icons/user";
 import Phone from "lucide-react/dist/esm/icons/phone";
@@ -69,12 +69,8 @@ import Receipt from "lucide-react/dist/esm/icons/receipt";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import Ban from "lucide-react/dist/esm/icons/ban";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
 import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -171,7 +167,7 @@ export function OrderDetailsPage() {
       if (!tenant?.id || !orderId) return null;
 
       // First try unified_orders
-      const { data: unifiedOrder, error: unifiedError } = await supabase
+      const { data: unifiedOrder } = await supabase
         .from('unified_orders')
         .select(`
           *,
@@ -854,6 +850,9 @@ export function OrderDetailsPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Related Entities Panel */}
+            <OrderRelatedEntitiesPanel orderId={order.id} />
           </div>
         </div>
       </div>
