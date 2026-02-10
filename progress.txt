@@ -4973,3 +4973,23 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
 - Used format/formatDistanceToNow from date-fns for human-readable timestamps
 - Added color-coded icons per communication type for visual distinction
 - All queries filter by tenant_id for multi-tenant isolation
+
+## task-169: Create vendor document management
+- Created src/hooks/useVendorDocuments.ts hook with TanStack Query for CRUD operations
+- Document categories: contract, license, lab_result, certificate, pricing_sheet, insurance, other
+- Expiration date tracking with computed properties for expired and expiring documents
+- File upload to Supabase Storage with tenant path isolation (tenantId/vendor-documents/filename)
+- Uses validateFile from lib/fileValidation.ts for security validation
+- Created src/components/admin/vendors/VendorDocumentManager.tsx component
+- Card-based grid UI with category icons and color coding
+- Document cards show file size, expiration status, upload date, and uploader name
+- Alert banners for expired and expiring-soon documents (30 day window)
+- Filter by category, expiration window, and search query
+- Edit dialog allows updating category, name, expiration date, and notes
+- Delete removes both database record and storage file
+- Added Documents tab to VendorDetailPage with FolderOpen icon
+- Created supabase/migrations/20260211000002_create_vendor_documents.sql
+- Added vendor_document_category enum for type safety
+- Full RLS policies: SELECT, INSERT, UPDATE, DELETE all filter by tenant_users
+- Added indexes for tenant_id, vendor_id, category, expiration_date, and full-text search
+- Added queryKeys.vendors.documents() and queryKeys.vendors.documentDetail() to lib/queryKeys.ts

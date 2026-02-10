@@ -21,6 +21,7 @@ import {
   Shield,
   TrendingUp,
   MessageSquare,
+  FolderOpen,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +36,7 @@ import { VendorContactsManager } from '@/components/admin/vendors/VendorContacts
 import { VendorComplianceTracking } from '@/components/admin/vendors/VendorComplianceTracking';
 import { VendorPriceHistory } from '@/components/admin/vendors/VendorPriceHistory';
 import { VendorCommunicationLog } from '@/components/admin/vendors/VendorCommunicationLog';
+import { VendorDocumentManager } from '@/components/admin/vendors/VendorDocumentManager';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -288,6 +290,10 @@ export default function VendorDetailPage() {
               <MessageSquare className="h-4 w-4" />
               Communications
             </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Documents
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -316,6 +322,10 @@ export default function VendorDetailPage() {
 
           <TabsContent value="communications">
             <VendorCommunicationLog vendorId={vendor.id} vendorName={vendor.name} />
+          </TabsContent>
+
+          <TabsContent value="documents">
+            <VendorDocumentManager vendorId={vendor.id} vendorName={vendor.name} />
           </TabsContent>
         </Tabs>
       </div>

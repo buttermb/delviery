@@ -1011,7 +1011,7 @@
     "id": "task-169",
     "title": "Create vendor document management",
     "description": "On vendor detail page, upload and manage documents — contracts, licenses, lab results, certificates, pricing sheets. Documents categorized by type. Expiration dates tracked. Notifications before expiration. Documents linked to vendor and accessible from product compliance checks. Supabase Storage with tenant path.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-170",

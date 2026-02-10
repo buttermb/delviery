@@ -862,6 +862,10 @@ export const queryKeys = {
       [...queryKeys.vendors.detail(tenantId, vendorId), 'communications'] as const,
     communicationDetail: (tenantId: string, communicationId: string) =>
       [...queryKeys.vendors.all, 'communication', tenantId, communicationId] as const,
+    documents: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'documents'] as const,
+    documentDetail: (tenantId: string, documentId: string) =>
+      [...queryKeys.vendors.all, 'document', tenantId, documentId] as const,
   },
 
   // Storefront
