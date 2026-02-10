@@ -189,7 +189,7 @@
     "id": "task-032",
     "title": "Create Supabase migration for inventory_history table",
     "description": "Create supabase/migrations/add_inventory_history.sql. Columns — id uuid primary key, tenant_id uuid not null, product_id uuid not null, quantity_before integer, quantity_after integer, quantity_change integer, reason text (order_confirmed, order_cancelled, manual_adjustment, restock, sync), reference_id uuid, user_id uuid, created_at timestamptz default now(). RLS by tenant_id. Index on product_id, created_at.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-033",

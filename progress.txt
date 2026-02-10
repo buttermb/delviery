@@ -871,3 +871,23 @@
   - Both hooks can coexist; teams can choose based on preference
 - All logging via `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias and follow project import order: React → Third-party → Types → Utils
+
+## task-032: Create Supabase migration for inventory_history table
+- Migration already exists at `supabase/migrations/20260123000000_create_inventory_history.sql`
+- Existing migration is MORE comprehensive than task requirements:
+  - Uses `change_type` with CHECK constraint instead of freeform `reason` column (more robust)
+  - Values: 'stock_in', 'stock_out', 'transfer', 'adjustment', 'sale', 'return', 'receiving', 'disposal'
+  - Uses `previous_quantity`/`new_quantity`/`change_amount` (NUMERIC) instead of `quantity_before`/`quantity_after`/`quantity_change` (INTEGER)
+  - Uses `performed_by` instead of `user_id` (clearer naming convention)
+  - Includes additional fields: `location_id`, `batch_id`, `notes`, `metadata JSONB`
+- RLS enabled with tenant isolation via `profiles` table lookup (matching other migrations)
+- Indexes created on:
+  - `tenant_id` (single column)
+  - `product_id` (as required)
+  - `change_type` (for filtering)
+  - `created_at DESC` (as required)
+  - `(tenant_id, product_id)` composite
+  - `(tenant_id, created_at DESC)` composite
+  - `(reference_type, reference_id)` for lookups
+- Lesson: Always check existing migrations before creating new ones — task may already be complete
+- The existing implementation exceeds requirements with better data types and constraints
