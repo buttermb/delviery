@@ -1501,3 +1501,46 @@
 - Used `useTenantAdminAuth()` for tenant context
 - All logging via `logger` from `@/lib/logger` — no console.log
 - TypeScript: Used `unknown` with explicit type casting for Supabase queries to handle dynamic tables
+
+## Task 050: Create order creation with inventory validation
+
+### What was implemented:
+- Enhanced `src/components/crm/LineItemsEditor.tsx` with real-time inventory validation
+- Updated `src/components/crm/CreateOrderForm.tsx` with submission blocking for stock issues
+
+### Key changes to LineItemsEditor.tsx:
+- Added `InventoryValidationResult` interface for validation state
+- Created `productMap` (useMemo) for O(1) product lookups by ID
+- Added `validateInventory()` callback that checks all line items against available stock
+- Added `getStockInfo()` callback to retrieve stock details for individual items
+- New Stock column in table showing available quantity with visual indicators:
+  - Package icon colored by stock status (destructive/amber/muted)
+  - AlertTriangle icon for out-of-stock or insufficient stock items
+  - Tooltip with detailed stock info on hover
+- Quantity input now shows red border when stock issue detected
+- "Max: X" label shown below quantity when quantity exceeds available
+- Row background tints red when stock issue detected
+- `onValidationChange` callback prop notifies parent of validation state changes
+
+### Key changes to CreateOrderForm.tsx:
+- Added `inventoryValidation` state to track validation from LineItemsEditor
+- `handleInventoryValidationChange` callback passed to LineItemsEditor
+- `hasInventoryIssues` and `canSubmit` computed values for submission logic
+- Form submission blocked when inventory validation fails
+- Alert banner shown above products table when issues detected:
+  - Destructive variant for out-of-stock items (lists product names)
+  - Amber warning for insufficient stock (shows requested vs available)
+- Submit button:
+  - Disabled when inventory issues present
+  - Shows AlertTriangle icon instead of Save when issues detected
+  - Text changes to "Fix Inventory Issues" when blocked
+- Toast error messages on blocked submission attempts
+
+### Technical details:
+- Used existing `useProducts` hook which already includes stockQuantity, isOutOfStock, isLowStock
+- No console.log — all logging via logger from @/lib/logger
+- Proper imports with @/alias
+- TypeScript clean with proper typing for InventoryValidationResult
+- Used useMemo for validation effect to notify parent on items/products changes
+- Used useCallback for memoized handlers
+

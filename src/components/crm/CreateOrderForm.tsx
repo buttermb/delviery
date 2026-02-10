@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,16 +20,19 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import CalendarIcon from "lucide-react/dist/esm/icons/calendar";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Save from "lucide-react/dist/esm/icons/save";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Receipt from "lucide-react/dist/esm/icons/receipt";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ClientSelector } from "./ClientSelector";
-import { LineItemsEditor } from "./LineItemsEditor";
+import { LineItemsEditor, type InventoryValidationResult } from "./LineItemsEditor";
 import type { LineItem, CRMClient } from "@/types/crm";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
@@ -74,6 +77,16 @@ export function CreateOrderForm({
     submitLabel = "Create Order",
 }: CreateOrderFormProps) {
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const [inventoryValidation, setInventoryValidation] = useState<InventoryValidationResult>({
+        isValid: true,
+        hasOutOfStock: false,
+        hasInsufficientStock: false,
+        errors: [],
+    });
+
+    const handleInventoryValidationChange = useCallback((validation: InventoryValidationResult) => {
+        setInventoryValidation(validation);
+    }, []);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -93,9 +106,23 @@ export function CreateOrderForm({
     const tax = subtotal * (taxRate / 100);
     const total = subtotal + tax;
 
+    // Check if submission should be blocked due to inventory issues
+    const hasInventoryIssues = !inventoryValidation.isValid;
+    const canSubmit = lineItems.length > 0 && !hasInventoryIssues && !isSubmitting;
+
     const handleFormSubmit = async (values: FormValues) => {
         if (lineItems.length === 0) {
             toast.error("Please add at least one item to the order");
+            return;
+        }
+
+        // Block submission if there are inventory issues
+        if (hasInventoryIssues) {
+            if (inventoryValidation.hasOutOfStock) {
+                toast.error("Cannot submit order: Some items are out of stock");
+            } else if (inventoryValidation.hasInsufficientStock) {
+                toast.error("Cannot submit order: Some items exceed available inventory");
+            }
             return;
         }
 
@@ -110,7 +137,7 @@ export function CreateOrderForm({
                 expected_date: values.expected_date,
                 notes: values.notes,
             });
-        } catch (error) {
+        } catch {
             // Error should be handled by parent
         }
     };
@@ -317,7 +344,55 @@ export function CreateOrderForm({
                         <CardTitle>Products</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <LineItemsEditor items={lineItems} onChange={setLineItems} />
+                        {/* Inventory validation warnings */}
+                        {hasInventoryIssues && (
+                            <Alert
+                                variant={inventoryValidation.hasOutOfStock ? "destructive" : "default"}
+                                className={cn(
+                                    "mb-4",
+                                    !inventoryValidation.hasOutOfStock && "border-amber-500 bg-amber-50 text-amber-900 dark:bg-amber-950/20 dark:text-amber-200"
+                                )}
+                            >
+                                {inventoryValidation.hasOutOfStock ? (
+                                    <XCircle className="h-4 w-4" />
+                                ) : (
+                                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                )}
+                                <AlertDescription>
+                                    {inventoryValidation.hasOutOfStock ? (
+                                        <div>
+                                            <span className="font-semibold">Cannot submit order:</span> The following items are out of stock:
+                                            <ul className="mt-1 list-disc list-inside text-sm">
+                                                {inventoryValidation.errors
+                                                    .filter((e) => e.type === 'out_of_stock')
+                                                    .map((e) => (
+                                                        <li key={e.itemId}>{e.productName}</li>
+                                                    ))}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <span className="font-semibold">Insufficient inventory:</span> Reduce quantities or choose alternatives:
+                                            <ul className="mt-1 list-disc list-inside text-sm">
+                                                {inventoryValidation.errors
+                                                    .filter((e) => e.type === 'insufficient_stock')
+                                                    .map((e) => (
+                                                        <li key={e.itemId}>
+                                                            {e.productName}: requested {e.requested}, only {e.available} available
+                                                        </li>
+                                                    ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
+                        <LineItemsEditor
+                            items={lineItems}
+                            onChange={setLineItems}
+                            onValidationChange={handleInventoryValidationChange}
+                        />
 
                         <div className="mt-6 flex flex-col items-end gap-2 text-sm">
                             <div className="flex justify-between w-48">
@@ -347,10 +422,14 @@ export function CreateOrderForm({
                     >
                         Cancel
                     </Button>
-                    <Button type="submit" disabled={isSubmitting || lineItems.length === 0}>
+                    <Button type="submit" disabled={!canSubmit}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        <Save className="mr-2 h-4 w-4" />
-                        {submitLabel}
+                        {hasInventoryIssues ? (
+                            <AlertTriangle className="mr-2 h-4 w-4" />
+                        ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                        )}
+                        {hasInventoryIssues ? "Fix Inventory Issues" : submitLabel}
                     </Button>
                 </div>
             </form>

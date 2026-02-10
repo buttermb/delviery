@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle } from "lucide-react";
+import { useState, useCallback, useMemo } from "react";
+import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,19 +24,109 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters";
 import { useProducts } from "@/hooks/crm/useProducts";
 import type { Product } from "@/hooks/crm/useProducts";
-import { LineItem } from "@/types/crm";
+import type { LineItem } from "@/types/crm";
+
+export interface InventoryValidationResult {
+    isValid: boolean;
+    hasOutOfStock: boolean;
+    hasInsufficientStock: boolean;
+    errors: Array<{
+        itemId: string;
+        productName: string;
+        requested: number;
+        available: number;
+        type: 'out_of_stock' | 'insufficient_stock';
+    }>;
+}
 
 interface LineItemsEditorProps {
     items: LineItem[];
     onChange: (items: LineItem[]) => void;
+    onValidationChange?: (validation: InventoryValidationResult) => void;
 }
 
-export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
+export function LineItemsEditor({ items, onChange, onValidationChange }: LineItemsEditorProps) {
     const { data: products = [], isLoading } = useProducts();
+
+    // Create a map of product ID to product for quick lookups
+    const productMap = useMemo(() => {
+        const map = new Map<string, Product>();
+        products.forEach((p) => map.set(p.id, p));
+        return map;
+    }, [products]);
+
+    // Validate inventory for all line items
+    const validateInventory = useCallback((): InventoryValidationResult => {
+        const errors: InventoryValidationResult['errors'] = [];
+
+        items.forEach((item) => {
+            if (!item.item_id) return;
+
+            const product = productMap.get(item.item_id);
+            if (!product) return;
+
+            if (product.isOutOfStock) {
+                errors.push({
+                    itemId: item.item_id,
+                    productName: product.name,
+                    requested: item.quantity,
+                    available: 0,
+                    type: 'out_of_stock',
+                });
+            } else if (item.quantity > product.stockQuantity) {
+                errors.push({
+                    itemId: item.item_id,
+                    productName: product.name,
+                    requested: item.quantity,
+                    available: product.stockQuantity,
+                    type: 'insufficient_stock',
+                });
+            }
+        });
+
+        return {
+            isValid: errors.length === 0,
+            hasOutOfStock: errors.some((e) => e.type === 'out_of_stock'),
+            hasInsufficientStock: errors.some((e) => e.type === 'insufficient_stock'),
+            errors,
+        };
+    }, [items, productMap]);
+
+    // Get stock info for a specific line item
+    const getStockInfo = useCallback((item: LineItem) => {
+        if (!item.item_id) return null;
+        const product = productMap.get(item.item_id);
+        if (!product) return null;
+
+        const isInsufficientStock = item.quantity > product.stockQuantity;
+        const isOutOfStock = product.isOutOfStock;
+        const isLowStock = product.isLowStock;
+
+        return {
+            available: product.stockQuantity,
+            isInsufficientStock,
+            isOutOfStock,
+            isLowStock,
+        };
+    }, [productMap]);
+
+    // Notify parent of validation changes whenever items or products change
+    useMemo(() => {
+        if (onValidationChange && products.length > 0) {
+            const validation = validateInventory();
+            onValidationChange(validation);
+        }
+    }, [items, products, validateInventory, onValidationChange]);
 
     const handleAddItem = () => {
         const newItem: LineItem = {
@@ -89,76 +179,143 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[40%]">Item / Description</TableHead>
-                            <TableHead className="w-[15%]">Quantity</TableHead>
-                            <TableHead className="w-[20%]">Unit Price</TableHead>
-                            <TableHead className="w-[20%] text-right">Total</TableHead>
-                            <TableHead className="w-[5%]"></TableHead>
+                            <TableHead className="w-[35%]">Item / Description</TableHead>
+                            <TableHead className="w-[12%]">Stock</TableHead>
+                            <TableHead className="w-[12%]">Quantity</TableHead>
+                            <TableHead className="w-[16%]">Unit Price</TableHead>
+                            <TableHead className="w-[18%] text-right">Total</TableHead>
+                            <TableHead className="w-[7%]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {items.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                     No items added. Click "Add Item" to start.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            items.map((item, index) => (
-                                <TableRow key={item.id || index}>
-                                    <TableCell>
-                                        <div className="flex flex-col gap-2">
-                                            <ProductSelector
-                                                value={item.item_id}
-                                                onSelect={(productId) => handleUpdateItem(index, "item_id", productId)}
-                                                products={products || []}
-                                                isLoading={isLoading}
-                                            />
-                                            <Input
-                                                placeholder="Description (optional)"
-                                                value={item.description}
-                                                onChange={(e) => handleUpdateItem(index, "description", e.target.value)}
-                                                className="h-8 text-xs"
-                                            />
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input
-                                            type="number"
-                                            min="1"
-                                            value={item.quantity}
-                                            onChange={(e) => handleUpdateItem(index, "quantity", e.target.value)}
-                                            className="h-9"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="relative">
-                                            <span className="absolute left-2 top-2.5 text-muted-foreground">$</span>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={item.unit_price}
-                                                onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
-                                                className="pl-6 h-9"
-                                            />
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium">
-                                        {formatCurrency(item.line_total)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleRemoveItem(index)}
-                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            items.map((item, index) => {
+                                const stockInfo = getStockInfo(item);
+                                const hasStockIssue = stockInfo && (stockInfo.isOutOfStock || stockInfo.isInsufficientStock);
+
+                                return (
+                                    <TableRow
+                                        key={item.id || index}
+                                        className={cn(hasStockIssue && "bg-destructive/5")}
+                                    >
+                                        <TableCell>
+                                            <div className="flex flex-col gap-2">
+                                                <ProductSelector
+                                                    value={item.item_id}
+                                                    onSelect={(productId) => handleUpdateItem(index, "item_id", productId)}
+                                                    products={products || []}
+                                                    isLoading={isLoading}
+                                                />
+                                                <Input
+                                                    placeholder="Description (optional)"
+                                                    value={item.description}
+                                                    onChange={(e) => handleUpdateItem(index, "description", e.target.value)}
+                                                    className="h-8 text-xs"
+                                                />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {stockInfo ? (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Package className={cn(
+                                                                    "h-3.5 w-3.5",
+                                                                    stockInfo.isOutOfStock && "text-destructive",
+                                                                    stockInfo.isInsufficientStock && !stockInfo.isOutOfStock && "text-amber-500",
+                                                                    stockInfo.isLowStock && !stockInfo.isInsufficientStock && "text-amber-500",
+                                                                    !stockInfo.isOutOfStock && !stockInfo.isInsufficientStock && !stockInfo.isLowStock && "text-muted-foreground"
+                                                                )} />
+                                                                <span className={cn(
+                                                                    "text-sm font-medium",
+                                                                    stockInfo.isOutOfStock && "text-destructive",
+                                                                    stockInfo.isInsufficientStock && !stockInfo.isOutOfStock && "text-amber-600",
+                                                                    stockInfo.isLowStock && !stockInfo.isInsufficientStock && "text-amber-600"
+                                                                )}>
+                                                                    {stockInfo.available}
+                                                                </span>
+                                                                {stockInfo.isOutOfStock && (
+                                                                    <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                                                                )}
+                                                                {stockInfo.isInsufficientStock && !stockInfo.isOutOfStock && (
+                                                                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                                                                )}
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {stockInfo.isOutOfStock ? (
+                                                                <p className="text-destructive font-medium">Out of stock</p>
+                                                            ) : stockInfo.isInsufficientStock ? (
+                                                                <p className="text-amber-600 font-medium">
+                                                                    Insufficient stock: {stockInfo.available} available, {item.quantity} requested
+                                                                </p>
+                                                            ) : stockInfo.isLowStock ? (
+                                                                <p className="text-amber-600">Low stock warning</p>
+                                                            ) : (
+                                                                <p>{stockInfo.available} units available</p>
+                                                            )}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">—</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1">
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleUpdateItem(index, "quantity", e.target.value)}
+                                                    className={cn(
+                                                        "h-9",
+                                                        hasStockIssue && "border-destructive focus-visible:ring-destructive"
+                                                    )}
+                                                />
+                                                {stockInfo?.isInsufficientStock && !stockInfo.isOutOfStock && (
+                                                    <span className="text-[10px] text-amber-600 font-medium">
+                                                        Max: {stockInfo.available}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="relative">
+                                                <span className="absolute left-2 top-2.5 text-muted-foreground">$</span>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={item.unit_price}
+                                                    onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
+                                                    className="pl-6 h-9"
+                                                />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right font-medium">
+                                            {formatCurrency(item.line_total)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleRemoveItem(index)}
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>

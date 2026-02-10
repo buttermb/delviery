@@ -297,7 +297,7 @@
     "id": "task-050",
     "title": "Create order creation with inventory validation",
     "description": "In the order creation flow (src/pages/admin/ or src/components/admin/orders/), before submitting an order, validate that all selected products have sufficient inventory. Show inline warnings for low-stock items. Block submission for out-of-stock items. Display current stock level next to each product in the order form. Use useLowStockAlerts or direct inventory queries filtered by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-051",
