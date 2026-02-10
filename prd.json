@@ -381,7 +381,7 @@
     "id": "task-064",
     "title": "Create Supabase migration for order_notes table",
     "description": "Create supabase/migrations/add_order_notes.sql. Columns — id uuid primary key, tenant_id uuid not null, order_id uuid not null references orders(id), user_id uuid not null, content text not null, mentioned_user_ids uuid[] default '{}', created_at timestamptz default now(). RLS by tenant_id. Index on order_id, created_at.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-065",

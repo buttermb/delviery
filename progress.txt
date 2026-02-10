@@ -1880,3 +1880,28 @@
 - All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
 - Loading and empty states with skeleton and placeholder UI
 - Error handling with toast notifications
+
+## task-064: Create Supabase migration for order_notes table
+- Created `supabase/migrations/20260210000001_add_order_notes.sql`
+- Columns implemented:
+  - id UUID PRIMARY KEY with gen_random_uuid() default
+  - tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE
+  - order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE
+  - user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE
+  - content TEXT NOT NULL for note text
+  - mentioned_user_ids UUID[] DEFAULT '{}' for @mention tracking
+  - created_at TIMESTAMPTZ DEFAULT NOW()
+- Indexes created:
+  - idx_order_notes_tenant_id for tenant filtering
+  - idx_order_notes_order_id for order lookups
+  - idx_order_notes_user_id for user activity queries
+  - idx_order_notes_order_created for chronological listing (order_id, created_at DESC)
+- RLS policies:
+  - SELECT: tenant_users can view notes in their tenant
+  - INSERT: tenant_users can add notes to orders in their tenant
+  - UPDATE: users can edit their own notes (with tenant membership check)
+  - DELETE: users can delete their own notes (with tenant membership check)
+  - ALL: tenant admins/owners can manage all notes in their tenant
+- Supports the OrderThreadedNotes component from task-063
+- Follows project naming convention with timestamp prefix
+- All foreign keys cascade on delete for data integrity
