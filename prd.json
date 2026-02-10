@@ -87,7 +87,7 @@
     "id": "task-015",
     "title": "Create useEntityNavigation hook",
     "description": "Create src/hooks/useEntityNavigation.ts — given an entityType and entityId, returns the correct admin route URL including tenant slug. navigateToEntity(type, id) uses react-router navigate. getEntityUrl(type, id) returns the URL string. This is the single source of truth for cross-module navigation. Uses ENTITY_ROUTES from constants.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-016",

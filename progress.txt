@@ -319,3 +319,28 @@
 - All exports typed with proper Record<EntityType, string> for type safety
 - No console.log — types/constants file only
 - Imports use `@/` alias pattern
+
+## task-015: Create useEntityNavigation hook
+- Created `src/hooks/useEntityNavigation.ts` as single source of truth for cross-module navigation
+- Core functions implemented:
+  - `navigateToEntity(entityType, entityId)` — navigates to entity detail page using react-router
+  - `getEntityUrl(entityType, entityId)` — returns URL string without navigating (for links)
+  - `navigateToEntityList(entityType)` — navigates to entity list page (no entity ID)
+  - `getEntityListUrl(entityType)` — returns list URL string without navigating
+- Uses `useTenantContext` from `@/hooks/useTenantContext` to get tenant slug
+- Uses `getEntityRoute` and `ENTITY_ROUTES` from `@/lib/constants/entityTypes`
+- URL generation:
+  - Detail URLs via `getEntityRoute(entityType, entityId, tenantSlug)` — handles both path and query param routes
+  - List URLs strip the trailing `=` from query param routes (e.g., `?tab=products&product=` becomes `?tab=products&product`)
+- Returns `{ navigateToEntity, getEntityUrl, navigateToEntityList, getEntityListUrl, isReady }`
+- `isReady` boolean indicates whether the hook can be used (has valid tenant context)
+- All functions return `null` or do nothing if tenant slug is not available
+- All callbacks memoized with `useCallback` for stable references
+- Return object memoized with `useMemo` to prevent unnecessary re-renders
+- Debug logging at each step using `logger` from `@/lib/logger`:
+  - URL generation (entity type, entity ID, generated URL)
+  - Navigation actions
+  - Warning when navigation fails due to missing tenant slug
+- No console.log — all logging via logger
+- Imports use `@/` alias as required
+- Exports both named function and default export for flexible importing
