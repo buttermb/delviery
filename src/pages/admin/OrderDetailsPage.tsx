@@ -23,6 +23,7 @@ import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDelivery
 import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
 import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
 import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
+import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -797,6 +798,15 @@ export function OrderDetailsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Order Analytics Insights */}
+            <OrderAnalyticsInsights
+              orderId={order.id}
+              customerId={order.customer_id}
+              orderTotal={order.total_amount}
+              orderCreatedAt={order.created_at}
+              orderItems={order.order_items}
+            />
 
             {/* Payment Status with Real-time Sync */}
             <OrderPaymentStatusSync

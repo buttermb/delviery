@@ -1943,3 +1943,45 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - forwardRef is needed to pass refs to child components for print content extraction
 - The Tenant type from TenantAdminAuthContext has business_name property
 - Receipt components should support both inline display and standalone printing
+
+## Task-066: Create order analytics connection
+
+### What was built:
+- OrderAnalyticsInsights component showing contextual analytics for orders
+- Displays insights about customer order history and comparisons
+- Shows whether this is the customer's largest order
+- Compares order to customer's average and tenant's AOV
+- Shows time of day the order was placed
+- Identifies new products the customer is trying
+- Indicates customer loyalty status (first order, loyal customer)
+
+### Files created/modified:
+- NEW: src/components/admin/orders/OrderAnalyticsInsights.tsx
+- MODIFIED: src/pages/admin/OrderDetailsPage.tsx (added import and component)
+
+### Technical details:
+- Uses useTenantAdminAuth() to get tenant context for filtering
+- Queries unified_orders table filtered by tenant_id and customer_id
+- Queries unified_order_items to analyze customer's product history
+- Calculates tenant-wide AOV from last 90 days of orders
+- Uses TooltipProvider for insight descriptions
+- Skeleton loading state while data loads
+- Returns null if no insights to display (graceful empty state)
+- Uses logger from @/lib/logger (no console.log)
+- All imports use @/ alias
+
+### Insights shown:
+1. Largest Order indicator if this is customer's biggest order
+2. Customer Average comparison (above/below their typical order)
+3. Store AOV comparison (percentage above/below store average)
+4. Order Time showing time of day with emoji (Morning/Afternoon/Evening/Night)
+5. New Products count if customer is trying products they haven't ordered before
+6. Loyalty indicator (first order vs loyal customer with order count)
+
+### Lessons learned:
+- useMemo is good for deriving insight arrays from analytics data
+- TooltipProvider must wrap Tooltip components for tooltips to work
+- Conditional rendering with early returns keeps component clean
+- Comparing order total to averages requires careful percentage calculations
+- Time of day can be derived from order.created_at timestamp
+- Product history analysis requires joining order_items with orders

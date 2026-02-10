@@ -393,7 +393,7 @@
     "id": "task-066",
     "title": "Create order analytics connection",
     "description": "When viewing an order, show contextual analytics — is this customer's largest order, how does it compare to average order value, what time of day was it placed, is the product mix typical. Pull from analytics calculations. Small insights section on order detail. Connects order view to analytics module naturally.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-067",
