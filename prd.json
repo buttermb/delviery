@@ -1041,7 +1041,7 @@
     "id": "task-174",
     "title": "Create menu order flow to admin orders",
     "description": "When a customer places an order through a disposable menu, the order must appear immediately in the admin orders panel. Order should include source=disposable_menu and menu_id reference. All order processing features work the same — inventory decrement, payment tracking, delivery assignment. Realtime subscription ensures instant appearance.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-175",

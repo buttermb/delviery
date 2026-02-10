@@ -5123,3 +5123,50 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
 - All imports use @/ alias
 - Proper loading and error states
 - TypeScript strict typing
+
+## task-174: Create menu order flow to admin orders
+
+### Date: 2026-02-10
+
+### Summary:
+Implemented complete menu order flow integration ensuring orders placed through disposable menus appear immediately in the admin orders panel with proper source tracking and cross-module notifications.
+
+### Files created:
+- src/hooks/useMenuOrderFlow.ts — New hook for menu order submission with eventBus integration
+
+### Files modified:
+- src/components/menu/ModernCheckoutFlow.tsx — Added eventBus publishing and query invalidation after order placement
+- prd.json — Marked task-174 as passes: true
+
+### Implementation details:
+
+1. **Created useMenuOrderFlow hook** (src/hooks/useMenuOrderFlow.ts):
+   - Provides submitOrder() function that calls menu-order-place edge function
+   - Publishes 'order_created' event via eventBus after successful order
+   - Invalidates relevant queries (orders.live, dashboard.stats, menu-orders, inventory)
+   - Includes proper error handling with toast notifications
+   - Exports both base hook and useMenuOrderFlowWithToasts variant
+
+2. **Updated ModernCheckoutFlow component**:
+   - Added imports for publish from @/lib/eventBus and queryKeys from @/lib/queryKeys
+   - Added useQueryClient hook usage
+   - After successful order, fetches tenant_id from menu and publishes order_created event
+   - Invalidates queries for immediate admin panel updates
+   - Logs event publishing for debugging
+
+### How menu orders appear in admin panel:
+1. Customer submits order via ModernCheckoutFlow
+2. menu-order-place edge function creates order in menu_orders table with tenant_id
+3. Supabase realtime triggers on INSERT to menu_orders
+4. useRealtimeSync in admin panel receives payload and fires ORDER_CREATED invalidation event
+5. LiveOrders.tsx fetches from both orders AND menu_orders tables
+6. Order appears with source='menu' badge and menu_id reference
+
+### Technical patterns used:
+- logger from @/lib/logger — no console.log
+- @/ alias for all imports
+- TanStack Query for data fetching and cache invalidation
+- EventBus publish() for cross-module communication
+- Proper TypeScript types for all inputs/outputs
+- .maybeSingle() for optional data fetches
+- Proper error handling with user-friendly messages
