@@ -33,6 +33,7 @@ import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/Custo
 import { CustomerDeliveryMap } from '@/components/admin/customers/CustomerDeliveryMap';
 import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
 import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/CustomerRelatedEntitiesPanel';
+import { CustomerComplianceVerification } from '@/components/admin/customers/CustomerComplianceVerification';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
 interface Customer {
@@ -321,6 +322,7 @@ export default function CustomerDetails() {
           <Tabs defaultValue="overview" className="space-y-6">
             <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))] flex-wrap">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="compliance">Compliance</TabsTrigger>
               <TabsTrigger value="addresses">Addresses</TabsTrigger>
               <TabsTrigger value="orders">Purchase History</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
@@ -365,6 +367,15 @@ export default function CustomerDetails() {
                   {/* Related Entities Panel */}
                   {customer && (
                     <CustomerRelatedEntitiesPanel customerId={customer.id} />
+                  )}
+                  {/* Compliance Verification */}
+                  {customer && (
+                    <CustomerComplianceVerification
+                      customerId={customer.id}
+                      customerName={`${customer.first_name} ${customer.last_name}`}
+                      compact
+                      showBlockWarning
+                    />
                   )}
                 </div>
                 {/* Right column: Activity Timeline */}
@@ -451,6 +462,17 @@ export default function CustomerDetails() {
                 </Card>
               </div>
             </TabsContent>
+
+            {/* Compliance Tab */}
+            {customer && (
+              <TabsContent value="compliance" className="space-y-6">
+                <CustomerComplianceVerification
+                  customerId={customer.id}
+                  customerName={`${customer.first_name} ${customer.last_name}`}
+                  showBlockWarning
+                />
+              </TabsContent>
+            )}
 
             {/* Addresses Tab */}
             {customer && (

@@ -903,7 +903,7 @@
     "id": "task-151",
     "title": "Create customer detail compliance verification",
     "description": "For cannabis compliance, customer detail page shows verification status — age verified, ID on file, purchase limits checked, delivery zone validated. Red flags for missing compliance data. Block order creation if required compliance missing. Configurable per tenant's jurisdiction requirements.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-152",

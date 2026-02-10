@@ -4436,3 +4436,21 @@ Date: 2026-02-10
 - Coupon table has `customer_id` column for customer-specific offers
 - Communication logs table tracks outbound messages for audit trail
 - Query keys extended with 'at-risk' suffix for this specific data view
+
+## task-151: Create customer detail compliance verification
+- Created `src/hooks/useCustomerCompliance.ts` — hook for managing customer compliance verification
+- Compliance checks include: age_verified, id_on_file, medical_card, purchase_limits, delivery_zone
+- Each check returns status: passed, failed, pending, or not_required
+- Integrated with `age_verifications` table for ID verification data
+- Reads tenant compliance requirements from `tenants.metadata.compliance_requirements`
+- Default requirements: requireAgeVerification=true, minimumAge=21, requireIdOnFile=true, enforcePurchaseLimits=true, enforceDeliveryZone=true
+- Created `src/components/admin/customers/CustomerComplianceVerification.tsx` — UI component for compliance display
+- Shows red flags for failed/pending compliance checks, with clear visual hierarchy
+- Block order warning banner when `blockOrdersIfNonCompliant` is enabled and customer is non-compliant
+- Added compact mode with collapsible view for Overview tab
+- Added dedicated "Compliance" tab to CustomerDetails page for full compliance view
+- Exported `ComplianceStatusBadge` component for inline compliance display in customer lists
+- Used `@tanstack/react-query` for data fetching with 1-minute stale time
+- All queries filter by `tenant_id` using `useTenantAdminAuth()` context
+- No console.log — used `logger` from `@/lib/logger` throughout
+- Build passes with no TypeScript errors
