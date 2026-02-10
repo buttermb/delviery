@@ -3987,3 +3987,43 @@ Implementation follows all project rules:
 - Simple speed-based ETA estimation (30 km/h average)
 - Delivery history fetched only when toggled (performance optimization)
 - Showed warnings for ungeocoded addresses that can't be displayed on map
+
+---
+
+## task-141: Create customer auto-segment on order completion
+
+### What was implemented:
+Created `src/hooks/useCustomerAutoSegment.ts` - a hook that listens to `order_completed` events via the eventBus and automatically updates customer segments.
+
+### Key features:
+1. **Event-driven architecture**: Listens to `order_completed` event from eventBus
+2. **Segment recalculation**: After order completes, recalculates customer segment based on:
+   - Order frequency (new, active, at_risk, churned)
+   - Total spend for VIP threshold (top 10% by spend)
+3. **VIP upgrade detection**: When customer crosses VIP threshold:
+   - Updates segment to VIP
+   - Creates admin notification
+   - Applies VIP tag
+4. **At-risk recovery**: Detects when at_risk customers become active again
+5. **Auto-tagging**: Applies segment-specific tags (VIP Customer, Active Customer, etc.)
+6. **Database updates**: Updates customer segment in contacts table
+
+### Files changed:
+- `src/lib/eventBus.ts` - Added `order_completed` event type
+- `src/hooks/useCustomerAutoSegment.ts` - New hook (created)
+
+### Patterns followed:
+- Used `useTenantContext()` for tenant isolation
+- All database queries filter by `tenant_id`
+- Used `logger` from `@/lib/logger` (no console.log)
+- Used `@/` alias for all imports
+- Event subscription pattern matching `useNotificationDispatcher`
+- Proper cleanup on unmount
+- Mounted ref pattern to prevent state updates after unmount
+
+### Technical decisions:
+- Reused segment calculation logic from `useCustomerSegments.ts` for consistency
+- Used upsert for tag assignment to avoid duplicates
+- Published `customer_updated` event after segment change for downstream listeners
+- Optional callback `onSegmentChange` for UI reactions (e.g., confetti on VIP upgrade)
+- Manual `recalculateSegment` function exposed for on-demand recalculation

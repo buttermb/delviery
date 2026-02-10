@@ -843,7 +843,7 @@
     "id": "task-141",
     "title": "Create customer auto-segment on order completion",
     "description": "After an order completes, recalculate customer segment. If customer crossed VIP threshold, update segment and notify admin. If customer was at_risk and placed new order, update to active. Trigger via eventBus order_completed event. Auto-apply segment-specific tags. Update customer record.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-142",
