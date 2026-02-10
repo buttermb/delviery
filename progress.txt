@@ -2613,3 +2613,34 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Components are fully typed with TypeScript interfaces
 - Proper import order: React → Third-party → Types → Components → Utils
 - Integration points ready for order creation (LineItemsEditor) and storefront (product detail pages)
+
+## task-093: Create product image gallery with menu preview
+- Created `src/components/admin/products/ProductImageGallery.tsx` — comprehensive image gallery component
+- Features implemented:
+  - Multiple images per product with visual thumbnails
+  - Drag-to-reorder images using native HTML5 drag and drop
+  - Primary image designation with star badge (shown in lists and menus)
+  - Set any image as primary via button click
+  - Remove images with immediate database update
+  - Full-screen zoom dialog with navigation
+  - Touch/swipe support for mobile navigation
+- Menu/Storefront Preview system:
+  - Dialog with Tabs to switch between "Disposable Menu" and "Storefront" preview
+  - Device preview toggle (Desktop/Mobile) with responsive sizing
+  - ProductPreviewCard internal component renders product exactly as it appears:
+    - Menu style: category badge, strain type, THC/CBD percentages, price, Add to Cart button
+    - Storefront style: hover effects, gradient overlay, wholesale pricing
+- Integration with ProductDetailsPage:
+  - Added import and component in Info tab
+  - Passes product data including `images` array from products table
+  - Editable mode enabled for admin users
+- Database integration:
+  - Uses existing `products.images` column (string[]) from Supabase
+  - Mutation updates both `image_url` (primary) and `images` (additional) fields
+  - Filters by `tenant_id` via `useTenantAdminAuth()`
+  - Invalidates `queryKeys.products.all` on successful update
+- Lazy loading via OptimizedProductImage component with loading states
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Proper TypeScript types: ProductImageData, PreviewMode, DevicePreview
+- Includes ProductImageGallerySkeleton for loading states
+- Import order follows convention: React → Third-party → Types → Components → Utils

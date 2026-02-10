@@ -15,6 +15,7 @@ import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard
 import { ProductMenuAppearances } from '@/components/admin/products/ProductMenuAppearances';
 import { ProductComplianceStatus } from '@/components/admin/products/ProductComplianceStatus';
 import { ProductReorderCard } from '@/components/admin/products/ProductReorderCard';
+import { ProductImageGallery } from '@/components/admin/products/ProductImageGallery';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -253,6 +254,25 @@ export default function ProductDetailsPage() {
 
                     {/* Info Tab */}
                     <TabsContent value="info" className="space-y-4">
+                        {/* Image Gallery */}
+                        <ProductImageGallery
+                            product={{
+                                id: product.id,
+                                name: product.name,
+                                image_url: product.image_url,
+                                images: product.images as string[] | null,
+                                category: product.category,
+                                strain_type: product.strain_type,
+                                retail_price: product.retail_price,
+                                wholesale_price: product.wholesale_price,
+                                description: product.description,
+                                thc_percent: product.thc_percent,
+                                cbd_percent: product.cbd_percent,
+                            }}
+                            editable={true}
+                            showPreview={true}
+                        />
+
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Basic Info */}
                             <Card>

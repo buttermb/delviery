@@ -555,7 +555,7 @@
     "id": "task-093",
     "title": "Create product image gallery with menu preview",
     "description": "Enhance product image management. Multiple images per product with drag-to-reorder. Primary image shown in lists and menus. Preview how product appears on disposable menu and storefront. Image optimization for web display. Stored in Supabase Storage with tenant-specific bucket path. Lazy loading in lists.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-094",
