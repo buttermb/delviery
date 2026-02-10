@@ -983,3 +983,20 @@
 - No console.log — pure UI components
 - No tenant_id filtering — pure presentational components for form building
 - All imports use `@/` alias as required
+
+## task-036: Create useFormPersistence hook
+- Created `src/hooks/useFormPersistence.ts` — auto-saves form state to localStorage
+- Hook accepts `formId` (unique identifier) and `formValues` (generic Record type)
+- Debounces saves by 1 second (configurable via `debounceMs` option) to prevent excessive writes
+- Uses `STORAGE_KEYS.FORM_PERSISTENCE_PREFIX` + formId pattern for storage key
+- Added `FORM_PERSISTENCE_PREFIX` to `src/constants/storageKeys.ts`
+- Provides `restoreForm()` — returns saved values or null if stale/missing
+- Provides `clearSavedForm()` — clears storage on successful form submit
+- Returns `hasSavedForm` boolean and `lastSavedAt` timestamp for UI feedback
+- Handles stale data with configurable `maxAgeMs` (default 24 hours)
+- Uses `safeStorage` from `@/utils/safeStorage` for memory fallback in incognito mode
+- Uses `useRef` for debounce timer to avoid stale closure issues
+- Properly cleans up debounce timer on unmount via useEffect cleanup
+- TypeScript generic `<T extends Record<string, unknown>>` for type-safe form values
+- All logging via `logger.debug/warn/error` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required

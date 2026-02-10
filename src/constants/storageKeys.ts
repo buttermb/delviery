@@ -125,6 +125,9 @@ export const STORAGE_KEYS = {
 
   // Sync Status
   SYNC_LAST_SYNCED: 'sync_last_synced',
+
+  // Form Persistence prefix
+  FORM_PERSISTENCE_PREFIX: 'form_persistence_',
 } as const;
 
 /**

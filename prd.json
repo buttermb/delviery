@@ -213,7 +213,7 @@
     "id": "task-036",
     "title": "Create useFormPersistence hook",
     "description": "Create src/hooks/useFormPersistence.ts — auto-saves form state to localStorage so users don't lose work if they navigate away. Accept formId and form values. Debounce saves by 1 second. Provide restoreForm() to load saved data. clearSavedForm() on successful submit. Uses STORAGE_KEYS with form-specific prefix.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-037",
