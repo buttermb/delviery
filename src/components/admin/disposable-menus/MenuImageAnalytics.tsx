@@ -22,11 +22,18 @@ interface MenuImageAnalyticsProps {
   menuId: string;
 }
 
+interface FilterState {
+  category?: string;
+  performance?: string;
+  imageStatus?: string;
+}
+
 export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date(),
   });
+  const [filters, setFilters] = useState<FilterState>({});
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 

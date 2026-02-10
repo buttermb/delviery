@@ -421,10 +421,11 @@ export default function Orders() {
     setBulkStatusConfirm({ open: false, targetStatus: '' });
 
     // Execute the bulk status update
-    await bulkStatusUpdate.executeBulkUpdate(
-      selectedOrders.map(id => ({ id, status: bulkStatusConfirm.targetStatus })),
-      bulkStatusConfirm.targetStatus
-    );
+    const ordersToUpdate = selectedOrders.map(id => {
+      const order = orders?.find(o => o.id === id);
+      return { id, status: bulkStatusConfirm.targetStatus, order_number: order?.order_number || '' };
+    });
+    await bulkStatusUpdate.executeBulkUpdate(ordersToUpdate, bulkStatusConfirm.targetStatus);
   };
 
   const handleClearFilters = () => {
@@ -745,21 +746,21 @@ export default function Orders() {
                 className="min-h-[48px] touch-manipulation"
                 disabled={filteredOrders.length === 0}
               />
-                <Button
-                  variant="outline"
-                  className="min-h-[48px] touch-manipulation"
-                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
-                >
-                  <WifiOff className="mr-2 h-4 w-4" />
-                  Offline Order
-                </Button>
-                <Button
-                  variant="default"
-                  className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
-                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
-                >
-                  + New Order
-                </Button>
+              <Button
+                variant="outline"
+                className="min-h-[48px] touch-manipulation"
+                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
+              >
+                <WifiOff className="mr-2 h-4 w-4" />
+                Offline Order
+              </Button>
+              <Button
+                variant="default"
+                className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
+                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
+              >
+                + New Order
+              </Button>
               <TakeTourButton
                 tutorialId={ordersTutorial.id}
                 steps={ordersTutorial.steps}

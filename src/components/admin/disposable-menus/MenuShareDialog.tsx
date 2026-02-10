@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+
 import { Copy, ExternalLink, MessageCircle, Mail } from 'lucide-react';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
@@ -43,12 +44,12 @@ export const MenuShareDialog = ({
   menu,
   whitelistEntry
 }: MenuShareDialogProps) => {
-  const [_copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
   const menuUrl = formatMenuUrl(
     menu.encrypted_url_token,
     whitelistEntry?.unique_access_token
   );
-  
+
   const accessCode = menu.access_code || 'N/A';
 
   const handleCopy = (text: string, label: string) => {

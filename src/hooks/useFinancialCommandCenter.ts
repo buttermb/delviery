@@ -346,6 +346,7 @@ export const useARCommand = () => {
       const totalOutstanding = clients?.reduce((sum, c) => sum + Number(c.outstanding_balance || 0), 0) || 0;
       
       // Categorize clients by urgency
+      const now = new Date();
       const categorized = (clients || []).map(c => {
         const amount = Number(c.outstanding_balance || 0);
         const daysSincePayment = c.last_payment_date 

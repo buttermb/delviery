@@ -11,7 +11,8 @@
  * - Kanban view option for attention items
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAttentionQueue } from '@/hooks/useAttentionQueue';

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
 import { logger } from '@/lib/logger';
+import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 
 interface ConversionRateChartProps {
     storeId?: string;

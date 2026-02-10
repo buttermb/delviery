@@ -258,15 +258,20 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Sync query data into optimistic list state
+  // Refetch products helper
+  const refetchProducts = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.products.list({ tenantId: tenant?.id }) });
+  }, [queryClient, tenant?.id]);
+
+  // Sync query data when component mounts
   useEffect(() => {
     if (tenant?.id) {
-      fetchProducts();
+      refetchProducts();
     }
-  }, [tenant?.id, fetchProducts]);
+  }, [tenant?.id, refetchProducts]);
 
   // Alias for external usage
-  const loadProducts = fetchProducts;
+  const loadProducts = refetchProducts;
 
   // Derived state for categories
   const categories = useMemo(() => {
