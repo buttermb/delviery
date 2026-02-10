@@ -951,7 +951,7 @@
     "id": "task-159",
     "title": "Create vendor performance metrics",
     "description": "Create src/hooks/useVendorMetrics.ts — calculates vendor performance. Metrics — on-time delivery rate, order accuracy rate, average lead time, total spend, product quality (from returns/complaints), response time. Show on vendor detail page as stats cards. Compare vendors on analytics page. Used for vendor selection recommendations.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-160",

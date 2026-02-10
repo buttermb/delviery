@@ -4589,3 +4589,41 @@ Date: 2026-02-10
 - Payment status triggers in Postgres auto-update PO paid status when payments are inserted/updated/deleted
 - Used SECURITY DEFINER on trigger functions for proper RLS handling
 - React Hook Form with Zod provides excellent form validation with TypeScript integration
+
+## Task 159: Create vendor performance metrics
+
+### What was implemented:
+- Created `src/hooks/useVendorMetrics.ts` - a comprehensive hook for calculating vendor performance metrics
+
+### Metrics implemented:
+1. **Delivery Metrics**: On-time delivery rate, late deliveries count, total deliveries
+2. **Order Accuracy**: Order accuracy rate based on received quantity vs ordered quantity
+3. **Lead Time**: Average, min, and max lead time in days from PO creation to receiving
+4. **Financial**: Total spend, average order value, total orders, pending orders
+5. **Payment Metrics**: Outstanding balance, paid amount, payment rate percentage
+6. **Quality Score**: Based on item receiving discrepancies (since no returns/complaints tables exist yet)
+7. **Response Time**: Average time from PO creation to status update
+8. **Monthly Trends**: Monthly spend and order count for trend visualization
+9. **Orders by Status**: Breakdown of POs by status (draft, submitted, approved, received, cancelled)
+
+### Also implemented:
+- `useVendorsComparison` hook for comparing multiple vendors' metrics side-by-side
+- Added query keys: `vendors.metrics()` and `vendors.comparison()` to queryKeys.ts
+- `getDefaultVendorMetrics()` helper function for fallback data
+
+### Technical details:
+- Uses TanStack Query with proper query keys for caching
+- Filters all queries by tenant_id for multi-tenant isolation
+- Uses Promise.allSettled for parallel fetching with graceful degradation
+- Uses logger from @/lib/logger (no console.log)
+- All imports use @/ alias
+- Uses useTenantAdminAuth for tenant context
+- Includes proper TypeScript types for all data structures
+- 1 minute stale time for real-time metrics, 5 minute gc time
+
+### Learnings:
+- The purchase_orders table now has tenant_id, payment_status, paid_amount, payment_date columns
+- vendor_payments table exists for tracking payments to vendors
+- purchase_order_items has quantity and received_quantity for accuracy tracking
+- No returns or complaints tables exist yet - quality is calculated from receiving discrepancies
+- The codebase uses Promise.allSettled pattern for parallel fetches that can fail independently

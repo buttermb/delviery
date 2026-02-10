@@ -838,6 +838,10 @@ export const queryKeys = {
       [...queryKeys.vendors.detail(tenantId, vendorId), 'payments'] as const,
     payables: (tenantId?: string) =>
       [...queryKeys.vendors.all, 'payables', tenantId] as const,
+    metrics: (tenantId: string, vendorId: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'metrics', filters] as const,
+    comparison: (tenantId: string, vendorIds: string[]) =>
+      [...queryKeys.vendors.byTenant(tenantId), 'comparison', vendorIds.sort().join(',')] as const,
   },
 
   // Storefront
