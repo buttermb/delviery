@@ -897,7 +897,7 @@
     "id": "task-150",
     "title": "Create customer re-engagement automation",
     "description": "Create src/components/admin/customers/ReEngagement.tsx — view at-risk and churned customers with suggested re-engagement actions. One-click to create promotional offer, send message, or add note. Show days since last order, previous order frequency, and what they used to buy. Helps proactively manage customer relationships.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-151",

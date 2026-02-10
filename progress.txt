@@ -4399,3 +4399,40 @@ Date: 2026-02-10
 - Organization relationship column may not exist on customers — handled with optional chaining and catch
 - Accordion's `onValueChange` callback is ideal for triggering lazy queries on expand
 - Each entity section can link to its respective detail page for deeper navigation
+
+## task-150: Create customer re-engagement automation
+- Created `src/components/admin/customers/ReEngagement.tsx` — view at-risk and churned customers with suggested re-engagement actions
+- Component identifies at-risk customers based on:
+  - Days since last order (configurable thresholds: 30 days for "at risk", 60 days for "churned")
+  - Order frequency comparison (customers ordering less than half their usual frequency marked as at-risk)
+- Features implemented:
+  - Customer cards with risk level badges (amber for at-risk, red for churned)
+  - Expandable cards showing detailed stats: total orders, total spent, average order value, last order date
+  - Top products previously purchased displayed as badges
+  - Filter dropdown to show all, at-risk only, or churned only customers
+  - One-click actions: Create Offer, Send Message, Add Note
+- Action dialogs:
+  - Create Offer: Generates customer-specific coupon with discount %, unique code, and expiry
+  - Send Message: Queue SMS or email re-engagement message (checks if phone/email available)
+  - Add Note: Save re-engagement note to customer profile
+- Mutations with proper error handling:
+  - `useAddCustomerNote` — saves to `customer_notes` table with note_type='re-engagement'
+  - `useCreatePromoOffer` — creates coupon in `coupons` table with customer_id restriction
+  - `useSendMessage` — logs to `communication_logs` with status='queued'
+- Query calculates order frequency by analyzing time between orders to detect behavioral changes
+
+### Key patterns followed:
+- All database queries filter by `tenant_id` via `useTenantAdminAuth()`
+- Uses `logger` from `@/lib/logger` — no console.log statements
+- Proper loading states with skeletons and error states with retry
+- Uses `useTenantNavigation` for proper tenant-aware routing to customer profiles
+- useCallback for event handlers, useMemo for derived data
+- Changed `useMemo` to `useEffect` for side effects (setting state) — useMemo is for computed values only
+
+### Key learnings:
+- Order frequency analysis requires at least 2 orders to calculate meaningful frequency
+- Risk thresholds should be configurable (hardcoded for now but could be tenant settings)
+- Side effects in components (like generating random codes) should use useEffect, not useMemo
+- Coupon table has `customer_id` column for customer-specific offers
+- Communication logs table tracks outbound messages for audit trail
+- Query keys extended with 'at-risk' suffix for this specific data view
