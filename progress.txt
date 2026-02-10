@@ -2510,3 +2510,33 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Used showSuccessToast/showErrorToast for user feedback
 - No console.log used — follows project conventions with logger from @/lib/logger
 - All imports use @/ alias as required
+
+## Task 089: Create product detail page with compliance status
+
+**Completed:** Created ProductComplianceStatus component for product detail page
+
+**What was implemented:**
+- Created src/components/admin/products/ProductComplianceStatus.tsx
+- Displays compliance status with overall status badge (Compliant/Warning/Non-Compliant)
+- Shows lab test results section with lab name, test date, and validity status
+- Calculates lab test expiration (365 days from test date) with expiring soon (300+ days) warnings
+- Displays traceability section with batch number, SKU, and barcode
+- Shows license documents summary from compliance_documents table (active/expiring/expired counts)
+- Displays compliance issues alert with critical/warning/info severity levels
+- Red warnings for missing lab tests, expired tests, or compliance issues
+- Link to compliance vault for full compliance details
+- Replaced basic Lab Results & Compliance card in ProductDetailsPage.tsx with new component
+
+**Key learnings:**
+- Products table has compliance fields: test_date, lab_name, coa_url, coa_pdf_url, lab_results_url, batch_number
+- Lab tests typically valid for 1 year in cannabis industry (365 days from test_date)
+- compliance_documents table stores tenant-level documents with status enum (active/expired/expiring_soon)
+- Used queryKeys.compliance.documents(tenantId) for fetching compliance documents
+- Calculated compliance status using pure function with memoization for performance
+- Used useMemo to recalculate compliance status only when product or documents change
+- date-fns differenceInDays used to calculate days since lab test
+- Alert component from shadcn/ui supports variant="destructive" for critical alerts
+- Created custom amber-colored alert for warnings using Tailwind classes
+- Component follows project patterns: loading skeletons, proper imports, no console.log
+- Used logger from @/lib/logger for error logging
+- All imports use @/ alias as required

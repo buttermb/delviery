@@ -13,6 +13,7 @@ import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHis
 import { ProductInventoryChart } from '@/components/admin/products/ProductInventoryChart';
 import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard';
 import { ProductMenuAppearances } from '@/components/admin/products/ProductMenuAppearances';
+import { ProductComplianceStatus } from '@/components/admin/products/ProductComplianceStatus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -374,46 +375,8 @@ export default function ProductDetailsPage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Lab Results */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Lab Results & Compliance</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Lab Name</p>
-                                            <p className="font-medium">{product.lab_name || '-'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Test Date</p>
-                                            <p className="font-medium">
-                                                {product.test_date
-                                                    ? format(new Date(product.test_date), 'MMM d, yyyy')
-                                                    : '-'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {(product.coa_url || product.lab_results_url) && (
-                                        <div className="flex gap-2">
-                                            {product.coa_url && (
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <a href={product.coa_url} target="_blank" rel="noopener noreferrer">
-                                                        View COA
-                                                    </a>
-                                                </Button>
-                                            )}
-                                            {product.lab_results_url && (
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <a href={product.lab_results_url} target="_blank" rel="noopener noreferrer">
-                                                        Lab Results
-                                                    </a>
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                            {/* Compliance Status - Lab Results, Licensing, Regulatory */}
+                            <ProductComplianceStatus product={product} />
 
                             {/* Timestamps */}
                             <Card>

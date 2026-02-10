@@ -531,7 +531,7 @@
     "id": "task-089",
     "title": "Create product detail page with compliance status",
     "description": "On product detail page, show compliance status — lab test results, expiration date, license coverage, regulatory notes. Red warning if approaching expiration or missing compliance data. Link to compliance module for full details. Critical for cannabis industry — every product must be traceable to its compliance records.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-090",
