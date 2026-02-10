@@ -25,6 +25,7 @@ import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderBu
 import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
+import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -806,6 +807,14 @@ export function OrderDetailsPage() {
               sourceMenuId={order.source_menu_id}
               sourceSessionId={order.source_session_id}
             />
+
+            {/* Storefront Session Link - Customer Journey Details */}
+            {order.source_session_id && (
+              <StorefrontSessionLink
+                sessionId={order.source_session_id}
+                menuId={order.source_menu_id}
+              />
+            )}
 
             {/* Order Analytics Insights */}
             <OrderAnalyticsInsights

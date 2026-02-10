@@ -435,7 +435,7 @@
     "id": "task-073",
     "title": "Create order storefront session link",
     "description": "If an order originated from a storefront or disposable menu, link it back to the session. Show on order detail — which menu was used, customer's browsing time, items they viewed before ordering. Creates direct connection between storefront module and orders module. Helps understand customer journey.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-074",

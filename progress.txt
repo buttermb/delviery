@@ -2133,3 +2133,26 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - OrderFilters already had source filter (ORDER_SOURCE_OPTIONS) from existing code
 - All imports use @/ alias, logger from @/lib/logger (no console.log)
 - All queries filter by tenant_id for proper tenant isolation
+
+## task-073: Create order storefront session link
+- Created migration (20260210000002_create_storefront_sessions.sql) for storefront_sessions table
+  - Tracks customer browsing sessions from storefronts and disposable menus
+  - Fields: session_token, visitor_id, source_type (storefront/menu/api), menu_id
+  - Session metrics: browsing_duration_seconds, page_views, items_viewed, items_added_to_cart
+  - Journey tracking: viewed_products (JSONB array), cart_history (JSONB), page_history (JSONB)
+  - UTM tracking: utm_source, utm_medium, utm_campaign, referrer
+  - Order linkage: order_id, converted_at fields for conversion tracking
+  - RLS policies for tenant isolation and anon session creation
+  - RPC functions: get_storefront_session_details, update_session_activity, link_session_to_order
+- Created StorefrontSessionLink.tsx component for detailed customer journey visualization
+  - Shows browsing time, products viewed, page views, cart additions
+  - Displays conversion metrics (view-to-cart rate, time to convert)
+  - Shows source menu details with link to menu management
+  - Collapsible product viewed list with duration per product
+  - UTM tracking info display (source, medium, campaign)
+  - Compact mode for inline display, full card mode for sidebar
+- Updated OrderDetailsPage.tsx to render StorefrontSessionLink when source_session_id exists
+- Exported StorefrontSessionLink from components/admin/orders/index.ts
+- Builds on task-072's source tracking infrastructure
+- All imports use @/ alias, logger from @/lib/logger (no console.log)
+- All queries filter by tenant_id for proper tenant isolation

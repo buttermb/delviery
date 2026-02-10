@@ -6,3 +6,4 @@ export { OrderRow } from './OrderRow';
 export { OrderExportButton } from './OrderExportButton';
 export { OrderSourceBadge, getOrderSourceLabel, isValidOrderSource } from './OrderSourceBadge';
 export { OrderSourceInfo } from './OrderSourceInfo';
+export { StorefrontSessionLink } from './StorefrontSessionLink';
