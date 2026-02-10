@@ -2249,3 +2249,24 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - All RLS policies use tenant_users join pattern for tenant isolation
 - All imports use @/ alias, logger from @/lib/logger (no console.log)
 - Performance indexes added for priority queue ordering
+
+## task-078: Create order-to-invoice generation
+- Enhanced existing `OrderInvoiceGenerator.tsx` with database-saving functionality
+- Added `useOrderInvoiceSave` hook that:
+  - Uses `generate_invoice_number` RPC for tenant-specific sequence numbers
+  - Saves invoice to `customer_invoices` table with `order_id` link
+  - Converts order items to invoice line items format
+  - Links invoice to customer via `customer_id`
+- Created `GenerateAndSaveInvoiceButton` component that:
+  - Creates invoice record in database
+  - Optionally downloads PDF with tenant business info
+  - Uses tenant context for company name
+  - Supports callback when invoice is created
+- Created `useFullOrderInvoice` hook combining DB save + PDF generation
+- Added new interfaces: `SavedInvoice`, `InvoiceLineItem`, `CreateOrderInvoiceInput`
+- Existing PDF generation preserves full functionality (download, print buttons)
+- All database queries filter by `tenant_id` (RLS via tenant_users)
+- Uses `useMutation` from TanStack Query with proper cache invalidation
+- Invoice number format: `{SLUG}-INV-{YEAR}-{PADDED_COUNTER}` from RPC
+- No console.log used — all logging via logger from @/lib/logger
+- All imports use @/ alias with proper order: React → Third-party → Utils

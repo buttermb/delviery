@@ -465,7 +465,7 @@
     "id": "task-078",
     "title": "Create order-to-invoice generation",
     "description": "Create src/components/admin/orders/InvoiceGenerator.tsx — generates invoice from order. Includes business details from tenant profile, customer billing info, itemized products with prices, tax calculation, payment terms. Saves as PDF. Links invoice record to order and customer. Invoice number auto-generated from tenant sequence.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-079",
