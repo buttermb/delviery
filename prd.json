@@ -351,7 +351,7 @@
     "id": "task-059",
     "title": "Create order delivery status sync",
     "description": "On the order detail page, show delivery status if order has an associated delivery. Show runner name, current status, estimated time, and real-time location if available. Delivery status changes reflect immediately on order detail via realtime subscription. When delivery marked as completed, auto-update order status to delivered.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-060",

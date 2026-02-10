@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { OrderRelatedEntitiesPanel } from '@/components/admin/orders/OrderRelatedEntitiesPanel';
 import { OrderPaymentStatusSync } from '@/components/admin/orders/OrderPaymentStatusSync';
+import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDeliveryStatusSync';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -767,6 +768,15 @@ export function OrderDetailsPage() {
               currentPaymentStatus={order.payment_status}
               autoUpdateOrderStatus={true}
               onPaymentStatusChange={() => {
+                queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+              }}
+            />
+
+            {/* Delivery Status with Real-time Sync */}
+            <OrderDeliveryStatusSync
+              orderId={order.id}
+              autoUpdateOrderStatus={true}
+              onDeliveryStatusChange={() => {
                 queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
               }}
             />

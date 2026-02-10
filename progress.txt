@@ -1773,3 +1773,18 @@
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - Imports use `@/` alias as required
 - TypeScript types: PaymentRecord, OrderPaymentStatusSyncProps interfaces
+
+## task-059: Create order delivery status sync
+- Created `src/components/admin/orders/OrderDeliveryStatusSync.tsx` component
+- Component displays delivery status on order detail page when order has associated delivery
+- Shows runner name, current status, estimated time, and real-time location (lat/lng)
+- Used `useRealTimeSubscription` hook for Supabase realtime updates on deliveries table
+- Filters by `tenant_id` and `order_id` for proper tenant isolation
+- Auto-updates order status to "delivered" when delivery is marked completed
+- Uses `queryKeys.deliveries.byOrder(tenantId, orderId)` for query caching
+- Component returns `null` if no delivery exists, avoiding unnecessary UI clutter
+- Added "View on Map" button that opens Google Maps with delivery coordinates
+- Real-time connection status indicator shows live subscription state
+- Integrated into `OrderDetailsPage.tsx` in the sidebar section after payment status
+- All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
+- Loading and error states with retry button included
