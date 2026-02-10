@@ -143,3 +143,33 @@
   - `queryKeys.activity.byUser(tenantId, userId)`
   - `queryKeys.activity.search(tenantId, query)`
   - `queryKeys.activity.recent(tenantId, limit)`
+
+## task-009: Create useActivityLog hook
+- Created `src/hooks/useActivityLog.ts` wrapping the activityLog utility for React components
+- Hook integrates with `useTenantContext` to auto-fill tenant_id and user_id — components don't need to pass these manually
+- Provides `logActivity(action, entityType, entityId?, metadata?)` function with context auto-fill
+- Uses TanStack Query's `useQuery` for fetching activity logs with filters:
+  - `entityType` — filter by entity type (order, product, etc.)
+  - `entityId` — filter by specific entity ID
+  - `userId` — filter by user who performed the action
+  - `action` — filter by action type (created, updated, deleted, etc.)
+  - `limit` — number of records to return (default: 50)
+- Query keys use `queryKeys.activity` factory from `@/lib/queryKeys`:
+  - `queryKeys.activity.byEntity(tenantId, entityType, entityId)` — for entity-specific queries
+  - `queryKeys.activity.byUser(tenantId, userId)` — for user-specific queries
+  - `queryKeys.activity.list(tenantId, filters)` — for general list queries
+- Returns object with:
+  - `logActivity` — memoized function with useCallback for stable reference
+  - `recentActivity` — array of ActivityLogEntry
+  - `isLoading`, `isFetching` — loading states
+  - `error` — Error | null
+  - `refetch` — trigger manual refetch
+  - `invalidateActivity` — invalidate activity cache for tenant
+  - `isReady` — boolean indicating context is ready for logging
+- After logging, automatically invalidates activity queries via `queryClient.invalidateQueries`
+- Fetch function filters by `tenant_id` for tenant isolation (RLS)
+- Re-exports `ActivityAction` and `EntityType` constants for convenience
+- All logging via `logger` from `@/lib/logger` — no console.log
+- Imports use `@/` alias as required
+- Options accept `enabled` flag to disable query and `refetchInterval` for auto-refresh
+- Default staleTime of 30 seconds to reduce unnecessary fetches

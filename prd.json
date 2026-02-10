@@ -51,7 +51,7 @@
     "id": "task-009",
     "title": "Create useActivityLog hook",
     "description": "Create src/hooks/useActivityLog.ts — wraps activityLog utility for React components. Provides logActivity function with tenant context auto-filled from useTenantContext. Also provides useQuery for fetching recent activity filtered by entity type, entity ID, or user. Use queryKeys.activity factory.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-010",
