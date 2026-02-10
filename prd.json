@@ -519,7 +519,7 @@
     "id": "task-087",
     "title": "Create product detail page with vendor info",
     "description": "On product detail page, show vendor information card — vendor name (clickable link to vendor detail), contact info, last restock date, average lead time, vendor reliability score. If product has multiple vendor sources, show all. Quick action to reorder from vendor. Connects product view directly to vendor module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-088",

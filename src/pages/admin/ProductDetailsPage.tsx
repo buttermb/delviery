@@ -11,6 +11,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useProduct, useProductInventoryHistory, useProductFrontedInventory } from '@/hooks/useProduct';
 import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHistory';
 import { ProductInventoryChart } from '@/components/admin/products/ProductInventoryChart';
+import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -436,6 +437,12 @@ export default function ProductDetailsPage() {
                                 </CardContent>
                             </Card>
                         </div>
+
+                        {/* Vendor Information Card */}
+                        <ProductVendorCard
+                            productId={productId}
+                            vendorName={product.vendor_name}
+                        />
                     </TabsContent>
 
                     {/* Orders Tab */}

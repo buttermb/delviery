@@ -2446,3 +2446,34 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - All queries filter by tenant_id for multi-tenant isolation
 - No console.log used — follows project conventions
 - All imports use @/ alias as required
+
+## Task 087: Create product detail page with vendor info
+
+**What was built:**
+- Created src/components/admin/products/ProductVendorCard.tsx component
+- Component displays vendor information for a product including:
+  - Vendor name (clickable link to vendor detail page via useEntityNavigation)
+  - Contact info (email, phone) with mailto/tel links
+  - Last restock date (from purchase orders) with relative time display
+  - Average lead time in days (calculated from PO creation to received date)
+  - Vendor reliability score (percentage of on-time deliveries)
+  - Total purchase orders count
+  - Quick action button to create purchase order with vendor/product pre-selected
+- Supports multiple vendors per product (shows all matching vendors)
+- Matches vendors by vendor_name field or by purchase order history
+- Integrated into ProductDetailsPage.tsx Info tab
+
+**Key learnings:**
+- FloraIQ has both 'vendors' table (for purchase orders) and 'wholesale_suppliers' table (for supplier transactions)
+- Products have a vendor_name text field rather than a direct vendor_id foreign key
+- Vendor matching requires fuzzy matching on name or lookup via purchase_order_items
+- EntityType 'VENDOR' already exists in entityTypes.ts for navigation
+- Purchase orders have expected_delivery_date and received_date for reliability calculations
+- Reliability score is calculated as: (on-time deliveries / completed deliveries) * 100
+- Average lead time is calculated from PO created_at to received_date
+- Used TanStack Query with custom query key for vendor data caching
+- All queries properly filter by tenant.id (account_id for vendors table)
+- Format dates using date-fns formatDistanceToNow for user-friendly display
+- Component follows project patterns: loading skeletons, error states, empty states
+- No console.log used — follows project conventions with logger from @/lib/logger
+- All imports use @/ alias as required
