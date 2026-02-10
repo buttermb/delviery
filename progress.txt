@@ -5708,3 +5708,19 @@ Date: 2026-02-10
 - Customer_id is nullable to support anonymous feedback
 - Order_id uses ON DELETE SET NULL to preserve feedback even if order is deleted
 - Added COMMENT statements for documentation
+
+## task-194: Create menu template library
+- Created src/components/admin/menus/MenuTemplates.tsx as a comprehensive menu template library
+- Created Supabase migration (20260210000001_add_menu_templates.sql) with menu_templates and menu_template_versions tables
+- Implemented CRUD operations using TanStack Query with proper tenant_id filtering
+- Templates include: product selection, layout (grid/list/compact), theme colors/fonts, availability rules (expiration, max views, burn after read, time restrictions), security settings (access code, screenshot protection, watermark, device fingerprinting)
+- Added 4 default templates: Daily Special, Weekend Menu, Wholesale Catalog, Pop-Up Event
+- Implemented template versioning with version history dialog and restore functionality
+- Added sharing across tenant via is_shared flag
+- Used useTenantAdminAuth() for tenant context
+- All database queries filter by tenant_id for multi-tenancy
+- Added RLS policies for both tables with tenant isolation
+- Created increment_template_usage RPC function for tracking template usage
+- Used logger instead of console.log throughout
+- Implemented loading states with Skeleton components
+- Proper error handling with showErrorToast

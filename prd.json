@@ -1161,7 +1161,7 @@
     "id": "task-194",
     "title": "Create menu template library",
     "description": "Create src/components/admin/menus/MenuTemplates.tsx — save menu configurations as templates. Templates include product selection, layout, theme, availability rules. Create new menu from template. Share templates across tenant. Default templates for common use cases (daily special, weekend menu, wholesale catalog). Template versioning.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-195",
