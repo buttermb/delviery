@@ -20,6 +20,7 @@ import { ProductPriceHistoryChart } from '@/components/admin/products/ProductPri
 import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDisplay';
 import { ProductPerformanceCard } from '@/components/admin/products/ProductPerformanceCard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useProductArchive } from '@/hooks/useProductArchive';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,6 +42,8 @@ import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import { useState } from 'react';
 
 export default function ProductDetailsPage() {
@@ -48,6 +51,7 @@ export default function ProductDetailsPage() {
     const { navigateToAdmin } = useTenantNavigation();
     const { tenant: _tenant } = useTenantAdminAuth();
     const [activeTab, setActiveTab] = useState('info');
+    const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
 
     const { data: product, isLoading, error } = useProduct({ productId });
     const { data: inventoryHistory = [], isLoading: historyLoading } = useProductInventoryHistory(productId);
@@ -130,6 +134,9 @@ export default function ProductDetailsPage() {
                             <div>
                                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3 flex-wrap">
                                     {product.name}
+                                    {(product as { archived_at?: string | null }).archived_at && (
+                                        <Badge variant="secondary">Archived</Badge>
+                                    )}
                                     {isOutOfStock && (
                                         <Badge variant="destructive">Out of Stock</Badge>
                                     )}
@@ -165,6 +172,25 @@ export default function ProductDetailsPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Product
                         </Button>
+                        {(product as { archived_at?: string | null }).archived_at ? (
+                            <Button
+                                variant="outline"
+                                onClick={() => unarchiveProduct(product.id)}
+                                disabled={isArchiveLoading}
+                            >
+                                <ArchiveRestore className="mr-2 h-4 w-4" />
+                                Restore
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                onClick={() => archiveProduct(product.id)}
+                                disabled={isArchiveLoading}
+                            >
+                                <Archive className="mr-2 h-4 w-4" />
+                                Archive
+                            </Button>
+                        )}
                     </div>
                 </div>
 

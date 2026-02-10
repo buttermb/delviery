@@ -669,7 +669,7 @@
     "id": "task-112",
     "title": "Create product archive with data preservation",
     "description": "Product archive (soft delete) functionality. Archived products hidden from active lists, menus, and order creation. Archived products retain their order history and analytics data. Can be un-archived. Show archived products in separate filtered view. Archive triggers menu sync — removes from active menus. Log to activity_log.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-113",

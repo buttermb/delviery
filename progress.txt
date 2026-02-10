@@ -3098,3 +3098,40 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Uses `queryKeys.inventory.transfers()` from `@/lib/queryKeys`
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
+
+## task-112: Create product archive with data preservation
+- Created migration `supabase/migrations/20260210050509_add_product_archive.sql`:
+  - Added `archived_at TIMESTAMPTZ` column to products table (NULL = active)
+  - Created indexes for efficient filtering: `idx_products_archived_at` and `idx_products_active`
+  - Created `archive_product(p_product_id, p_tenant_id)` RPC function that:
+    - Sets `archived_at` timestamp
+    - Removes product from all menu_products (menu sync)
+    - Sets `menu_visibility = FALSE`
+  - Created `unarchive_product(p_product_id, p_tenant_id)` RPC function
+  - Both functions are `SECURITY DEFINER` with proper tenant isolation
+- Created `src/hooks/useProductArchive.ts`:
+  - Uses TanStack Query mutations for archive/unarchive operations
+  - Calls RPC functions for atomic operations
+  - Logs activity via `useActivityLog` hook (action: 'archived'/'unarchived', type: 'product')
+  - Shows toast notifications on success/error
+  - Invalidates `queryKeys.products.all` and `queryKeys.menus.all` after mutations
+- Updated `ProductAdvancedFilters.tsx`:
+  - Added `ArchiveStatus = 'active' | 'archived' | 'all'` type
+  - Added `archiveStatus` to ProductFilters interface with default 'active'
+  - Added archive status dropdown in filter panel
+  - Added archive status badge display
+- Updated `ProductsListPage.tsx`:
+  - Extended Product type to include `archived_at`
+  - Added archive status filtering in filteredProducts memo
+  - Added Archive/ArchiveRestore icons import
+  - Added archive/unarchive actions in row dropdown menu
+  - Shows "Archived" badge next to product name when archived
+- Updated `ProductDetailsPage.tsx`:
+  - Added Archive/ArchiveRestore buttons in header
+  - Shows "Archived" badge in product name when archived
+  - Uses useProductArchive hook for archive/unarchive actions
+- Key learnings:
+  - Use RPC functions for atomic multi-table operations (archive + menu sync)
+  - Extended types with `& { archived_at?: string | null }` for new columns
+  - Default filter to 'active' to hide archived by default
+  - Archive is soft-delete: preserves order history and analytics data

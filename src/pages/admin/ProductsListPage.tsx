@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
+import { useProductArchive } from '@/hooks/useProductArchive';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -60,10 +61,14 @@ import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import Store from "lucide-react/dist/esm/icons/store";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 
 import type { Database } from '@/integrations/supabase/types';
 
-type Product = Database['public']['Tables']['products']['Row'];
+type ProductRow = Database['public']['Tables']['products']['Row'];
+// Extended product type to include archived_at field (added via migration)
+type Product = ProductRow & { archived_at?: string | null };
 
 type ViewMode = 'grid' | 'table';
 type SortOption = 'name' | 'price' | 'stock' | 'category';
@@ -72,6 +77,9 @@ export function ProductsListPage() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const navigateTenant = useTenantNavigate();
   const queryClient = useQueryClient();
+
+  // Archive hook
+  const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
 
   // Table preferences for filter persistence
   const { preferences, savePreferences } = useTablePreferences('products-list', {
@@ -289,6 +297,16 @@ export function ProductsListPage() {
           }
         }
 
+        // Archive status filter
+        const isArchived = Boolean(product.archived_at);
+        if (advancedFilters.archiveStatus === 'active' && isArchived) {
+          return false;
+        }
+        if (advancedFilters.archiveStatus === 'archived' && !isArchived) {
+          return false;
+        }
+        // 'all' shows both active and archived products
+
         // Created date range filter
         if (advancedFilters.createdAfter && product.created_at) {
           const createdDate = new Date(product.created_at);
@@ -331,6 +349,7 @@ export function ProductsListPage() {
       advancedFilters.priceMax !== null ||
       advancedFilters.complianceStatus !== 'all' ||
       advancedFilters.menuStatus !== 'all' ||
+      advancedFilters.archiveStatus !== 'active' ||
       advancedFilters.createdAfter !== null ||
       advancedFilters.createdBefore !== null
     );
@@ -454,7 +473,14 @@ export function ProductsListPage() {
       accessorKey: 'name',
       cell: (product) => (
         <div className="flex flex-col">
-          <span className="font-medium">{product.name}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{product.name}</span>
+            {product.archived_at && (
+              <Badge variant="secondary" className="text-xs">
+                Archived
+              </Badge>
+            )}
+          </div>
           {product.sku && (
             <span className="text-xs text-muted-foreground">
               SKU: {product.sku}
@@ -515,6 +541,21 @@ export function ProductsListPage() {
             <DropdownMenuItem>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
             </DropdownMenuItem>
+            {product.archived_at ? (
+              <DropdownMenuItem
+                onClick={() => unarchiveProduct(product.id)}
+                disabled={isArchiveLoading}
+              >
+                <ArchiveRestore className="mr-2 h-4 w-4" /> Restore
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => archiveProduct(product.id)}
+                disabled={isArchiveLoading}
+              >
+                <Archive className="mr-2 h-4 w-4" /> Archive
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => handleDelete(product.id)}

@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 export type StockStatus = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 export type ComplianceStatus = 'all' | 'compliant' | 'non_compliant' | 'pending';
 export type MenuStatus = 'all' | 'listed' | 'unlisted';
+export type ArchiveStatus = 'active' | 'archived' | 'all';
 
 export interface ProductFilters {
   category: string;
@@ -44,6 +45,7 @@ export interface ProductFilters {
   priceMax: number | null;
   complianceStatus: ComplianceStatus;
   menuStatus: MenuStatus;
+  archiveStatus: ArchiveStatus;
   createdAfter: Date | null;
   createdBefore: Date | null;
 }
@@ -56,6 +58,7 @@ export const defaultProductFilters: ProductFilters = {
   priceMax: null,
   complianceStatus: 'all',
   menuStatus: 'all',
+  archiveStatus: 'active',
   createdAfter: null,
   createdBefore: null,
 };
@@ -88,6 +91,7 @@ export function ProductAdvancedFilters({
     if (filters.priceMin !== null || filters.priceMax !== null) count++;
     if (filters.complianceStatus !== 'all') count++;
     if (filters.menuStatus !== 'all') count++;
+    if (filters.archiveStatus !== 'active') count++;
     if (filters.createdAfter || filters.createdBefore) count++;
     return count;
   }, [filters]);
@@ -143,6 +147,10 @@ export function ProductAdvancedFilters({
         if (filters.menuStatus === 'listed') return 'Listed on Menu';
         if (filters.menuStatus === 'unlisted') return 'Unlisted';
         return '';
+      case 'archiveStatus':
+        if (filters.archiveStatus === 'archived') return 'Archived';
+        if (filters.archiveStatus === 'all') return 'All Products';
+        return '';
       case 'createdAfter':
       case 'createdBefore':
         const parts: string[] = [];
@@ -175,6 +183,9 @@ export function ProductAdvancedFilters({
     }
     if (filters.menuStatus !== 'all') {
       badges.push({ key: 'menuStatus', label: getFilterLabel('menuStatus') });
+    }
+    if (filters.archiveStatus !== 'active') {
+      badges.push({ key: 'archiveStatus', label: getFilterLabel('archiveStatus') });
     }
     if (filters.createdAfter || filters.createdBefore) {
       badges.push({ key: 'createdAfter', label: getFilterLabel('createdAfter') });
@@ -339,6 +350,26 @@ export function ProductAdvancedFilters({
                   <SelectItem value="all">Any Status</SelectItem>
                   <SelectItem value="listed">Listed on Menu</SelectItem>
                   <SelectItem value="unlisted">Unlisted</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Archive Status Filter */}
+            <div className="space-y-2">
+              <Label>Archive Status</Label>
+              <Select
+                value={filters.archiveStatus}
+                onValueChange={(value) =>
+                  handleFilterChange('archiveStatus', value as ArchiveStatus)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Active Products" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active Products</SelectItem>
+                  <SelectItem value="archived">Archived Only</SelectItem>
+                  <SelectItem value="all">All Products</SelectItem>
                 </SelectContent>
               </Select>
             </div>
