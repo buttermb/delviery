@@ -225,3 +225,34 @@
 - All logging via `logger` from `@/lib/logger` — no console.log
 - Imports use `@/` alias as required
 - Note: Assumes `notifications` table exists (task-012 creates it)
+
+## task-012: Create Supabase migration for notifications table
+- Created `supabase/migrations/add_notifications_table.sql` as specified in task description
+- Table structure matches task requirements exactly:
+  - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()` — unique identifier
+  - `tenant_id UUID NOT NULL REFERENCES public.tenants(id)` — with ON DELETE CASCADE for cleanup
+  - `user_id UUID REFERENCES auth.users(id)` — nullable for broadcast notifications, ON DELETE SET NULL
+  - `title TEXT NOT NULL` — notification headline
+  - `message TEXT` — optional detailed message
+  - `type TEXT DEFAULT 'info'` — with CHECK constraint for valid types (info/warning/error/success)
+  - `entity_type TEXT` — optional entity reference for deep linking
+  - `entity_id UUID` — optional entity ID for deep linking
+  - `read BOOLEAN DEFAULT false` — read status
+  - `created_at TIMESTAMPTZ DEFAULT NOW()` — timestamp
+- RLS policies implemented for tenant isolation:
+  - `notifications_tenant_read_policy` — users can read notifications in their tenant (targeted or broadcast)
+  - `notifications_tenant_insert_policy` — users can insert notifications for their tenant
+  - `notifications_tenant_update_policy` — users can update (mark as read) their own notifications
+  - `notifications_tenant_delete_policy` — users can delete their own notifications
+  - `notifications_service_role_policy` — service_role has full access for system notifications
+- Indexes created as required:
+  - `idx_notifications_tenant_user_read_created` — composite index for common query pattern
+  - `idx_notifications_tenant_id` — single column index for tenant filtering
+  - `idx_notifications_user_id` — partial index for user-specific queries
+  - `idx_notifications_read` — partial index for unread notifications
+  - `idx_notifications_created_at` — index for time ordering
+  - `idx_notifications_entity` — partial index for entity lookups
+- Enabled Supabase realtime via `ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications`
+- Added COMMENT statements for table and column documentation
+- Granted appropriate permissions: SELECT/INSERT/UPDATE/DELETE to authenticated, ALL to service_role
+- Note: task-011's useNotificationDispatcher hook depends on this table existing

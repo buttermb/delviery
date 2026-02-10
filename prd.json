@@ -69,7 +69,7 @@
     "id": "task-012",
     "title": "Create Supabase migration for notifications table",
     "description": "Create supabase/migrations/add_notifications_table.sql. Columns — id uuid primary key, tenant_id uuid not null, user_id uuid, title text not null, message text, type text (info/warning/error/success), entity_type text, entity_id uuid, read boolean default false, created_at timestamptz default now(). RLS policy filtering by tenant_id. Index on tenant_id, user_id, read, created_at.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-013",
