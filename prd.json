@@ -1095,7 +1095,7 @@
     "id": "task-183",
     "title": "Create menu share and distribution",
     "description": "Create src/components/admin/menus/MenuShare.tsx — tools for distributing disposable menus. Generate shareable link, QR code, embed code. Track link clicks and conversions per distribution channel. UTM parameter support for tracking. Copy link button with toast. Bulk generate QR codes for all active menus. Download QR as PNG.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-184",

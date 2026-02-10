@@ -5407,3 +5407,33 @@ Created src/components/admin/menus/MenuTheme.tsx - comprehensive menu theming co
 - Loading states with Skeleton
 - Error handling with showErrorToast
 
+## task-183: Create menu share and distribution
+- Created `src/components/admin/menus/MenuShare.tsx` — comprehensive menu distribution tools
+- Implemented shareable link generation with UTM parameter support
+- Added distribution channel presets (Email, WhatsApp, SMS, Instagram, Facebook, QR Print, Website)
+- Custom UTM parameter editor (source, medium, campaign)
+- QR code generation using existing `@/lib/utils/qrCode.ts` utilities
+- Bulk QR code download for multiple menus with progress indicator
+- Embed code generator with configurable width/height
+- Analytics tab showing click/conversion stats per distribution channel
+- Uses `menu_access_logs` and `menu_orders` tables for tracking stats
+
+### Features implemented:
+- Tab-based UI: Links, QR Code, Embed, Stats
+- Channel-specific UTM tracking with quick-select buttons
+- Copy to clipboard with visual feedback (CheckCircle icon)
+- Bulk QR download with checkbox selection and progress bar
+- Distribution analytics table showing clicks, conversions, and conversion rate
+- Real-time preview for embed dimensions
+
+### Key patterns used:
+- useTenantAdminAuth() for tenant context
+- TanStack Query with queryKeys.menus.list and queryKeys.menus.analytics
+- formatMenuUrl() from @/utils/menuHelpers for URL generation
+- generateQRCodeDataURL() and downloadQRCodePNG() from @/lib/utils/qrCode
+- logger from @/lib/logger (no console.log)
+- All imports use @/ alias
+- Queries filter by tenant_id
+- Loading states with Skeleton
+- Error handling with showErrorToast
+
