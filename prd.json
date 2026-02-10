@@ -1203,7 +1203,7 @@
     "id": "task-201",
     "title": "Create storefront SEO settings in admin",
     "description": "Create src/components/admin/storefront/SEOSettings.tsx — manage storefront SEO from admin. Set page title, meta description, social share image, keywords. Preview how links appear on social media. Auto-generate sitemap. Per-product SEO overrides. Applies to storefront and menu pages. Saves to tenant_settings.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-202",

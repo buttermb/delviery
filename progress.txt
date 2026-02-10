@@ -5880,3 +5880,52 @@ Lessons Learned:
 - menu_schedule_history table tracks all schedule changes
 - Analytics should be preserved as JSONB snapshot before archiving
 - EventBus enables cross-module notifications without tight coupling
+## task-201: Create storefront SEO settings in admin
+- Created `src/components/admin/storefront/SEOSettings.tsx` — comprehensive SEO management component
+- Four tabs: General (meta tags), Social Sharing (OG images), Sitemap, Product SEO
+
+Key Features Implemented:
+1. Meta Tags (General Tab):
+   - Page title with 70 char limit
+   - Meta description with 160 char limit  
+   - Keywords field (comma-separated)
+   - Favicon URL configuration
+   - Real-time GoogleSearchPreview component integration
+
+2. Social Sharing Tab:
+   - Open Graph image URL field
+   - Image preview with error handling
+   - OGImagePreview component for Facebook, Twitter/X, LinkedIn
+   - Recommended dimensions displayed (1200x630px)
+
+3. Sitemap Tab:
+   - Auto-generate toggle saved to tenant_settings
+   - Generate Now button creates downloadable sitemap.xml
+   - Sitemap includes homepage + all product URLs with proper slugs
+   - Custom robots.txt editor
+   - Visual preview of URLs to be included
+   - Last generated timestamp tracking
+
+4. Per-Product SEO Overrides:
+   - Search filter for products
+   - Table showing products with custom SEO
+   - Edit dialog for individual product SEO
+   - Reset to defaults functionality
+   - Live search result preview in edit dialog
+
+Technical Patterns:
+- Used existing GoogleSearchPreview and OGImagePreview components
+- Saves to tenant_settings table via upsert with onConflict: 'tenant_id'
+- Product SEO saved to products table (seo_title, seo_description fields)
+- TanStack Query with proper query keys for caching
+- Form validation with Zod schema
+- useTenantAdminAuth() for tenant context
+- All logging via logger from @/lib/logger (no console.log)
+- Proper loading/error states with Skeleton and Alert components
+
+Lessons Learned:
+- Existing seoSettingsSchema in storefrontSettingsSchema.ts for validation reference
+- GoogleSearchPreview/OGImagePreview already existed — reused components
+- tenant_settings table stores SEO config with seo_* prefixed columns
+- Products table has seo_title and seo_description columns for overrides
+- Sitemap generation done client-side with blob download approach
