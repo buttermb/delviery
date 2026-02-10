@@ -1,67 +1,40 @@
 
-# Fix Sidebar "Rendered more hooks" Error
 
-## Problem Summary
-The sidebar is crashing with the error "Rendered more hooks than during the previous render." This is a React hooks rule violation in the sidebar's underlying hooks.
+## Fix: TypeScript Build Error in `useMenuExpiration.ts`
 
-## Root Cause
-Two hooks have **early returns that come AFTER other hooks are called**, causing the number of hooks to change between renders:
+### Problem
+The file `src/hooks/useMenuExpiration.ts` has **8 TypeScript compilation errors** starting at line 50. The root cause is overly complex inline type assertions (`as unknown as { ... }`) used to work around Supabase client typing. These massive single-line type casts have syntax issues that break the build.
 
-1. **`useSidebarPreferences.ts` (lines 366-376)**: Early return after `useQuery` and `useMutation` hooks
-2. **`useOperationSize.ts` (lines 186-195)**: Early return after `useQuery`, `useMutation`, and other hooks
+### Solution
+Replace all the verbose `as unknown as { ... }` type assertions with a simple `any` cast pattern. Since the Supabase client is already typed via the auto-generated types, and these queries are just working around missing table definitions in the generated types, a clean cast is sufficient and far more maintainable.
 
-When `admin?.userId` changes from `undefined` to a value (or vice versa), React sees different numbers of hooks being called, which breaks the rules of hooks.
+### Changes
 
-## Solution
-Move the early returns to BEFORE any hooks are called, or remove them entirely by handling the "no user" case within the hooks themselves.
+**File: `src/hooks/useMenuExpiration.ts`**
 
-### Changes Required
-
-#### 1. Fix `src/hooks/useSidebarPreferences.ts`
-Move the `!admin?.userId` check to the **beginning** of the hook, before any other hooks are called.
-
+Replace each instance of the long inline type assertion pattern:
 ```typescript
-export function useSidebarPreferences() {
-  const { tenant, admin } = useTenantAdminAuth();
-  
-  // MOVE THIS CHECK TO THE TOP - before any hooks
-  // But we can't return early before calling hooks, so we need a different approach
-  // Instead, use enabled flags and handle missing user in the return
-}
+// BEFORE (broken, 200+ character single-line type casts):
+await (supabase as unknown as { from: (table: string) => { select: ... } })
+  .from('disposable_menus')
+  ...
+
+// AFTER (clean, working):
+await (supabase as any)
+  .from('disposable_menus')
+  ...
 ```
 
-**Approach**: Remove the early return entirely. Instead:
-- Keep all hooks called unconditionally
-- Use the `enabled` option in `useQuery` to prevent fetching when user is missing
-- Return default values when data isn't available
+This applies to approximately 6 locations in the file (lines 50, 85, 123, 153, 171, 241, 252, 296).
 
-#### 2. Fix `src/hooks/useOperationSize.ts`
-Same approach - remove the early return at line 186-195 and handle the missing user case through the hooks' `enabled` flags and conditional return values.
+### Why This Is Safe
+- The Supabase client already provides runtime type safety via its SDK
+- These casts exist only because `disposable_menus` and `menu_schedule_history` may not be in the auto-generated types yet
+- Using `as any` is the standard pattern for tables not yet in generated types
+- All query results are already typed via the return type annotations (`ExpiringMenu[]`, `ArchivedMenu[]`)
 
-### Technical Implementation
+### Technical Details
+- **Files modified:** 1 (`src/hooks/useMenuExpiration.ts`)
+- **Risk:** Low -- only removing broken type assertions, no logic changes
+- **Build impact:** Resolves all 8 TS errors, unblocking the build
 
-#### `useSidebarPreferences.ts`
-```text
-Lines 366-376: DELETE the early return block
-Lines 378-385: Update to always return, handling the no-user case with defaults
-```
-
-The hook already handles `!admin?.userId` in the query's `enabled` flag and returns `DEFAULT_PREFERENCES` when appropriate. The early return is redundant and harmful.
-
-#### `useOperationSize.ts`
-```text
-Lines 186-195: DELETE the early return block
-Lines 197-204: Update to always return, using detected defaults when user is missing
-```
-
-The hook already uses `enabled: !!tenant?.id && !!admin?.userId` for the query. The early return is redundant.
-
-### Verification
-After these fixes:
-- All hooks will be called in the same order on every render
-- The sidebar will load correctly without crashing
-- Functionality remains identical (the return values handle missing user data)
-
-### Files to Modify
-1. `src/hooks/useSidebarPreferences.ts` - Remove early return at lines 366-376
-2. `src/hooks/useOperationSize.ts` - Remove early return at lines 186-195
