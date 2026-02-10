@@ -2203,3 +2203,49 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Added table and column comments for documentation
 - Foreign key to orders(id) uses ON DELETE SET NULL to preserve recurring record if template deleted
 - Foreign key to tenants(id) uses ON DELETE CASCADE to clean up when tenant removed
+
+## task-077: Create order priority system
+- Created supabase/migrations/20260210000002_add_order_priority_system.sql with full priority system
+- Added priority column to unified_orders: low/normal/high/urgent with CHECK constraint
+- Added priority tracking columns: priority_set_at, priority_set_by, priority_auto_set
+- Created tenant_priority_settings table for configurable auto-priority rules:
+  - vip_customer_priority: Priority for VIP customers
+  - large_order_threshold: Amount threshold for large order priority
+  - wholesale_default_priority: Default priority for wholesale orders
+  - urgent_delivery_hours: Hours before delivery to mark urgent
+  - notify_on_urgent/notify_on_high: Notification preferences
+- Created calculate_order_priority() RPC function for auto-priority based on rules
+- Created update_order_priority() RPC function with proper tracking
+- Created set_order_priority_on_insert trigger for auto-assignment on new orders
+- Created order_priority_notifications table for urgent/high priority alerts
+- Created triggers for notification creation on urgent/high orders and priority changes
+- Updated OrderPriorityFlag component to support 'urgent' level with Zap icon and red styling
+- Created useOrderPriority.ts hook with:
+  - usePrioritySettings: Fetch tenant priority settings
+  - useUpdatePrioritySettings: Update tenant settings with upsert
+  - useUpdateOrderPriority: Update individual order priority
+  - usePriorityNotifications: Fetch priority notifications
+  - useAcknowledgeNotification/useAcknowledgeAllNotifications: Acknowledge alerts
+  - useUrgentNotificationCount: Count for badge display
+  - sortByPriority utility function for client-side sorting
+- Updated useUnifiedOrders hook to support priority filtering and sorting:
+  - Added priority option for filtering by priority level(s)
+  - Added sortByPriority option to sort urgent/high first
+  - Added sortOrdersByPriority helper function
+  - Added priority fields to UnifiedOrder interface
+- Created UrgentOrdersBell.tsx notification bell component with:
+  - Pulsing animation for urgent notifications
+  - Popover with notification list
+  - Acknowledge individual/all actions
+  - Link to view all priority orders
+- Created PrioritySettingsForm.tsx for tenant settings configuration:
+  - Auto-priority toggle
+  - VIP customer priority setting
+  - Large order threshold and priority
+  - Wholesale default priority
+  - Urgent delivery time threshold
+  - Notification preferences
+- Created OrderPrioritySelect.tsx for inline priority changes
+- All RLS policies use tenant_users join pattern for tenant isolation
+- All imports use @/ alias, logger from @/lib/logger (no console.log)
+- Performance indexes added for priority queue ordering

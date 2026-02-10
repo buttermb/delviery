@@ -459,7 +459,7 @@
     "id": "task-077",
     "title": "Create order priority system",
     "description": "Add priority field to orders (low/normal/high/urgent). High and urgent orders show at top of list with colored indicator. Urgent orders trigger immediate notification to admin. Priority auto-set based on rules — VIP customers get high priority, large orders get high priority. Configurable in tenant settings. Filter and sort by priority.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-078",

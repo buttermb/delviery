@@ -2,8 +2,9 @@
  * Order Priority Flag Component
  *
  * Displays a badge indicating the priority level of an order.
- * Supports high, normal, and low priority indicators with
+ * Supports urgent, high, normal, and low priority indicators with
  * appropriate colors and icons for quick visual identification.
+ * Urgent orders show a pulsing animation to draw attention.
  */
 
 import { Badge } from '@/components/ui/badge';
@@ -11,8 +12,9 @@ import { cn } from '@/lib/utils';
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Flag from "lucide-react/dist/esm/icons/flag";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
+import Zap from "lucide-react/dist/esm/icons/zap";
 
-export type OrderPriority = 'high' | 'normal' | 'low';
+export type OrderPriority = 'urgent' | 'high' | 'normal' | 'low';
 
 interface OrderPriorityFlagProps {
   priority: OrderPriority;
@@ -31,6 +33,13 @@ const priorityConfig: Record<
     iconClasses?: string;
   }
 > = {
+  urgent: {
+    label: 'URGENT',
+    icon: Zap,
+    colorClasses:
+      'bg-red-600/20 text-red-600 border-red-600/30 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30 font-bold',
+    iconClasses: 'animate-pulse',
+  },
   high: {
     label: 'High Priority',
     icon: AlertTriangle,

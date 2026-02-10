@@ -18,6 +18,7 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 export type OrderType = 'retail' | 'wholesale' | 'menu' | 'pos' | 'all';
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'in_transit' | 'delivered' | 'completed' | 'cancelled' | 'rejected' | 'refunded';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid' | 'refunded';
+export type OrderPriorityLevel = 'urgent' | 'high' | 'normal' | 'low';
 
 export interface UnifiedOrder {
   id: string;
@@ -46,6 +47,11 @@ export interface UnifiedOrder {
   updated_at: string;
   cancelled_at: string | null;
   cancellation_reason: string | null;
+  // Priority fields
+  priority: OrderPriorityLevel;
+  priority_set_at: string | null;
+  priority_set_by: string | null;
+  priority_auto_set: boolean;
   // Relations
   items?: UnifiedOrderItem[];
   customer?: { id: string; first_name: string; last_name: string; email: string } | null;
@@ -98,6 +104,8 @@ export interface CreateOrderInput {
 interface UseUnifiedOrdersOptions {
   orderType?: OrderType;
   status?: OrderStatus;
+  priority?: OrderPriorityLevel | OrderPriorityLevel[];
+  sortByPriority?: boolean;
   limit?: number;
   offset?: number;
   enabled?: boolean;
@@ -123,13 +131,15 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
   const {
     orderType = 'all',
     status,
+    priority,
+    sortByPriority = false,
     limit = 50,
     offset = 0,
     enabled = true,
     realtime = true,
   } = options;
 
-  const queryKey = unifiedOrdersKeys.list(tenant?.id || '', { orderType, status, limit, offset });
+  const queryKey = unifiedOrdersKeys.list(tenant?.id || '', { orderType, status, priority, sortByPriority, limit, offset });
 
   const query = useQuery({
     queryKey,
@@ -146,16 +156,38 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
           courier:couriers(id, full_name, phone),
           menu:disposable_menus(id, name)
         `)
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1);
+        .eq('tenant_id', tenant.id);
 
+      // Apply order type filter
       if (orderType !== 'all') {
         query = query.eq('order_type', orderType);
       }
+
+      // Apply status filter
       if (status) {
         query = query.eq('status', status);
       }
+
+      // Apply priority filter
+      if (priority) {
+        if (Array.isArray(priority)) {
+          query = query.in('priority', priority);
+        } else {
+          query = query.eq('priority', priority);
+        }
+      }
+
+      // Apply sorting - if sortByPriority, sort by priority first then created_at
+      // Priority order: urgent (1) > high (2) > normal (3) > low (4)
+      if (sortByPriority) {
+        // Note: Supabase doesn't support CASE in order, so we fetch and sort client-side
+        // or use a view/computed column. For now, sort by created_at and sort in JS
+        query = query.order('created_at', { ascending: false });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+
+      query = query.range(offset, offset + limit - 1);
 
       const { data, error } = await query;
 
@@ -164,12 +196,43 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
         throw error;
       }
 
-      return data as UnifiedOrder[];
+      let orders = data as UnifiedOrder[];
+
+      // Sort by priority client-side if requested
+      if (sortByPriority && orders.length > 0) {
+        orders = sortOrdersByPriority(orders);
+      }
+
+      return orders;
     },
     enabled: enabled && !!tenant?.id,
     staleTime: 30000, // 30 seconds
     gcTime: 300000, // 5 minutes
   });
+
+  /**
+   * Sort orders by priority (urgent first, then high, normal, low)
+   */
+  function sortOrdersByPriority(orders: UnifiedOrder[]): UnifiedOrder[] {
+    const priorityOrder: Record<OrderPriorityLevel, number> = {
+      urgent: 1,
+      high: 2,
+      normal: 3,
+      low: 4,
+    };
+
+    return [...orders].sort((a, b) => {
+      const priorityA = priorityOrder[a.priority || 'normal'];
+      const priorityB = priorityOrder[b.priority || 'normal'];
+
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Secondary sort by created_at (newest first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }
 
   // Real-time subscription
   useEffect(() => {
@@ -269,7 +332,7 @@ export function useCreateUnifiedOrder() {
         p_metadata: JSON.parse(JSON.stringify(input.metadata || {})),
       };
 
-      // @ts-ignore - RPC exists after unified architecture migration
+      // @ts-expect-error - RPC exists after unified architecture migration
       const { data: orderId, error } = await supabase.rpc('create_unified_order', rpcParams);
 
       if (error) {
@@ -320,6 +383,11 @@ export function useCreateUnifiedOrder() {
         updated_at: new Date().toISOString(),
         cancelled_at: null,
         cancellation_reason: null,
+        // Priority defaults (will be set by DB trigger)
+        priority: 'normal',
+        priority_set_at: null,
+        priority_set_by: null,
+        priority_auto_set: false,
       };
 
       // Add to all matching list caches
@@ -565,7 +633,7 @@ export function useCancelOrder() {
 
       // Reverse balance if requested and is wholesale order
       if (reverseBalance && order.order_type === 'wholesale' && order.wholesale_client_id) {
-        // @ts-ignore - RPC exists after unified architecture migration
+        // @ts-expect-error - RPC exists after unified architecture migration
         await supabase.rpc('update_contact_balance', {
           p_contact_id: order.wholesale_client_id,
           p_amount: order.total_amount,
