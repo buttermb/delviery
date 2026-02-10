@@ -123,3 +123,23 @@
 - TypeScript generic `<T>` for typed payload in callback
 - No console.log — all logging via `@/lib/logger`
 - Imports use `@/` alias as required
+
+## task-008: Create activity log utility
+- Created `src/lib/activityLog.ts` with function `logActivity(tenantId, userId, action, entityType, entityId, metadata)`
+- Inserts into `activity_log` table via Supabase direct insert (not RPC like existing activityLogger.ts)
+- Action types defined as const object: `created`, `updated`, `deleted`, `viewed`, `exported`, `synced`
+- Entity types defined as const object: order, product, customer, inventory, menu, storefront, delivery, payment, invoice, user, settings, report, supplier, purchase_order, return, coupon, loyalty
+- Type exports: `ActivityActionType`, `EntityTypeValue`, `ActivityMetadata`, `ActivityLogEntry`
+- Added `logActivities` for batch operations — useful for bulk imports/exports
+- Added `createActivityMetadata` helper for building structured metadata with changes, previousValues, and timestamp
+- Error handling: logs errors but doesn't throw — activity logging failures shouldn't break the app
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Imports use `@/` alias as required
+- Also added `activity` query keys factory to `queryKeys.ts` for task-009 to use:
+  - `queryKeys.activity.list(tenantId, filters)`
+  - `queryKeys.activity.detail(tenantId, activityId)`
+  - `queryKeys.activity.byTenant(tenantId)`
+  - `queryKeys.activity.byEntity(tenantId, entityType, entityId)`
+  - `queryKeys.activity.byUser(tenantId, userId)`
+  - `queryKeys.activity.search(tenantId, query)`
+  - `queryKeys.activity.recent(tenantId, limit)`

@@ -919,4 +919,25 @@ export const queryKeys = {
     detail: (dealId: string) =>
       [...queryKeys.storefrontDeals.all, dealId] as const,
   },
+
+  // Activity Log
+  activity: {
+    all: ['activity'] as const,
+    lists: () => [...queryKeys.activity.all, 'list'] as const,
+    list: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.activity.lists(), { tenantId, ...filters }] as const,
+    details: () => [...queryKeys.activity.all, 'detail'] as const,
+    detail: (tenantId: string, activityId: string) =>
+      [...queryKeys.activity.details(), tenantId, activityId] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.activity.all, 'tenant', tenantId] as const,
+    byEntity: (tenantId: string, entityType: string, entityId?: string) =>
+      [...queryKeys.activity.byTenant(tenantId), 'entity', entityType, entityId] as const,
+    byUser: (tenantId: string, userId: string) =>
+      [...queryKeys.activity.byTenant(tenantId), 'user', userId] as const,
+    search: (tenantId: string, query: string) =>
+      [...queryKeys.activity.byTenant(tenantId), 'search', query] as const,
+    recent: (tenantId: string, limit?: number) =>
+      [...queryKeys.activity.byTenant(tenantId), 'recent', limit] as const,
+  },
 } as const;

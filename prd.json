@@ -45,7 +45,7 @@
     "id": "task-008",
     "title": "Create activity log utility",
     "description": "Create src/lib/activityLog.ts with function logActivity(tenantId, userId, action, entityType, entityId, metadata). Inserts into activity_log table via Supabase. Action types include created, updated, deleted, viewed, exported, synced. This creates the audit trail connecting all user actions across modules.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-009",
