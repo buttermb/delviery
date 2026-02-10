@@ -195,7 +195,7 @@
     "id": "task-033",
     "title": "Create useInventoryHistory hook",
     "description": "Create src/hooks/useInventoryHistory.ts — fetch inventory change history for a product or across all products. Accepts productId (optional) and dateRange. Returns history entries with formatted changes. Used in product detail view and inventory reports. Includes calculated fields like running total. Uses queryKeys.inventory.history factory.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-034",

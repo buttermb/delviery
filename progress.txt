@@ -891,3 +891,37 @@
   - `(reference_type, reference_id)` for lookups
 - Lesson: Always check existing migrations before creating new ones — task may already be complete
 - The existing implementation exceeds requirements with better data types and constraints
+
+## task-033: Create useInventoryHistory hook
+- Hook already existed at `src/hooks/useInventoryHistory.ts` with basic functionality
+- Enhanced to meet all task requirements:
+  - Added `dateRange` parameter (as DateRange interface with startDate/endDate)
+  - Maintained backward compatibility with separate `startDate`/`endDate` params
+  - Added `formattedChange` field (e.g., "+50", "-25", "0") via `formatChange()` helper
+  - Added `runningTotal` calculation for each entry
+  - Added `changeTypeLabel` for human-readable change type display
+  - Added `changeDirection` ('increase' | 'decrease' | 'neutral') for UI styling
+- Created `FormattedInventoryHistoryEntry` interface extending base entry with calculated fields
+- Running total logic:
+  - Uses `new_quantity` from each entry as the running total at that point in time
+  - Entries are returned in descending order (newest first) matching query ORDER BY
+  - `calculateRunningTotals()` function processes entries and adds formatted fields
+- Summary statistics added via `useMemo`:
+  - `totalChanges` — count of history entries
+  - `netChange` — totalIncrease - totalDecrease
+  - `totalIncrease` — sum of positive changes
+  - `totalDecrease` — sum of negative changes (absolute value)
+  - `currentQuantity` — running total of most recent entry
+- Uses `queryKeys.inventory.history()` factory (already existed in queryKeys.ts)
+- Supabase query uses type assertion to handle untyped `inventory_history` table:
+  - `(supabase as unknown as { from: (table: string) => unknown }).from('inventory_history')`
+  - Returns typed `InventoryHistoryEntry[]` via explicit return type
+- Hook returns structured object:
+  - `data` — raw entries from database
+  - `formattedEntries` — entries with running totals and formatting
+  - `summary` — computed statistics
+  - Query state: `isLoading`, `isPending`, `isFetching`, `isError`, `error`, `refetch`
+- CHANGE_TYPE_LABELS constant maps change types to display labels
+- All logging via `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias and follow import order: React → Third-party → Local imports
+- Lesson: When enhancing existing hooks, preserve backward compatibility while adding new features
