@@ -675,3 +675,28 @@
 - No console.log — pure UI component
 - No tenant_id filtering needed — presentational component only
 - All imports use `@/` alias as required
+
+## task-026: Create useGlobalSearch hook
+- Updated `src/hooks/useGlobalSearch.ts` to match task requirements exactly
+- Searches across orders, products, customers, and vendors simultaneously using parallel queries
+- Returns categorized results in `{ orders[], products[], customers[], vendors[] }` format
+- Implemented relevance scoring with three tiers:
+  - EXACT_MATCH_SCORE (100) — value equals search term
+  - STARTS_WITH_SCORE (75) — value starts with search term
+  - CONTAINS_SCORE (50) — value contains search term
+- Each result includes: id, name, subtitle, status (optional), relevanceScore, metadata
+- Results are sorted by relevance score (highest first) within each category
+- Uses `useDebounce` hook from `@/hooks/useDebounce` with 300ms default delay
+- Minimum 2 characters required before search triggers (configurable via `minChars`)
+- All queries filter by tenant_id:
+  - Orders and products use `tenant_id`
+  - Customers (profiles) use `account_id`
+  - Vendors use `account_id`
+- Uses Supabase `.or()` with `.ilike()` for case-insensitive partial matching
+- TanStack Query with `staleTime: 30000` for caching
+- Hook options: minChars, debounceMs, limitPerCategory, enabled
+- Returns: results, isSearching, error, totalCount, setQuery, clear, query, debouncedQuery
+- Helper functions `calculateRelevanceScore` and `getBestRelevanceScore` for scoring logic
+- Graceful error handling with logger.warn for individual query failures
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required

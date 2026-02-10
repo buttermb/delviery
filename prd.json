@@ -153,7 +153,7 @@
     "id": "task-026",
     "title": "Create useGlobalSearch hook",
     "description": "Create src/hooks/useGlobalSearch.ts — searches across orders, products, customers, and vendors simultaneously. Accept search query string. Returns categorized results { orders[], products[], customers[], vendors[] } with relevance scoring. Uses Supabase ilike or full-text search. Debounce 300ms. Min 2 characters. Filter by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-027",
