@@ -1251,7 +1251,7 @@
     "id": "task-209",
     "title": "Create delivery proof of delivery",
     "description": "Create src/components/admin/delivery/ProofOfDelivery.tsx — runner captures proof of delivery. Photo upload, customer signature (canvas), recipient name, delivery notes. Stored in Supabase Storage linked to delivery and order. Viewable on order detail page. Required for compliance in cannabis delivery. Generates delivery receipt.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-210",

@@ -6135,3 +6135,22 @@ Technical notes:
 - All queries filter by tenant_id for multi-tenant isolation
 - ESLint warning fixed by copying ref value for cleanup function
 - Publishes notification_sent event after each notification
+
+
+## task-209: Create delivery proof of delivery
+- Created src/components/admin/delivery/ProofOfDelivery.tsx for capturing proof of delivery
+- Component captures photo evidence, customer signature, recipient name, and delivery notes
+- Uses react-signature-canvas for signature capture on canvas
+- Photo upload supports both file selection and device camera capture
+- Form validation with react-hook-form + zod schema
+- Geolocation capture for delivery location verification (lat/lng with accuracy)
+- Uploads images to Supabase Storage "delivery-proofs" bucket
+- Stores proof in delivery_proofs table (with graceful fallback if table doesn't exist yet)
+- Generates text-based delivery receipt for compliance documentation
+- Compliance alert reminds runner of age verification (21+) requirements
+- Uses useTenantAdminAuth for tenant context (tenant_id filtering)
+- DeliveryProofData interface exported for consumer components
+- All logging via logger from @/lib/logger — no console.log
+- Proper error handling with toast notifications
+- Loading states during submission and location capture
+- Tabs UI separates photo and signature capture for better mobile UX
