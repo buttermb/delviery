@@ -687,7 +687,7 @@
     "id": "task-115",
     "title": "Create product comparison view",
     "description": "Create src/components/admin/products/ProductComparison.tsx — select 2-4 products to compare side by side. Compare price, stock, sales velocity, revenue, vendor, category, compliance status. Highlight differences. Useful for deciding which products to promote or discontinue. Accessible from product list via multi-select action.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-116",

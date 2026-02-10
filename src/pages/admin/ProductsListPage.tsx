@@ -63,8 +63,11 @@ import Store from "lucide-react/dist/esm/icons/store";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Archive from "lucide-react/dist/esm/icons/archive";
 import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
+import GitCompare from "lucide-react/dist/esm/icons/git-compare";
 
 import type { Database } from '@/integrations/supabase/types';
+
+import { ProductComparison } from '@/components/admin/products/ProductComparison';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 // Extended product type to include archived_at field (added via migration)
@@ -116,6 +119,9 @@ export function ProductsListPage() {
 
   // Selection state
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+  // Comparison dialog state
+  const [showComparison, setShowComparison] = useState(false);
 
   // Persist filter changes
   const prevFiltersRef = useRef({ advancedFilters, sortBy });
@@ -800,9 +806,21 @@ export function ProductsListPage() {
           <div className="flex items-center justify-between">
             <CardTitle>Products ({filteredProducts.length})</CardTitle>
             {selectedProducts.length > 0 && (
-              <Badge variant="secondary">
-                {selectedProducts.length} selected
-              </Badge>
+              <div className="flex items-center gap-2">
+                {selectedProducts.length >= 2 && selectedProducts.length <= 4 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowComparison(true)}
+                  >
+                    <GitCompare className="h-4 w-4 mr-2" />
+                    Compare ({selectedProducts.length})
+                  </Button>
+                )}
+                <Badge variant="secondary">
+                  {selectedProducts.length} selected
+                </Badge>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -907,6 +925,13 @@ export function ProductsListPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Product Comparison Dialog */}
+      <ProductComparison
+        productIds={selectedProducts}
+        open={showComparison}
+        onClose={() => setShowComparison(false)}
+      />
     </div>
   );
 }

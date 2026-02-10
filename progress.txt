@@ -3163,3 +3163,18 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - RLS policies use `profiles.tenant_id` pattern for tenant isolation
 - Added SELECT, INSERT, UPDATE, DELETE policies for CRUD operations
 - Key learning: Reuse existing tables when available - no need to duplicate tags table
+
+## task-115: Create product comparison view
+- Created ProductComparison.tsx component for comparing 2-4 products side by side
+- Compares the following metrics: wholesale price, retail price, stock levels, sales velocity, revenue (30d), vendor, category, compliance status, days until stockout
+- Uses useBulkProductVelocity hook for efficient batch velocity calculation
+- Created useProductRevenueData hook to fetch 30-day revenue from order_items
+- Highlights best/worst values with green/red backgrounds using getMetricHighlight()
+- Shows trend indicators (increasing/decreasing/stable) for sales velocity
+- Compliance status determined by presence of COA/lab results and test date expiration
+- Displays reorder urgency badges for products approaching stockout
+- Integrated into ProductsListPage with "Compare" button appearing when 2-4 products are selected
+- Dialog uses shadcn/ui Dialog with ScrollArea for scrollable comparison table
+- All database queries filter by tenant_id for multi-tenant isolation
+- Uses logger from @/lib/logger (no console.log statements)
+- TypeScript strict mode compliant with proper typing throughout
