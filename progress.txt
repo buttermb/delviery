@@ -4310,3 +4310,72 @@ Date: 2026-02-10
 - Partial unique indexes prevent duplicate pricing without blocking NULL values
 - SECURITY DEFINER functions for RLS bypass when calculating prices
 - XOR constraint pattern: `(a IS NOT NULL AND b IS NULL) OR (a IS NULL AND b IS NOT NULL)`
+
+## task-148: Create customer dashboard overview
+
+### Implementation Details
+
+**File Created: src/pages/admin/CustomerDashboard.tsx**
+
+### Components implemented:
+- `CustomerDashboard` - Main overview page for customer module
+- `StatsCard` - Reusable animated stats card with icons and trends
+- `StatsCardSkeleton` - Loading state skeleton for stats cards
+
+### Stats cards displayed:
+- Total Customers (with Users icon)
+- New This Week (with UserPlus icon and trend)
+- Active Rate percentage (with Activity icon and trend)
+- Average LTV (with TrendingUp icon and trend)
+- Churn Rate (with UserX icon and trend)
+
+### Charts implemented:
+- Customer Growth Line Chart (using recharts LineChart):
+  - Shows total customers over last 30 days
+  - Dashed line for new customers per day
+  - Responsive container with proper tooltips and legend
+- Segment Distribution Pie Chart:
+  - Donut chart showing VIP, Active, New, At Risk, Churned segments
+  - Color-coded matching segment system colors
+  - Inner/outer radius for donut effect
+
+### Data tables:
+- Top Customers by LTV table:
+  - Columns: Customer name, LTV amount, Order count, Segment badge
+  - Clickable rows navigate to customer detail
+  - Sorted by total spend descending
+  - Uses existing `useBulkCustomerLTV` hook
+
+### Activity feed:
+- Recent Customer Activity section:
+  - Shows latest 10 customer orders
+  - Displays customer avatar initial, name, order date/time
+  - Shows order amount and status badge
+  - Clickable items navigate to customer detail
+
+### Quick actions section:
+- Card with gradient background at top
+- Buttons: Add Customer, Import, Export, View All
+- Uses `useTenantNavigation` hook for proper tenant-aware navigation
+
+### Hooks leveraged:
+- `useCustomerSegments` - for segment counts and distribution data
+- `useBulkCustomerLTV` - for LTV data and top customers
+- `useCustomerGrowth` (local) - custom hook for growth chart data
+- `useRecentCustomerActivity` (local) - custom hook for activity feed
+
+### Key patterns followed:
+- All database queries filter by `tenant_id` via `useTenantAdminAuth()`
+- Proper loading states with skeletons for all async data
+- Empty states using `EnhancedEmptyState` component
+- Motion animations using framer-motion for stats cards and charts
+- Mobile-responsive with horizontal scroll for stats cards on small screens
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Proper import order: React → Third-party → Types → Components → Utils
+
+### Key learnings:
+- Reused existing `useCustomerSegments` and `useBulkCustomerLTV` hooks rather than duplicating logic
+- The `counts` object from `useCustomerSegments` provides pre-calculated segment totals
+- Chart data transformation happens in useMemo to avoid recalculation on every render
+- `useTenantNavigation` hook provides `navigateToAdmin()` for proper tenant-aware routing
+- Motion animations with staggered delays create polished loading experience

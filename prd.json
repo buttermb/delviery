@@ -885,7 +885,7 @@
     "id": "task-148",
     "title": "Create customer dashboard overview",
     "description": "Create src/pages/admin/CustomerDashboard.tsx — overview page for customer module. Stats cards — total customers, new this week, active percentage, average LTV, churn rate. Segment distribution pie chart. Top customers by LTV table. Recent customer activity feed. Customer growth trend line chart. Quick actions — add customer, import, export.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-149",
