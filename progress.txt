@@ -3832,3 +3832,22 @@ Implementation follows all project rules:
 - SET search_path = public prevents schema injection vulnerabilities
 - Triggers are powerful for maintaining denormalized data (balance_after, customer_credit_balance)
 - Comments on tables and columns improve schema documentation
+
+## task-137: Create customer import from CSV
+- Created `src/components/admin/customers/CustomerImport.tsx`
+- Multi-step wizard: upload → map columns → preview → import → complete
+- CSV/Excel parsing using `xlsx` library (read, utils.sheet_to_json)
+- Auto-mapping of file columns to system fields by name matching
+- Validation for required fields (first_name, last_name) and email format
+- Duplicate detection by phone/email using TanStack Query against existing customers
+- Three duplicate handling strategies: skip, merge, overwrite
+- Preview step shows statistics (valid, invalid, duplicates, new) and matched customer table
+- Import runs with progress indicator, processes each customer individually
+- Activity logging with `useActivityLog` hook (logs to activity_log table)
+- Results summary with breakdown: imported, merged, overwritten, skipped, failed
+- Error report download functionality for failed records
+- Used `useTenantAdminAuth()` for tenant context filtering
+- All queries filter by `tenant_id` as required
+- No console.log statements — used `logger` from `@/lib/logger`
+- Proper loading states and error handling throughout
+- Used shadcn/ui components: Dialog, Card, Table, RadioGroup, Progress, etc.

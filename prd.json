@@ -819,7 +819,7 @@
     "id": "task-137",
     "title": "Create customer import from CSV",
     "description": "Create src/components/admin/customers/CustomerImport.tsx — upload CSV with customer data. Parse and validate name, phone, email, address. Duplicate detection by phone/email. Show preview with matched existing customers. Options — skip duplicates, merge, overwrite. Import results summary. Log action. Connects to customer search for deduplication.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-138",
