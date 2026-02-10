@@ -57,7 +57,7 @@
     "id": "task-010",
     "title": "Create Supabase migration for activity_log table",
     "description": "Create supabase/migrations/add_activity_log_table.sql. Table columns — id uuid primary key default gen_random_uuid(), tenant_id uuid references tenants(id), user_id uuid references auth.users(id), action text not null, entity_type text not null, entity_id uuid, metadata jsonb default '{}', created_at timestamptz default now(). Add RLS policy — users can only read/write activity for their tenant. Add index on tenant_id, entity_type, created_at.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-011",

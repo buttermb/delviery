@@ -173,3 +173,29 @@
 - Imports use `@/` alias as required
 - Options accept `enabled` flag to disable query and `refetchInterval` for auto-refresh
 - Default staleTime of 30 seconds to reduce unnecessary fetches
+
+## task-010: Create Supabase migration for activity_log table
+- Created `supabase/migrations/add_activity_log_table.sql` as specified in task description
+- Table structure matches task requirements exactly:
+  - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()` — unique identifier
+  - `tenant_id UUID NOT NULL REFERENCES public.tenants(id)` — with ON DELETE CASCADE for cleanup
+  - `user_id UUID REFERENCES auth.users(id)` — nullable for system actions, ON DELETE SET NULL
+  - `action TEXT NOT NULL` — action performed (created, updated, deleted, etc.)
+  - `entity_type TEXT NOT NULL` — type of entity affected (order, product, customer, etc.)
+  - `entity_id UUID` — nullable for actions not tied to specific entity
+  - `metadata JSONB DEFAULT '{}'::jsonb` — additional context data
+  - `created_at TIMESTAMPTZ DEFAULT NOW()` — timestamp of activity
+- RLS policies implemented for tenant isolation:
+  - `activity_log_tenant_read_policy` — users can only SELECT activity from their tenant via tenant_users lookup
+  - `activity_log_tenant_insert_policy` — users can only INSERT activity for their tenant via tenant_users lookup
+  - `activity_log_service_role_policy` — service_role can do anything for system-level logging
+- Indexes created for efficient querying:
+  - `idx_activity_log_tenant_entity_created` — composite index on (tenant_id, entity_type, created_at DESC) as required
+  - `idx_activity_log_tenant_id` — single column index for tenant filtering
+  - `idx_activity_log_entity_id` — partial index for entity lookups (WHERE entity_id IS NOT NULL)
+  - `idx_activity_log_user_id` — partial index for user activity queries (WHERE user_id IS NOT NULL)
+  - `idx_activity_log_action` — index on action for action-type filtering
+- Added COMMENT statements for table and column documentation
+- Granted SELECT and INSERT to authenticated role, ALL to service_role
+- Note: existing `activity_logs` (plural) table in 20250101000001 migration uses `resource`/`resource_id` columns
+  - New `activity_log` (singular) table uses `entity_type`/`entity_id` as specified in task-008/009 utilities
