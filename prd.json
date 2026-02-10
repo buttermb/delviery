@@ -1137,7 +1137,7 @@
     "id": "task-190",
     "title": "Create menu compliance badge display",
     "description": "On each menu, display required compliance information. For cannabis — license number, lab test badges, THC/CBD content. Configurable per tenant's jurisdiction. Required fields enforced before menu can be published. Non-compliant products flagged and optionally hidden. Compliance data pulled from product compliance records.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-191",

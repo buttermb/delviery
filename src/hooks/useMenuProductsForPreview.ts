@@ -18,6 +18,12 @@ export interface MenuProductPreview {
     strain_type: string | null;
     thc_content: number | null;
     cbd_content: number | null;
+    // Compliance fields
+    lab_name?: string | null;
+    lab_results_url?: string | null;
+    test_date?: string | null;
+    coa_url?: string | null;
+    batch_number?: string | null;
   } | null;
 }
 

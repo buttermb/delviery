@@ -5606,3 +5606,20 @@ Completed: Tue, Feb 10, 2026
 - Added updated_at trigger to auto-update timestamp on record changes
 - Added table and column comments for documentation
 - Aligned schema with existing useAbandonedCarts.ts hook interface
+
+## task-190: Create menu compliance badge display
+- Created `src/components/admin/disposable-menus/MenuComplianceBadge.tsx` component
+- Component displays cannabis compliance information: lab test badges, THC/CBD content, COA availability, batch tracking
+- Implemented `JurisdictionRequirements` interface for configurable compliance rules per tenant
+- Default jurisdiction requires: lab test, COA, batch number, THC display, test date (with 365-day expiration)
+- Compliance checks include: lab tested status, COA availability, batch tracking, test date validity, THC/CBD content display
+- Added `isProductCompliant()` and `getComplianceIssues()` helper functions for external use
+- Component has two display modes: summary (single badge with tooltip) and detailed (all badges shown)
+- Supports size variants: sm, md, lg with appropriate icon and text sizing
+- Uses semantic status colors from design system (success, warning, destructive, info)
+- Integrated into `MenuPreview.tsx` - replaced simple THC/CBD badges with compliance badge
+- Updated `useMenuProductsForPreview.ts` hook interface to include compliance fields
+- All imports use `@/` alias, proper import order (React → Third-party → Types → Components → Utils)
+- No console.log used — all logging would go through logger if needed
+- Component uses existing Badge, Tooltip UI components from shadcn/ui
+- Lucide icons: ShieldCheck, ShieldAlert, FlaskConical, FileCheck, Award, CheckCircle, AlertTriangle
