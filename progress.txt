@@ -2540,3 +2540,35 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Component follows project patterns: loading skeletons, proper imports, no console.log
 - Used logger from @/lib/logger for error logging
 - All imports use @/ alias as required
+
+## Task 090: Create product inventory auto-reorder trigger
+
+**Completed:** Created useAutoReorder hook and integrated with product detail page and dashboard
+
+**What was implemented:**
+- Created src/hooks/useAutoReorder.ts with three main hooks:
+  - `useAutoReorder()` - monitors all products below low_stock_threshold, returns reorder suggestions
+  - `useProductReorder(productId)` - gets reorder info for a specific product
+  - `useCreateReorderPO()` - mutation hook for one-click purchase order creation
+- Created src/components/admin/products/ProductReorderCard.tsx for product detail page
+  - Shows sales velocity stats (daily average, weekly/monthly totals, days of stock remaining)
+  - Displays suggested reorder quantity with estimated cost
+  - One-click "Create Purchase Order" button that calls create-purchase-order edge function
+  - Priority badges (critical/high/medium/low) based on stock levels and velocity
+- Updated src/components/admin/dashboard/AutoReorderSuggestionsWidget.tsx
+  - Now uses useAutoReorder hook instead of direct wholesale_inventory query
+  - Shows summary stats (total items, estimated reorder cost)
+  - Links to product detail page and purchase orders
+- Added ProductReorderCard to ProductDetailsPage.tsx in the Inventory tab
+
+**Key learnings:**
+- Sales velocity calculation uses order_items table from last 30 days
+- Priority is calculated from: current stock vs threshold AND days of stock remaining
+- Suggested quantity targets 30 days of stock or 2x threshold, whichever is higher
+- Used TanStack Query with custom query key factory for reorder suggestions
+- Edge function create-purchase-order handles PO creation, no direct table insert needed
+- Products table has vendor_id/vendor_name for vendor association
+- All queries filter by tenant_id via useTenantAdminAuth().tenant?.id
+- Component uses useTenantNavigation for tenant-aware routing
+- Logger from @/lib/logger used for all error/info logging (no console.log)
+- Mutation hook invalidates both purchaseOrders and reorder suggestions queries on success

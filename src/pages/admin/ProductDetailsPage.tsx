@@ -14,6 +14,7 @@ import { ProductInventoryChart } from '@/components/admin/products/ProductInvent
 import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard';
 import { ProductMenuAppearances } from '@/components/admin/products/ProductMenuAppearances';
 import { ProductComplianceStatus } from '@/components/admin/products/ProductComplianceStatus';
+import { ProductReorderCard } from '@/components/admin/products/ProductReorderCard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -543,6 +544,9 @@ export default function ProductDetailsPage() {
 
                     {/* Inventory Tab */}
                     <TabsContent value="inventory" className="space-y-4">
+                        {/* Reorder Suggestion Card */}
+                        <ProductReorderCard productId={productId} />
+
                         {/* Inventory History Chart */}
                         <ProductInventoryChart productId={productId} />
 

@@ -537,7 +537,7 @@
     "id": "task-090",
     "title": "Create product inventory auto-reorder trigger",
     "description": "When product stock falls below low_stock_threshold, auto-create a reorder suggestion. Create src/hooks/useAutoReorder.ts — monitors inventory levels, generates reorder recommendations with suggested quantity based on sales velocity. Show reorder suggestions on product detail and dashboard. One-click to create purchase order to vendor.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-091",
