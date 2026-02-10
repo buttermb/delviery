@@ -1081,3 +1081,49 @@
 - All callbacks memoized with `useCallback` for stable references
 - No console.log — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias as required
+
+## task-039: Create shared filter bar component
+- Created `src/components/admin/shared/FilterBar.tsx` — reusable filter bar with comprehensive filtering features
+- Core filter types supported:
+  - `select` — dropdown with options array, placeholder support
+  - `dateRange` — dual calendar popover with from/to date selection
+  - `date` — single date picker
+  - `text` — text input for custom filters
+- Props interface includes:
+  - `filters: FilterConfig[]` — array of filter configurations
+  - `activeFilters: ActiveFilters` — current filter values object
+  - `onFilterChange: (filters) => void` — callback for filter updates
+  - `onClear: () => void` — callback to clear all filters
+  - `storageKey?: string` — localStorage key for persistence
+  - `searchPlaceholder?: string` — search input placeholder
+  - `searchValue? / onSearchChange?` — controlled search props
+  - `showSearch?: boolean` — toggle search visibility
+  - `customFilters?: ReactNode` — slot for custom filter elements
+  - `className?: string` — additional styling
+- localStorage persistence:
+  - `loadFiltersFromStorage(key)` — retrieves filters from localStorage
+  - `saveFiltersToStorage(key, filters)` — persists filters to localStorage
+  - Auto-loads on mount when `storageKey` provided
+  - Auto-saves on filter change via useEffect
+  - Clears storage when `handleClearAll()` is called
+- Active filter count badge:
+  - `countActiveFilters()` helper counts non-empty filter values
+  - DateRange values checked for from/to presence
+  - Badge shown next to Filter icon when count > 0
+- Active filter badges row:
+  - Displays each active filter with label and value
+  - Remove button (X icon) to clear individual filters
+  - Only renders when activeFilterCount > 0
+- Date formatting via date-fns:
+  - Stores dates as ISO 'yyyy-MM-dd' strings
+  - Displays ranges intelligently: "Feb 1 - 15, 2026" or "From Feb 1, 2026"
+  - Uses `format()` from date-fns for consistent formatting
+- Helper hook `useFilterBar(storageKey, defaultFilters)` exported:
+  - Manages filter state with useState
+  - Integrates localStorage persistence
+  - Returns { filters, setFilters, clearFilters, searchValue, setSearchValue }
+- Uses react-day-picker's `DateRange` type for calendar integration
+- Uses shadcn/ui components: Button, Input, Badge, Calendar, Popover, Select
+- Uses lucide-react icons: CalendarIcon, Search, X, Filter
+- All logging via `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required

@@ -231,7 +231,7 @@
     "id": "task-039",
     "title": "Create shared filter bar component",
     "description": "Create src/components/admin/shared/FilterBar.tsx — reusable filter bar with date range picker, status dropdown, search input, and custom filter slots. Props — filters config array, onFilterChange, activeFilters object, onClear. Persists active filters to localStorage. Shows active filter count badge. Used across orders, products, customers pages.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-040",
