@@ -177,7 +177,7 @@
     "id": "task-030",
     "title": "Create shared date formatter utility",
     "description": "Create src/lib/formatters/date.ts — formatDate(date, format), formatRelative(date) returns \"2 hours ago\" or \"Yesterday\", formatDateRange(start, end). Timezone-aware using tenant settings. Used across all modules for consistent date display. Export as named functions.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-031",

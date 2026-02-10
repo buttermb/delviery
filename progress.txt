@@ -802,3 +802,41 @@
 - Marking as passing since the required functionality exists and is properly exported
 - No changes needed — existing code structure is superior (utils directory organization vs formatters subdirectory)
 - Lesson: Always check if functionality already exists before creating new files
+
+## task-030: Create shared date formatter utility
+- Created `src/lib/formatters/date.ts` as a new file in the formatters directory
+- Core functions implemented exactly as task specified:
+  - `formatDate(date, format, options)` — formats date with custom format string (date-fns tokens)
+  - `formatRelative(date, options)` — returns "2 hours ago", "Yesterday", "Tomorrow" etc.
+  - `formatDateRange(start, end, options)` — intelligent range formatting with redundancy elimination
+- Timezone support using native Intl API (not date-fns-tz which isn't installed):
+  - `toTimezone(date, timezone)` — converts date to target timezone using Intl.DateTimeFormat
+  - `resolveTimezone(timezone)` — falls back to DEFAULT_TIMEZONE ('America/New_York') when not provided
+  - Options accept `timezone?: string | null` for tenant settings integration
+- Additional exports for convenience:
+  - `DATE_FORMATS` — preset format strings (short, medium, long, full, iso, time, dateTime)
+  - `getCurrentTimezone()` — detects user's timezone via Intl API
+  - `getTimezoneAbbreviation(timezone, date)` — returns "EST", "PST" etc.
+  - `formatDateWithTimezone(date, options)` — formats with timezone indicator appended
+- Relative formatting handles special cases:
+  - "Just now" for < 1 minute
+  - "X minutes ago" for < 60 minutes
+  - "X hours ago" for same day
+  - "Yesterday", "Tomorrow" for adjacent days
+  - "X days ago" / "in X days" for within a week
+  - Falls back to formatDistance for older dates
+- Date range formatting is intelligent:
+  - Same day: "Feb 9, 2026"
+  - Same month: "Feb 1 - 15, 2026"
+  - Same year: "Jan 15 - Feb 15, 2026"
+  - Different years: "Dec 15, 2025 - Jan 15, 2026"
+  - Supports includeTime option for time ranges on same day
+- Error handling:
+  - Graceful fallback to local formatting when timezone conversion fails
+  - Returns placeholder ('—') for null/undefined/invalid dates
+  - Logger warnings for parse and format failures
+- Note: `src/lib/utils/formatDate.ts` also exists with similar but different API
+  - The new file follows the task's specified API exactly
+  - Both can coexist; the formatters.ts barrel file exports from utils version
+- All logging via `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
