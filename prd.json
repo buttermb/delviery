@@ -21,7 +21,7 @@
     "id": "task-004",
     "title": "Create useQueryInvalidation hook",
     "description": "Create src/hooks/useQueryInvalidation.ts — centralizes TanStack Query invalidation logic. Methods like invalidateOrder(tenantId, orderId) that invalidates orders.detail, orders.list, related customer queries, related inventory queries, and dashboard stats. Every mutation across the app should use this hook instead of manual invalidation. Use queryClient from TanStack Query.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-005",

@@ -33,3 +33,21 @@
 - Added module-specific related queries (e.g., vendors.products, menus.products, compliance.audits)
 - Used `as const` for proper type inference with TanStack Query
 - No breaking changes to existing factories — backward compatible extensions
+
+## task-004: Create useQueryInvalidation hook
+- Created `src/hooks/useQueryInvalidation.ts` to centralize TanStack Query invalidation logic
+- Uses `useQueryClient` from TanStack Query to access the query client
+- All invalidation methods are memoized with `useCallback` to prevent unnecessary re-renders
+- Methods handle cross-module dependencies (e.g., `invalidateOrder` also invalidates dashboard, analytics, inventory)
+- Key methods implemented:
+  - `invalidateOrder(tenantId, orderId)` — invalidates orders.detail, orders.list, dashboard stats, analytics, inventory
+  - `invalidateProduct(tenantId, productId)` — invalidates products, inventory, dashboard, analytics, stock alerts
+  - `invalidateCustomer(tenantId, customerId)` — invalidates customers, CRM, tags, analytics, dashboard
+  - `invalidateInventory(tenantId, inventoryId?)` — invalidates inventory, alerts, stock alerts, dashboard
+  - Plus: invalidateVendor, invalidateMenu, invalidateStorefront, invalidateDelivery, invalidateCompliance, invalidatePayments
+- Added list-only variants for bulk updates (e.g., `invalidateOrderList`, `invalidateProductList`)
+- `invalidateAll(tenantId)` for full tenant data refresh (expensive, use sparingly)
+- All logging uses `logger.debug` from `@/lib/logger` — no console.log
+- Uses `Promise.all` for parallel invalidation of independent queries
+- Exposes `queryClient` for edge cases requiring direct access
+- Imports use `@/` alias as required
