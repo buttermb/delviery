@@ -1544,3 +1544,31 @@
 - Used useMemo for validation effect to notify parent on items/products changes
 - Used useCallback for memoized handlers
 
+## task-051: Create order confirmation inventory decrement
+- Created `src/hooks/useOrderConfirmation.ts` to handle order confirmation with automatic inventory decrement
+- Hook accepts orderId and optionally skipInventoryDecrement flag
+- Fetches order with items from unified_orders + unified_order_items tables
+- Updates order status to 'confirmed' first, then processes inventory
+- For each order item:
+  - Fetches current product stock_quantity from products table
+  - Decrements stock using Math.max(0, previous - quantity) to prevent negative values
+  - Updates both stock_quantity and available_quantity on product
+  - Logs to inventory_history with:
+    - change_type: 'sale'
+    - reason: 'order_confirmed'
+    - reference_type: 'order_confirmed'
+    - reference_id: orderId
+    - Includes metadata with order_id, order_number, order_item_id, source
+- Returns DecrementResult[] with success/failure status for each item
+- Implements TanStack Query mutation with:
+  - Optimistic update in onMutate (marks order as confirmed in cache)
+  - Context for rollback on error
+  - Uses invalidateOnEvent for cross-panel invalidation
+  - Invalidates orders.all, products.all, inventory.all queries
+- Shows success/error toasts using showSuccessToast/showErrorToast
+- All logging via logger from @/lib/logger — no console.log
+- Uses @/ alias for all imports
+- Filters all queries by tenant_id
+- Uses useTenantAdminAuth for tenant context
+- Uses .maybeSingle() for optional data fetching
+

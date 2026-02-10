@@ -303,7 +303,7 @@
     "id": "task-051",
     "title": "Create order confirmation inventory decrement",
     "description": "When an order status changes to confirmed, automatically decrement inventory for all order line items. Create src/hooks/useOrderConfirmation.ts that accepts orderId, fetches order items, decrements each product's stock_quantity. Log each change to inventory_history with reason order_confirmed and reference_id = orderId. Use TanStack Query mutation with optimistic update. Invalidate both orders and products queries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-052",
