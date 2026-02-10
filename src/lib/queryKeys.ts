@@ -992,4 +992,15 @@ export const queryKeys = {
     byProduct: (productId: string) =>
       [...queryKeys.productTags.all, 'product', productId] as const,
   },
+
+  // Inventory Forecast
+  inventoryForecast: {
+    all: ['inventory-forecast'] as const,
+    single: (tenantId?: string, productId?: string) =>
+      [...queryKeys.inventoryForecast.all, 'single', tenantId, productId] as const,
+    bulk: (tenantId?: string, options?: { productIds?: string[]; onlyAtRisk?: boolean }) =>
+      [...queryKeys.inventoryForecast.all, 'bulk', tenantId, options?.productIds?.join(','), options?.onlyAtRisk] as const,
+    dashboard: (tenantId?: string) =>
+      [...queryKeys.inventoryForecast.all, 'dashboard', tenantId] as const,
+  },
 } as const;

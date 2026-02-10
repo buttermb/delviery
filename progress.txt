@@ -3221,3 +3221,19 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - No console.log used — all state is React-managed
 - Verified TypeScript compiles with no errors
 
+
+## task-118: Create inventory forecasting
+- Created src/hooks/useInventoryForecast.ts with full stockout prediction system
+- Returns forecast_stockout_date, recommended_reorder_date, recommended_reorder_quantity
+- Uses 30-day rolling window from unified_order_items for velocity calculation
+- Calculates daily/weekly/monthly units sold, trend direction
+- Warning levels: critical, warning, soon, healthy with messages
+- Main hook useInventoryForecast for single product forecast
+- Bulk hook useBulkInventoryForecast for multiple products (inventory dashboard)
+- Dashboard hook useInventoryForecastDashboard for at-risk items view
+- Configurable leadTimeDays and targetStockDays parameters
+- Utility functions: getWarningLevelBadgeVariant, formatForecastDate
+- Added inventoryForecast query keys to queryKeys.ts
+- Follows existing useProductVelocity pattern but adds reorder recommendations
+- All queries filter by tenant_id, uses logger not console.log
+- TypeScript strict mode compliant, proper @/ import aliases

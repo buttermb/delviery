@@ -705,7 +705,7 @@
     "id": "task-118",
     "title": "Create inventory forecasting",
     "description": "Create src/hooks/useInventoryForecast.ts — predicts when each product will go out of stock based on sales velocity. Returns forecast_stockout_date, recommended_reorder_date, recommended_reorder_quantity. Display on product detail and inventory dashboard. Uses last 30 days order data for velocity calculation. Warning badges for items approaching stockout.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-119",
