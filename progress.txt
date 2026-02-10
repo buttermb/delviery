@@ -1233,3 +1233,42 @@
 - All logging via `logger.warn` and `logger.error` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
 - Import order: React → Third-party (react-router, tanstack) → Local imports
+
+## task-043: Create shared sidebar navigation component
+- Created `src/components/admin/shared/AdminSidebar.tsx` — main admin sidebar with collapsible sections
+- Navigation sections implemented as specified:
+  - Dashboard, Orders, Products & Inventory, Customers, Vendors, Menus & Storefront, Deliveries, Analytics, Settings
+- Each section has collapsible behavior using shadcn/ui Collapsible component
+- Collapsible state persisted to localStorage:
+  - `SIDEBAR_COLLAPSED_KEY` — stores icon-only mode state
+  - `SIDEBAR_SECTIONS_KEY` — stores section expanded/collapsed states
+  - Uses try-catch wrapped localStorage operations for error safety
+- Active item highlighting:
+  - Uses `useLocation()` and `useParams()` from react-router-dom
+  - `isActive()` function checks current pathname against item hrefs
+  - Active items get `bg-accent` styling via Tailwind classes
+- Badge counts for navigation items:
+  - Props accept `badgeCounts` object with pendingOrders, lowStock, unreadNotifications, pendingDeliveries
+  - Badges displayed next to item labels with destructive variant for low stock
+  - In collapsed mode, shows red dot indicator instead of number badge
+- Icon-only mode (collapsed sidebar):
+  - `isCollapsed` state toggles between 64px and 256px width
+  - Uses TooltipProvider/Tooltip for item labels in collapsed mode
+  - Section headers hidden in collapsed mode, only icons shown
+  - Persists collapsed state to localStorage
+- Auto-expand section when it contains active item:
+  - useEffect watches location.pathname changes
+  - Expands relevant section automatically when route changes
+- Tenant-aware navigation:
+  - Uses `useTenantAdminAuth()` to get tenant slug and tenant info
+  - All NavLink paths prefixed with `/${tenantSlug}`
+  - Header shows tenant initial and business name
+- Footer with low stock warning:
+  - Shows AlertTriangle icon when lowStock count > 0
+  - Tooltip in collapsed mode, full message in expanded mode
+- Uses ScrollArea for navigation content to handle overflow
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required
+- Note: This is a standalone simplified sidebar component
+  - The codebase also has a more comprehensive AdaptiveSidebar at `src/components/admin/sidebar/`
+  - This shared component provides a simpler API for pages that don't need the full feature set

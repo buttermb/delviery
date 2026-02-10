@@ -255,7 +255,7 @@
     "id": "task-043",
     "title": "Create shared sidebar navigation component",
     "description": "Create src/components/admin/shared/AdminSidebar.tsx — main admin sidebar with collapsible sections. Groups — Dashboard, Orders, Products & Inventory, Customers, Vendors, Menus & Storefront, Deliveries, Analytics, Settings. Each item shows icon and label. Active item highlighted. Badge counts for pending orders, low stock, unread notifications. Collapse to icon-only mode. Persists collapsed state.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-044",
