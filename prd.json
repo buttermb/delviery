@@ -447,7 +447,7 @@
     "id": "task-075",
     "title": "Create order recurring/subscription support",
     "description": "Add ability to mark an order as recurring. Create src/components/admin/orders/RecurringOrderSetup.tsx — select frequency (daily/weekly/biweekly/monthly), start date, end date. Store in recurring_orders table. Dashboard shows upcoming recurring orders. Notification before each recurrence. Auto-creates order from template with inventory validation.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-076",

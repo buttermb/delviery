@@ -12,7 +12,7 @@ export interface RecurringOrderItem {
   unit_price: number;
 }
 
-export type RecurringOrderFrequency = "weekly" | "biweekly" | "monthly" | "quarterly";
+export type RecurringOrderFrequency = "daily" | "weekly" | "biweekly" | "monthly" | "quarterly";
 
 export interface RecurringOrderSchedule {
   id: string;
@@ -22,6 +22,7 @@ export interface RecurringOrderSchedule {
   order_items: RecurringOrderItem[];
   frequency: RecurringOrderFrequency;
   next_order_date: string;
+  end_date: string | null;
   last_order_date: string | null;
   day_of_week: number | null;
   day_of_month: number | null;
@@ -104,6 +105,7 @@ export function useRecurringOrders() {
           order_items: input.order_items as unknown as Json,
           frequency: input.frequency,
           next_order_date: input.next_order_date,
+          end_date: input.end_date,
           day_of_week: input.day_of_week,
           day_of_month: input.day_of_month,
           auto_confirm: input.auto_confirm,
@@ -146,6 +148,7 @@ export function useRecurringOrders() {
       if (updates.order_items !== undefined) payload.order_items = updates.order_items as unknown as Json;
       if (updates.frequency !== undefined) payload.frequency = updates.frequency;
       if (updates.next_order_date !== undefined) payload.next_order_date = updates.next_order_date;
+      if (updates.end_date !== undefined) payload.end_date = updates.end_date;
       if (updates.day_of_week !== undefined) payload.day_of_week = updates.day_of_week;
       if (updates.day_of_month !== undefined) payload.day_of_month = updates.day_of_month;
       if (updates.auto_confirm !== undefined) payload.auto_confirm = updates.auto_confirm;
@@ -283,6 +286,7 @@ export function useRecurringOrders() {
     );
     // Normalize to monthly value
     const multiplier = {
+      daily: 30,
       weekly: 4,
       biweekly: 2,
       monthly: 1,

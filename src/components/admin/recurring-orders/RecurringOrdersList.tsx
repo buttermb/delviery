@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
 import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
 import Pause from "lucide-react/dist/esm/icons/pause";
 import Play from "lucide-react/dist/esm/icons/play";
@@ -13,7 +12,7 @@ import Zap from "lucide-react/dist/esm/icons/zap";
 import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -79,6 +78,7 @@ function RecurringOrdersListComponent({ clientId, compact = false }: RecurringOr
 
   const getFrequencyLabel = (frequency: string) => {
     const labels: Record<string, string> = {
+      daily: "Daily",
       weekly: "Weekly",
       biweekly: "Bi-Weekly",
       monthly: "Monthly",

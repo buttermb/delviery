@@ -2176,3 +2176,18 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - All imports use @/ alias, logger from @/lib/logger (no console.log)
 - Component reuses useAvailableRunners hook for runner data
 - Applied RuleCard sub-component pattern for cleaner code organization
+
+## task-075: Create order recurring/subscription support
+- Fixed missing useTenantAdminAuth import in RecurringOrderSetup.tsx
+- Added 'daily' frequency option to RecurringOrderFrequency type
+- Added 'end_date' field to RecurringOrderSchedule interface for subscription end dates
+- Updated RecurringOrderSetup form schema to include end_date and daily frequency
+- Added end_date input field with optional label in the form UI
+- Updated createSchedule and updateSchedule mutations to handle end_date
+- Updated totalMonthlyValue calculation to include daily frequency multiplier (30)
+- Updated RecurringOrdersList to display daily frequency label
+- Updated summary card to show daily frequency and end date when set
+- Component located at src/components/admin/recurring-orders/ (slight path difference from spec)
+- Uses RecurringOrdersList for dashboard display of upcoming orders
+- Edge function 'generate-recurring-order' handles auto-creation with inventory validation
+- All imports use @/ alias, no console.log, logger used for errors

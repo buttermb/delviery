@@ -2,16 +2,10 @@ import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQuery } from "@tanstack/react-query";
 import Plus from "lucide-react/dist/esm/icons/plus";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Calendar from "lucide-react/dist/esm/icons/calendar";
-import Repeat from "lucide-react/dist/esm/icons/repeat";
 import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Play from "lucide-react/dist/esm/icons/play";
-import Pause from "lucide-react/dist/esm/icons/pause";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { SafeModal } from "@/components/ui/safe-modal";
 import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   useRecurringOrders,
@@ -38,16 +32,15 @@ import {
   RecurringOrderFrequency,
 } from "@/hooks/useRecurringOrders";
 import { useWholesaleClients, useWholesaleCouriers, useProductsForWholesale } from "@/hooks/useWholesaleData";
-import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
-import { cn } from "@/lib/utils";
 
 const schema = z.object({
   name: z.string().min(1, "Schedule name is required"),
   client_id: z.string().min(1, "Client is required"),
-  frequency: z.enum(["weekly", "biweekly", "monthly", "quarterly"]),
+  frequency: z.enum(["daily", "weekly", "biweekly", "monthly", "quarterly"]),
   next_order_date: z.string().min(1, "Start date is required"),
+  end_date: z.string().nullable(),
   day_of_week: z.number().nullable(),
   day_of_month: z.number().nullable(),
   auto_confirm: z.boolean(),
@@ -77,6 +70,7 @@ const DAYS_OF_WEEK = [
 ];
 
 const FREQUENCY_OPTIONS: { value: RecurringOrderFrequency; label: string; description: string }[] = [
+  { value: "daily", label: "Daily", description: "Every day" },
   { value: "weekly", label: "Weekly", description: "Every week on the same day" },
   { value: "biweekly", label: "Bi-Weekly", description: "Every two weeks" },
   { value: "monthly", label: "Monthly", description: "Once per month" },
@@ -88,7 +82,7 @@ function RecurringOrderSetupComponent({
   onOpenChange,
   editSchedule,
 }: RecurringOrderSetupProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant: _tenant } = useTenantAdminAuth();
   const { createSchedule, updateSchedule } = useRecurringOrders();
   const { data: clients = [] } = useWholesaleClients();
   const { data: couriers = [] } = useWholesaleCouriers();
@@ -113,6 +107,7 @@ function RecurringOrderSetupComponent({
           client_id: editSchedule.client_id,
           frequency: editSchedule.frequency,
           next_order_date: editSchedule.next_order_date.split("T")[0],
+          end_date: editSchedule.end_date ? editSchedule.end_date.split("T")[0] : null,
           day_of_week: editSchedule.day_of_week,
           day_of_month: editSchedule.day_of_month,
           auto_confirm: editSchedule.auto_confirm,
@@ -127,6 +122,7 @@ function RecurringOrderSetupComponent({
           auto_confirm: false,
           auto_assign_runner: false,
           next_order_date: new Date().toISOString().split("T")[0],
+          end_date: null,
           day_of_week: null,
           day_of_month: null,
           preferred_runner_id: null,
@@ -206,6 +202,7 @@ function RecurringOrderSetupComponent({
       order_items: validItems,
       frequency: data.frequency,
       next_order_date: data.next_order_date,
+      end_date: data.end_date,
       day_of_week: data.frequency === "weekly" || data.frequency === "biweekly"
         ? data.day_of_week
         : null,
@@ -373,6 +370,18 @@ function RecurringOrderSetupComponent({
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>End Date (Optional)</Label>
+            <Input
+              type="date"
+              value={watch("end_date") || ""}
+              onChange={(e) => setValue("end_date", e.target.value || null)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty for indefinite recurring orders
+            </p>
           </div>
 
           {/* Frequency-specific options */}
@@ -639,6 +648,7 @@ function RecurringOrderSetupComponent({
                   This order will automatically create a{" "}
                   <span className="font-medium">{formatCurrency(orderTotal)}</span> order{" "}
                   <span className="font-medium">
+                    {frequency === "daily" && "every day"}
                     {frequency === "weekly" && "every week"}
                     {frequency === "biweekly" && "every two weeks"}
                     {frequency === "monthly" && "every month"}
@@ -654,6 +664,14 @@ function RecurringOrderSetupComponent({
                   <span className="font-medium">
                     {new Date(watch("next_order_date") || "").toLocaleDateString()}
                   </span>
+                  {watch("end_date") && (
+                    <>
+                      {" "}until{" "}
+                      <span className="font-medium">
+                        {new Date(watch("end_date") || "").toLocaleDateString()}
+                      </span>
+                    </>
+                  )}
                   .
                 </p>
                 {watch("auto_confirm") && (
