@@ -651,7 +651,7 @@
     "id": "task-109",
     "title": "Create inventory alerts settings page",
     "description": "Create src/components/admin/settings/InventoryAlerts.tsx — configure inventory alert thresholds globally and per-product. Global defaults for low_stock_threshold and critical_stock_threshold. Override per product. Configure notification channels — in-app, email. Set recheck frequency. Save to tenant_settings or product columns.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-110",

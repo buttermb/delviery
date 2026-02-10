@@ -3039,3 +3039,19 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Uses Collapsible component for category expansion in by_category view
 - Error and loading states properly handled with skeleton loaders
 - No console.log — all logging via `@/lib/logger`
+
+## task-109: Create inventory alerts settings page
+- Created `src/components/admin/settings/InventoryAlerts.tsx` for configuring inventory alert thresholds
+- Global settings stored in `tenant_settings` table with fields: inventory_alerts_enabled, inventory_low_stock_threshold, inventory_critical_stock_threshold, inventory_notification_inapp, inventory_notification_email, inventory_recheck_frequency
+- Per-product overrides use existing product columns: low_stock_alert, critical_stock_alert
+- Used React Hook Form with Zod for form validation
+- Followed patterns from `OrderAutoAssign.tsx` for settings upsert with `onConflict: 'tenant_id'`
+- Implemented notification channels toggle (in-app, email)
+- Added recheck frequency selector with options from 15 minutes to daily
+- Products table with search, inline editing, and status badges (OK, Low, Critical)
+- All queries filter by `tenant_id` using `.eq('tenant_id', tenant.id)`
+- Used `useTenantAdminAuth()` for tenant context
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Proper loading states (Skeleton), error states (Alert), and success/error toasts
+- Used `.maybeSingle()` for optional tenant_settings data
+- Imports use `@/` alias as required
