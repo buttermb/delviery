@@ -5809,3 +5809,25 @@ Patterns followed:
 - No console.log — uses `logger` from `@/lib/logger`
 - Proper import order: React → Third-party → Components → Utils
 - Build verified successful with no TypeScript errors
+
+
+## task-199: Create storefront announcement bar
+- Created `src/components/admin/storefront/AnnouncementBar.tsx` for admin-manageable announcements
+- Created migration `supabase/migrations/20260210000001_storefront_announcements.sql` for database table
+- Features implemented:
+  - Set announcement text, link URL, link text
+  - Custom background and text colors with live preview
+  - Schedule announcements with start/end dates
+  - Multiple announcements with reorder support (move up/down)
+  - Toggle active/inactive status
+  - Real-time updates via Supabase subscription
+- Database schema:
+  - `storefront_announcements` table with tenant_id and optional store_id
+  - RLS policies for tenant isolation
+  - Public read policy for active announcements within schedule
+  - Indexes for performance on tenant_id, store_id, is_active, schedule
+- Used TanStack Query for data fetching with proper query key invalidation
+- All logging via `logger` from `@/lib/logger` — no console.log
+- Proper loading and error states with icons
+- Imports use `@/` alias as required
+- Build verified with no TypeScript errors

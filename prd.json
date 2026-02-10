@@ -1191,7 +1191,7 @@
     "id": "task-199",
     "title": "Create storefront announcement bar",
     "description": "Create src/components/admin/storefront/AnnouncementBar.tsx — admin-manageable announcement bar on storefront. Set text, link, background color, schedule. Multiple announcements rotate. Dismiss tracking per session. Used for promotions, new product launches, compliance notices. Managed from admin, displayed on storefront. Real-time updates.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-200",
