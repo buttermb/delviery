@@ -147,7 +147,7 @@
     "id": "task-025",
     "title": "Create shared badge status component",
     "description": "Create src/components/admin/shared/StatusBadge.tsx — renders colored badges for any entity status. Props — status string, entityType. Maps order statuses (pending/confirmed/delivered/cancelled) to colors. Maps inventory statuses (in_stock/low_stock/out_of_stock) to colors. Maps customer statuses (active/inactive/vip) to colors. Uses shadcn/ui Badge variant.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-026",

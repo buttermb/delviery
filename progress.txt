@@ -656,3 +656,22 @@
 - Error handling uses `logger.error()` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
 - Extends existing lazy-loading hooks (useRelatedClientInvoices, etc.) in same file
+
+## task-025: Create shared badge status component
+- Created `src/components/admin/shared/StatusBadge.tsx` for rendering colored status badges
+- Supports 6 entity types: order, inventory, customer, delivery, payment, menu
+- Order statuses: pending, confirmed, processing, shipped, delivered, cancelled, refunded
+- Inventory statuses: in_stock, low_stock, out_of_stock, discontinued
+- Customer statuses: active, inactive, vip, suspended, pending_verification
+- Delivery statuses: pending, assigned, in_transit, delivered, failed, returned
+- Payment statuses: pending, completed, failed, refunded, cancelled
+- Menu statuses: draft, active, expired, archived
+- Color configuration uses semantic Tailwind classes (bg-green-100/text-green-800 for success, etc.)
+- Props interface includes: status, entityType, optional label override, size variant (sm/default/lg), className
+- `formatStatusLabel` helper converts snake_case to Title Case for display
+- `getStatusColors` function returns color config based on entity type and status
+- Exports color mappings and helper functions for external use
+- Uses shadcn/ui Badge component with outline variant as base
+- No console.log — pure UI component
+- No tenant_id filtering needed — presentational component only
+- All imports use `@/` alias as required
