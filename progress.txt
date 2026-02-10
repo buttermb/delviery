@@ -5297,3 +5297,28 @@ Created a comprehensive menu order notification system that alerts admin when or
 - Includes menu_conversion_funnel view for analytics
 - Status: PASSES
 
+## task-179: Create menu product ordering with drag-drop
+- Created `src/components/admin/disposable-menus/MenuProductOrdering.tsx`
+  - Full drag-and-drop reordering for products within categories using @dnd-kit
+  - Category-level drag-and-drop to reorder entire category sections
+  - Real-time preview panel showing how products will appear on menu
+  - Persists display_order to disposable_menu_products table
+  - Product arrangement is independent per menu (same product can have different positions)
+  - Uses useSortable from @dnd-kit/sortable for smooth animations
+  - Nested DndContext for product reordering within expandable categories
+  - Reset and Save buttons with unsaved changes indicator
+  - Uses TanStack Query for mutations with proper invalidation
+- Created `src/components/admin/disposable-menus/MenuProductOrderingDialog.tsx`
+  - Dialog wrapper that fetches menu products with product details
+  - Passes data to MenuProductOrdering component
+  - Loading and error states included
+- Updated `src/components/admin/disposable-menus/MenuCard.tsx`
+  - Added "Reorder Products" option to dropdown menu
+  - Opens MenuProductOrderingDialog for non-forum menus with products
+  - Added ArrowUpDown icon for the menu item
+- The display_order column already exists in disposable_menu_products table (from previous migrations)
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias
+- Build passes with no TypeScript errors
+- Status: PASSES
+

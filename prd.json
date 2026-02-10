@@ -1071,7 +1071,7 @@
     "id": "task-179",
     "title": "Create menu product ordering with drag-drop",
     "description": "In menu builder, allow reordering products via drag-and-drop. Product order saved per menu. Categories also reorderable. Changes preview in real-time. Save position to menu_products junction table with sort_order column. Product arrangement independent per menu — same product can have different positions on different menus.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-180",
