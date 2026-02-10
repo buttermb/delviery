@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { logActivity, EntityType } from '@/lib/activityLog';
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -82,7 +83,7 @@ export function ProductDuplicateButton({
   variant = 'button',
   onSuccess,
 }: ProductDuplicateButtonProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [isHovered, setIsHovered] = useState(false);
 
@@ -90,6 +91,10 @@ export function ProductDuplicateButton({
     mutationFn: async () => {
       if (!tenant?.id) {
         throw new Error('Tenant not found');
+      }
+
+      if (!admin?.userId) {
+        throw new Error('User not found');
       }
 
       // Generate a unique SKU for the duplicate
@@ -131,6 +136,22 @@ export function ProductDuplicateButton({
         logger.error('Failed to duplicate product', { error: error.message, productId: product.id });
         throw error;
       }
+
+      // Log duplication to activity_log
+      await logActivity(
+        tenant.id,
+        admin.userId,
+        'created',
+        EntityType.PRODUCT,
+        data.id,
+        {
+          action: 'duplicated',
+          source_product_id: product.id,
+          source_product_name: product.name,
+          new_product_name: data.name,
+          new_sku: data.sku,
+        }
+      );
 
       return data;
     },

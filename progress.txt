@@ -2697,3 +2697,57 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Loading and error states included
 - TypeScript interfaces for all data structures
 - React Hook Form + Zod patterns (ready for future form integration)
+
+---
+
+## Task 095: Create product clone/duplicate
+
+**Status:** ✅ Completed
+
+### What Was Implemented
+
+Product duplication functionality allowing users to clone an existing product with all its details, generate a unique SKU, and open the new product for editing.
+
+### Implementation Details
+
+**Hook: src/hooks/useProductDuplicate.ts**
+- Updated to add activity logging when duplicating a product
+- Uses `logActivity()` with metadata including source product info
+- Generates unique SKU using `-COPY` suffix with counter for duplicates
+- Sets `available_quantity: 0` (no inventory copied)
+- Sets `batch_number: null` (unique per product)
+- Returns `duplicateProduct` function and `isPending` state
+
+**Component: src/components/admin/products/ProductDuplicateButton.tsx**
+- Updated to add activity logging when duplicating
+- Works as standalone button or dropdown menu item (variant prop)
+- Shows loading state during duplication
+- Calls `onSuccess` callback with new product
+
+**Component: src/components/admin/ProductCard.tsx**
+- Added `onDuplicate` prop for duplicate action
+- Added Copy icon to dropdown menu and long-press menu
+- Duplicate option appears after Edit in menu order
+
+**Page: src/pages/admin/ProductManagement.tsx**
+- Integrated `useProductDuplicate` hook with onSuccess callback
+- On duplicate success: adds new product to local state and opens edit dialog
+- Duplicate option in both grid view cards and table view row actions
+- Uses Copy icon from lucide-react
+
+### Task Requirements Met
+- ✅ Add duplicate product action
+- ✅ Copies all product details (name, description, category, images, pricing)
+- ✅ Generates new SKU with `-COPY` suffix
+- ✅ Does not copy inventory (available_quantity: 0)
+- ✅ Does not copy batch number (null)
+- ✅ Navigates to new product for editing (opens edit dialog)
+- ✅ Log duplication to activity_log
+
+### Key Patterns Applied
+- All imports use `@/` alias
+- Logger from `@/lib/logger` used (not console.log)
+- Activity logged with proper metadata (source product, new product)
+- Uses `useTenantAdminAuth()` for tenant and user context
+- Loading states handled in mutation
+- Error handling with toast notifications

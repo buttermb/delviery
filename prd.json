@@ -567,7 +567,7 @@
     "id": "task-095",
     "title": "Create product clone/duplicate",
     "description": "Add duplicate product action. Copies all product details (name, description, category, images, pricing) to a new product. Generates new SKU. Does not copy inventory or order history. Useful for creating variations. Navigates to new product for editing. Log duplication to activity_log.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-096",

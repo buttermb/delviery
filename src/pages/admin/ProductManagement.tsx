@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,20 +11,18 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
-import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { toast } from "sonner";
 import {
   Package,
   Plus,
-  Search,
   Edit,
   Trash2,
   Barcode,
+  Copy,
   DollarSign,
   LayoutGrid,
   List,
@@ -32,8 +30,6 @@ import {
   Loader2,
   Printer,
   MoreVertical,
-  Eye,
-  EyeOff,
   Store
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
@@ -61,8 +57,8 @@ import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
-import { Upload } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
+import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -81,7 +77,6 @@ type Product = Database['public']['Tables']['products']['Row'] & {
   minimum_price?: number;
   version?: number;
 };
-type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 const mapProductToForm = (product: Product): ProductFormData => ({
   name: product.name || "",
@@ -111,25 +106,30 @@ export default function ProductManagement() {
   const navigateTenant = useTenantNavigate();
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
-  const queryClient = useQueryClient();
+  useEncryption();
   const { invalidateProductCaches } = useProductMutations();
+
+  // Product duplication hook with callback to open edit dialog
+  const { duplicateProduct } = useProductDuplicate({
+    onSuccess: (newProduct) => {
+      // Add to local state and open edit dialog
+      setProducts(prev => [newProduct, ...prev]);
+      setEditingProduct(newProduct);
+      setIsDialogOpen(true);
+    },
+  });
 
   // Read URL search params for filtering
   const urlSearch = searchParams.get('search') || '';
-  const highlightId = searchParams.get('highlight') || '';
 
   // Use optimistic list for products
   const {
     items: products,
     optimisticIds,
-    addOptimistic,
-    updateOptimistic,
-    deleteOptimistic,
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -151,7 +151,7 @@ export default function ProductManagement() {
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
   // Fetch store settings for potency alerts
-  const { data: storeSettings } = useQuery({
+  useQuery({
     queryKey: ['store-settings-potency'],
     queryFn: async () => {
       // Find the marketplace profile for this tenant
@@ -205,8 +205,7 @@ export default function ProductManagement() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
-  const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
-  const productVersionRef = useRef<number>(1);
+  const { updateWithLock } = useOptimisticLock('products');
 
   // Batch delete confirmation dialog
   const { dialogState: batchDeleteDialogState, confirm: confirmBatchDelete, closeDialog: closeBatchDeleteDialog, setLoading: setBatchDeleteLoading } = useConfirmDialog();
@@ -652,7 +651,7 @@ export default function ProductManagement() {
     setBulkPriceEditorOpen(true);
   };
 
-  const handleBulkPriceUpdate = async (updates: unknown) => {
+  const handleBulkPriceUpdate = async (_updates: unknown) => {
     // Component handles the DB update; we refresh and invalidate caches
     await loadProducts();
     invalidateProductCaches({
@@ -777,7 +776,6 @@ export default function ProductManagement() {
     }
   };
 
-
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
     {
@@ -883,6 +881,9 @@ export default function ProductManagement() {
             <DropdownMenuItem onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => duplicateProduct(product)}>
+              <Copy className="mr-2 h-4 w-4" /> Duplicate
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
@@ -906,6 +907,7 @@ export default function ProductManagement() {
       product={product}
       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
       onDelete={() => handleDelete(product.id)}
+      onDuplicate={() => duplicateProduct(product)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
       onPublish={() => handlePublish(product.id)}
     />
@@ -1230,6 +1232,7 @@ export default function ProductManagement() {
                       product={product}
                       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
                       onDelete={() => handleDelete(product.id)}
+                      onDuplicate={() => duplicateProduct(product)}
                       onPrintLabel={() => {
                         setLabelProduct(product);
                         setLabelDialogOpen(true);
