@@ -1215,7 +1215,7 @@
     "id": "task-203",
     "title": "Create delivery-order two-way sync",
     "description": "Delivery status changes reflect on order immediately and vice versa. When delivery marked in_transit, order status updates to out_for_delivery. When delivery completed, order status updates to delivered. When order cancelled, delivery auto-cancelled. Bidirectional sync via eventBus. Both modules always show consistent status.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-204",

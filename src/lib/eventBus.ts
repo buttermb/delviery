@@ -107,6 +107,23 @@ export interface EventPayloads {
     previousStatus: 'online' | 'offline' | 'reconnecting';
     timestamp: string;
   };
+  // Delivery status changed event for bidirectional sync with orders
+  delivery_status_changed: {
+    deliveryId: string;
+    orderId: string;
+    tenantId: string;
+    previousStatus: string | null;
+    newStatus: string;
+    runnerId?: string;
+    changedAt: string;
+  };
+  // Order cancelled event for auto-cancelling linked deliveries
+  order_cancelled: {
+    orderId: string;
+    tenantId: string;
+    reason?: string;
+    cancelledAt: string;
+  };
 }
 
 // Event names derived from payload types

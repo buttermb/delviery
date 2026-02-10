@@ -5979,3 +5979,42 @@ Lessons Learned:
 - Orders table has delivery_lat/delivery_lng for geocoded addresses
 - date-fns isToday and differenceInMinutes for time calculations
 - Pattern: refetch on dialog close for data freshness
+
+## task-203: Create delivery-order two-way sync
+- Created `src/hooks/useDeliveryOrderSync.ts` — bidirectional sync hook for delivery and order statuses
+- Added new eventBus events in `src/lib/eventBus.ts`:
+  - `delivery_status_changed`: Published when delivery status updates
+  - `order_cancelled`: Published when order is cancelled
+
+Status Mapping (Delivery → Order):
+- `in_transit` → `out_for_delivery`
+- `delivered`/`completed` → `delivered`
+- `cancelled` → `cancelled`
+
+Bidirectional Sync Logic:
+- When delivery status changes → order status auto-updates via eventBus subscription
+- When order cancelled → linked delivery auto-cancelled via eventBus subscription
+- Both directions use `tenant_id` filtering for multi-tenant safety
+
+Hook Features:
+- `isActive`: Boolean indicating sync is listening
+- `syncDeliveryToOrder()`: Manual sync delivery status to order
+- `syncOrderCancellationToDelivery()`: Manual sync order cancellation to delivery
+- `publishDeliveryStatusChange()`: Emit delivery status change event
+- `publishOrderCancelled()`: Emit order cancelled event
+
+Technical Patterns:
+- Used useTenantAdminAuth() for tenant context
+- Uses subscribe/publish from eventBus for loose coupling
+- TanStack Query invalidation for immediate UI updates
+- Tries unified_orders first, falls back to orders table
+- Handles missing deliveries table gracefully (code 42P01)
+- Options for enabling/disabling auto-sync behaviors
+- Proper cleanup on unmount with mountedRef pattern
+
+Lessons Learned:
+- eventBus provides typed publish/subscribe for cross-module communication
+- Multiple order tables exist (unified_orders, orders) - need fallback pattern
+- deliveries table may not exist on all tenants (handle 42P01 error)
+- Always publish order_updated event after syncing for other listeners
+- Query key invalidation pattern: queryKeys.orders.detail(), queryKeys.deliveries.byOrder()
