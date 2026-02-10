@@ -18,7 +18,6 @@ import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
 import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
 import Search from "lucide-react/dist/esm/icons/search";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
@@ -27,7 +26,6 @@ import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
 import { formatCurrency, formatQuantity } from "@/lib/formatters";
 import { ResponsiveTable, ResponsiveColumn } from "@/components/shared/ResponsiveTable";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface StockProduct {
   id: string;

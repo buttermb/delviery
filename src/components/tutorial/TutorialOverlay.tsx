@@ -63,18 +63,18 @@ export function TutorialOverlay({
         // Use target as-is (already a complete selector)
         try {
           element = document.querySelector(currentStepData.target) as HTMLElement | null;
-        } catch (e) {
-          logger.warn(`Invalid tutorial target selector: ${currentStepData.target}`, { 
-            component: 'TutorialOverlay' 
+        } catch {
+          logger.warn(`Invalid tutorial target selector: ${currentStepData.target}`, {
+            component: 'TutorialOverlay'
           });
         }
       } else {
         // Wrap with data-tutorial attribute (for simple string targets like "create-menu-button")
         try {
           element = document.querySelector(`[data-tutorial="${currentStepData.target}"]`) as HTMLElement | null;
-        } catch (e) {
-          logger.warn(`Invalid tutorial target: ${currentStepData.target}`, { 
-            component: 'TutorialOverlay' 
+        } catch {
+          logger.warn(`Invalid tutorial target: ${currentStepData.target}`, {
+            component: 'TutorialOverlay'
           });
         }
       }
@@ -215,7 +215,7 @@ export function TutorialOverlay({
         if (tutorialElement) {
           container = tutorialElement.closest('main, [role="main"], .container, [class*="container"]') || tutorialElement.parentElement || document.body;
         }
-      } catch (e) {
+      } catch {
         // Fallback to body if anything fails
         container = document.body;
       }

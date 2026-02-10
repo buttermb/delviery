@@ -11,13 +11,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { 
-  Store, 
-  ChevronDown, 
-  Check, 
-  Plus, 
-  LayoutGrid,
-  ExternalLink 
+import {
+  Store,
+  ChevronDown,
+  Check,
+  Plus,
+  LayoutGrid
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

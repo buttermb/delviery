@@ -253,7 +253,7 @@ function generateProjectionMessage(
 /**
  * Get default projection when data is unavailable
  */
-function getDefaultProjection(currentBalance: number, message: string): CreditProjection {
+function getDefaultProjection(_currentBalance: number, message: string): CreditProjection {
   return {
     daysRemaining: null,
     depletionDate: null,

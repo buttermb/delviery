@@ -9,7 +9,6 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
-import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,7 +138,6 @@ export function ProductCatalogPage() {
   const { storeSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { store } = useShop();
-  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textMuted } = useLuxuryTheme();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -156,12 +154,12 @@ export function ProductCatalogPage() {
   const ITEMS_PER_PAGE = 24;
 
   // Wishlist integration
-  const { items: wishlistItems, toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
+  const { toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
   // Cart integration for Quick Add
-  const { addItem, cartItems } = useShopCart({
+  const { addItem } = useShopCart({
     storeId: store?.id,
     onCartChange: () => { },
   });
@@ -204,7 +202,7 @@ export function ProductCatalogPage() {
           return next;
         });
       }, 2000);
-    } catch (error) {
+    } catch {
       toast({
         title: "Failed to add",
         description: "Please try again",
@@ -287,8 +285,8 @@ export function ProductCatalogPage() {
     retry: 1,
   });
 
-  // Fetch categories with error handling
-  const { data: categories = [], error: categoriesError } = useQuery({
+  // Fetch categories with error handling (needed for cache warming)
+  useQuery({
     queryKey: queryKeys.shopProducts.categories(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];

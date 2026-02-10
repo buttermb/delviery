@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/com
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
-import { useMenuCart } from '@/contexts/MenuCartContext';
+import { useMenuCartStore } from '@/stores/menuCartStore';
 
 interface CartDrawerProps {
   open: boolean;
@@ -11,7 +11,10 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
-  const { items, updateQuantity, removeItem, totalAmount } = useMenuCart();
+  const items = useMenuCartStore((state) => state.items);
+  const updateQuantity = useMenuCartStore((state) => state.updateQuantity);
+  const removeItem = useMenuCartStore((state) => state.removeItem);
+  const totalAmount = useMenuCartStore((state) => state.getTotal());
 
   if (items.length === 0) {
     return (
@@ -40,18 +43,8 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
         <div className="flex-1 overflow-y-auto py-4 space-y-4">
           {items.map((item) => (
             <div key={item.productId} className="flex gap-4">
-              <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden shrink-0">
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.productName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
+              <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                <ShoppingBag className="h-8 w-8 text-muted-foreground" />
               </div>
 
               <div className="flex-1 min-w-0">

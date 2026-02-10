@@ -5,14 +5,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, ComposedChart, Area
 } from 'recharts';
-import { DollarSign, TrendingUp, Calendar, ShoppingBag, Activity } from 'lucide-react';
-import { subDays, startOfYear, format, parseISO, isSameDay } from 'date-fns';
+import { DollarSign, TrendingUp, ShoppingBag, Activity } from 'lucide-react';
+import { subDays, startOfYear, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
@@ -119,9 +117,9 @@ export default function RevenueReports() {
       }
 
       // Products - count all orders for product analytics
-      // @ts-ignore - Supabase type inference for join is tricky
+      // @ts-expect-error - Supabase type inference for join is tricky
       if (order.order_items && Array.isArray(order.order_items)) {
-        // @ts-ignore
+        // @ts-expect-error
         order.order_items.forEach(item => {
           const name = item.product_name || 'Unknown Product';
           productSales[name] = (productSales[name] || 0) + (item.quantity || 0);

@@ -2,7 +2,6 @@ import { Suspense, lazy, useCallback, useRef, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   User,
   Shield,

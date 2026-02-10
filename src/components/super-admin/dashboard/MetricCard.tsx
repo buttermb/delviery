@@ -10,8 +10,6 @@ import {
   AreaChart,
   Area,
   ResponsiveContainer,
-  XAxis,
-  YAxis,
   Tooltip,
 } from 'recharts';
 

@@ -5,7 +5,7 @@ import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { SwipeableItem } from '@/components/mobile/SwipeableItem';
 import { ProductDrawer } from '@/components/mobile/ProductDrawer';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import { Trash2, Archive, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Trash2, Archive, Wifi, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { syncQueue } from '@/lib/sync-queue';

@@ -20,11 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { StockWarning } from '@/components/shop/StockWarning';
 import {
   ArrowLeft,
   Package,
@@ -34,7 +31,6 @@ import {
   Loader2,
   AlertTriangle,
   Check,
-  X,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
@@ -81,7 +77,7 @@ export function SinglePageCheckout() {
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
 
   // Cart hook
-  const { cartItems, subtotal, clearCart, isInitialized } = useShopCart({
+  const { cartItems, subtotal, clearCart: _clearCart, isInitialized } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
   });

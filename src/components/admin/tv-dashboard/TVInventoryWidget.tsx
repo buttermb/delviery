@@ -8,7 +8,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import { AlertTriangle, CheckCircle2, Package } from 'lucide-react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface InventoryAlert {

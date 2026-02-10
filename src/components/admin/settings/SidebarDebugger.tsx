@@ -8,7 +8,7 @@ import { useIntegrationManager } from '@/hooks/useIntegrationManager';
 import { getAllFeatures, ESSENTIAL_FEATURES, FEATURE_REGISTRY } from '@/lib/sidebar/featureRegistry';
 import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrationLogic';
 import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
-import { CheckCircle, Info, Layers, AlertCircle, XCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle, Info, Layers, AlertCircle, ArrowRight } from 'lucide-react';
 
 export function SidebarDebugger() {
     const {

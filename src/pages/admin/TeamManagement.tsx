@@ -307,18 +307,6 @@ export default function TeamManagement() {
     }
   };
 
-  const getRoleBadgeVariant = (role: string): 'default' | 'secondary' | 'outline' => {
-    switch (role) {
-      case 'owner':
-      case 'admin':
-        return 'default';
-      case 'member':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'owner':

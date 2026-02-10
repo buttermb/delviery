@@ -14,14 +14,12 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   ArrowLeft,
-  ShoppingCart,
   Truck,
   CreditCard,
   CheckCircle2,
   MapPin,
   Calendar,
   MessageSquare,
-  Check,
   Loader2
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
@@ -38,9 +36,9 @@ type CheckoutStep = "cart" | "delivery" | "payment" | "review";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const _location = useLocation();
   const queryClient = useQueryClient();
-  const { customer, tenant } = useCustomerAuth();
+  const { tenant } = useCustomerAuth();
   const { guestCart } = useGuestCart();
   const [user, setUser] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("delivery");
@@ -140,7 +138,7 @@ export default function CheckoutPage() {
   }, [user, guestCart, guestProducts]);
 
   const cartItems = user ? dbCartItems : guestCartItems;
-  const isLoading = (user && dbLoading) || (!user && false);
+  const _isLoading = (user && dbLoading) || (!user && false);
 
   // Get order notes from sessionStorage
   const orderNotes = typeof window !== "undefined" ? sessionStorage.getItem("orderNotes") || "" : "";

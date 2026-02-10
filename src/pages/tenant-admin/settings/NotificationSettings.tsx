@@ -64,7 +64,7 @@ const CHANNELS = [
 ] as const;
 
 export default function NotificationSettings() {
-  const { tenant } = useTenantAdminAuth();
+  useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');

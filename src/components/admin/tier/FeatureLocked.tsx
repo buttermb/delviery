@@ -6,10 +6,9 @@
 
 import { Lock, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
-import { getTierPreset, getNextTier, type BusinessTier } from '@/lib/presets/businessTiers';
+import { getTierPreset, type BusinessTier } from '@/lib/presets/businessTiers';
 import { TierBadge } from './TierBadge';
 import { cn } from '@/lib/utils';
 
@@ -26,9 +25,8 @@ export function FeatureLocked({
   requiredTier,
   className
 }: FeatureLockedProps) {
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { tier } = useBusinessTier();
+  const { tier: _tier } = useBusinessTier();
 
   // Find which tier unlocks this feature if not specified
   const unlockTier = requiredTier || findUnlockTier(featureId || '');
@@ -98,7 +96,7 @@ export function LockedBadge({ className }: { className?: string }) {
  * Find which tier unlocks a feature
  * Uses the subscription tier from the preset to determine access
  */
-function findUnlockTier(featureId: string): BusinessTier | null {
+function findUnlockTier(_featureId: string): BusinessTier | null {
   // Feature access is now controlled by subscription tier in featureConfig.ts
   // Business tiers map to subscription tiers:
   // street/trap -> starter, block/hood -> professional, empire -> enterprise

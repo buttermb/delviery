@@ -1,10 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useActiveStore } from "@/hooks/useActiveStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Circle, Package, Palette, Globe, ArrowRight } from "lucide-react";
+import { Check, Package, Palette, Globe, ArrowRight } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { cn } from "@/lib/utils";
 

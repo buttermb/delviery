@@ -36,7 +36,7 @@ export function TeamActivityWidget() {
             const teamWithActivity = await Promise.all(
                 members.map(async (member) => {
                     // Get deliveries count for this specific courier
-                    // @ts-ignore - Deep type instantiation from Supabase query
+                    // @ts-expect-error - Deep type instantiation from Supabase query
                     const { count: deliveries } = await supabase
                         .from('deliveries')
                         .select('*', { count: 'exact', head: true })

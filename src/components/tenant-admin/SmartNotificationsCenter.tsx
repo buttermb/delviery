@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -53,7 +53,6 @@ export function SmartNotificationsCenter() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const [open, setOpen] = useState(false);
 

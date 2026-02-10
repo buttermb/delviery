@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Plus, Minus, Trash2, CheckCircle2, DollarSign, ShoppingCart, Zap } from 'lucide-react';
+import { CreditCard, CheckCircle2, DollarSign, ShoppingCart, Zap } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 interface Product {
@@ -140,7 +140,7 @@ export function POSDemo() {
         });
     };
 
-    const removeFromCart = (id: string) => {
+    const _removeFromCart = (id: string) => {
         setCart(prev => prev.filter(p => p.id !== id));
     };
 

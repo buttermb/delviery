@@ -28,7 +28,7 @@ type Tenant = Database['public']['Tables']['tenants']['Row'];
 export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { login, mfaRequired, verifyMfa } = useTenantAdminAuth();
+  const { login, mfaRequired } = useTenantAdminAuth();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,7 +42,7 @@ export default function TenantAdminLoginPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
-  const { isOnline, hasQueuedAttempt, preventSubmit, queueLoginAttempt } = useAuthOffline(
+  const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
       await login(qEmail, qPassword, qSlug || '');
       toast({

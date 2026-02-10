@@ -16,7 +16,7 @@ import { OfflineIndicator } from "@/components/mobile/OfflineIndicator";
 export function CustomerMobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { tenant, customer } = useCustomerAuth();
+  const { tenant } = useCustomerAuth();
   const isMobile = useIsMobile();
   const { getGuestCartCount } = useGuestCart();
   const [cartUpdateKey, setCartUpdateKey] = useState(0);
@@ -126,7 +126,7 @@ export function CustomerMobileBottomNav() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              const isCart = item.path.includes("/cart");
+              const _isCart = item.path.includes("/cart");
 
               return (
                 <button

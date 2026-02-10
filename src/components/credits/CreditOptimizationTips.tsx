@@ -23,7 +23,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   Accordion,
   AccordionContent,
@@ -33,7 +32,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
-import { getUsageStats, CREDIT_COSTS, getCategoryDisplayName, type CreditCategory } from '@/lib/credits';
+import { CREDIT_COSTS } from '@/lib/credits';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface CreditOptimizationTipsProps {
@@ -144,7 +143,7 @@ export function CreditOptimizationTips({
   maxTips = 5,
 }: CreditOptimizationTipsProps) {
   const { tenant } = useTenantAdminAuth();
-  const { isFreeTier, balance } = useCredits();
+  const { isFreeTier } = useCredits();
   const [dismissedTips, setDismissedTips] = useState<Set<string>>(new Set());
 
   const tenantId = tenant?.id;
@@ -288,7 +287,7 @@ export function CreditOptimizationTips({
 
       <CardContent className="space-y-4">
         <Accordion type="single" collapsible className="w-full">
-          {personalizedTips.map((tip, index) => (
+          {personalizedTips.map((tip) => (
             <AccordionItem key={tip.id} value={tip.id}>
               <AccordionTrigger className="hover:no-underline">
                 <div className="flex items-center gap-3 text-left">

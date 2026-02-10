@@ -7,7 +7,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
-import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,8 +19,6 @@ import {
   CheckCircle,
   Clock,
   MapPin,
-  Phone,
-  Mail,
   XCircle,
   ArrowLeft,
   RefreshCw
@@ -61,7 +58,6 @@ const STATUS_STEPS = [
 export default function OrderTrackingPage() {
   const { storeSlug, trackingToken } = useParams();
   const { store } = useShop();
-  const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
 
   // Fetch order details with retry and auto-refresh
   const { data: order, isLoading, error, refetch, isFetching } = useQuery({

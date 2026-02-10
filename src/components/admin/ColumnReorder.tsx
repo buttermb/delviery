@@ -116,6 +116,12 @@ export function ColumnReorder({
     })
   );
 
+  // Memoize onColumnsChange to prevent infinite loops
+  const stableOnColumnsChange = useCallback(
+    (cols: ColumnConfig[]) => onColumnsChange(cols),
+    [onColumnsChange]
+  );
+
   // Load from localStorage if storageKey provided
   useEffect(() => {
     if (storageKey) {
@@ -130,7 +136,7 @@ export function ColumnReorder({
               ? { ...col, visible: savedCol.visible }
               : col;
           });
-          
+
           // Sort by saved order
           mergedColumns.sort((a, b) => {
             const aIndex = savedConfig.findIndex((s) => s.id === a.id);
@@ -139,15 +145,15 @@ export function ColumnReorder({
             if (bIndex === -1) return -1;
             return aIndex - bIndex;
           });
-          
+
           setLocalColumns(mergedColumns);
-          onColumnsChange(mergedColumns);
+          stableOnColumnsChange(mergedColumns);
         }
       } catch (e) {
         logger.error('Failed to load column config', e);
       }
     }
-  }, [storageKey]);
+  }, [storageKey, columns, stableOnColumnsChange]);
 
   // Sync external changes
   useEffect(() => {

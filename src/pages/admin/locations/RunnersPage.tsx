@@ -3,7 +3,6 @@
  * Manage delivery runners and their vehicles
  */
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

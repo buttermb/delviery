@@ -3,7 +3,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Volume2, VolumeX, Bell, BellOff, Play } from 'lucide-react';
+import { Volume2, VolumeX, Bell, Play } from 'lucide-react';
 import { useSoundAlerts, initAudio, preloadSounds } from '@/lib/soundAlerts';
 import { useState, useEffect } from 'react';
 

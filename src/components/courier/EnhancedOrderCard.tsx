@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MapPin, DollarSign, Package, Clock, 
+import {
+  MapPin, Package, Clock,
   Navigation, Phone, ThumbsUp, ThumbsDown,
-  Star, User, Home, TrendingUp
+  User, Home
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';

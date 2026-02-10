@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import FileText from "lucide-react/dist/esm/icons/file-text";
@@ -64,7 +63,6 @@ export function OrderNotesSection({
   additionalFilter,
   className,
 }: OrderNotesSectionProps) {
-  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'internal' | 'customer'>('internal');

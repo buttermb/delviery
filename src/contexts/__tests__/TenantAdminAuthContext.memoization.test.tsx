@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, render } from '@testing-library/react';
 import { ReactNode, useRef, useEffect } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -227,7 +227,7 @@ describe('TenantAdminAuthContext - Memoization', () => {
     let renderCount = 0;
 
     const TestComponent = () => {
-      const context = useTenantAdminAuth();
+      const _context = useTenantAdminAuth();
       renderCount++;
 
       return (

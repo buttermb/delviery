@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,7 +51,7 @@ const CREDIT_SUGGESTIONS: CreditSuggestion[] = [
 
 export function PurchaseSuccessPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { balance, isLoading } = useCredits();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();

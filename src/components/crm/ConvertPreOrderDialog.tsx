@@ -69,7 +69,7 @@ export function ConvertPreOrderDialog({ preOrder, trigger, open: controlledOpen,
 
     const onSubmit = async (values: FormValues) => {
         try {
-            const { invoice, preOrder: updatedPreOrder } = await convertPreOrder.mutateAsync({
+            const { invoice } = await convertPreOrder.mutateAsync({
                 preOrderId: preOrder.id,
                 invoiceData: {
                     invoice_date: values.issue_date.toISOString().slice(0, 10),

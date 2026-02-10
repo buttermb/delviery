@@ -187,7 +187,7 @@ export function ForgotPasswordPage() {
     setSubmitted(true);
   };
 
-  const handleTryAgain = useCallback(() => {
+  const _handleTryAgain = useCallback(() => {
     setSubmitted(false);
     setEmail("");
     setEmailError("");

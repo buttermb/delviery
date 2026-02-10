@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import { usePublicInvoice } from "@/hooks/crm/usePublicInvoice";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Package, Users, BarChart3, Radio, Shield, ChevronRight, Search, Bell, Settings, LogOut, Menu, MousePointer2, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, BarChart3, Radio, Shield, Search, Bell, Menu, MousePointer2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardViews, DashboardViewKey } from './dashboard/DashboardViews';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';

@@ -192,7 +192,7 @@ function extractRoutePath(fullPath: string): string {
 /**
  * Verify a path resolves to a valid route (either direct or redirect)
  */
-function isValidPath(path: string): boolean {
+function _isValidPath(path: string): boolean {
   const routePath = extractRoutePath(path);
   return VALID_ADMIN_ROUTES.includes(routePath) || REDIRECT_ROUTES.includes(routePath);
 }
@@ -600,7 +600,6 @@ describe('Admin Panel Navigation & Data Flow', () => {
       for (const { name, config } of allSidebars) {
         for (const section of config) {
           const ids = section.items.map(i => i.id);
-          const uniqueIds = [...new Set(ids)];
           // Allow storefront to appear multiple times as it's used for different contexts
           const filteredIds = ids.filter(id => id !== 'storefront');
           const filteredUniqueIds = [...new Set(filteredIds)];
@@ -620,7 +619,6 @@ describe('Admin Panel Navigation & Data Flow', () => {
 
       for (const { name, config } of allSidebars) {
         const allPaths = config.flatMap(s => s.items).map(i => i.path);
-        const uniquePaths = [...new Set(allPaths)];
         const duplicates = allPaths.filter((path, index) => allPaths.indexOf(path) !== index);
 
         // A few duplicates are acceptable (e.g., orders with different tabs)

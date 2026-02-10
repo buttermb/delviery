@@ -85,7 +85,7 @@ export function ActivityFeedWidget() {
       });
 
       // Recent customers (simplified - basic fields only)
-      // @ts-ignore - Avoid type instantiation
+      // @ts-expect-error - Avoid type instantiation
       const { data: customers } = await supabase
         .from('customers')
         .select('id, email, created_at')

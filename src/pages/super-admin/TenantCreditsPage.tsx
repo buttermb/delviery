@@ -5,27 +5,24 @@
  * and management actions.
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   Filter,
   MoreHorizontal,
-  Users,
-  Coins,
   Crown,
   AlertTriangle,
   XCircle,
   CheckCircle,
   RefreshCw,
-  Download,
   Gift,
   Eye,
   Edit,
   UserCog,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -66,8 +63,6 @@ import {
   getTenantsWithCredits,
   getTenantCreditDetail,
   grantBulkCredits,
-  type TenantCreditInfo,
-  type TenantCreditDetail,
 } from '@/lib/credits';
 import { TenantCreditDetailPanel } from '@/components/super-admin/TenantCreditDetailPanel';
 import { CreditAdjustmentForm } from '@/components/super-admin/CreditAdjustmentForm';

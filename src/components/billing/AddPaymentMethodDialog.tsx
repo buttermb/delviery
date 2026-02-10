@@ -11,7 +11,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CreditCard } from "lucide-react";
-import { logger } from "@/lib/logger";
 
 interface AddPaymentMethodDialogProps {
     open: boolean;
@@ -26,10 +25,10 @@ export function AddPaymentMethodDialog({
     open,
     onOpenChange,
     tenantId,
-    onSuccess,
+    onSuccess: _onSuccess,
 }: AddPaymentMethodDialogProps) {
     const [loading, setLoading] = useState(false);
-    const { toast } = useToast();
+    const { toast: _toast } = useToast();
 
     const handleAddPaymentMethod = async () => {
         setLoading(true);

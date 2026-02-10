@@ -155,7 +155,7 @@ export function EditWholesaleOrderDialog({
       if (deleteError) throw deleteError;
 
       // Insert updated items
-      // @ts-ignore - quantity/subtotal fields mismatch with Supabase types
+      // @ts-expect-error - quantity/subtotal fields mismatch with Supabase types
       const { error: insertError } = await supabase
         .from('wholesale_order_items')
         .insert(

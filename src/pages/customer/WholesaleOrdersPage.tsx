@@ -43,8 +43,8 @@ type CustomerMode = 'retail' | 'wholesale';
 
 export default function WholesaleOrdersPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { customer, tenant } = useCustomerAuth();
-  const { toast } = useToast();
+  const { tenant } = useCustomerAuth();
+  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const tenantId = tenant?.id;
   const buyerTenantId = tenantId;
@@ -59,7 +59,7 @@ export default function WholesaleOrdersPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);

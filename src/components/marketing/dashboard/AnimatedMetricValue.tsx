@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useInView } from 'framer-motion';
 
 interface AnimatedMetricValueProps {
   value: string;

@@ -36,7 +36,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
             stopScanning();
           }
         },
-        (errorMessage) => {
+        (_errorMessage) => {
           // Silent - scanning errors are normal
         }
       );

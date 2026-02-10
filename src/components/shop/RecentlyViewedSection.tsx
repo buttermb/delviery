@@ -2,15 +2,12 @@
  * RecentlyViewedSection - Horizontal scrollable list of recently viewed products
  */
 
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Package, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';

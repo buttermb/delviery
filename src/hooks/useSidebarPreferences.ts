@@ -191,7 +191,7 @@ export function useSidebarPreferences() {
         ...updates,
       };
 
-      const { data, error } = await (supabase as any)
+      const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,

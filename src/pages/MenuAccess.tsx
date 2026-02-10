@@ -15,7 +15,6 @@ import { CartDrawer } from '@/components/menu/CartDrawer';
 import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 import { MenuCartProvider } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
-import type { GeofenceRule } from '@/utils/geofencing';
 
 
 

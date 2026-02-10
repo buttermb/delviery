@@ -4,7 +4,6 @@ import { useShop } from '@/pages/shop/ShopLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
-import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
 import { TestimonialsSection } from '@/components/shop/sections/TestimonialsSection';
 import { NewsletterSection } from '@/components/shop/sections/NewsletterSection';
 import { GallerySection } from '@/components/shop/sections/GallerySection';

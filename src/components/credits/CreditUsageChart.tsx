@@ -4,7 +4,6 @@
  * Displays credit usage analytics with a chart and breakdown by category.
  */
 
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,

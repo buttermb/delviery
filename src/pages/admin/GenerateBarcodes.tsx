@@ -1,11 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * Advanced Barcode & QR Code Generator
  * Generate barcodes for products, packages, batches, and custom labels
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { useState } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -13,18 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BarcodeGenerator } from '@/components/inventory/BarcodeGenerator';
 import { QRCodeSVG } from 'qrcode.react';
 import {
-  ArrowLeft,
   Download,
   Printer,
   Barcode,
-  QrCode,
   Package,
   Layers,
   FileText,
@@ -34,11 +29,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
-  generateBarcodeDataURL,
   createPackageQRData,
   type QRCodeData
 } from '@/utils/barcodeService';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
@@ -55,7 +48,6 @@ interface GeneratedBarcode {
 }
 
 export default function GenerateBarcodes() {
-  const { navigateToAdmin } = useTenantNavigation();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { toast } = useToast();
 

@@ -106,7 +106,6 @@ vi.mock('sonner', () => ({
 // Import after mocks
 import { TenantAdminAuthProvider, useTenantAdminAuth } from '../TenantAdminAuthContext';
 import { resilientFetch } from '@/lib/utils/networkResilience';
-import { supabase } from '@/integrations/supabase/client';
 import { safeStorage } from '@/utils/safeStorage';
 
 const wrapper = ({ children }: { children: ReactNode }) => (

@@ -3,14 +3,14 @@ import { interpolate } from 'remotion';
 import { DashboardMockup } from '../components/DashboardMockup';
 import { FeatureCallout } from '../components/FeatureCallout';
 import { TransitionOverlay } from '../components/TransitionOverlay';
-import { Truck, MapPin, Navigation } from 'lucide-react';
+import { Truck, Navigation, AlertCircle } from 'lucide-react';
 
 export function FleetScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   // Route drawing
-  const pathLength = interpolate(frame, [30, 90], [0, 1], { extrapolateRight: 'clamp' });
+  const _pathLength = interpolate(frame, [30, 90], [0, 1], { extrapolateRight: 'clamp' });
   const rerouteLength = interpolate(frame, [120, 150], [0, 1], { extrapolateRight: 'clamp' });
 
   // Driver Pos

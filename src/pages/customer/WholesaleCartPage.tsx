@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * B2B customers can view and manage their wholesale shopping cart
  */
 
-import { useState } from 'react';
+import { useState as _useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +23,7 @@ import {
   Package
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table as _Table, TableBody as _TableBody, TableCell as _TableCell, TableHead as _TableHead, TableHeader as _TableHeader, TableRow as _TableRow } from '@/components/ui/table';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
@@ -32,7 +32,7 @@ type CustomerMode = 'retail' | 'wholesale';
 
 export default function WholesaleCartPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { customer, tenant } = useCustomerAuth();
+  const { tenant } = useCustomerAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -47,7 +47,7 @@ export default function WholesaleCartPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);

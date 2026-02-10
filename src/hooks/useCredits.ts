@@ -148,14 +148,12 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
-// Safe wrapper to get tenant and session without throwing
+// Safe wrapper to get tenant and session
+// Note: useTenantAdminAuth must be called unconditionally per React hooks rules
 function useTenantSafe() {
-  try {
-    const { tenant } = useTenantAdminAuth();
-    return { tenant, session: null };
-  } catch {
-    return { tenant: null, session: null };
-  }
+  const authContext = useTenantAdminAuth();
+  // Return tenant from context, or null if context is unavailable
+  return { tenant: authContext?.tenant ?? null, session: null };
 }
 
 // Fetch credits balance from edge function

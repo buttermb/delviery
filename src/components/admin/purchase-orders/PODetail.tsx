@@ -20,8 +20,6 @@ import {
   X,
   FileText,
   CheckCircle2,
-  Clock,
-  XCircle,
   Truck,
 } from "lucide-react";
 import {

@@ -332,18 +332,8 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
 
   const handleSave = () => {
     if (onSave) {
-      // Convert nodes back to workflow actions
-      const actions = nodes
-        .filter((n) => n.type === 'action')
-        .sort((a, b) => a.position.y - b.position.y) // Sort by Y position
-        .map((node) => ({
-          id: node.id,
-          name: node.data.label,
-          type: node.data.actionType,
-          config: node.data.config || {},
-        }));
-
-      // Pass back the actions along with nodes and edges
+      // Note: actions could be derived from nodes if needed by sorting by Y position
+      // and mapping type='action' nodes to { id, name, type, config }
       onSave(nodes, edges);
     }
   };

@@ -125,7 +125,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      // @ts-ignore - RPC function not in auto-generated types
+      // @ts-expect-error - RPC function not in auto-generated types
       const { data, error } = await supabase.rpc('adjust_client_balance' as any, {
         p_client_id: clientId,
         p_amount: amount,
@@ -327,7 +327,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      // @ts-ignore - RPC function not in auto-generated types
+      // @ts-expect-error - RPC function not in auto-generated types
       const { data: rpcResult, error: rpcError } = await supabase.rpc('record_fronted_payment_atomic' as any, {
         p_fronted_id: frontedId,
         p_payment_amount: amount,
@@ -468,7 +468,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      // @ts-ignore - RPC function not in auto-generated types
+      // @ts-expect-error - RPC function not in auto-generated types
       const { data: rpcResult, error: rpcError } = await supabase.rpc('complete_delivery_with_collection' as any, {
         p_delivery_id: deliveryId,
         p_amount_collected: amountCollected,
@@ -597,7 +597,7 @@ class PaymentService {
     try {
       // Get all unpaid fronted inventory for the client
       const { data: frontedItems } = await supabase
-        // @ts-ignore - Type instantiation too deep
+        // @ts-expect-error - Type instantiation too deep
         .from('fronted_inventory' as any)
         .select('id, expected_revenue, payment_received, payment_due_date, created_at')
         .eq('client_id', clientId)

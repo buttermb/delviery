@@ -17,8 +17,8 @@ interface FloatingCartButtonProps {
   onCheckout?: () => void;
 }
 
-export function FloatingCartButton({ primaryColor = '#10b981', onCheckout }: FloatingCartButtonProps) {
-  const { storeSlug } = useParams();
+export function FloatingCartButton({ primaryColor = '#10b981', onCheckout: _onCheckout }: FloatingCartButtonProps) {
+  const { storeSlug: _storeSlug } = useParams();
   const { store, cartItemCount } = useShop();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);

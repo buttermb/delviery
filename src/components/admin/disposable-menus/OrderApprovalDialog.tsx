@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -67,7 +67,10 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
   const queryClient = useQueryClient();
   const { shouldAutoApprove } = useFeatureFlags();
 
-  const orderItems = Array.isArray(order.order_items) ? order.order_items : [];
+  const orderItems = useMemo(() =>
+    Array.isArray(order.order_items) ? order.order_items : [],
+    [order.order_items]
+  );
   const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) =>
     sum + (item.quantity || 0), 0
   );

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card } from '@/components/ui/card';
@@ -57,14 +57,14 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
     return getStatusColorInline(status);
   };
 
-  const getMapStyle = () => {
+  const getMapStyle = useCallback(() => {
     const styles = {
       'streets': 'mapbox://styles/mapbox/streets-v12',
       'satellite': 'mapbox://styles/mapbox/satellite-streets-v12',
       'dark': 'mapbox://styles/mapbox/dark-v11'
     };
     return styles[mapStyle];
-  };
+  }, [mapStyle]);
 
   useEffect(() => {
     if (!mapContainer.current || !MAPBOX_TOKEN) return;
@@ -85,7 +85,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
 
     map.current.on('load', () => {
       setMapLoaded(true);
-      
+
       // Add 3D buildings layer
       const layers = map.current!.getStyle().layers;
       const labelLayerId = layers?.find(
@@ -111,7 +111,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
     return () => {
       map.current?.remove();
     };
-  }, [mapStyle]);
+  }, [getMapStyle]);
 
   // Real-time courier position updates
   useEffect(() => {

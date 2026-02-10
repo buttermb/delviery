@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Package, Menu, LogOut, DollarSign, Clock, Settings } from 'lucide-react';
+import { Menu, LogOut, DollarSign, Clock, Settings } from 'lucide-react';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
@@ -17,7 +17,6 @@ import { RoleIndicator } from '@/components/courier/RoleIndicator';
 import { LocationTrackingStatus } from '@/components/courier/LocationTrackingStatus';
 import { useRunnerStats } from '@/hooks/useRunnerStats';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
-import { AnimatePresence } from 'framer-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface Order {
@@ -41,7 +40,7 @@ interface Stats {
 export default function CourierDashboardPage() {
   const { courier, loading, isOnline, toggleOnlineStatus, role } = useCourier();
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
-  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [_loadingOrders, setLoadingOrders] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 

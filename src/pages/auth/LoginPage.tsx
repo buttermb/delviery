@@ -18,8 +18,6 @@ import {
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { logger } from '@/lib/logger';
-import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { safeStorage } from '@/utils/safeStorage';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({

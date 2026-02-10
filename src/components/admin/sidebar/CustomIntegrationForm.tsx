@@ -4,7 +4,7 @@
  * Allows users to add custom webhooks and API integrations
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { logger } from '@/lib/logger';
 import { sanitizeFormInput, sanitizeUrlInput, sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 interface CustomIntegrationFormProps {
   open: boolean;
@@ -27,7 +26,7 @@ interface CustomIntegrationFormProps {
 export function CustomIntegrationForm({
   open,
   onOpenChange,
-  onIntegrationAdded,
+  onIntegrationAdded: _onIntegrationAdded,
 }: CustomIntegrationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -66,9 +65,9 @@ export function CustomIntegrationForm({
     setIsSubmitting(true);
 
     // Sanitize form inputs before processing
-    const sanitizedName = sanitizeFormInput(formData.name, 100);
+    const _sanitizedName = sanitizeFormInput(formData.name, 100);
     const sanitizedUrl = sanitizeUrlInput(formData.endpoint_url);
-    const sanitizedDescription = sanitizeTextareaInput(formData.description, 500);
+    const _sanitizedDescription = sanitizeTextareaInput(formData.description, 500);
 
     if (!sanitizedUrl) {
       toast.error('Invalid endpoint URL');

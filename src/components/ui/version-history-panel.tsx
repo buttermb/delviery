@@ -62,7 +62,7 @@ interface VersionHistoryPanelProps {
 
 export function VersionHistoryPanel({
   entityType,
-  entityId,
+  entityId: _entityId,
   entityName,
   versions,
   onRestore,

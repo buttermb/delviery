@@ -5,8 +5,8 @@
  * Displays in Settings or as a standalone page.
  */
 
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Gift,
   Users,
@@ -16,10 +16,8 @@ import {
   TrendingUp,
   Coins,
   UserPlus,
-  ArrowRight,
   RefreshCw,
   Mail,
-  MessageSquare,
   Loader2,
   Sparkles,
 } from 'lucide-react';
@@ -27,7 +25,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import {
   Tooltip,
   TooltipContent,
@@ -43,10 +40,7 @@ import {
   getReferralLink,
   copyReferralLink,
   REFERRAL_REWARDS,
-  type ReferralCode,
-  type ReferralStats,
 } from '@/lib/credits/referralService';
-import { logger } from '@/lib/logger';
 
 export interface ReferralDashboardProps {
   className?: string;
@@ -58,7 +52,6 @@ export function ReferralDashboard({
   compact = false,
 }: ReferralDashboardProps) {
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
 
   const tenantId = tenant?.id;
@@ -80,7 +73,6 @@ export function ReferralDashboard({
   // Fetch stats
   const {
     data: stats,
-    isLoading: statsLoading,
   } = useQuery({
     queryKey: ['referral-stats', tenantId],
     queryFn: async () => {

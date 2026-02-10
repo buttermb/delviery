@@ -5,7 +5,7 @@
 
 import { useParams } from 'react-router-dom';
 import { usePost, useDeletePost } from '@/hooks/usePosts';
-import { useComments, useCreateComment, useDeleteComment } from '@/hooks/useComments';
+import { useComments, useCreateComment } from '@/hooks/useComments';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,7 +28,7 @@ export function PostDetailPage() {
   const { data: profile } = useForumProfile();
   const createCommentMutation = useCreateComment();
   const deletePostMutation = useDeletePost();
-  const deleteCommentMutation = useDeleteComment();
+  const _deleteCommentMutation = useDeleteComment();
   const [commentContent, setCommentContent] = useState('');
 
   // Subscribe to real-time comment updates
@@ -70,7 +70,7 @@ export function PostDetailPage() {
         depth: 0,
       });
       setCommentContent('');
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };
@@ -81,7 +81,7 @@ export function PostDetailPage() {
     try {
       await deletePostMutation.mutateAsync(postId);
       navigate('/community');
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

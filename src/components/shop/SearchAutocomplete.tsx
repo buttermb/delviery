@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, X, Package, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchAutocompleteProps {

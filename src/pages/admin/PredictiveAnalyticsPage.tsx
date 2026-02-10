@@ -1,25 +1,15 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import {
   TrendingUp,
   Package,
   DollarSign,
-  Loader2,
-  BarChart3,
 } from "lucide-react";
 import { DemandForecast } from "@/components/admin/predictive/DemandForecast";
 import { InventoryOptimization } from "@/components/admin/predictive/InventoryOptimization";
 import { CashFlowProjection } from "@/components/admin/predictive/CashFlowProjection";
-import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 export default function PredictiveAnalyticsPage() {
-  const { tenant } = useTenantAdminAuth();
   const [activeTab, setActiveTab] = useState("demand");
 
   return (

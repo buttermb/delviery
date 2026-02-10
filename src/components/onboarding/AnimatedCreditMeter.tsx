@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { motion, useSpring, useTransform, animate } from 'framer-motion';
+import { motion, useSpring, useTransform } from 'framer-motion';
 import { Coins, Sparkles, Zap, MessageSquare, ShoppingCart, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';

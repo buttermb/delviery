@@ -56,7 +56,7 @@ const COLUMNS = [
   },
 ];
 
-export function OrderKanban({ onViewDetails: _onViewDetails }: OrderKanbanProps) {
+export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate }: OrderKanbanProps) {
   const queryClient = useQueryClient();
   const { data: orders = [], isLoading, refetch } = useMenuOrders();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -120,7 +120,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails }: OrderKanbanProps)
         }
       }
 
-      // @ts-ignore - Dynamic status value
+      // @ts-expect-error - Dynamic status value
       const { error } = await supabase
         .from('menu_orders')
         .update(updates)

@@ -1,12 +1,12 @@
 import { Link, useParams } from 'react-router-dom';
 import { useShop } from '@/pages/shop/ShopLayout';
-import { Facebook, Twitter, Instagram, Linkedin, Mail } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 interface LuxuryFooterProps {
   accentColor?: string;
 }
 
-export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
+export function LuxuryFooter({ accentColor: _accentColor = '#0EC7BA' }: LuxuryFooterProps) {
   const { storeSlug } = useParams();
   const { store, isPreviewMode } = useShop();
 

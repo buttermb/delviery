@@ -20,7 +20,6 @@ import {
   Edit,
   Trash2,
   Eye,
-  Loader2,
 } from "lucide-react";
 import {
   Table,

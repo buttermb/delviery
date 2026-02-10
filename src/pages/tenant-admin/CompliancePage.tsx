@@ -1,19 +1,14 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function CompliancePage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data: compliance, isLoading } = useQuery({
     queryKey: ['compliance', tenantId],

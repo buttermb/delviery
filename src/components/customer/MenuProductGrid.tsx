@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, Package, Plus, Minus, Loader2 } from 'lucide-react';
+import { Package, Plus, Minus, Loader2 } from 'lucide-react';
 import { cleanProductName } from '@/utils/productName';
-import { formatWeight } from '@/utils/productHelpers';
 import { cn } from '@/lib/utils';
 
 interface Product {
@@ -33,11 +31,11 @@ interface MenuProductGridProps {
 export const MenuProductGrid = ({
   products,
   showImages,
-  showAvailability,
+  showAvailability: _showAvailability,
   onAddToCart,
-  minOrderQty = 1
+  minOrderQty: _minOrderQty = 1
 }: MenuProductGridProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, _setSearchQuery] = useState('');
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [animatingId, setAnimatingId] = useState<string | null>(null);
 

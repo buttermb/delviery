@@ -57,8 +57,13 @@ export function RoleBasedSidebar() {
     const currentSection = navigation.find(
       section => section.children?.some(child => child.href === location.pathname)
     );
-    if (currentSection && !expandedSections.includes(currentSection.name)) {
-      setExpandedSections([...expandedSections, currentSection.name]);
+    if (currentSection) {
+      setExpandedSections(prev => {
+        if (prev.includes(currentSection.name)) {
+          return prev;
+        }
+        return [...prev, currentSection.name];
+      });
     }
   }, [location.pathname, navigation]);
 

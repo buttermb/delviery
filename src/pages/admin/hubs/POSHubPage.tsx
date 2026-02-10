@@ -6,7 +6,7 @@
  * - Z-Reports: End of day reports
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';

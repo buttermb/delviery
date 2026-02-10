@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Workflow, Save, Play, Plus, Trash2 } from 'lucide-react';
+import { Workflow, Save, Play, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface WorkflowAction {

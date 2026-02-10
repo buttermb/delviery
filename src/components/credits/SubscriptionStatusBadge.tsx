@@ -11,7 +11,6 @@ import {
   Coins,
   Sparkles,
   AlertTriangle,
-  CheckCircle,
   Clock,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

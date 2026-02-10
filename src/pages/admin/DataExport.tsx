@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import { Download, Database, FileSpreadsheet } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
@@ -21,7 +21,7 @@ export default function DataExport() {
   const { toast } = useToast();
   const [exportType, setExportType] = useState<string>('');
   const [format, setFormat] = useState<string>('csv');
-  const { isFreeTier, balance, performAction } = useCredits();
+  const { isFreeTier, performAction } = useCredits();
 
   const { data: exportHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['data-export-history', tenantId],

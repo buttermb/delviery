@@ -23,7 +23,7 @@ import {
     Lightbulb,
     ExternalLink,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 
-const TabSkeleton = () => (
+const _TabSkeleton = () => (
     <div className="p-6 space-y-4">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-64 w-full" />

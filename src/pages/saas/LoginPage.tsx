@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
-import { resilientFetch, ErrorCategory, getErrorMessage, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
+import { resilientFetch, ErrorCategory, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
 import { authFlowLogger, AuthFlowStep, AuthAction } from '@/lib/utils/authFlowLogger';
 import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
 import {
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Lock, Mail, WifiOff, AlertCircle, Eye, EyeOff, ArrowLeft, Wand2, Flower2, Leaf, Star, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CheckCircle2, WifiOff, Eye, EyeOff, Wand2, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
@@ -60,10 +60,10 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [_isSendingMagicLink, setIsSendingMagicLink] = useState(false);
+  const [_magicLinkSent, _setMagicLinkSent] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
-  const [retryCount, setRetryCount] = useState(0);
+  const [_retryCount, setRetryCount] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';

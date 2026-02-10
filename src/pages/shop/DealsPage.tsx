@@ -17,8 +17,6 @@ import {
     Tag,
     Clock,
     Calendar,
-    ChevronRight,
-    Percent,
     Sparkles,
     ShoppingBag,
 } from 'lucide-react';
@@ -39,7 +37,7 @@ interface Deal {
 export default function DealsPage() {
     const { storeSlug } = useParams();
     const { store } = useShop();
-    const { isLuxuryTheme, cardBg, cardBorder, textPrimary, textMuted, accentColor } = useLuxuryTheme();
+    const { isLuxuryTheme, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
 
     const { data: deals = [], isLoading } = useQuery({
         queryKey: ['store-active-deals', store?.id],

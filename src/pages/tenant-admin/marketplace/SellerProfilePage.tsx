@@ -4,8 +4,7 @@ import { logger } from '@/lib/logger';
  * Allows sellers to create and manage their marketplace profile
  */
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -14,11 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ProfileForm } from './ProfileForm';
-import { Building2, CheckCircle, Clock, XCircle, AlertCircle, FileText, Upload } from 'lucide-react';
+import { Building2, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 export default function SellerProfilePage() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

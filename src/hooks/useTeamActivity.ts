@@ -7,7 +7,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 

@@ -41,7 +41,6 @@ import {
   BarChart3,
   Calculator,
   Wallet,
-  Clock,
   ArrowRight,
   Menu,
   Bell,

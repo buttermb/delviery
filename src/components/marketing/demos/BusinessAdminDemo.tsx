@@ -15,13 +15,9 @@ import {
     Settings,
     Bell,
     Search,
-    Menu,
     MoreVertical,
     TrendingUp,
-    DollarSign,
-    Clock,
-    CheckCircle2,
-    Zap
+    DollarSign
 } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
@@ -127,7 +123,7 @@ export function BusinessAdminDemo() {
         { icon: ShoppingCart, label: 'Orders' },
         { icon: Package, label: 'Inventory' },
         { icon: Users, label: 'Customers' },
-        { icon: Menu, label: 'Menus' },
+        { icon: TrendingUp, label: 'Menus' },
         { icon: Settings, label: 'Settings' },
     ];
 

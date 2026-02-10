@@ -12,26 +12,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Package, 
-  Edit, 
+import {
+  Package,
+  Edit,
   ArrowLeft,
   Eye,
   EyeOff,
-  DollarSign,
   Package2,
   Lock,
-  FileText,
   Calendar,
-  MapPin,
   TrendingUp
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { MarketplaceListing } from '@/types/marketplace-extended';
-import { decryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { useState } from 'react';
-import { generateEncryptionKey } from '@/lib/encryption/aes256';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Type helper to avoid excessive deep instantiation
@@ -39,11 +34,11 @@ const asListing = (data: any): MarketplaceListing => data as MarketplaceListing;
 
 export default function ListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [decryptedLabResults, setDecryptedLabResults] = useState<any>(null);
-  const [decrypting, setDecrypting] = useState(false);
+  const [_decryptedLabResults, _setDecryptedLabResults] = useState<any>(null);
+  const [_decrypting, setDecrypting] = useState(false);
 
   // Fetch listing details
   const { data: listing, isLoading } = useQuery<MarketplaceListing | null>({
@@ -68,17 +63,13 @@ export default function ListingDetailPage() {
   });
 
   // Decrypt lab results if needed
-  const handleDecryptLabResults = async () => {
+  const _handleDecryptLabResults = async () => {
     if (!listing?.lab_results || !listing.lab_results_encrypted) {
       return;
     }
 
     setDecrypting(true);
     try {
-      // In production, you'd get the encryption key from a secure source
-      // For now, we'll generate a key (this is just for demonstration)
-      const key = await generateEncryptionKey();
-      
       // Note: In real implementation, you'd need the actual encryption key
       // that was used to encrypt the data. This is a placeholder.
       toast({
@@ -86,7 +77,7 @@ export default function ListingDetailPage() {
         description: 'Lab results decryption requires the original encryption key. This feature is for demonstration.',
         variant: 'default',
       });
-      
+
       // In production, you'd do:
       // const decrypted = await decryptLabResults(listing.lab_results.encrypted, key);
       // setDecryptedLabResults(decrypted);

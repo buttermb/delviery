@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEncryption } from '@/lib/hooks/useEncryption';
@@ -15,16 +15,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Shield } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 
 export default function CustomerForm() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { isReady: encryptionIsReady } = useEncryption();
   const isEdit = !!id;
 

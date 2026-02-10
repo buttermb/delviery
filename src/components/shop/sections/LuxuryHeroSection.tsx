@@ -23,7 +23,7 @@ export interface LuxuryHeroSectionProps {
   storeId?: string;
 }
 
-export function LuxuryHeroSection({ content, styles, storeId }: LuxuryHeroSectionProps) {
+export function LuxuryHeroSection({ content, styles, storeId: _storeId }: LuxuryHeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { storeSlug } = useParams();
 

@@ -3,7 +3,6 @@
  * Premium scroll progress indicator for product pages
  */
 
-import { useState, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 
 interface ScrollProgressProps {

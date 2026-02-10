@@ -36,7 +36,7 @@ export function AutocompleteInput({
     if (stored) {
       try {
         setRecentSelections(JSON.parse(stored).slice(0, 3));
-      } catch (e) {
+      } catch {
         // Ignore parse errors
       }
     }

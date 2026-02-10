@@ -21,16 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2, FileText } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2 } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
-type PurchaseOrderInsert = Database['public']['Tables']['purchase_orders']['Insert'];
-type PurchaseOrderItemInsert = Database['public']['Tables']['purchase_order_items']['Insert'];
 
 interface POItem {
   product_id: string;
@@ -50,7 +47,7 @@ interface POCreateFormProps {
 }
 
 export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: POCreateFormProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant: _tenant } = useTenantAdminAuth();
   const { createPurchaseOrder } = usePurchaseOrders();
   const [currentStep, setCurrentStep] = useState<Step>("supplier");
   const [formData, setFormData] = useState({

@@ -17,7 +17,7 @@ interface POSTransaction {
   tenant_id: string;
 }
 
-interface POSShift {
+interface _POSShift {
   id: string;
   tenant_id: string;
   status: 'open' | 'closed';

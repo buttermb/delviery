@@ -16,7 +16,7 @@ interface CommunityProtectedRouteProps {
 export function CommunityProtectedRoute({ children }: CommunityProtectedRouteProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [_authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -28,7 +28,7 @@ export function CommunityProtectedRoute({ children }: CommunityProtectedRoutePro
           // User can still view the forum, but will need to login to post
           // Don't redirect - allow read-only access
         }
-      } catch (error) {
+      } catch {
         // Allow access even if check fails
         setAuthenticated(false);
       } finally {

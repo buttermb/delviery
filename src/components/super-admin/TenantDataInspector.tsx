@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import { Search, Download, Eye, Database } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';

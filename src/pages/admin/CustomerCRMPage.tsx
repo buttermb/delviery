@@ -6,30 +6,14 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import {
-  Search,
   Users,
   TrendingUp,
   DollarSign,
-  Calendar,
-  Tag,
-  Filter,
-  Loader2,
-  Star,
-  AlertCircle,
+  Tag
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -45,8 +29,7 @@ import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
-import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 
 interface Customer {
@@ -71,7 +54,7 @@ export default function CustomerCRMPage() {
   const [segmentFilter, setSegmentFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  const { data: dashboardMetrics, isLoading: isDashboardLoading } = useCRMDashboard();
+  const { data: dashboardMetrics } = useCRMDashboard();
 
   const { data: customers, isLoading } = useQuery({
     queryKey: queryKeys.customers.list({ lifecycle: lifecycleFilter, segment: segmentFilter }),

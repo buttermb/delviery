@@ -7,7 +7,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Navigation, Phone, ChevronRight, Package, CheckCircle2, Truck, Activity, Signal, Route, Clock, Zap } from 'lucide-react';
+import { MapPin, Phone, ChevronRight, Package, CheckCircle2, Truck, Route, Clock, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 

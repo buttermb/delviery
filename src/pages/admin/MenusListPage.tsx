@@ -4,7 +4,6 @@ import { useDisposableMenus } from '@/hooks/useDisposableMenus';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
     Select,
     SelectContent,
@@ -15,7 +14,6 @@ import {
 import Plus from "lucide-react/dist/esm/icons/plus";
 import Search from "lucide-react/dist/esm/icons/search";
 import Eye from "lucide-react/dist/esm/icons/eye";
-import Users from "lucide-react/dist/esm/icons/users";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import MenuIcon from "lucide-react/dist/esm/icons/menu";
@@ -76,18 +74,6 @@ export function MenusListPage() {
     const totalOrders = menus?.reduce((sum, m) => sum + (m.order_count || 0), 0) || 0;
     const totalRevenue = menus?.reduce((sum, m) => sum + (m.total_revenue || 0), 0) || 0;
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'active':
-                return <Badge className="bg-success text-success-foreground">Active</Badge>;
-            case 'soft_burned':
-                return <Badge className="bg-warning text-warning-foreground">Soft Burned</Badge>;
-            case 'hard_burned':
-                return <Badge variant="destructive">Burned</Badge>;
-            default:
-                return <Badge variant="outline">{status}</Badge>;
-        }
-    };
 
     return (
         <div className="space-y-6 p-6 pb-16">

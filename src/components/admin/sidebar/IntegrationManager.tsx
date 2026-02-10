@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
-import { ExternalLink, RefreshCw, CheckCircle2, XCircle, AlertCircle, Settings, Plus } from 'lucide-react';
+import { RefreshCw, CheckCircle2, XCircle, AlertCircle, Settings, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -17,7 +17,7 @@ import { CustomIntegrationForm } from './CustomIntegrationForm';
 
 export function IntegrationManager() {
   const { getIntegrationsWithStatus, toggleIntegration, refreshConnectionStatus } = useIntegrationManager();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [setupDialogOpen, setSetupDialogOpen] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<{ id: string; name: string } | null>(null);
@@ -48,7 +48,7 @@ export function IntegrationManager() {
           },
         });
       }
-    } catch (error) {
+    } catch {
       toast.error(`Failed to check ${integrationName} connection`, {
         description: 'Please try again or check your network connection',
       });
@@ -57,7 +57,7 @@ export function IntegrationManager() {
     }
   };
 
-  const getStatusIcon = (connected: boolean) => {
+  const _getStatusIcon = (connected: boolean) => {
     if (connected) {
       return <CheckCircle2 className="h-4 w-4 text-green-500" />;
     }

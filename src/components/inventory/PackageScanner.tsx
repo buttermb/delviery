@@ -6,11 +6,11 @@ import { logger } from '@/lib/logger';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Scan, Package, MapPin, CheckCircle2, XCircle, AlertCircle, Flashlight } from 'lucide-react';
+import { Scan, Package, MapPin, CheckCircle2, AlertCircle, Flashlight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { parseQRCodeData, type QRCodeData, type PackageQRData } from '@/utils/barcodeService';
+import { parseQRCodeData, type PackageQRData } from '@/utils/barcodeService';
 
 interface PackageScannerProps {
   onScanSuccess?: (data: PackageQRData) => void;
@@ -56,7 +56,7 @@ export function PackageScanner({
       }).catch(err => {
         logger.warn('Scanner warmup failed (permissions might be pending)', err, { component: 'PackageScanner' });
       });
-    } catch (e) {
+    } catch {
       // Element might not exist yet if not rendering the container
     }
 
@@ -130,7 +130,7 @@ export function PackageScanner({
         (decodedText) => {
           handleScanResult(decodedText);
         },
-        (errorMessage) => {
+        (_errorMessage) => {
           // Ignore scan errors while actively scanning
         }
       );

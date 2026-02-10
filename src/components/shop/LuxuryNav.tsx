@@ -11,7 +11,7 @@ interface LuxuryNavProps {
   accentColor?: string;
 }
 
-export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7BA' }: LuxuryNavProps) {
+export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accentColor = '#0EC7BA' }: LuxuryNavProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { storeSlug } = useParams();
   const navigate = useNavigate();

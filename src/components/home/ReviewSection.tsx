@@ -89,11 +89,11 @@ export function ReviewSection() {
   }, [data, page]);
 
   // Calculate average rating from visible reviews
-  const averageRating = allReviews.length > 0
+  const _averageRating = allReviews.length > 0
     ? allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length
     : 4.8;
 
-  const reviewCount = 10427; // Total count from database
+  const _reviewCount = 10427; // Total count from database
 
   const loadMore = () => {
     setPage(prev => prev + 1);

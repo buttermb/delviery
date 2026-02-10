@@ -40,11 +40,11 @@ export function SidebarHotItems() {
     return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
   };
 
-  const handleItemClick = (itemId: string, featureId?: string) => {
+  const handleItemClick = (_itemId: string, _featureId?: string) => {
     // Tracking is handled by SidebarMenuItem
   };
 
-  const handleLockedItemClick = (featureId: FeatureId) => {
+  const handleLockedItemClick = (_featureId: FeatureId) => {
     // Upgrade modal is handled by parent AdaptiveSidebar
   };
 

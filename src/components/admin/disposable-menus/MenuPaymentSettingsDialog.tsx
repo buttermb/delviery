@@ -1,4 +1,4 @@
-// @ts-nocheck - Supabase types not yet regenerated
+// @ts-expect-error - Supabase types not yet regenerated for payment_settings field
 /**
  * MenuPaymentSettingsDialog - Per-menu payment method overrides
  * Allows overriding tenant-level payment settings for individual menus
@@ -46,7 +46,7 @@ export function MenuPaymentSettingsDialog({
   const { data: tenantSettings, isLoading: isLoadingTenant } = useTenantPaymentSettings();
   
   // Parse existing overrides from menu
-  // @ts-ignore - payment_settings exists in database but not in generated types
+  // @ts-expect-error - payment_settings exists in database but not in generated types
   const existingOverrides: PaymentOverrides = ((menu as any).payment_settings as PaymentOverrides) || {};
   
   const [overrides, setOverrides] = useState<PaymentOverrides>(existingOverrides);
@@ -55,13 +55,12 @@ export function MenuPaymentSettingsDialog({
   // Reset state when dialog opens
   useEffect(() => {
     if (open) {
-      // @ts-ignore - payment_settings exists in database but not in generated types
+      // @ts-expect-error - payment_settings exists in database but not in generated types
       const menuOverrides = ((menu as any).payment_settings as PaymentOverrides) || {};
       setOverrides(menuOverrides);
       setHasChanges(false);
     }
-    // @ts-ignore - payment_settings exists in database but not in generated types
-  }, [open, (menu as any).payment_settings]);
+  }, [open, menu]);
 
   const updateOverride = <K extends keyof PaymentSettings>(
     key: K,
@@ -88,8 +87,8 @@ export function MenuPaymentSettingsDialog({
   const saveOverrides = useMutation({
     mutationFn: async () => {
       const paymentSettings = Object.keys(overrides).length > 0 ? overrides : null;
-      
-      // @ts-ignore - payment_settings exists in database but not in generated types
+
+      // @ts-expect-error - payment_settings exists in database but not in generated types
       const { error } = await supabase
         .from('disposable_menus')
         .update({ payment_settings: paymentSettings } as any)

@@ -153,15 +153,15 @@ function FileUpload({
   const [isDragging, setIsDragging] = React.useState(false);
   const [files, setFiles] = React.useState<UploadedFile[]>([]);
   const [error, setError] = React.useState<string | null>(null);
-  const [isCompressing, setIsCompressing] = React.useState(false);
+  const [isCompressing, _setIsCompressing] = React.useState(false);
 
   // Compression is disabled for now - stub implementation
-  const getCompressionOptions = React.useCallback((): Record<string, unknown> | null => {
+  const _getCompressionOptions = React.useCallback((): Record<string, unknown> | null => {
     return null;
   }, []);
 
   // Compress a file if it's a compressible image - disabled for now
-  const maybeCompressFile = React.useCallback(async (file: File): Promise<File> => {
+  const _maybeCompressFile = React.useCallback(async (file: File): Promise<File> => {
     // Compression disabled - return original file
     return file;
   }, []);

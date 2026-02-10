@@ -12,7 +12,6 @@ import {
   DollarSign,
   BarChart3,
   Settings,
-  Mail,
   Shield,
   Search,
   Bell,
@@ -124,11 +123,10 @@ export function TopNav({
     avatar_url?: string;
   };
   
-  const adminName = admin?.full_name 
+  const adminName = admin?.full_name
     || (admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : null)
-    || admin?.email 
+    || admin?.email
     || 'Super Admin';
-  const adminEmail = admin?.email || '';
   const adminInitials = getInitials(
     admin?.full_name || (admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : undefined),
     admin?.email

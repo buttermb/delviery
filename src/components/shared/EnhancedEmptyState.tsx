@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/contexts/ThemeContext";
 import { LucideIcon } from "lucide-react";
 import { isValidElement } from "react";
 
@@ -115,7 +114,6 @@ export function EnhancedEmptyState({
   designSystem = "tenant-admin",
   compact = false,
 }: EnhancedEmptyStateProps) {
-  const { theme } = useTheme();
   const config = emptyStateConfig[type];
   const finalTitle = title || config.defaultTitle;
   const finalDescription = description || config.defaultDescription;
@@ -142,26 +140,12 @@ export function EnhancedEmptyState({
 
   const finalIcon = renderIcon();
 
-  // Design system-specific styling using semantic tokens
-  const bgColor = {
-    marketing: "bg-card",
-    "super-admin": "bg-card/80 backdrop-blur-xl",
-    "tenant-admin": "bg-card",
-    customer: "bg-card",
-  }[designSystem];
-
-  const borderColor = "border-border";
-  const textColor = "text-card-foreground";
-  const textLightColor = "text-muted-foreground";
-
   const primaryButtonClass = {
     marketing: "bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] hover:opacity-90 text-white",
     "super-admin": "bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white",
     "tenant-admin": "bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:opacity-90 text-white",
     customer: "bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white",
   }[designSystem];
-
-  const secondaryButtonClass = "border-border text-foreground hover:bg-muted";
 
   // Render action icon (handles LucideIcon or ReactNode)
   const renderActionIcon = (actionIcon: React.ReactNode | LucideIcon | undefined) => {

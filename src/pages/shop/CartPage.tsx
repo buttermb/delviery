@@ -3,12 +3,12 @@
  * Shopping cart with quantity controls and checkout button
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
-import { useShopCart, ShopCartItem } from '@/hooks/useShopCart';
+import { useShopCart } from '@/hooks/useShopCart';
 import { useDeals } from '@/hooks/useDeals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShoppingCart,
   ShoppingBag,
   Plus,
   Minus,
@@ -33,7 +32,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { CartItemStockWarning, CartStockSummary, useCartStockCheck } from '@/components/shop/CartStockWarning';
+import { CartItemStockWarning } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 

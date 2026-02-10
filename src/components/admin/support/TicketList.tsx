@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { MessageSquare, Loader2, AlertCircle } from "lucide-react";
+import { MessageSquare, Loader2 } from "lucide-react";
 
 interface Ticket {
   id: string;

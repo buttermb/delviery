@@ -4,11 +4,10 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Key, Bell, Shield, User } from "lucide-react";
+import { Key, Bell, Shield, User } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeFetch } from "@/utils/safeFetch";
 

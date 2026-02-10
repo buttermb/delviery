@@ -18,7 +18,6 @@ import {
   Package,
   Search,
   Filter,
-  ShoppingCart,
   Star,
   Building2,
   Lock,

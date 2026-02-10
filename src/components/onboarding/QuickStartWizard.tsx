@@ -16,7 +16,7 @@ interface QuickStartWizardProps {
   onComplete: () => void;
 }
 
-export function QuickStartWizard({ open, onOpenChange, onComplete }: QuickStartWizardProps) {
+export function QuickStartWizard({ open, onOpenChange, onComplete: _onComplete }: QuickStartWizardProps) {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

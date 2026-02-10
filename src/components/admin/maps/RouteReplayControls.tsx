@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -10,7 +9,6 @@ import {
   SkipForward,
   Gauge,
   Clock,
-  MapPin,
   Battery,
   Navigation
 } from 'lucide-react';
@@ -38,18 +36,12 @@ export function RouteReplayControls({
   onReset,
   onSpeedChange,
 }: RouteReplayControlsProps) {
-  const [localIndex, setLocalIndex] = useState(currentIndex);
-
-  useEffect(() => {
-    setLocalIndex(currentIndex);
-  }, [currentIndex]);
 
   const currentLocation = locations[currentIndex];
   const progress = locations.length > 0 ? (currentIndex / (locations.length - 1)) * 100 : 0;
 
   const handleSliderChange = (value: number[]) => {
     const newIndex = Math.floor((value[0] / 100) * (locations.length - 1));
-    setLocalIndex(newIndex);
     onIndexChange(newIndex);
   };
 

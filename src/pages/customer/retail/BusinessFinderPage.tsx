@@ -15,12 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Store, 
-  Search, 
+import {
+  Store,
+  Search,
   Filter,
   MapPin,
-  Star,
   Truck,
   Clock,
   ArrowRight,
@@ -42,8 +41,8 @@ type CustomerMode = 'retail' | 'wholesale';
 
 export default function BusinessFinderPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { customer, tenant } = useCustomerAuth();
-  const { toast } = useToast();
+  const { tenant } = useCustomerAuth();
+  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<string>('all');
@@ -57,7 +56,7 @@ export default function BusinessFinderPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);
@@ -66,7 +65,7 @@ export default function BusinessFinderPage() {
   const { data: businesses = [], isLoading } = useQuery({
     queryKey: ['retail-businesses', stateFilter, deliveryFilter],
     queryFn: async () => {
-      // @ts-ignore - Deep type instantiation from Supabase types
+      // @ts-expect-error - Deep type instantiation from Supabase types
       const query = supabase
         .from('tenants')
         .select(`

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useOperationSize } from '@/hooks/useOperationSize';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { Badge } from '@/components/ui/badge';
-import { RotateCcw, Info, AlertCircle } from 'lucide-react';
+import { RotateCcw, Info } from 'lucide-react';
 import type { OperationSize } from '@/types/sidebar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 

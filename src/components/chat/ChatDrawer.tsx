@@ -49,7 +49,7 @@ export function ChatDrawer({
     const [activeConversationId, setActiveConversationId] = useState<string | null>(conversationId);
 
     // Fetch or create conversation
-    const { data: conversation } = useQuery({
+    const { data: _conversation } = useQuery({
         queryKey: ['conversation', conversationId, orderId],
         queryFn: async () => {
             if (conversationId) {

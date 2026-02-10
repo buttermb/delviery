@@ -11,8 +11,6 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Progress } from '@/components/ui/progress';
 
 export default function StrategicDashboardPage() {
     const { tenant } = useTenantAdminAuth();

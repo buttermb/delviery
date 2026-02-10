@@ -9,7 +9,6 @@
 import { useState } from 'react';
 import { AlertTriangle, Zap, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCredits } from '@/hooks/useCredits';
 import { CreditPurchaseModal } from './CreditPurchaseModal';

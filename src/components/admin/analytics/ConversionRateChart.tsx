@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowRight } from "lucide-react";
 import { logger } from '@/lib/logger';
 
 interface ConversionRateChartProps {
@@ -135,7 +136,7 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
                                 width={120}
                             />
                             <Tooltip
-                                formatter={(value: number, name: string, props: any) => [
+                                formatter={(value: number, _name: string, props: any) => [
                                     `${value.toLocaleString()} (${props.payload.rate}%)`,
                                     'Count'
                                 ]}

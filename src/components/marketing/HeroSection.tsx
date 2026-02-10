@@ -27,11 +27,11 @@ export function HeroSection() {
   const isMobile = useIsMobile();
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = inView && !prefersReducedMotion;
-  const [shouldAnimateChart, setShouldAnimateChart] = useState(false);
+  const [_shouldAnimateChart, setShouldAnimateChart] = useState(false);
 
   // Auth state for conditional CTAs
   const { user } = useAuth();
-  const { hasActiveSubscription, isTrial } = useSubscriptionStatus();
+  const { isTrial } = useSubscriptionStatus();
 
   // Use throttled scroll for better performance
   const { scrollY } = useThrottledScroll(32);

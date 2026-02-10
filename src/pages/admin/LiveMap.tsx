@@ -6,13 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import {
-  MapPin, Truck, Layers, Map as MapIcon, Search,
+  MapPin, Truck, Search,
   Phone, Navigation, Clock, Users, Activity,
-  ChevronRight, RefreshCw, Maximize2, Minimize2, UserPlus, AlertCircle,
-  CheckCircle, XCircle, Car, Focus, Package, Route, Timer, ShoppingBag
+  ChevronRight, RefreshCw, Maximize2, Minimize2, AlertCircle,
+  CheckCircle, XCircle, Car, Focus
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -57,7 +56,7 @@ export default function LiveMap() {
   const [allCouriers, setAllCouriers] = useState<CourierLocation[]>([]);
   const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [, setOrdersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('dark');
   const [showHeatmap, setShowHeatmap] = useState(false);
@@ -66,10 +65,10 @@ export default function LiveMap() {
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
-  const [showRoutes, setShowRoutes] = useState(true);
+  const [showRoutes] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [showOffline, setShowOffline] = useState(false);
-  const [activeTab, setActiveTab] = useState<'couriers' | 'orders'>('couriers');
+  useState<'couriers' | 'orders'>('couriers');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
@@ -102,26 +101,6 @@ export default function LiveMap() {
     active: couriers.filter(c => c.status === 'delivering').length,
     offline: allCouriers.length - couriers.length,
   }), [couriers, allCouriers]);
-
-  // Order stats
-  const orderStats = useMemo(() => ({
-    total: activeOrders.length,
-    pending: activeOrders.filter(o => o.status === 'pending').length,
-    preparing: activeOrders.filter(o => o.status === 'preparing').length,
-    ready: activeOrders.filter(o => o.status === 'ready_for_pickup').length,
-    inTransit: activeOrders.filter(o => ['in_transit', 'out_for_delivery'].includes(o.status)).length,
-    assigned: activeOrders.filter(o => o.courier_id !== null).length,
-  }), [activeOrders]);
-
-  // Filtered orders based on search
-  const filteredOrders = useMemo(() => {
-    if (!searchQuery) return activeOrders;
-    return activeOrders.filter(o =>
-      o.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.delivery_address.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [activeOrders, searchQuery]);
 
   // Load couriers - memoized to prevent re-creation
   const loadCourierLocations = useCallback(async () => {
@@ -389,33 +368,6 @@ export default function LiveMap() {
 
       // Open the popup for this marker
       const marker = markers.current[courier.id];
-      if (marker) {
-        marker.togglePopup();
-      }
-    }
-  };
-
-  // Focus on a specific order/customer location
-  const focusOnOrder = (order: ActiveOrder) => {
-    if (!order.dropoff_lat || !order.dropoff_lng) {
-      toast.error('No delivery location available for this order');
-      return;
-    }
-
-    setSelectedOrder(order.id);
-    setSelectedCourier(null);
-    if (map.current) {
-      map.current.flyTo({
-        center: [order.dropoff_lng, order.dropoff_lat],
-        zoom: 16,
-        pitch: 60,
-        bearing: Math.random() * 360,
-        duration: 2000,
-        essential: true
-      });
-
-      // Open the popup for this marker
-      const marker = orderMarkers.current[order.id];
       if (marker) {
         marker.togglePopup();
       }

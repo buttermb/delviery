@@ -18,7 +18,7 @@ const mockStore = {
 };
 
 // Mock product data
-const mockRpcProducts = [
+const _mockRpcProducts = [
   {
     product_id: 'prod-1',
     product_name: 'OG Kush',

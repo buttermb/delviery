@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +10,6 @@ import {
   Gift,
   TrendingUp,
   Users,
-  Award,
   Plus,
   Settings,
   Trophy,
@@ -19,12 +17,11 @@ import {
   Zap,
   Edit,
   Trash2,
-  Save,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -70,7 +67,7 @@ interface LoyaltyRewardRedemption {
   points_spent: number;
 }
 
-interface LoyaltyStats {
+interface _LoyaltyStats {
   total_members: number;
   points_issued: number;
   points_redeemed: number;

@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
     Select,
@@ -27,7 +26,6 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Plus, Minus, Trash2, Package, Calendar } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { formatSmartDate } from '@/lib/utils/formatDate';
 
 interface PurchaseOrderItem {
     id: string;

@@ -14,7 +14,6 @@ vi.mock('@/lib/utils/apiClient', () => ({
 }));
 
 const mockSupabaseFrom = vi.fn();
-const mockSupabaseInsert = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: (...args: unknown[]) => mockSupabaseFrom(...args),
@@ -318,7 +317,7 @@ describe('SessionManagement', () => {
       });
 
       // Setup revoke and reload responses
-      const updateMock = setupRevokeResponse(true);
+      setupRevokeResponse(true);
       setupSessionsResponse([mockSessions[0]]); // Only current session remains after refresh
 
       // Find and click revoke button for second session (10.0.0.55)

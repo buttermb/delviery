@@ -9,17 +9,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   TrendingDown,
-  TrendingUp,
   Gift,
   CreditCard,
   RefreshCw,
   Coins,
   ChevronDown,
   ChevronUp,
-  ArrowRight,
   Calendar,
   Filter,
-  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

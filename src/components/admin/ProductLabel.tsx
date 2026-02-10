@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Preview and download printable product labels
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -52,9 +52,10 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const labelRef = useRef<HTMLDivElement>(null);
+  const pdfPreviewUrlRef = useRef<string>('');
 
-  // Prepare label data
-  const labelData: ProductLabelData | null = product.sku ? {
+  // Prepare label data - memoized to avoid triggering useEffect on every render
+  const labelData: ProductLabelData | null = useMemo(() => product.sku ? {
     productName: product.name || '',
     category: product.category || undefined,
     strainName: product.strain_name || undefined,
@@ -69,7 +70,22 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     sku: product.sku || '',
     barcodeImageUrl: product.barcode_image_url || undefined,
     barcodeValue: (product.barcode as string) || product.sku || '',
-  } : null;
+  } : null, [
+    product.sku,
+    product.name,
+    product.category,
+    product.strain_name,
+    product.strain_type,
+    product.vendor_name,
+    product.batch_number,
+    product.thc_percent,
+    product.cbd_percent,
+    product.wholesale_price,
+    product.retail_price,
+    product.available_quantity,
+    product.barcode_image_url,
+    product.barcode,
+  ]);
 
   // Generate barcode when dialog opens
   useEffect(() => {
@@ -109,7 +125,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
         toast.error(`Barcode preview failed: ${errorMessage}`);
       }
     }
-  }, [open, product.sku, product.barcode]);
+  }, [open, product.sku, product.barcode, product.name]);
 
   // Generate PDF preview when size changes or PDF preview is enabled
   useEffect(() => {
@@ -117,13 +133,14 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
       const generatePreview = async () => {
         try {
           setGeneratingPdf(true);
-          // Clean up old URL
-          if (pdfPreviewUrl) {
-            URL.revokeObjectURL(pdfPreviewUrl);
+          // Clean up old URL using ref to avoid stale closure
+          if (pdfPreviewUrlRef.current) {
+            URL.revokeObjectURL(pdfPreviewUrlRef.current);
           }
-          
+
           const pdfBlob = await generateProductLabelPDF(labelData, labelSize);
           const url = URL.createObjectURL(pdfBlob);
+          pdfPreviewUrlRef.current = url;
           setPdfPreviewUrl(url);
         } catch (error) {
           logger.error('Failed to generate PDF preview', error, {
@@ -134,14 +151,14 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           setGeneratingPdf(false);
         }
       };
-      
+
       generatePreview();
     }
 
     // Cleanup on unmount
     return () => {
-      if (pdfPreviewUrl) {
-        URL.revokeObjectURL(pdfPreviewUrl);
+      if (pdfPreviewUrlRef.current) {
+        URL.revokeObjectURL(pdfPreviewUrlRef.current);
       }
     };
   }, [open, showPdfPreview, labelSize, labelData]);

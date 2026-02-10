@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
-import { useMenuCart } from '@/contexts/MenuCartContext';
+import { useMenuCartStore } from '@/stores/menuCartStore';
 import { Badge } from '@/components/ui/badge';
 
 interface CartButtonProps {
@@ -8,7 +8,8 @@ interface CartButtonProps {
 }
 
 export function CartButton({ onClick }: CartButtonProps) {
-  const { totalItems, totalAmount } = useMenuCart();
+  const totalItems = useMenuCartStore((state) => state.getItemCount());
+  const totalAmount = useMenuCartStore((state) => state.getTotal());
 
   if (totalItems === 0) return null;
 

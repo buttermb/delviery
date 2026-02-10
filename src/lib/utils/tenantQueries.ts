@@ -22,7 +22,7 @@ export function tenantQuery(
     throw new Error('Tenant ID required for query');
   }
 
-  // @ts-ignore - Dynamic table name
+  // @ts-expect-error - Dynamic table name
   return supabase
     .from(table as any)
     .select(select)
@@ -47,7 +47,7 @@ export async function tenantInsert(
     ? data.map(item => ({ ...item, tenant_id: tenantId }))
     : { ...data, tenant_id: tenantId };
 
-  // @ts-ignore - Dynamic table name
+  // @ts-expect-error - Dynamic table name
   return supabase
     .from(table as any)
     .insert(insertData as any)
@@ -69,7 +69,7 @@ export async function tenantUpdate(
     throw new Error('Tenant ID required for update');
   }
 
-  // @ts-ignore - Dynamic table name
+  // @ts-expect-error - Dynamic table name
   return supabase
     .from(table as any)
     .update(data)
@@ -92,7 +92,7 @@ export async function tenantDelete(
     throw new Error('Tenant ID required for delete');
   }
 
-  // @ts-ignore - Dynamic table name
+  // @ts-expect-error - Dynamic table name
   return supabase
     .from(table as any)
     .delete()

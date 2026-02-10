@@ -23,9 +23,9 @@ export function AuthGuard({
   redirectTo,
 }: AuthGuardProps) {
   const navigate = useNavigate();
-  const { superAdmin, loading: superAdminLoading } = useSuperAdminAuth();
-  const { admin, tenant, loading: tenantAdminLoading } = useTenantAdminAuth();
-  const { customer, loading: customerLoading } = useCustomerAuth();
+  const { superAdmin: _superAdmin, loading: superAdminLoading } = useSuperAdminAuth();
+  const { admin: _admin, tenant, loading: tenantAdminLoading } = useTenantAdminAuth();
+  const { customer: _customer, loading: customerLoading } = useCustomerAuth();
 
   const userType = getCurrentUserType();
   const isLoading = superAdminLoading || tenantAdminLoading || customerLoading;

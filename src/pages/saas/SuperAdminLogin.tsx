@@ -3,16 +3,15 @@
  * Separate login for managing all tenant accounts
  */
 
-import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Loader2, Building2, ArrowLeft } from "lucide-react";
+import { Loader2, Building2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { handleError } from '@/utils/errorHandling/handlers';
 

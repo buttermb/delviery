@@ -4,7 +4,7 @@
  * Created: 2026-02-02
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Suspense, lazy, useState } from 'react';
@@ -171,24 +171,27 @@ describe('WidgetSkeleton - Integration Tests', () => {
         Promise.resolve({ revenue: 50000, trend: '+12%' })
       );
 
+      // Named component function to satisfy React hooks rules
+      function DataWidgetComponent() {
+        const [data, setData] = useState<any>(null);
+
+        // Simulate data fetch
+        if (!data) {
+          mockFetchData().then(setData);
+          return <div>Loading data...</div>;
+        }
+
+        return (
+          <div data-testid="data-widget">
+            <div>Revenue: ${data.revenue}</div>
+            <div>Trend: {data.trend}</div>
+          </div>
+        );
+      }
+
       const LazyDataWidget = lazy(() =>
         Promise.resolve({
-          default: () => {
-            const [data, setData] = useState<any>(null);
-
-            // Simulate data fetch
-            if (!data) {
-              mockFetchData().then(setData);
-              return <div>Loading data...</div>;
-            }
-
-            return (
-              <div data-testid="data-widget">
-                <div>Revenue: ${data.revenue}</div>
-                <div>Trend: {data.trend}</div>
-              </div>
-            );
-          },
+          default: DataWidgetComponent,
         })
       );
 
@@ -219,7 +222,7 @@ describe('WidgetSkeleton - Integration Tests', () => {
       const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
         try {
           return <>{children}</>;
-        } catch (error) {
+        } catch {
           return <div data-testid="error-state">Widget failed to load</div>;
         }
       };
@@ -253,7 +256,7 @@ describe('WidgetSkeleton - Integration Tests', () => {
         });
       });
 
-      const TestComponent = ({ key }: { key: string }) => (
+      const TestComponent = ({ key: _key }: { key: string }) => (
         <QueryClientProvider client={queryClient}>
           <Suspense fallback={<WidgetSkeleton variant="card" />}>
             <LazyWidget />
@@ -290,7 +293,7 @@ describe('WidgetSkeleton - Integration Tests', () => {
 
       // In JSDOM, getBoundingClientRect returns 0 for all dimensions
       // Instead, verify that the skeleton has height classes applied
-      const skeletonContent = container.querySelector('.h-64, .h-\\[64\\], [class*="h-64"]');
+      const _skeletonContent = container.querySelector('.h-64, .h-\\[64\\], [class*="h-64"]');
 
       // Verify skeleton structure exists and has expected styling
       expect(skeletonElement).toBeInTheDocument();

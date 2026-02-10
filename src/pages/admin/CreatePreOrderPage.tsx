@@ -48,6 +48,15 @@ export default function CreatePreOrderPage() {
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
+    // useForm must be called before any early returns to satisfy React hooks rules
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            expected_date: addDays(new Date(), 7),
+            notes: "",
+        },
+    });
+
     const tenantSlug = tenant?.slug;
     const isContextReady = !tenantLoading && !!tenant?.id && !!tenantSlug;
     const contextError = !tenantLoading && (!tenant?.id || !tenantSlug)
@@ -77,14 +86,6 @@ export default function CreatePreOrderPage() {
             </div>
         );
     }
-
-    const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            expected_date: addDays(new Date(), 7),
-            notes: "",
-        },
-    });
 
     // Calculate total
     const total = lineItems.reduce((sum, item) => sum + item.line_total, 0);

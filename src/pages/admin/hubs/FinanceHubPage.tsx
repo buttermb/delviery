@@ -32,7 +32,7 @@ const PayoutsPage = lazy(() => import('@/pages/admin/PayoutsPage'));
 const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
 const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
 const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
-const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
+const _FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">

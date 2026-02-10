@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Save, Store, Palette, Truck, CreditCard, Upload } from "lucide-react";
+import { Loader2, Save, Store, Palette, Truck, Upload } from "lucide-react";
 import { MarketplaceProfile } from "@/types/marketplace-extended";
 
 export default function StoreSettings() {

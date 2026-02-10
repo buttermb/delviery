@@ -3,16 +3,12 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import {
   Calendar,
   Clock,
   Plus,
-  Loader2,
-  Users,
   Settings,
 } from "lucide-react";
 import { AppointmentCalendar } from "@/components/admin/appointments/AppointmentCalendar";

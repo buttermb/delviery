@@ -9,9 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText,
   Plus,
-  Loader2,
-  Upload,
-  Calendar,
   AlertCircle,
 } from "lucide-react";
 import { DocumentList } from "@/components/admin/compliance/DocumentList";

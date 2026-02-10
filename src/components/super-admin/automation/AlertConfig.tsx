@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Plus, Save, Trash2 } from 'lucide-react';
+import { Bell, Plus, Trash2 } from 'lucide-react';
 import {
   Select,
   SelectContent,

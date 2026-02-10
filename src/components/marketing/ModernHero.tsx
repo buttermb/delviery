@@ -8,7 +8,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, MousePointer2, Smartphone, Play } from "lucide-react";
+import { ArrowRight, ShieldCheck, MousePointer2, Play } from "lucide-react";
 import { lazy, Suspense } from "react";
 // Lazy load the heavy demo component
 const BusinessAdminDemo = lazy(() => import("./demos/BusinessAdminDemo").then(module => ({ default: module.BusinessAdminDemo })));
@@ -34,7 +34,7 @@ const ROTATING_FEATURES = [
 ];
 
 export function ModernHero() {
-  const { isMobile, isTouchDevice, shouldUseStaticFallback } = useMobileOptimized();
+  const { isMobile, shouldUseStaticFallback } = useMobileOptimized();
   const [featureIndex, setFeatureIndex] = useState(0);
 
   useEffect(() => {

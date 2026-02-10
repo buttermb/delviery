@@ -82,7 +82,7 @@ export default function WholesaleCheckoutPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);
@@ -174,7 +174,7 @@ export default function WholesaleCheckoutPage() {
         }));
 
         const orderSubtotal = orderItems.reduce((sum: number, item: any) => sum + item.total_price, 0);
-        const orderFeeCalculation = calculateOrderTotal(orderSubtotal, 0, 0);
+        const _orderFeeCalculation = calculateOrderTotal(orderSubtotal, 0, 0);
 
         // Call edge function to create order
         const { data, error } = await supabase.functions.invoke('create-marketplace-order', {

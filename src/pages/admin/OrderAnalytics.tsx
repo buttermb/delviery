@@ -2,16 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ShoppingCart, DollarSign, TrendingUp, Clock } from 'lucide-react';
-
-interface Order {
-  id: string;
-  created_at: string;
-  total: number | string;
-  status: string;
-  tenant_id: string;
-}
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
 
 interface DayData {
   day: string;

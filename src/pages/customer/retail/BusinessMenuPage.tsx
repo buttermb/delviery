@@ -16,15 +16,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Store, 
-  Search, 
+import {
+  Store,
+  Search,
   Filter,
   ShoppingCart,
   Package,
-  ArrowLeft,
-  Plus,
-  Minus
+  ArrowLeft
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
@@ -45,7 +43,7 @@ type CustomerMode = 'retail' | 'wholesale';
 
 export default function BusinessMenuPage() {
   const { slug, businessSlug } = useParams<{ slug?: string; businessSlug?: string }>();
-  const { customer, tenant } = useCustomerAuth();
+  const { tenant: _tenant } = useCustomerAuth();
   // Use businessSlug if provided (from route), otherwise use slug (current tenant)
   const targetBusinessSlug = businessSlug || slug;
   const { toast } = useToast();
@@ -64,7 +62,7 @@ export default function BusinessMenuPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);

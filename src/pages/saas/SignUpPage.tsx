@@ -4,12 +4,11 @@
  */
 
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,9 +30,9 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap, Coins, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap, Coins, ArrowLeft } from 'lucide-react';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
-import { PLAN_CONFIG, getPlanConfig, type PlanKey } from '@/config/planPricing';
+import { getPlanConfig, type PlanKey } from '@/config/planPricing';
 import { signupProtection } from '@/lib/signupProtection';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
@@ -123,7 +122,7 @@ export default function SignUpPage() {
 
   // Phone verification state
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
-  const [phoneHash, setPhoneHash] = useState<string | null>(null);
+  const [_phoneHash, setPhoneHash] = useState<string | null>(null);
   const [pendingFormData, setPendingFormData] = useState<SignupFormData | null>(null);
 
   const form = useForm<SignupFormData>({
@@ -262,7 +261,7 @@ export default function SignUpPage() {
           industry: data.industry || 'not_specified',
         });
       }
-    } catch (e) {
+    } catch {
       // Silently fail analytics
     }
 
@@ -439,7 +438,7 @@ export default function SignUpPage() {
             email: data.email,
           });
         }
-      } catch (e) {
+      } catch {
         // Silently fail analytics
       }
 
@@ -544,7 +543,7 @@ export default function SignUpPage() {
             email: data.email,
           });
         }
-      } catch (e) {
+      } catch {
         // Silently fail analytics
       }
 
@@ -630,7 +629,7 @@ export default function SignUpPage() {
                   </div>
                   <PhoneVerificationStep
                     required={true}
-                    onVerified={(hash, phoneNumber) => {
+                    onVerified={(hash, _phoneNumber) => {
                       setPhoneHash(hash);
                       setShowPhoneVerification(false);
                       // Re-submit the form with verified phone

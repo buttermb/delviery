@@ -76,11 +76,6 @@ function ThermalReceiptLayout({
   const is58mm = width === '58mm';
   const charWidth = is58mm ? 32 : 42;
 
-  const centerText = (text: string) => {
-    const padding = Math.max(0, Math.floor((charWidth - text.length) / 2));
-    return ' '.repeat(padding) + text;
-  };
-
   const formatLine = (left: string, right: string) => {
     const spaces = Math.max(1, charWidth - left.length - right.length);
     return left + ' '.repeat(spaces) + right;

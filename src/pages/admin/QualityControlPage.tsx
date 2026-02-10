@@ -1,21 +1,17 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import {
   Search,
   Upload,
   FileText,
   AlertTriangle,
-  CheckCircle2,
-  Clock,
   Package,
   Loader2,
   Shield,
@@ -64,7 +60,6 @@ const COMPLIANCE_COLORS: Record<string, string> = {
 
 export default function QualityControlPage() {
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
-import { Download, TrendingUp, Users, DollarSign, Target, Zap } from 'lucide-react';
+import { Download, TrendingUp, Users, DollarSign, Target } from 'lucide-react';
 
 export default function ExecutiveDashboardPage() {
   const { data: metrics, isLoading } = useQuery({

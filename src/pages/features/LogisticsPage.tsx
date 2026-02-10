@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, Truck, MapPin, Navigation, Clock, Fuel, Users, Route, Smartphone, FileCheck, Zap } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Truck, MapPin, Clock, Fuel, Route, Smartphone, FileCheck, Zap } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { SEOHead } from "@/components/SEOHead";

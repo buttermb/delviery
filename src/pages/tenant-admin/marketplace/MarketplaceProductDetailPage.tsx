@@ -13,7 +13,6 @@ import {
     ArrowLeft,
     ShoppingCart,
     Store,
-    Leaf,
     FileText,
     ShieldCheck,
     Package,
@@ -34,7 +33,6 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { PageHeader } from '@/components/shared/PageHeader';
 
 export default function MarketplaceProductDetailPage() {
     const { productId } = useParams<{ productId: string }>();
@@ -44,7 +42,6 @@ export default function MarketplaceProductDetailPage() {
     const queryClient = useQueryClient();
 
     const [quantity, setQuantity] = useState(1);
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [messageText, setMessageText] = useState('');
     const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
 

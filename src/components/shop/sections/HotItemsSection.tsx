@@ -74,7 +74,7 @@ export function HotItemsSection({
   const { show_time_indicator = true, max_items = 8 } = content || {};
   const customAccent = styles?.accent_color;
 
-  const { items, config, context, isLoading, error } = useContextAwareHotItems({
+  const { items, config, context: _context, isLoading, error } = useContextAwareHotItems({
     storeId,
     limit: max_items,
   });
@@ -123,7 +123,7 @@ export function HotItemsSection({
           return next;
         });
       }, 2000);
-    } catch (err) {
+    } catch {
       toast({
         title: 'Failed to add',
         description: 'Please try again',

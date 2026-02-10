@@ -35,7 +35,7 @@ export default function PinSetupModal({ open, onPinSet }: PinSetupModalProps) {
     try {
       await onPinSet(pin);
       toast.success('PIN set successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to set PIN');
     } finally {
       setLoading(false);

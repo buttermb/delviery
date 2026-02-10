@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   RotateCcw,
   Package,
@@ -15,7 +15,6 @@ import {
   Edit,
   X,
   CheckCircle2,
-  Clock,
 } from "lucide-react";
 
 interface ReturnAuthorization {

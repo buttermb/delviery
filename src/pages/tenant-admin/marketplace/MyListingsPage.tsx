@@ -21,7 +21,6 @@ import {
   Edit,
   Trash2,
   Eye,
-  EyeOff,
   Pause,
   Play,
   Filter,
@@ -43,10 +42,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Link } from 'react-router-dom';
 
 export default function MyListingsPage() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -82,7 +80,7 @@ export default function MyListingsPage() {
     queryFn: async (): Promise<any[]> => {
       if (!tenantId || !profile?.id) return [];
 
-      // @ts-ignore - Deep type instantiation error with Supabase query chains
+      // @ts-expect-error - Deep type instantiation error with Supabase query chains
       const result = await supabase
         .from('marketplace_listings')
         .select('*')

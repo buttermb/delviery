@@ -36,7 +36,7 @@ export function ShareButtons({
     const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
     const encodedUrl = encodeURIComponent(shareUrl);
     const encodedTitle = encodeURIComponent(title);
-    const encodedDescription = encodeURIComponent(description || '');
+    const _encodedDescription = encodeURIComponent(description || '');
 
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;

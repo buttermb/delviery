@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Package, Navigation } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface OrderItem {
@@ -57,7 +56,7 @@ export default function IncomingOrderModal({ order, open, onAccept, onReject }: 
     try {
       await onAccept();
       toast.success('Order accepted!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to accept order');
       setAccepting(false);
     }

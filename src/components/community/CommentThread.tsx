@@ -45,7 +45,7 @@ export function CommentThread({
 
       setReplyContent('');
       setShowReply(false);
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

@@ -4,11 +4,10 @@ import type {
   ValidationMode,
   UIElement,
   UITree,
-  VisibilityCondition,
 } from "./types";
 import { VisibilityConditionSchema } from "./visibility";
-import { ActionSchema, type ActionDefinition } from "./actions";
-import { ValidationConfigSchema, type ValidationFunction } from "./validation";
+import { ActionSchema as _ActionSchema, type ActionDefinition } from "./actions";
+import { ValidationConfigSchema as _ValidationConfigSchema, type ValidationFunction } from "./validation";
 
 /**
  * Component definition with visibility and validation support

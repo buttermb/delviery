@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, X, ArrowRight, Check } from 'lucide-react';
+import { ShoppingCart, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import ProductImage from '@/components/ProductImage';

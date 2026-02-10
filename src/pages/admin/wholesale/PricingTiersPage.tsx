@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
     Dialog,
     DialogContent,
@@ -83,7 +82,7 @@ export default function PricingTiersPage() {
     const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
     // Fetch settings to get tiers
-    const { data: settings, isLoading } = useQuery({
+    const { data: settings } = useQuery({
         queryKey: ['account-settings', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return null;

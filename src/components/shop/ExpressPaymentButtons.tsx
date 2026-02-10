@@ -90,7 +90,7 @@ export function ExpressPaymentButtons({
   const buttonHeight = size === 'lg' ? 'h-12' : size === 'sm' ? 'h-9' : 'h-10';
 
   // If neither express payment is available, don't render anything
-  const hasExpressOptions = isApplePayAvailable || isGooglePayAvailable;
+  const _hasExpressOptions = isApplePayAvailable || isGooglePayAvailable;
 
   return (
     <div className={cn("space-y-4", className)}>

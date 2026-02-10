@@ -7,14 +7,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useShop } from './ShopLayout';
-import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useStorefrontOrders, type OrderStatusFilter, type OrderFilters } from '@/hooks/useStorefrontOrders';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -28,12 +27,8 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  ShoppingCart,
-  Plus,
-  Filter,
   Calendar,
   Truck,
-  ArrowLeft,
   User,
   Receipt
 } from 'lucide-react';
@@ -77,7 +72,6 @@ export function OrdersHubPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
-  const { isLuxuryTheme } = useLuxuryTheme();
   const { toast } = useToast();
 
   const [customerId, setCustomerId] = useState<string | null>(null);
@@ -116,7 +110,7 @@ export function OrdersHubPage() {
   }, [orderSearchInput]);
 
   // Fetch orders
-  const { orders, isLoading, orderStats, refetch } = useStorefrontOrders({
+  const { orders, isLoading, orderStats } = useStorefrontOrders({
     storeId: store?.id,
     customerId,
     filters: orderFilters,
@@ -416,7 +410,7 @@ function OrderCard({
   onReorder: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   return (
     <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white">

@@ -5,23 +5,20 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   Search,
   Users,
   ShoppingCart,
   DollarSign,
-  Mail,
   Phone,
   Calendar,
   TrendingUp,
@@ -68,7 +65,6 @@ interface Customer {
 export default function StorefrontCustomers() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
-  const navigate = useNavigate();
   const tenantId = tenant?.id;
 
   // Table preferences persistence

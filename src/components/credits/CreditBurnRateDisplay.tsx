@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
-import { projectDepletion, type CreditProjection } from '@/lib/credits/creditProjection';
+import { projectDepletion } from '@/lib/credits/creditProjection';
 
 export interface CreditBurnRateDisplayProps {
   className?: string;

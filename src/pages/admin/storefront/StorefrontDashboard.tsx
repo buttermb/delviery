@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
@@ -25,12 +24,8 @@ import {
   Settings,
   ExternalLink,
   Plus,
-  BarChart3,
   Palette,
   Globe,
-  Percent,
-  Trash2,
-  LayoutGrid,
   FileText,
   ClipboardList,
   TrendingUp,
@@ -38,7 +33,6 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { StorePreviewButton } from '@/components/admin/storefront/StorePreviewButton';
 import { StorefrontFunnel } from '@/components/admin/storefront/StorefrontFunnel';
 import { DeleteStoreDialog } from '@/components/admin/storefront/DeleteStoreDialog';
 import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDialog';

@@ -17,7 +17,6 @@ import {
     useSensors,
     DragStartEvent,
     DragEndEvent,
-    DragOverEvent,
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -194,7 +193,7 @@ export function DraggableKanban<T extends DraggableItem>({
     disabled = false,
     className,
 }: DraggableKanbanProps<T>) {
-    const [activeId, setActiveId] = useState<string | null>(null);
+    const [_activeId, setActiveId] = useState<string | null>(null);
     const [activeItem, setActiveItem] = useState<T | null>(null);
 
     // Configure sensors for pointer and touch

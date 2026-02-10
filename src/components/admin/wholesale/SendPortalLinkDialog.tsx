@@ -85,7 +85,7 @@ export function SendPortalLinkDialog({ open, onOpenChange, client }: SendPortalL
 
       // Use send-verification-email or similar email function
       // For now, we'll use a generic approach
-      const { data, error } = await supabase.functions.invoke('send-verification-email', {
+      const { data: _data, error } = await supabase.functions.invoke('send-verification-email', {
         body: {
           email: client.email,
           subject: 'Your Client Portal Access',

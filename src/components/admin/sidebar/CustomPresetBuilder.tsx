@@ -153,7 +153,7 @@ export function CustomPresetBuilder() {
 
       await updatePreferences({ customPresets: updatedPresets });
       setIsOpen(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to save preset');
     } finally {
       setSaving(false);
@@ -166,7 +166,7 @@ export function CustomPresetBuilder() {
       await updatePreferences({ customPresets: updatedPresets });
       toast.success('Preset deleted');
       setDeletePresetId(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete preset');
     }
   };
@@ -174,7 +174,7 @@ export function CustomPresetBuilder() {
   const handleApplyPreset = async (preset: CustomPreset) => {
     try {
       toast.loading(`Applying ${preset.name}...`, { id: 'apply-custom-preset' });
-      
+
       await updatePreferences({
         layoutPreset: preset.id,
         hiddenFeatures: allFeatures
@@ -184,7 +184,7 @@ export function CustomPresetBuilder() {
 
       await new Promise(resolve => setTimeout(resolve, 200));
       toast.success(`Applied ${preset.name}`, { id: 'apply-custom-preset' });
-    } catch (error) {
+    } catch {
       toast.error('Failed to apply preset', { id: 'apply-custom-preset' });
     }
   };
@@ -234,7 +234,7 @@ export function CustomPresetBuilder() {
                   <div className="space-y-6">
                     {Object.entries(featuresBySection).map(([section, features]) => {
                       const allSelected = features.every(f => selectedFeatures.includes(f.id));
-                      const someSelected = features.some(f => selectedFeatures.includes(f.id));
+                      const _someSelected = features.some(f => selectedFeatures.includes(f.id));
 
                       return (
                         <div key={section}>

@@ -1,14 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Palette, ImageIcon, Layout, Box, Sparkles } from "lucide-react";
-import { ThemePresetSelector, ThemePresetStrip } from "@/components/admin/storefront/ThemePresetSelector";
-import { type ThemePreset, THEME_PRESETS } from "@/lib/storefrontThemes";
+import { ThemePresetStrip } from "@/components/admin/storefront/ThemePresetSelector";
+import { type ThemePreset } from "@/lib/storefrontThemes";
 import { useToast } from "@/hooks/use-toast";
 import { StorefrontBannerManager } from "@/components/admin/storefront/StorefrontBannerManager";
 
@@ -34,10 +32,10 @@ interface SimpleViewProps {
 
 export function SimpleStorefrontEditor({
     storeId,
-    storeSlug,
+    storeSlug: _storeSlug,
     layoutConfig,
     setLayoutConfig,
-    themeConfig,
+    themeConfig: _themeConfig,
     setThemeConfig,
     onSave,
     onPublish,
@@ -77,7 +75,7 @@ export function SimpleStorefrontEditor({
     const showHero = isSectionVisible('hero');
     const showFeatures = isSectionVisible('features');
     const showProducts = isSectionVisible('product_grid');
-    const showTestimonials = isSectionVisible('testimonials');
+    const _showTestimonials = isSectionVisible('testimonials');
     const showNewsletter = isSectionVisible('newsletter');
 
     const handleThemeSelect = (theme: ThemePreset) => {

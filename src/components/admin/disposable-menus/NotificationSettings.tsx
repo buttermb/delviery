@@ -55,8 +55,12 @@ export const NotificationSettings = () => {
     const saved = localStorage.getItem('notification_settings');
     if (saved) {
       const parsed = JSON.parse(saved);
-      setTemplates(parsed.templates || templates);
-      setNotificationChannels(parsed.channels || notificationChannels);
+      if (parsed.templates) {
+        setTemplates(parsed.templates);
+      }
+      if (parsed.channels) {
+        setNotificationChannels(parsed.channels);
+      }
     }
   }, []);
 

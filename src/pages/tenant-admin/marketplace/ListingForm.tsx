@@ -33,10 +33,9 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Loader2, Plus, Trash2, FileText, Image as ImageIcon, Lock } from 'lucide-react';
+import { X, Loader2, Plus, Trash2, FileText, Image as ImageIcon, Lock } from 'lucide-react';
 import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useFeatureFlags } from '@/config/featureFlags';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -110,7 +109,7 @@ interface ListingFormProps {
 
 export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   const { shouldAutoApprove } = useFeatureFlags();
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();

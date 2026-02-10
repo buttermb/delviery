@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Check, X, Minus } from 'lucide-react';
-import { BUSINESS_TIER_PRESETS, type BusinessTier, getTierColor } from '@/lib/presets/businessTiers';
+import { Check, Minus } from 'lucide-react';
+import { BUSINESS_TIER_PRESETS, type BusinessTier } from '@/lib/presets/businessTiers';
 import { cn } from '@/lib/utils';
 
 interface TierComparisonModalProps {

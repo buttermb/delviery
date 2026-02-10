@@ -225,7 +225,7 @@ export default function BusinessSettings() {
   useEffect(() => {
     async function loadSettings() {
       if (!tenant?.id) return;
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('tenants')
         .select('*')
         .eq('id', tenant.id)

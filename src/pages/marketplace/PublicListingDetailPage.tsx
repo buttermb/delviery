@@ -10,11 +10,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  Package, 
+import {
+  Package,
   Building2,
-  Star,
   Lock,
   ArrowLeft,
   LogIn,
@@ -27,7 +25,6 @@ import { SEOHead } from '@/components/SEOHead';
 export default function PublicListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   // Fetch listing details
   const { data: listing, isLoading } = useQuery({

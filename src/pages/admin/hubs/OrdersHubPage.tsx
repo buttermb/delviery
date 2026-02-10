@@ -125,7 +125,7 @@ export default function OrdersHubPage() {
     const [isExporting, setIsExporting] = useState(false);
 
     // Fetch orders for export (all order types, higher limit for export)
-    const { data: orders, refetch: refetchOrders } = useUnifiedOrders({
+    const { data: _orders, refetch: refetchOrders } = useUnifiedOrders({
         orderType: 'all',
         limit: 1000,
         enabled: false, // Only fetch when export is triggered

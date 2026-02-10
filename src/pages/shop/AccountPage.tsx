@@ -23,8 +23,6 @@ import { useStorefrontOrders, type OrderStatusFilter, type OrderFilters } from '
 import {
   User,
   Package,
-  MapPin,
-  Settings,
   LogOut,
   Search,
   ChevronRight,
@@ -60,7 +58,7 @@ export default function AccountPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store } = useShop();
-  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textMuted } = useLuxuryTheme();
+  const { accentColor } = useLuxuryTheme();
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');
@@ -698,7 +696,7 @@ function WishlistSection({
   storeId,
   storeSlug,
   primaryColor,
-  accentColor
+  accentColor: _accentColor
 }: {
   storeId: string;
   storeSlug: string;
@@ -899,7 +897,7 @@ function OrderCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const { toast } = useToast();
   const { setCartItemCount } = useShop();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Add individual item to cart
   const addItemToCart = (item: any) => {
@@ -1044,7 +1042,7 @@ function OrderCard({
 function QuickReorderButton({
   order,
   storeId,
-  primaryColor,
+  primaryColor: _primaryColor,
 }: {
   order: CustomerOrder;
   storeId: string;

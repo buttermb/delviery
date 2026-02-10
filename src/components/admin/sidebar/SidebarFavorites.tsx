@@ -81,7 +81,7 @@ export function SidebarFavorites() {
   }, []);
 
   // Handle removing a favorite - uses database mutation with optimistic updates
-  const handleRemoveFavorite = useCallback((itemId: string) => {
+  const _handleRemoveFavorite = useCallback((itemId: string) => {
     // toggleFavorite is backed by useMutation in useSidebarPreferences
     // It performs optimistic updates and syncs to database
     toggleFavorite(itemId);

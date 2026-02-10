@@ -26,7 +26,7 @@ import {
   Eye,
   ArrowLeft,
 } from 'lucide-react';
-import { InvoicePDF, InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
+import { InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
 import { useToast } from '@/hooks/use-toast';
 
 interface InvoiceItem {

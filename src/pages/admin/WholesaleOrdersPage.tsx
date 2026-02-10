@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,12 +14,10 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   Package,
-  TrendingUp,
   Clock,
   Truck,
   CheckCircle2,
@@ -29,8 +27,6 @@ import {
   RefreshCw,
   DollarSign,
   FileText,
-  XCircle,
-  ArrowRight,
   Warehouse
 } from 'lucide-react';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
@@ -43,14 +39,9 @@ import { LastUpdated } from '@/components/shared/LastUpdated';
 import CopyButton from '@/components/CopyButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { Separator } from '@/components/ui/separator';
 import { EditWholesaleOrderDialog } from '@/components/wholesale/EditWholesaleOrderDialog';
-import { CancelWholesaleOrderDialog } from '@/components/wholesale/CancelWholesaleOrderDialog';
-import { EditPurchaseOrderDialog } from '@/components/wholesale/EditPurchaseOrderDialog';
-import { CancelPurchaseOrderDialog } from '@/components/wholesale/CancelPurchaseOrderDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { Skeleton } from '@/components/ui/skeleton';
 import { wholesaleOrderFlowManager, WholesaleOrderStatus } from '@/lib/orders/wholesaleOrderFlowManager';
 import { canChangeStatus, getEditRestrictionMessage } from '@/lib/utils/orderEditability';
 
@@ -143,7 +134,6 @@ export default function WholesaleOrdersPage() {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);

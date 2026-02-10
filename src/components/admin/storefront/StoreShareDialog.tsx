@@ -15,7 +15,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -114,7 +113,7 @@ export function StoreShareDialog({
     try {
       await downloadQRCodePNG(shareUrl, `store-qr-${store.slug}.png`, { size: 512 });
       toast({ title: 'QR Code downloaded!' });
-    } catch (error) {
+    } catch {
       toast({ title: 'Download failed', variant: 'destructive' });
     }
   };
@@ -125,7 +124,7 @@ export function StoreShareDialog({
     try {
       await onRegenerateToken();
       toast({ title: 'New link generated!', description: 'Previous links will no longer work.' });
-    } catch (error) {
+    } catch {
       toast({ title: 'Failed to generate new link', variant: 'destructive' });
     } finally {
       setRegenerating(false);

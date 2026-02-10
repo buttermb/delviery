@@ -13,7 +13,6 @@ import {
     FileText,
     ShoppingCart,
     MessageSquare,
-    Mail,
     CreditCard,
     Package,
     Users,

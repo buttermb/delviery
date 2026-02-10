@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Lock, ArrowRight, Calendar } from "lucide-react";
+import { Lock, ArrowRight, Calendar } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatSmartDate } from "@/lib/utils/formatDate";

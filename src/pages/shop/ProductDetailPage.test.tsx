@@ -3,7 +3,7 @@
  * Verifies product info, gallery, cart integration, and related products
  */
 
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -63,7 +63,7 @@ const mockRelatedProduct = {
   min_expiry_days: null,
 };
 
-const mockOutOfStockProduct = {
+const _mockOutOfStockProduct = {
   ...mockProduct,
   product_id: 'prod-3',
   product_name: 'Sold Out Strain',
@@ -151,15 +151,15 @@ vi.mock('@/hooks/use-toast', () => ({
 vi.mock('framer-motion', () => ({
   motion: {
     img: ({ children, ...props }: Record<string, unknown>) => {
-      const { initial, animate, exit, transition, whileHover, whileTap, ...domProps } = props;
+      const { initial: _initial, animate: _animate, exit: _exit, transition: _transition, whileHover: _whileHover, whileTap: _whileTap, ...domProps } = props;
       return <img {...domProps as React.ImgHTMLAttributes<HTMLImageElement>}>{children as React.ReactNode}</img>;
     },
     button: ({ children, ...props }: Record<string, unknown>) => {
-      const { initial, animate, exit, transition, whileHover, whileTap, ...domProps } = props;
+      const { initial: _initial, animate: _animate, exit: _exit, transition: _transition, whileHover: _whileHover, whileTap: _whileTap, ...domProps } = props;
       return <button {...domProps as React.ButtonHTMLAttributes<HTMLButtonElement>}>{children as React.ReactNode}</button>;
     },
     div: ({ children, ...props }: Record<string, unknown>) => {
-      const { initial, animate, exit, transition, whileHover, whileTap, ...domProps } = props;
+      const { initial: _initial, animate: _animate, exit: _exit, transition: _transition, whileHover: _whileHover, whileTap: _whileTap, ...domProps } = props;
       return <div {...domProps as React.HTMLAttributes<HTMLDivElement>}>{children as React.ReactNode}</div>;
     },
   },

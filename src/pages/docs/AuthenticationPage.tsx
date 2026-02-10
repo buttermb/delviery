@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { SEOHead } from "@/components/SEOHead";
 import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

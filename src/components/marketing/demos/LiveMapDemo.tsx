@@ -7,10 +7,10 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Truck, MapPin, Clock, Navigation, CheckCircle2,
-  Package, Zap, Users
+  Truck, MapPin, Navigation, CheckCircle2,
+  Zap, Users
 } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
@@ -125,7 +125,7 @@ function LiveMapDemoMobile() {
 export function LiveMapDemo() {
   const { shouldUseStaticFallback } = useMobileOptimized();
   const [drivers, setDrivers] = useState(INITIAL_DRIVERS);
-  const [stats, setStats] = useState({ active: 2, delivered: 12, onTime: 98 });
+  const [stats] = useState({ active: 2, delivered: 12, onTime: 98 });
 
   // Animate driver positions (only on desktop)
   useEffect(() => {

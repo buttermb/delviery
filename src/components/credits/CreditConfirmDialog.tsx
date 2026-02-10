@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { Coins, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
+import { Coins, AlertTriangle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -278,7 +278,7 @@ export function useCreditConfirm({
   skipConfirmation = false,
 }: UseCreditConfirmOptions): UseCreditConfirmReturn {
   const [isOpen, setIsOpen] = useState(false);
-  const { isFreeTier, balance } = useCredits();
+  const { isFreeTier } = useCredits();
   
   const costInfo = getCreditCostInfo(actionKey);
   const cost = costInfo?.credits ?? 0;

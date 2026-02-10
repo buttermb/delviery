@@ -1,240 +1,423 @@
 /**
- * useRealtimeSubscription Hook
+ * Real-time subscription hook for Supabase with tenant isolation
  *
- * Generic hook that subscribes to Supabase Realtime postgres_changes
- * and auto-invalidates TanStack Query cache on table changes.
- *
- * Usage:
- *   import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
- *   import { queryKeys } from '@/lib/queryKeys';
- *
- *   // Basic: invalidate all products queries on any change
- *   useRealtimeSubscription({
- *     table: 'products',
- *     queryKeys: [queryKeys.products.all],
- *   });
- *
- *   // With filter: only listen to changes for this tenant
- *   useRealtimeSubscription({
- *     table: 'orders',
- *     filter: `tenant_id=eq.${tenantId}`,
- *     queryKeys: [queryKeys.orders.all, queryKeys.analytics.all],
- *     enabled: !!tenantId,
- *   });
- *
- *   // With event-specific callbacks
- *   useRealtimeSubscription({
- *     table: 'products',
- *     queryKeys: [queryKeys.products.all],
- *     onInsert: (record) => logger.debug('New product', { record }),
- *     onUpdate: (record) => logger.debug('Updated product', { record }),
- *   });
+ * Wraps Supabase realtime subscriptions with:
+ * - Tenant isolation (filters by tenant_id)
+ * - Automatic cleanup on unmount
+ * - EventBus integration for cross-module communication
+ * - Exponential backoff reconnection
+ * - Lifecycle logging
  */
 
-import { useEffect, useRef, useCallback } from 'react';
-import { useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+import { supabase } from '@/integrations/supabase/client';
+import { publish } from '@/lib/eventBus';
+import type { EventName, EventPayloads } from '@/lib/eventBus';
 import { logger } from '@/lib/logger';
 
-type PostgresChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE';
+/**
+ * Supported database event types
+ */
+export type RealtimeEventType = 'INSERT' | 'UPDATE' | 'DELETE' | '*';
 
-interface RealtimeRecord {
-  id?: string;
-  [key: string]: unknown;
-}
+/**
+ * Connection status for the realtime subscription
+ */
+export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
-interface UseRealtimeSubscriptionOptions {
-  /** The database table to subscribe to */
+/**
+ * Payload received from realtime subscription
+ */
+export interface RealtimePayload<T = Record<string, unknown>> {
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  new: T | null;
+  old: T | null;
   table: string;
-  /** Database schema (defaults to 'public') */
-  schema?: string;
-  /** Supabase realtime filter (e.g., 'tenant_id=eq.abc123') */
-  filter?: string;
-  /** Event types to listen for (defaults to all: INSERT, UPDATE, DELETE) */
-  events?: PostgresChangeEvent[];
-  /** Query keys to invalidate when changes occur */
-  queryKeys: readonly QueryKey[];
-  /** Whether the subscription is active (defaults to true) */
-  enabled?: boolean;
-  /** Callback fired on INSERT events */
-  onInsert?: (record: RealtimeRecord) => void;
-  /** Callback fired on UPDATE events */
-  onUpdate?: (newRecord: RealtimeRecord, oldRecord: RealtimeRecord) => void;
-  /** Callback fired on DELETE events */
-  onDelete?: (record: RealtimeRecord) => void;
-  /** Callback fired on any change event */
-  onChange?: (event: PostgresChangeEvent, payload: RealtimePostgresChangesPayload<RealtimeRecord>) => void;
-  /** Debounce invalidation in milliseconds (useful for high-frequency tables) */
-  debounceMs?: number;
-  /** Custom channel name (auto-generated if not provided) */
-  channelName?: string;
-}
-
-interface UseRealtimeSubscriptionResult {
-  /** Whether the subscription channel is currently active */
-  isSubscribed: boolean;
-  /** The current subscription status */
-  status: 'connecting' | 'subscribed' | 'error' | 'closed' | 'idle';
+  schema: string;
 }
 
 /**
- * Hook that subscribes to Supabase Realtime table changes and
- * auto-invalidates the specified TanStack Query cache keys.
+ * Callback function type for realtime changes
  */
-export function useRealtimeSubscription(
-  options: UseRealtimeSubscriptionOptions
-): UseRealtimeSubscriptionResult {
+export type RealtimeCallback<T = Record<string, unknown>> = (payload: RealtimePayload<T>) => void;
+
+/**
+ * Options for the realtime subscription hook
+ */
+export interface UseRealTimeSubscriptionOptions<T = Record<string, unknown>> {
+  /** The database table to subscribe to */
+  table: string;
+  /** Tenant ID for filtering (required for tenant isolation) */
+  tenantId: string | null;
+  /** Callback function when changes arrive */
+  callback?: RealtimeCallback<T>;
+  /** Event types to listen for (default: '*' for all) */
+  event?: RealtimeEventType;
+  /** Whether the subscription is enabled (default: true) */
+  enabled?: boolean;
+  /** Optional event name to publish to eventBus */
+  publishToEvent?: EventName;
+  /** Custom filter column (default: 'tenant_id') */
+  filterColumn?: string;
+  /** Database schema (default: 'public') */
+  schema?: string;
+}
+
+/**
+ * Return value from the hook
+ */
+export interface UseRealTimeSubscriptionResult {
+  /** Current connection status */
+  status: ConnectionStatus;
+  /** Manual reconnect function */
+  reconnect: () => void;
+  /** Manual disconnect function */
+  disconnect: () => void;
+}
+
+/**
+ * Exponential backoff configuration
+ */
+const BACKOFF_CONFIG = {
+  initialDelay: 1000,
+  maxDelay: 30000,
+  multiplier: 2,
+  maxRetries: 10,
+};
+
+/**
+ * Calculate backoff delay with jitter
+ */
+function calculateBackoffDelay(attempt: number): number {
+  const delay = Math.min(
+    BACKOFF_CONFIG.initialDelay * Math.pow(BACKOFF_CONFIG.multiplier, attempt),
+    BACKOFF_CONFIG.maxDelay
+  );
+  // Add jitter (±20%)
+  const jitter = delay * 0.2 * (Math.random() - 0.5);
+  return Math.floor(delay + jitter);
+}
+
+/**
+ * Build event payload for eventBus based on event type
+ */
+function buildEventPayload(
+  eventName: EventName,
+  tenantId: string,
+  record: Record<string, unknown> | null,
+  eventType: string
+): EventPayloads[EventName] | null {
+  if (!record) return null;
+
+  const basePayload = { tenantId };
+
+  switch (eventName) {
+    case 'order_created':
+    case 'order_updated':
+      return {
+        ...basePayload,
+        orderId: String(record.id || ''),
+        customerId: record.customer_id ? String(record.customer_id) : undefined,
+        status: record.status ? String(record.status) : undefined,
+        changes: eventType === 'UPDATE' ? record : undefined,
+      } as EventPayloads['order_updated'];
+
+    case 'inventory_changed':
+      return {
+        ...basePayload,
+        productId: String(record.product_id || record.id || ''),
+        locationId: record.location_id ? String(record.location_id) : undefined,
+        quantityChange: Number(record.quantity_change || 0),
+        newQuantity: Number(record.quantity || record.stock_quantity || 0),
+      } as EventPayloads['inventory_changed'];
+
+    case 'customer_updated':
+      return {
+        ...basePayload,
+        customerId: String(record.id || ''),
+        changes: record,
+      } as EventPayloads['customer_updated'];
+
+    case 'product_updated':
+      return {
+        ...basePayload,
+        productId: String(record.id || ''),
+        changes: record,
+      } as EventPayloads['product_updated'];
+
+    case 'storefront_synced':
+      return {
+        ...basePayload,
+        storefrontId: String(record.id || ''),
+        syncedAt: new Date().toISOString(),
+      } as EventPayloads['storefront_synced'];
+
+    case 'menu_published':
+      return {
+        ...basePayload,
+        menuId: String(record.id || ''),
+        publishedAt: new Date().toISOString(),
+      } as EventPayloads['menu_published'];
+
+    case 'notification_sent':
+      return {
+        ...basePayload,
+        notificationId: String(record.id || ''),
+        userId: record.user_id ? String(record.user_id) : undefined,
+        type: String(record.type || 'unknown'),
+      } as EventPayloads['notification_sent'];
+
+    default:
+      logger.warn(`[useRealTimeSubscription] Unknown event type: ${eventName}`);
+      return null;
+  }
+}
+
+/**
+ * Hook for subscribing to Supabase realtime changes with tenant isolation
+ *
+ * @example
+ * ```tsx
+ * const { status, reconnect } = useRealTimeSubscription({
+ *   table: 'orders',
+ *   tenantId,
+ *   callback: (payload) => {
+ *     logger.debug('Order changed:', payload);
+ *   },
+ *   publishToEvent: 'order_updated',
+ * });
+ * ```
+ */
+export function useRealTimeSubscription<T = Record<string, unknown>>(
+  options: UseRealTimeSubscriptionOptions<T>
+): UseRealTimeSubscriptionResult {
   const {
     table,
-    schema = 'public',
-    filter,
-    events,
-    queryKeys: keysToInvalidate,
+    tenantId,
+    callback,
+    event = '*',
     enabled = true,
-    onInsert,
-    onUpdate,
-    onDelete,
-    onChange,
-    debounceMs,
-    channelName,
+    publishToEvent,
+    filterColumn = 'tenant_id',
+    schema = 'public',
   } = options;
 
-  const queryClient = useQueryClient();
+  // State for connection status
+  const [status, setStatus] = useState<ConnectionStatus>('disconnected');
+
+  // Refs for stable values and cleanup
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const statusRef = useRef<UseRealtimeSubscriptionResult['status']>('idle');
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const callbackRef = useRef(callback);
+  const retryCountRef = useRef(0);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
 
-  // Stable ref for callbacks to avoid re-subscribing on callback changes
-  const callbacksRef = useRef({ onInsert, onUpdate, onDelete, onChange });
-  callbacksRef.current = { onInsert, onUpdate, onDelete, onChange };
-
-  // Stable ref for queryKeys to avoid unnecessary re-subscriptions
-  const queryKeysRef = useRef(keysToInvalidate);
-  queryKeysRef.current = keysToInvalidate;
-
-  const invalidateQueries = useCallback(() => {
-    const keys = queryKeysRef.current;
-    for (const key of keys) {
-      queryClient.invalidateQueries({ queryKey: key as QueryKey });
-    }
-  }, [queryClient]);
-
-  const debouncedInvalidate = useCallback(() => {
-    if (debounceMs && debounceMs > 0) {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        invalidateQueries();
-        debounceTimerRef.current = null;
-      }, debounceMs);
-    } else {
-      invalidateQueries();
-    }
-  }, [invalidateQueries, debounceMs]);
-
+  // Keep callback ref updated
   useEffect(() => {
-    if (!enabled) {
-      statusRef.current = 'idle';
+    callbackRef.current = callback;
+  }, [callback]);
+
+  // Track mounted state
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  /**
+   * Clean up subscription and retry timeout
+   */
+  const cleanup = useCallback(() => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    if (channelRef.current) {
+      logger.debug(`[useRealTimeSubscription] Cleaning up subscription for table: ${table}`);
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    if (mountedRef.current) {
+      setStatus('disconnected');
+    }
+  }, [table]);
+
+  /**
+   * Handle incoming realtime changes
+   */
+  const handleChange = useCallback(
+    (payload: RealtimePostgresChangesPayload<T & { tenant_id?: string }>) => {
+      const realtimePayload: RealtimePayload<T> = {
+        eventType: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
+        new: (payload.new as T) || null,
+        old: (payload.old as T) || null,
+        table: payload.table,
+        schema: payload.schema,
+      };
+
+      logger.debug(`[useRealTimeSubscription] Received ${payload.eventType} on ${table}`, {
+        table,
+        eventType: payload.eventType,
+      });
+
+      // Call the user callback
+      if (callbackRef.current) {
+        try {
+          callbackRef.current(realtimePayload);
+        } catch (error) {
+          logger.error(`[useRealTimeSubscription] Error in callback for ${table}`, error);
+        }
+      }
+
+      // Publish to eventBus if configured
+      if (publishToEvent && tenantId) {
+        try {
+          const newRecord = payload.new as Record<string, unknown> | null;
+          const eventPayload = buildEventPayload(publishToEvent, tenantId, newRecord, payload.eventType);
+          if (eventPayload) {
+            publish(publishToEvent, eventPayload as EventPayloads[typeof publishToEvent]);
+          }
+        } catch (error) {
+          logger.error(`[useRealTimeSubscription] Error publishing to eventBus`, error);
+        }
+      }
+    },
+    [table, tenantId, publishToEvent]
+  );
+
+  /**
+   * Handle reconnection with exponential backoff
+   */
+  const handleReconnect = useCallback(() => {
+    if (!mountedRef.current) return;
+
+    if (retryCountRef.current >= BACKOFF_CONFIG.maxRetries) {
+      logger.error(`[useRealTimeSubscription] Max retries reached for ${table}`, undefined, {
+        retries: retryCountRef.current,
+      });
+      setStatus('error');
       return;
     }
 
-    // Generate a unique channel name
-    const resolvedChannelName = channelName
-      ?? `realtime-sub-${table}${filter ? `-${filter.replace(/[^a-zA-Z0-9]/g, '_')}` : ''}`;
+    const delay = calculateBackoffDelay(retryCountRef.current);
+    retryCountRef.current += 1;
 
-    statusRef.current = 'connecting';
+    logger.debug(`[useRealTimeSubscription] Scheduling reconnect`, {
+      table,
+      attempt: retryCountRef.current,
+      delay,
+    });
 
-    // Determine the event to listen for
-    const eventFilter = events && events.length === 1 ? events[0] : '*';
+    retryTimeoutRef.current = setTimeout(() => {
+      if (mountedRef.current) {
+        setupSubscriptionInternal();
+      }
+    }, delay);
+  }, [table]);
+
+  /**
+   * Internal setup function (no dependencies on itself)
+   */
+  const setupSubscriptionInternal = useCallback(() => {
+    if (!tenantId || !enabled || !mountedRef.current) {
+      logger.debug(`[useRealTimeSubscription] Subscription disabled or missing tenantId`, {
+        table,
+        tenantId,
+        enabled,
+      });
+      return;
+    }
+
+    // Clean up existing subscription
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    setStatus('connecting');
+
+    logger.debug(`[useRealTimeSubscription] Setting up subscription`, {
+      table,
+      tenantId,
+      event,
+      schema,
+    });
+
+    const channelName = `realtime:${schema}:${table}:${tenantId}`;
 
     const channel = supabase
-      .channel(resolvedChannelName)
+      .channel(channelName)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes',
         {
-          event: eventFilter,
+          event,
           schema,
           table,
-          filter,
-        } as any,
-        (payload: RealtimePostgresChangesPayload<RealtimeRecord>) => {
-          const eventType = payload.eventType as PostgresChangeEvent;
-
-          // If events filter is specified and this event isn't in it, skip
-          if (events && events.length > 1 && !events.includes(eventType)) {
-            return;
-          }
-
-          logger.debug(`[useRealtimeSubscription] ${table} ${eventType}`, {
-            table,
-            event: eventType,
-            filter,
-          });
-
-          // Fire event-specific callbacks
-          const callbacks = callbacksRef.current;
-          switch (eventType) {
-            case 'INSERT':
-              callbacks.onInsert?.(payload.new as RealtimeRecord);
-              break;
-            case 'UPDATE':
-              callbacks.onUpdate?.(
-                payload.new as RealtimeRecord,
-                payload.old as RealtimeRecord
-              );
-              break;
-            case 'DELETE':
-              callbacks.onDelete?.(payload.old as RealtimeRecord);
-              break;
-          }
-
-          // Fire generic onChange callback
-          callbacks.onChange?.(eventType, payload);
-
-          // Invalidate TanStack Query cache
-          debouncedInvalidate();
-        }
+          filter: `${filterColumn}=eq.${tenantId}`,
+        },
+        handleChange
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          statusRef.current = 'subscribed';
-          logger.debug('[useRealtimeSubscription] Subscribed', {
-            table,
-            filter,
-            channel: resolvedChannelName,
-          });
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          statusRef.current = 'error';
-          logger.warn('[useRealtimeSubscription] Subscription error', {
-            table,
-            filter,
-            status,
-            channel: resolvedChannelName,
-          });
-        } else if (status === 'CLOSED') {
-          statusRef.current = 'closed';
+      .subscribe((subscriptionStatus) => {
+        if (!mountedRef.current) return;
+
+        logger.debug(`[useRealTimeSubscription] Channel status: ${subscriptionStatus}`, { table, channelName });
+
+        if (subscriptionStatus === 'SUBSCRIBED') {
+          setStatus('connected');
+          retryCountRef.current = 0; // Reset retry count on successful connection
+          logger.info(`[useRealTimeSubscription] Successfully subscribed to ${table}`);
+        } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
+          setStatus('error');
+          handleReconnect();
+        } else if (subscriptionStatus === 'CLOSED') {
+          setStatus('disconnected');
         }
       });
 
     channelRef.current = channel;
+  }, [tenantId, enabled, table, event, schema, filterColumn, handleChange, handleReconnect]);
+
+  /**
+   * Manual reconnect function
+   */
+  const reconnect = useCallback(() => {
+    logger.debug(`[useRealTimeSubscription] Manual reconnect requested for ${table}`);
+    retryCountRef.current = 0;
+    setupSubscriptionInternal();
+  }, [table, setupSubscriptionInternal]);
+
+  /**
+   * Manual disconnect function
+   */
+  const disconnect = useCallback(() => {
+    logger.debug(`[useRealTimeSubscription] Manual disconnect requested for ${table}`);
+    cleanup();
+  }, [table, cleanup]);
+
+  // Setup subscription on mount and when dependencies change
+  useEffect(() => {
+    setupSubscriptionInternal();
 
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      statusRef.current = 'idle';
+      cleanup();
     };
-  }, [table, schema, filter, enabled, channelName, events, debouncedInvalidate]);
+  }, [setupSubscriptionInternal, cleanup]);
 
   return {
-    isSubscribed: statusRef.current === 'subscribed',
-    status: statusRef.current,
+    status,
+    reconnect,
+    disconnect,
   };
 }
+
+export default useRealTimeSubscription;

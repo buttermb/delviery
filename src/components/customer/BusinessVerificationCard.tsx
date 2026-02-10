@@ -52,7 +52,7 @@ const LICENSE_TYPES = [
 ];
 
 export function BusinessVerificationCard() {
-  const { customer, tenant } = useCustomerAuth();
+  const { tenant } = useCustomerAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);

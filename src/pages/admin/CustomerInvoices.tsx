@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { InvoiceLink } from '@/components/admin/cross-links';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,9 +16,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X, Loader2 } from 'lucide-react';
+import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
@@ -29,7 +28,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const PAGE_SIZE = 25;
 
-interface LineItem {
+interface _LineItem {
   description: string;
   quantity: number;
   rate: number;
@@ -153,12 +152,12 @@ export default function CustomerInvoices() {
             setLoading(false);
             return;
           }
-        } catch (e) {
+        } catch {
           // Fall through to edge function
         }
 
         // Fallback: Try Edge Function
-        const { data: edgeData, error: edgeError } = await callAdminFunction({
+        const { data: _edgeData, error: edgeError } = await callAdminFunction({
           functionName: 'invoice-management',
           body: { action: 'list', tenant_id: tenant.id },
           errorMessage: 'Failed to load invoices',
@@ -279,7 +278,7 @@ export default function CustomerInvoices() {
         if (!genErr && typeof genNum === 'string' && genNum.trim()) {
           invoiceNumber = genNum;
         }
-      } catch (_e) {
+      } catch {
         // Fallback to timestamp-based number
       }
 
@@ -307,7 +306,7 @@ export default function CustomerInvoices() {
       };
 
       // Try using Edge Function first
-      const { data: edgeData, error: edgeError } = await callAdminFunction({
+      const { error: edgeError } = await callAdminFunction({
         functionName: 'invoice-management',
         body: { action: 'create', tenant_id: tenant.id, invoice_data: invoiceData },
         errorMessage: 'Failed to create invoice',

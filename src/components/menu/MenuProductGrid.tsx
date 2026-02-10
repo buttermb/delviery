@@ -25,7 +25,7 @@ interface MenuProductGridProps {
   whitelistEntryId?: string;
 }
 
-export function MenuProductGrid({ products, menuId, whitelistEntryId }: MenuProductGridProps) {
+export function MenuProductGrid({ products, menuId: _menuId, whitelistEntryId: _whitelistEntryId }: MenuProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { items, addItem } = useMenuCart();
 

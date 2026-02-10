@@ -22,7 +22,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   LifeBuoy,
   MessageSquare,
@@ -121,7 +120,7 @@ export function ContextAwareSupportButton({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const location = useLocation();
+  const _location = useLocation();
   const navigate = useNavigate();
 
   const context = gatherContext(userId, userEmail, userName);
@@ -166,7 +165,7 @@ export function ContextAwareSupportButton({
       setDialogOpen(false);
       setSubject('');
       setDescription('');
-    } catch (error) {
+    } catch {
       toast.error('Failed to submit ticket');
     } finally {
       setIsSubmitting(false);

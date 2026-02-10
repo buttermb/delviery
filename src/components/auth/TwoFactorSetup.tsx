@@ -36,7 +36,7 @@ export function TwoFactorSetup() {
     const [secret, setSecret] = useState<string | null>(null);
     const [verificationCode, setVerificationCode] = useState("");
     const [isEnabled, setIsEnabled] = useState(false);
-    const [factors, setFactors] = useState<MfaFactor[]>([]);
+    const [_factors, setFactors] = useState<MfaFactor[]>([]);
     const [backupCodes, setBackupCodes] = useState<string[]>([]);
     const [setupStep, setSetupStep] = useState<SetupStep>('idle');
     const [actionIntent, setActionIntent] = useState<ActionIntent>('enable');
@@ -59,8 +59,8 @@ export function TwoFactorSetup() {
                 setIsEnabled(true);
                 setFactors(data.totp as MfaFactor[]);
             }
-        } catch (error) {
-            logger.error("Error checking MFA status:", error);
+        } catch (err) {
+            logger.error("Error checking MFA status:", err);
         }
     };
 
@@ -86,7 +86,7 @@ export function TwoFactorSetup() {
             }
 
             return true;
-        } catch (error) {
+        } catch {
             setPasswordError("Failed to verify password. Please try again.");
             return false;
         } finally {

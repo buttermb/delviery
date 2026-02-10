@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowUpRight, ArrowDownRight, MoreVertical, Search, Filter,
-  Download, Plus, CheckCircle2, AlertCircle, Clock, MapPin,
-  DollarSign, Package, ShoppingCart, Truck, X, ExternalLink, Settings,
-  Edit2, Trash2, Mail, Phone, User, Calendar, MousePointer2, TrendingUp,
-  QrCode, Copy, Eye, Lock, ShieldCheck, ChevronRight, MessageSquare, Shield,
-  Zap, Navigation, Share2, Flame, Award, Heart, PieChart, Activity
+  Download, Plus, CheckCircle2, Clock,
+  Package, ShoppingCart, Settings,
+  Edit2, TrendingUp,
+  Eye, Lock, ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -209,7 +208,7 @@ function OrdersView({ isInteractive }: { isInteractive: boolean }) {
     }, 2000); // Action every 2 seconds
 
     return () => clearInterval(interval);
-  }, [isInteractive]);
+  }, [isInteractive, reduceAnimations]);
 
   const Column = ({ title, cards, color }: any) => (
     <div className="flex-1 flex flex-col min-w-0 bg-slate-50 rounded-xl border border-slate-200 p-3">
@@ -372,7 +371,7 @@ function InventoryView({ isInteractive }: { isInteractive: boolean }) {
 }
 
 function CatalogView({ isInteractive }: { isInteractive: boolean }) {
-  const [products, setProducts] = useState([
+  const [products] = useState([
     { id: 1, name: "Blue Dream", category: "Flower • Sativa", price: "$45.00", stock: "High", image: "from-blue-100 to-indigo-100 text-indigo-500" },
     { id: 2, name: "OG Kush", category: "Flower • Indica", price: "$50.00", stock: "Medium", image: "from-emerald-100 to-green-100 text-emerald-500" },
     { id: 3, name: "Pineapple Express", category: "Vape • Hybrid", price: "$35.00", stock: "Low", image: "from-amber-100 to-yellow-100 text-amber-500" },

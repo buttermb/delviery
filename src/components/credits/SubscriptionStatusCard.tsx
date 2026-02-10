@@ -10,7 +10,6 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Crown,
-  Calendar,
   AlertTriangle,
   PauseCircle,
   XCircle,

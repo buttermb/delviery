@@ -27,7 +27,6 @@ import {
 import {
   Users,
   UserPlus,
-  Mail,
   Shield,
   MoreVertical,
   Clock,
@@ -36,7 +35,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { z } from 'zod';
 import { FormFactory } from '@/components/shared/FormFactory';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';

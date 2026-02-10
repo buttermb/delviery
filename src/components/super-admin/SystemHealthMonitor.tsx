@@ -12,7 +12,6 @@ import { Activity } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
 
 interface SystemHealthMonitorProps {
   className?: string;
@@ -27,7 +26,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
       // Fetch latest metrics for each type
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-      // @ts-ignore - Table exists in DB but types not yet regenerated
+      // @ts-expect-error - Table exists in DB but types not yet regenerated
       const { data: metrics, error } = await supabase
         .from('system_metrics')
         .select('metric_type, value, timestamp, metadata')
@@ -83,8 +82,8 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
       const errorRate = metricsByType.get('error_rate')?.value || 0;
       const activeTenants = metricsByType.get('active_tenants')?.value || 0;
       const diskUsage = metricsByType.get('disk')?.value || 0;
-      const memoryUsage = metricsByType.get('memory')?.value || 0;
-      const cpuUsage = metricsByType.get('cpu')?.value || 0;
+      const _memoryUsage = metricsByType.get('memory')?.value || 0;
+      const _cpuUsage = metricsByType.get('cpu')?.value || 0;
 
       // Determine status based on thresholds
       const getStatus = (value: number, thresholds: { warning: number; critical: number }) => {

@@ -85,7 +85,7 @@ export function MobileBottomNav() {
     if (open) {
       setOpen(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, open]);
 
   const handleLogout = async () => {
     await logout();

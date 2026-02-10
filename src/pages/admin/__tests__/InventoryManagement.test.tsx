@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -75,7 +74,7 @@ vi.mock('@/lib/tutorials/tutorialConfig', () => ({
 }));
 
 vi.mock('@/components/shared/ResponsiveTable', () => ({
-  ResponsiveTable: ({ data, columns }: { data: unknown[]; columns: unknown[] }) => (
+  ResponsiveTable: ({ data, columns: _columns }: { data: unknown[]; columns: unknown[] }) => (
     <table data-testid="inventory-table">
       <tbody>
         {data.map((item: { id: string; name: string }) => (

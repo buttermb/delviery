@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+// supabase import retained for future use when query execution is implemented
 import { useToast } from '@/hooks/use-toast';
 import { Database, Play, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,7 +79,6 @@ export function QueryBuilder() {
       
       // For demo purposes, return empty results
       const data: Record<string, unknown>[] = [];
-      const error = null;
 
       setResults(data || []);
       setQueryHistory([query, ...queryHistory.slice(0, 9)]); // Keep last 10

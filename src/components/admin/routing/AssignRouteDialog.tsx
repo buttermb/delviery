@@ -19,7 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Truck, Loader2, MapPin } from "lucide-react";
+import { Truck, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Courier {
@@ -50,7 +50,7 @@ export const AssignRouteDialog = ({
     const [loading, setLoading] = useState(true);
     const [assigning, setAssigning] = useState(false);
     const { toast } = useToast();
-    const { session } = useAuth();
+    const { session: _session } = useAuth();
 
     useEffect(() => {
         const fetchAvailableCouriers = async () => {

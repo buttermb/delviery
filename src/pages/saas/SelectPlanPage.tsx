@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles, Zap, Shield, Clock, Coins, ArrowLeft } from "lucide-react";
+import { Check, Loader2, Sparkles, Shield, Clock, Coins, ArrowLeft } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
-import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { handleError } from '@/utils/errorHandling/handlers';
 import { cn } from "@/lib/utils";
 import FloraIQLogo from '@/components/FloraIQLogo';
@@ -41,7 +40,7 @@ export default function SelectPlanPage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [skipTrial, setSkipTrial] = useState(false);
   const tenantId = searchParams.get("tenant_id");
-  const preselectedPlan = searchParams.get("plan") as PlanKey | null;
+  const _preselectedPlan = searchParams.get("plan") as PlanKey | null;
 
   // Load plans from configuration (Static source of truth)
   useEffect(() => {
@@ -135,7 +134,7 @@ export default function SelectPlanPage() {
       // If active and not free tier, redirect to billing or show message
       // Note: 'free' plan is technically 'active' status usually, so we check plan too.
       // Assuming 'free' plan is named 'free' or similar.
-      const isPaidPlan = tenant.subscription_plan !== 'free' && tenant.subscription_plan !== 'starter'; // Verify plan names?
+      const _isPaidPlan = tenant.subscription_plan !== 'free' && tenant.subscription_plan !== 'starter'; // Verify plan names?
       // Actually 'starter' might be paid.
       // Let's check if status is active.
 

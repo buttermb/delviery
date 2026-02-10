@@ -1,13 +1,13 @@
-import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { useCurrentFrame, useVideoConfig } from 'remotion';
 import { interpolate } from 'remotion';
 import { DashboardMockup } from '../components/DashboardMockup';
 import { FeatureCallout } from '../components/FeatureCallout';
 import { TransitionOverlay } from '../components/TransitionOverlay';
-import { AlertTriangle, Check, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Check, TrendingUp, Package } from 'lucide-react';
 
 export function InventoryScene() {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  useVideoConfig();
 
   const INVENTORY = [
     { name: 'Blue Dream', stock: 142, status: 'Ideal', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
@@ -18,7 +18,6 @@ export function InventoryScene() {
   ];
 
   const rowOpacity = (i: number) => interpolate(frame, [i * 5, i * 5 + 10], [0, 1], { extrapolateRight: 'clamp' });
-  const warnPulse = spring({ frame: frame - 120, fps, config: { damping: 5 } }); // Bouncy warning
 
   return (
     <div style={{ flex: 1, height: '100%', backgroundColor: 'white' }}>

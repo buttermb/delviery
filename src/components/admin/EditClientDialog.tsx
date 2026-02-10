@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,13 +45,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
     notes: ""
   });
 
-  useEffect(() => {
-    if (open && clientId) {
-      fetchClient();
-    }
-  }, [open, clientId]);
-
-  const fetchClient = async () => {
+  const fetchClient = useCallback(async () => {
     try {
       setFetching(true);
       const { data, error } = await supabase
@@ -81,7 +75,13 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
     } finally {
       setFetching(false);
     }
-  };
+  }, [clientId]);
+
+  useEffect(() => {
+    if (open && clientId) {
+      fetchClient();
+    }
+  }, [open, clientId, fetchClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

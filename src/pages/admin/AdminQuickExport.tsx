@@ -10,12 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Download, FileText, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Download } from 'lucide-react';
 
 interface QuickExportProps {
   onExportComplete?: () => void;
@@ -26,8 +22,8 @@ import { handleError } from '@/utils/errorHandling/handlers';
 export default function AdminQuickExport({ onExportComplete }: QuickExportProps) {
   const [exportType, setExportType] = useState<'orders' | 'users' | 'products'>('orders');
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('month');
-  const [customStartDate, setCustomStartDate] = useState<Date>();
-  const [customEndDate, setCustomEndDate] = useState<Date>();
+  const [customStartDate, _setCustomStartDate] = useState<Date>();
+  const [customEndDate, _setCustomEndDate] = useState<Date>();
   const { toast } = useToast();
 
   const { data: exportData, isLoading } = useQuery({

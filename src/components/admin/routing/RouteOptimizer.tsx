@@ -9,7 +9,7 @@
  * - Visual Route Display
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -19,21 +19,16 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import {
   Route as RouteIcon,
   Navigation,
   MapPin,
   Clock,
-  Fuel,
   Zap,
-  CheckCircle2,
   Trash2,
   GripVertical,
-  Truck,
   Send
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -46,7 +41,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Mapbox & Map Components
 import 'mapbox-gl/dist/mapbox-gl.css';
-// @ts-ignore - react-map-gl types
+// @ts-expect-error - react-map-gl types
 import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/mapbox';
 
 // ----------------------------------------------------------------------------
@@ -89,7 +84,7 @@ export function RouteOptimizer() {
   const [optimizedRoute, setOptimizedRoute] = useState<OptimizedRoute | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const [mapRef, setMapRef] = useState<any>(null);
+  const [mapRef, _setMapRef] = useState<any>(null);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
   // Mapbox Token

@@ -111,7 +111,7 @@ export function QuickReceiving() {
 
         // Log movement (optional - may not exist)
         try {
-          // @ts-ignore - Table may not exist in types
+          // @ts-expect-error - Table may not exist in types
           await supabase.from('inventory_movements' as any).insert({
             product_id: item.product_id,
             product_name: item.product_name,

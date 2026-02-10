@@ -5,7 +5,6 @@
 
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
 import * as forumApi from '@/lib/api/forum';
 import { usePosts } from '@/hooks/usePosts';
 import { PostCard } from '@/components/community/PostCard';

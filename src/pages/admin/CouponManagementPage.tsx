@@ -338,7 +338,7 @@ export default function CouponManagementPage() {
                   {filteredCoupons.map((coupon) => {
                     const StatusIcon = STATUS_ICONS[coupon.status || "inactive"] || XCircle;
                     const expired = isExpired(coupon);
-                    const active = isActive(coupon);
+                    const _active = isActive(coupon);
                     const displayStatus = expired ? "expired" : (coupon.status || "inactive");
 
                     return (

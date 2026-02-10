@@ -63,7 +63,6 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             return;
         }
 
-        setFile(selectedFile);
         await parseFile(selectedFile);
     };
 
@@ -103,7 +102,6 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         } catch (error) {
             logger.error("Error parsing file", error);
             toast.error("Failed to parse file. Please check format.");
-            setFile(null);
         } finally {
             setLoading(false);
         }
@@ -296,7 +294,6 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
     };
 
     const resetState = () => {
-        setFile(null);
         setRawRecords([]);
         setFileHeaders([]);
         setMapping({});

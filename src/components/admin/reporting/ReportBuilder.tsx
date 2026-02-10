@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import type { Json } from "@/integrations/supabase/types";
 import {
   Dialog,
   DialogContent,

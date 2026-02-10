@@ -56,7 +56,7 @@ export function LeafletMapWidget({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, []);
+  }, [center, zoom]);
 
   // Update markers when locations change
   useEffect(() => {

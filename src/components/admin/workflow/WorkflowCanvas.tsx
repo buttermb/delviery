@@ -34,7 +34,6 @@ import {
   Settings,
   Zap,
   Database,
-  Send,
   Webhook as WebhookIcon,
   Clock,
   ArrowRight,
@@ -336,7 +335,7 @@ export function WorkflowCanvas() {
     }
   };
 
-  const handleVisualWorkflowSave = useCallback(async (nodes: Node[], edges: Edge[]) => {
+  const handleVisualWorkflowSave = useCallback(async (nodes: Node[], _edges: Edge[]) => {
     if (!selectedWorkflow) return;
 
     try {
@@ -744,7 +743,7 @@ export function WorkflowCanvas() {
                         try {
                           const config = JSON.parse(e.target.value);
                           setConfiguringAction({ ...configuringAction, config });
-                        } catch (err) {
+                        } catch {
                           // Invalid JSON
                         }
                       }}

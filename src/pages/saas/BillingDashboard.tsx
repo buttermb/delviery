@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CreditCard, DollarSign, TrendingUp, AlertTriangle, Download, Plus, Users, Menu, Package, MapPin } from 'lucide-react';
+import { CreditCard, TrendingUp, Download, Plus, Users, Menu, Package, MapPin } from 'lucide-react';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 export default function BillingDashboard() {
   const { tenant, refresh } = useTenant();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('');
 

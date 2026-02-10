@@ -21,9 +21,6 @@ import {
   TrendingUp,
   CheckCircle2,
   Building2,
-  Phone,
-  Mail,
-  DollarSign,
   RefreshCw,
 } from 'lucide-react';
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
@@ -74,7 +71,7 @@ export function SmartClientPicker({
 
   const { data: allClients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { recentClients, addRecentClient, isLoading: recentLoading } = useRecentClients();
-  const { suggestions, recurringClients, overdueClients, isLoading: suggestionsLoading } = useClientSuggestions();
+  const { suggestions, recurringClients: _recurringClients, overdueClients: _overdueClients, isLoading: suggestionsLoading } = useClientSuggestions();
   const { toggleFavorite } = useToggleClientFavorite();
 
   // Filter clients by search query

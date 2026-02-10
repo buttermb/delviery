@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Check, ArrowRightLeft, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,7 +55,7 @@ export function URLEncoder() {
     }
   };
 
-  const handleConvert = () => {
+  const _handleConvert = () => {
     if (!input.trim()) {
       setOutput('');
       return;
@@ -76,7 +76,7 @@ export function URLEncoder() {
       setCopied(true);
       toast.success('Output copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy to clipboard');
     }
   };

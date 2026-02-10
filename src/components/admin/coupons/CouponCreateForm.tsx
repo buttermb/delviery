@@ -48,7 +48,7 @@ const generateCouponCode = () => {
 };
 
 export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: CouponCreateFormProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant: _tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     code: "",

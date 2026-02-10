@@ -11,12 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Building2,
     User,
     Phone,
     Mail,
-    Calendar,
-    DollarSign,
     MessageSquare,
     Package
 } from "lucide-react";

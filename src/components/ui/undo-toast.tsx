@@ -3,7 +3,7 @@
  * Shows a toast with undo functionality and countdown timer
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Undo2, X, Check } from 'lucide-react';

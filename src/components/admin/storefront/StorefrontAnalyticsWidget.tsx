@@ -8,7 +8,6 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { Eye, Users, ShoppingCart, TrendingUp } from 'lucide-react';
 

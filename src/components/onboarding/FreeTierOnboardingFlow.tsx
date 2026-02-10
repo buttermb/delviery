@@ -5,7 +5,7 @@
  * Features 4 steps: Welcome, Credits, Limits, and Upgrade Path.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Sparkles,
@@ -22,7 +22,6 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
 import { AnimatedCreditMeter } from './AnimatedCreditMeter';
 import { FreeTierLimitsCard } from './FreeTierLimitsCard';
 import { UpgradePathSection } from './UpgradePathSection';

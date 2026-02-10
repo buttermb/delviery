@@ -41,7 +41,7 @@ export function LocationMapWidget() {
     }>;
   }
 
-  // @ts-ignore - Complex query return type causing deep instantiation
+  // @ts-expect-error - Complex query return type causing deep instantiation
   const { data: locations } = useQuery<LocationData | null>({
     queryKey: ['location-map', account?.id],
     queryFn: async (): Promise<LocationData | null> => {

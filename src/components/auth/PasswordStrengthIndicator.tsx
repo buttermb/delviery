@@ -86,7 +86,7 @@ export function PasswordStrengthIndicator({
       {/* Visual Strength Meter - 3 bars for Weak/Medium/Strong */}
       <div className="space-y-1">
         <div className="flex items-center gap-1.5">
-          {(['weak', 'medium', 'strong'] as StrengthLevel[]).map((level, index) => {
+          {(['weak', 'medium', 'strong'] as StrengthLevel[]).map((level) => {
             // Determine if this bar should be filled
             const levelOrder: Record<StrengthLevel, number> = { weak: 0, medium: 1, strong: 2 };
             const currentLevelOrder = levelOrder[strength.level];

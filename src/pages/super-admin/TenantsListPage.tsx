@@ -5,9 +5,9 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -139,7 +139,7 @@ export default function TenantsListPage() {
     if (healthFilter === 'all') return tenants;
 
     return tenants.filter((tenant) => {
-      // @ts-ignore - tenant type mismatch will resolve when types regenerate
+      // @ts-expect-error - tenant type mismatch will resolve when types regenerate
       const health = calculateHealthScore(tenant as any);
       const score = health.score;
 
@@ -198,12 +198,6 @@ export default function TenantsListPage() {
 
   const clearSelection = () => {
     setSelectedTenants([]);
-  };
-
-  const getHealthColor = (score: number) => {
-    if (score >= 80) return 'bg-success';
-    if (score >= 50) return 'bg-warning';
-    return 'bg-destructive';
   };
 
   if (isLoading) {
@@ -420,7 +414,7 @@ export default function TenantsListPage() {
               </TableHeader>
               <TableBody>
                 {paginatedTenants.map((tenant) => {
-                  // @ts-ignore - tenant type mismatch will resolve when types regenerate
+                  // @ts-expect-error - tenant type mismatch will resolve when types regenerate
                   const health = calculateHealthScore(tenant as any);
                   const healthScore = health.score;
                   return (
@@ -571,7 +565,7 @@ export default function TenantsListPage() {
               key={tenant.id}
               tenant={tenant}
               onView={(id) => navigate(`/super-admin/tenants/${id}`)}
-              onLoginAs={(id) => {
+              onLoginAs={(_id) => {
                 window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
               }}
             />

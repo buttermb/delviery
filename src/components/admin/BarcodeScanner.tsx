@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Uses device camera to scan product barcodes
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,44 +27,16 @@ interface BarcodeScannerProps {
 
 export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = false, scannedCount = 0 }: BarcodeScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  // Track scanning state with ref to avoid stale closure in stopScanning
+  const isScanningRef = useRef(false);
 
-  useEffect(() => {
-    if (open && !scannerRef.current) {
-      initializeScanner();
-    }
-
-    return () => {
-      stopScanning();
-    };
-  }, [open]);
-
-  const initializeScanner = async () => {
-    try {
-      setIsInitializing(true);
-      
-      // Create scanner instance
-      scannerRef.current = new Html5Qrcode('barcode-scanner-region');
-      
-      // Start scanning
-      await startScanning();
-    } catch (error) {
-      logger.error('Failed to initialize barcode scanner', error, {
-        component: 'BarcodeScanner',
-      });
-      toast.error('Failed to access camera. Please grant camera permissions.');
-    } finally {
-      setIsInitializing(false);
-    }
-  };
-
-  const startScanning = async () => {
+  const startScanning = useCallback(async () => {
     if (!scannerRef.current) return;
 
     try {
-      setIsScanning(true);
-      
+      isScanningRef.current = true;
+
       await scannerRef.current.start(
         { facingMode: 'environment' }, // Use back camera
         {
@@ -76,10 +48,10 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
           logger.info('Barcode scanned successfully', { barcode: decodedText });
           toast.success(`Barcode detected: ${decodedText}`);
           onScanSuccess(decodedText);
-          
+
           // Only close if not in batch mode
           if (!batchMode) {
-            handleClose();
+            onOpenChange(false);
           }
         },
         (_errorMessage) => {
@@ -91,23 +63,52 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
         component: 'BarcodeScanner',
       });
       toast.error('Failed to start camera');
-      setIsScanning(false);
+      isScanningRef.current = false;
     }
-  };
+  }, [onScanSuccess, batchMode, onOpenChange]);
 
-  const stopScanning = async () => {
-    if (scannerRef.current && isScanning) {
+  const stopScanning = useCallback(async () => {
+    if (scannerRef.current && isScanningRef.current) {
       try {
         await scannerRef.current.stop();
         scannerRef.current.clear();
-        setIsScanning(false);
+        isScanningRef.current = false;
       } catch (error) {
         logger.error('Failed to stop scanning', error, {
           component: 'BarcodeScanner',
         });
       }
     }
-  };
+  }, []);
+
+  const initializeScanner = useCallback(async () => {
+    try {
+      setIsInitializing(true);
+
+      // Create scanner instance
+      scannerRef.current = new Html5Qrcode('barcode-scanner-region');
+
+      // Start scanning
+      await startScanning();
+    } catch (error) {
+      logger.error('Failed to initialize barcode scanner', error, {
+        component: 'BarcodeScanner',
+      });
+      toast.error('Failed to access camera. Please grant camera permissions.');
+    } finally {
+      setIsInitializing(false);
+    }
+  }, [startScanning]);
+
+  useEffect(() => {
+    if (open && !scannerRef.current) {
+      initializeScanner();
+    }
+
+    return () => {
+      stopScanning();
+    };
+  }, [open, initializeScanner, stopScanning]);
 
   const handleClose = () => {
     stopScanning();

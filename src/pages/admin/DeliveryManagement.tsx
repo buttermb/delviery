@@ -13,15 +13,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import {
   Truck, Clock, CheckCircle2, XCircle,
-  Phone, User, Package
+  User, Package
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
 import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
 
@@ -48,7 +46,7 @@ interface Delivery {
 }
 
 export default function DeliveryManagement() {
-  const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+  const { navigateToAdmin } = useTenantNavigation();
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const [searchQuery, setSearchQuery] = useState('');

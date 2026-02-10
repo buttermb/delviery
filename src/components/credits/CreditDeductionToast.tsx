@@ -5,7 +5,7 @@
  * Auto-dismisses after 2 seconds. Clicking opens purchase modal.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Coins, TrendingDown, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditPurchaseModal } from './CreditPurchaseModal';

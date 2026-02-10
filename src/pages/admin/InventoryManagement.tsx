@@ -4,7 +4,6 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Package, TrendingUp, ArrowUpDown, Settings, AlertTriangle, CheckCircle, Warehouse, Layers } from "lucide-react";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { BulkInventoryModal } from "@/components/admin/BulkInventoryModal";
@@ -39,7 +38,7 @@ export function InventoryManagement() {
   const { tenant } = useTenantAdminAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, _setSearchTerm] = useState("");
 
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -84,7 +83,7 @@ export function InventoryManagement() {
     }, {} as Record<string, Product[]>);
   }, [products]);
 
-  const filteredProducts = products.filter(p => {
+  const _filteredProducts = products.filter(p => {
     const searchLower = searchTerm.toLowerCase();
     return (
       p.name?.toLowerCase().includes(searchLower) ||

@@ -11,7 +11,6 @@ import {
   Mail,
   MessageSquare,
   User,
-  Building2,
   MapPin,
   Calendar,
   DollarSign,

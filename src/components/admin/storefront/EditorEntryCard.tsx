@@ -3,7 +3,7 @@
  * Inviting card that prompts users to open the full-screen editor
  */
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Palette, Maximize2, Loader2, Layout, Sparkles } from 'lucide-react';

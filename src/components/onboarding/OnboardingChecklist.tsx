@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2,
-  Circle,
   Package,
   Users,
   FileSpreadsheet,
@@ -229,7 +228,7 @@ export function OnboardingChecklist({
 
       {isExpanded && (
         <CardContent className="pt-0 space-y-2">
-          {steps.map((step, index) => {
+          {steps.map((step) => {
             const isComplete = completedSteps.has(step.id);
             const Icon = step.icon;
             

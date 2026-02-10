@@ -26,8 +26,7 @@ import {
     Truck,
     FileText,
     Send,
-    User,
-    MapPin
+    User
 } from 'lucide-react';
 import {
     Dialog,

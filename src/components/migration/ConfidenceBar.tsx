@@ -16,7 +16,7 @@ export function ConfidenceBar({ score, showLabel = true, className }: Confidence
     return 'bg-red-500';
   };
 
-  const getLabel = () => {
+  const _getLabel = () => {
     if (percentage >= 80) return 'High';
     if (percentage >= 60) return 'Medium';
     if (percentage >= 40) return 'Low';

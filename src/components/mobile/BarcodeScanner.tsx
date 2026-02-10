@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import { Button } from '@/components/ui/button';
-import { X, Camera, Flashlight } from 'lucide-react';
-import { toast } from 'sonner';
+import { X, Flashlight } from 'lucide-react';
 
 interface BarcodeScannerProps {
     onScan: (data: string) => void;
@@ -12,7 +11,7 @@ interface BarcodeScannerProps {
 
 export function BarcodeScanner({ onScan, onClose, open }: BarcodeScannerProps) {
     const [torchOn, setTorchOn] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, _setError] = useState<string | null>(null);
 
     if (!open) return null;
 

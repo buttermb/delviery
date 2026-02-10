@@ -21,7 +21,7 @@ interface StoreAgeSettings {
 export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
     const { storeSlug } = useParams();
     const [isVisible, setIsVisible] = useState(false);
-    const [isVerified, setIsVerified] = useState(false);
+    const [_isVerified, setIsVerified] = useState(false);
     // Use storeSlug-namespaced key to avoid cross-store contamination if hosting multiple
     const storageKey = `age_verified_${storeSlug || storeId || 'default'}`;
 

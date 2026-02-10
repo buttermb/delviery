@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { TrendingUp, Package } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { mockDashboardData } from '../mockDashboardData';
 

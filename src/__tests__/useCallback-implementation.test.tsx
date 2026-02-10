@@ -82,7 +82,7 @@ describe('useCallback implementation for event handlers', () => {
       });
 
       const TestParent = () => {
-        const [state, setState] = useState(0);
+        const [, setState] = useState(0);
         const handler = useCallback(() => {}, []);
 
         return (
@@ -122,7 +122,7 @@ describe('useCallback implementation for event handlers', () => {
       });
 
       const TestParent = () => {
-        const [state, setState] = useState(0);
+        const [, setState] = useState(0);
         // NOT using useCallback - handler recreated every render
         const handler = () => {};
 
@@ -137,7 +137,6 @@ describe('useCallback implementation for event handlers', () => {
       const { rerender } = render(<TestParent />);
 
       expect(renderCount).toBe(1);
-      const firstHandler = handlerRefs[0];
 
       // Trigger parent re-render
       fireEvent.click(screen.getByText('Update'));
@@ -314,16 +313,15 @@ describe('useCallback implementation for event handlers', () => {
     });
 
     it('should maintain stable reference when dependencies do not change', () => {
-      let renderCount = 0;
       const handlers: Array<() => void> = [];
 
       const TestComponent = () => {
-        renderCount++;
         const [dep, setDep] = useState(1);
-        const [unrelated, setUnrelated] = useState(0);
+        const [, setUnrelated] = useState(0);
 
         const handler = useCallback(() => {
-          console.log(dep);
+          // Use dep in callback
+          void dep;
         }, [dep]);
 
         handlers.push(handler);
@@ -377,7 +375,7 @@ describe('useCallback implementation for event handlers', () => {
       });
 
       const Parent = () => {
-        const [state, setState] = useState(0);
+        const [, setState] = useState(0);
 
         const handleEdit = useCallback(() => {
           handlerCalls.onEdit();

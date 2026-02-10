@@ -11,14 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LiveDeliveryMap } from '@/components/admin/LiveDeliveryMap';
 import { RouteReplayMap } from '@/components/admin/maps/RouteReplayMap';
-import { useRunnerLocationHistory, LocationPoint } from '@/hooks/useRunnerLocationHistory';
+import { useRunnerLocationHistory } from '@/hooks/useRunnerLocationHistory';
 import { queryKeys } from '@/lib/queryKeys';
 import { calculateETA, ETAResult } from '@/lib/utils/eta-calculation';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
@@ -48,7 +47,7 @@ function formatRouteDate(date: Date): string {
 
 export default function RunnerLocationTracking() {
   const navigate = useNavigate();
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const [selectedRunnerId, setSelectedRunnerId] = useState<string>('');
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('live');
@@ -598,7 +597,7 @@ export default function RunnerLocationTracking() {
                               </div>
                             </div>
                             <div className="ml-4 border-l-2 border-muted pl-6 mt-2 space-y-3">
-                              {dayLocations.slice(0, 20).map((location, idx) => (
+                              {dayLocations.slice(0, 20).map((location, _idx) => (
                                 <div
                                   key={location.id}
                                   className="relative flex items-start gap-3"

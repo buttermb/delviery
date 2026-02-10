@@ -97,7 +97,7 @@ export function BigPlugRunnerPortal() {
         amountCollected: collected,
         showToast: true
       });
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     }
   };

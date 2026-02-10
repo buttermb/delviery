@@ -10,7 +10,6 @@ import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Filter from "lucide-react/dist/esm/icons/filter";
 import Search from "lucide-react/dist/esm/icons/search";
 import Calendar from "lucide-react/dist/esm/icons/calendar";
@@ -23,7 +22,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,

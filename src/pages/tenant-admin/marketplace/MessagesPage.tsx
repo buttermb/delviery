@@ -72,7 +72,7 @@ interface Conversation {
 }
 
 export default function MessagesPage() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -80,7 +80,7 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [_replyingTo, setReplyingTo] = useState<string | null>(null);
 
   // Fetch all messages (sent and received) for this tenant
   const { data: messages = [], isLoading } = useQuery<Message[]>({
@@ -123,7 +123,7 @@ export default function MessagesPage() {
           try {
             const decrypted = await decryptMessage(msg.message_text);
             return { ...msg, message_text: decrypted };
-          } catch (e) {
+          } catch {
             logger.warn('Failed to decrypt message', { messageId: msg.id });
             return msg;
           }

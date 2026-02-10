@@ -71,7 +71,7 @@ export function TVMetricsWidget({
     avgOrderValue,
     itemsSold,
     yesterdayRevenue = 0,
-    yesterdayOrders = 0,
+    yesterdayOrders: _yesterdayOrders = 0,
 }: TVMetricsWidgetProps) {
     // Calculate trends
     const revenueTrend = yesterdayRevenue > 0

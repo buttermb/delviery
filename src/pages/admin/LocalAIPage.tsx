@@ -5,9 +5,6 @@
 
 import { LocalAIIntegration } from '@/components/admin/ai/LocalAIIntegration';
 import { SEOHead } from '@/components/SEOHead';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export default function LocalAIPage() {
   return (

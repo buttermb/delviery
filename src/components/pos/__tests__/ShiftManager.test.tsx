@@ -9,9 +9,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
 
 // Mock the dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -67,11 +66,8 @@ vi.mock('./ZReport', () => ({
   ZReport: vi.fn(() => <div data-testid="z-report">Z-Report Component</div>),
 }));
 
-// Import the component after mocking
-import { ShiftManager } from '../ShiftManager';
-
 // Helper to create test wrapper with QueryClient
-function createWrapper() {
+function _createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },

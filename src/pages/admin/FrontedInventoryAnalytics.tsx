@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Package,
   Users,
-  Calendar,
   AlertTriangle,
   Download,
   BarChart3,

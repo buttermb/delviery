@@ -13,7 +13,6 @@ import {
   TrendingUp, Loader2, ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, startOfMonth, endOfMonth, subMonths, subWeeks } from 'date-fns';
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
@@ -26,7 +25,6 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function ReportsPage() {
   const navigate = useNavigate();
-  const { account } = useAccount();
   const { tenant } = useTenantAdminAuth();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');

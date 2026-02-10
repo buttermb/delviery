@@ -45,16 +45,17 @@ function ResendButton({ onResend }: { onResend: () => void }) {
 }
 
 export function CustomerForgotPasswordPage() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [tenant, setTenant] = useState<{ id: string; slug: string; name: string } | null>(null);
+  const [_tenant, setTenant] = useState<{ id: string; slug: string; name: string } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
   const [rateLimited, setRateLimited] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [formError, setFormError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
   const requestTimestamps = useRef<number[]>([]);

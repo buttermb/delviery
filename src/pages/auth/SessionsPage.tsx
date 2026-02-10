@@ -34,7 +34,6 @@ import {
   Clock,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 
 type RevokeTarget = { type: 'single'; sessionId: string } | { type: 'all-others' } | null;
 
@@ -63,7 +62,7 @@ const getDeviceIcon = (userAgent: string) => {
   return <Monitor className="h-5 w-5" />;
 };
 
-const getBrowserName = (userAgent: string): string => {
+const _getBrowserName = (userAgent: string): string => {
   const ua = userAgent.toLowerCase();
   if (ua.includes('edg')) return 'Microsoft Edge';
   if (ua.includes('chrome') && !ua.includes('edg')) return 'Google Chrome';
@@ -74,7 +73,7 @@ const getBrowserName = (userAgent: string): string => {
   return 'Unknown Browser';
 };
 
-const getDeviceType = (userAgent: string): string => {
+const _getDeviceType = (userAgent: string): string => {
   const ua = userAgent.toLowerCase();
   if (ua.includes('iphone')) return 'iPhone';
   if (ua.includes('ipad')) return 'iPad';

@@ -13,7 +13,7 @@
 
 import { useState, useRef } from 'react';
 import { format } from 'date-fns';
-import { RefreshCw, Maximize2, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';

@@ -35,7 +35,6 @@ import {
   getOrderCustomerName,
   getOrderPhoneNumber,
   generateOrderSMSMessage,
-  ORDER_SMS_TEMPLATES,
   SMSTemplateKey,
 } from '@/hooks/useSendOrderSMS';
 

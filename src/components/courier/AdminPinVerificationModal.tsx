@@ -29,7 +29,7 @@ export default function AdminPinVerificationModal({ open, onVerify }: AdminPinVe
       } else {
         toast.success('Admin PIN verified successfully');
       }
-    } catch (error) {
+    } catch {
       toast.error('Verification failed');
     } finally {
       setLoading(false);

@@ -77,7 +77,7 @@ export function useTenantPaymentSettings() {
     queryFn: async () => {
       if (!tenant?.id) return DEFAULT_SETTINGS;
 
-      // @ts-ignore - tenant_payment_settings table exists but not in generated types
+      // @ts-expect-error - tenant_payment_settings table exists but not in generated types
       const { data, error } = await supabase
         .from('tenant_payment_settings' as any)
         .select('*')
@@ -107,7 +107,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       if (!menuId) return DEFAULT_SETTINGS;
 
       // First, get the menu to find its tenant_id and any payment_settings override
-      // @ts-ignore - payment_settings column exists but not in generated types
+      // @ts-expect-error - payment_settings column exists but not in generated types
       const { data: menu, error: menuError } = await supabase
         .from('disposable_menus')
         .select('tenant_id, payment_settings' as any)
@@ -120,7 +120,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       }
 
       // Get tenant-level payment settings
-      // @ts-ignore - tenant_payment_settings table exists but not in generated types
+      // @ts-expect-error - tenant_payment_settings table exists but not in generated types
       const { data: tenantSettings, error: settingsError } = await supabase
         .from('tenant_payment_settings' as any)
         .select('*')

@@ -6,21 +6,14 @@
  */
 import { logger } from '@/lib/logger';
 
-import { NavLink, useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, User, HelpCircle, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -71,8 +64,8 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const location = useLocation();
   const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();
-  const { sidebarConfig, hotItems, favorites, operationSize, isLoading } = useSidebarConfig();
-  const { trackFeatureClick, toggleFavorite, preferences, searchQuery, setSearchQuery } = useSidebar();
+  const { sidebarConfig, hotItems, favorites, operationSize: _operationSize, isLoading } = useSidebarConfig();
+  const { trackFeatureClick, toggleFavorite: _toggleFavorite, preferences, searchQuery, setSearchQuery } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
   // Run storage migration on mount

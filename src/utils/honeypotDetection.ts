@@ -560,19 +560,22 @@ export function useBotDetection(options: {
 } = {}) {
   const detectorRef = useRef<BotDetector | null>(null);
 
+  // Destructure options to use stable primitive values in dependencies
+  const { minFormTime, formComplexity, onBotDetected } = options;
+
   useEffect(() => {
-    detectorRef.current = createBotDetector(options);
+    detectorRef.current = createBotDetector({ minFormTime, formComplexity });
     return () => detectorRef.current?.cleanup();
-  }, []);
+  }, [minFormTime, formComplexity]);
 
   const getReport = useCallback(() => {
     if (!detectorRef.current) return null;
     const report = detectorRef.current.getReport();
-    if (report.isBot && options.onBotDetected) {
-      options.onBotDetected(report);
+    if (report.isBot && onBotDetected) {
+      onBotDetected(report);
     }
     return report;
-  }, [options.onBotDetected]);
+  }, [onBotDetected]);
 
   const addHoneypotFields = useCallback((container: HTMLElement | null) => {
     if (container && detectorRef.current) {

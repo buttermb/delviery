@@ -37,7 +37,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const { tenant } = useTenantAdminAuth();
   const createMenu = useCreateDisposableMenu();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
-  useMediaQuery('(max-width: 768px)');
+  const _isMobile = useMediaQuery('(max-width: 768px)');
 
   // Template state
   const [selectedTemplate, setSelectedTemplate] = useState<MenuTemplate | null>(null);

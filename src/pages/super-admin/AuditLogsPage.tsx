@@ -18,7 +18,7 @@ export default function AuditLogsPage() {
   const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: ['super-admin-audit-logs', actionFilter],
     queryFn: async () => {
-      // @ts-ignore - audit_logs columns will be available after types regenerate
+      // @ts-expect-error - audit_logs columns will be available after types regenerate
       let query = supabase
         .from('audit_logs')
         .select('id, action, resource_type, resource_id, tenant_id, actor_id, actor_type, timestamp, changes')
@@ -71,7 +71,7 @@ export default function AuditLogsPage() {
     queryKey: ['audit-logs-actors', actorIds],
     queryFn: async () => {
       if (actorIds.length === 0) return [];
-      // @ts-ignore - super_admins table exists but not in types yet
+      // @ts-expect-error - super_admins table exists but not in types yet
       const { data } = await (supabase as any)
         .from('super_admins')
         .select('id, email')
@@ -88,7 +88,7 @@ export default function AuditLogsPage() {
 
   // Calculate stats
   const stats = useMemo(() => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const _thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     

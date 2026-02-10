@@ -123,8 +123,8 @@ export default function RecordFrontedReturn() {
         const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;
 
         // Try atomic RPC first (handles inventory, balance update, and movement logging)
-        // @ts-ignore - RPC function 'process_fronted_return_atomic' is not yet in the auto-generated types
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('process_fronted_return_atomic' as any, {
+        // @ts-expect-error - RPC function 'process_fronted_return_atomic' is not yet in the auto-generated types
+        const { error: rpcError } = await supabase.rpc('process_fronted_return_atomic' as any, {
           p_fronted_id: id,
           p_good_returns: goodReturns,
           p_damaged_returns: damagedReturns,
@@ -169,7 +169,7 @@ export default function RecordFrontedReturn() {
               // Update client balance (return value reduces debt)
               if (front.client_id && front.price_per_unit) {
                 const returnValue = goodReturns * front.price_per_unit;
-                // @ts-ignore - RPC function 'adjust_client_balance' is not yet in the auto-generated types
+                // @ts-expect-error - RPC function 'adjust_client_balance' is not yet in the auto-generated types
                 const { error: balanceError } = await supabase.rpc('adjust_client_balance' as any, {
                   p_client_id: front.client_id,
                   p_amount: returnValue,

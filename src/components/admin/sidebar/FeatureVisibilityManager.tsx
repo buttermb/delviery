@@ -12,16 +12,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useFeatureVisibility } from '@/hooks/useFeatureVisibility';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
-import type { FeatureId } from '@/lib/featureConfig';
 import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import { ChevronDown, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function FeatureVisibilityManager() {
-  const { sidebarConfig, operationSize, businessTier } = useSidebarConfig();
+  const { sidebarConfig: _sidebarConfig, operationSize, businessTier } = useSidebarConfig();
   const { isFeatureVisible, toggleFeature, showAll, hideAll, resetToDefault } = useFeatureVisibility();
-  const { canAccess } = useFeatureAccess();
+  const { canAccess: _canAccess } = useFeatureAccess();
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   // Get all features from registry

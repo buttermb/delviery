@@ -33,7 +33,6 @@ import {
     Sparkles,
     Filter
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface GlobalProduct {
     id: string;

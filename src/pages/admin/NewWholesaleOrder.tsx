@@ -42,7 +42,6 @@ import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { captureWholesalePrices } from '@/lib/utils/priceSnapshot';
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
@@ -284,7 +283,7 @@ export default function NewWholesaleOrder() {
   }, []);
 
   // Submit handler with retry capability
-  const [lastError, setLastError] = useState<string | null>(null);
+  const [_lastError, setLastError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 2;
 

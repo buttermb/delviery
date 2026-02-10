@@ -11,9 +11,6 @@ import {
     ArrowLeft,
     ArrowRight,
     Trash2,
-    Clock,
-    CheckCircle,
-    XCircle,
     Receipt
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";

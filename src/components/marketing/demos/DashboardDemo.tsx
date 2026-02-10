@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, ShoppingBag, DollarSign, Package, Clock, Wifi, BarChart3, Zap } from 'lucide-react';
+import { TrendingUp, ShoppingBag, DollarSign, Package, Clock, Wifi, Zap } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
 const MOCK_METRICS = [

@@ -4,7 +4,7 @@ import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera as CameraIcon, RotateCcw, CheckCircle, Upload } from 'lucide-react';
+import { Camera as CameraIcon, RotateCcw, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -43,7 +43,7 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
       
       // Upload to Supabase Storage
       const fileName = `${orderId}-${Date.now()}.jpg`;
-      const { data, error } = await supabase.storage
+      const { data: _data, error } = await supabase.storage
         .from('delivery-photos')
         .upload(fileName, blob, {
           contentType: 'image/jpeg',

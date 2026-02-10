@@ -568,7 +568,7 @@ export function CheckoutPage() {
  * Promo codes in this system grant bonus credits rather than price discounts,
  * but we show a monetary value equivalent for clarity.
  */
-function calculatePromoDiscount(subtotal: number, promo: PromoDiscount): number {
+function calculatePromoDiscount(_subtotal: number, _promo: PromoDiscount): number {
   // Promo codes grant bonus credits, not direct price discounts.
   // We show a $0 price discount but display the bonus credits separately.
   return 0;

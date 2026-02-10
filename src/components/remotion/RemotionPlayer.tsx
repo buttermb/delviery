@@ -63,7 +63,7 @@ export function RemotionPlayer({
   className = '',
   clickToPlay: _clickToPlay = false,
 }: RemotionPlayerProps) {
-  const reduceAnimations = useShouldReduceAnimations();
+  const _reduceAnimations = useShouldReduceAnimations();
   const isMobile = useIsMobile();
 
   const width = isMobile ? MOBILE_RESOLUTION.width : compositionWidth;

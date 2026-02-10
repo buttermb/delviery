@@ -23,7 +23,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
   const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
 
-  const isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
+  const _isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
     const cacheKey = `${email}:${tenantSlug}`;
     const cached = verificationCache.current.get(cacheKey);
 

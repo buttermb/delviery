@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useEncryption } from "@/lib/hooks/useEncryption";
 import { logger } from "@/lib/logger";
 import { PullToRefresh } from "@/components/mobile/PullToRefresh";
 import { Card } from "@/components/ui/card";
@@ -25,8 +24,6 @@ import {
   MessageSquare,
   DollarSign,
   Package,
-  Star,
-  AlertCircle,
   Edit2
 } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
@@ -49,8 +46,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input as ShadcnInput } from "@/components/ui/input"; // Renamed to avoid conflict
-import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { SendPortalLinkDialog } from "@/components/admin/wholesale/SendPortalLinkDialog";
@@ -77,7 +72,6 @@ import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 export default function WholesaleClients() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
-  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const queryClient = useQueryClient();
   const { preferences, savePreferences } = useTablePreferences("wholesale-clients-table");
 

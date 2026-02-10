@@ -9,14 +9,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   Edit,
-  MoreHorizontal,
   RefreshCw,
   Package,
-  DollarSign,
-  Coins,
   CheckCircle,
   XCircle,
-  GripVertical,
   Star,
   Sparkles,
 } from 'lucide-react';

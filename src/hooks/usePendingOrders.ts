@@ -68,9 +68,9 @@ export function usePendingOrders(tenantId?: string) {
 
     const loadPendingOrders = async () => {
         try {
-            // @ts-ignore - Outdated Supabase types
+            // @ts-expect-error - Outdated Supabase types
             const { data, error } = await supabase
-                // @ts-ignore - Table not in types
+                // @ts-expect-error - Table not in types
                 .from('disposable_menu_orders')
                 .select(`
           *,

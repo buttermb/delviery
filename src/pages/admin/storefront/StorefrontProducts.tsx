@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -18,17 +18,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   Search,
   Package,
   Eye,
   EyeOff,
-  DollarSign,
   Save,
-  Filter,
-  CheckSquare,
-  Square,
-  RefreshCw,
   ArrowUp,
   ArrowDown
 } from 'lucide-react';
@@ -324,7 +318,7 @@ export default function StorefrontProducts() {
     setEditingPrices((prev) => ({ ...prev, [productId]: value }));
   };
 
-  const handlePriceSave = (productId: string, originalPrice: number) => {
+  const handlePriceSave = (productId: string, _originalPrice: number) => {
     const newPrice = editingPrices[productId];
     if (newPrice === undefined) return;
 

@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClient } from '@/hooks/crm/useClients';
 import { useClientInvoices } from '@/hooks/crm/useInvoices';
@@ -31,8 +31,7 @@ import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
-    const navigate = useNavigate();
-    const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+    const { navigateToAdmin } = useTenantNavigation();
     const { data: client, isLoading } = useClient(clientId);
     const { data: invoices } = useClientInvoices(clientId);
     const { data: preOrders } = useClientPreOrders(clientId);

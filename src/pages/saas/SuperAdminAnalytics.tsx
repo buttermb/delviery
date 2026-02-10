@@ -20,15 +20,12 @@ import {
   TrendingUp,
   Users,
   Download,
-  Calendar,
   BarChart3,
-  PieChart,
   LineChart,
   ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { formatSmartDate } from '@/lib/utils/formatDate';
 
 import {
   isTrial,
@@ -42,7 +39,7 @@ export default function SuperAdminAnalytics() {
   const [timeRange, setTimeRange] = useState<string>('30d');
 
   // Platform Analytics
-  const { data: analytics, isLoading } = useQuery({
+  const { data: analytics } = useQuery({
     queryKey: ['platform-analytics', timeRange],
     queryFn: async () => {
       const { data: tenants } = await supabase.from('tenants').select('*');

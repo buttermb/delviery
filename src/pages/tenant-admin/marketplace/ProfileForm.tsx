@@ -32,7 +32,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { compressImage, isCompressibleImage, COMPRESSION_PRESETS } from '@/lib/utils/image-compression';
 
 const US_STATES = [
@@ -76,7 +76,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState<string | null>(null);
   const [selectedShippingStates, setSelectedShippingStates] = useState<string[]>(initialData?.shipping_states || []);

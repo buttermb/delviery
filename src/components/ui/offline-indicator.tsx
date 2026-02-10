@@ -16,7 +16,6 @@ import {
   Wifi,
   WifiOff,
   Cloud,
-  CloudOff,
   RefreshCw,
   Trash2,
   AlertCircle,
@@ -75,7 +74,7 @@ export function OfflineIndicator({
     }
   };
 
-  const getStatusLabel = (status: QueuedItem['status']) => {
+  const _getStatusLabel = (status: QueuedItem['status']) => {
     switch (status) {
       case 'pending': return 'Waiting';
       case 'syncing': return 'Syncing';

@@ -57,7 +57,7 @@ interface AnalyticsStat {
   trend: 'up' | 'down';
 }
 
-interface SecurityEvent {
+interface _SecurityEvent {
   id: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   event_type: string;
@@ -68,11 +68,12 @@ interface SecurityEvent {
 const DisposableMenuAnalytics = () => {
   const { tenant } = useTenantAdminAuth();
   const { menuId } = useParams();
-  const [dateRange, setDateRange] = useState(7); // days
 
   const { data: menus, isLoading: menusLoading } = useDisposableMenus(tenant?.id);
   const { data: accessLogs, isLoading: logsLoading, refetch: refetchLogs } = useMenuAccessLogs(menuId!);
   const { data: securityEvents, refetch: refetchEvents } = useMenuSecurityEvents(menuId);
+  // Note: dateRange state planned for future use with date picker
+  const [_dateRange, _setDateRange] = useState(7); // days
 
   const menu = menus?.find(m => m.id === menuId);
 

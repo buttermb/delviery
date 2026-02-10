@@ -16,17 +16,16 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    Plus, GripVertical, Trash2, Save, ArrowLeft, Layout,
+    GripVertical, Trash2, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
-    FileText, Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Store, Settings2, Wand2
+    Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
+    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
-import { ModeSwitchWarningDialog } from '@/components/admin/storefront/ModeSwitchWarningDialog';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
@@ -42,16 +41,14 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
-import { THEME_PRESETS, applyThemeToConfig, type ThemePreset } from '@/lib/storefrontThemes';
+import { type ThemePreset } from '@/lib/storefrontThemes';
 import { useEasyModeBuilder } from '@/hooks/useEasyModeBuilder';
-import { detectAdvancedCustomizations, generateSectionsFromPreset, getPresetById, PRESET_PACKS } from '@/lib/storefrontPresets';
+import { detectAdvancedCustomizations } from '@/lib/storefrontPresets';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
-import type { Json } from '@/integrations/supabase/types';
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -220,9 +217,9 @@ export function StorefrontBuilder({
     const [previewZoom, setPreviewZoom] = useState(0.85);
 
     // Mode switch warning dialog
-    const [showModeSwitchWarning, setShowModeSwitchWarning] = useState(false);
-    const [pendingModeSwitch, setPendingModeSwitch] = useState<'simple' | 'advanced' | null>(null);
-    const [advancedCustomizations, setAdvancedCustomizations] = useState<string[]>([]);
+    const [, setShowModeSwitchWarning] = useState(false);
+    const [, setPendingModeSwitch] = useState<'simple' | 'advanced' | null>(null);
+    const [, setAdvancedCustomizations] = useState<string[]>([]);
 
     // Store Creation Dialog State
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -281,7 +278,7 @@ export function StorefrontBuilder({
     );
 
     // Fetch Store Config
-    const { data: store, isLoading } = useQuery({
+    const { data: store } = useQuery({
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
@@ -372,30 +369,6 @@ export function StorefrontBuilder({
 
         setBuilderMode(targetMode);
     }, [builderMode, layoutConfig, easyModeBuilder, toast]);
-
-    // Confirm mode switch after warning
-    const confirmModeSwitch = useCallback(() => {
-        if (pendingModeSwitch === 'simple') {
-            // Reset to a preset
-            const preset = easyModeBuilder.selectedPreset || PRESET_PACKS[0];
-            easyModeBuilder.selectPreset(preset.id);
-
-            // Apply preset sections
-            const sections = generateSectionsFromPreset(preset);
-            setLayoutConfig(sections);
-            saveToHistory(sections);
-        }
-
-        setBuilderMode(pendingModeSwitch || 'simple');
-        setShowModeSwitchWarning(false);
-        setPendingModeSwitch(null);
-    }, [pendingModeSwitch, easyModeBuilder]);
-
-    // Cancel mode switch
-    const cancelModeSwitch = useCallback(() => {
-        setShowModeSwitchWarning(false);
-        setPendingModeSwitch(null);
-    }, []);
 
     // Save to history
     const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
@@ -607,33 +580,6 @@ export function StorefrontBuilder({
         }
     });
 
-    // Unpublish mutation
-    const unpublishMutation = useMutation({
-        mutationFn: async () => {
-            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
-                .from('marketplace_stores')
-                .update({
-                    is_public: false,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('tenant_id', tenant?.id || '');
-
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            toast({ title: "Store unpublished", description: "Your storefront is now in draft mode." });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
-        },
-        onError: (err) => {
-            toast({
-                title: "Unpublish failed",
-                description: "Could not unpublish storefront. Please try again.",
-                variant: "destructive"
-            });
-            logger.error('Failed to unpublish storefront', err);
-        }
-    });
-
     const addSection = (type: keyof typeof SECTION_TYPES) => {
         const newSection: SectionConfig = {
             id: crypto.randomUUID(),
@@ -763,10 +709,6 @@ export function StorefrontBuilder({
         setSelectedSectionId(id);
         if (!rightPanelOpen) setRightPanelOpen(true);
     };
-
-    // Render the appropriate layout config for preview
-    const previewConfig = builderMode === 'simple' ? easyModeBuilder.derivedLayoutConfig : layoutConfig;
-    const previewTheme = builderMode === 'simple' ? easyModeBuilder.derivedThemeConfig : themeConfig;
 
     // Notify parent of dirty state changes
     useEffect(() => {

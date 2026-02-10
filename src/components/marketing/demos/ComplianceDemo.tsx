@@ -7,7 +7,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { FileText, CheckCircle2, RefreshCw, ShieldCheck, Lock, Zap, Clock, Database } from 'lucide-react';
+import { CheckCircle2, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
