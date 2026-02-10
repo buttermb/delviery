@@ -663,7 +663,7 @@
     "id": "task-111",
     "title": "Create stock transfer between locations",
     "description": "If tenant has multiple locations, create stock transfer flow. Create src/components/admin/inventory/StockTransfer.tsx — select source location, destination, products, quantities. Creates paired inventory_history entries (decrease at source, increase at destination). Transfer tracking with status. Notification to destination location admin.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-112",

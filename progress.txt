@@ -3072,3 +3072,29 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - Used `.maybeSingle()` for product fetch
 - All imports use `@/` alias as required
+
+## task-111: Create stock transfer between locations
+- Created `src/components/admin/inventory/StockTransfer.tsx` — full stock transfer flow between locations
+- Component checks if tenant has multiple locations; shows helpful message if only one location exists
+- Location selection: source and destination dropdowns with city info, filters prevent selecting same location
+- Product selection: fetches products with stock > 0 from source location, shows available quantity
+- Transfer items management: add/remove products with quantity validation against available stock
+- Creates paired `inventory_history` entries:
+  - Source: `change_type: 'transfer_out'`, negative change amount, `reference_type: 'stock_transfer'`
+  - Destination: `change_type: 'transfer_in'`, positive change amount, `reference_type: 'stock_transfer'`
+- Transfer tracking with status workflow: pending → in_transit → completed (or cancelled)
+- Status update buttons: "Start Transit" (pending→in_transit), "Complete" (in_transit→completed)
+- Notification to destination location admin via `notifications` table insert
+- Activity logging via `logActivity()` from `@/lib/activityLog`:
+  - Logs `ActivityAction.CREATED` with transfer details on creation
+  - Logs `ActivityAction.UPDATED` on status changes
+- UI features:
+  - Recent transfers list with source→destination display, item count, and date
+  - Status badges with icons (Clock, ArrowRight, CheckCircle, XCircle)
+  - Loading states with Skeleton components
+  - EnhancedEmptyState for no transfers or no multiple locations
+- All queries filter by `tenant_id` for tenant isolation
+- Uses `useTenantAdminAuth()` from `@/contexts/TenantAdminAuthContext`
+- Uses `queryKeys.inventory.transfers()` from `@/lib/queryKeys`
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
