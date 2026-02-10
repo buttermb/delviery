@@ -5381,3 +5381,29 @@ Created a comprehensive menu order notification system that alerts admin when or
 - Added process_menu_schedules() function for auto-activation via Edge Function/cron
 - Works with existing MenuScheduler.tsx component from task-180
 - Status: PASSES
+
+## task-182: Create menu theme customization
+Date: Tue, Feb 10, 2026 11:21:28 AM
+
+Created src/components/admin/menus/MenuTheme.tsx - comprehensive menu theming component.
+
+### What was implemented:
+- Color customization (primary, secondary, background, text, accent, border)
+- Logo upload with Supabase storage integration
+- Header image upload
+- Typography settings (heading font, body font, base font size)
+- Layout options (grid/list, columns, card style, spacing)
+- Footer text with Powered by FloraIQ toggle
+- Custom CSS textarea for advanced customization
+- Real-time preview component
+- Saves theme to disposable_menus.appearance_settings JSONB column
+
+### Key patterns used:
+- useTenantAdminAuth() for tenant context
+- TanStack Query with queryKeys for caching
+- logger from @/lib/logger (no console.log)
+- All imports use @/ alias
+- Queries filter by tenant_id
+- Loading states with Skeleton
+- Error handling with showErrorToast
+

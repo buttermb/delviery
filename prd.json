@@ -1089,7 +1089,7 @@
     "id": "task-182",
     "title": "Create menu theme customization",
     "description": "Create src/components/admin/menus/MenuTheme.tsx — customize menu appearance per tenant. Colors (primary, secondary, background, text), logo upload, font selection, layout style (grid/list), header image, footer text, custom CSS. Preview in real-time. Save theme to menu record or tenant_branding. Apply theme when rendering disposable menu.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-183",
