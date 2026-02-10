@@ -255,6 +255,7 @@ const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement").then(m => ({ default: m.VendorManagement })));
+const VendorDashboard = lazy(() => import("./pages/admin/VendorDashboard"));
 const PurchaseOrders = lazy(() => import("./pages/admin/PurchaseOrders"));
 const ImagesPage = lazy(() => import("./pages/admin/catalog/ImagesPage"));
 const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
@@ -1027,6 +1028,7 @@ const App = () => {
                                         <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                                         <Route path="system-settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
+                                        <Route path="vendor-dashboard" element={<FeatureProtectedRoute featureId="vendor-management"><VendorDashboard /></FeatureProtectedRoute>} />
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}
                                         <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />

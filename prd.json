@@ -981,7 +981,7 @@
     "id": "task-164",
     "title": "Create vendor dashboard overview",
     "description": "Create src/pages/admin/VendorDashboard.tsx — overview of vendor module. Stats cards — total vendors, active POs, total outstanding payables, on-time delivery rate. Top vendors by spend table. Recent PO activity feed. Vendor distribution by category chart. Quick actions — add vendor, create PO, view pending deliveries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-165",

@@ -4811,3 +4811,17 @@ Created a complete vendor contact management system with the following component
 - Aggregate scores should be recalculated on every rating change
 - Linking ratings to POs provides context for historical analysis
 - Color-coded progress bars make dimension comparison visual and intuitive
+
+## Task 164: Create vendor dashboard overview
+- Created src/pages/admin/VendorDashboard.tsx with comprehensive vendor module overview
+- Implemented 4 stats cards: Total Vendors, Active POs, Outstanding Payables, On-Time Delivery Rate
+- Added Top Vendors by Spend table with clickable rows linking to vendor details
+- Added Recent PO Activity feed showing latest purchase orders with status badges
+- Added Vendor Distribution pie chart showing vendors by category
+- Implemented Quick Actions: Add Vendor, Create PO, View Pending Deliveries
+- Used existing patterns from InventoryDashboard.tsx for consistent UX
+- Vendors table uses account_id for tenant filtering (from VendorManagement pattern)
+- Purchase orders table uses tenant_id for filtering (from PurchaseOrdersPage pattern)
+- Added lazy import and route in App.tsx at /vendor-dashboard path
+- Learnings: Different tables use different tenant column names (account_id vs tenant_id)
+
