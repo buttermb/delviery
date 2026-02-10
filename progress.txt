@@ -5437,3 +5437,34 @@ Created src/components/admin/menus/MenuTheme.tsx - comprehensive menu theming co
 - Loading states with Skeleton
 - Error handling with showErrorToast
 
+
+## Task 184: Create menu product availability rules
+Completed: Tue, Feb 10, 2026 11:32:43 AM
+
+### What was implemented:
+- Created Supabase migration for menu_product_availability_rules table with RLS policies
+- Implemented 4 rule types: time_window, day_of_week, quantity_limit, bundle_only
+- Created useMenuProductAvailability.ts hook with full CRUD operations
+- Created availabilityEngine.ts for client-side rule evaluation
+- Created MenuProductAvailability.tsx component with:
+  - Per-product rule management UI
+  - Real-time availability status display
+  - Quantity limit progress bars
+  - Hide/show unavailable products option
+  - Custom unavailable messages
+  - Reset quantities for session-based limits
+
+### Files created:
+- supabase/migrations/20260210000001_menu_product_availability_rules.sql
+- src/hooks/useMenuProductAvailability.ts
+- src/lib/menus/availabilityEngine.ts
+- src/components/admin/menus/MenuProductAvailability.tsx
+
+### Key patterns used:
+- Used useTenantAdminAuth for tenant context
+- All queries filter by tenant_id
+- Used logger from @/lib/logger (no console.log)
+- Used @/ alias for all imports
+- TanStack Query for data management
+- Proper loading and error states
+

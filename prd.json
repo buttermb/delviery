@@ -1101,7 +1101,7 @@
     "id": "task-184",
     "title": "Create menu product availability rules",
     "description": "Set product availability rules per menu. Rules — available only certain hours, available only certain days, limited quantity per menu session, bundle-only (not sold individually on this menu). Rules engine evaluates when customer views menu. Unavailable products hidden or shown as unavailable. Connects to scheduling module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-185",
