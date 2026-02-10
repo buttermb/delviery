@@ -1319,3 +1319,47 @@
 - All logging via `logger.debug/error` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
 - Import order: React → Third-party → Local imports
+
+## task-045: Create shared admin layout wrapper
+- Created `src/components/admin/shared/AdminLayout.tsx` — wraps all admin pages with consistent layout
+- Main layout features:
+  - Desktop sidebar: Uses AdminSidebar component (fixed position, sticky top, full height)
+  - Mobile sidebar: Uses Sheet component (drawer sliding from left)
+  - Top header bar with hamburger menu (mobile), command palette trigger, and notification bell
+  - Main content area with responsive padding (p-4 on mobile, p-6 on desktop)
+  - Optional page header via PageHeader component when title prop provided
+- Layout context via React.createContext:
+  - `useAdminLayout()` hook for nested components to access layout state
+  - Context provides: isMobileSidebarOpen, toggleMobileSidebar, openMobileSidebar, closeMobileSidebar, isCompact
+  - Error thrown if useAdminLayout used outside AdminLayout provider
+- Header bar features:
+  - Left side: hamburger menu (lg:hidden), tenant initial badge, tenant name (mobile only)
+  - Right side: command palette trigger (search button), notification bell with unread badge
+  - Sticky positioning with backdrop-blur effect for overlay content
+  - Platform-aware keyboard shortcut hint (⌘K on Mac, Ctrl+K on Windows/Linux)
+- Integration with existing hooks:
+  - `useSidebarBadges` — provides badge counts to AdminSidebar
+  - `useNotifications` — provides unread count for notification bell
+  - `useCommandPaletteStore` — toggles command palette via Zustand store
+  - `useTenantAdminAuth` — gets tenant context and validates tenantSlug
+- Props interface includes:
+  - `title`, `subtitle`, `breadcrumbs`, `badge`, `actions` — passed to PageHeader
+  - `hideHeader` — option to hide page header when custom header needed
+  - `compact` — minimal mode without sidebar for embedded views
+  - `contentClassName`, `className` — additional styling hooks
+- Compact mode:
+  - No sidebar, just header bar and content
+  - Used for embedded views, modals, or focused workflows
+- Guard clause:
+  - Returns null and logs error if tenantSlug is missing from URL params
+  - Prevents rendering without valid tenant context
+- Responsive design:
+  - Desktop (lg+): Fixed sidebar, full content area
+  - Mobile (<lg): Hidden sidebar, hamburger menu for Sheet drawer
+  - Mobile sidebar uses Sheet from shadcn/ui for proper drawer behavior
+  - SheetTitle with sr-only class for accessibility
+- Uses shadcn/ui components: Button, Badge, Sheet/SheetContent/SheetTitle
+- Uses lucide-react icons: Menu, Search, Bell, X
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required
+- Import order: React → Third-party → Types → Components → Utils

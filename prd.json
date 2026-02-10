@@ -267,7 +267,7 @@
     "id": "task-045",
     "title": "Create shared admin layout wrapper",
     "description": "Create src/components/admin/shared/AdminLayout.tsx — wraps all admin pages with consistent layout. Includes AdminSidebar, top header bar with notification bell and command palette trigger, breadcrumbs, and main content area. Handles responsive layout — sidebar collapses to hamburger on mobile. Provides layout context for nested components.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-046",
