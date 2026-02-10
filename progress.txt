@@ -3274,3 +3274,34 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Service role key auth for cron jobs, JWT validation for manual triggers
 - HTML email template with urgency colors (red/orange/yellow) based on stockout timeline
 - Summary shows critical products (≤3 days) vs warning products separately
+
+## task-121: Create product weight and dimension tracking
+- Created migration supabase/migrations/20260210120000_add_product_dimensions.sql:
+  - Adds weight_kg, length_cm, width_cm, height_cm columns to products table
+  - Uses numeric types for precision (10,3 for weight, 10,2 for dimensions)
+  - Created index on tenant_id for products with dimensions for route optimization queries
+  - Added column comments documenting purpose (shipping weight, package dimensions)
+- Updated src/components/admin/product-form/BasicInfoStep.tsx:
+  - Added "Shipping Dimensions" section with weight_kg, length_cm, width_cm, height_cm inputs
+  - Includes descriptive label about usage for shipping cost calculation and delivery optimization
+  - Used Input components with number type, proper step values, and unit labels (kg, cm)
+- Updated src/components/admin/product-form/ReviewStep.tsx:
+  - Added dimension fields to optionalFields list for validation display
+  - Added Package icon and "Shipping Dimensions" section in review
+  - Shows weight, dimensions (L×W×H), and calculated volume in liters
+  - Only renders section if any dimension values are present
+- Extended src/components/admin/products/ProductExport.tsx:
+  - Added 'shipping' group to ExportFieldOption type and FIELD_GROUPS
+  - Added weight_kg, length_cm, width_cm, height_cm to EXPORT_FIELD_OPTIONS
+- Extended src/components/admin/products/ProductBulkImport.tsx:
+  - Added 4 new SYSTEM_FIELDS for shipping dimensions
+  - Updated numericFields array for validation
+  - Updated insert statement to include weight_kg, length_cm, width_cm, height_cm
+- Created src/components/admin/orders/OrderDimensionsCard.tsx:
+  - New component for displaying aggregated shipping dimensions in order summary
+  - Shows total weight across all items (with quantity factored in)
+  - Shows largest item dimensions and volume
+  - Displays coverage (items with dimensions vs total)
+  - Warns about items missing dimensions with expandable list
+  - Supports compact mode for inline display
+- All files use @/ imports, logger (not console.log), TypeScript strict mode compliant

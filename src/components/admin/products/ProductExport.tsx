@@ -73,7 +73,7 @@ interface ExportFieldOption {
   id: string;
   label: string;
   description: string;
-  group: 'basic' | 'pricing' | 'inventory' | 'cannabis' | 'lab' | 'related' | 'metadata';
+  group: 'basic' | 'pricing' | 'inventory' | 'cannabis' | 'lab' | 'related' | 'metadata' | 'shipping';
   type?: 'string' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
   recommended?: boolean;
   default?: boolean;
@@ -144,6 +144,12 @@ const EXPORT_FIELD_OPTIONS: ExportFieldOption[] = [
   { id: 'image_url', label: 'Image URL', description: 'Primary product image URL', group: 'metadata', type: 'string' },
   { id: 'average_rating', label: 'Average Rating', description: 'Average customer rating', group: 'metadata', type: 'number' },
   { id: 'review_count', label: 'Review Count', description: 'Number of reviews', group: 'metadata', type: 'number' },
+
+  // Shipping Dimensions
+  { id: 'weight_kg', label: 'Shipping Weight (kg)', description: 'Shipping weight in kilograms', group: 'shipping', type: 'number' },
+  { id: 'length_cm', label: 'Length (cm)', description: 'Package length in centimeters', group: 'shipping', type: 'number' },
+  { id: 'width_cm', label: 'Width (cm)', description: 'Package width in centimeters', group: 'shipping', type: 'number' },
+  { id: 'height_cm', label: 'Height (cm)', description: 'Package height in centimeters', group: 'shipping', type: 'number' },
 ];
 
 // Field groups for UI organization
@@ -152,6 +158,7 @@ const FIELD_GROUPS = [
   { id: 'related', label: 'Related Data', description: 'Category, vendor, orders, menus' },
   { id: 'pricing', label: 'Pricing', description: 'Prices and costs' },
   { id: 'inventory', label: 'Inventory', description: 'Stock levels and quantities' },
+  { id: 'shipping', label: 'Shipping Dimensions', description: 'Weight and package dimensions' },
   { id: 'cannabis', label: 'Cannabis Details', description: 'Strain and product info' },
   { id: 'lab', label: 'Lab & Potency', description: 'Test results and compliance' },
   { id: 'metadata', label: 'Metadata', description: 'IDs, dates, and URLs' },

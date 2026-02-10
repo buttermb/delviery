@@ -723,7 +723,7 @@
     "id": "task-121",
     "title": "Create product weight and dimension tracking",
     "description": "Add weight, length, width, height fields to products. Used for shipping cost calculation in order module. Display on product detail. Required for delivery route optimization. Bulk update dimensions via import. Show dimensional data in order summary for delivery planning.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-122",

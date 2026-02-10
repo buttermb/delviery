@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, Package } from "lucide-react";
 
 interface ProductFormData {
   [key: string]: unknown;
@@ -30,6 +30,8 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
     { field: "effects", label: "Effects tags" },
     { field: "flavors", label: "Flavor tags" },
     { field: "vendor_name", label: "Vendor name" },
+    { field: "weight_kg", label: "Shipping weight" },
+    { field: "length_cm", label: "Package dimensions" },
   ];
 
   // Optimized: single pass for both filters with memoization
@@ -106,6 +108,48 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
           </div>
         </Card>
       </div>
+
+      {/* Shipping Dimensions */}
+      {(formData.weight_kg || formData.length_cm || formData.width_cm || formData.height_cm) && (
+        <div>
+          <Label className="text-lg font-semibold flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Shipping Dimensions
+          </Label>
+          <Card className="p-4 mt-3">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {formData.weight_kg && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Weight:</span>
+                  <span className="font-medium">{formData.weight_kg} kg</span>
+                </div>
+              )}
+              {(formData.length_cm || formData.width_cm || formData.height_cm) && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dimensions:</span>
+                  <span className="font-medium">
+                    {formData.length_cm || "-"} × {formData.width_cm || "-"} × {formData.height_cm || "-"} cm
+                  </span>
+                </div>
+              )}
+              {formData.length_cm && formData.width_cm && formData.height_cm && (
+                <div className="flex justify-between col-span-2">
+                  <span className="text-muted-foreground">Volume:</span>
+                  <span className="font-medium">
+                    {(
+                      (Number(formData.length_cm) *
+                        Number(formData.width_cm) *
+                        Number(formData.height_cm)) /
+                      1000
+                    ).toFixed(2)}{" "}
+                    L
+                  </span>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Checklist */}
       <div>

@@ -75,6 +75,11 @@ const SYSTEM_FIELDS: SystemField[] = [
   { key: "batch_number", label: "Batch Number", required: false, type: "string" },
   { key: "thc_percent", label: "THC %", required: false, type: "number" },
   { key: "cbd_percent", label: "CBD %", required: false, type: "number" },
+  // Shipping dimensions
+  { key: "weight_kg", label: "Shipping Weight (kg)", required: false, type: "number" },
+  { key: "length_cm", label: "Length (cm)", required: false, type: "number" },
+  { key: "width_cm", label: "Width (cm)", required: false, type: "number" },
+  { key: "height_cm", label: "Height (cm)", required: false, type: "number" },
 ];
 
 export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulkImportProps) {
@@ -230,7 +235,7 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
       }
 
       // Validate numeric fields
-      const numericFields = ["wholesale_price", "retail_price", "cost_per_unit", "available_quantity", "thc_percent", "cbd_percent"];
+      const numericFields = ["wholesale_price", "retail_price", "cost_per_unit", "available_quantity", "thc_percent", "cbd_percent", "weight_kg", "length_cm", "width_cm", "height_cm"];
       numericFields.forEach((fieldKey) => {
         if (normalized[fieldKey] !== null && normalized[fieldKey] !== undefined && normalized[fieldKey] !== "") {
           const num = parseNumber(normalized[fieldKey]);
@@ -365,6 +370,11 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
               cbd_percent: (record.normalized.cbd_percent as number) ?? 0,
               thca_percentage: 0,
               price: (record.normalized.wholesale_price as number) ?? 0, // Legacy field sync
+              // Shipping dimensions
+              weight_kg: (record.normalized.weight_kg as number) || null,
+              length_cm: (record.normalized.length_cm as number) || null,
+              width_cm: (record.normalized.width_cm as number) || null,
+              height_cm: (record.normalized.height_cm as number) || null,
             }))
           )
           .select("id, available_quantity");

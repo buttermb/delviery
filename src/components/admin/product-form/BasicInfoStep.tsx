@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 
 interface ProductFormData {
@@ -182,6 +181,88 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
             placeholder="Vendor/Brand name (e.g., Cookies, Jungle Boys)"
             className="mt-1.5"
           />
+        </div>
+
+        {/* Shipping Dimensions Section */}
+        <div className="pt-4 border-t">
+          <Label className="text-base font-medium">Shipping Dimensions (Optional)</Label>
+          <p className="text-xs text-muted-foreground mb-3">
+            Used for shipping cost calculation and delivery route optimization
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="weight_kg">Shipping Weight</Label>
+              <div className="flex items-center mt-1.5">
+                <Input
+                  id="weight_kg"
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={(formData.weight_kg as string | number) || ""}
+                  onChange={(e) =>
+                    updateFormData({ weight_kg: e.target.value === "" ? "" : parseFloat(e.target.value) })
+                  }
+                  placeholder="0.5"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">kg</span>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="length_cm">Length</Label>
+              <div className="flex items-center mt-1.5">
+                <Input
+                  id="length_cm"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={(formData.length_cm as string | number) || ""}
+                  onChange={(e) =>
+                    updateFormData({ length_cm: e.target.value === "" ? "" : parseFloat(e.target.value) })
+                  }
+                  placeholder="10"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">cm</span>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="width_cm">Width</Label>
+              <div className="flex items-center mt-1.5">
+                <Input
+                  id="width_cm"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={(formData.width_cm as string | number) || ""}
+                  onChange={(e) =>
+                    updateFormData({ width_cm: e.target.value === "" ? "" : parseFloat(e.target.value) })
+                  }
+                  placeholder="5"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">cm</span>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="height_cm">Height</Label>
+              <div className="flex items-center mt-1.5">
+                <Input
+                  id="height_cm"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={(formData.height_cm as string | number) || ""}
+                  onChange={(e) =>
+                    updateFormData({ height_cm: e.target.value === "" ? "" : parseFloat(e.target.value) })
+                  }
+                  placeholder="3"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">cm</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
