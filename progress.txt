@@ -2344,3 +2344,19 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
   - Status transitions defined in STATUS_TRANSITIONS constant
   - DEFAULT_SLA_TARGETS provides sensible defaults (can be overridden by tenant settings)
   - Green/Yellow/Red color scheme with 80% threshold for approaching
+
+## task-082: Create order pinned notes for dashboard
+- Added pinning capability to order notes with is_pinned, pinned_at, pinned_by, pin_reason columns
+- Created migration `20260210000002_add_order_notes_pinning.sql` to add pinning columns to order_notes table
+- Created `src/hooks/usePinnedOrderNotes.ts` hook for fetching pinned notes with tenant isolation
+- Added PIN_REASONS constant for categorizing pinned notes: wrong_address, callback_needed, substitution_required, payment_issue, delivery_issue, custom
+- Created `src/components/admin/dashboard/PinnedNotesWidget.tsx` for "Requires Attention" dashboard section
+- Widget displays pinned notes with color-coded icons based on pin_reason, shows order number, note content, and who pinned it
+- Updated `src/components/admin/orders/OrderThreadedNotes.tsx` to support pin/unpin actions via dropdown menu
+- Each note shows a "Pinned" badge when pinned, styled with orange background
+- Added queryKeys.orderNotes.pinned() to queryKeys.ts for cache management
+- Pin/unpin actions invalidate both the order notes query and pinned notes query for real-time updates
+- Real-time subscription in widget auto-refreshes when notes table changes
+- Used existing patterns: useTenantAdminAuth for tenant context, supabase queries with tenant_id filter
+- All logging uses logger from @/lib/logger, no console.log statements
+- Import order follows: React → Third-party → Types → Components → Utils

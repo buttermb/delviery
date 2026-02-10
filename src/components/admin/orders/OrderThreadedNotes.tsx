@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Command,
@@ -40,6 +41,25 @@ import MessageSquare from 'lucide-react/dist/esm/icons/message-square';
 import Send from 'lucide-react/dist/esm/icons/send';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import AtSign from 'lucide-react/dist/esm/icons/at-sign';
+import Pin from 'lucide-react/dist/esm/icons/pin';
+import PinOff from 'lucide-react/dist/esm/icons/pin-off';
+import MoreVertical from 'lucide-react/dist/esm/icons/more-vertical';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { queryKeys } from '@/lib/queryKeys';
+import { PIN_REASONS, PinReason } from '@/hooks/usePinnedOrderNotes';
 
 /** Team member for @mentions */
 interface TeamMember {
@@ -62,6 +82,10 @@ interface OrderNote {
   content: string;
   mentioned_user_ids: string[];
   created_at: string;
+  is_pinned?: boolean;
+  pinned_at?: string | null;
+  pinned_by?: string | null;
+  pin_reason?: string | null;
   // Joined user info
   user?: {
     user_id: string;
@@ -153,6 +177,10 @@ export function OrderThreadedNotes({
           content,
           mentioned_user_ids,
           created_at,
+          is_pinned,
+          pinned_at,
+          pinned_by,
+          pin_reason,
           user:tenant_users!order_notes_user_id_fkey(user_id, full_name, first_name, last_name, avatar_url, email)
         `)
         .eq('order_id', orderId)
@@ -277,6 +305,97 @@ export function OrderThreadedNotes({
       toast.error('Failed to add note');
     },
   });
+
+  // Pin note mutation
+  const pinNoteMutation = useMutation({
+    mutationFn: async ({ noteId, reason }: { noteId: string; reason?: PinReason }): Promise<void> => {
+      if (!tenantId || !currentUserId) {
+        throw new Error('Missing required data');
+      }
+
+      const { error: updateError } = await (supabase as unknown as { from: (table: string) => {
+        update: (data: Record<string, unknown>) => {
+          eq: (field: string, value: string) => {
+            eq: (field: string, value: string) => Promise<{ error: unknown }>;
+          };
+        };
+      }})
+        .from('order_notes')
+        .update({
+          is_pinned: true,
+          pinned_at: new Date().toISOString(),
+          pinned_by: currentUserId,
+          pin_reason: reason || null,
+        })
+        .eq('id', noteId)
+        .eq('tenant_id', tenantId);
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notesQueryKey });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orderNotes.pinned(tenantId) });
+      toast.success('Note pinned to dashboard');
+    },
+    onError: (err) => {
+      logger.error('Failed to pin order note', err, {
+        component: 'OrderThreadedNotes',
+      });
+      toast.error('Failed to pin note');
+    },
+  });
+
+  // Unpin note mutation
+  const unpinNoteMutation = useMutation({
+    mutationFn: async (noteId: string): Promise<void> => {
+      if (!tenantId) {
+        throw new Error('Missing tenant ID');
+      }
+
+      const { error: updateError } = await (supabase as unknown as { from: (table: string) => {
+        update: (data: Record<string, unknown>) => {
+          eq: (field: string, value: string) => {
+            eq: (field: string, value: string) => Promise<{ error: unknown }>;
+          };
+        };
+      }})
+        .from('order_notes')
+        .update({
+          is_pinned: false,
+          pinned_at: null,
+          pinned_by: null,
+          pin_reason: null,
+        })
+        .eq('id', noteId)
+        .eq('tenant_id', tenantId);
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notesQueryKey });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orderNotes.pinned(tenantId) });
+      toast.success('Note unpinned from dashboard');
+    },
+    onError: (err) => {
+      logger.error('Failed to unpin order note', err, {
+        component: 'OrderThreadedNotes',
+      });
+      toast.error('Failed to unpin note');
+    },
+  });
+
+  // State for pin reason dialog
+  const [pinningNoteId, setPinningNoteId] = useState<string | null>(null);
+  const [selectedPinReason, setSelectedPinReason] = useState<PinReason>('custom');
+
+  const handlePinNote = (noteId: string, reason?: PinReason) => {
+    pinNoteMutation.mutate({ noteId, reason });
+    setPinningNoteId(null);
+  };
+
+  const handleUnpinNote = (noteId: string) => {
+    unpinNoteMutation.mutate(noteId);
+  };
 
   // Handle textarea change and detect @mentions
   const handleContentChange = useCallback(
@@ -472,7 +591,13 @@ export function OrderThreadedNotes({
                 'Unknown';
 
               return (
-                <div key={note.id} className="flex gap-3">
+                <div
+                  key={note.id}
+                  className={cn(
+                    'flex gap-3 group p-2 -mx-2 rounded-lg transition-colors',
+                    note.is_pinned && 'bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800'
+                  )}
+                >
                   <Avatar className="h-8 w-8 flex-shrink-0">
                     <AvatarImage src={note.user?.avatar_url || undefined} />
                     <AvatarFallback className="text-xs">
@@ -483,7 +608,7 @@ export function OrderThreadedNotes({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium truncate">
                         {userName}
                       </span>
@@ -492,11 +617,72 @@ export function OrderThreadedNotes({
                           addSuffix: true,
                         })}
                       </span>
+                      {note.is_pinned && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700">
+                          <Pin className="h-2.5 w-2.5 mr-1" />
+                          Pinned
+                        </Badge>
+                      )}
                     </div>
                     <div className="mt-1 text-sm whitespace-pre-wrap break-words">
                       {formatNoteContent(note.content)}
                     </div>
                   </div>
+                  {/* Pin/Unpin Action Menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {note.is_pinned ? (
+                        <DropdownMenuItem
+                          onClick={() => handleUnpinNote(note.id)}
+                          disabled={unpinNoteMutation.isPending}
+                        >
+                          <PinOff className="h-4 w-4 mr-2" />
+                          Unpin from Dashboard
+                        </DropdownMenuItem>
+                      ) : (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => handlePinNote(note.id, 'wrong_address')}
+                            disabled={pinNoteMutation.isPending}
+                          >
+                            <Pin className="h-4 w-4 mr-2 text-red-500" />
+                            Pin: Wrong Address
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handlePinNote(note.id, 'callback_needed')}
+                            disabled={pinNoteMutation.isPending}
+                          >
+                            <Pin className="h-4 w-4 mr-2 text-orange-500" />
+                            Pin: Callback Needed
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handlePinNote(note.id, 'substitution_required')}
+                            disabled={pinNoteMutation.isPending}
+                          >
+                            <Pin className="h-4 w-4 mr-2 text-yellow-500" />
+                            Pin: Substitution Required
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handlePinNote(note.id, 'custom')}
+                            disabled={pinNoteMutation.isPending}
+                          >
+                            <Pin className="h-4 w-4 mr-2" />
+                            Pin to Dashboard
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               );
             })

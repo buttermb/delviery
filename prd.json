@@ -489,7 +489,7 @@
     "id": "task-082",
     "title": "Create order pinned notes for dashboard",
     "description": "Allow marking an order note as pinned. Pinned notes show on the dashboard in a \"Requires Attention\" section. Useful for flagging issues — wrong address, customer callback needed, product substitution required. Pinned notes cleared when action is taken. Creates direct dashboard-to-order interconnection.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-083",

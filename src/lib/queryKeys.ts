@@ -961,4 +961,13 @@ export const queryKeys = {
     targets: (tenantId?: string) =>
       [...queryKeys.sla.all, 'targets', tenantId] as const,
   },
+
+  // Order Notes
+  orderNotes: {
+    all: ['order-notes'] as const,
+    byOrder: (orderId: string, tenantId?: string) =>
+      [...queryKeys.orderNotes.all, 'order', orderId, tenantId] as const,
+    pinned: (tenantId?: string) =>
+      [...queryKeys.orderNotes.all, 'pinned', tenantId] as const,
+  },
 } as const;
