@@ -345,7 +345,7 @@
     "id": "task-058",
     "title": "Create order payment status sync",
     "description": "On the order detail page, show payment status from the payments table. If payment is pending, show pay button. If paid, show payment method and transaction ID. Payment status changes should update order display in real-time via Supabase subscription. When payment is received, auto-update order status if configured. Invalidate order queries on payment change.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-059",

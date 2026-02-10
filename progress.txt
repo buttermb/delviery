@@ -1754,3 +1754,22 @@
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - Imports use `@/` alias as required
 - TypeScript types: OrderStatus, NotificationRecipient, OrderInfo interfaces
+
+## task-058: Create order payment status sync
+- Created `src/components/admin/orders/OrderPaymentStatusSync.tsx` component
+- Shows payment status from payments table on order detail page
+- If payment is pending, shows "Record Payment" button with dialog
+- If paid, displays payment method, transaction ID, and paid date
+- Real-time updates via Supabase subscription on payments table using `useRealTimeSubscription` hook
+- Auto-updates order payment_status field when payment is completed (configurable via prop)
+- Invalidates order queries on payment change for immediate UI updates
+- Uses TanStack Query for data fetching with proper query keys
+- Added `byOrder` query key to `queryKeys.payments` in `src/lib/queryKeys.ts`
+- Payment dialog allows selecting payment method and entering transaction ID
+- Gracefully handles missing payments table (fallback to order payment_status)
+- Integrated into `OrderDetailsPage.tsx` replacing static payment status display
+- Uses `useTenantAdminAuth` for tenant context
+- Subscription status indicator shows real-time connection state
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Imports use `@/` alias as required
+- TypeScript types: PaymentRecord, OrderPaymentStatusSyncProps interfaces

@@ -611,6 +611,7 @@ export const queryKeys = {
       [...queryKeys.payments.byClient(tenantId, clientId), 'aging'] as const,
     pending: (tenantId: string) => [...queryKeys.payments.byTenant(tenantId), 'pending'] as const,
     refunds: (tenantId: string) => [...queryKeys.payments.byTenant(tenantId), 'refunds'] as const,
+    byOrder: (orderId: string) => [...queryKeys.payments.all, 'order', orderId] as const,
   },
 
   // Fronted Inventory

@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { OrderRelatedEntitiesPanel } from '@/components/admin/orders/OrderRelatedEntitiesPanel';
+import { OrderPaymentStatusSync } from '@/components/admin/orders/OrderPaymentStatusSync';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -756,20 +757,19 @@ export function OrderDetailsPage() {
                     {order.order_source || 'Manual'}
                   </Badge>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Payment Status</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <CreditCard className="w-4 h-4 text-muted-foreground" />
-                    <Badge
-                      variant={order.payment_status === 'paid' ? 'default' : 'secondary'}
-                      className={order.payment_status === 'paid' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}
-                    >
-                      {order.payment_status || 'pending'}
-                    </Badge>
-                  </div>
-                </div>
               </CardContent>
             </Card>
+
+            {/* Payment Status with Real-time Sync */}
+            <OrderPaymentStatusSync
+              orderId={order.id}
+              orderAmount={order.total_amount}
+              currentPaymentStatus={order.payment_status}
+              autoUpdateOrderStatus={true}
+              onPaymentStatusChange={() => {
+                queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+              }}
+            />
 
             {/* Customer Info */}
             <Card>
