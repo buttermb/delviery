@@ -4269,3 +4269,44 @@ Date: 2026-02-10
 - Applied Zod refinements for conditional validation (customer vs group selection, percentage max 100%)
 - Used TanStack Query for data fetching with proper tenant_id filtering
 - Exported utility functions allow easy integration with order creation flow
+
+---
+
+## Task 147: Create Supabase migration for customer_pricing table
+
+### Implemented:
+- Created `supabase/migrations/20260210120000_add_customer_pricing.sql`
+- Created both `customer_groups` and `customer_pricing` tables
+
+### customer_groups table:
+- id, tenant_id, name, description, is_active, timestamps
+- Unique constraint on (tenant_id, name) to prevent duplicate group names
+- Full RLS policies for tenant isolation (SELECT, INSERT, UPDATE, DELETE)
+
+### customer_pricing table:
+- All required columns: id, tenant_id, customer_id, customer_group_id, product_id
+- discount_type TEXT with CHECK constraint for 'percentage' or 'fixed'
+- discount_value DECIMAL(10,2) with positive value constraint
+- start_date and end_date DATE columns for promotional periods
+- is_active BOOLEAN default true
+
+### Constraints implemented:
+- `customer_pricing_target_check` - ensures exactly one of customer_id or customer_group_id is set (XOR)
+- `customer_pricing_percentage_max` - ensures percentage discounts don't exceed 100
+- `customer_pricing_date_range_check` - ensures end_date >= start_date when both are set
+- Unique indexes to prevent duplicate pricing rules for same customer/group + product combo
+
+### Indexes for performance:
+- tenant_id, customer_id, customer_group_id, product_id
+- Partial indexes for active rules and date range queries
+
+### Helper functions created:
+- `get_customer_product_pricing(tenant_id, customer_id, product_id, customer_group_id)` - returns applicable pricing rule, prioritizing customer-specific over group pricing
+- `calculate_effective_price(original_price, discount_type, discount_value)` - calculates final price
+
+### Key learnings:
+- Created customer_groups table as dependency for customer_pricing foreign key
+- Used CHECK constraints for business rule validation at database level
+- Partial unique indexes prevent duplicate pricing without blocking NULL values
+- SECURITY DEFINER functions for RLS bypass when calculating prices
+- XOR constraint pattern: `(a IS NOT NULL AND b IS NULL) OR (a IS NULL AND b IS NOT NULL)`

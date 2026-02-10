@@ -879,7 +879,7 @@
     "id": "task-147",
     "title": "Create Supabase migration for customer_pricing table",
     "description": "Create supabase/migrations/add_customer_pricing.sql. Columns — id uuid primary key, tenant_id uuid, customer_id uuid, customer_group_id uuid, product_id uuid, discount_type text (percentage/fixed), discount_value decimal, start_date date, end_date date, is_active boolean default true. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-148",
