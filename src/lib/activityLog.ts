@@ -41,6 +41,7 @@ export const EntityType = {
   SETTINGS: 'settings',
   REPORT: 'report',
   SUPPLIER: 'supplier',
+  VENDOR: 'vendor',
   PURCHASE_ORDER: 'purchase_order',
   RETURN: 'return',
   COUPON: 'coupon',

@@ -1017,7 +1017,7 @@
     "id": "task-170",
     "title": "Create vendor bulk import",
     "description": "Create src/components/admin/vendors/VendorImport.tsx — import multiple vendors from CSV. Fields — name, contact name, email, phone, address, license number. Duplicate detection by name and license. Preview with validation errors. Import results summary. Useful when onboarding multiple vendors at once.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-171",

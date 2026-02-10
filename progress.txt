@@ -4993,3 +4993,17 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
 - Full RLS policies: SELECT, INSERT, UPDATE, DELETE all filter by tenant_users
 - Added indexes for tenant_id, vendor_id, category, expiration_date, and full-text search
 - Added queryKeys.vendors.documents() and queryKeys.vendors.documentDetail() to lib/queryKeys.ts
+
+## task-170: Create vendor bulk import
+- Created src/components/admin/vendors/VendorImport.tsx
+- Implemented CSV/Excel file upload with xlsx library
+- Added column mapping for: name, contact_name, email, phone, address, license_number
+- Duplicate detection by vendor name and license number using TanStack Query
+- Preview step shows validation stats (valid/invalid/duplicates/new)
+- Duplicate handling strategy: skip or overwrite
+- Import with progress bar and results summary
+- Error report download for failed records
+- Activity logging via logActivity with new VENDOR EntityType
+- Added VENDOR to EntityType in src/lib/activityLog.ts
+- Followed existing patterns from CustomerImport and ProductBulkImport
+- Used useTenantAdminAuth for tenant context, filter by account_id
