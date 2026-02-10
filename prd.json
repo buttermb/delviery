@@ -783,7 +783,7 @@
     "id": "task-131",
     "title": "Create customer merge tool",
     "description": "Create src/components/admin/customers/CustomerMerge.tsx — merge duplicate customer records. Select primary record, merge secondary into it. Combines order history, payment history, notes, tags. Deduplicates addresses. Updates all order references to point to primary customer. Logs merge to activity_log. Shows preview before merge.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-132",

@@ -3659,3 +3659,66 @@ Implementation follows all project rules:
 - Uses .maybeSingle() for optional data
 - No 'any' type usage (used proper TypeScript types)
 - Loading and error states included
+
+---
+
+## Task 131: Create customer merge tool
+
+### Date: 2026-02-10
+
+### Summary
+Created src/components/admin/customers/CustomerMerge.tsx — a dialog component for merging duplicate customer records.
+
+### Features Implemented:
+1. **Customer Selection UI:**
+   - Select primary customer (record to keep) and secondary customer (record to merge and delete)
+   - Visual cards showing customer details with badges indicating which is primary vs secondary
+   - Search functionality with debounced typeahead for finding customers by name, email, or phone
+
+2. **Merge Preview:**
+   - Shows count of records that will be transferred: orders, payments, notes, tags, addresses
+   - Shows combined totals after merge (total spent, loyalty points)
+   - Warning banner indicating the action is irreversible
+
+3. **Merge Execution:**
+   - Updates all orders to point to primary customer
+   - Updates all customer_payments to point to primary customer
+   - Updates all customer_notes to point to primary customer
+   - Handles customer_tags - transfers unique tags, deletes duplicates
+   - Handles customer_delivery_addresses - deduplicates addresses by comparing address string
+   - Updates primary customer's total_spent and loyalty_points with combined values
+   - Deletes secondary customer record
+
+4. **Activity Logging:**
+   - Logs merge action to activity_log with 'merged' action type
+   - Records both customer IDs, names, merged data counts, and who performed the action
+
+5. **UI/UX:**
+   - Two-step flow: selection -> preview with back navigation
+   - Final confirmation alert dialog before executing merge
+   - Loading states during search and merge execution
+   - Error handling with toast notifications
+   - Query invalidation to refresh customer lists and details after merge
+
+### Technical Implementation:
+- Uses TanStack Query for customer search and preview data fetching
+- useMutation for the merge operation with proper error handling
+- Uses useActivityLog hook for activity logging
+- Parallel queries for counting records to merge (orders, payments, notes, tags, addresses)
+- Proper TypeScript types for Customer and MergePreviewData
+
+### Patterns Learned:
+- For deduplication during merge, use Sets to track existing items before transferring
+- Use head: true with count: 'exact' for efficient count queries
+- Log meaningful metadata in activity_log for audit trail
+- Always invalidate relevant queries after data mutations
+- Use AlertDialog for destructive action confirmation
+
+Implementation follows all project rules:
+- Uses logger from @/lib/logger
+- Uses @/ alias for all imports  
+- All queries filter by tenant_id
+- Uses useTenantAdminAuth() for tenant context
+- No 'any' type usage
+- Loading and error states included
+
