@@ -507,7 +507,7 @@
     "id": "task-085",
     "title": "Create product detail page with order history",
     "description": "On the product detail page, add a section showing recent orders containing this product. Display order number, date, quantity ordered, customer name as clickable links. Show total units sold this week/month/all-time. Paginated list with DataTable. Use queryKeys.orders.byProduct(tenantId, productId).",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-086",

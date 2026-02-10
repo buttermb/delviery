@@ -2406,3 +2406,20 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Props: orderId, maxHeight, showHeader, className
 - Exported types: OrderCommsProps, CommunicationEntry, CommType
 - Follows project patterns: useTenantAdminAuth, @/ alias imports, no console.log
+
+## task-085: Create product detail page with order history
+- Added queryKeys.orders.byProduct(tenantId, productId) to src/lib/queryKeys.ts
+- Created useProductOrders hook in src/hooks/useProduct.ts that fetches orders containing a product via unified_order_items table
+- Hook joins unified_order_items with unified_orders using Supabase select with nested joins
+- Filters orders by tenant_id to ensure multi-tenant isolation
+- Returns both orders list and stats (totalSoldWeek, totalSoldMonth, totalSoldAllTime)
+- Created src/components/admin/products/ProductOrderHistory.tsx component with:
+  - Three stat cards showing units sold this week/month/all-time
+  - DataTable with paginated orders list (order number, date, qty, customer, total, status)
+  - Clickable links: order number navigates to order detail, customer name to customer detail
+  - Status badges using getStatusVariant for semantic coloring
+  - Loading and error states properly handled
+- Added 'Orders' tab to ProductDetailsPage between Info and Variants tabs
+- Updated TabsList to 4-column grid to accommodate new tab
+- No console.log used — follows project conventions with logger if needed
+- All imports use @/ alias as required

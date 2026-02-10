@@ -55,6 +55,7 @@ export const queryKeys = {
     pipeline: (tenantId?: string) => [...queryKeys.orders.all, 'pipeline', tenantId] as const,
     statusHistory: (orderId: string) => [...queryKeys.orders.all, 'status-history', orderId] as const,
     live: (tenantId?: string) => [...queryKeys.orders.all, 'live', tenantId] as const,
+    byProduct: (tenantId: string, productId: string) => [...queryKeys.orders.byTenant(tenantId), 'product', productId] as const,
   },
 
   // Wholesale Orders

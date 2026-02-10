@@ -9,38 +9,35 @@
 import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useProduct, useProductInventoryHistory, useProductFrontedInventory } from '@/hooks/useProduct';
-import { useProductMutations } from '@/hooks/useProductMutations';
+import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHistory';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import Package from "lucide-react/dist/esm/icons/package";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Boxes from "lucide-react/dist/esm/icons/boxes";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
 import Beaker from "lucide-react/dist/esm/icons/beaker";
 import Tag from "lucide-react/dist/esm/icons/tag";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Clock from "lucide-react/dist/esm/icons/clock";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import { useState } from 'react';
 
 export default function ProductDetailsPage() {
     const { productId } = useParams<{ productId: string }>();
-    const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
-    const { tenant } = useTenantAdminAuth();
+    const { navigateToAdmin } = useTenantNavigation();
+    const { tenant: _tenant } = useTenantAdminAuth();
     const [activeTab, setActiveTab] = useState('info');
 
     const { data: product, isLoading, error } = useProduct({ productId });
@@ -230,10 +227,14 @@ export default function ProductDetailsPage() {
 
                 {/* Main Content Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+                    <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
                         <TabsTrigger value="info">
                             <FileText className="h-4 w-4 mr-2 hidden sm:block" />
                             Info
+                        </TabsTrigger>
+                        <TabsTrigger value="orders">
+                            <ShoppingCart className="h-4 w-4 mr-2 hidden sm:block" />
+                            Orders
                         </TabsTrigger>
                         <TabsTrigger value="variants">
                             <DollarSign className="h-4 w-4 mr-2 hidden sm:block" />
@@ -434,6 +435,11 @@ export default function ProductDetailsPage() {
                                 </CardContent>
                             </Card>
                         </div>
+                    </TabsContent>
+
+                    {/* Orders Tab */}
+                    <TabsContent value="orders" className="space-y-4">
+                        <ProductOrderHistory productId={productId} />
                     </TabsContent>
 
                     {/* Variants Tab (Pricing Tiers) */}
