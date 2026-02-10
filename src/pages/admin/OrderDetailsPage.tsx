@@ -20,6 +20,7 @@ import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { OrderRelatedEntitiesPanel } from '@/components/admin/orders/OrderRelatedEntitiesPanel';
 import { OrderPaymentStatusSync } from '@/components/admin/orders/OrderPaymentStatusSync';
 import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDeliveryStatusSync';
+import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -161,6 +162,10 @@ export function OrderDetailsPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
+
+  // Product quick view state
+  const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
+  const [quickViewProductName, setQuickViewProductName] = useState<string>('');
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -622,7 +627,16 @@ export function OrderDetailsPage() {
                       </TableRow>
                     ) : (
                       (order.order_items || []).map((item) => (
-                        <TableRow key={item.id}>
+                        <TableRow
+                          key={item.id}
+                          className={item.product_id ? 'cursor-pointer hover:bg-muted/50 transition-colors' : ''}
+                          onClick={() => {
+                            if (item.product_id) {
+                              setQuickViewProductId(item.product_id);
+                              setQuickViewProductName(item.product_name);
+                            }
+                          }}
+                        >
                           <TableCell className="pl-6">
                             <div className="flex items-center gap-3">
                               {item.image_url ? (
@@ -640,6 +654,9 @@ export function OrderDetailsPage() {
                                 <p className="font-medium">{item.product_name}</p>
                                 {item.variant && (
                                   <p className="text-xs text-muted-foreground">{item.variant}</p>
+                                )}
+                                {item.product_id && (
+                                  <p className="text-xs text-primary">Click to view details</p>
                                 )}
                               </div>
                             </div>
@@ -866,6 +883,17 @@ export function OrderDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Product Quick View Panel */}
+      <OrderProductQuickView
+        isOpen={!!quickViewProductId}
+        onClose={() => {
+          setQuickViewProductId(null);
+          setQuickViewProductName('');
+        }}
+        productId={quickViewProductId}
+        productName={quickViewProductName}
+      />
     </SwipeBackWrapper>
   );
 }

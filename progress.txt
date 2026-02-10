@@ -1788,3 +1788,21 @@
 - Integrated into `OrderDetailsPage.tsx` in the sidebar section after payment status
 - All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
 - Loading and error states with retry button included
+
+## task-060: Create order product quick view
+- Created `src/components/admin/orders/OrderProductQuickView.tsx` component
+- Component opens a `DetailPanel` slide-over when clicking a product in order items
+- Shows product details: image, description, current stock level, vendor, category
+- Includes price information: retail, wholesale, cost per unit
+- Displays cannabis-specific info: strain name, strain type, THC/CBD percentages
+- Shows price history if `product_price_history` table exists (graceful fallback)
+- Stock status badges: "In Stock", "Low Stock", "Out of Stock" based on quantity vs threshold
+- "View Full Page" action button navigates to full product page
+- Integrated into `OrderDetailsPage.tsx` by making order item rows clickable
+- Added "Click to view details" hint text for products with `product_id`
+- Uses `useTenantAdminAuth` for tenant context, filters by `tenant_id`
+- All imports use `@/` alias, no `console.log`, uses `logger` from `@/lib/logger`
+- TypeScript interfaces: ProductDetails, PriceHistoryEntry
+- Query keys: `queryKeys.products.detail(tenantId, productId)`
+- Loading states handled with DetailPanel's built-in loading prop
+- Error handling shows friendly message when product fetch fails

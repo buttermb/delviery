@@ -357,7 +357,7 @@
     "id": "task-060",
     "title": "Create order product quick view",
     "description": "In the order detail page, clicking a product in the order items list opens a DetailPanel showing product details — image, description, current stock, vendor, category, price history. The panel includes a link to the full product page. Useful for quickly checking product info without leaving the order context.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-061",
