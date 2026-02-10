@@ -993,7 +993,7 @@
     "id": "task-166",
     "title": "Create vendor payment terms tracking",
     "description": "Store payment terms per vendor — net 15/30/60, COD, prepaid. Auto-calculate payment due dates on POs. Show overdue payments on dashboard. Aging report for outstanding payables. Payment term compliance tracking. Alert when payment approaching due date. Connects vendor payments to financial management.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-167",

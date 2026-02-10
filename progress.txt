@@ -4850,3 +4850,46 @@ Created a complete vendor contact management system with the following component
 - Warning levels help prioritize which vendors need POs first
 - Sales velocity (units per day) enables accurate reorder quantity recommendations
 
+
+## Task 166: Create vendor payment terms tracking (2026-02-10)
+
+### Implementation:
+- Created migration `20260210100001_vendor_payment_terms.sql` with:
+  - `vendor_payment_terms` table storing payment terms per vendor (cod, prepaid, net_7/15/30/45/60/90, custom)
+  - Added `payment_due_date` column to purchase_orders
+  - RLS policies for tenant isolation
+  - Trigger to auto-set payment_due_date on new POs based on vendor terms
+  - `get_payment_term_days()` helper function
+
+- Created `src/hooks/useVendorPaymentTerms.ts` with:
+  - `useVendorPaymentTerms(vendorId)` hook for managing vendor payment terms
+  - `usePayablesAging(vendorId?)` hook for aging report by bucket
+  - `useUpcomingPayments(daysAhead)` hook for due-soon payments
+  - `useOverduePayments()` hook for overdue payments dashboard
+  - Helper functions: getPaymentTermDays, calculateDueDate, getDaysUntilDue, getDaysOverdue
+  - TypeScript types for all data structures
+
+- Created `src/components/admin/vendors/VendorPaymentTermsManager.tsx`:
+  - Display current payment terms with color-coded badge
+  - Days until due display with prepaid/COD handling
+  - Dialog to upsert payment terms with custom days support
+  - Notes field for additional payment term context
+
+- Created `src/components/admin/vendors/PayablesAgingReport.tsx`:
+  - Full aging report with buckets: Current, 1-30, 31-60, 61-90, 90+ days
+  - Collapsible bucket cards with progress bars
+  - Drill-down to individual POs within each bucket
+  - Overdue alert banner with total overdue amount
+  - Upcoming payments widget (next 7 days)
+  - Summary cards: Total Outstanding, Current, Overdue
+  - Vendor filter for scoped reports
+  - Compact widget variant for dashboard use
+
+### Learnings:
+- Payment terms are stored per-vendor with UNIQUE constraint on (tenant_id, vendor_id)
+- Purchase orders get payment_due_date auto-calculated via trigger on INSERT
+- Aging buckets computed client-side from POs with payment_status in ('unpaid', 'partial')
+- Days overdue calculated as: today - payment_due_date
+- Use .maybeSingle() for optional vendor terms lookup
+- Vendors table uses account_id as tenant identifier (not tenant_id)
+- Join syntax with vendors!inner needed for foreign key relation queries
