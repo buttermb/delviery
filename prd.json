@@ -525,7 +525,7 @@
     "id": "task-088",
     "title": "Create product detail page with menu appearances",
     "description": "On product detail page, show which menus/storefronts currently feature this product. List of active menus with links. Show pricing on each menu (may differ). Toggle to add/remove from menus directly. This connects product module to menu/storefront module bidirectionally.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-089",

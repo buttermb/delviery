@@ -12,6 +12,7 @@ import { useProduct, useProductInventoryHistory, useProductFrontedInventory } fr
 import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHistory';
 import { ProductInventoryChart } from '@/components/admin/products/ProductInventoryChart';
 import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard';
+import { ProductMenuAppearances } from '@/components/admin/products/ProductMenuAppearances';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -442,6 +443,12 @@ export default function ProductDetailsPage() {
                         <ProductVendorCard
                             productId={productId}
                             vendorName={product.vendor_name}
+                        />
+
+                        {/* Menu & Store Appearances Card */}
+                        <ProductMenuAppearances
+                            productId={productId}
+                            basePrice={product.retail_price}
                         />
                     </TabsContent>
 

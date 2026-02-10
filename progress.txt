@@ -2477,3 +2477,36 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Component follows project patterns: loading skeletons, error states, empty states
 - No console.log used — follows project conventions with logger from @/lib/logger
 - All imports use @/ alias as required
+
+## Task 088: Create product detail page with menu appearances
+
+**What was built:**
+- Created src/components/admin/products/ProductMenuAppearances.tsx component
+- Component displays which menus/storefronts feature the product including:
+  - Tabs for disposable menus and marketplace stores
+  - List of active menus with clickable links to menu detail page
+  - List of stores with clickable links to storefront page
+  - Custom pricing display per menu/store (shows "Custom" badge if differs from base)
+  - Expiration date for menus (shows "Expired" badge if past)
+  - Status badges (active/inactive, featured)
+  - Toggle visibility for storefront products
+  - Remove button to remove product from a menu
+  - "Add to Menu" dialog to add product to available menus
+- Integrated into ProductDetailsPage.tsx Info tab after ProductVendorCard
+
+**Key learnings:**
+- Products connect to menus via disposable_menu_products table (menu_id + product_id)
+- Products connect to stores via marketplace_product_settings table (store_id + product_id)
+- disposable_menu_products has custom_price field that can override product price
+- marketplace_product_settings has custom_price and is_visible fields
+- Menus have status enum (active/burned) and expiration_date with never_expires flag
+- marketplace_stores has is_active flag for store status
+- Used nested select queries with !inner join to get related menu/store data
+- Filter results by tenant_id to ensure multi-tenant isolation
+- Used useMutation hooks for add/remove operations with proper query invalidation
+- TanStack Query invalidates both product and menus query keys on mutations
+- date-fns isPast() checks if menu is expired
+- Component follows project patterns: loading skeletons, error states, empty states
+- Used showSuccessToast/showErrorToast for user feedback
+- No console.log used — follows project conventions with logger from @/lib/logger
+- All imports use @/ alias as required
