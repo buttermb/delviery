@@ -6116,3 +6116,22 @@ Technical notes:
 - Used useOnlineStatus hook for connection detection
 - Maps delivery status from orders table to delivery status types
 - Expandable delivery cards show full item list and instructions
+
+## task-208: Create delivery notification chain
+- Created src/hooks/useDeliveryNotifications.ts for automated delivery notifications
+- Follows useNotificationDispatcher and useOrderStatusNotification patterns
+- Listens to delivery_status_changed events from eventBus
+- Notification chain by status:
+  - assigned: Notifies runner with customer info and order number
+  - picked_up: Notifies customer "Your order is on its way!" + optional SMS
+  - nearby: Geo-proximity notification "Your delivery is almost there!" + optional SMS
+  - delivered: Notifies customer + admin of completion + optional SMS
+  - failed/cancelled: Notifies admin, cancelled also notifies customer
+- SMS notifications via existing send-sms Edge Function (Twilio)
+- checkNearbyAndNotify() calculates Haversine distance between runner and customer
+- nearbyThresholdMeters config (default 500m) for proximity triggering
+- Uses Set to prevent duplicate nearby notifications per delivery
+- Fetches delivery info from unified_orders with fallback to orders table
+- All queries filter by tenant_id for multi-tenant isolation
+- ESLint warning fixed by copying ref value for cleanup function
+- Publishes notification_sent event after each notification

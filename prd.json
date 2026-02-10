@@ -1245,7 +1245,7 @@
     "id": "task-208",
     "title": "Create delivery notification chain",
     "description": "Automated notification chain for deliveries. On assignment → notify runner. On pickup → notify customer \"Your order is on its way\". On nearby (geo-proximity) → notify customer \"Your delivery is almost there\". On delivered → notify customer and admin. All notifications via useNotificationDispatcher. SMS option for customer notifications.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-209",
