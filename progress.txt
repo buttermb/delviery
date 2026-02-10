@@ -925,3 +925,30 @@
 - All logging via `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias and follow import order: React → Third-party → Local imports
 - Lesson: When enhancing existing hooks, preserve backward compatibility while adding new features
+
+## task-034: Create shared confirmation dialog component
+- Created `src/components/admin/shared/ConfirmDialog.tsx` as a reusable confirmation modal
+- Built on shadcn/ui AlertDialog primitives for consistent design
+- Props implemented exactly as specified in task:
+  - `isOpen: boolean` — controls dialog visibility
+  - `onConfirm: () => void` — callback for confirm action
+  - `onCancel: () => void` — callback for cancel action or dismiss
+  - `title: string` — dialog header text
+  - `description: string` — dialog body text
+  - `confirmLabel?: string` — customize confirm button text (default: 'Confirm')
+  - `variant?: 'default' | 'destructive'` — button styling variant
+- Additional props added for enhanced usability:
+  - `cancelLabel?: string` — customize cancel button text (default: 'Cancel')
+  - `loading?: boolean` — shows loading state and disables buttons during async operations
+  - `className?: string` — custom styling for dialog content
+- Destructive variant applies `buttonVariants({ variant: 'destructive' })` for red button styling
+- Uses `cn()` utility from `@/lib/utils` for className merging
+- `onOpenChange` handler calls `onCancel` when dialog is dismissed via overlay click or escape key
+- Memoized `handleConfirm` callback prevents action during loading state
+- Loading state shows "Processing..." text instead of confirm label
+- Note: Existing `useConfirmDialog` hook at `src/hooks/useConfirmDialog.ts` provides state management
+  - Hook was NOT modified — only the component was created per task requirements
+  - Initially added hook to component file but moved out to avoid react-refresh/only-export-components warning
+- No console.log — pure UI component with no logging needed
+- No tenant_id filtering — pure presentational component
+- All imports use `@/` alias as required

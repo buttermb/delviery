@@ -201,7 +201,7 @@
     "id": "task-034",
     "title": "Create shared confirmation dialog component",
     "description": "Create src/components/admin/shared/ConfirmDialog.tsx — reusable confirmation modal using shadcn/ui AlertDialog. Props — isOpen, onConfirm, onCancel, title, description, confirmLabel, variant (default/destructive). Used for delete confirmations, status changes, bulk operations across all modules. Destructive variant shows red button.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-035",
