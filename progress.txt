@@ -5533,3 +5533,49 @@ Completed: Tue, Feb 10, 2026
 - eventBus for cross-module communication
 - Proper TypeScript types (no any)
 - Loading states handled in UI components
+
+## Task-187: Create storefront customer account link
+
+**Date:** 2026-02-10
+
+**What was implemented:**
+1. Created `useStorefrontCustomerProfile` hook (`src/hooks/useStorefrontCustomerProfile.ts`) that provides unified customer data access:
+   - Fetches customer profile from the unified `customers` table
+   - Retrieves browsing history from `customer_browsing_history` table
+   - Manages wishlist via `customer_wishlist` table
+   - Handles customer preferences via `customer_preferences` table
+   - Includes mutations for tracking product views, managing wishlist, and updating preferences
+   - All queries filter by `tenant_id` for multi-tenant security
+
+2. Created `CustomerProfileCard` component (`src/components/customer/CustomerProfileCard.tsx`):
+   - Displays unified customer profile information
+   - Shows loyalty tier with color-coded badges (bronze, silver, gold, platinum)
+   - Displays order count, total spent, loyalty points, and average order value
+   - Links to order history and wishlist
+   - Uses the existing storefront design system
+
+3. Created `CustomerPreferencesPanel` component (`src/components/customer/CustomerPreferencesPanel.tsx`):
+   - Tabbed interface for wishlist, browsing history, and preferences
+   - Wishlist tab shows saved products with add-to-cart and remove actions
+   - Browsing history tab shows recently viewed products
+   - Preferences tab allows managing notification settings
+
+4. Updated `CustomerDashboardPage` (`src/pages/customer/DashboardPage.tsx`):
+   - Integrated CustomerProfileCard and CustomerPreferencesPanel components
+   - Replaced the old quick stats section with the unified profile display
+
+**Key learnings:**
+- The storefront customer sync mechanism already existed via database triggers (`sync_marketplace_customer_to_customers`)
+- Customers table has `referral_source` column set to 'storefront' for customers synced from marketplace
+- The unified customers table is already linked to admin CRM via `marketplace_customer_id` foreign key
+- OrdersListPage already queries the shared `orders` table filtered by tenant_id and customer_id
+- Used proper import order: React → Third-party → Types → Components → Utils
+- All database queries properly filter by tenant_id for multi-tenant isolation
+
+**Files created:**
+- src/hooks/useStorefrontCustomerProfile.ts
+- src/components/customer/CustomerProfileCard.tsx
+- src/components/customer/CustomerPreferencesPanel.tsx
+
+**Files modified:**
+- src/pages/customer/DashboardPage.tsx

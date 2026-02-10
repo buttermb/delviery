@@ -1119,7 +1119,7 @@
     "id": "task-187",
     "title": "Create storefront customer account link",
     "description": "When a customer creates an account on storefront, record appears in admin customer list. Customer's storefront browsing history, wishlist, and preferences accessible from admin. Orders placed via storefront linked to customer profile. Customer can view their order history on storefront — pulls from same orders table. Unified customer record.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-188",
