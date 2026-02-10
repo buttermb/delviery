@@ -93,7 +93,7 @@
     "id": "task-016",
     "title": "Create shared loading skeleton components",
     "description": "Create src/components/admin/shared/LoadingSkeletons.tsx with reusable skeleton components — TableSkeleton(rows, cols), CardSkeleton, StatCardSkeleton, ListItemSkeleton, DetailPageSkeleton, FormSkeleton. Use shadcn/ui Skeleton component. All admin pages should use these for consistent loading states.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-017",

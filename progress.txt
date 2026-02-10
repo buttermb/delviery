@@ -344,3 +344,24 @@
 - No console.log — all logging via logger
 - Imports use `@/` alias as required
 - Exports both named function and default export for flexible importing
+
+## task-016: Create shared loading skeleton components
+- Created `src/components/admin/shared/LoadingSkeletons.tsx` with reusable skeleton components
+- Components implemented exactly as specified in task:
+  - `TableSkeleton(rows, cols)` — loading table with configurable row/column count
+  - `CardSkeleton` — loading card with optional image and footer support
+  - `StatCardSkeleton` — dashboard stat card loading state (matches AdminPageSkeleton pattern)
+  - `ListItemSkeleton` — loading list item with optional avatar and action button
+  - `DetailPageSkeleton` — full page loading skeleton with header, stats, main content, and sidebar
+  - `FormSkeleton` — loading form with configurable field count and button section
+- Added bonus `GridSkeleton` component for loading grids of cards (2/3/4 columns)
+- All components use shadcn/ui `Skeleton` from `@/components/ui/skeleton`
+- Also use `Card`, `CardContent`, `CardHeader` from `@/components/ui/card` for structure
+- Use `cn()` utility from `@/lib/utils` for className merging
+- All components accept `className` prop for customization
+- Proper accessibility with `role="status"` and `aria-label` on all components
+- Created `src/components/admin/shared/` directory (first file in this shared location)
+- Followed existing patterns from `AdminPageSkeleton.tsx` and `skeleton.tsx` for consistency
+- No console.log — no logging needed in pure UI components
+- No tenant_id filtering needed — these are pure UI components with no data fetching
+- All imports use `@/` alias as required
