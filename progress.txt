@@ -3178,3 +3178,29 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - All database queries filter by tenant_id for multi-tenant isolation
 - Uses logger from @/lib/logger (no console.log statements)
 - TypeScript strict mode compliant with proper typing throughout
+
+## task-116: Create product storefront preview
+- Created ProductStorefrontPreview.tsx component in src/components/admin/products/
+- Added "Preview on Storefront" button to ProductDetailsPage header (next to Edit/Archive buttons)
+- Opens a dialog showing exactly how the product appears on storefronts and active menus
+- Features:
+  - Store selector dropdown to switch between active storefronts
+  - Toggle between Card View and Detail View preview modes
+  - Shows product as customers see it with dark luxury theme styling
+  - Displays custom pricing when set on storefront/menu
+  - Shows visibility status (visible/hidden) and featured badges
+  - Lists all active menus featuring this product
+  - "Open Live" button to open actual storefront in new tab
+  - Product data summary showing display price, stock, category, visibility
+- Uses useProductStorefrontData hook to fetch:
+  - marketplace_product_settings with marketplace_stores for store appearances
+  - disposable_menu_products with disposable_menus for menu appearances
+- Preview components:
+  - StorefrontProductCard: Mimics storefront product card with image, pricing, THC/CBD, badges
+  - StorefrontProductDetail: Mimics product detail page layout with full specs
+  - VisibilityStatus: Shows visible/hidden status with check/x icons
+- All queries filter by tenant_id for multi-tenant isolation
+- Uses logger from @/lib/logger (no console.log statements)
+- All imports use @/ alias, proper import order maintained
+- Loading and error states included throughout
+- TypeScript strict mode compliant

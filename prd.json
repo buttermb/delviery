@@ -693,7 +693,7 @@
     "id": "task-116",
     "title": "Create product storefront preview",
     "description": "On product detail page, add a \"Preview on Storefront\" button. Opens a preview panel or new tab showing exactly how this product appears on the storefront and any active menus. Shows all product data as customer sees it. Useful for verifying product listings without visiting the actual storefront. Connects product to storefront module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-117",

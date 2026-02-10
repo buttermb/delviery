@@ -19,6 +19,7 @@ import { ProductImageGallery } from '@/components/admin/products/ProductImageGal
 import { ProductPriceHistoryChart } from '@/components/admin/products/ProductPriceHistoryChart';
 import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDisplay';
 import { ProductPerformanceCard } from '@/components/admin/products/ProductPerformanceCard';
+import { ProductStorefrontPreview } from '@/components/admin/products/ProductStorefrontPreview';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useProductArchive } from '@/hooks/useProductArchive';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
@@ -165,6 +166,7 @@ export default function ProductDetailsPage() {
                         </div>
                     </div>
                     <div className="flex gap-2">
+                        <ProductStorefrontPreview product={product} />
                         <Button
                             variant="outline"
                             onClick={() => navigateToAdmin(`inventory-hub?tab=products&edit=${product.id}`)}
