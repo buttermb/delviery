@@ -26,6 +26,10 @@ export { useAuthGuard } from './useAuthGuard';
 // Realtime Hooks
 export { useRealtimeSubscription } from './useRealtimeSubscription';
 
+// Sync Status Hooks
+export { useSyncStatus } from './useSyncStatus';
+export type { SyncStatus, UseSyncStatusReturn } from './useSyncStatus';
+
 // Toast Hook
 export { useToast, toast } from './use-toast';
 

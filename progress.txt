@@ -427,3 +427,32 @@
 - No tenant_id filtering — pure presentational component
 - All imports use `@/` alias as required
 - TypeScript types properly imported from entityTypes constants
+
+## task-019: Create useSyncStatus hook
+- Created `src/hooks/useSyncStatus.ts` to track sync status between modules
+- Hook returns `syncStatus` object with:
+  - `lastSynced: string | null` — ISO timestamp of last successful sync
+  - `isSyncing: boolean` — whether a sync operation is currently in progress
+  - `syncError: string | null` — current error message if any
+  - `currentModule: SyncModule | null` — module currently being synced
+- Returns `triggerSync(module)` function to initiate sync for a specific module
+- Also returns `clearError()` to reset error state and `isRecentlySynced(thresholdMs)` to check if sync is fresh
+- Added sync-related events to `@/lib/eventBus`:
+  - `sync_started: { tenantId, module }` — published when sync begins
+  - `sync_completed: { tenantId, module, syncedAt }` — published when sync succeeds
+  - `sync_error: { tenantId, module, error }` — published when sync fails
+- Added `SyncModule` type: 'orders' | 'products' | 'inventory' | 'customers' | 'storefront' | 'all'
+- Added `SYNC_LAST_SYNCED` storage key to `@/constants/storageKeys` for localStorage persistence
+- Persistence:
+  - Stores last sync time and module in localStorage via `safeStorage` wrapper
+  - Initializes state from localStorage on mount for persistence across page reloads
+  - Uses `safeJsonParse` and `safeJsonStringify` for error-safe JSON handling
+- Event handling:
+  - Subscribes to `sync_started`, `sync_completed`, `sync_error` events via `eventBus.subscribe`
+  - Filters events by `tenantId` to only handle events for current tenant
+  - Auto-unsubscribes on unmount via useEffect cleanup returning unsubscribe function
+- Uses `useTenantAdminAuth` from `@/contexts/TenantAdminAuthContext` for tenant context
+- All functions memoized with `useCallback`, return object memoized with `useMemo`
+- Debug/info/error logging via `logger` from `@/lib/logger` — no console.log
+- Exported hook via hooks barrel file (`src/hooks/index.ts`)
+- All imports use `@/` alias as required

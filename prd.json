@@ -111,7 +111,7 @@
     "id": "task-019",
     "title": "Create useSyncStatus hook",
     "description": "Create src/hooks/useSyncStatus.ts — tracks sync status between modules. Returns syncStatus object with lastSynced timestamp, isSyncing boolean, syncError string or null, and triggerSync function. Listens to eventBus for sync events. Stores last sync time in localStorage via STORAGE_KEYS. Shows sync indicator in admin header.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-020",

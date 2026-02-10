@@ -5,6 +5,9 @@
 
 import { logger } from '@/lib/logger';
 
+// Sync module types
+export type SyncModule = 'orders' | 'products' | 'inventory' | 'customers' | 'storefront' | 'all';
+
 // Event payload types for type-safe event handling
 export interface EventPayloads {
   order_created: { orderId: string; tenantId: string; customerId?: string };
@@ -15,6 +18,10 @@ export interface EventPayloads {
   storefront_synced: { tenantId: string; storefrontId: string; syncedAt: string };
   menu_published: { menuId: string; tenantId: string; publishedAt: string };
   notification_sent: { notificationId: string; tenantId: string; userId?: string; type: string };
+  // Sync events for cross-module synchronization
+  sync_started: { tenantId: string; module: SyncModule };
+  sync_completed: { tenantId: string; module: SyncModule; syncedAt: string };
+  sync_error: { tenantId: string; module: SyncModule; error: string };
 }
 
 // Event names derived from payload types
