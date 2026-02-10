@@ -291,7 +291,7 @@
     "id": "task-049",
     "title": "Create useModuleHealth hook",
     "description": "Create src/hooks/useModuleHealth.ts — checks health/connectivity of each module. Returns status object with each module name and its status (healthy/degraded/error). Checks can products be fetched, can orders be created, can customers be queried, etc. Shows in admin header as subtle status indicator. Helps debug interconnectivity issues.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-050",

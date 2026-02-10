@@ -1479,3 +1479,25 @@
 - Import order: React → Third-party (lucide-react) → Components → Utils
 - All callbacks memoized with `useCallback`, computed values with `useMemo`
 - No console.log — follows project logging standards
+
+## task-049: Create useModuleHealth hook
+- Created `src/hooks/useModuleHealth.ts` to check health/connectivity of each module
+- Returns status object with module name and status (healthy/degraded/error)
+- Checks 6 core modules: products, orders, customers, inventory, deliveries, menus
+- Each module health check performs a lightweight query (limit 1) filtered by tenant_id
+- Status calculation:
+  - `healthy`: Query succeeds with latency < 2000ms
+  - `degraded`: Query succeeds but latency > 2000ms, or table not initialized
+  - `error`: Query fails with error
+- Overall status: error if any module has error, degraded if any degraded, otherwise healthy
+- Uses TanStack Query with:
+  - 1 minute staleTime to avoid excessive checking
+  - 5 minute refetchInterval for background monitoring
+  - refetchOnWindowFocus disabled to prevent spamming
+- Exported types: ModuleStatus, ModuleHealthCheck, ModuleHealthSummary
+- `checkModule(moduleName)` function for on-demand individual module checks
+- Summary includes healthyCount, degradedCount, errorCount, totalModules
+- Added moduleHealth query keys to queryKeys.ts
+- Used `useTenantAdminAuth()` for tenant context
+- All logging via `logger` from `@/lib/logger` — no console.log
+- TypeScript: Used `unknown` with explicit type casting for Supabase queries to handle dynamic tables

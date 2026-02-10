@@ -920,6 +920,15 @@ export const queryKeys = {
       [...queryKeys.storefrontDeals.all, dealId] as const,
   },
 
+  // Module Health
+  moduleHealth: {
+    all: ['module-health'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.moduleHealth.all, tenantId] as const,
+    byModule: (tenantId: string, moduleName: string) =>
+      [...queryKeys.moduleHealth.byTenant(tenantId), moduleName] as const,
+  },
+
   // Activity Log
   activity: {
     all: ['activity'] as const,
