@@ -4673,3 +4673,51 @@ Created a complete vendor contact management system with the following component
 - Quick action handlers should log interactions silently (catch errors quietly)
 - Contact history shows most recent interactions with timestamps
 - Form defaultValues should auto-set is_primary=true when adding first contact
+
+## Task 161: Create vendor compliance tracking
+
+### What was implemented:
+- Created `src/hooks/useVendorCompliance.ts` hook with:
+  - `useVendorCompliance(vendorId)` - manages compliance records with CRUD operations
+  - `useVendorComplianceDocuments(complianceId)` - manages compliance document uploads
+  - `useVendorComplianceAudit(complianceId)` - fetches audit trail for compliance changes
+  - Helper functions: `getComplianceStatus()`, `getDaysUntilExpiration()`
+  - Type exports: `VendorCompliance`, `ComplianceDocument`, `ComplianceAuditEntry`, `LicenseType`, `ComplianceStatus`
+  - Constants: `LICENSE_TYPE_OPTIONS`, `COMMON_PRODUCT_CATEGORIES`, `WARNING_DAYS_THRESHOLD`
+
+- Created `src/components/admin/vendors/VendorComplianceTracking.tsx` component with:
+  - License management (add/edit/delete license records)
+  - License type selection (cultivator, processor, distributor, retailer, etc.)
+  - License expiration tracking with visual warnings
+  - Jurisdiction/state tracking
+  - Approved product categories checkboxes
+  - Warning banner for expired/expiring licenses (red for expired, yellow for warning)
+  - Block PO creation indicator for expired licenses (via `onComplianceStatusChange` callback)
+  - Audit trail dialog showing history of compliance changes
+  - Accordion layout for multiple license records per vendor
+  - `ComplianceStatusBadge` sub-component for visual status display
+
+- Added "Compliance" tab to VendorDetailPage with Shield icon
+
+- Added query keys to `src/lib/queryKeys.ts`:
+  - `vendors.compliance(tenantId, vendorId)`
+  - `vendors.complianceDocuments(tenantId, complianceId)`
+  - `vendors.complianceAudit(tenantId, complianceId)`
+
+### Technical details:
+- All queries filter by tenant_id for multi-tenant isolation
+- Uses logger from @/lib/logger (no console.log)
+- All imports use @/ alias
+- Uses useTenantAdminAuth for tenant context
+- Proper TypeScript types exported from hook
+- Uses TanStack Query for data fetching with proper cache invalidation
+- Audit trail automatically logs changes when creating/updating compliance records
+- Compliance status calculated from license expiration (30-day warning threshold)
+
+### Learnings:
+- Compliance status is derived from is_active flag and license_expiration date
+- Warning threshold of 30 days works well for license renewal reminders
+- Audit trail should capture both old and new values for meaningful change history
+- Parent components can receive compliance status via callback for PO creation blocking
+- Accordion pattern works well for managing multiple license records per vendor
+- date-fns formatDistanceToNow provides user-friendly expiration countdown

@@ -18,6 +18,7 @@ import {
   FileText,
   DollarSign,
   Users,
+  Shield,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +30,7 @@ import { VendorProductCatalog } from '@/components/admin/vendors/VendorProductCa
 import { VendorOrderHistory } from '@/components/admin/vendors/VendorOrderHistory';
 import { VendorPaymentTracking } from '@/components/admin/vendors/VendorPaymentTracking';
 import { VendorContactsManager } from '@/components/admin/vendors/VendorContactsManager';
+import { VendorComplianceTracking } from '@/components/admin/vendors/VendorComplianceTracking';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -257,7 +259,7 @@ export default function VendorDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Tabs for Products, Order History, Contacts, and Payments */}
+        {/* Tabs for Products, Order History, Contacts, Compliance, and Payments */}
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
@@ -265,6 +267,10 @@ export default function VendorDetailPage() {
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Contacts
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Compliance
             </TabsTrigger>
             <TabsTrigger value="payments" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
@@ -282,6 +288,10 @@ export default function VendorDetailPage() {
 
           <TabsContent value="contacts">
             <VendorContactsManager vendorId={vendor.id} vendorName={vendor.name} />
+          </TabsContent>
+
+          <TabsContent value="compliance">
+            <VendorComplianceTracking vendorId={vendor.id} vendorName={vendor.name} />
           </TabsContent>
 
           <TabsContent value="payments">

@@ -846,6 +846,12 @@ export const queryKeys = {
       [...queryKeys.vendors.detail(tenantId, vendorId), 'contacts'] as const,
     contactHistory: (tenantId: string, contactId: string) =>
       [...queryKeys.vendors.all, 'contact-history', tenantId, contactId] as const,
+    compliance: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'compliance'] as const,
+    complianceDocuments: (tenantId: string, complianceId: string) =>
+      [...queryKeys.vendors.all, 'compliance-documents', tenantId, complianceId] as const,
+    complianceAudit: (tenantId: string, complianceId: string) =>
+      [...queryKeys.vendors.all, 'compliance-audit', tenantId, complianceId] as const,
   },
 
   // Storefront

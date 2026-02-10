@@ -963,7 +963,7 @@
     "id": "task-161",
     "title": "Create vendor compliance tracking",
     "description": "For cannabis vendors, track compliance — license number, license expiration, license type, approved product categories, state/jurisdiction. Red warning when license approaching expiration. Block PO creation for expired licenses. Link to compliance module. Required compliance docs upload. Audit trail for compliance changes.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-162",
