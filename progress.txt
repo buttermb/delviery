@@ -5929,3 +5929,53 @@ Lessons Learned:
 - tenant_settings table stores SEO config with seo_* prefixed columns
 - Products table has seo_title and seo_description columns for overrides
 - Sitemap generation done client-side with blob download approach
+
+## task-202: Create delivery management dashboard
+- Created `src/pages/admin/DeliveryDashboard.tsx` — comprehensive delivery overview page
+- Key Stats implemented (6 cards):
+  - Active Deliveries (pending + confirmed + out_for_delivery)
+  - Completed Today (delivered orders created today)
+  - Average Delivery Time (difference between scheduled and completed times)
+  - On-Time Rate (percentage delivered within 30 minutes of scheduled)
+  - Pending Assignments (orders without courier_id)
+  - In Transit (orders with status out_for_delivery)
+
+- Map Integration:
+  - Reused existing LeafletMapWidget component
+  - Displays active delivery locations (red markers)
+  - Displays available runner locations (blue markers)
+  - Uses delivery_lat/delivery_lng from orders table
+
+- Runner Status List:
+  - Fetches runners via useAvailableRunners hook
+  - Calculates active deliveries per runner from orders with courier_id
+  - Displays status badges (available/busy/offline)
+  - Shows vehicle type and phone
+
+- Pending Assignments Queue:
+  - Lists orders with status pending/confirmed and no courier_id
+  - Quick assign button opens AssignRunnerDialog
+  - Shows order number, address, amount, scheduled time
+
+- Delivery Timeline:
+  - Shows today's order activity chronologically
+  - Visual timeline with status-colored circles (green=delivered, purple=in_transit, amber=pending)
+  - Displays order number, status, customer name, timestamp
+
+Technical Patterns:
+- Used useTenantAdminAuth() for tenant context throughout
+- All Supabase queries filter by tenant_id
+- TanStack Query with queryKeys.deliveries.list() for proper caching
+- Refetch interval of 60 seconds for near-realtime updates
+- Loading states with Skeleton components
+- Empty states with descriptive icons and messages
+- Reused AssignRunnerDialog for quick assignment workflow
+- useMemo for computed values (stats, runners, mapLocations, pendingQueue, timeline)
+
+Lessons Learned:
+- LeafletMapWidget already handles marker creation and map bounds
+- useAvailableRunners hook exists with onlyAvailable option for filtering
+- AssignRunnerDialog takes orderId/orderNumber props (not deliveryAddress)
+- Orders table has delivery_lat/delivery_lng for geocoded addresses
+- date-fns isToday and differenceInMinutes for time calculations
+- Pattern: refetch on dialog close for data freshness

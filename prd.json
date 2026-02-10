@@ -1209,7 +1209,7 @@
     "id": "task-202",
     "title": "Create delivery management dashboard",
     "description": "Create src/pages/admin/DeliveryDashboard.tsx — overview of all deliveries. Stats — active deliveries, completed today, average delivery time, on-time rate. Map showing active delivery locations. Runner status list. Pending assignments queue. Delivery timeline for today. Quick assign action. Uses multiple interconnected queries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-203",
