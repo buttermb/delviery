@@ -5468,3 +5468,19 @@ Completed: Tue, Feb 10, 2026 11:32:43 AM
 - TanStack Query for data management
 - Proper loading and error states
 
+
+## task-185: Create storefront to admin order real-time sync
+- Enhanced `src/hooks/useAdminOrdersRealtime.ts` to subscribe to all order source tables
+- Added subscription to `storefront_orders` table (previously only `marketplace_orders` was covered)
+- Now subscribes to 4 order tables for comprehensive realtime coverage:
+  1. `orders` - Regular orders with order_source tracking
+  2. `unified_orders` - POS transactions (filtered by order_type === 'pos')
+  3. `storefront_orders` - Direct storefront orders (tenant_id filtered)
+  4. `marketplace_orders` - Marketplace store orders (store_id filtered)
+- Each new order triggers: highlight animation (10s), notification sound, browser notification, toast
+- Toast notification shows source label: "New Storefront order #XXX" with customer name and amount
+- Query invalidation fires for orders, dashboard, activity feed, and storefront-specific queries
+- Cross-panel invalidation via `invalidateOnEvent('STOREFRONT_ORDER', tenantId)`
+- New orders slide in at top with `animate-new-order-highlight` CSS animation class
+- All subscriptions properly cleaned up on unmount via channelsRef cleanup
+- Updated JSDoc header to document all subscribed tables and features

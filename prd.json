@@ -1107,7 +1107,7 @@
     "id": "task-185",
     "title": "Create storefront to admin order real-time sync",
     "description": "Verify and enhance that orders placed through the main storefront appear instantly in admin. Use Supabase realtime subscriptions. Order includes source=storefront. Admin order list auto-refreshes when new storefront order arrives. If admin has order list open, new order slides in at top with highlight animation. Toast notification.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-186",

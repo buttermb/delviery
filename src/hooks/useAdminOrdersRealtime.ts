@@ -1,7 +1,17 @@
 /**
  * Real-time admin orders hook
- * Subscribes to both regular orders and marketplace (storefront) orders
- * to show all orders instantly in the admin panel with source tracking.
+ * Subscribes to multiple order tables for instant admin panel updates:
+ * - orders: Regular orders with order_source tracking
+ * - unified_orders: POS transactions
+ * - storefront_orders: Direct storefront orders (tenant-filtered)
+ * - marketplace_orders: Marketplace store orders
+ *
+ * Features:
+ * - Highlight animation for new orders (10 second duration)
+ * - Browser notifications with Web API
+ * - Notification sound + haptic vibration
+ * - Cross-panel query invalidation
+ * - Toast notifications with source labels
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -200,7 +210,42 @@ export function useAdminOrdersRealtime({
 
       channelsRef.current.push(unifiedOrdersChannel);
 
-      // 2. Fetch stores for this tenant and subscribe to marketplace_orders
+      // 3. Subscribe to storefront_orders table for direct storefront orders
+      const storefrontOrdersChannel = supabase
+        .channel(`admin-storefront-orders-direct-${tenant.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'storefront_orders',
+            filter: `tenant_id=eq.${tenant.id}`,
+          },
+          (payload) => {
+            const order = payload.new as Record<string, unknown>;
+            handleNewOrder({
+              id: order.id as string,
+              orderNumber: (order.order_number as string) || (order.id as string).slice(0, 8),
+              source: 'storefront',
+              customerName: (order.customer_name as string) || (order.customer_email as string) || 'Storefront Customer',
+              totalAmount: (order.total as number) || (order.total_amount as number) || 0,
+              timestamp: (order.created_at as string) || new Date().toISOString(),
+            });
+
+            // Invalidate storefront-specific queries
+            queryClient.invalidateQueries({ queryKey: queryKeys.storefront.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            logger.debug('Storefront orders (direct) realtime subscription active', { component: 'useAdminOrdersRealtime' });
+          }
+        });
+
+      channelsRef.current.push(storefrontOrdersChannel);
+
+      // 4. Fetch stores for this tenant and subscribe to marketplace_orders
       const { data: stores } = await supabase
         .from('marketplace_stores')
         .select('id, store_name')
