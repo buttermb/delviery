@@ -855,7 +855,7 @@
     "id": "task-143",
     "title": "Create customer group/organization support",
     "description": "Create organization/group concept. Multiple customers can belong to one organization. Organization has its own profile — name, address, billing info. Orders can be placed under organization. Group pricing rules. Organization-level LTV and analytics. Useful for B2B cannabis wholesale relationships.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-144",

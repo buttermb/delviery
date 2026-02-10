@@ -4074,3 +4074,55 @@ Created a comprehensive customer flag/block system with:
 - Loading and error states in all components
 - TanStack Query for data fetching with proper query key invalidation
 - Toast notifications for user feedback
+
+## Task 143: Create customer group/organization support
+Date: 2026-02-10
+
+### What was implemented:
+- Created `src/types/organization.ts` with comprehensive TypeScript types for organizations:
+  - Organization, OrganizationWithStats, OrganizationMember types
+  - OrganizationStatus, OrganizationType, OrganizationMemberRole enums
+  - Form values types for create/edit operations
+  - Filter and sort options for list queries
+
+- Created `src/hooks/useOrganizations.ts` with:
+  - useOrganizations hook for listing organizations with filtering
+  - useOrganizationDetail hook for single organization with members
+  - useOrganizationSearch hook for search autocomplete
+  - useCustomerOrganizations hook for customer-specific organization lookups
+  - Full CRUD operations for organizations
+  - Member management (add, remove, update members)
+  - Organization-level stats calculation (LTV, order count, avg order value)
+
+- Created `src/components/admin/customers/OrganizationList.tsx`:
+  - Table view of all organizations with stats
+  - Search and filter by status/type
+  - Quick actions menu (view, edit, status change, delete)
+  - Delete confirmation dialog
+
+- Created `src/components/admin/customers/OrganizationForm.tsx`:
+  - Multi-tab form dialog (Basic Info, Contact, Billing, Pricing)
+  - React Hook Form with Zod validation
+  - Support for create and edit modes
+  - License info for cannabis compliance
+  - Group discount configuration
+
+- Created `src/components/admin/customers/OrganizationDetail.tsx`:
+  - Detailed organization view with stats cards
+  - Member management table with role badges
+  - Add member dialog with SmartClientPicker
+  - Permission toggles for members
+  - Contact, license, and pricing info panels
+
+- Created `src/pages/admin/CustomerOrganizationsPage.tsx`:
+  - Main admin page for organization management
+  - Toggles between list and detail views
+  - Integrates all components
+
+### Key learnings:
+- Used useMemo for organization list with stats to avoid recalculation
+- Followed existing hook patterns from useCustomerFlags for consistency
+- Used SmartClientPicker for customer selection in member add flow
+- Calculated LTV and order stats by querying unified_orders with organization_id
+- All queries properly filter by tenant_id for multi-tenant isolation
+- Used logger from @/lib/logger instead of console.log throughout
