@@ -4198,3 +4198,42 @@ Date: 2026-02-10
 - Followed existing hook patterns from useOrganizations and useCustomerFlags
 - All queries filter by tenant_id for multi-tenant isolation
 - Used logger from @/lib/logger instead of console.log
+
+## Task 145: Create Supabase migration for loyalty_points table
+
+### What was implemented:
+- Created `supabase/migrations/20260210000001_add_loyalty_points.sql`
+- Replaced the old user-based `loyalty_points` table with a tenant-aware transaction log table
+- New table schema:
+  - id (uuid primary key)
+  - tenant_id (uuid not null, references tenants)
+  - customer_id (uuid not null)
+  - points (integer not null - positive for earn, negative for redeem)
+  - type (text with check constraint: earned/redeemed/adjusted/expired/bonus)
+  - reference_type (text - e.g., 'order', 'referral')
+  - reference_id (uuid - links to related entity)
+  - balance_after (integer - running balance after transaction)
+  - description (text - human-readable description)
+  - created_at (timestamptz)
+  - created_by (uuid - for audit trail)
+
+### Additional implementations:
+- Created `loyalty_config` table for tenant-specific loyalty program settings
+  - Includes tier thresholds (bronze/silver/gold/platinum)
+  - Tier multipliers for point earning
+  - Points per dollar and redemption ratio
+  - Expiration settings
+- Added comprehensive indexes for query performance:
+  - tenant_id, customer_id, created_at DESC, type, reference lookups
+- Implemented RLS policies using tenant_users table for tenant isolation
+- Created helper functions:
+  - get_customer_loyalty_balance() - calculates current point balance
+  - get_customer_lifetime_points() - calculates lifetime earned points
+
+### Key learnings:
+- The old loyalty_points table was user-based (auth.users), not tenant/customer-based
+- New table is a transaction log pattern where balance is calculated from SUM(points)
+- This design supports full audit trail and point expiration logic
+- RLS policies use subquery pattern: tenant_id IN (SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid())
+- Added bonus type to support signup bonuses, referral bonuses, birthday bonuses
+- SECURITY DEFINER functions with SET search_path = public for helper functions

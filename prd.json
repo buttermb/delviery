@@ -867,7 +867,7 @@
     "id": "task-145",
     "title": "Create Supabase migration for loyalty_points table",
     "description": "Create supabase/migrations/add_loyalty_points.sql. Columns — id uuid primary key, tenant_id uuid not null, customer_id uuid not null, points integer not null, type text (earned/redeemed/adjusted/expired), reference_type text, reference_id uuid, balance_after integer, created_at timestamptz. RLS by tenant_id. Index customer_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-146",
