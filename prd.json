@@ -1125,7 +1125,7 @@
     "id": "task-188",
     "title": "Create storefront cart abandonment tracking",
     "description": "Track carts that don't complete checkout. Store abandoned cart data — products, quantities, customer (if identified), timestamp, menu/storefront source. Show abandoned carts in admin dashboard. Auto-generate follow-up suggestion for identified customers. Calculate abandonment rate by menu. Connect to customer re-engagement module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-189",

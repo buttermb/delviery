@@ -1055,4 +1055,25 @@ export const queryKeys = {
     search: (customerId: string, query: string, tenantId?: string) =>
       [...queryKeys.customerNotes.all, 'search', customerId, query, tenantId] as const,
   },
+
+  // Abandoned Carts
+  abandonedCarts: {
+    all: ['abandoned-carts'] as const,
+    lists: () => [...queryKeys.abandonedCarts.all, 'list'] as const,
+    list: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.abandonedCarts.lists(), { tenantId, ...filters }] as const,
+    details: () => [...queryKeys.abandonedCarts.all, 'detail'] as const,
+    detail: (tenantId: string, cartId: string) =>
+      [...queryKeys.abandonedCarts.details(), tenantId, cartId] as const,
+    byTenant: (tenantId: string) =>
+      [...queryKeys.abandonedCarts.all, 'tenant', tenantId] as const,
+    byCustomer: (tenantId: string, customerId: string) =>
+      [...queryKeys.abandonedCarts.byTenant(tenantId), 'customer', customerId] as const,
+    byMenu: (tenantId: string, menuId: string) =>
+      [...queryKeys.abandonedCarts.byTenant(tenantId), 'menu', menuId] as const,
+    stats: (tenantId?: string) =>
+      [...queryKeys.abandonedCarts.all, 'stats', tenantId] as const,
+    abandonmentRate: (tenantId?: string, menuId?: string) =>
+      [...queryKeys.abandonedCarts.all, 'abandonment-rate', tenantId, menuId] as const,
+  },
 } as const;

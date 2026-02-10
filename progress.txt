@@ -5579,3 +5579,19 @@ Completed: Tue, Feb 10, 2026
 
 **Files modified:**
 - src/pages/customer/DashboardPage.tsx
+
+## task-188: Create storefront cart abandonment tracking
+- Created `src/hooks/useAbandonedCarts.ts` — hook for tracking and managing abandoned carts
+- Exports `useAbandonedCarts` hook with TanStack Query for fetching, stats, and mutations
+- Exports `useAbandonmentRate` hook to calculate abandonment rate per menu
+- Features: real-time Supabase subscription for live updates, cart recovery tracking
+- Mutations: markAsRecovered, recordAbandonedCart, deleteAbandonedCart
+- Stats include: total abandoned, total value, recovered count, recovery rate, avg cart value
+- Added `abandonedCarts` query keys to `src/lib/queryKeys.ts` following existing pattern
+- Created `src/components/admin/dashboard/AbandonedCartsWidget.tsx` for dashboard display
+- Widget shows stats summary, recent abandoned carts list with customer info and values
+- Includes `getFollowUpSuggestions` helper to auto-generate recovery suggestions
+- All queries filter by tenant_id, uses useTenantAdminAuth for context
+- Loading states use Skeleton components, error state handled with logger.error
+- No console.log used — all logging via `@/lib/logger`
+- All imports use `@/` alias, proper import order followed
