@@ -30,6 +30,7 @@ import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoic
 import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOrderHistoryTab';
 import { CustomerPaymentHistoryTab } from '@/components/admin/customers/CustomerPaymentHistoryTab';
 import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/CustomerDeliveryAddressesTab';
+import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
 
 interface Customer {
   id: string;
@@ -331,6 +332,7 @@ export default function CustomerDetails() {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="addresses">Addresses</TabsTrigger>
               <TabsTrigger value="orders">Purchase History</TabsTrigger>
+              <TabsTrigger value="favorites">Favorites</TabsTrigger>
               <TabsTrigger value="payments">Payment History</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="communications">Communications</TabsTrigger>
@@ -381,6 +383,15 @@ export default function CustomerDetails() {
                   tenantId={tenantId}
                   customerEmail={customer.email}
                   customerPhone={customer.phone}
+                />
+              )}
+
+              {/* Preferred Products (compact view) */}
+              {customer && (
+                <CustomerPreferredProducts
+                  customerId={customer.id}
+                  compact
+                  limit={5}
                 />
               )}
 
@@ -453,6 +464,13 @@ export default function CustomerDetails() {
             {customer && (
               <TabsContent value="orders">
                 <CustomerOrderHistoryTab customerId={customer.id} />
+              </TabsContent>
+            )}
+
+            {/* Favorites/Preferred Products Tab */}
+            {customer && (
+              <TabsContent value="favorites">
+                <CustomerPreferredProducts customerId={customer.id} />
               </TabsContent>
             )}
 

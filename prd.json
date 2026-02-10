@@ -801,7 +801,7 @@
     "id": "task-134",
     "title": "Create customer preferred products",
     "description": "On customer detail page, show frequently ordered products based on order history. Show product name, times ordered, last ordered date, total quantity. Clickable to product detail. Useful for staff recommendations during order creation. Show \"Favorites\" section when selecting products for this customer's order.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-135",

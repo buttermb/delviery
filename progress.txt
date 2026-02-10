@@ -3754,3 +3754,23 @@ Implementation follows all project rules:
 - Loading skeleton while searching
 - Empty state when no results found
 - Clear button to reset search
+
+## task-134: Create customer preferred products
+- Created `src/components/admin/customers/CustomerPreferredProducts.tsx` — displays frequently ordered products based on customer order history
+- Queries `order_items` table joined with `orders` (filtering by `customer_id` and `tenant_id`) and `products` table
+- Aggregates products by frequency: counts times ordered, total quantity, tracks last ordered date
+- Displays ranked list with visual rank badges (gold/silver/bronze for top 3)
+- Shows product image (or package icon placeholder), name, category, stats
+- ProductLink component makes product name clickable to navigate to product detail
+- Supports compact mode for embedding (e.g., in Overview tab)
+- Optional `onProductSelect` callback for order creation flow with add-to-cart button
+- Configurable `limit` prop (default 10 products)
+- Calculates top category from purchase patterns
+- Integrated into `CustomerDetails.tsx`:
+  - Added "Favorites" tab showing full component
+  - Added compact view in Overview tab (showing top 5 products)
+- All queries filter by `tenant_id` using `useTenantAdminAuth()`
+- Proper loading skeletons and error states
+- Empty state with helpful message when no purchase history
+- Uses `logger` for error logging — no console.log statements
+- Proper imports with `@/` alias throughout
