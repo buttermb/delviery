@@ -2588,3 +2588,28 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Proper TypeScript types: `Category`, `CategoryStats`, `CategoryWithStats`
 - Graceful handling of missing tables (42P01 error code)
 - Loading states with Skeleton components, error handling via `handleError` utility
+
+## task-092: Create product variant system
+- Created `src/components/admin/products/ProductVariants.tsx` — comprehensive variant management component
+- Created `src/components/admin/products/VariantSelector.tsx` — reusable variant selector for orders/storefront
+- Each variant has own: SKU, price (wholesale/retail/cost), stock level, low stock alert
+- Supports three variant types: weight (with weight_grams), size, strain (with THC/CBD/strain_type)
+- ProductVariants component features:
+  - Full CRUD operations using existing useProductVariants hook
+  - Bulk preset creation for weights (1g, 1/8oz, 1/4oz, 1/2oz, 1oz) and sizes (S, M, L)
+  - Table view with type badges, stock indicators, pricing columns
+  - Duplicate variant functionality (copies all data except inventory)
+  - Confirmation dialog for deletions with stock warnings
+  - Compact mode for inline variant selection
+  - Loading and error states with Skeleton/AlertTriangle
+- VariantSelector component provides three display variants:
+  - `dropdown`: Combobox with search, grouped by type
+  - `radio`: Radio group with price/stock display
+  - `buttons`: Button group for simple selection
+- StorefrontVariantSelector: simplified customer-facing component showing retail prices
+- All components use logger from @/lib/logger — no console.log
+- Queries filter by tenant_id via useTenantAdminAuth()
+- Uses existing useProductVariants hook which has proper TanStack Query patterns
+- Components are fully typed with TypeScript interfaces
+- Proper import order: React → Third-party → Types → Components → Utils
+- Integration points ready for order creation (LineItemsEditor) and storefront (product detail pages)

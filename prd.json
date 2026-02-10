@@ -549,7 +549,7 @@
     "id": "task-092",
     "title": "Create product variant system",
     "description": "Create src/components/admin/products/ProductVariants.tsx — manage product variants (size, strain, weight). Each variant has its own SKU, price, stock level. Variants share the parent product's vendor, category, and compliance data. Order line items reference specific variant. Inventory tracked per variant. Display variant selector in order creation and storefront.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-093",
