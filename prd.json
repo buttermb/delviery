@@ -1053,7 +1053,7 @@
     "id": "task-176",
     "title": "Create menu analytics dashboard",
     "description": "Create src/components/admin/menus/MenuAnalytics.tsx — analytics per menu. Views count, unique visitors, add-to-cart rate, checkout rate, conversion funnel, popular products on this menu, average order value from this menu, revenue generated. Date range selector. Compare menus. Data from orders filtered by menu_id. Charts using recharts.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-177",

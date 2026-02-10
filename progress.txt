@@ -5228,3 +5228,29 @@ Created a comprehensive menu order notification system that alerts admin when or
 - Proper tenant_id filtering
 - useRef for mounted state tracking
 - useCallback for memoized handlers
+
+## task-176: Create menu analytics dashboard
+- Created `src/components/admin/menus/MenuAnalytics.tsx` — per-menu analytics component
+- Features implemented:
+  - Views count and unique visitors tracking from menu_access_logs
+  - Add-to-cart rate, checkout rate, conversion rate calculations
+  - Conversion funnel visualization with Progress bars
+  - Popular products on this menu with revenue ranking
+  - Average order value and total revenue from this menu
+  - Date range selector using AnalyticsDateRangePicker
+  - Compare menus feature — select another menu to see side-by-side comparison
+  - Charts using recharts (AreaChart, LineChart)
+- Data sources:
+  - menu_access_logs table for views/visitors
+  - menu_orders table filtered by menu_id and tenant_id
+- Technical patterns used:
+  - useTenantAdminAuth() for tenant context
+  - TanStack Query with proper query keys for caching
+  - logger from @/lib/logger — no console.log
+  - @/ alias for all imports
+  - formatCurrency() for consistent currency display
+  - Loading skeletons for async states
+  - Empty states with helpful messages
+  - Memoized chart data with useMemo
+- Component can receive menuId as prop (embedded mode) or via selector dropdown
+- Comparison banner shows delta percentages when comparing menus
