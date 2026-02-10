@@ -771,7 +771,7 @@
     "id": "task-129",
     "title": "Create customer notes with timeline",
     "description": "Create src/components/admin/customers/CustomerNotes.tsx — internal notes timeline on customer detail page. Staff can add notes, tag them (general/complaint/preference/followup). Notes show author, timestamp, and tag. Pin important notes. Searchable. Connected to order notes — show order-specific notes in customer timeline too. Unified view of all interactions.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-130",

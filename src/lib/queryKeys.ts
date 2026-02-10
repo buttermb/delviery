@@ -1003,4 +1003,17 @@ export const queryKeys = {
     dashboard: (tenantId?: string) =>
       [...queryKeys.inventoryForecast.all, 'dashboard', tenantId] as const,
   },
+
+  // Customer Notes
+  customerNotes: {
+    all: ['customer-notes'] as const,
+    byCustomer: (customerId: string, tenantId?: string) =>
+      [...queryKeys.customerNotes.all, 'customer', customerId, tenantId] as const,
+    pinned: (customerId: string, tenantId?: string) =>
+      [...queryKeys.customerNotes.all, 'pinned', customerId, tenantId] as const,
+    byOrder: (orderId: string) =>
+      [...queryKeys.customerNotes.all, 'order', orderId] as const,
+    search: (customerId: string, query: string, tenantId?: string) =>
+      [...queryKeys.customerNotes.all, 'search', customerId, query, tenantId] as const,
+  },
 } as const;

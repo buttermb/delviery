@@ -3568,3 +3568,53 @@ const DEFAULT_AUTO_TAG_RULES = [
 - Uses tenant_id from profiles table via auth.uid() for RLS
 - Foreign keys cascade deletes from tenants and contacts tables
 - Unique constraint on (tenant_id, name) prevents duplicate tag names within a tenant
+
+
+## task-129: Create customer notes with timeline
+- Created src/components/admin/customers/CustomerNotes.tsx component
+  - Internal notes timeline on customer detail page
+  - Staff can add notes with tag types: general, complaint, preference, followup, medical, compliment
+  - Notes show author (from profiles), timestamp, and tag badge with color-coding
+  - Pin/unpin important notes - pinned notes appear at top
+  - Full-text search across notes
+  - Filter by note type
+  - Connected to orders via order_id field - shows order-linked notes in timeline
+  - Edit and delete notes with confirmation dialog
+  - Loading and error states
+  - Uses TooltipProvider for action buttons
+
+- Created src/hooks/useCustomerNotes.ts hook with TanStack Query
+  - useCustomerNotes() - fetch all notes for a customer
+  - useCustomerPinnedNotes() - fetch only pinned notes
+  - useOrderLinkedNotes() - fetch notes linked to a specific order
+  - useSearchCustomerNotes() - search notes by text
+  - useCreateCustomerNote() - create new note
+  - useUpdateCustomerNote() - update existing note
+  - useDeleteCustomerNote() - delete note
+  - useTogglePinNote() - toggle pin status
+  - All mutations invalidate appropriate query keys
+
+- Added customerNotes query keys to src/lib/queryKeys.ts
+  - byCustomer(customerId, tenantId)
+  - pinned(customerId, tenantId)
+  - byOrder(orderId)
+  - search(customerId, query, tenantId)
+
+- Created database migration: supabase/migrations/20260210000002_enhance_customer_notes.sql
+  - Added tenant_id column for multi-tenant isolation
+  - Added is_pinned boolean column
+  - Added order_id column for linking notes to orders
+  - Added updated_at timestamp column
+  - Updated note_type check constraint to include 'followup'
+  - Added indexes for tenant_id+customer_id, pinned notes, order-linked notes
+  - RLS policies for tenant isolation (view, insert, update, delete)
+
+Implementation follows project rules:
+- Uses logger from @/lib/logger — no console.log
+- Uses @/ alias for all imports
+- All queries filter by tenant_id
+- Uses useTenantAdminAuth() for tenant context
+- Uses .maybeSingle() for optional data
+- No 'any' type usage
+- Loading and error states included
+- Toast notifications for user feedback
