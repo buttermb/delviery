@@ -729,7 +729,7 @@
     "id": "task-122",
     "title": "Create customer detail page with order history",
     "description": "On customer detail page, show complete order history table. Columns — order number, date, total, status, items count, payment status. Clickable rows navigate to order detail. Show order count and total lifetime value stats above. Paginated with DataTable. Sorted newest first. Filter by status and date range.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-123",

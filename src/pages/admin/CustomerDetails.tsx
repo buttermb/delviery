@@ -1,11 +1,9 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useEncryption } from '@/lib/hooks/useEncryption';
-import { OrderLink, ProductLink } from '@/components/admin/cross-links';
-import { logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,8 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, User, Mail, Phone, MapPin, Calendar,
-  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare, Shield
+  ArrowLeft, User, Mail, Phone, Calendar,
+  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -29,6 +27,7 @@ import { ContactCard } from '@/components/crm/ContactCard';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoicesTab';
+import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOrderHistoryTab';
 
 interface Customer {
   id: string;
@@ -53,10 +52,9 @@ interface Customer {
 
 export default function CustomerDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
-  const { isReady: encryptionIsReady } = useEncryption();
+  const { isReady: _encryptionIsReady } = useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -441,80 +439,11 @@ export default function CustomerDetails() {
             </TabsContent>
 
             {/* Orders Tab */}
-            <TabsContent value="orders">
-              <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Purchase History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {orders.length === 0 ? (
-                      <EnhancedEmptyState
-                        icon={ShoppingBag}
-                        title="No Orders Yet"
-                        description="This customer hasn't placed any orders yet."
-                        compact
-                      />
-                    ) : (
-                      orders.map(order => (
-                        <div key={order.id} className="border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <p className="font-medium">
-                                <OrderLink orderId={order.id} orderNumber={`Order #${order.id.slice(0, 8)}`} />
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold">${order.total_amount?.toFixed(2)}</p>
-                              <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
-                                {order.status}
-                              </Badge>
-                            </div>
-                          </div>
-                          <Separator className="my-3" />
-                          <div className="space-y-2">
-                            {order.order_items?.map((item: Record<string, unknown>) => (
-                              <div key={item.id as string} className="flex justify-between text-sm">
-                                <span>
-                                  <ProductLink
-                                    productId={(item.product_id as string) || (item.products as Record<string, unknown>)?.id as string}
-                                    productName={((item.products as Record<string, unknown>)?.name as string) || 'Unknown Product'}
-                                  />
-                                  {' '}x{item.quantity as number}
-                                </span>
-                                <span>${(item.subtotal as number)?.toFixed(2)}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigateToAdmin(`customers/${id}/invoices`)}
-                            >
-                              View Invoice
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                toast.success("Items added to cart");
-                                navigateToAdmin(`pos?customer=${id}&reorder=${order.id}`);
-                              }}
-                            >
-                              Reorder
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            {customer && (
+              <TabsContent value="orders">
+                <CustomerOrderHistoryTab customerId={customer.id} />
+              </TabsContent>
+            )}
 
             {/* Invoices Tab */}
             {customer && (

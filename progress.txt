@@ -3305,3 +3305,22 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
   - Warns about items missing dimensions with expandable list
   - Supports compact mode for inline display
 - All files use @/ imports, logger (not console.log), TypeScript strict mode compliant
+
+## task-122: Create customer detail page with order history
+- Created src/components/admin/customers/CustomerOrderHistoryTab.tsx component
+- Uses DataTable for complete order history with pagination (10 per page)
+- Table columns: Order # (clickable link), Date, Total, Status, Items count, Payment status
+- Order number uses OrderLink for navigation to order detail page
+- Stats cards above table show: Total Orders, Lifetime Value, Avg. Order Value, Completed count
+- Filter by order status (all/pending/confirmed/processing/ready/out_for_delivery/completed/cancelled)
+- Date range filter using Calendar popover with range selection
+- Clear filters button when filters are active, shows filtered vs total count
+- Data fetched via TanStack Query with tenant_id filtering for multi-tenant security
+- Uses useTenantAdminAuth() for tenant context
+- Replaced legacy orders tab in CustomerDetails.tsx with new component
+- All queries filter by tenant_id using supabase RLS-compatible approach
+- Proper loading states (skeleton cards + placeholder)
+- Error handling with logger (no console.log)
+- All imports use @/ alias pattern
+- Sorted newest first by default (order by created_at descending)
+- Empty state with action to create new order via POS
