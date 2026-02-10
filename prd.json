@@ -615,7 +615,7 @@
     "id": "task-103",
     "title": "Create product performance analytics card",
     "description": "On product detail page, add analytics card showing — units sold (7d/30d/90d), revenue generated, average order quantity, sales trend chart (recharts), customer segments buying this product, best performing day of week, comparison to category average. Connects product module to analytics module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-104",

@@ -18,6 +18,7 @@ import { ProductReorderCard } from '@/components/admin/products/ProductReorderCa
 import { ProductImageGallery } from '@/components/admin/products/ProductImageGallery';
 import { ProductPriceHistoryChart } from '@/components/admin/products/ProductPriceHistoryChart';
 import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDisplay';
+import { ProductPerformanceCard } from '@/components/admin/products/ProductPerformanceCard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -443,6 +444,12 @@ export default function ProductDetailsPage() {
                         <ProductMenuAppearances
                             productId={productId}
                             basePrice={product.retail_price}
+                        />
+
+                        {/* Performance Analytics Card */}
+                        <ProductPerformanceCard
+                            productId={productId}
+                            productCategory={product.category}
                         />
                     </TabsContent>
 

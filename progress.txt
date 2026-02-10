@@ -2912,3 +2912,27 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - All logging uses `logger` from `@/lib/logger` — no console.log statements
 - Proper imports using `@/` alias, lucide-react icons imported from esm paths
 - All database queries filter by tenant_id for multi-tenant isolation
+
+## task-103: Create product performance analytics card
+- Created `src/components/admin/products/ProductPerformanceCard.tsx` for product analytics
+- Integrated into ProductDetailsPage.tsx on the "info" tab
+- Shows units sold for 7d/30d/90d periods with revenue breakdowns
+- Uses TanStack Query with `useProductPerformance()` hook for data fetching
+- Fetches from order_items with inner join on orders, filtered by tenant_id
+- Sales trend chart using recharts LineChart showing last 30 days of sales
+- Customer segments breakdown showing which tiers/types buy this product
+- Day of week performance analysis with best performing day highlighted
+- Category comparison: calculates average revenue for products in same category
+- Performance vs category percentage badge when category data is available
+- StatCard sub-component for consistent metric display with trend indicators
+- SalesTrendChart renders responsive line chart with proper Tooltip styling
+- CustomerSegmentsDisplay shows horizontal bar charts with percentages
+- DayPerformanceDisplay visualizes daily revenue with best day highlighted
+- Tabs component for switching between Trend, Customers, and By Day views
+- Loading state with Skeleton components matching layout
+- Empty state when no sales data available with helpful messaging
+- Error state with fallback UI and warning logging
+- All logging uses `logger` from `@/lib/logger` — no console.log statements
+- Proper imports using `@/` alias, lucide-react icons from esm paths
+- Query data is stale after 5 minutes for reasonable cache behavior
+- All database queries filter by tenant_id for multi-tenant isolation
