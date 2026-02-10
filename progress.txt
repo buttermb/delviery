@@ -3887,3 +3887,42 @@ Implementation follows all project rules:
 - Used same VIP threshold calculation (top 10% by spend) as useCustomerSegments
 - Joined customer_tags with tags table to get tag names for export
 - Supported filtering before export to allow targeted exports
+
+## Task 139: Create customer activity feed
+
+### What was built:
+- Created `src/components/admin/customers/CustomerActivityFeed.tsx`
+- Unified activity feed showing all customer interactions across modules:
+  - Orders placed (from `orders` table)
+  - Payments made (from `unified_orders` where amount_paid > 0)
+  - Deliveries received (from `deliveries` joined with customer's orders)
+  - Menu interactions (from `activity_logs` with category='menu')
+  - Communications received (from `communication_logs` table)
+  - Notes added (from `customer_notes` table)
+  - Credit changes (from `customer_credits` table)
+
+### Key features:
+- Chronological timeline with visual icons for each activity type
+- Filter by activity type via dropdown select
+- Pagination with configurable page size
+- Each entry links to related entity using cross-link components (OrderLink, InvoiceLink)
+- Relative time display (e.g., "2 hours ago") with full date on hover
+- Loading skeleton states and empty states
+- Error handling with graceful fallbacks for missing tables
+
+### Patterns followed:
+- Used `useTenantAdminAuth()` for tenant context
+- All database queries filter by `tenant_id`
+- Used `logger` from `@/lib/logger` (no console.log)
+- Used `@/` alias for all imports
+- TanStack Query for data fetching
+- Proper loading states with Skeleton components
+- Used existing cross-link components for entity navigation
+- Used existing formatRelativeTime and formatSmartDate utilities
+
+### Technical decisions:
+- Fetched from multiple tables and merged into unified timeline
+- Used type assertions for tables that may not exist (activity_logs, communication_logs, etc.) with try/catch fallbacks
+- Sorted all activities by created_at descending after fetching
+- Activity type configuration with icons, colors, and labels for consistency
+- Component supports both card-wrapped and unwrapped modes for flexibility

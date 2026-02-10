@@ -831,7 +831,7 @@
     "id": "task-139",
     "title": "Create customer activity feed",
     "description": "Create src/components/admin/customers/CustomerActivityFeed.tsx — shows all activity for a customer across all modules. Orders placed, payments made, deliveries received, menu interactions, communications received, notes added, credit changes. Unified chronological feed. Each entry links to related entity. Paginated. Filter by activity type.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-140",
