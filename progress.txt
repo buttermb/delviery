@@ -3722,3 +3722,18 @@ Implementation follows all project rules:
 - No 'any' type usage
 - Loading and error states included
 
+
+## task-132: Create customer quick view in order creation
+- Created `src/components/admin/customers/CustomerQuickView.tsx` — quick view card for customer info during order creation
+- Shows customer name, phone, email, LTV, order count, last order date, segment badge, tags, preferred address
+- Uses `useCustomerStats` hook for LTV/order count/avg order value
+- Uses `useCustomerSegment` hook for segment data (VIP, Active, New, At Risk, Churned)
+- Fetches preferred delivery address from `customer_delivery_addresses` table with `is_primary=true`
+- Clicking customer name opens DetailPanel with full customer info without navigating away
+- Reuses existing components: `CustomerSegmentBadge`, `CustomerTagBadges`, `DetailPanel`
+- All queries filter by `tenant_id` using `useTenantAdminAuth()`
+- Loading skeletons for async data
+- Error handling with `logger.error` — no console.log
+- Proper imports using `@/` alias throughout
+- Memoized formatted currency values
+- Export both named and default export for flexible usage

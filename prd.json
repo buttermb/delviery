@@ -789,7 +789,7 @@
     "id": "task-132",
     "title": "Create customer quick view in order creation",
     "description": "When selecting a customer during order creation, show a quick view card — customer name, phone, email, LTV, order count, last order date, segment badge, tags, preferred address. Helps staff understand customer context while creating orders. Clicking customer name opens full detail in DetailPanel without navigating away.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-133",
