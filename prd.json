@@ -129,7 +129,7 @@
     "id": "task-022",
     "title": "Create shared data table component",
     "description": "Create src/components/admin/shared/DataTable.tsx — a reusable data table with sorting, filtering, pagination, row selection, and bulk actions. Props include columns config, data array, onRowClick, bulkActions array, searchPlaceholder, emptyState. Uses shadcn/ui Table. Supports server-side pagination. Emits selected row IDs for bulk operations.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-023",

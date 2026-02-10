@@ -517,3 +517,55 @@
 - Return object updated to include new functions alongside legacy `checkPermission` methods
 - No console.log — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias as required
+
+## task-022: Create shared data table component
+- Created `src/components/admin/shared/DataTable.tsx` — a reusable data table with full feature set
+- Column configuration via `ColumnDef<TData>` interface:
+  - `accessorKey` — key to access data from row (supports nested paths via dot notation)
+  - `header` — string or render function for header content
+  - `cell` — custom cell renderer receiving `{ original, value }`
+  - `sortable` — enables column sorting with visual indicators
+  - `sortFn` — optional custom sort function
+  - `width` — column width (e.g., '100px', '10%')
+  - `hideOnMobile` — responsive column hiding
+- Sorting features:
+  - Client-side sorting with toggle (asc → desc → none)
+  - Custom sort functions supported
+  - Server-side sorting via `onSortChange` callback
+  - Visual indicators: ArrowUpDown, ArrowUp, ArrowDown icons
+- Filtering/Search:
+  - Search input with configurable placeholder
+  - Supports single or multiple search columns
+  - Supports nested path search (e.g., 'customer.name')
+  - Controlled or uncontrolled search via `searchValue`/`onSearchChange` props
+- Pagination:
+  - Client-side pagination with configurable page sizes
+  - Server-side pagination via `ServerPagination` interface
+  - Page size selector with customizable options
+  - Item count display and page navigation
+- Row selection:
+  - Optional via `enableSelection` prop
+  - Select all / select individual rows
+  - Indeterminate state for partial selection
+  - Checkbox column with proper accessibility labels
+- Bulk actions:
+  - Array of `BulkAction` objects with label, onClick, variant, icon, disabled
+  - Actions appear when rows are selected
+  - `onClick` receives array of selected row IDs
+- Empty state:
+  - Custom empty state via `emptyState` ReactNode prop
+  - Default "No results found" message
+- Loading state:
+  - Spinner with "Loading..." message when `loading` prop is true
+- Row click handling:
+  - `onRowClick` callback for navigation
+  - Click handler excludes checkbox clicks
+- Helper utilities:
+  - `getNestedValue` for accessing nested object properties
+  - `useDataTableSelection` hook for external selection state management
+- Uses shadcn/ui components: Table, Button, Input, Checkbox, Select
+- Uses lucide-react icons for sorting and navigation
+- No tenant_id filtering needed — pure presentational component (data passed in props)
+- No console.log — pure UI component
+- All imports use `@/` alias as required
+- TypeScript generic `<TData extends Record<string, unknown>>` for type safety
