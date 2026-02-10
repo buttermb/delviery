@@ -1029,7 +1029,7 @@
     "id": "task-172",
     "title": "Create menu builder product selector",
     "description": "In the menu/disposable menu builder, product selection connects to live inventory. Show stock status badge next to each product. Out-of-stock products grayed out. Low-stock products show warning. Product price pulled from product record but overridable per menu. Category filtering matches product categories. Search within product catalog.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-173",

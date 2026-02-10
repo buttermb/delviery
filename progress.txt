@@ -5042,3 +5042,32 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
 - All imports use @/` alias as required
 - All database queries filter by tenant_id (account_id for vendors table)
 - TypeScript checks pass with no errors
+
+
+## Task 172: Create menu builder product selector
+
+### Implementation Details
+- Created new component: src/components/admin/disposable-menus/MenuBuilderProductSelector.tsx
+- Features implemented:
+  - Live inventory connection with TanStack Query fetching from wholesale_inventory table
+  - Stock status badges (In Stock, Low Stock, Out of Stock) with visual indicators
+  - Out-of-stock products are grayed out and cannot be selected
+  - Low-stock warning indicators (threshold: 10 units) with amber coloring
+  - Per-menu price override functionality with inline editing
+  - Category filtering tabs matching product categories
+  - Search within product catalog by name, SKU, category, or description
+  - Products sorted by stock status (in-stock first, out-of-stock last)
+  - Selected products summary with quick remove badges
+  - Responsive grid layout with 2 columns on sm+ screens
+  - Stock legend at bottom explaining color coding
+- Component exports:
+  - MenuBuilderProductSelector (main component)
+  - SelectedMenuProduct interface for parent component integration
+- Technical patterns used:
+  - useTenantAdminAuth() for tenant context
+  - useQuery with tenant_id filtering
+  - logger from @/lib/logger for error handling
+  - Proper loading and error states
+  - All imports use @/ alias
+  - No console.log statements
+  - TypeScript strict typing with no 'any' types
