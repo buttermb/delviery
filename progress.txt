@@ -2360,3 +2360,24 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Used existing patterns: useTenantAdminAuth for tenant context, supabase queries with tenant_id filter
 - All logging uses logger from @/lib/logger, no console.log statements
 - Import order follows: React → Third-party → Types → Components → Utils
+
+
+## task-083: Create order history diff view
+- Created `src/components/admin/orders/OrderHistoryDiff.tsx` component for comparing before/after states when orders are edited
+- Uses `useOrderAuditLog` hook to fetch order audit entries from order_audit_log table
+- Parses audit entries to extract changed fields, including:
+  - Direct field changes from old_value/new_value columns
+  - Complex changes from metadata.changes object (before/after structure)
+  - Nested change objects with old/new properties
+- Color-coded diff display: green for added, red for removed, amber for changed
+- Each diff entry shows: field name, old value (strikethrough), arrow, new value
+- Groups changes by date with expandable/collapsible sections
+- Displays actor info (user name/email or "System") and timestamps (smart date + relative time)
+- FIELD_LABELS mapping provides human-readable labels for common order fields (status, payment_status, total, customer_name, etc.)
+- formatValue() helper handles different value types (null, boolean, number as currency, objects/arrays)
+- Empty state shows when no changes are recorded
+- Loading state with skeleton placeholders
+- Error state with user-friendly message
+- Follows project patterns: useTenantAdminAuth context, @/ alias imports, logger (no console.log)
+- Props: orderId (required), maxHeight, showHeader, className
+- Exported types: OrderHistoryDiffProps, DiffField, ParsedDiff

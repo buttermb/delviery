@@ -495,7 +495,7 @@
     "id": "task-083",
     "title": "Create order history diff view",
     "description": "When order is edited, show what changed. Create src/components/admin/orders/OrderHistoryDiff.tsx — compares before/after states. Highlights changed fields in the timeline. Shows who made the change and when. Diff includes quantity changes, status changes, price adjustments, customer changes. Pulled from activity_log metadata.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-084",
