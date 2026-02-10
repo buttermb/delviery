@@ -842,6 +842,10 @@ export const queryKeys = {
       [...queryKeys.vendors.detail(tenantId, vendorId), 'metrics', filters] as const,
     comparison: (tenantId: string, vendorIds: string[]) =>
       [...queryKeys.vendors.byTenant(tenantId), 'comparison', vendorIds.sort().join(',')] as const,
+    contacts: (tenantId: string, vendorId: string) =>
+      [...queryKeys.vendors.detail(tenantId, vendorId), 'contacts'] as const,
+    contactHistory: (tenantId: string, contactId: string) =>
+      [...queryKeys.vendors.all, 'contact-history', tenantId, contactId] as const,
   },
 
   // Storefront

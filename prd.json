@@ -957,7 +957,7 @@
     "id": "task-160",
     "title": "Create vendor contact management",
     "description": "On vendor detail page, manage multiple contacts per vendor. Contact fields — name, role, phone, email, is_primary. Primary contact auto-selected for PO communications. Quick actions — call, email, copy number. Contact history log. Multiple contacts for different departments (sales, billing, logistics).",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-161",

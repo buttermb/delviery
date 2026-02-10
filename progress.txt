@@ -4627,3 +4627,49 @@ Date: 2026-02-10
 - purchase_order_items has quantity and received_quantity for accuracy tracking
 - No returns or complaints tables exist yet - quality is calculated from receiving discrepancies
 - The codebase uses Promise.allSettled pattern for parallel fetches that can fail independently
+
+## task-160: Create vendor contact management
+Created a complete vendor contact management system with the following components:
+
+### Database Migration (`supabase/migrations/20260210000003_vendor_contacts.sql`):
+- `vendor_contacts` table with fields: name, role, department, phone, email, is_primary, notes
+- Department enum: sales, billing, logistics, support, management, other
+- RLS policies for tenant isolation (SELECT, INSERT, UPDATE, DELETE)
+- Trigger to ensure only one primary contact per vendor
+- `vendor_contact_history` table for logging interactions (call, email, meeting, note)
+- Proper indexes on tenant_id, vendor_id, is_primary, created_at
+
+### Hook (`src/hooks/useVendorContacts.ts`):
+- `useVendorContacts(vendorId)` - main hook with CRUD operations
+- `useVendorContactHistory(contactId)` - fetch contact interaction history
+- Mutations: createContact, updateContact, deleteContact, setPrimary, logInteraction
+- Returns contacts, primaryContact, loading states, and mutation states
+- Query keys added: `vendors.contacts()` and `vendors.contactHistory()`
+
+### Component (`src/components/admin/vendors/VendorContactsManager.tsx`):
+- Full CRUD UI for managing contacts with add/edit dialogs
+- Contact cards display name, role, department, phone, email
+- Quick actions: call, email, copy number, copy email (with interaction logging)
+- Set primary contact functionality
+- Contact history dialog with interaction logging form
+- Delete confirmation dialog
+- Uses react-hook-form + zod for validation
+- Loading and error states with EnhancedEmptyState
+
+### Integration:
+- Added "Contacts" tab to VendorDetailPage with Users icon
+- VendorContactsManager rendered within the Contacts tab
+
+### Technical details:
+- All queries filter by tenant_id for multi-tenant isolation
+- Uses logger from @/lib/logger (no console.log)
+- All imports use @/ alias
+- Uses useTenantAdminAuth for tenant context
+- Proper TypeScript types exported from hook
+- Uses TanStack Query for data fetching with proper cache invalidation
+
+### Learnings:
+- Database trigger WHEN clause ensures single primary per vendor automatically
+- Quick action handlers should log interactions silently (catch errors quietly)
+- Contact history shows most recent interactions with timestamps
+- Form defaultValues should auto-set is_primary=true when adding first contact
