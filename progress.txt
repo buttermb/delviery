@@ -1719,3 +1719,19 @@
 - Uses @/ alias for all imports
 - Import order follows: React → Third-party → Types → Components → Hooks → Utils
 - TypeScript compiles without errors
+
+## task-056: Create order timeline component
+- Created `src/components/admin/orders/OrderTimeline.tsx` for chronological order event display
+- Component fetches from `activity_log` table filtered by `entity_type=order` and `entity_id`
+- Event types supported: created, confirmed, payment_received, items_picked, out_for_delivery, delivered, cancelled, refunded, updated
+- Each event displays: timestamp with smart formatting, relative time, user/actor info, and optional notes
+- Uses `useTenantAdminAuth()` to get tenant context (following CLAUDE.md rules)
+- TanStack Query for data fetching with proper queryKeys from `@/lib/queryKeys`
+- Realtime subscription via `useRealTimeSubscription` hook for live updates on INSERT events
+- Callback filters by entity_type and entity_id to only refresh for relevant order events
+- UI uses shadcn/ui components: Card, Badge, ScrollArea, Skeleton, Avatar, Tooltip
+- Loading skeleton and empty state for proper UX
+- Error state with user-friendly message
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Imports use `@/` alias as required
+- TypeScript types imported from `@/lib/activityLog` for ActivityLogEntry

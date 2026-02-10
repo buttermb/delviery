@@ -333,7 +333,7 @@
     "id": "task-056",
     "title": "Create order timeline component",
     "description": "Create src/components/admin/orders/OrderTimeline.tsx — shows chronological timeline of all order events. Events include created, confirmed, payment_received, items_picked, out_for_delivery, delivered, cancelled, refunded. Each event shows timestamp, user who performed action, and any notes. Pull from activity_log filtered by entity_type=order and entity_id. Auto-updates via realtime subscription.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-057",
