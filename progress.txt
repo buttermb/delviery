@@ -5685,3 +5685,26 @@ Date: 2026-02-10
 - Satisfaction score = percentage of 4+ star ratings
 - Used ScrollArea component for long feedback lists
 - Expandable comments for long text with "Read more" toggle
+
+## Task 193: Create Supabase migration for menu_feedback table
+Date: 2026-02-10
+
+### Implemented:
+- Created supabase/migrations/20260210000002_add_menu_feedback.sql
+- Table columns: id (uuid pk), tenant_id, menu_id, order_id, customer_id (nullable), rating (1-5 check), comment (text), created_at
+- Foreign key references to tenants, disposable_menus, menu_orders, and customers tables
+- Comprehensive indexes for tenant_id, menu_id, order_id, customer_id, created_at, and rating
+- Composite index for aggregate rating per menu (menu_id, rating)
+
+### RLS Policies:
+- Tenant can view/insert/update/delete own feedback
+- Public can submit feedback for active menus (for unauthenticated customers)
+- All policies filter by tenant_id via tenant_users lookup
+
+### Key learnings:
+- disposable_menus table has tenant_id column (added in later migrations)
+- menu_orders table is used for orders on disposable menus
+- Used CHECK constraint for rating validation (rating >= 1 AND rating <= 5)
+- Customer_id is nullable to support anonymous feedback
+- Order_id uses ON DELETE SET NULL to preserve feedback even if order is deleted
+- Added COMMENT statements for documentation

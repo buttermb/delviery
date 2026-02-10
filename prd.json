@@ -1155,7 +1155,7 @@
     "id": "task-193",
     "title": "Create Supabase migration for menu_feedback table",
     "description": "Create supabase/migrations/add_menu_feedback.sql. Columns — id uuid primary key, tenant_id uuid, menu_id uuid, order_id uuid, customer_id uuid nullable, rating integer check (1-5), comment text, created_at timestamptz. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-194",
