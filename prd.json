@@ -1083,7 +1083,7 @@
     "id": "task-181",
     "title": "Create Supabase migration for menu_schedules table",
     "description": "Create supabase/migrations/add_menu_schedules.sql. Columns — id uuid primary key, tenant_id uuid, menu_id uuid, start_time timestamptz, end_time timestamptz, is_recurring boolean default false, recurrence_rule text (cron-like), is_active boolean default true, created_at timestamptz. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-182",

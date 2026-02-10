@@ -5351,3 +5351,33 @@ Created a comprehensive menu order notification system that alerts admin when or
   - Dialog-based edit/create flows with validation
 - Imports use `@/` alias as required
 - Loading and error states properly handled with Skeleton components and toast notifications
+
+
+
+## task-181: Create Supabase migration for menu_schedules table
+- Created `supabase/migrations/20260210000001_add_menu_schedules.sql`
+- Table columns as specified:
+  - id UUID PRIMARY KEY with gen_random_uuid()
+  - tenant_id UUID NOT NULL with FK to tenants(id) ON DELETE CASCADE
+  - menu_id UUID NOT NULL with FK to disposable_menus(id) ON DELETE CASCADE
+  - start_time TIMESTAMPTZ NOT NULL
+  - end_time TIMESTAMPTZ (nullable for indefinite schedules)
+  - is_recurring BOOLEAN DEFAULT FALSE
+  - recurrence_rule TEXT (iCal-style, e.g., FREQ=WEEKLY;BYDAY=FR,SA,SU)
+  - is_active BOOLEAN DEFAULT TRUE
+  - created_at TIMESTAMPTZ DEFAULT NOW()
+  - updated_at TIMESTAMPTZ with auto-update trigger
+- Indexes created for performance:
+  - idx_menu_schedules_tenant_id
+  - idx_menu_schedules_menu_id
+  - idx_menu_schedules_start_time
+  - idx_menu_schedules_is_active (partial)
+  - idx_menu_schedules_active_range (composite)
+- RLS enabled with tenant_id filtering:
+  - SELECT policy for authenticated users in tenant
+  - INSERT policy for authenticated users in tenant
+  - UPDATE policy for authenticated users in tenant
+  - DELETE policy for authenticated users in tenant
+- Added process_menu_schedules() function for auto-activation via Edge Function/cron
+- Works with existing MenuScheduler.tsx component from task-180
+- Status: PASSES
