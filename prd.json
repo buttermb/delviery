@@ -1167,7 +1167,7 @@
     "id": "task-195",
     "title": "Create menu deep link to specific products",
     "description": "Generate deep links to specific products on a menu. URL includes menu ID and product ID. When opened, menu scrolls to and highlights the product. Useful for promotions — share link to a specific product. Track deep link clicks. QR code generation per product-menu combination.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-196",

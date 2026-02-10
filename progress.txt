@@ -5724,3 +5724,23 @@ Date: 2026-02-10
 - Used logger instead of console.log throughout
 - Implemented loading states with Skeleton components
 - Proper error handling with showErrorToast
+
+## Task 195: Create menu deep link to specific products
+Date: 2026-02-10
+
+Created src/components/admin/menus/MenuDeepLinks.tsx component with:
+- Deep link URL generation combining menu token and product ID with ?product=&highlight=true params
+- QR code generation per product-menu combination using existing qrCode utility
+- Deep link click tracking via menu_access_logs table (stores product_id for deep link visits)
+- Analytics showing top clicked products with refetch capability
+- Bulk QR download for all products on a menu
+- Search/filter products within the menu
+- Copy link, show QR dialog, and open link preview actions
+
+Patterns followed:
+- Used useTenantAdminAuth() for tenant context
+- Filtered queries by tenant_id for proper multi-tenant isolation
+- Used logger instead of console.log
+- Proper loading states with Skeleton components
+- Error handling with showErrorToast/showSuccessToast
+- All imports use @/ alias
