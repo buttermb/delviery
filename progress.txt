@@ -2809,3 +2809,23 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - Proper loading states with Skeleton components
 - Error handling for fetch failures
 - Progress indicator for large dataset exports
+
+## task-098: Create product search with advanced filters
+- Created `src/components/admin/products/ProductAdvancedFilters.tsx` with comprehensive filter UI
+- Filters implemented: category, vendor, stock status (in_stock/low_stock/out_of_stock), price range, compliance status (based on COA/lab results), menu status (listed/unlisted), created date range
+- Used collapsible panel with "Advanced Filters" toggle button showing active filter count badge
+- Active filter badges displayed inline with X button to remove individual filters
+- Used `useTablePreferences` hook for persisting filter state to localStorage
+- Date values serialized to ISO strings for storage, parsed back on load
+- Filter state persists across page refreshes and sessions
+- Debounced text search (300ms) now searches across name, SKU, and description fields
+- All filters combined with AND logic in `filteredProducts` useMemo
+- Compliance status determined by presence of `coa_url` or `lab_results_url` fields
+- Menu status determined by `menu_visibility` boolean field
+- Derived `vendors` array from products for vendor filter dropdown
+- Derived `maxPrice` for potential slider UI
+- Added `hasActiveFilters` computed value for empty state messaging
+- Updated empty state to show contextual message when filters are active
+- No console.log — all logging uses `@/lib/logger`
+- All imports use `@/` alias pattern
+- TypeScript types exported: ProductFilters, StockStatus, ComplianceStatus, MenuStatus

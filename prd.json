@@ -585,7 +585,7 @@
     "id": "task-098",
     "title": "Create product search with advanced filters",
     "description": "Enhance product list with advanced search. Filter by category, vendor, stock status (in stock/low/out), price range, compliance status, menu status (listed/unlisted), created date range. Text search across name, SKU, description. Combine filters with AND logic. Show active filter count. Persist filter state. Debounced search.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-099",
