@@ -603,7 +603,7 @@
     "id": "task-101",
     "title": "Create product-vendor reorder automation",
     "description": "Create src/components/admin/products/ReorderSettings.tsx — per-product reorder configuration. Set reorder_point (threshold), reorder_quantity (how many to order), preferred_vendor_id. When stock hits reorder_point, auto-generate purchase order draft linked to vendor. Dashboard shows pending reorders. Vendor module shows incoming purchase orders.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-102",

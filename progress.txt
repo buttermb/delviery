@@ -2868,3 +2868,23 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - Form validation: requires quantity > 0 and reason selected
 - All imports use `@/` alias pattern
 - Used existing patterns from StockAdjustmentModal.tsx in src/components/admin/ as reference
+
+## task-101: Create product-vendor reorder automation
+- Created `src/components/admin/products/ReorderSettings.tsx` for per-product reorder configuration
+- Component allows setting: reorder_point (threshold), reorder_quantity, preferred_vendor_id
+- Uses `useTenantAdminAuth()` for tenant context — all vendor queries filter by account_id/tenant_id
+- `useVendors()` hook fetches active vendors from the vendors table for dropdown selection
+- `useReorderConfig()` hook fetches current product's reorder settings (low_stock_alert, vendor_id)
+- `usePendingReorders()` hook exported for dashboard widgets - shows products below reorder point
+- When stock hits reorder_point with auto_reorder_enabled, creates PO draft via edge function
+- Auto-reorder toggle requires a vendor to be selected first
+- Current stock status displayed with "Below Reorder Point" / "Stock OK" badges
+- Alert shown when stock is below threshold with option to create PO immediately
+- Save mutation updates product's low_stock_alert, vendor_id, reorder_quantity, auto_reorder_enabled
+- PO creation uses `supabase.functions.invoke('create-purchase-order')` with product/vendor/quantity
+- `PendingReordersWidget` component shows dashboard list of products needing reorder (limited to 5)
+- All queries use `queryKeys` factory pattern for cache invalidation
+- All logging uses `logger` from `@/lib/logger` — no console.log statements
+- Loading states with Skeleton components, error states with Alert component
+- Proper imports using `@/` alias, lucide-react icons imported from esm paths
+- Build verification passed with `npx vite build`
