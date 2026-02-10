@@ -5071,3 +5071,55 @@ Implemented vendor-specific price history tracking to monitor cost changes from 
   - All imports use @/ alias
   - No console.log statements
   - TypeScript strict typing with no 'any' types
+
+
+## Task 173: Create menu live inventory sync
+
+### Implementation Details
+- Created new hook: src/hooks/useMenuInventorySync.ts
+  - Real-time subscription for syncing menu product availability with inventory
+  - Uses Supabase realtime subscription on wholesale_inventory table
+  - Automatically tracks stock status changes (available, low_stock, out_of_stock)
+  - Publishes inventory_changed events for notification system
+  - Publishes menu_product_hidden and menu_product_restored events for admin notifications
+  - Provides callbacks: onStockChange, onProductUnavailable, onProductRestored
+  - Returns helpers: isProductAvailable(), getProductStatus(), stockStatus map
+  - Includes connection status tracking and auto-refresh
+
+- Created new component: src/components/menu/MenuLiveInventorySync.tsx
+  - Provider component wrapper for menu inventory sync
+  - StockStatusBadge component for displaying stock status
+  - useMenuLiveInventory hook for accessing sync context
+  - Integrates with toast notifications for admin views
+  - Invalidates menu queries when stock changes detected
+
+- Updated src/pages/customer/MenuViewPage.tsx
+  - Integrated useMenuInventorySync hook for live stock updates
+  - Products automatically gray out when out of stock
+  - Products restore when stock is replenished
+  - Query invalidation on stock changes for immediate UI updates
+
+- Updated src/lib/eventBus.ts
+  - Added menu_product_hidden event type
+  - Added menu_product_restored event type
+  - Events include menuId, productId, productName, tenantId, reason/timestamp
+
+- Updated src/hooks/useNotificationDispatcher.ts
+  - Added handleMenuProductHidden handler for admin notifications
+  - Added handleMenuProductRestored handler for admin notifications
+  - Creates notifications when products auto-hidden from menus
+  - Creates notifications when products restored to menus
+
+- Updated src/hooks/index.ts
+  - Exported useMenuInventorySync hook
+  - Exported related types: MenuProductStockStatus, ProductStockChange, etc.
+
+### Technical patterns used:
+- useTenantAdminAuth() for tenant context
+- Supabase realtime subscription with tenant_id filtering
+- TanStack Query invalidation for UI updates
+- EventBus for cross-module communication
+- logger from @/lib/logger — no console.log
+- All imports use @/ alias
+- Proper loading and error states
+- TypeScript strict typing

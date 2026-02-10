@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ShoppingCart, Lock, Plus, Minus, Search, Filter, Package, Loader2, Star } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Search, Loader2, Star } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { toast } from "@/hooks/use-toast";
@@ -16,6 +16,8 @@ import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBot
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { MenuProductGrid } from "@/components/customer/MenuProductGrid";
 import { SmartSearchOverlay } from "@/components/customer/SmartSearchOverlay";
+import { useMenuInventorySync } from "@/hooks/useMenuInventorySync";
+import { logger } from "@/lib/logger";
 
 export default function CustomerMenuViewPage() {
   const { menuId: menuIdParam } = useParams<{ menuId: string }>();
@@ -137,7 +139,7 @@ export default function CustomerMenuViewPage() {
     : 0;
 
   // Memoize filtered products
-  const filteredProducts = useMemo(() => {
+  const _filteredProducts = useMemo(() => {
     if (!products) return [];
     if (!searchTerm) return products;
 
@@ -151,14 +153,56 @@ export default function CustomerMenuViewPage() {
     });
   }, [products, searchTerm]);
 
-  // Map products for grid and search
-  const mappedProducts = useMemo(() => {
-    return products?.map((item: any) => ({
-      ...item.products,
-      available: (item.products.stock_quantity === null || item.products.stock_quantity > 0),
-      min_quantity: 1 // Default
-    })) || [];
+  // Extract product IDs for realtime sync
+  const productIds = useMemo(() => {
+    return products?.map((item: unknown) => (item as { products?: { id?: string } }).products?.id).filter(Boolean) as string[] || [];
   }, [products]);
+
+  // Use realtime inventory sync for live stock updates
+  const {
+    isProductAvailable: checkProductAvailable,
+    getProductStatus,
+    isConnected: isRealtimeConnected,
+  } = useMenuInventorySync({
+    menuId: menuId || '',
+    tenantId: tenantId || null,
+    productIds,
+    enabled: !!menuId && !!tenantId && productIds.length > 0,
+    onProductUnavailable: useCallback((change) => {
+      logger.info('[CustomerMenuViewPage] Product became unavailable', {
+        productId: change.productId,
+        productName: change.productName,
+      });
+      // Refresh products query to update UI
+      queryClient.invalidateQueries({ queryKey: ["customer-menu-products", menuId, tenantId] });
+    }, [queryClient, menuId, tenantId]),
+    onProductRestored: useCallback((change) => {
+      logger.info('[CustomerMenuViewPage] Product restored', {
+        productId: change.productId,
+        productName: change.productName,
+      });
+      // Refresh products query to update UI
+      queryClient.invalidateQueries({ queryKey: ["customer-menu-products", menuId, tenantId] });
+    }, [queryClient, menuId, tenantId]),
+  });
+
+  // Map products for grid and search with realtime stock status
+  const mappedProducts = useMemo(() => {
+    return products?.map((item: unknown) => {
+      const typedItem = item as { products: { id: string; stock_quantity?: number | null } };
+      const product = typedItem.products;
+      // Check realtime status first, fallback to static stock_quantity
+      const realtimeAvailable = checkProductAvailable(product.id);
+      const staticAvailable = product.stock_quantity === null || (product.stock_quantity ?? 0) > 0;
+
+      return {
+        ...product,
+        available: realtimeAvailable && staticAvailable,
+        stock_status: getProductStatus(product.id),
+        min_quantity: 1 // Default
+      };
+    }) || [];
+  }, [products, checkProductAvailable, getProductStatus]);
 
   const handleAddToCart = async (productId: string, quantity: number) => {
     try {
@@ -227,7 +271,7 @@ export default function CustomerMenuViewPage() {
     );
   }
 
-  const requiresAccessCode = !!menu.access_code;
+  const _requiresAccessCode = !!menu.access_code;
 
   return (
     <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">

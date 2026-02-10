@@ -1035,7 +1035,7 @@
     "id": "task-173",
     "title": "Create menu live inventory sync",
     "description": "When a menu is active and a product goes out of stock, automatically hide or gray out that product on the menu. Use Supabase realtime subscription on products table. When stock is restored, product becomes available again. Show notification to admin when products auto-hidden. Prevents customers from ordering unavailable items.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-174",

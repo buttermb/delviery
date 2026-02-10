@@ -27,6 +27,23 @@ export interface EventPayloads {
   };
   storefront_synced: { tenantId: string; storefrontId: string; syncedAt: string };
   menu_published: { menuId: string; tenantId: string; publishedAt: string };
+  // Menu product auto-hidden due to inventory change
+  menu_product_hidden: {
+    menuId: string;
+    productId: string;
+    productName: string;
+    tenantId: string;
+    reason: 'out_of_stock' | 'low_stock';
+    hiddenAt: string;
+  };
+  // Menu product restored after inventory restock
+  menu_product_restored: {
+    menuId: string;
+    productId: string;
+    productName: string;
+    tenantId: string;
+    restoredAt: string;
+  };
   notification_sent: { notificationId: string; tenantId: string; userId?: string; type: string };
   // Order lifecycle event for triggering post-completion actions
   order_completed: {

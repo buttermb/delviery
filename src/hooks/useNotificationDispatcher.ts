@@ -232,6 +232,73 @@ export function useNotificationDispatcher(
   );
 
   /**
+   * Handle menu_product_hidden events
+   * Notifies admin when a product is auto-hidden from menu due to stock
+   */
+  const handleMenuProductHidden = useCallback(
+    async (payload: EventPayloads['menu_product_hidden']) => {
+      if (!mountedRef.current || !tenantId) return;
+
+      // Only process events for our tenant
+      if (payload.tenantId !== tenantId) {
+        logger.debug('[NotificationDispatcher] Ignoring menu_product_hidden from different tenant');
+        return;
+      }
+
+      logger.debug('[NotificationDispatcher] Processing menu_product_hidden event', {
+        menuId: payload.menuId,
+        productId: payload.productId,
+        productName: payload.productName,
+        reason: payload.reason,
+      });
+
+      await createNotification({
+        tenantId,
+        userId: null, // Notify all admins
+        title: 'Menu Product Auto-Hidden',
+        message: `"${payload.productName}" has been automatically hidden from the menu because it is ${payload.reason === 'out_of_stock' ? 'out of stock' : 'low on stock'}.`,
+        type: 'warning',
+        entityType: 'menu',
+        entityId: payload.menuId,
+      });
+    },
+    [tenantId]
+  );
+
+  /**
+   * Handle menu_product_restored events
+   * Notifies admin when a product is restored to menu after restock
+   */
+  const handleMenuProductRestored = useCallback(
+    async (payload: EventPayloads['menu_product_restored']) => {
+      if (!mountedRef.current || !tenantId) return;
+
+      // Only process events for our tenant
+      if (payload.tenantId !== tenantId) {
+        logger.debug('[NotificationDispatcher] Ignoring menu_product_restored from different tenant');
+        return;
+      }
+
+      logger.debug('[NotificationDispatcher] Processing menu_product_restored event', {
+        menuId: payload.menuId,
+        productId: payload.productId,
+        productName: payload.productName,
+      });
+
+      await createNotification({
+        tenantId,
+        userId: null, // Notify all admins
+        title: 'Menu Product Restored',
+        message: `"${payload.productName}" is back in stock and now available on the menu again.`,
+        type: 'success',
+        entityType: 'menu',
+        entityId: payload.menuId,
+      });
+    },
+    [tenantId]
+  );
+
+  /**
    * Manual dispatch function for creating notifications
    */
   const dispatchNotification = useCallback(
@@ -271,6 +338,8 @@ export function useNotificationDispatcher(
     const unsubOrderCreated = subscribe('order_created', handleOrderCreated);
     const unsubInventoryChanged = subscribe('inventory_changed', handleInventoryChanged);
     const unsubCustomerUpdated = subscribe('customer_updated', handleCustomerUpdated);
+    const unsubMenuProductHidden = subscribe('menu_product_hidden', handleMenuProductHidden);
+    const unsubMenuProductRestored = subscribe('menu_product_restored', handleMenuProductRestored);
 
     // Cleanup on unmount
     return () => {
@@ -279,6 +348,8 @@ export function useNotificationDispatcher(
       unsubOrderCreated();
       unsubInventoryChanged();
       unsubCustomerUpdated();
+      unsubMenuProductHidden();
+      unsubMenuProductRestored();
     };
   }, [
     isReady,
@@ -289,6 +360,8 @@ export function useNotificationDispatcher(
     handleOrderCreated,
     handleInventoryChanged,
     handleCustomerUpdated,
+    handleMenuProductHidden,
+    handleMenuProductRestored,
   ]);
 
   return {
