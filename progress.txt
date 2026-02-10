@@ -1441,3 +1441,41 @@
 - All logging via `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
 - Import order: React → Third-party → Local imports
+## task-048: Create shared stats card component
+- Created `src/components/admin/shared/StatsCard.tsx` — reusable stat card for dashboards
+- Props interface `StatsCardProps`:
+  - `title` — title displayed above the value
+  - `value` — main value (string or number)
+  - `change` — percentage change value (optional)
+  - `trend` — direction: 'up' | 'down' | 'flat' (optional, default: 'flat')
+  - `icon` — LucideIcon component (optional)
+  - `onClick` — click handler for navigation (optional)
+  - `loading` — loading state (optional, default: false)
+  - `data` — number array for sparkline visualization (optional)
+  - `subtitle` — additional description text (optional)
+  - `className` — custom styling (optional)
+- Built-in `Sparkline` component for mini chart visualization:
+  - Renders SVG path from data array
+  - Calculates min/max for proper scaling
+  - Uses green/red color based on trend direction (first vs last value)
+  - Only renders if data has 2+ points
+- `StatsCardSkeleton` component for loading state with proper skeleton layout
+- Change percentage formatting:
+  - Shows + sign for positive, no sign for negative
+  - Fixed to 1 decimal place
+  - Green color for positive, red for negative, muted for zero
+- Trend indicator:
+  - Uses TrendingUp, TrendingDown, or Minus icons from lucide-react
+  - Color-coded: green for up, red for down, muted for flat
+- Accessibility features:
+  - Clickable cards have role="button" and tabIndex for keyboard navigation
+  - handleKeyDown for Enter/Space key activation
+  - aria-label describing the stat and click action
+  - Icons marked aria-hidden
+- Helper component `StatsCardGrid`:
+  - Responsive grid layout with configurable columns (2, 3, or 4)
+  - Grid classes adjust for different breakpoints
+- All imports use `@/` alias as required
+- Import order: React → Third-party (lucide-react) → Components → Utils
+- All callbacks memoized with `useCallback`, computed values with `useMemo`
+- No console.log — follows project logging standards

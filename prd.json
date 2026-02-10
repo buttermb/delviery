@@ -285,7 +285,7 @@
     "id": "task-048",
     "title": "Create shared stats card component",
     "description": "Create src/components/admin/shared/StatsCard.tsx — reusable stat card for dashboards. Props — title, value, change (percentage), trend (up/down/flat), icon, onClick, loading. Shows sparkline or mini chart if data array provided. Change shown in green (positive) or red (negative). Used in dashboard, analytics, and module overview pages.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-049",
