@@ -2191,3 +2191,15 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Uses RecurringOrdersList for dashboard display of upcoming orders
 - Edge function 'generate-recurring-order' handles auto-creation with inventory validation
 - All imports use @/ alias, no console.log, logger used for errors
+
+## task-076: Create Supabase migration for recurring_orders table
+- Created supabase/migrations/20260210000001_add_recurring_orders.sql
+- Table columns: id (UUID PK), tenant_id (UUID NOT NULL), template_order_id (UUID FK to orders), customer_id (UUID), frequency (TEXT with CHECK constraint), next_run_date (DATE NOT NULL), end_date (DATE), is_active (BOOLEAN default true), created_at/updated_at (TIMESTAMPTZ)
+- Added CHECK constraint for frequency: daily/weekly/biweekly/monthly
+- Created indexes on tenant_id, customer_id, next_run_date, is_active, template_order_id for performance
+- RLS enabled with tenant_id filtering via tenant_users join pattern
+- Policies: SELECT/INSERT/UPDATE/DELETE for tenants, ALL for super_admins
+- Added updated_at trigger function for automatic timestamp updates
+- Added table and column comments for documentation
+- Foreign key to orders(id) uses ON DELETE SET NULL to preserve recurring record if template deleted
+- Foreign key to tenants(id) uses ON DELETE CASCADE to clean up when tenant removed

@@ -453,7 +453,7 @@
     "id": "task-076",
     "title": "Create Supabase migration for recurring_orders table",
     "description": "Create supabase/migrations/add_recurring_orders.sql. Columns — id uuid primary key, tenant_id uuid not null, template_order_id uuid references orders(id), customer_id uuid, frequency text (daily/weekly/biweekly/monthly), next_run_date date, end_date date, is_active boolean default true, created_at timestamptz default now(). RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-077",
