@@ -1173,7 +1173,7 @@
     "id": "task-196",
     "title": "Create storefront-admin inventory sync indicator",
     "description": "In admin, show indicator that storefront inventory display is in sync. If there's a lag (rare), show warning. Last sync timestamp. Manual sync button for force refresh. Monitors Supabase realtime connection health. Shows in admin header near sync status indicator.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-197",

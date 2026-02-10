@@ -5744,3 +5744,28 @@ Patterns followed:
 - Proper loading states with Skeleton components
 - Error handling with showErrorToast/showSuccessToast
 - All imports use @/ alias
+
+=== Task 196: Create storefront-admin inventory sync indicator ===
+Date: Tue, Feb 10, 2026 12:35:48 PM
+
+Implementation:
+- Created src/components/admin/storefront/InventorySyncIndicator.tsx
+- Integrated into admin header in src/pages/admin/AdminLayout.tsx
+
+Features implemented:
+1. Real-time Supabase connection monitoring for inventory tables (products, inventory_batches, marketplace_product_settings)
+2. Sync status display (synced, syncing, lagging, error, disconnected)
+3. Last sync timestamp with relative time display (e.g., '2 minutes ago')
+4. Manual 'Force Sync Now' button that invalidates TanStack Query cache
+5. Connection health indicator (connected, connecting, disconnected, error)
+6. Popover with detailed stats (connection status, sync count, last sync time)
+7. Visual indicators with appropriate colors and icons for each state
+
+Patterns followed:
+- Used logger from @/lib/logger (no console.log)
+- Used @/ alias for all imports
+- Used useTenantAdminAuth() for tenant context
+- Followed existing ProductSyncStatusIndicator and OfflineStatusIndicator patterns
+- Tenant ID filtering on realtime subscriptions
+- Proper cleanup of subscriptions on unmount
+

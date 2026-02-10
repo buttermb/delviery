@@ -42,6 +42,7 @@ import { useCredits } from "@/contexts/CreditContext";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { CreditBalance } from '@/components/credits/CreditBalance';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
+import { InventorySyncIndicator } from '@/components/admin/storefront/InventorySyncIndicator';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useMenuOrderNotifications } from '@/hooks/useMenuOrderNotifications';
@@ -244,6 +245,11 @@ const AdminLayout = () => {
 
                   {/* Theme Toggle */}
                   <ThemeToggle />
+
+                  {/* Inventory Sync Indicator */}
+                  <div className="hidden sm:block">
+                    <InventorySyncIndicator size="sm" showDetails={true} />
+                  </div>
 
                   {/* Offline Status Indicator */}
                   <div className="hidden sm:block">
