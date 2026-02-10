@@ -2996,3 +2996,31 @@ Created `src/components/admin/inventory/MovementReport.tsx` — comprehensive in
 - Error handling with loading skeletons and EnhancedEmptyState for no results
 - Logger from `@/lib/logger` for export tracking and errors — no console.log
 - Proper `@/` alias imports, lucide-react icons from esm paths
+
+## task-107: Create inventory audit tool
+Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventory audit workflow:
+
+- **Dual Tab Interface**: "Current Audit" tab for active audit session, "History" tab for past audit records
+- **Product Count Entry**: Lists all tenant products with expected stock quantity and editable input for actual count
+- **Discrepancy Highlighting**: Rows with non-zero variance highlighted in amber, visual badges for status (OK/Diff)
+- **Statistics Dashboard**: Cards showing total products, counted items, discrepancy count, and net change
+- **Search Filtering**: Filter products by name, SKU, or category during audit
+- **Per-Product Notes**: Optional notes field for each product to document observations
+- **Audit Notes**: General notes textarea for the entire audit session
+- **Submit Workflow**: Confirmation dialog summarizing discrepancies before creating adjustments
+- **Inventory History Integration**: Creates `inventory_history` entries with reason "audit" for each discrepancy
+- **Product Quantity Updates**: Updates `available_quantity` on products table for all adjusted items
+- **PDF Report Generation**: Uses jsPDF to generate professional audit report with:
+  - Header with date, business name, auditor email
+  - Summary statistics
+  - Full product table with expected/actual/variance columns
+  - Color-coded variances (green for gains, red for losses)
+- **Audit History Tracking**: Queries past audit entries from inventory_history grouped by session
+- **Permission Gating**: Route wrapped in `RoleProtectedRoute` requiring 'owner' or 'admin' roles
+- **Route Registration**: Added lazy import and route at `/inventory-audit` in App.tsx
+- Uses `useTenantAdminAuth()` for tenant context, all queries filter by `tenant_id`
+- TanStack Query with `useMutation` for submit, `useQuery` for products and history
+- Proper invalidation via `invalidateOnEvent()` after submission
+- Loading skeletons, error states with retry, and empty states
+- Logger from `@/lib/logger` — no console.log usage
+- All imports use `@/` alias, lucide icons from esm paths

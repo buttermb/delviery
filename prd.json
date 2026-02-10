@@ -639,7 +639,7 @@
     "id": "task-107",
     "title": "Create inventory audit tool",
     "description": "Create src/pages/admin/InventoryAudit.tsx — physical inventory audit workflow. List all products with expected stock vs actual count entry. Highlight discrepancies. Submit audit creates adjustment entries in inventory_history with reason audit. Generate audit report PDF. Track audit history. Permission-gated to admin role.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-108",
