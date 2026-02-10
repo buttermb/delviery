@@ -4027,3 +4027,50 @@ Created `src/hooks/useCustomerAutoSegment.ts` - a hook that listens to `order_co
 - Published `customer_updated` event after segment change for downstream listeners
 - Optional callback `onSegmentChange` for UI reactions (e.g., confetti on VIP upgrade)
 - Manual `recalculateSegment` function exposed for on-demand recalculation
+
+---
+
+## task-142: Create customer block/flag system
+
+### What was implemented:
+Created a comprehensive customer flag/block system with:
+1. Database migration for `customer_flags` table
+2. `useCustomerFlags` hook for flag management
+3. `CustomerBlockFlag` component for admin panel
+4. `CustomerFlagBanner` warning component for order creation
+5. Storefront checkout block for blocked customers
+
+### Files created:
+- `supabase/migrations/20260210000001_create_customer_flags.sql` - Database migration
+- `src/hooks/useCustomerFlags.ts` - Hook for flag management
+- `src/components/admin/customers/CustomerBlockFlag.tsx` - Admin component
+- `src/components/admin/customers/CustomerFlagBanner.tsx` - Warning banner component
+
+### Files modified:
+- `src/pages/shop/CheckoutPage.tsx` - Added blocked customer check in order placement
+
+### Key features:
+1. **Flag types**: `flagged` (warning only) and `blocked` (prevents ordering)
+2. **Flag reasons**: payment_issues, compliance, fraud, abuse, other
+3. **Activity logging**: Automatic logging via database trigger when flags are added/resolved
+4. **RLS security**: Tenant-isolated policies using tenant_users pattern
+5. **Admin UI**: Full management component with add/resolve dialogs and history tabs
+6. **Warning banner**: CustomerFlagBanner shows in order creation when customer is flagged
+7. **Storefront blocking**: Blocked customers cannot place orders via storefront checkout
+8. **Permission-based**: Uses `usePermissions` hook for admin-only flag management
+
+### Database features:
+- `customer_flags` table with unique constraint for active flags
+- `is_customer_blocked(customer_id, tenant_id)` RPC function
+- `get_customer_flags(customer_id, tenant_id)` RPC function
+- Automatic activity log trigger on flag changes
+- Indexes for tenant_id, customer_id, and is_active
+
+### Patterns followed:
+- Used `useTenantAdminAuth()` for tenant context
+- All database queries filter by `tenant_id`
+- Used `logger` from `@/lib/logger` (no console.log)
+- Used `@/` alias for all imports
+- Loading and error states in all components
+- TanStack Query for data fetching with proper query key invalidation
+- Toast notifications for user feedback

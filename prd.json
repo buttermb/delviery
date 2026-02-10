@@ -849,7 +849,7 @@
     "id": "task-142",
     "title": "Create customer block/flag system",
     "description": "Ability to flag or block customers. Flagged customers show warning banner when creating orders. Blocked customers prevented from ordering via storefront. Flag reasons — payment issues, compliance, fraud, abuse. Flag visible across all modules. Activity log tracks flag changes. Admin-only action via usePermissions.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-143",
