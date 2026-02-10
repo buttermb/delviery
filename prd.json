@@ -807,7 +807,7 @@
     "id": "task-135",
     "title": "Create customer credit/balance system",
     "description": "Add credit balance to customer records. Create src/hooks/useCustomerCredit.ts — addCredit, deductCredit, getBalance. Credits applied during order payment. Credit history log. Refunds can be issued as credit. Show balance on customer detail and during order checkout. Negative balance = outstanding debt. Connects customer, payment, and order modules.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-136",

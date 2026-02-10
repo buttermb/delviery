@@ -31,6 +31,7 @@ import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOr
 import { CustomerPaymentHistoryTab } from '@/components/admin/customers/CustomerPaymentHistoryTab';
 import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/CustomerDeliveryAddressesTab';
 import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
+import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
 interface Customer {
   id: string;
@@ -59,18 +60,25 @@ export default function CustomerDetails() {
   const { tenant } = useTenantAdminAuth();
   const { isReady: _encryptionIsReady } = useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [notes, setNotes] = useState<any[]>([]);
+  const [orders, setOrders] = useState<unknown[]>([]);
+  const [payments, setPayments] = useState<unknown[]>([]);
+  const [notes, setNotes] = useState<unknown[]>([]);
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
-  const [storeCredit, setStoreCredit] = useState(0);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
   const [storeCreditDialogOpen, setStoreCreditDialogOpen] = useState(false);
   const [storeCreditAmount, setStoreCreditAmount] = useState('');
 
   // Get tenant_id from tenant context or customer data
   const tenantId = tenant?.id || customer?.tenant_id;
+
+  // Use the customer credit hook for credit balance management
+  const {
+    balance: storeCredit,
+    addCredit,
+    isAddingCredit,
+    refetch: refetchCredit,
+  } = useCustomerCredit(id);
 
   useEffect(() => {
     if (id) {
@@ -133,25 +141,6 @@ export default function CustomerDetails() {
 
       if (notesError) throw notesError;
       setNotes(notesData || []);
-
-      // Load store credit balance
-      const { data: creditData } = await supabase
-        .from('customer_credits')
-        .select('amount, transaction_type')
-        .eq('customer_id', id)
-        .eq('tenant_id', tenantId);
-
-      if (creditData) {
-        const totalCredit = creditData.reduce((sum, credit) => {
-          if (credit.transaction_type === 'issued' || credit.transaction_type === 'refund') {
-            return sum + (credit.amount || 0);
-          } else if (credit.transaction_type === 'used') {
-            return sum - (credit.amount || 0);
-          }
-          return sum;
-        }, 0);
-        setStoreCredit(Math.max(0, totalCredit));
-      }
 
       // Calculate outstanding balance (total orders - total payments)
       const ordersTotal = (ordersData || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
@@ -710,29 +699,26 @@ export default function CustomerDetails() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount))) {
-                    try {
-                      const { error } = await supabase.from('customer_credits').insert({
-                        tenant_id: tenant?.id,
-                        customer_id: id,
-                        amount: parseFloat(storeCreditAmount),
-                        transaction_type: 'issued',
-                        reason: 'Manual credit issued by admin'
-                      });
-                      if (error) throw error;
+                  if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
+                    const result = await addCredit({
+                      customerId: id,
+                      amount: parseFloat(storeCreditAmount),
+                      reason: 'Manual credit issued by admin',
+                      transactionType: 'issued',
+                    });
+                    if (result) {
                       toast.success(`$${storeCreditAmount} store credit added`);
                       setStoreCreditDialogOpen(false);
                       setStoreCreditAmount('');
-                      loadCustomerData();
-                    } catch (error) {
-                      logger.error('Failed to add store credit', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
+                      refetchCredit();
+                    } else {
                       toast.error('Failed to add store credit');
                     }
                   }
                 }}
-                disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount))}
+                disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
               >
-                Add Credit
+                {isAddingCredit ? 'Adding...' : 'Add Credit'}
               </Button>
             </div>
           </div>

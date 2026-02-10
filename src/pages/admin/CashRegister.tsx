@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
+import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
 interface Product {
   id: string;
@@ -159,13 +160,16 @@ function CashRegisterContent() {
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
 
   // Tax state
-  const [taxRate, setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
-  const [taxEnabled, setTaxEnabled] = useState<boolean>(true);
+  const [taxRate, _setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
+  const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
 
   // Customer state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+
+  // Customer credit balance (for showing available store credit)
+  const { balance: customerCreditBalance } = useCustomerCredit(selectedCustomer?.id);
 
   // Clear cart confirmation
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false);
@@ -917,10 +921,18 @@ function CashRegisterContent() {
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
                 {selectedCustomer ? (
-                  <div>
-                    <span className="font-medium text-sm">{selectedCustomer.name}</span>
-                    {selectedCustomer.phone && (
-                      <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <span className="font-medium text-sm">{selectedCustomer.name}</span>
+                      {selectedCustomer.phone && (
+                        <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
+                      )}
+                    </div>
+                    {customerCreditBalance > 0 && (
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
+                        <Wallet className="h-3 w-3 mr-1" />
+                        ${customerCreditBalance.toFixed(2)} credit
+                      </Badge>
                     )}
                   </div>
                 ) : (

@@ -3774,3 +3774,32 @@ Implementation follows all project rules:
 - Empty state with helpful message when no purchase history
 - Uses `logger` for error logging — no console.log statements
 - Proper imports with `@/` alias throughout
+
+## task-135: Create customer credit/balance system
+
+### What was implemented:
+- Created `src/hooks/useCustomerCredit.ts` — a comprehensive hook for managing customer store credit
+- Hook provides: `addCredit`, `deductCredit`, `getBalance`, `hasCredit` functions
+- Uses TanStack Query for caching and automatic invalidation
+- Transaction types: issued, used, refund, expired, adjustment
+- Calculates balance from transaction history (issued + refunded - used)
+- Includes standalone `getCustomerCreditBalance()` function for non-React contexts
+
+### Integration points:
+- Updated `CustomerDetails.tsx` to use the new hook:
+  - Replaced inline credit fetching with `useCustomerCredit` hook
+  - Updated "Add Store Credit" dialog to use `addCredit` mutation
+  - Shows loading state during credit addition
+  - Auto-refetches credit balance after changes
+- Updated `CashRegister.tsx` (POS checkout) to show customer credit:
+  - Displays credit balance badge next to customer name
+  - Shows green badge with wallet icon when credit > 0
+  - Helps staff know available credit during checkout
+
+### Key patterns learned:
+- Existing `customer_credits` table already exists with columns: id, tenant_id, customer_id, amount, transaction_type, reason, order_id, created_by, created_at
+- Transaction types used: 'issued', 'used', 'refund' — balance = issued + refund - used
+- Use `unknown[]` instead of `any[]` for state variables to follow TypeScript best practices
+- The hook pattern follows existing hooks like `useCredits.ts` for tenant credits
+- Query keys should be namespaced to avoid collisions
+- All queries properly filter by `tenant_id` from `useTenantAdminAuth()`
