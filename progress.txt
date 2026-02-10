@@ -365,3 +365,33 @@
 - No console.log — no logging needed in pure UI components
 - No tenant_id filtering needed — these are pure UI components with no data fetching
 - All imports use `@/` alias as required
+
+## task-017: Create shared error boundary component
+- Created `src/components/admin/shared/ModuleErrorBoundary.tsx` as a React class component error boundary
+- Component catches errors in admin modules and displays a friendly error state
+- Props interface includes:
+  - `children: ReactNode` — the wrapped module content
+  - `moduleName: string` — required module name for error context and display
+  - `fallback?: ReactNode` — optional custom fallback UI
+  - `onRetry?: () => void` — optional custom retry handler callback
+- Class component lifecycle methods:
+  - `getDerivedStateFromError(error)` — updates state when error is caught
+  - `componentDidCatch(error, errorInfo)` — logs error and shows toast notification
+- Error handling:
+  - Logs error with module context via `logger.error()` from `@/lib/logger`
+  - Displays toast notification via `toast.error()` from `sonner`
+  - Both error message and component stack are captured
+- Retry functionality:
+  - `handleRetry()` resets error state and calls optional `onRetry` prop
+  - Logs retry attempt with module context via `logger.info()`
+- Fallback UI:
+  - Centered Card layout with AlertTriangle icon in destructive color
+  - Shows module name in title: "{moduleName} Error"
+  - Displays error message in styled error box
+  - Stack trace visible in dev mode only (import.meta.env.DEV check)
+  - Single retry button with RefreshCw icon: "Retry {moduleName}"
+- Uses shadcn/ui components: Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+- Uses lucide-react icons: AlertTriangle, RefreshCw
+- No console.log — all logging via `@/lib/logger`
+- Follows existing AdminErrorBoundary pattern but simplified for per-module use
+- All imports use `@/` alias as required

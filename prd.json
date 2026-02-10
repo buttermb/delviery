@@ -99,7 +99,7 @@
     "id": "task-017",
     "title": "Create shared error boundary component",
     "description": "Create src/components/admin/shared/ModuleErrorBoundary.tsx — a React error boundary that catches errors in admin modules and shows a friendly error state with retry button. Logs error to logger.error with module name and error details. Shows toast notification via sonner. Renders fallback UI with the module name and retry action.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-018",
