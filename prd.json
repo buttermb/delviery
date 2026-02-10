@@ -1179,7 +1179,7 @@
     "id": "task-197",
     "title": "Create menu performance comparison report",
     "description": "Create src/components/admin/menus/MenuComparison.tsx — compare 2-3 menus side by side. Metrics — views, orders, revenue, conversion rate, avg order value, top products. Date range selector. Highlight winner per metric. Export comparison. Useful for deciding which menu format works best. Data from menu_events and orders.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-198",

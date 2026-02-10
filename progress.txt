@@ -5769,3 +5769,20 @@ Patterns followed:
 - Tenant ID filtering on realtime subscriptions
 - Proper cleanup of subscriptions on unmount
 
+
+## task-197: Create menu performance comparison report
+- Created `src/components/admin/menus/MenuComparison.tsx` for side-by-side menu performance comparison
+- Allows selecting 2-3 menus to compare at once using multi-select chips with remove buttons
+- Date range picker using existing `AnalyticsDateRangePicker` component
+- Metrics compared: views, unique visitors, orders, revenue, conversion rate, avg order value
+- Each metric row highlights the winner with a gold badge using `WinnerBadge` component
+- Top products section shows best sellers from each menu side by side
+- Summary section counts total wins per menu and identifies overall winner
+- Export functionality using existing `AnalyticsExportButton` for CSV/JSON/Excel
+- Data fetched from `menu_access_logs` (views) and `menu_orders` (orders/revenue)
+- Uses `useTenantAdminAuth()` for tenant context and filters all queries by `tenant_id`
+- Proper loading states with `Skeleton` components during data fetch
+- Empty states for when no menus exist or fewer than 2 menus available
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Used `useCallback` for memoizing expensive operations like winner calculations
+- `formatCurrency` helper for consistent currency display
