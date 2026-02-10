@@ -978,4 +978,18 @@ export const queryKeys = {
     pinned: (tenantId?: string) =>
       [...queryKeys.orderNotes.all, 'pinned', tenantId] as const,
   },
+
+  // Product Tags
+  productTags: {
+    all: ['product-tags'] as const,
+    lists: () => [...queryKeys.productTags.all, 'list'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.productTags.lists(), { tenantId }] as const,
+    details: () => [...queryKeys.productTags.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.productTags.details(), id] as const,
+    popular: (tenantId?: string, limit?: number) =>
+      [...queryKeys.productTags.all, 'popular', tenantId, limit] as const,
+    byProduct: (productId: string) =>
+      [...queryKeys.productTags.all, 'product', productId] as const,
+  },
 } as const;

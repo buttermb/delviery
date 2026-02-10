@@ -675,7 +675,7 @@
     "id": "task-113",
     "title": "Create product tags system",
     "description": "Create tagging system for products. Tags are tenant-specific (stored in product_tags table). Multiple tags per product. Filter products by tags. Tags displayed as colored chips. Create/edit/delete tags. Auto-suggest existing tags when adding. Popular tags shown in filter bar. Tags shared across product list, menus, and search results.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-114",

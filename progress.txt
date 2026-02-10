@@ -3135,3 +3135,19 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
   - Extended types with `& { archived_at?: string | null }` for new columns
   - Default filter to 'active' to hide archived by default
   - Archive is soft-delete: preserves order history and analytics data
+
+## task-113: Create product tags system
+- Extended existing useProductTags.ts hook with full CRUD functionality
+- Added query keys for product tags in queryKeys.ts (productTags.list, productTags.popular, productTags.byProduct)
+- Created hooks: useProductTags, usePopularProductTags, useProductTagAssignments, useCreateProductTag, useUpdateProductTag, useDeleteProductTag, useAssignProductTag, useRemoveProductTag, useBatchAssignProductTags, useSearchProductTags, useProductTagsByIds
+- Created ProductTagsManager.tsx - full CRUD UI for managing tags with color picker and preview
+- Created ProductTagBadge.tsx - colored chip display for tags with removable mode and sizes (sm/md/lg)
+- Created ProductTagBadgeList.tsx - list display with optional max count and '+N more' indicator
+- Created ProductTagFilter.tsx - filter bar component with popover, search, checkboxes, and popular tags section
+- Created ProductTagInput.tsx - autocomplete input for assigning tags to products with inline tag creation
+- All components use logger from @/lib/logger (no console.log)
+- All database queries filter by tenant_id for multi-tenant isolation
+- Used useTenantAdminAuth() for tenant context as required
+- Graceful handling of missing tables (42P01 error code)
+- TAG_COLORS constant exported for consistent color palette across components
+- Used sonner toast for success/error notifications
