@@ -915,7 +915,7 @@
     "id": "task-153",
     "title": "Create vendor detail page with order history",
     "description": "On vendor detail page, show purchase order history. All purchase orders to this vendor. Columns — PO number, date, total, status, items count, delivery date. Links to PO detail. Calculate total spent with this vendor all-time and this month.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-154",

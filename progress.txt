@@ -4474,3 +4474,22 @@ Date: 2026-02-10
 - All imports use `@/` alias, logging via `logger` from `@/lib/logger`
 - Used existing patterns: useTenantAdminAuth, useTenantNavigation, SwipeBackWrapper, SEOHead
 - Purchase Order tab placeholder for future task-153
+
+## task-153: Create vendor detail page with order history
+- Created src/components/admin/vendors/VendorOrderHistory.tsx component
+- Shows purchase order history for a specific vendor
+- DataTable columns: PO Number, Date, Total, Status, Items Count, Expected Delivery
+- Summary stats cards: Total Orders, Total Spent (All Time), Spent This Month
+- Status badges with color coding: draft (outline), sent (secondary), confirmed (default), received (green), cancelled (destructive)
+- Search filter by PO number, status filter dropdown
+- Clicking a row navigates to PO detail page via navigateToAdmin
+- New Purchase Order button pre-fills vendor ID in URL
+- Used queryKeys.vendors.orders(tenantId, vendorId) for caching
+- Joined purchase_order_items to get item counts
+- All queries filter by account_id (tenant isolation)
+- Spent calculations only count received or confirmed POs
+- Monthly spending calculated from first day of current month
+- Replaced placeholder tab content in VendorDetailPage with VendorOrderHistory component
+- Removed unused ExternalLink import from VendorDetailPage
+- Used existing patterns: usePagination, StandardPagination, EnhancedEmptyState
+- All imports use @/ alias, logging via logger

@@ -16,7 +16,6 @@ import {
   Edit,
   Loader2,
   FileText,
-  ExternalLink,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +24,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { VendorProductCatalog } from '@/components/admin/vendors/VendorProductCatalog';
+import { VendorOrderHistory } from '@/components/admin/vendors/VendorOrderHistory';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -265,15 +265,7 @@ export default function VendorDetailPage() {
           </TabsContent>
 
           <TabsContent value="orders">
-            <Card>
-              <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">Purchase Order History</h3>
-                <p className="text-muted-foreground mb-4">
-                  Purchase order tracking will be available in a future update.
-                </p>
-              </CardContent>
-            </Card>
+            <VendorOrderHistory vendorId={vendor.id} vendorName={vendor.name} />
           </TabsContent>
         </Tabs>
       </div>
