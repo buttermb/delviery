@@ -2977,3 +2977,22 @@ Enhanced `src/pages/admin/InventoryDashboard.tsx` with comprehensive inventory o
 - Error handling with logger from `@/lib/logger` — no console.log
 - Uses Recharts (PieChart, BarChart), lucide-react icons, shadcn/ui components
 - Responsive design with grid layouts and proper mobile breakpoints
+
+## task-106: Create inventory movement report
+Created `src/components/admin/inventory/MovementReport.tsx` — comprehensive inventory movement reporting component:
+
+- **Date Range Filtering**: Quick presets (Today, 7/30/90 days, All Time) + custom calendar pickers for start/end dates
+- **Multi-Filter Support**: Filter by product (dropdown from products table), reason (receiving, sale, return, adjustment, damage, theft, quality, count, transfer, disposal, audit, other), and user (from tenant_users)
+- **Search Functionality**: Client-side search across product name, SKU, reason, and notes
+- **Sortable Columns**: Click column headers to sort by date, product name, change amount, reason, or user (toggles asc/desc with visual indicators)
+- **Rich Data Table**: Shows date, product (name + SKU), change amount (colored +/-), previous/new quantity, reason badge, order reference (linked if from order), user email
+- **Totals Row**: Footer row with movement count, total increase, total decrease, and net change (all color-coded)
+- **CSV Export**: Export button generates full report with all columns plus summary totals, properly quoted/escaped
+- **Order Reference Linking**: Fetches order_number from orders table via reference_id for movements tied to orders
+- **User Resolution**: Joins to tenant_users to show email instead of just user_id
+- **Pagination**: Server-side pagination with page size 25, previous/next navigation, page count display
+- All queries filter by `tenant_id` via `useTenantAdminAuth()` hook
+- Uses TanStack Query with proper query keys from `@/lib/queryKeys`
+- Error handling with loading skeletons and EnhancedEmptyState for no results
+- Logger from `@/lib/logger` for export tracking and errors — no console.log
+- Proper `@/` alias imports, lucide-react icons from esm paths

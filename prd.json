@@ -633,7 +633,7 @@
     "id": "task-106",
     "title": "Create inventory movement report",
     "description": "Create src/components/admin/inventory/MovementReport.tsx — detailed report of all inventory movements over a date range. Filter by product, reason, user. Show table with product name, date, change, reason, order reference, user. Totals row. Export to CSV. Connects inventory_history to orders (via reference_id) and users. Sortable columns.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-107",
