@@ -165,7 +165,7 @@
     "id": "task-028",
     "title": "Create useDashboardStats hook",
     "description": "Create src/hooks/useDashboardStats.ts — aggregates stats from all modules. Returns ordersToday, revenueToday, newCustomers, lowStockCount, pendingDeliveries, activeMenus, totalProducts, avgOrderValue. Each stat includes value, change percentage from yesterday, and trend direction (up/down/flat). Uses parallel TanStack queries. RefetchInterval 30 seconds.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-029",

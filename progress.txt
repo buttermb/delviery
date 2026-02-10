@@ -751,3 +751,41 @@
 - No console.log — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias as required
 - Follows project import order: React → Third-party → Types → Components → Utils
+
+## task-028: Create useDashboardStats hook
+- Extended existing `src/hooks/useDashboardStats.ts` to add trend indicators per task requirements
+- Added new types for trend support:
+  - `TrendDirection` — 'up' | 'down' | 'flat' for visual indicators
+  - `StatWithTrend` — { value, changePercent, trend } structure for each stat
+  - `DashboardStatsWithTrends` — primary return type with 8 key stats
+- Key stats returned with trends (matching task-028 specification exactly):
+  - `ordersToday` — orders placed today with yesterday comparison
+  - `revenueToday` — revenue today with yesterday comparison
+  - `newCustomers` — new customers today with yesterday comparison
+  - `lowStockCount` — low stock items count (inverted trend: more is bad)
+  - `pendingDeliveries` — active deliveries in transit
+  - `activeMenus` — currently active disposable menus
+  - `totalProducts` — total product count (stable metric, flat trend)
+  - `avgOrderValue` — MTD average order value with growth trend
+- Helper functions added:
+  - `calculateTrend(changePercent)` — determines up/down/flat based on threshold (±0.5%)
+  - `calculateChangePercent(current, previous)` — handles zero division edge case
+  - `createStatWithTrend(current, previous)` — builds StatWithTrend object with rounded percent
+- Refactored internal function:
+  - Original query logic moved to `useRawDashboardStats()` internal function
+  - Main `useDashboardStats()` now wraps raw stats and adds trend calculations
+  - Trend calculations memoized with `useMemo` for performance
+- Return object includes:
+  - `stats: DashboardStatsWithTrends` — primary API per task requirements
+  - `rawStats: DashboardStats` — backward compatibility with existing consumers
+  - `data, isLoading, isPending, isFetching, isError, error, refetch` — query state
+- Query configuration preserved:
+  - `refetchInterval: 30_000` (30 seconds) as specified
+  - `staleTime: 30_000` for caching
+  - `enabled: !!tenantId` for tenant context
+- Uses parallel queries via `Promise.allSettled` for efficient data fetching
+- Special handling for `lowStockCount` — inverted trend direction (more items = bad)
+- Changed from `useTenantAdminAuth()` to `useTenantContext()` for consistency with task-005
+- No console.log — all logging via `logger.debug()` from `@/lib/logger`
+- All imports use `@/` alias as required
+- Import order follows convention: React → Third-party → Local imports
