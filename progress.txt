@@ -700,3 +700,54 @@
 - Graceful error handling with logger.warn for individual query failures
 - No console.log — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias as required
+
+## task-027: Create global search command palette
+- Created `src/components/admin/shared/CommandPalette.tsx` as a Cmd+K / Ctrl+K command palette
+- Keyboard shortcut implementation:
+  - Global event listener on `document` for keydown events
+  - Checks for 'k' key with metaKey (Mac) or ctrlKey (Windows/Linux)
+  - Prevents default browser behavior and toggles the palette
+  - Proper cleanup on unmount via useEffect return
+- Uses `useGlobalSearch` hook from `@/hooks/useGlobalSearch`:
+  - Passes `enabled: open` to only search when palette is visible
+  - Destructures results, isSearching, setQuery, clear, query, totalCount
+  - Clears search when palette closes via useEffect
+- Groups results by entity type using `ENTITY_LABELS` from `@/lib/constants/entityTypes`:
+  - Results grouped into Orders, Products, Customers, Vendors sections
+  - Each section only renders if it has results
+  - CommandSeparator between non-empty groups
+- Entity icons via `ENTITY_ICON_COMPONENTS` local mapping:
+  - ORDER → FileText, PRODUCT → Package, CUSTOMER → Users, VENDOR → Building2
+  - Uses actual lucide-react component imports (not dynamic icon loading)
+- Each result shows:
+  - Entity type icon (color-coded muted-foreground)
+  - Name with truncation for overflow
+  - Subtitle (e.g., order number, SKU, email) as small muted text
+  - StatusBadge when status is available (maps entity type to StatusEntityType)
+  - ArrowRight icon for navigation affordance
+- Navigation via `useEntityNavigation` hook:
+  - `navigateToEntity(entityType, entityId)` on item selection
+  - Checks `isReady` before navigating, logs warning if not ready
+  - Closes palette after successful navigation
+- Recent searches stored in localStorage via `STORAGE_KEYS`:
+  - Uses `COMMAND_PALETTE_RECENT_SEARCHES` key (already defined in storageKeys.ts)
+  - Stores up to 10 recent searches (MAX_RECENT_SEARCHES constant)
+  - Each entry: { id, entityType, name, subtitle, timestamp }
+  - Uses `safeStorage`, `safeJsonParse`, `safeJsonStringify` for error-safe storage
+  - Recent searches section shown when no active search query
+  - Clear button to remove all recent searches
+- Keyboard shortcut hints in footer:
+  - Platform-aware modifier key (⌘ for Mac, Ctrl for others)
+  - Navigation hints: ↑↓ navigate, ↵ select, Esc close
+  - Uses styled kbd elements for visual consistency
+- Uses Zustand store for global state:
+  - `useCommandPaletteStore` with open, setOpen, toggle
+  - Exported for external control (e.g., from header buttons)
+- Empty states:
+  - "Type at least 2 characters to search" when query is too short
+  - "No results found" with suggestion to try different term
+  - Loading spinner with "Searching..." message
+- Uses shadcn/ui command components: CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator, CommandShortcut
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required
+- Follows project import order: React → Third-party → Types → Components → Utils

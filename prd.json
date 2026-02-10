@@ -159,7 +159,7 @@
     "id": "task-027",
     "title": "Create global search command palette",
     "description": "Create src/components/admin/shared/CommandPalette.tsx — Cmd+K / Ctrl+K command palette. Uses useGlobalSearch hook. Groups results by entity type with icons from ENTITY_ICONS. Each result shows name, subtitle (e.g. order number, email), and status badge. Clicking navigates via useEntityNavigation. Recent searches stored in localStorage via STORAGE_KEYS. Show keyboard shortcut hints.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-028",
