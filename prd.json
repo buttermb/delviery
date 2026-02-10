@@ -1113,7 +1113,7 @@
     "id": "task-186",
     "title": "Create storefront product sync from admin",
     "description": "When admin updates a product (price, name, description, image, stock), changes reflect on storefront immediately. Use eventBus product_updated event. Storefront uses TanStack Query with realtime invalidation. No manual publish step needed. Audit log tracks what changed and when. Show sync status indicator on product pages.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-187",

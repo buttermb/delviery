@@ -5484,3 +5484,52 @@ Completed: Tue, Feb 10, 2026 11:32:43 AM
 - New orders slide in at top with `animate-new-order-highlight` CSS animation class
 - All subscriptions properly cleaned up on unmount via channelsRef cleanup
 - Updated JSDoc header to document all subscribed tables and features
+
+
+## task-186: Create storefront product sync from admin
+Completed: Tue, Feb 10, 2026
+
+### What was implemented:
+1. **useStorefrontProductSync hook** (`src/hooks/useStorefrontProductSync.ts`):
+   - Listens to product_updated, price_changed, and inventory_changed events from eventBus
+   - Subscribes to Supabase realtime on products table with tenant isolation
+   - Automatically invalidates all storefront-related TanStack Query caches:
+     - shopProducts (list, detail, carousels, categories)
+     - storefront config
+     - inventory, menus, POS products
+   - Tracks per-product sync status (synced, syncing, pending, error)
+   - Provides manual syncProduct() for forcing refresh
+   - Logs product changes to activity_logs for audit trail
+
+2. **ProductSyncStatusIndicator component** (`src/components/admin/products/ProductSyncStatusIndicator.tsx`):
+   - Visual badge showing sync status with icons
+   - Tooltip with detailed sync info (product name, last sync time, sync count)
+   - Connection status indicator for realtime subscription
+   - Size variants (sm, md, lg) and optional detail view
+   - Color-coded status: green (synced), blue (syncing), amber (pending), red (error)
+
+3. **Product sync audit migration** (`supabase/migrations/20260210000001_add_product_sync_audit.sql`):
+   - product_sync_audit table with RLS policies
+   - Tracks field_changed, old_value, new_value, sync_source, sync_status
+   - Automatic trigger on products table UPDATE to log changes
+   - Indexes for tenant, product, status, and created_at queries
+   - Tracks affected_storefronts and affected_menus
+
+4. **useProductSyncAudit hook** (`src/hooks/useProductSyncAudit.ts`):
+   - Query audit records by product, tenant, status, or field
+   - Get pending/failed sync counts
+   - useProductsLatestSync for batch status check
+
+5. **Integration into ProductDetailsPage**:
+   - Added sync indicator in product header next to SKU/category badges
+   - Shows realtime connection status
+   - Displays last sync timestamp and session sync count
+
+### Key patterns used:
+- Used logger from @/lib/logger (no console.log)
+- All queries filter by tenant_id via RLS
+- Used @/ alias for all imports
+- TanStack Query invalidation for cache sync
+- eventBus for cross-module communication
+- Proper TypeScript types (no any)
+- Loading states handled in UI components

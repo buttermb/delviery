@@ -21,8 +21,10 @@ import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDis
 import { ProductPerformanceCard } from '@/components/admin/products/ProductPerformanceCard';
 import { ProductStorefrontPreview } from '@/components/admin/products/ProductStorefrontPreview';
 import { ProductMarginAlert } from '@/components/admin/products/ProductMarginAlert';
+import { ProductSyncStatusIndicator } from '@/components/admin/products/ProductSyncStatusIndicator';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useProductArchive } from '@/hooks/useProductArchive';
+import { useStorefrontProductSync } from '@/hooks/useStorefrontProductSync';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -51,13 +53,24 @@ import { useState } from 'react';
 export default function ProductDetailsPage() {
     const { productId } = useParams<{ productId: string }>();
     const { navigateToAdmin } = useTenantNavigation();
-    const { tenant: _tenant } = useTenantAdminAuth();
+    const { tenant } = useTenantAdminAuth();
     const [activeTab, setActiveTab] = useState('info');
     const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
 
     const { data: product, isLoading, error } = useProduct({ productId });
     const { data: inventoryHistory = [], isLoading: historyLoading } = useProductInventoryHistory(productId);
     const { data: frontedInventory = [], isLoading: frontedLoading } = useProductFrontedInventory(productId);
+
+    // Product sync status for real-time storefront updates
+    const {
+        connectionStatus,
+        getProductSyncStatus,
+        lastSyncAt,
+        syncCount,
+    } = useStorefrontProductSync({
+        tenantId: tenant?.id ?? null,
+        enableRealtime: true,
+    });
 
     // Loading state
     if (isLoading) {
@@ -161,6 +174,19 @@ export default function ProductDetailsPage() {
                                         <Badge variant="outline" className="capitalize">
                                             {product.strain_type}
                                         </Badge>
+                                    )}
+                                    {/* Storefront sync status indicator */}
+                                    {productId && (
+                                        <ProductSyncStatusIndicator
+                                            syncStatus={getProductSyncStatus(productId)}
+                                            connectionStatus={connectionStatus}
+                                            lastSyncAt={lastSyncAt}
+                                            syncCount={syncCount}
+                                            productName={product.name}
+                                            size="sm"
+                                            showDetails={false}
+                                            showConnection={true}
+                                        />
                                     )}
                                 </div>
                             </div>
