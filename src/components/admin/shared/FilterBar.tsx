@@ -280,14 +280,14 @@ export function FilterBar({
           <Select
             value={(activeFilters[config.key] as string) ?? ''}
             onValueChange={(value) =>
-              handleFilterValueChange(config.key, value || null)
+              handleFilterValueChange(config.key, value === '__all__' ? null : (value || null))
             }
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder={config.placeholder ?? `All ${config.label}`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All {config.label}</SelectItem>
+              <SelectItem value="__all__">All {config.label}</SelectItem>
               {config.options?.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

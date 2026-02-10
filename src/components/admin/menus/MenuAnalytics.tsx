@@ -377,12 +377,12 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
           />
 
           {/* Compare Menu Selector */}
-          <Select value={compareMenuId || ''} onValueChange={(v) => setCompareMenuId(v || undefined)}>
+          <Select value={compareMenuId || '__none__'} onValueChange={(v) => setCompareMenuId(v === '__none__' ? undefined : v)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Compare with..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No comparison</SelectItem>
+              <SelectItem value="__none__">No comparison</SelectItem>
               {menus.filter(m => m.id !== currentMenuId).map((menu) => (
                 <SelectItem key={menu.id} value={menu.id}>
                   {menu.name}

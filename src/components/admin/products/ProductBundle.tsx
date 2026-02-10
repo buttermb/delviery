@@ -1017,7 +1017,7 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
                       </SelectTrigger>
                       <SelectContent>
                         {availableProducts.length === 0 ? (
-                          <SelectItem value="" disabled>
+                          <SelectItem value="__placeholder__" disabled>
                             No more products available
                           </SelectItem>
                         ) : (

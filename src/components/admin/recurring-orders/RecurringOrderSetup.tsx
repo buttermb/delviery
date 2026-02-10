@@ -103,33 +103,33 @@ function RecurringOrderSetupComponent({
     resolver: zodResolver(schema),
     defaultValues: editSchedule
       ? {
-          name: editSchedule.name,
-          client_id: editSchedule.client_id,
-          frequency: editSchedule.frequency,
-          next_order_date: editSchedule.next_order_date.split("T")[0],
-          end_date: editSchedule.end_date ? editSchedule.end_date.split("T")[0] : null,
-          day_of_week: editSchedule.day_of_week,
-          day_of_month: editSchedule.day_of_month,
-          auto_confirm: editSchedule.auto_confirm,
-          auto_assign_runner: editSchedule.auto_assign_runner,
-          preferred_runner_id: editSchedule.preferred_runner_id,
-          delivery_address: editSchedule.delivery_address,
-          delivery_notes: editSchedule.delivery_notes,
-          notes: editSchedule.notes,
-        }
+        name: editSchedule.name,
+        client_id: editSchedule.client_id,
+        frequency: editSchedule.frequency,
+        next_order_date: editSchedule.next_order_date.split("T")[0],
+        end_date: editSchedule.end_date ? editSchedule.end_date.split("T")[0] : null,
+        day_of_week: editSchedule.day_of_week,
+        day_of_month: editSchedule.day_of_month,
+        auto_confirm: editSchedule.auto_confirm,
+        auto_assign_runner: editSchedule.auto_assign_runner,
+        preferred_runner_id: editSchedule.preferred_runner_id,
+        delivery_address: editSchedule.delivery_address,
+        delivery_notes: editSchedule.delivery_notes,
+        notes: editSchedule.notes,
+      }
       : {
-          frequency: "weekly",
-          auto_confirm: false,
-          auto_assign_runner: false,
-          next_order_date: new Date().toISOString().split("T")[0],
-          end_date: null,
-          day_of_week: null,
-          day_of_month: null,
-          preferred_runner_id: null,
-          delivery_address: null,
-          delivery_notes: null,
-          notes: null,
-        },
+        frequency: "weekly",
+        auto_confirm: false,
+        auto_assign_runner: false,
+        next_order_date: new Date().toISOString().split("T")[0],
+        end_date: null,
+        day_of_week: null,
+        day_of_month: null,
+        preferred_runner_id: null,
+        delivery_address: null,
+        delivery_notes: null,
+        notes: null,
+      },
   });
 
   const frequency = watch("frequency");
@@ -389,14 +389,14 @@ function RecurringOrderSetupComponent({
             <div className="space-y-2">
               <Label>Preferred Day of Week</Label>
               <Select
-                value={watch("day_of_week")?.toString() || ""}
-                onValueChange={(v) => setValue("day_of_week", v ? parseInt(v) : null)}
+                value={watch("day_of_week")?.toString() || "__none__"}
+                onValueChange={(v) => setValue("day_of_week", v && v !== '__none__' ? parseInt(v) : null)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select day (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No preference</SelectItem>
+                  <SelectItem value="__none__">No preference</SelectItem>
                   {DAYS_OF_WEEK.map((day) => (
                     <SelectItem key={day.value} value={day.value.toString()}>
                       {day.label}
@@ -691,7 +691,7 @@ function RecurringOrderSetupComponent({
 
         <DialogFooterActions
           primaryLabel={editSchedule ? "Update Schedule" : "Create Schedule"}
-          onPrimary={() => {}}
+          onPrimary={() => { }}
           primaryLoading={isSubmitting}
           primaryDisabled={!hasOrderItemChanges}
           secondaryLabel="Cancel"

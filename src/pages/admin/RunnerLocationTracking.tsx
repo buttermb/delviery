@@ -330,12 +330,12 @@ export default function RunnerLocationTracking() {
               {selectedRunnerId && deliveries.length > 0 && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Delivery (Optional)</label>
-                  <Select value={selectedDeliveryId} onValueChange={setSelectedDeliveryId}>
+                  <Select value={selectedDeliveryId || '__all__'} onValueChange={(v) => setSelectedDeliveryId(v === '__all__' ? '' : v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All deliveries" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All deliveries</SelectItem>
+                      <SelectItem value="__all__">All deliveries</SelectItem>
                       {deliveries.map((delivery) => (
                         <SelectItem key={delivery.id} value={delivery.id}>
                           Order #{delivery.order?.order_number || 'N/A'} - {delivery.status}
@@ -481,7 +481,7 @@ export default function RunnerLocationTracking() {
                                       <Badge
                                         variant={
                                           delivery.status === 'in_transit' ? 'default' :
-                                          delivery.status === 'picked_up' ? 'secondary' : 'outline'
+                                            delivery.status === 'picked_up' ? 'secondary' : 'outline'
                                         }
                                         className="text-xs"
                                       >
@@ -714,7 +714,7 @@ export default function RunnerLocationTracking() {
                                 <Badge
                                   variant={
                                     delivery.status === 'delivered' ? 'default' :
-                                    delivery.status === 'in_transit' ? 'secondary' : 'outline'
+                                      delivery.status === 'in_transit' ? 'secondary' : 'outline'
                                   }
                                   className="text-xs"
                                 >

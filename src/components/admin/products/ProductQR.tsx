@@ -600,7 +600,7 @@ export function ProductQR({
                   </SelectTrigger>
                   <SelectContent>
                     {menusLoading ? (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="__placeholder__" disabled>
                         Loading menus...
                       </SelectItem>
                     ) : menus && menus.length > 0 ? (
@@ -610,7 +610,7 @@ export function ProductQR({
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="__placeholder__" disabled>
                         No active menus found
                       </SelectItem>
                     )}
@@ -681,9 +681,8 @@ export function ProductQR({
                   filteredProducts.map((product) => (
                     <div
                       key={product.id}
-                      className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 ${
-                        selectedProducts.includes(product.id) ? 'bg-muted' : ''
-                      }`}
+                      className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 ${selectedProducts.includes(product.id) ? 'bg-muted' : ''
+                        }`}
                       onClick={() => handleProductToggle(product.id)}
                     >
                       <Checkbox

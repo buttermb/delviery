@@ -506,12 +506,12 @@ export function MenuABTest({ menuId: propMenuId, className }: MenuABTestProps) {
         <div className="flex items-center gap-3">
           {/* Menu Selector (if not provided via props) */}
           {!propMenuId && (
-            <Select value={selectedMenuId} onValueChange={setSelectedMenuId}>
+            <Select value={selectedMenuId} onValueChange={(v) => setSelectedMenuId(v === '__all__' ? undefined : v)}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="All menus" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All menus</SelectItem>
+                <SelectItem value="__all__">All menus</SelectItem>
                 {menus.map((menu) => (
                   <SelectItem key={menu.id} value={menu.id}>
                     {menu.name}
@@ -631,9 +631,9 @@ export function MenuABTest({ menuId: propMenuId, className }: MenuABTestProps) {
                     <Badge
                       variant={
                         test.status === 'running' ? 'default' :
-                        test.status === 'completed' ? 'secondary' :
-                        test.status === 'paused' ? 'outline' :
-                        'outline'
+                          test.status === 'completed' ? 'secondary' :
+                            test.status === 'paused' ? 'outline' :
+                              'outline'
                       }
                     >
                       {test.status}
@@ -812,8 +812,8 @@ export function MenuABTest({ menuId: propMenuId, className }: MenuABTestProps) {
                           }}
                           formatter={(value: number, name: string) =>
                             name === 'revenue' ? formatCurrency(value) :
-                            name === 'conversionRate' ? `${value.toFixed(2)}%` :
-                            value
+                              name === 'conversionRate' ? `${value.toFixed(2)}%` :
+                                value
                           }
                         />
                         <Legend />

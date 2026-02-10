@@ -416,13 +416,13 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
               primaryAction={
                 hasActiveFilters
                   ? {
-                      label: 'Clear Filters',
-                      onClick: clearFilters,
-                    }
+                    label: 'Clear Filters',
+                    onClick: clearFilters,
+                  }
                   : {
-                      label: 'Log Communication',
-                      onClick: handleAddCommunication,
-                    }
+                    label: 'Log Communication',
+                    onClick: handleAddCommunication,
+                  }
               }
             />
           ) : (
@@ -535,8 +535,8 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
                   <FormItem>
                     <FormLabel>Related Purchase Order</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
+                      onValueChange={(v) => field.onChange(v === '__none__' ? '' : v)}
+                      value={field.value || '__none__'}
                       disabled={isLoadingPOs}
                     >
                       <FormControl>
@@ -545,7 +545,7 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="__none__">None</SelectItem>
                         {purchaseOrders?.map((po) => (
                           <SelectItem key={po.id} value={po.id}>
                             {po.po_number} - {po.status}

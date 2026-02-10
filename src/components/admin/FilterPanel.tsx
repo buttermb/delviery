@@ -133,13 +133,13 @@ export function FilterPanel({
                       </Label>
                       <Select
                         value={(value as string) || ''}
-                        onValueChange={(val) => handleFilterChange(filter.id, val || null)}
+                        onValueChange={(val) => handleFilterChange(filter.id, val === '__all__' ? null : (val || null))}
                       >
                         <SelectTrigger id={filter.id}>
                           <SelectValue placeholder={filter.placeholder || `Select ${filter.label}`} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All</SelectItem>
+                          <SelectItem value="__all__">All</SelectItem>
                           {filter.options?.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}

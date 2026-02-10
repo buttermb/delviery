@@ -127,9 +127,8 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
-          className={`${sizeClasses[size]} ${
-            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-          }`}
+          className={`${sizeClasses[size]} ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+            }`}
         />
       ))}
     </div>
@@ -563,14 +562,14 @@ export function VendorRatingSystem({ vendorId, vendorName }: VendorRatingSystemP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Link to Purchase Order (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={(v) => field.onChange(v === '__none__' ? '' : v)} value={field.value || '__none__'}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a PO..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No PO linked</SelectItem>
+                        <SelectItem value="__none__">No PO linked</SelectItem>
                         {vendorOrders?.map((po) => (
                           <SelectItem key={po.id} value={po.id}>
                             PO #{po.po_number ?? po.id.slice(0, 8)} -{' '}

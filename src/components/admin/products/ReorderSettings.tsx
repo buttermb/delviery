@@ -547,7 +547,7 @@ export function ReorderSettings({
               </SelectTrigger>
               <SelectContent>
                 {vendors?.length === 0 ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="__placeholder__" disabled>
                     No vendors available
                   </SelectItem>
                 ) : (

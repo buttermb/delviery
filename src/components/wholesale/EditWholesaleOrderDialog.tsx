@@ -336,12 +336,12 @@ export function EditWholesaleOrderDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Assign Courier</Label>
-              <Select value={runnerId} onValueChange={setRunnerId}>
+              <Select value={runnerId || '__none__'} onValueChange={(v) => setRunnerId(v === '__none__' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a courier..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="__none__">Unassigned</SelectItem>
                   {couriers.map((courier: any) => (
                     <SelectItem key={courier.id} value={courier.id}>
                       <div className="flex items-center gap-2">
@@ -350,7 +350,7 @@ export function EditWholesaleOrderDialog({
                           <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
                         )}
                         {courier.status && (
-                          <Badge 
+                          <Badge
                             variant={courier.status === 'available' ? 'default' : 'secondary'}
                             className="text-xs"
                           >

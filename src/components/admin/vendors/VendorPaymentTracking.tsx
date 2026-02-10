@@ -406,8 +406,8 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                         <FormItem>
                           <FormLabel>Purchase Order (Optional)</FormLabel>
                           <Select
-                            onValueChange={handlePOSelect}
-                            value={field.value}
+                            onValueChange={(v) => handlePOSelect(v === '__none__' ? '' : v)}
+                            value={field.value || '__none__'}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -415,7 +415,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">No specific PO</SelectItem>
+                              <SelectItem value="__none__">No specific PO</SelectItem>
                               {purchaseOrders?.map((po) => (
                                 <SelectItem key={po.id} value={po.id}>
                                   {po.po_number} - {formatCurrency(po.total - (po.paid_amount || 0))} remaining

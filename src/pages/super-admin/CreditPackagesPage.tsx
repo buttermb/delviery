@@ -206,8 +206,8 @@ export default function CreditPackagesPage() {
                       {pkg.badge ? (
                         <Badge className={
                           pkg.badge === 'POPULAR' ? 'bg-blue-100 text-blue-800' :
-                          pkg.badge === 'BEST VALUE' ? 'bg-purple-100 text-purple-800' :
-                          'bg-gray-100 text-gray-800'
+                            pkg.badge === 'BEST VALUE' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
                         }>
                           {pkg.badge === 'POPULAR' && <Star className="h-3 w-3 mr-1" />}
                           {pkg.badge === 'BEST VALUE' && <Sparkles className="h-3 w-3 mr-1" />}
@@ -260,9 +260,8 @@ export default function CreditPackagesPage() {
             {packages?.filter(p => p.isActive).map((pkg) => (
               <div
                 key={pkg.id}
-                className={`relative border rounded-lg p-4 ${
-                  pkg.badge ? 'border-primary' : 'border-border'
-                }`}
+                className={`relative border rounded-lg p-4 ${pkg.badge ? 'border-primary' : 'border-border'
+                  }`}
               >
                 {pkg.badge && (
                   <Badge className="absolute -top-2 left-1/2 -translate-x-1/2">
@@ -436,12 +435,12 @@ function EditPackageDialog({
 
           <div className="space-y-2">
             <Label>Badge (Optional)</Label>
-            <Select value={badge} onValueChange={setBadge}>
+            <Select value={badge || '__none__'} onValueChange={(v) => setBadge(v === '__none__' ? '' : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="No badge" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No badge</SelectItem>
+                <SelectItem value="__none__">No badge</SelectItem>
                 <SelectItem value="POPULAR">POPULAR</SelectItem>
                 <SelectItem value="BEST VALUE">BEST VALUE</SelectItem>
                 <SelectItem value="NEW">NEW</SelectItem>
