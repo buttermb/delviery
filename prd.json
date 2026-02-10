@@ -1197,7 +1197,7 @@
     "id": "task-200",
     "title": "Create menu expiration and auto-archive",
     "description": "Menus with end dates auto-deactivate and move to archive when expired. Archived menus preserve analytics data. Reactivation with one click (updates link, resets schedule). Auto-notify admin when menu expires. Dashboard shows expiring-soon menus. Connects scheduling to menu lifecycle management.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-201",

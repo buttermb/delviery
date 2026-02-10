@@ -5831,3 +5831,52 @@ Patterns followed:
 - Proper loading and error states with icons
 - Imports use `@/` alias as required
 - Build verified with no TypeScript errors
+
+==============================================
+Task 200: Create menu expiration and auto-archive
+Date: 2026-02-10
+==============================================
+
+Files Created:
+- src/hooks/useMenuExpiration.ts
+- src/components/admin/disposable-menus/MenuExpirationManager.tsx
+- supabase/migrations/20260210000001_menu_expiration_archive.sql
+
+Files Modified:
+- src/lib/eventBus.ts (added menu_archived, menu_reactivated, menu_expiring_soon events)
+- prd.json (marked task-200 as passes: true)
+
+What was implemented:
+1. useMenuExpiration hook with:
+   - useExpiringSoonMenus: fetches menus expiring within N hours
+   - useArchivedMenus: fetches archived menus with preserved analytics
+   - useArchiveMenu: archives menu preserving analytics snapshot
+   - useReactivateMenu: one-click reactivation with optional new schedule
+   - useProcessExpiredMenus: processes and auto-archives expired menus
+   - useTimeUntilExpiration: utility for calculating time remaining
+
+2. MenuExpirationManager component:
+   - Dashboard widget showing expiring-soon menus
+   - Tab for viewing archived menus with preserved analytics
+   - Color-coded urgency (red for less than 6h, amber for less than 24h)
+   - One-click archive and reactivate buttons
+   - Confirmation dialogs for destructive actions
+   - Compact mode for sidebar/header display
+
+3. EventBus events:
+   - menu_archived: fired when menu is archived
+   - menu_reactivated: fired when menu is reactivated
+   - menu_expiring_soon: fired for admin notification
+
+4. Database migration:
+   - Added archived_at, archived_reason, analytics_snapshot columns
+   - archive_menu_with_analytics RPC function
+   - reactivate_archived_menu RPC function
+   - Updated process_scheduled_menus to archive non-recurring menus
+
+Lessons Learned:
+- Existing MenuScheduler component handles activation/deactivation times
+- Menu status can be: active, soft_burned, hard_burned, archived
+- menu_schedule_history table tracks all schedule changes
+- Analytics should be preserved as JSONB snapshot before archiving
+- EventBus enables cross-module notifications without tight coupling

@@ -58,6 +58,35 @@ export interface EventPayloads {
     tenantId: string;
     restoredAt: string;
   };
+  // Menu archived (expired or manually archived)
+  menu_archived: {
+    menuId: string;
+    menuName: string;
+    tenantId: string;
+    reason: 'expired' | 'manual' | 'schedule_ended';
+    analyticsSnapshot: {
+      totalViews: number;
+      totalOrders: number;
+      totalRevenue: number;
+      conversionRate: number;
+    };
+    archivedAt: string;
+  };
+  // Menu reactivated from archive
+  menu_reactivated: {
+    menuId: string;
+    menuName: string;
+    tenantId: string;
+    reactivatedAt: string;
+  };
+  // Menu expiring soon notification
+  menu_expiring_soon: {
+    menuId: string;
+    menuName: string;
+    tenantId: string;
+    expiresAt: string;
+    hoursRemaining: number;
+  };
   notification_sent: { notificationId: string; tenantId: string; userId?: string; type: string };
   // Order lifecycle event for triggering post-completion actions
   order_completed: {
