@@ -261,7 +261,7 @@
     "id": "task-044",
     "title": "Create useSidebarBadges hook",
     "description": "Create src/hooks/useSidebarBadges.ts — fetches badge counts for sidebar navigation items. Returns pendingOrdersCount, lowStockCount, unreadNotificationsCount, pendingDeliveriesCount. Uses lightweight count queries with tenant_id filter. RefetchInterval 30 seconds. Subscribes to realtime changes for instant updates. Returns formatted badge values.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-045",

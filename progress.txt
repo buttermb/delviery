@@ -1272,3 +1272,50 @@
 - Note: This is a standalone simplified sidebar component
   - The codebase also has a more comprehensive AdaptiveSidebar at `src/components/admin/sidebar/`
   - This shared component provides a simpler API for pages that don't need the full feature set
+
+## task-044: Create useSidebarBadges hook
+- Created `src/hooks/useSidebarBadges.ts` — fetches badge counts for sidebar navigation items
+- Returns `SidebarBadgeCounts` object with:
+  - `pendingOrdersCount` — combined wholesale and menu orders in pending/processing states
+  - `lowStockCount` — products with stock_quantity < 10
+  - `unreadNotificationsCount` — notifications where is_read = false
+  - `pendingDeliveriesCount` — deliveries in assigned/picked_up/in_transit states
+- Uses TanStack Query with:
+  - `refetchInterval: 30000` — 30 second polling as specified
+  - `staleTime: 30000` — data considered stale after 30 seconds
+  - Uses `queryKeys.sidebarBadges.counts(tenantId)` factory (already existed in queryKeys.ts)
+- Lightweight count queries:
+  - All queries use `select('*', { count: 'exact', head: true })` for efficient counting
+  - No actual data is fetched, only counts — minimizes payload size
+  - Parallel fetching via `Promise.all` for efficiency
+- Tenant isolation:
+  - All queries filter by `tenant_id` via `useTenantAdminAuth()` context
+  - Only enabled when tenant.id is available
+- Realtime subscriptions for instant updates:
+  - 5 Supabase realtime channels subscribed:
+    - `wholesale_orders` — any change triggers invalidation
+    - `menu_orders` — any change triggers invalidation
+    - `products` — UPDATE only, when stock_quantity changes
+    - `notifications` — any change triggers invalidation
+    - `wholesale_deliveries` — any change triggers invalidation
+  - Each channel filtered by `tenant_id=eq.${tenantId}`
+  - Invalidates TanStack Query cache on change via `queryClient.invalidateQueries`
+  - Proper cleanup on unmount via useEffect return
+  - `isSubscribed` state tracks subscription status
+- Formatted badge values:
+  - `formattedBadges` object returns display-ready values
+  - Returns `null` if count is 0 (for conditional rendering)
+  - Returns `'99+'` if count > 99 (for UI constraints)
+  - Returns count as string otherwise
+- Additional return values:
+  - `totalCount` — sum of all badge counts
+  - `hasAnyBadges` — boolean for quick check
+  - `refresh()` — manual refetch function
+- TypeScript interfaces exported:
+  - `SidebarBadgeCounts`, `FormattedBadge`, `FormattedBadges`, `UseSidebarBadgesResult`
+- Note: Existing `useAdminBadgeCounts.ts` hook has similar functionality but different API
+  - This new hook follows the PRD specification exactly
+  - Uses `useCallback`/`useMemo` for all computed values
+- All logging via `logger.debug/error` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
+- Import order: React → Third-party → Local imports
