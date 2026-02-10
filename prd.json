@@ -591,7 +591,7 @@
     "id": "task-099",
     "title": "Create product price update with menu sync",
     "description": "When a product's price is updated, automatically sync the new price to all active menus and storefronts featuring that product. Show confirmation dialog listing affected menus before saving. Option to update menu prices or keep menu-specific pricing. Publish price_updated event to eventBus. Toast notification listing updated menus.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-100",

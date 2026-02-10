@@ -2829,3 +2829,24 @@ Enhanced existing `src/components/admin/products/ProductBulkImport.tsx` to add m
 - No console.log — all logging uses `@/lib/logger`
 - All imports use `@/` alias pattern
 - TypeScript types exported: ProductFilters, StockStatus, ComplianceStatus, MenuStatus
+
+## task-099: Create product price update with menu sync
+- Created `src/components/admin/products/ProductPriceUpdateDialog.tsx` - confirmation dialog for price updates
+- Created `src/hooks/useProductPriceUpdate.ts` - hook for managing price updates with menu sync
+- Dialog shows price changes (wholesale/retail) with old→new display using formatCurrency
+- Fetches affected menus from `disposable_menu_products` and stores from `marketplace_product_settings`
+- Filters results by tenant_id for proper multi-tenant isolation
+- Distinguishes between items with custom_price (won't be affected) and items using base price
+- Warning badge shows count of items with custom pricing that will be unaffected
+- Checkbox option to sync prices: "Sync price to X items" with explanation
+- Items using base price have custom_price set to null, so they auto-reflect base product price
+- Publishes `price_changed` event to eventBus with old/new prices and timestamp
+- Uses existing `useLogPriceChange` mutation from usePriceHistory for activity logging
+- Toast notification shows updated menu/store names (truncated to first 3 with "+N more" suffix)
+- Loading skeleton shown while fetching affected items
+- Error handling with logger.error throughout
+- Reused existing patterns from ProductMenuAppearances.tsx for menu/store display
+- All imports use `@/` alias pattern
+- No console.log statements — uses logger from @/lib/logger
+- All queries filter by tenant_id for security
+- AlertDialog component used from shadcn/ui for confirmation pattern
