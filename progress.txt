@@ -3204,3 +3204,20 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - All imports use @/ alias, proper import order maintained
 - Loading and error states included throughout
 - TypeScript strict mode compliant
+
+## task-117: Create product cost tracking
+- cost_per_unit field already existed in products table from previous migrations
+- Product detail page already had margin calculation and display
+- Created ProductMarginBadge component for visual margin display with tooltips
+- Created ProductMarginAlert component for prominent low-margin warnings
+- Added Margin column to ProductManagement table (hidden by default)
+- Integrated ColumnVisibilityControl to toggle column visibility
+- Persisted visible columns in table preferences
+- Added margin threshold of 20% for alerts
+- Alert shows suggested price to meet threshold
+- Export now includes cost_per_unit and margin_percent columns
+- ProductDetailsPage shows ProductMarginAlert after stats cards
+- Margin sorting already existed in filteredProducts
+- No console.log used — all state is React-managed
+- Verified TypeScript compiles with no errors
+

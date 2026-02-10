@@ -20,6 +20,7 @@ import { ProductPriceHistoryChart } from '@/components/admin/products/ProductPri
 import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDisplay';
 import { ProductPerformanceCard } from '@/components/admin/products/ProductPerformanceCard';
 import { ProductStorefrontPreview } from '@/components/admin/products/ProductStorefrontPreview';
+import { ProductMarginAlert } from '@/components/admin/products/ProductMarginAlert';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useProductArchive } from '@/hooks/useProductArchive';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
@@ -269,6 +270,16 @@ export default function ProductDetailsPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Margin Alert - Shows if margin is below threshold */}
+                <ProductMarginAlert
+                    costPrice={product.cost_per_unit}
+                    wholesalePrice={product.wholesale_price}
+                    retailPrice={product.retail_price}
+                    marginThreshold={20}
+                    productName={product.name}
+                    onAdjustPrice={() => navigateToAdmin(`inventory-hub?tab=products&edit=${product.id}`)}
+                />
 
                 {/* Main Content Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

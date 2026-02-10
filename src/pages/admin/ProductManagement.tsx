@@ -69,6 +69,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
+import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBadge";
+import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
+import Columns from "lucide-react/dist/esm/icons/columns";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
@@ -150,6 +153,22 @@ export default function ProductManagement() {
   const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
+  // Column visibility - margin column hidden by default
+  const availableColumns = [
+    { id: "image", label: "Image" },
+    { id: "name", label: "Product Details" },
+    { id: "category", label: "Category" },
+    { id: "price", label: "Price" },
+    { id: "margin", label: "Margin" },
+    { id: "stock", label: "Stock" },
+  ];
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(
+    () => preferences.customFilters?.visibleColumns || ["image", "name", "category", "price", "stock"]
+  );
+
+  // Margin threshold for alerts (default 20%)
+  const marginThreshold = 20;
+
   // Fetch store settings for potency alerts
   useQuery({
     queryKey: ['store-settings-potency'],
@@ -176,19 +195,30 @@ export default function ProductManagement() {
   });
 
   // Track previous filter values to avoid unnecessary saves
-  const prevFiltersRef = useRef({ sortBy, categoryFilter, stockStatusFilter });
+  const prevFiltersRef = useRef({ sortBy, categoryFilter, stockStatusFilter, visibleColumns });
+
+  // Toggle column visibility
+  const handleToggleColumn = (columnId: string) => {
+    setVisibleColumns(prev => {
+      const newColumns = prev.includes(columnId)
+        ? prev.filter(c => c !== columnId)
+        : [...prev, columnId];
+      return newColumns;
+    });
+  };
 
   // Persist filter changes - only when values actually change
   useEffect(() => {
     const prev = prevFiltersRef.current;
-    if (prev.sortBy !== sortBy || prev.categoryFilter !== categoryFilter || prev.stockStatusFilter !== stockStatusFilter) {
-      prevFiltersRef.current = { sortBy, categoryFilter, stockStatusFilter };
+    const columnsChanged = JSON.stringify(prev.visibleColumns) !== JSON.stringify(visibleColumns);
+    if (prev.sortBy !== sortBy || prev.categoryFilter !== categoryFilter || prev.stockStatusFilter !== stockStatusFilter || columnsChanged) {
+      prevFiltersRef.current = { sortBy, categoryFilter, stockStatusFilter, visibleColumns };
       savePreferences({
         sortBy,
-        customFilters: { category: categoryFilter, stockStatus: stockStatusFilter }
+        customFilters: { category: categoryFilter, stockStatus: stockStatusFilter, visibleColumns }
       });
     }
-  }, [sortBy, categoryFilter, stockStatusFilter, savePreferences]);
+  }, [sortBy, categoryFilter, stockStatusFilter, visibleColumns, savePreferences]);
 
   // Other state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -849,6 +879,20 @@ export default function ProductManagement() {
         />
       )
     },
+    // Margin column - hidden by default, visible via column toggle
+    ...(visibleColumns.includes("margin") ? [{
+      header: "Margin",
+      accessorKey: "cost_per_unit" as keyof Product,
+      className: "text-center",
+      cell: (product: Product) => (
+        <ProductMarginBadge
+          costPrice={product.cost_per_unit}
+          sellingPrice={product.wholesale_price}
+          marginThreshold={marginThreshold}
+          size="sm"
+        />
+      )
+    }] : []),
     {
       header: "Stock",
       accessorKey: "available_quantity",
@@ -992,13 +1036,20 @@ export default function ProductManagement() {
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <ExportButton
-            data={filteredProducts}
+            data={filteredProducts.map(p => ({
+              ...p,
+              margin_percent: p.wholesale_price && p.cost_per_unit
+                ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
+                : null,
+            }))}
             filename="products"
             columns={[
               { key: "name", label: "Name" },
               { key: "sku", label: "SKU" },
               { key: "category", label: "Category" },
+              { key: "cost_per_unit", label: "Cost" },
               { key: "wholesale_price", label: "Price" },
+              { key: "margin_percent", label: "Margin %" },
               { key: "available_quantity", label: "Stock" },
               { key: "strain_name", label: "Strain" },
               { key: "vendor_name", label: "Vendor" },
@@ -1188,22 +1239,29 @@ export default function ProductManagement() {
             </Select>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
-            <Toggle
-              pressed={viewMode === "grid"}
-              onPressedChange={() => setViewMode("grid")}
-              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Toggle>
-            <Toggle
-              pressed={viewMode === "list"}
-              onPressedChange={() => setViewMode("list")}
-              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
-            >
-              <List className="h-4 w-4" />
-            </Toggle>
+          {/* Column Visibility & View Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <ColumnVisibilityControl
+              visibleColumns={visibleColumns}
+              onToggleColumn={handleToggleColumn}
+              availableColumns={availableColumns}
+            />
+            <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
+              <Toggle
+                pressed={viewMode === "grid"}
+                onPressedChange={() => setViewMode("grid")}
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={viewMode === "list"}
+                onPressedChange={() => setViewMode("list")}
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Toggle>
+            </div>
           </div>
         </div>
       </div>

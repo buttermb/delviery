@@ -699,7 +699,7 @@
     "id": "task-117",
     "title": "Create product cost tracking",
     "description": "Add cost_price field to products (wholesale/purchase cost). Calculate and display margin percentage and margin amount on product detail. Show margin in product list as hidden column. Margin alerts if margin drops below configurable threshold. Used in analytics for profitability reports. Connects to vendor purchase orders.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-118",
