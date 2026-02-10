@@ -387,7 +387,7 @@
     "id": "task-065",
     "title": "Create order print/receipt generation",
     "description": "Create src/components/admin/orders/OrderReceipt.tsx — generates printable receipt for an order. Includes business name from tenant settings, order number, date, customer info, line items with prices, subtotal, tax, total, payment method. Print button opens browser print dialog with print-optimized CSS. Also export as PDF option.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-066",

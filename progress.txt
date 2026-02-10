@@ -1905,3 +1905,41 @@
 - Supports the OrderThreadedNotes component from task-063
 - Follows project naming convention with timestamp prefix
 - All foreign keys cascade on delete for data integrity
+
+## Task 065: Create order print/receipt generation
+Date: Tue, Feb 10, 2026 12:43:58 AM
+
+### What was implemented:
+- Created src/components/admin/orders/OrderReceipt.tsx
+- Generates printable receipt for orders with:
+  - Business name from tenant settings via useTenantAdminAuth()
+  - Order number, date, status
+  - Customer info (name, email, phone, address)
+  - Line items with product name, quantity, and prices
+  - Subtotal, discount, tax, delivery fee, and total
+  - Payment method and status
+  - Optional order notes
+  - Thank you message and print timestamp
+
+### Key features:
+- ReceiptContent: forwardRef component for the actual receipt layout
+- OrderReceipt: Main component with Card wrapper and action buttons
+- Print button opens browser print dialog with print-optimized CSS
+- PDF export using jsPDF with receipt-sized format (80mm width)
+- useOrderReceipt hook for programmatic receipt generation
+
+### Technical details:
+- Uses useTenantAdminAuth() to get tenant.business_name for receipt header
+- Uses logger from @/lib/logger for all logging (no console.log)
+- Uses formatCurrency from @/utils/formatters for price formatting
+- Uses date-fns format() for date/time formatting
+- Loading state with Skeleton component while auth loads
+- Error handling with toast notifications
+- Print window handles popup blockers gracefully
+
+### Lessons learned:
+- jsPDF supports custom page sizes - [80, 200] creates receipt-width paper
+- Browser print dialogs need complete HTML documents with inline styles
+- forwardRef is needed to pass refs to child components for print content extraction
+- The Tenant type from TenantAdminAuthContext has business_name property
+- Receipt components should support both inline display and standalone printing
