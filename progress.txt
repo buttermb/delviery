@@ -2959,3 +2959,21 @@ Created `src/components/admin/products/ProductQR.tsx` with comprehensive QR code
 - All logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias, lucide-react icons from esm paths
 - Full tenant_id filtering on all database queries
+
+## task-105: Create inventory dashboard page
+Enhanced `src/pages/admin/InventoryDashboard.tsx` with comprehensive inventory overview features:
+
+- **Stats Cards**: Total Products, Total Stock Value (currency formatted), Low Stock Count, Out of Stock Count
+- **Stock Level Distribution Chart**: Pie chart using Recharts showing products grouped by stock status (Out of Stock, Critical, Low Stock, Adequate, Overstocked)
+- **Category-wise Stock Breakdown**: Horizontal bar chart showing inventory value by product category with detailed stats
+- **Recent Inventory Changes Timeline**: Integrated existing `InventoryHistoryTimeline` component in a dedicated tab
+- **Low Stock Alerts with One-Click Reorder**: Filterable list of products needing restocking with visual severity badges (Out of Stock, Critical, Low Stock), one-click reorder button navigates to purchase order creation with product pre-selected
+- **Multiple TanStack Queries**: Separate queries for stats, category breakdown, stock distribution, and low stock products with proper error/loading states
+- **Realtime Updates**: Supabase channel subscription for product changes with query invalidation
+- **Tabs Organization**: Overview tab (charts), Low Stock Alerts tab (with badge count), Recent Changes tab (timeline)
+- All database queries filter by `tenant_id` using `useTenantAdminAuth()`
+- Tenant-aware navigation with `tenantSlug` in URLs
+- Loading states with Skeleton components and Loader2 spinners
+- Error handling with logger from `@/lib/logger` — no console.log
+- Uses Recharts (PieChart, BarChart), lucide-react icons, shadcn/ui components
+- Responsive design with grid layouts and proper mobile breakpoints

@@ -627,7 +627,7 @@
     "id": "task-105",
     "title": "Create inventory dashboard page",
     "description": "Create src/pages/admin/InventoryDashboard.tsx — overview of all inventory. Stats cards for total products, total stock value, low stock count, out of stock count. Stock level distribution chart. Recent inventory changes timeline. Low stock alerts list with one-click reorder. Category-wise stock breakdown. Uses multiple TanStack queries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-106",
