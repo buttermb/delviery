@@ -315,7 +315,7 @@
     "id": "task-053",
     "title": "Create order-customer link in order list",
     "description": "In the orders list/table view, each order row should display the customer name as a clickable link. Clicking navigates to the customer detail page via useEntityNavigation(CUSTOMER, customerId). Show customer avatar or initials badge next to name. If no customer assigned, show \"Walk-in\" label. Tooltip shows customer email on hover.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-054",

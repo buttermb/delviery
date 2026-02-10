@@ -1607,3 +1607,26 @@
 - Filters all queries by tenant_id
 - Uses useTenantAdminAuth for tenant context
 - Uses .maybeSingle() for optional data fetching
+
+
+## task-053: Create order-customer link in order list
+- Enhanced `src/components/admin/cross-links/CustomerLink.tsx` component:
+  - Added customer avatar with initials fallback using Avatar component from shadcn/ui
+  - Shows "Walk-in" label with User icon when no customer is assigned (customerId is null/undefined)
+  - Tooltip shows customer email on hover using Tooltip component from shadcn/ui
+  - Uses `useEntityNavigation` hook to generate customer detail page URLs via getEntityUrl("CUSTOMER", customerId)
+  - Added customerEmail and customerAvatar props for enhanced display
+  - Added showAvatar prop (default: true) to optionally hide avatar
+  - getInitials() helper function extracts initials from customer name for avatar fallback
+- Updated `src/components/admin/orders/OrderRow.tsx`:
+  - Added imports for CustomerLink from @/components/admin/cross-links
+  - Extended OrderRowProps.order interface with user_id, customer_id, and avatar_url
+  - Replaced plain text customer display with CustomerLink component
+  - Passes customerId, customerName, customerEmail, and customerAvatar to CustomerLink
+- Updated `src/pages/admin/Orders.tsx`:
+  - Updated all three CustomerLink usages to pass customerEmail prop for tooltip functionality
+  - Desktop table column, mobile renderer, and drawer all use enhanced CustomerLink
+- All logging uses logger from @/lib/logger — no console.log
+- Uses @/ alias for all imports
+- Import order follows: React → Third-party → Components → Utils pattern
+- TypeScript compiles without errors

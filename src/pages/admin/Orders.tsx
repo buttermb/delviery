@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
@@ -21,7 +20,6 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
@@ -71,7 +69,6 @@ export default function Orders() {
   const { tenant } = useTenantAdminAuth();
   const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useAdminKeyboardShortcuts({
     onSearch: () => {
@@ -637,13 +634,13 @@ export default function Orders() {
     {
       header: "Customer",
       cell: (order) => (
-        <div className="flex flex-col">
-          <span className="font-medium">
-            <CustomerLink
-              customerId={order.user_id}
-              customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
-            />
-          </span>
+        <div className="flex flex-col gap-1">
+          <CustomerLink
+            customerId={order.user_id}
+            customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+            customerEmail={order.user?.email}
+            className="font-medium"
+          />
           {order.user?.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               {order.user.email}
@@ -929,7 +926,8 @@ export default function Orders() {
                       <p className="text-sm font-medium">
                         <CustomerLink
                           customerId={order.user_id}
-                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+                          customerEmail={order.user?.email}
                         />
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -1074,7 +1072,8 @@ export default function Orders() {
                 <p className="text-sm">
                   <CustomerLink
                     customerId={selectedOrder.user_id}
-                    customerName={selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}
+                    customerName={selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || ''}
+                    customerEmail={selectedOrder.user?.email}
                   />
                 </p>
                 {selectedOrder.user?.phone && (

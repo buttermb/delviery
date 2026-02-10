@@ -1,4 +1,13 @@
 import React from 'react';
+
+import Eye from "lucide-react/dist/esm/icons/eye";
+import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
+import Printer from "lucide-react/dist/esm/icons/printer";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,14 +25,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Eye from "lucide-react/dist/esm/icons/eye";
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-import Building2 from "lucide-react/dist/esm/icons/building-2";
 import CopyButton from '@/components/CopyButton';
+import { CustomerLink } from '@/components/admin/cross-links';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 interface OrderRowProps {
@@ -35,10 +38,13 @@ interface OrderRowProps {
     total_amount: number;
     delivery_method?: string;
     order_source?: string;
+    user_id?: string;
+    customer_id?: string;
     user?: {
       full_name: string | null;
       email: string | null;
       phone: string | null;
+      avatar_url?: string | null;
     };
   };
   isSelected: boolean;
@@ -119,10 +125,14 @@ export const OrderRow = React.memo<OrderRowProps>(({
 
       {/* Customer */}
       <td className="px-4 py-3">
-        <div className="flex flex-col">
-          <span className="font-medium">
-            {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
-          </span>
+        <div className="flex flex-col gap-1">
+          <CustomerLink
+            customerId={order.customer_id || order.user_id}
+            customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+            customerEmail={order.user?.email}
+            customerAvatar={order.user?.avatar_url}
+            className="font-medium"
+          />
           {order.user?.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               {order.user.email}
