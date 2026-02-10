@@ -1233,7 +1233,7 @@
     "id": "task-206",
     "title": "Create delivery tracking page for customers",
     "description": "Create a customer-facing delivery tracking page. Order number and phone lookup. Shows delivery status, runner name, estimated time, live location (if enabled). Status timeline — confirmed, picked up, in transit, nearby, delivered. Auto-refresh with Supabase realtime. Accessible from order confirmation page and SMS link.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-207",

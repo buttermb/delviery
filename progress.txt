@@ -6072,3 +6072,32 @@ Key learnings:
 - Mapbox Directions API returns geometry as GeoJSON LineString
 - Route legs provide per-segment distance and duration
 - Time windows can be used to add urgency factor to optimization
+
+## task-206: Create delivery tracking page for customers
+- Created `src/pages/portal/DeliveryTrackingPage.tsx` — public delivery tracking page
+- Two modes: direct tracking via URL (/track/:trackingCode) or lookup by order number + phone
+- Order/phone lookup form using React Hook Form + Zod for validation
+- Delivery status timeline with 5 steps: confirmed, picked_up, in_transit, nearby, delivered
+- Shows runner info (name, phone, vehicle) when assigned
+- Live location indicator when courier_lat/lng available
+- Supabase realtime subscription for automatic updates on order changes
+- Auto-refresh every 15 seconds for active deliveries (pending/in_transit/nearby)
+- Responsive design with Tailwind CSS, matches existing portal page styling
+- Added lazy import and routes in App.tsx: /track and /track/:trackingCode
+
+Key patterns used:
+- useQuery with refetchInterval for polling active deliveries
+- supabase.channel() for realtime subscription filtered by order ID
+- queryClient.invalidateQueries() on realtime updates for cache sync
+- Form validation with Zod schema and zodResolver
+- Lookup uses last 4 digits of phone for privacy
+- Uses @/lib/logger for all logging (no console.log)
+- formatCurrency utility for price display
+- All imports use @/ alias
+
+Technical notes:
+- Orders table has tracking_code, customer_phone for lookup
+- Couriers relation provides runner name, phone, vehicle_type, current_lat/lng
+- Tenants relation provides store business_name
+- Status timeline handles cancelled state separately
+- Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery

@@ -239,6 +239,7 @@ const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage")
 const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
 const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
 const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
+const DeliveryTrackingPage = lazy(() => import("./pages/portal/DeliveryTrackingPage"));
 // Commented out - available for future use:
 // const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
 // const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
@@ -1124,6 +1125,8 @@ const App = () => {
                                       <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                                       {/* Public Routes */}
                                       <Route path="/portal/invoice/:token" element={<InvoicePublicPage />} />
+                                      <Route path="/track" element={<DeliveryTrackingPage />} />
+                                      <Route path="/track/:trackingCode" element={<DeliveryTrackingPage />} />
                                       <Route path="/:tenantSlug/shop" element={
                                         <ErrorBoundary title="Shop Unavailable" description="We encountered an error loading the shop. Please try refreshing the page.">
                                           <CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>
