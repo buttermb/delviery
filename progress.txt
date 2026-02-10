@@ -11,3 +11,14 @@
 - No console.log used — all logging via `@/lib/logger`
 - Subscribe returns unsubscribe function for convenient cleanup
 - Error handling in publish prevents one handler failure from affecting others
+
+## task-002: Create useEventBus hook
+- Created `src/hooks/useEventBus.ts` as React hook wrapper around eventBus
+- Main `useEventBus<T>` hook accepts eventName and callback, auto-unsubscribes on unmount
+- Used `useRef` to keep callback stable and avoid re-subscribing on every render
+- Returns `{ publish }` function typed to the specific event payload
+- Added `useEventPublisher` helper for components that only emit events (no subscription)
+- Added `useMultiEventBus` for subscribing to multiple events at once
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Proper useEffect cleanup returns unsubscribe function
+- Imports use `@/` alias as required

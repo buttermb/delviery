@@ -9,7 +9,7 @@
     "id": "task-002",
     "title": "Create useEventBus hook",
     "description": "Create src/hooks/useEventBus.ts — a React hook wrapper around the eventBus utility. Auto-unsubscribe on component unmount using useEffect cleanup. Accept event name and callback. Return publish function for that event type. Type-safe with FloraIQ event types. Use logger from @/lib/logger.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-003",
