@@ -243,7 +243,7 @@
     "id": "task-041",
     "title": "Create shared page header component",
     "description": "Create src/components/admin/shared/PageHeader.tsx — consistent page header for all admin pages. Props — title, subtitle, breadcrumbs array, actions (React nodes for buttons), badge (optional status badge). Renders breadcrumb trail using react-router links with tenant slug. Actions align right. Used on every admin page for consistent layout.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-042",

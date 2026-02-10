@@ -1154,3 +1154,43 @@
 - Type-safe generic hook: `usePagination<T>(items: T[], options)`
 - No console.log — no logging needed in this utility hook
 - All imports use `@/` alias (none needed — only React and react-router-dom)
+
+## task-041: Create shared page header component
+- Created `src/components/admin/shared/PageHeader.tsx` — consistent header for all admin pages
+- Props implemented exactly as task specified:
+  - `title: string` — main page title
+  - `subtitle?: string` — optional description text
+  - `breadcrumbs?: BreadcrumbItem[]` — array of breadcrumb items
+  - `actions?: ReactNode` — right-aligned action buttons/elements
+  - `badge?: PageBadge` — optional status badge next to title
+- BreadcrumbItem interface:
+  - `label: string` — display text for breadcrumb
+  - `href?: string` — optional path (will be prefixed with tenant slug)
+- PageBadge interface:
+  - `label: string` — badge text
+  - `variant?: 'default' | 'secondary' | 'destructive' | 'outline'` — styling
+  - `className?: string` — additional styles
+- Tenant-aware breadcrumb links:
+  - Uses `useTenantAdminAuth()` to get `tenantSlug` and `tenant`
+  - `buildHref()` helper prefixes paths with `/${tenantSlug}` or `/${tenantSlug}/admin/`
+  - Root breadcrumb always links to tenant dashboard
+  - Tenant display name from `tenant.business_name` or formatted slug
+- Layout structure:
+  - Vertical spacing with `space-y-1`
+  - Breadcrumb nav with ChevronRight separators
+  - Title row with flexbox justify-between for actions alignment
+  - Title can be truncated for long names
+  - Badge displays inline next to title with flex-shrink-0
+  - Actions container aligned right with gap-2 between buttons
+- Uses shadcn/ui `Badge` component from `@/components/ui/badge`
+- Uses lucide-react `ChevronRight` icon for breadcrumb separators
+- Accessibility:
+  - `aria-label="Page breadcrumb"` on nav element
+  - `aria-current="page"` on last breadcrumb item
+  - `title` attributes for truncated text
+- Exports both named `PageHeader` and default export for flexible importing
+- Also exports `BreadcrumbItem`, `PageBadge`, and `PageHeaderProps` types
+- No console.log — pure UI component with no logging needed
+- No tenant_id filtering in queries — uses context for tenant-aware URLs only
+- All imports use `@/` alias as required
+- Import order follows convention: React → Third-party → Components → Utils
