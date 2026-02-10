@@ -212,7 +212,27 @@ export function useMenuOrderFlow(
           // No customerId for anonymous menu orders
         });
 
-        logger.debug('[MenuOrderFlow] Published order_created event', {
+        // Publish detailed menu_order_created event for admin notifications
+        // Includes full order details for rich notifications with sound/push
+        publish('menu_order_created', {
+          orderId: result.order_id,
+          tenantId,
+          menuId: input.menu_id,
+          customerName: input.customer_name,
+          customerPhone: input.contact_phone,
+          deliveryAddress: input.delivery_address,
+          items: input.order_items.map((item) => ({
+            productName: item.product_name || `Product ${item.product_id.slice(0, 8)}`,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          totalAmount: input.total_amount,
+          paymentMethod: input.payment_method,
+          customerNotes: input.customer_notes,
+          createdAt: new Date().toISOString(),
+        });
+
+        logger.debug('[MenuOrderFlow] Published order_created and menu_order_created events', {
           orderId: result.order_id,
           tenantId,
           component: 'useMenuOrderFlow',

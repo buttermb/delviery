@@ -44,6 +44,7 @@ import { CreditBalance } from '@/components/credits/CreditBalance';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useMenuOrderNotifications } from '@/hooks/useMenuOrderNotifications';
 /**
  * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
@@ -84,6 +85,9 @@ const AdminLayout = () => {
 
   // Enable cross-panel toast notifications (separate from above)
   useEventToasts({ enabled: !!tenant?.id });
+
+  // Enable menu order notifications to admin (sound + push)
+  useMenuOrderNotifications({ enabled: !!tenant?.id });
 
   // Initialize browser push notifications on first admin load
   useEffect(() => {

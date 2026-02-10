@@ -1047,7 +1047,7 @@
     "id": "task-175",
     "title": "Create menu order notifications to admin",
     "description": "When an order comes through a disposable menu, send immediate notification to admin. Notification includes customer name/phone, items ordered, total, delivery address if applicable. Notification bell shows unread count. Sound notification option. Push notification if PWA installed. Uses useNotificationDispatcher with event order_created.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-176",

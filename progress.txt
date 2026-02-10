@@ -5170,3 +5170,61 @@ Implemented complete menu order flow integration ensuring orders placed through 
 - Proper TypeScript types for all inputs/outputs
 - .maybeSingle() for optional data fetches
 - Proper error handling with user-friendly messages
+
+---
+
+## Task 175: Create menu order notifications to admin
+
+### Implementation Summary:
+Created a comprehensive menu order notification system that alerts admin when orders come through disposable menus with sound, push notifications, and detailed order information.
+
+### Files Created/Modified:
+
+1. **src/lib/eventBus.ts** - Added `menu_order_created` event type:
+   - New event payload includes: orderId, tenantId, menuId, customerName, customerPhone, deliveryAddress, items array (with productName, quantity, price), totalAmount, paymentMethod, customerNotes, createdAt
+   - Enables rich notifications with complete order details
+
+2. **src/hooks/useMenuOrderNotifications.ts** - New hook for menu order notifications:
+   - Listens for `menu_order_created` events via eventBus subscription
+   - Creates database notification with detailed message (customer, phone, items, total, delivery address, notes)
+   - Plays notification sound via playNotificationSound() from notificationSound.ts
+   - Sends browser push notification via service worker (works on lock screen) with fallback to regular Notification API
+   - Settings persistence in localStorage (soundEnabled, pushEnabled, vibrateEnabled)
+   - Proper tenant isolation (ignores events from other tenants)
+   - formatOrderItems() helper for concise item display in notifications
+
+3. **src/hooks/useMenuOrderFlow.ts** - Enhanced to publish detailed event:
+   - Now publishes both `order_created` (basic) and `menu_order_created` (detailed) events
+   - Maps order items to include productName, quantity, price
+   - Includes all customer and delivery information in event payload
+
+4. **src/pages/admin/AdminLayout.tsx** - Integrated the new hook:
+   - Added import for useMenuOrderNotifications
+   - Hook is enabled when tenant is loaded (enabled: !!tenant?.id)
+   - Runs alongside existing useEventNotifications and useEventToasts
+
+### How it works:
+1. Customer places order through disposable menu
+2. useMenuOrderFlow.submitOrder() calls edge function and on success:
+   - Publishes `order_created` for general sync
+   - Publishes `menu_order_created` with full order details
+3. useMenuOrderNotifications in AdminLayout receives the event:
+   - Creates rich database notification (appears in NotificationBell)
+   - Plays sound if enabled
+   - Shows browser push notification if permitted
+4. Realtime subscription also ensures data refresh
+
+### Key Features:
+- **Notification Bell unread count**: Already handled by existing NotificationBell component
+- **Sound notification option**: Uses playNotificationSound() with vibration support
+- **Push notification if PWA installed**: Uses showServiceWorkerNotification() for persistent notifications
+- **Settings persistence**: localStorage for sound/push/vibrate preferences
+- **Detailed message format**: Customer name/phone, items summary, total, delivery address, notes
+
+### Technical patterns used:
+- logger from @/lib/logger — no console.log
+- @/ alias for all imports
+- EventBus subscribe/publish pattern
+- Proper tenant_id filtering
+- useRef for mounted state tracking
+- useCallback for memoized handlers

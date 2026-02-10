@@ -12,6 +12,20 @@ export type SyncModule = 'orders' | 'products' | 'inventory' | 'customers' | 'st
 export interface EventPayloads {
   order_created: { orderId: string; tenantId: string; customerId?: string };
   order_updated: { orderId: string; tenantId: string; status?: string; changes?: Record<string, unknown> };
+  // Menu order created with full details for admin notifications
+  menu_order_created: {
+    orderId: string;
+    tenantId: string;
+    menuId: string;
+    customerName?: string;
+    customerPhone: string;
+    deliveryAddress?: string;
+    items: Array<{ productName: string; quantity: number; price: number }>;
+    totalAmount: number;
+    paymentMethod: string;
+    customerNotes?: string;
+    createdAt: string;
+  };
   inventory_changed: { productId: string; tenantId: string; locationId?: string; quantityChange: number; newQuantity: number };
   customer_updated: { customerId: string; tenantId: string; changes?: Record<string, unknown> };
   product_updated: { productId: string; tenantId: string; changes?: Record<string, unknown> };
