@@ -219,7 +219,7 @@
     "id": "task-037",
     "title": "Create shared export utility",
     "description": "Create src/lib/export.ts — exportToCSV(data, columns, filename), exportToJSON(data, filename). Handles date formatting, nested objects, and special characters. Creates download link. Logs export action via activityLog. Used in orders, products, customers, inventory reports. Accept column config for header mapping.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-038",

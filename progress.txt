@@ -1000,3 +1000,44 @@
 - TypeScript generic `<T extends Record<string, unknown>>` for type-safe form values
 - All logging via `logger.debug/warn/error` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
+
+## task-037: Create shared export utility
+- Created `src/lib/export.ts` — centralized export utility for CSV and JSON downloads
+- Core functions implemented exactly as task specified:
+  - `exportToCSV(data, columns, filename, options)` — exports data to CSV with column config
+  - `exportToJSON(data, filename, options)` — exports data to JSON with pretty printing
+- Column configuration via `ExportColumn<T>` interface:
+  - `key: string` — supports dot notation for nested objects (e.g., 'customer.name')
+  - `header: string` — display name for CSV header
+  - `type` — automatic formatting for string, number, currency, percent, date, datetime, boolean
+  - `format` — custom formatter function for complex transformations
+- Date formatting:
+  - Uses date-fns `format()` for consistent date output
+  - Configurable `dateFormat` and `datetimeFormat` in options
+  - Handles Date objects and ISO strings
+- Nested object handling:
+  - `getNestedValue(obj, path)` helper traverses dot-notation paths
+  - Objects/arrays that aren't dates get JSON.stringify treatment
+- Special character escaping:
+  - `escapeCSVValue()` handles commas, quotes, newlines, tabs
+  - Double quotes escaped as `""` per CSV standard
+  - Values containing special chars wrapped in quotes
+- Download link creation:
+  - `downloadFile(content, filename, mimeType)` creates blob URL
+  - Appends hidden `<a>` element, clicks it, removes it
+  - Cleans up object URL after 100ms delay
+- Activity logging integration:
+  - `logExportActivity()` calls `logActivity` from `@/lib/activityLog`
+  - Logs with `ActivityAction.EXPORTED` and configurable entity type
+  - Only logs if tenantId and userId provided in options
+  - Metadata includes filename, format, and rowCount
+- Export options include:
+  - `includeBOM` — adds UTF-8 BOM for Excel compatibility (default true)
+  - `currencyLocale` / `currencyCode` — configurable currency formatting
+  - `tenantId` / `userId` — for activity logging
+  - `entityType` / `metadata` — additional logging context
+- Added convenience helpers:
+  - `generateFilename(baseName, extension)` — creates timestamped filename
+  - `ColumnBuilder` — factory methods for quick column definition
+- No console.log — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias as required
