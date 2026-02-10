@@ -609,3 +609,50 @@
 - No console.log — pure UI component
 - No tenant_id filtering — pure presentational component
 - All imports use `@/` alias as required
+
+## task-024: Create useRelatedEntities hook
+- Extended existing `src/hooks/useRelatedEntities.ts` with unified `useRelatedEntities` hook
+- Core functionality:
+  - Given an `entityType` and `entityId`, fetches all related entities using parallel TanStack queries
+  - Uses `useQueries` from TanStack Query for efficient parallel data fetching
+  - Supports three entity types: 'order', 'customer', 'product'
+- Order related entities (`OrderRelatedEntities`):
+  - `customer: RelatedCustomer | null` — customer who placed the order
+  - `products: RelatedProduct[]` — products in the order with quantities
+  - `delivery: RelatedDelivery | null` — delivery details with courier info
+  - `payment: RelatedPayment | null` — payment status and transaction info
+- Customer related entities (`CustomerRelatedEntities`):
+  - `orders: RelatedOrder[]` — customer's order history
+  - `totalSpent: number` — sum of completed order amounts
+  - `lastOrderDate: string | null` — most recent order timestamp
+  - `orderCount: number` — total number of orders
+  - `averageOrderValue: number` — computed average
+- Product related entities (`ProductRelatedEntities`):
+  - `vendor: RelatedVendor | null` — supplier information
+  - `orders: RelatedOrder[]` — orders containing this product
+  - `stock: RelatedStock[]` — inventory across locations
+  - `totalStock: number` — sum of available quantities
+  - `totalOrdered: number` — sum of quantities ordered
+- Type definitions exported:
+  - `RelatedEntityType` — union of supported entity types
+  - `RelatedCustomer`, `RelatedProduct`, `RelatedDelivery`, `RelatedPayment`
+  - `RelatedOrder`, `RelatedVendor`, `RelatedStock`
+  - `OrderRelatedEntities`, `CustomerRelatedEntities`, `ProductRelatedEntities`
+  - `RelatedEntities` — union type for all related entities
+  - `UseRelatedEntitiesReturn` — hook return type interface
+- Query configuration:
+  - Uses `queryKeys` from `@/lib/queryKeys` with `.related()` pattern
+  - `staleTime: 30_000` (30 seconds) for efficient caching
+  - `enabled` based on both `entityId` and `tenantId` availability
+- Tenant isolation:
+  - All queries filter by `tenant_id` via `useTenantAdminAuth()`
+  - Product orders filtered client-side for tenant match
+- Return object includes:
+  - `data: RelatedEntities | null` — combined results based on entity type
+  - `isLoading: boolean` — true if any query is loading
+  - `isError: boolean` — true if any query has error
+  - `error: Error | null` — first error encountered
+  - `refetch: () => void` — triggers refetch of all queries
+- Error handling uses `logger.error()` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
+- Extends existing lazy-loading hooks (useRelatedClientInvoices, etc.) in same file

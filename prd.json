@@ -141,7 +141,7 @@
     "id": "task-024",
     "title": "Create useRelatedEntities hook",
     "description": "Create src/hooks/useRelatedEntities.ts — given an entityType and entityId, fetches all related entities. For an order, returns customer, products, delivery, payment. For a customer, returns orders, total spent, last order date. For a product, returns vendor, orders containing it, current stock. Returns typed RelatedEntities object. Uses parallel TanStack queries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-025",
