@@ -339,7 +339,7 @@
     "id": "task-057",
     "title": "Create order status change with notification dispatch",
     "description": "When order status changes, dispatch notifications to relevant parties. Use useNotificationDispatcher. Notify admin on new order, notify delivery runner on confirmed, notify customer (if contact info exists) on out_for_delivery and delivered. Each notification includes order number, customer name, and new status. Log status change to activity_log.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-058",

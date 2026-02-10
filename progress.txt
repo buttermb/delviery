@@ -1735,3 +1735,22 @@
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - Imports use `@/` alias as required
 - TypeScript types imported from `@/lib/activityLog` for ActivityLogEntry
+
+## task-057: Create order status change with notification dispatch
+- Created `src/hooks/useOrderStatusNotification.ts` for automatic notification dispatch on order status changes
+- Hook subscribes to `order_updated` and `order_created` events from the event bus
+- Notification targets based on status:
+  - Admin: notified on new order (created/pending), confirmed, delivered, cancelled, refunded
+  - Delivery runner: notified on confirmed (if runner_id is assigned)
+  - Customer: notified on out_for_delivery and delivered (if contact info exists)
+- Each notification includes order number, customer name, and new status
+- Fetches order info from `unified_orders` with joined runner profile for runner name
+- Uses `logActivity` from `@/lib/activityLog` to log status changes with metadata
+- Creates notifications via direct Supabase insert to `notifications` table
+- Publishes `notification_sent` event after dispatching notifications
+- Provides `dispatchStatusNotification` function for manual dispatch
+- Uses `useTenantContext` for tenant isolation — all DB queries filter by tenant_id
+- Proper cleanup: useRef for mounted check, unsubscribe on unmount
+- All logging uses `logger` from `@/lib/logger` — no console.log
+- Imports use `@/` alias as required
+- TypeScript types: OrderStatus, NotificationRecipient, OrderInfo interfaces
