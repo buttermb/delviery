@@ -19,6 +19,7 @@ import {
   DollarSign,
   Users,
   Shield,
+  TrendingUp,
 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +32,7 @@ import { VendorOrderHistory } from '@/components/admin/vendors/VendorOrderHistor
 import { VendorPaymentTracking } from '@/components/admin/vendors/VendorPaymentTracking';
 import { VendorContactsManager } from '@/components/admin/vendors/VendorContactsManager';
 import { VendorComplianceTracking } from '@/components/admin/vendors/VendorComplianceTracking';
+import { VendorPriceHistory } from '@/components/admin/vendors/VendorPriceHistory';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
 
@@ -276,6 +278,10 @@ export default function VendorDetailPage() {
               <DollarSign className="h-4 w-4" />
               Payments
             </TabsTrigger>
+            <TabsTrigger value="price-history" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Price History
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -296,6 +302,10 @@ export default function VendorDetailPage() {
 
           <TabsContent value="payments">
             <VendorPaymentTracking vendorId={vendor.id} vendorName={vendor.name} />
+          </TabsContent>
+
+          <TabsContent value="price-history">
+            <VendorPriceHistory vendorId={vendor.id} vendorName={vendor.name} />
           </TabsContent>
         </Tabs>
       </div>

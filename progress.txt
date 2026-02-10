@@ -4893,3 +4893,63 @@ Created a complete vendor contact management system with the following component
 - Use .maybeSingle() for optional vendor terms lookup
 - Vendors table uses account_id as tenant identifier (not tenant_id)
 - Join syntax with vendors!inner needed for foreign key relation queries
+
+---
+
+## Task 167: Create vendor product price history (2026-02-10)
+
+### Summary:
+Implemented vendor-specific price history tracking to monitor cost changes from vendors over time. This connects the vendor module to product cost tracking and margin analysis.
+
+### Files Created:
+1. `supabase/migrations/20260211000001_vendor_price_history.sql`:
+   - Added `vendor_id` column to existing `pricing_history` table
+   - Created `vendor_price_alert_settings` table for configurable thresholds
+   - Created `vendor_price_alerts` table for triggered alerts
+   - Created `log_vendor_price_change()` RPC function that:
+     - Logs cost changes to pricing_history with vendor reference
+     - Calculates change percentage
+     - Creates alert if change exceeds threshold
+   - Created `get_vendor_price_history()` RPC for fetching history
+   - Full RLS policies for tenant isolation
+
+2. `src/hooks/useVendorPriceHistory.ts`:
+   - `useVendorPriceHistory(vendorId, productId?)` - fetch price history
+   - `useVendorPriceAlerts(vendorId?)` - fetch active alerts
+   - `useDismissPriceAlert()` - dismiss alerts mutation
+   - `useVendorPriceAlertSettings(vendorId)` - fetch alert settings
+   - `useUpdatePriceAlertSettings()` - update threshold settings
+   - `useLogVendorPriceChange()` - log price changes
+   - `useProductPriceTrend(vendorId, productId)` - trend data for charts
+
+3. `src/components/admin/vendors/VendorPriceHistory.tsx`:
+   - Full price history component with:
+     - Line chart showing cost trends (recharts)
+     - Time range filters (30d, 90d, 1y, all)
+     - Product filter dropdown
+     - Stats summary (total changes, avg change, increases/decreases)
+     - Price alerts section with dismiss functionality
+     - Alert settings dialog (threshold configuration)
+     - Detailed price change log table
+
+### Files Modified:
+1. `src/pages/admin/VendorDetailPage.tsx`:
+   - Added TrendingUp icon import
+   - Added VendorPriceHistory component import
+   - Added "Price History" tab with icon
+
+2. `src/pages/admin/NewPurchaseOrder.tsx`:
+   - Added `originalCost` field to OrderProduct interface
+   - Modified item addition to track original cost
+   - Added price change logging after PO creation:
+     - Calls `log_vendor_price_change` RPC when cost differs
+     - Updates product's cost_per_unit to reflect new vendor cost
+
+### Learnings:
+- Existing `pricing_history` table already tracks cost_per_unit changes, added vendor_id for vendor-specific tracking
+- Alert threshold configurable per vendor (global) or per product
+- Price change percentage calculated only when old cost > 0 to avoid division errors
+- Use parseISO from date-fns for consistent date parsing in charts
+- Vendor pricing changes flow: PO creation → detect cost change → log to history → trigger alert if threshold exceeded
+- RPC functions use SECURITY DEFINER for proper RLS bypass when needed
+- Vendors table uses account_id as tenant identifier (same as observed in task-166)

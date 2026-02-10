@@ -999,7 +999,7 @@
     "id": "task-167",
     "title": "Create vendor product price history",
     "description": "Track vendor pricing over time for each product. When cost price changes on PO, log to vendor_price_history. Show price trend chart on product detail (vendor cost tab). Alert when vendor raises prices above threshold. Useful for negotiation. Connects vendor module to product cost tracking and margin analysis.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-168",
