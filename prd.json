@@ -471,7 +471,7 @@
     "id": "task-079",
     "title": "Create order split functionality",
     "description": "Allow splitting one order into multiple orders. Use case — customer wants to ship some items now and some later. Split creates new order(s) with selected items, adjusts original order totals. Both orders reference the original via parent_order_id. Activity log tracks the split. Customer can see all related orders.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-080",

@@ -2270,3 +2270,28 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Invoice number format: `{SLUG}-INV-{YEAR}-{PADDED_COUNTER}` from RPC
 - No console.log used — all logging via logger from @/lib/logger
 - All imports use @/ alias with proper order: React → Third-party → Utils
+
+
+## task-079: Create order split functionality
+- Created `OrderSplitDialog.tsx` in `src/components/admin/orders/`
+- Implements order splitting: move selected items to a new order
+- Key features:
+  - Visual item selection with checkboxes
+  - Prevents splitting if order has less than 2 items
+  - Ensures at least 1 item remains in original order
+  - Shows split preview with totals for both orders
+  - Uses `parent_order_id` in metadata to reference original order
+  - Updates original order with `split_orders` array in metadata
+  - Adds delivery notes referencing the other order for easy navigation
+- Uses `logActivity` from `@/lib/activityLog` for audit trail:
+  - Logs 'updated' action on original order with split details
+  - Logs 'created' action on new order with parent reference
+- Exports both `OrderSplitDialog` (controlled) and `OrderSplitButton` (standalone)
+- Invalidates all relevant query caches: orders, unified orders, activity feed
+- Toast notification with "View" action to navigate to new order
+- Uses `useTenantAdminAuth()` for tenant context
+- Uses `useTenantNavigation()` for admin route navigation
+- All queries filter by `tenant_id`
+- No console.log — uses logger from `@/lib/logger`
+- All imports use `@/` alias with proper order: React → Third-party → Types → Components → Utils
+- Includes loading states and error handling with toast notifications
