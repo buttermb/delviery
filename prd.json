@@ -105,7 +105,7 @@
     "id": "task-018",
     "title": "Create shared empty state component",
     "description": "Create src/components/admin/shared/EmptyState.tsx — reusable empty state for any module. Props — icon (lucide-react), title, description, actionLabel, onAction, entityType. When entityType is provided, shows contextual CTA like \"Create your first order\" or \"Add a product\". Uses ENTITY_LABELS for display text.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-019",

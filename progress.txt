@@ -395,3 +395,35 @@
 - No console.log — all logging via `@/lib/logger`
 - Follows existing AdminErrorBoundary pattern but simplified for per-module use
 - All imports use `@/` alias as required
+
+## task-018: Create shared empty state component
+- Created `src/components/admin/shared/EmptyState.tsx` as a reusable empty state for admin modules
+- Props interface includes:
+  - `icon: LucideIcon` — required lucide-react icon to display
+  - `title: string` — main title text
+  - `description: string` — description text below the title
+  - `actionLabel?: string` — optional label for the action button
+  - `onAction?: () => void` — optional callback when action button is clicked
+  - `entityType?: EntityType` — optional entity type for contextual CTA
+  - `className?: string` — additional styling
+- Entity-type aware CTAs:
+  - Created `ENTITY_CTA_LABELS` record mapping each EntityType to contextual action text
+  - Examples: "Create your first order", "Add a product", "Add your first customer"
+  - When `entityType` is provided without `actionLabel`, uses entity-specific CTA
+  - When `actionLabel` is provided, it takes precedence over entity CTA
+- Uses `ENTITY_LABELS` from `@/lib/constants/entityTypes` for accessibility text
+- Visual design:
+  - Centered flex layout with vertical stacking
+  - Icon in 16x16 rounded muted background container
+  - Text content limited to max-w-sm for readability
+  - Button renders only when both label and action handler are provided
+- Accessibility:
+  - `role="status"` on container
+  - `aria-label` uses entity name when available, falls back to title
+  - Icon container has `aria-hidden="true"`
+- Uses shadcn/ui `Button` from `@/components/ui/button`
+- Uses `cn()` utility from `@/lib/utils` for className merging
+- No console.log — pure UI component with no logging needed
+- No tenant_id filtering — pure presentational component
+- All imports use `@/` alias as required
+- TypeScript types properly imported from entityTypes constants
