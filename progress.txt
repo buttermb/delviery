@@ -3237,3 +3237,20 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Follows existing useProductVelocity pattern but adds reorder recommendations
 - All queries filter by tenant_id, uses logger not console.log
 - TypeScript strict mode compliant, proper @/ import aliases
+
+## task-119: Create product related products suggestion
+- Created src/hooks/useRelatedProducts.ts with co-occurrence-based product suggestions
+- Main hook useRelatedProducts: suggests products frequently bought together
+- Calculates from unified_order_items — finds products in the same completed orders
+- Returns RelatedProduct[] with coOccurrenceCount and coOccurrenceScore (normalized 0-1)
+- Configurable limit and minCoOccurrence threshold parameters
+- Uses 90-day analysis window for sufficient order history
+- Weekly stale time (7 days) for caching as per task spec
+- Added useBulkRelatedProducts for fetching related products for multiple products at once
+- Added useStorefrontRelatedProducts for public storefront use (no tenant admin auth required)
+- Storefront hook fetches tenant_id from storefront_settings, only shows in-stock products
+- Utility functions: getCoOccurrenceLabel, formatCoOccurrenceCount for display
+- Used Array.from() for Map/Set iteration to avoid downlevelIteration TypeScript issues
+- All queries filter by tenant_id (or derive it from store), uses logger not console.log
+- Proper error handling with loading states, follows existing hook patterns
+- TypeScript strict mode compliant with ProductData interface for type safety

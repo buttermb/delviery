@@ -711,7 +711,7 @@
     "id": "task-119",
     "title": "Create product related products suggestion",
     "description": "Create src/hooks/useRelatedProducts.ts — suggests related products based on order co-occurrence. Products frequently ordered together are related. Show \"Frequently Bought Together\" on product detail. Used in storefront for cross-selling. Calculate from order_items data. Cache results. Update weekly.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-120",
