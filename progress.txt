@@ -1194,3 +1194,42 @@
 - No tenant_id filtering in queries — uses context for tenant-aware URLs only
 - All imports use `@/` alias as required
 - Import order follows convention: React → Third-party → Components → Utils
+
+## task-042: Create useBreadcrumbs hook
+- Created `src/hooks/useBreadcrumbs.ts` — auto-generates breadcrumb trail from current route path
+- Route segment mapping via `ROUTE_LABELS` constant:
+  - Maps 80+ route segments to human-readable labels
+  - Covers all admin routes: dashboard, orders, inventory, customers, vendors, menus, storefront, deliveries, analytics, settings
+  - Handles nested routes: marketplace/listings, catalog/batches, storefront/products, etc.
+- Dynamic entity resolution:
+  - Detects UUIDs in path segments via regex
+  - Determines entity type from parent segment using `ROUTE_TO_ENTITY` mapping
+  - Fetches entity names via lightweight Supabase queries with tenant isolation
+  - Supports: orders (order_number), products (name), customers (full_name), vendors (company_name), menus (name), invoices (invoice_number), deliveries, listings (title)
+- Entity query configuration via `ENTITY_QUERY_CONFIG`:
+  - Maps each entity type to table name, name column, and tenant column
+  - Uses type assertion for dynamic table access: `(supabase as unknown as {...}).from(table)`
+  - Graceful fallback to formatted ID when entity name not found
+- Hook interface:
+  - `useBreadcrumbs(options?)` returns `{ breadcrumbs, isLoading }`
+  - `breadcrumbs: BreadcrumbItem[]` with `{ label, href }` structure
+  - Options: `rootLabel` (override tenant name), `skipAdminSegment` (default: true)
+- Root breadcrumb:
+  - Uses tenant business name from `useTenantAdminAuth()` context
+  - Falls back to 'Dashboard' if no tenant info available
+  - Links to `/{tenantSlug}/admin/dashboard`
+- Path building:
+  - Filters out tenant slug and optionally 'admin' segment
+  - Builds cumulative paths for each breadcrumb href
+  - Skips duplicate segments that match root label
+- TanStack Query integration:
+  - Uses `useQuery` for entity name fetching with caching
+  - `staleTime: 60_000` (1 minute) for entity names
+  - Parallel fetching via `Promise.all` for multiple IDs
+  - Only queries when tenantId available and IDs detected
+- Helper function `formatSegment()`:
+  - Converts kebab-case and snake_case to Title Case
+  - Used for segments not in ROUTE_LABELS mapping
+- All logging via `logger.warn` and `logger.error` from `@/lib/logger` — no console.log
+- All imports use `@/` alias as required
+- Import order: React → Third-party (react-router, tanstack) → Local imports

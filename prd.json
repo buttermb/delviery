@@ -249,7 +249,7 @@
     "id": "task-042",
     "title": "Create useBreadcrumbs hook",
     "description": "Create src/hooks/useBreadcrumbs.ts — auto-generates breadcrumb trail from current route path. Maps route segments to human-readable labels using ENTITY_LABELS. Includes tenant dashboard as root. Returns array of { label, href } objects. Dynamic segments (IDs) resolved to entity names via lightweight queries.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-043",
