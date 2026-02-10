@@ -2572,3 +2572,19 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Component uses useTenantNavigation for tenant-aware routing
 - Logger from @/lib/logger used for all error/info logging (no console.log)
 - Mutation hook invalidates both purchaseOrders and reorder suggestions queries on success
+
+## task-091: Create product category management with counts
+- Enhanced `src/pages/admin/catalog/CategoriesPage.tsx` with comprehensive category stats
+- Each category now displays: product count, total stock value, revenue generated, best seller product
+- Added aggregate stats cards at top: total categories, total products, total stock value, total revenue
+- Stats computed via separate TanStack Query using category key factory with 'stats' suffix
+- Links categories to filtered product list via `navigateToFilteredProducts(categoryId)` using tenant-aware routing
+- Uses `tenantSlug` from useParams to build proper admin routes: `/${tenantSlug}/admin/products?category_id=${categoryId}`
+- Category tree supports nesting with expand/collapse functionality
+- Real-time updates via TanStack Query invalidation when categories change
+- Mobile-responsive: stats show in a separate row on small screens
+- All queries filter by `tenant_id` as required
+- No console.log — all logging via `logger` from `@/lib/logger`
+- Proper TypeScript types: `Category`, `CategoryStats`, `CategoryWithStats`
+- Graceful handling of missing tables (42P01 error code)
+- Loading states with Skeleton components, error handling via `handleError` utility

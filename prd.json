@@ -543,7 +543,7 @@
     "id": "task-091",
     "title": "Create product category management with counts",
     "description": "Create or enhance category management page. Each category shows product count, total stock value, revenue generated, best seller. Categories link to filtered product list. Adding/removing products from categories updates counts in real-time. Category tree supports nesting. Uses TanStack Query with category key factory.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-092",
