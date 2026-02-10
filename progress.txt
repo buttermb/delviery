@@ -4379,3 +4379,23 @@ Date: 2026-02-10
 - Chart data transformation happens in useMemo to avoid recalculation on every render
 - `useTenantNavigation` hook provides `navigateToAdmin()` for proper tenant-aware routing
 - Motion animations with staggered delays create polished loading experience
+
+## task-149: Create customer detail page related entities
+- Created `src/components/admin/customers/CustomerRelatedEntitiesPanel.tsx` — accordion-based panel showing all related entities
+- Implemented lazy-loading pattern with `useLazyQuery` custom hook for efficient data fetching
+- Related entities include: recent orders, active deliveries, outstanding payments, special pricing, loyalty tier, communication preferences, associated organization, saved menus
+- Each section only fetches data when expanded (accordion trigger enables the query)
+- Uses existing `queryKeys.customers.related(tenantId, customerId)` with section-specific suffixes
+- Reused `TIER_DISPLAY_INFO` and `LoyaltyTier` type from `useCustomerLoyalty` hook
+- Added to CustomerDetails page Overview tab in left sidebar column
+- Gracefully handles missing tables/columns with try-catch and `logger.debug` for non-critical errors
+- All sections have loading, error, and empty states
+- Navigation handlers link to respective module pages using `useTenantNavigation`
+
+### Key learnings:
+- Lazy-loading with accordion pattern prevents fetching all data upfront — only fetches when user shows interest
+- The existing `queryKeys` factory already had `customers.related` so no changes needed to queryKeys.ts
+- Communication preferences table may not exist yet — used try-catch with graceful fallback to defaults
+- Organization relationship column may not exist on customers — handled with optional chaining and catch
+- Accordion's `onValueChange` callback is ideal for triggering lazy queries on expand
+- Each entity section can link to its respective detail page for deeper navigation

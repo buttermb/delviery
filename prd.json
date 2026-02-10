@@ -891,7 +891,7 @@
     "id": "task-149",
     "title": "Create customer detail page related entities",
     "description": "Add RelatedEntities panel to customer detail page using useRelatedEntities hook. Show recent orders, active deliveries, outstanding payments, applicable special pricing, loyalty tier, communication preferences, associated organization, saved menus. Each section links to respective module.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-150",

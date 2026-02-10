@@ -32,6 +32,7 @@ import { CustomerPaymentHistoryTab } from '@/components/admin/customers/Customer
 import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/CustomerDeliveryAddressesTab';
 import { CustomerDeliveryMap } from '@/components/admin/customers/CustomerDeliveryMap';
 import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
+import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/CustomerRelatedEntitiesPanel';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
 interface Customer {
@@ -333,32 +334,40 @@ export default function CustomerDetails() {
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
-              {/* Contact Card and Activity Timeline */}
+              {/* Contact Card, Activity Timeline, and Related Entities */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {tenantId && customer && (
-                  <ContactCard
-                    customer={customer}
-                    customerId={customer.id}
-                    tenantId={tenantId}
-                    onCall={() => {
-                      if (customer.phone) {
-                        window.location.href = `tel:${customer.phone}`;
-                      }
-                    }}
-                    onEmail={() => {
-                      if (customer.email) {
-                        window.location.href = `mailto:${customer.email}`;
-                      }
-                    }}
-                    onMessage={() => {
-                      // Scroll to communication history or open dialog
-                      const commTab = document.querySelector('[value="communications"]');
-                      if (commTab) {
-                        (commTab as HTMLElement).click();
-                      }
-                    }}
-                  />
-                )}
+                {/* Left column: Contact Card + Related Entities */}
+                <div className="space-y-6">
+                  {tenantId && customer && (
+                    <ContactCard
+                      customer={customer}
+                      customerId={customer.id}
+                      tenantId={tenantId}
+                      onCall={() => {
+                        if (customer.phone) {
+                          window.location.href = `tel:${customer.phone}`;
+                        }
+                      }}
+                      onEmail={() => {
+                        if (customer.email) {
+                          window.location.href = `mailto:${customer.email}`;
+                        }
+                      }}
+                      onMessage={() => {
+                        // Scroll to communication history or open dialog
+                        const commTab = document.querySelector('[value="communications"]');
+                        if (commTab) {
+                          (commTab as HTMLElement).click();
+                        }
+                      }}
+                    />
+                  )}
+                  {/* Related Entities Panel */}
+                  {customer && (
+                    <CustomerRelatedEntitiesPanel customerId={customer.id} />
+                  )}
+                </div>
+                {/* Right column: Activity Timeline */}
                 {tenantId && customer && (
                   <div className="lg:col-span-2">
                     <ActivityTimeline clientId={customer.id} />
