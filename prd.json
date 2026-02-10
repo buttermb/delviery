@@ -873,7 +873,7 @@
     "id": "task-146",
     "title": "Create customer special pricing rules",
     "description": "Create src/components/admin/customers/SpecialPricing.tsx — set customer-specific or group-specific pricing. Override product prices for specific customers or customer groups. Percentage discount or fixed price. Date range for promotions. Show special pricing in order creation when customer selected. Stored in customer_pricing table. Applied automatically.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-147",

@@ -4237,3 +4237,35 @@ Date: 2026-02-10
 - RLS policies use subquery pattern: tenant_id IN (SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid())
 - Added bonus type to support signup bonuses, referral bonuses, birthday bonuses
 - SECURITY DEFINER functions with SET search_path = public for helper functions
+
+
+---
+
+## Task 146: Create customer special pricing rules
+
+### Implemented:
+- Created `src/components/admin/customers/SpecialPricing.tsx`
+- Full CRUD interface for managing customer-specific pricing rules
+- Supports both individual customers and customer groups
+- Two discount types: percentage off or fixed price override
+- Optional date ranges for promotional pricing periods
+- Active/inactive toggle with visual status badges (Active/Scheduled/Expired/Inactive)
+
+### Component features:
+- Table view showing all pricing rules with target, product, discount, date range, and status
+- Create/edit dialog with React Hook Form + Zod validation
+- Real-time effective price preview when setting percentage discounts
+- Inline toggle for quick enable/disable
+- Delete confirmation dialog
+- Loading and error states with proper empty state guidance
+
+### Utility exports for order creation integration:
+- `getApplicableSpecialPricing(tenantId, customerId, customerGroupId?)` - fetches active, in-date pricing rules
+- `calculateEffectivePrice(originalPrice, pricingRule)` - calculates final price with discount applied
+
+### Key learnings:
+- Component depends on `customer_pricing` table (task-147 will create migration)
+- Used existing patterns from CustomerPreferredProducts.tsx and EarningRulesConfig.tsx
+- Applied Zod refinements for conditional validation (customer vs group selection, percentage max 100%)
+- Used TanStack Query for data fetching with proper tenant_id filtering
+- Exported utility functions allow easy integration with order creation flow
