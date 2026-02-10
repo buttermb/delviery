@@ -1239,7 +1239,7 @@
     "id": "task-207",
     "title": "Create delivery runner mobile view",
     "description": "Create src/pages/mobile/RunnerView.tsx — mobile-optimized view for delivery runners. Shows assigned deliveries in route order. Each delivery shows customer name, address, items, special instructions. Navigation button opens maps app. Status update buttons — picked up, in transit, delivered. Photo proof of delivery upload. Offline support.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-208",

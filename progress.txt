@@ -6101,3 +6101,18 @@ Technical notes:
 - Tenants relation provides store business_name
 - Status timeline handles cancelled state separately
 - Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery
+
+## task-207: Create delivery runner mobile view
+- Created src/pages/mobile/RunnerView.tsx with mobile-optimized UI for delivery runners
+- Shows assigned deliveries in route order with numbered badges
+- Each delivery card displays customer name, address, items, special instructions, total amount
+- Navigate button opens Google Maps (Android) or Apple Maps (iOS) with address or coordinates
+- Call button allows direct phone call to customer
+- Status update buttons: Pick Up -> Start Delivery -> Delivered (using mutation pattern)
+- Photo proof of delivery modal with camera capture and delivery notes
+- Offline support with localStorage queue for status updates
+- Auto-sync offline queue when connection restored
+- Supabase realtime subscription for live delivery updates
+- Used useOnlineStatus hook for connection detection
+- Maps delivery status from orders table to delivery status types
+- Expandable delivery cards show full item list and instructions
