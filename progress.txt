@@ -3487,3 +3487,72 @@ Created `src/hooks/useCustomerLTV.ts` - a comprehensive customer lifetime value 
 - No 'any' type usage
 - React.memo for CustomerSegmentBadge component
 - Proper useMemo for derived values (segmentMap, counts, filterBySegment)
+
+---
+
+## Task 127: Create customer tag system
+**Date**: 2026-02-10
+**Status**: ✅ Completed
+
+### What Was Implemented
+
+Customer tagging system that enables categorizing customers with multiple tags, filtering customer list by tags, displaying tags on customer cards, and auto-tag rules based on customer attributes.
+
+### Implementation Details
+
+**Component: src/components/admin/customers/CustomerTagFilter.tsx**
+- Multi-select filter for customer list by assigned tags
+- Uses Command component for searchable tag selection
+- Shows selected tags as removable badges
+- Clear all filters option
+- Loading skeleton while tags load
+
+**Component: src/components/admin/customers/CustomerTagBadges.tsx**
+- Read-only display component for customer tags
+- Configurable max visible tags with "+N more" tooltip
+- Size variants (sm/md) for different contexts
+- Used in customer list rows and mobile cards
+- Tooltip shows hidden tags on overflow
+
+**Hook: src/hooks/useAutoTagRules.ts**
+- Auto-tag rules engine for automatic customer tagging
+- Predefined tag names: vip, wholesale, retail, preferred, flagged, at_risk, special_pricing, new_customer
+- Predefined tag colors for consistency
+- Rule conditions: ltv_threshold, customer_type, loyalty_tier, days_since_order, order_count
+- `useEnsureAutoTag()` — Creates tag if doesn't exist
+- `useApplyAutoTags()` — Evaluates and applies rules to customer
+- `useCustomersByTags()` — Get customer IDs filtered by tags
+- `useTagCounts()` — Get customer counts per tag
+
+**Page Updates: src/pages/admin/CustomerManagement.tsx**
+- Added CustomerTagFilter to filter bar
+- Added Tags column in desktop table view
+- Added CustomerTagBadges in mobile card view
+- Filter logic updated to include tag filtering
+- State for filterTagIds with useCustomersByTags hook
+
+### Existing Components Used
+- `useCustomerTags.ts` — Already existed with CRUD operations for tags
+- `TagManager.tsx` — Already existed for editing customer tags
+- `queryKeys.ts` — Already had tags and customerTags keys defined
+
+### Auto-Tag Rule Examples
+```typescript
+const DEFAULT_AUTO_TAG_RULES = [
+  { name: 'VIP by LTV', tagName: 'vip', condition: 'ltv_threshold', threshold: 5000 },
+  { name: 'Wholesale Customers', tagName: 'wholesale', condition: 'customer_type', value: 'wholesale' },
+  { name: 'At Risk (Inactive)', tagName: 'at_risk', condition: 'days_since_order', threshold: 60 },
+  { name: 'New Customers', tagName: 'new_customer', condition: 'order_count', threshold: 1 },
+];
+```
+
+### Project Rules Followed
+- Uses logger from @/lib/logger (no console.log)
+- Uses @/ alias for all imports
+- All queries filter by tenant_id
+- Uses useTenantAdminAuth() for tenant context
+- Uses .maybeSingle() for optional data
+- No 'any' type usage — uses 'unknown' with proper type guards
+- Loading states included in all async operations
+- Error handling with toast notifications
+

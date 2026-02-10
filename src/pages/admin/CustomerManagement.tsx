@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Lock
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -38,10 +38,12 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
-import { VirtualList } from "@/components/ui/virtual-list";
-import { useSwipeBack, useLongPress } from "@/hooks/useGestures";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import CopyButton from "@/components/CopyButton";
+import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilter";
+import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
+import { TagManager } from "@/components/admin/TagManager";
+import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
 interface Customer {
   id: string;
@@ -77,7 +79,7 @@ export function CustomerManagement() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +92,10 @@ export function CustomerManagement() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
+
+  // Get customer IDs filtered by tags
+  const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
 
   useEffect(() => {
     if (tenant && !accountLoading) {
@@ -278,11 +284,17 @@ export function CustomerManagement() {
   const filteredCustomers = customers.filter((customer) => {
     const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
     const search = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       fullName.includes(search) ||
       customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.includes(search)
-    );
+      customer.phone?.includes(search);
+
+    // Filter by tags if any are selected
+    const matchesTags =
+      filterTagIds.length === 0 ||
+      (customerIdsByTags && customerIdsByTags.includes(customer.id));
+
+    return matchesSearch && matchesTags;
   });
 
   // Use standardized pagination
@@ -472,6 +484,10 @@ export function CustomerManagement() {
                   <SelectItem value="suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
+              <CustomerTagFilter
+                selectedTagIds={filterTagIds}
+                onTagsChange={setFilterTagIds}
+              />
             </div>
           </div>
 
@@ -529,6 +545,9 @@ export function CustomerManagement() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Last Order
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Tags
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
@@ -600,6 +619,9 @@ export function CustomerManagement() {
                       {customer.last_purchase_at
                         ? new Date(customer.last_purchase_at).toLocaleDateString()
                         : 'Never'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <CustomerTagBadges customerId={customer.id} maxVisible={2} />
                     </td>
                     <td className="px-6 py-4">
                       {getCustomerStatus(customer)}
@@ -712,11 +734,12 @@ export function CustomerManagement() {
                             customer.email || customer.phone || 'No contact'
                           )}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
                             {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
                           </Badge>
                           {getCustomerStatus(customer)}
+                          <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
                         </div>
                       </div>
                     </div>

@@ -759,7 +759,7 @@
     "id": "task-127",
     "title": "Create customer tag system",
     "description": "Similar to product tags, create customer tagging. Tags like wholesale, retail, preferred, flagged, special_pricing. Multiple tags per customer. Filter customer list by tags. Tags visible on customer card in order creation. Auto-tag rules — e.g. auto-tag as vip when LTV exceeds threshold. Stored in customer_tags table with tenant_id RLS.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-128",
