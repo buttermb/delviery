@@ -411,7 +411,7 @@
     "id": "task-069",
     "title": "Create order bulk assignment to runner",
     "description": "In orders DataTable, allow selecting multiple confirmed orders and assigning them to a delivery runner in bulk. Show runner dropdown with available runners. On assign, create delivery records for each order linked to the runner. Notify runner via notification. Update order status to assigned. Uses delivery module hooks.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-070",

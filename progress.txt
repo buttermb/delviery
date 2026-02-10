@@ -2022,3 +2022,31 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - No `console.log` statements — all logging via `logger` from `@/lib/logger`
 - All imports use `@/` alias
 - TypeScript compiles with no errors
+
+## task-069: Create order bulk assignment to runner
+- Created `src/hooks/useOrderBulkRunnerAssign.ts` - new hook for bulk assigning orders to delivery runners
+  - Processes orders in batches of 5 for progress visibility
+  - For each order: creates delivery record in `wholesale_deliveries`, updates order status to `assigned` with `courier_id`
+  - Includes rollback if order update fails after delivery creation
+  - Activity logging via `logActivities` with metadata including runner_name, bulk_operation flag
+  - Notifications: admin notification for bulk completion, runner notification for new assignments
+  - Cross-panel invalidation via `invalidateOnEvent` for DRIVER_ASSIGNED event
+  - Query invalidations for orders, runners, wholesale-deliveries, fulfillment
+- Created `src/components/admin/orders/BulkAssignRunnerDialog.tsx` - dialog component for bulk runner assignment
+  - Uses `useAvailableRunners` hook to fetch runners list
+  - Shows selected orders summary with badges (max 10 displayed, +N more for overflow)
+  - Runner dropdown shows name, rating, and status badge
+  - Selected runner details card with phone, total deliveries, vehicle info
+  - Warning message when assigning to non-available runner
+  - Progress bar via `BulkOperationProgress` for large batches
+- Updated `src/components/admin/orders/index.ts` to export `BulkAssignRunnerDialog`
+- Updated `src/pages/admin/Orders.tsx`:
+  - Added `UserPlus` icon import from lucide-react
+  - Added `BulkAssignRunnerDialog` import
+  - Added `assignRunnerDialogOpen` state
+  - Added "Assign Runner" action to BulkActionsBar with UserPlus icon
+  - Integrated BulkAssignRunnerDialog with proper props (selectedOrders, onSuccess handler)
+- All database queries filter by `tenant_id` for proper multi-tenant isolation
+- No `console.log` statements — all logging via `logger` from `@/lib/logger`
+- All imports use `@/` alias
+- TypeScript compiles with no errors, Vite build succeeds

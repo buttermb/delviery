@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -23,6 +23,7 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
+import { BulkAssignRunnerDialog } from "@/components/admin/orders/BulkAssignRunnerDialog";
 import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
 import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -115,6 +116,7 @@ export default function Orders() {
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
 
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -977,6 +979,12 @@ export default function Orders() {
             onClick: async () => { handleBulkStatusChange('in_transit'); },
           },
           {
+            id: 'assign-runner',
+            label: 'Assign Runner',
+            icon: <UserPlus className="h-4 w-4" />,
+            onClick: async () => { setAssignRunnerDialogOpen(true); },
+          },
+          {
             id: 'mark-cancelled',
             label: 'Cancel',
             icon: <XCircle className="h-4 w-4" />,
@@ -1035,6 +1043,19 @@ export default function Orders() {
         title="Export Orders"
         description="Choose which related data to include in the CSV export."
         itemCount={filteredOrders.length}
+      />
+
+      <BulkAssignRunnerDialog
+        open={assignRunnerDialogOpen}
+        onOpenChange={setAssignRunnerDialogOpen}
+        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id)).map(o => ({
+          id: o.id,
+          order_number: o.order_number,
+        }))}
+        onSuccess={() => {
+          setSelectedOrders([]);
+          refetch();
+        }}
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
