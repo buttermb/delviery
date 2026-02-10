@@ -969,7 +969,7 @@
     "id": "task-162",
     "title": "Create vendor catalog sync",
     "description": "Create src/components/admin/vendors/CatalogSync.tsx — ability to import or sync vendor's product catalog. Upload vendor catalog CSV. Match to existing products. Identify new products to add. Price comparison — vendor price vs current selling price. Margin calculation. Bulk update product costs from vendor catalog. Schedule periodic sync.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-163",

@@ -4721,3 +4721,48 @@ Created a complete vendor contact management system with the following component
 - Parent components can receive compliance status via callback for PO creation blocking
 - Accordion pattern works well for managing multiple license records per vendor
 - date-fns formatDistanceToNow provides user-friendly expiration countdown
+
+## Task 162: Create vendor catalog sync
+
+### Files created:
+- `src/components/admin/vendors/CatalogSync.tsx`
+
+### Implementation details:
+- Complete vendor catalog sync component with:
+  - CSV file upload with drag-and-drop UI
+  - CSV parsing supporting multiple column name formats (sku/product_code, name/product_name, price/cost)
+  - Product matching algorithm (exact SKU match, name match, or new product identification)
+  - Price comparison showing vendor price vs current cost
+  - Margin calculation based on selling price minus vendor price
+  - Bulk update product costs for matched products
+  - Bulk create new products from catalog
+  - Sortable and filterable results table
+  - Selection system for bulk operations
+  - Schedule sync dialog (UI ready for API integration)
+  - Stats cards showing total items, matched, new, price increases/decreases
+
+- Used existing patterns:
+  - TanStack Query for data fetching and mutations
+  - queryKeys for cache management
+  - useTenantAdminAuth for tenant context
+  - StandardPagination for table pagination
+  - EnhancedEmptyState for empty states
+  - shadcn/ui components (Card, Dialog, Table, Badge, etc.)
+  - toast from sonner for notifications
+  - logger from @/lib/logger (no console.log)
+
+### Technical details:
+- All queries filter by tenant_id for multi-tenant isolation
+- Uses vendor_name for product filtering (matches VendorProductCatalog pattern)
+- Margin calculation: ((sellingPrice - vendorPrice) / sellingPrice) * 100
+- Default 30% markup when creating new products
+- Custom pagination implementation (manual state, not usePagination hook)
+- Supports sorting by name, SKU, vendor price, price change, and margin percent
+
+### Learnings:
+- CSV parsing should be flexible to handle various vendor formats
+- Product matching should prioritize exact SKU match over name match
+- Margin color coding (red < 10%, amber < 20%, green >= 20%) helps identify problematic pricing
+- Selection state needs to track both matched products (for cost updates) and new products (for creation)
+- Bulk operations should be separated (update costs vs create products) to avoid confusion
+- Schedule sync UI is ready but requires vendor API configuration for actual automation
