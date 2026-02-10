@@ -386,6 +386,13 @@ export const queryKeys = {
     analytics: () => [...queryKeys.loyalty.all, 'analytics'] as const,
     config: (tenantId?: string) => [...queryKeys.loyalty.all, 'config', tenantId] as const,
     customer: (customerId?: string) => [...queryKeys.loyalty.all, 'customer', customerId] as const,
+    // Customer loyalty (admin-side)
+    customerStatus: (tenantId: string, customerId: string) =>
+      [...queryKeys.loyalty.all, 'status', tenantId, customerId] as const,
+    customerHistory: (tenantId: string, customerId: string) =>
+      [...queryKeys.loyalty.all, 'history', tenantId, customerId] as const,
+    leaderboard: (tenantId?: string) =>
+      [...queryKeys.loyalty.all, 'leaderboard', tenantId] as const,
   },
 
   // Coupons

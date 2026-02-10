@@ -861,7 +861,7 @@
     "id": "task-144",
     "title": "Create customer loyalty points system",
     "description": "Create src/hooks/useCustomerLoyalty.ts — points-based loyalty system. Earn points on purchases (configurable rate per tenant). Redeem points for discounts on future orders. Points balance on customer detail. Points history log. Tier system — bronze/silver/gold based on points. Tier benefits configurable. Connects orders, payments, and customer modules.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-145",

@@ -4126,3 +4126,75 @@ Date: 2026-02-10
 - Calculated LTV and order stats by querying unified_orders with organization_id
 - All queries properly filter by tenant_id for multi-tenant isolation
 - Used logger from @/lib/logger instead of console.log throughout
+
+## task-144: Create customer loyalty points system
+
+### Implementation:
+
+- Created \:
+  - Full points-based loyalty system for admin-side customer management
+  - \ hook for tenant loyalty configuration (points_per_dollar, tiers, multipliers)
+  - \ hook for customer status (current_points, lifetime_points, tier)
+  - \ hook for transaction history log
+  - \ hook with awardPoints, redeemPoints, adjustPoints mutations
+  - \ combined hook for customer detail page usage
+  - \ utility function for order completion integration
+
+- Tier system implementation:
+  - Four tiers: bronze, silver, gold, platinum
+  - Configurable tier thresholds based on lifetime points
+  - Tier multipliers for earning bonus points
+  - TIER_DISPLAY_INFO constant for UI styling
+
+- Helper functions exported:
+  - calculateTier, getTierMultiplier, getNextTier, getPointsToNextTier
+  - calculatePointsToEarn, calculatePointsValue
+
+- Updated \ with customer loyalty keys:
+  - customerStatus, customerHistory, leaderboard
+
+### Key learnings:
+- Separated config fetch from customer-specific queries for better caching
+- Used DEFAULT_CONFIG fallback when tenant hasn't configured loyalty program
+- Points transactions stored as signed integers (negative for redemptions)
+- Calculated current_points by summing all transactions (not stored separately)
+- lifetime_points only counts 'earned' and 'bonus' types for tier calculation
+- Followed existing hook patterns from useOrganizations and useCustomerFlags
+- All queries filter by tenant_id for multi-tenant isolation
+- Used logger from @/lib/logger instead of console.log
+
+## task-144: Create customer loyalty points system
+
+### Implementation:
+
+- Created src/hooks/useCustomerLoyalty.ts:
+  - Full points-based loyalty system for admin-side customer management
+  - useLoyaltyConfig hook for tenant loyalty configuration (points_per_dollar, tiers, multipliers)
+  - useCustomerLoyaltyStatus hook for customer status (current_points, lifetime_points, tier)
+  - usePointsHistory hook for transaction history log
+  - usePointsMutations hook with awardPoints, redeemPoints, adjustPoints mutations
+  - useCustomerLoyalty combined hook for customer detail page usage
+  - awardPointsForOrder utility function for order completion integration
+
+- Tier system implementation:
+  - Four tiers: bronze, silver, gold, platinum
+  - Configurable tier thresholds based on lifetime points
+  - Tier multipliers for earning bonus points
+  - TIER_DISPLAY_INFO constant for UI styling
+
+- Helper functions exported:
+  - calculateTier, getTierMultiplier, getNextTier, getPointsToNextTier
+  - calculatePointsToEarn, calculatePointsValue
+
+- Updated src/lib/queryKeys.ts with customer loyalty keys:
+  - customerStatus, customerHistory, leaderboard
+
+### Key learnings:
+- Separated config fetch from customer-specific queries for better caching
+- Used DEFAULT_CONFIG fallback when tenant has not configured loyalty program
+- Points transactions stored as signed integers (negative for redemptions)
+- Calculated current_points by summing all transactions (not stored separately)
+- lifetime_points only counts earned and bonus types for tier calculation
+- Followed existing hook patterns from useOrganizations and useCustomerFlags
+- All queries filter by tenant_id for multi-tenant isolation
+- Used logger from @/lib/logger instead of console.log
