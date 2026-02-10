@@ -2156,3 +2156,23 @@ Date: Tue, Feb 10, 2026 12:43:58 AM
 - Builds on task-072's source tracking infrastructure
 - All imports use @/ alias, logger from @/lib/logger (no console.log)
 - All queries filter by tenant_id for proper tenant isolation
+
+
+## task-074: Create order auto-assign rules
+- Created `src/components/admin/settings/OrderAutoAssign.tsx` — settings component for configuring order auto-assignment rules
+- Component uses React Hook Form + Zod for form validation and management
+- Features:
+  - Global enable/disable toggle for auto-assignment
+  - Rule management with add/remove/reorder functionality
+  - Multiple condition types: order_total_min, order_total_max, delivery_zone, product_category, customer_type, time_of_day
+  - Operator options: equals, greater_than, less_than, contains, in
+  - Runner selection dropdown with status badges
+  - Priority ordering for rule evaluation
+  - Active rules summary view
+- Rules stored in tenant_settings table via upsert with onConflict: tenant_id
+- Used useFieldArray for dynamic rule and condition management
+- All queries filter by tenant_id using useTenantAdminAuth() context
+- Loading states with Skeleton components, error states with Alert
+- All imports use @/ alias, logger from @/lib/logger (no console.log)
+- Component reuses useAvailableRunners hook for runner data
+- Applied RuleCard sub-component pattern for cleaner code organization

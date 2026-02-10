@@ -441,7 +441,7 @@
     "id": "task-074",
     "title": "Create order auto-assign rules",
     "description": "Create src/components/admin/settings/OrderAutoAssign.tsx — settings page where admin configures auto-assignment rules. Rules like — orders over $X go to senior runner, orders in zone A go to runner 1, orders with specific products go to specific runner. Rules stored in tenant_settings jsonb. Applied automatically when order is confirmed.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-075",
