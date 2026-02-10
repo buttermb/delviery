@@ -741,7 +741,7 @@
     "id": "task-124",
     "title": "Create customer detail page with delivery addresses",
     "description": "On customer detail page, show saved delivery addresses. Primary address marked with star. Edit/delete addresses. Add new address with geocoding. Map preview of address. When creating order for this customer, auto-populate address selector. Link to delivery zone mapping.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-125",

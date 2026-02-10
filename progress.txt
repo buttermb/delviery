@@ -3346,3 +3346,40 @@ Created `src/pages/admin/InventoryAudit.tsx` — comprehensive physical inventor
 - Quick actions: Record Payment and Create Invoice buttons
 - Payment method icons for visual distinction (card, cash, check, bank, crypto)
 - Status badges with color-coded styling (green=completed, amber=pending, red=failed, purple=refunded)
+
+## Task 124: Create customer detail page with delivery addresses
+
+### Files Created:
+- supabase/migrations/20260210000001_add_customer_delivery_addresses.sql
+- src/components/admin/customers/CustomerDeliveryAddressesTab.tsx
+
+### Implementation Details:
+- Created customer_delivery_addresses table with proper RLS and tenant_id filtering
+- Table includes: id, tenant_id, customer_id, label, street_address, apartment, city, state, zip_code, country, latitude, longitude, is_primary, delivery_instructions, timestamps
+- Added trigger to ensure only one primary address per customer (automatically unsets others when setting new primary)
+- Added indexes for fast lookups by customer_id and tenant_id
+
+### Component Features:
+- CustomerDeliveryAddressesTab component with full CRUD operations
+- Primary address marked with star badge
+- Edit and delete functionality with confirmation dialogs
+- Add new address with Zod form validation using React Hook Form
+- Geocoding via OpenStreetMap Nominatim API (free, no API key required)
+- "Open in Maps" button to view address in Google Maps
+- Set primary address functionality
+- Delivery instructions field for special notes
+- US state selector with all 50 states
+- Link to Delivery Zones page for zone mapping integration
+- Loading states with Skeleton components
+- Error handling with retry button
+- Empty state with action to add first address
+
+### Integration:
+- Added new "Addresses" tab to CustomerDetails.tsx TabsList
+- Tab positioned after Overview for easy access
+- Uses useTenantAdminAuth() for tenant context
+- All queries filter by tenant_id for multi-tenant security
+- Uses TanStack Query for data fetching with proper cache invalidation
+- All imports use @/ alias pattern
+- Uses logger (no console.log)
+- Proper TypeScript types with no 'any' usage

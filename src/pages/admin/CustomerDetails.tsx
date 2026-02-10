@@ -29,6 +29,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoicesTab';
 import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOrderHistoryTab';
 import { CustomerPaymentHistoryTab } from '@/components/admin/customers/CustomerPaymentHistoryTab';
+import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/CustomerDeliveryAddressesTab';
 
 interface Customer {
   id: string;
@@ -326,8 +327,9 @@ export default function CustomerDetails() {
 
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))]">
+            <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))] flex-wrap">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="addresses">Addresses</TabsTrigger>
               <TabsTrigger value="orders">Purchase History</TabsTrigger>
               <TabsTrigger value="payments">Payment History</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
@@ -439,6 +441,13 @@ export default function CustomerDetails() {
                 </Card>
               </div>
             </TabsContent>
+
+            {/* Addresses Tab */}
+            {customer && (
+              <TabsContent value="addresses">
+                <CustomerDeliveryAddressesTab customerId={customer.id} />
+              </TabsContent>
+            )}
 
             {/* Orders Tab */}
             {customer && (
