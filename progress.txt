@@ -569,3 +569,43 @@
 - No console.log — pure UI component
 - All imports use `@/` alias as required
 - TypeScript generic `<TData extends Record<string, unknown>>` for type safety
+
+## task-023: Create shared detail panel component
+- Created `src/components/admin/shared/DetailPanel.tsx` — slide-over panel for quick entity viewing
+- Props interface includes:
+  - `isOpen: boolean` — controls panel visibility
+  - `onClose: () => void` — callback when panel should close
+  - `title: string` — panel header title
+  - `entityType?: EntityType` — optional entity type for contextual styling
+  - `entityId?: string` — optional entity ID for reference display
+  - `actions?: DetailPanelAction[]` — array of action button configurations
+  - `relatedEntities?: RelatedEntity[]` — related entities for cross-module navigation
+  - `relatedEntitiesLoading?: boolean` — loading state for related entities section
+  - `children: ReactNode` — panel content
+  - `loading?: boolean` — loading state for main content
+  - `width?: 'sm' | 'md' | 'lg' | 'xl'` — panel width variants
+- Action configuration via `DetailPanelAction` interface:
+  - `label`, `icon`, `onClick`, `variant`, `disabled`, `loading`
+  - Supports all Button variants: default, destructive, outline, secondary, ghost, link
+- Related entities via `RelatedEntity` interface:
+  - `entityType`, `entityId`, `label`, `subtitle`, `onClick`
+  - Renders as clickable cards with entity type icon abbreviation
+- CSS transitions for slide-in animation:
+  - `translate-x-0` / `translate-x-full` with `duration-300 ease-in-out`
+  - Backdrop overlay with opacity fade animation
+- Keyboard support:
+  - Escape key listener to close panel
+  - Proper focus management on action buttons
+- Body scroll lock when panel is open via `document.body.style.overflow`
+- Uses shadcn/ui components: Button, ScrollArea, Separator
+- Uses lucide-react icons: X, Loader2
+- Uses `ENTITY_LABELS` and `getEntityIconName` from `@/lib/constants/entityTypes`
+- Related entities section renders at bottom with separator
+- Loading states for both main content and related entities
+- Accessibility:
+  - `role="dialog"` and `aria-modal="true"` on panel
+  - `aria-label` with entity context when available
+  - Close button with `aria-label="Close panel"`
+- No console.log — pure UI component
+- No tenant_id filtering — pure presentational component
+- All imports use `@/` alias as required

@@ -135,7 +135,7 @@
     "id": "task-023",
     "title": "Create shared detail panel component",
     "description": "Create src/components/admin/shared/DetailPanel.tsx — a slide-over panel for quick-viewing any entity without navigating away. Props — isOpen, onClose, title, children, entityType, entityId, actions array. Shows related entities section at bottom. Actions include Edit, Delete, View Full Page. Transitions with framer-motion or CSS transitions.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-024",
