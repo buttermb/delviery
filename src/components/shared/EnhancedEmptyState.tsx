@@ -173,10 +173,10 @@ export function EnhancedEmptyState({
       </div>
 
       <div className="space-y-2 text-center">
-        <h3 className={cn(compact ? "text-lg" : "text-2xl", "font-semibold", textColor)} id={`empty-state-title-${type}`}>
+        <h3 className={cn(compact ? "text-lg" : "text-2xl", "font-semibold text-foreground")} id={`empty-state-title-${type}`}>
           {finalTitle}
         </h3>
-        <p className={cn("text-sm max-w-sm", textLightColor)} id={`empty-state-desc-${type}`}>
+        <p className={cn("text-sm max-w-sm text-muted-foreground")} id={`empty-state-desc-${type}`}>
           {finalDescription}
         </p>
       </div>
@@ -217,7 +217,7 @@ export function EnhancedEmptyState({
 
   return (
     <Card
-      className={cn("p-12 text-center max-w-md mx-auto", bgColor, borderColor, className)}
+      className={cn("p-12 text-center max-w-md mx-auto", className)}
       role="status"
       aria-live="polite"
     >
