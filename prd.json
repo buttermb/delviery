@@ -183,7 +183,7 @@
     "id": "task-031",
     "title": "Create useLocalStorage hook",
     "description": "Create or verify src/hooks/useLocalStorage.ts — wraps localStorage with STORAGE_KEYS. Type-safe get/set with JSON parse/stringify. Try-catch wrapped. Supports default values. SSR-safe with typeof window check. Used for persisting user preferences like table column visibility, sort order, sidebar state across modules.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-032",

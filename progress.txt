@@ -840,3 +840,34 @@
   - Both can coexist; the formatters.ts barrel file exports from utils version
 - All logging via `logger` from `@/lib/logger` — no console.log
 - All imports use `@/` alias as required
+
+## task-031: Create useLocalStorage hook
+- Enhanced existing `src/hooks/useLocalStorage.ts` with full feature set
+- Type-safe key parameter accepts `StorageKey | string` for STORAGE_KEYS integration:
+  - Import `StorageKey` type from `@/constants/storageKeys`
+  - Allows type-checking when using defined storage keys
+  - Still accepts arbitrary strings for backward compatibility
+- Core features implemented exactly as task specified:
+  - Type-safe get/set with JSON parse/stringify and `as T` type assertions
+  - Try-catch wrapped for all operations (get, set, clear)
+  - Supports default values via `initialValue` parameter
+  - SSR-safe via `safeStorage` utility which checks `typeof window === 'undefined'`
+- Additional features added:
+  - `clearValue()` — third return value to clear storage and reset to initial value
+  - Cross-tab synchronization via `window.addEventListener('storage', ...)` event listener
+  - Memoized `setValue` and `clearValue` with `useCallback` for stable references
+- State updates use functional pattern in `setStoredValue((prevValue) => ...)`:
+  - Avoids stale closure issues when using function updater pattern
+  - Ensures localStorage and React state stay in sync
+- Return type is `readonly [T, (value) => void, () => void]` with `as const`:
+  - Tuple with value, setter, and clear functions
+  - Existing usages that only destructure two values continue to work
+- Error handling uses structured logger calls with context:
+  - `logger.error(message, errorObj, { key, component: 'useLocalStorage' })`
+  - Errors don't break the app — fallback to initial value on parse errors
+- SSR check in useEffect cleanup: `if (typeof window === 'undefined') return;`
+- Existing `useLocalStorageState.ts` hook also exists with similar features plus cross-tab sync
+  - New hook now also has cross-tab sync for feature parity
+  - Both hooks can coexist; teams can choose based on preference
+- All logging via `logger` from `@/lib/logger` — no console.log
+- All imports use `@/` alias and follow project import order: React → Third-party → Types → Utils
