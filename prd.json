@@ -795,7 +795,7 @@
     "id": "task-133",
     "title": "Create customer search with typeahead",
     "description": "Create src/components/admin/customers/CustomerSearch.tsx — typeahead search component used in order creation, customer list, and global search. Searches name, phone, email. Shows results with customer info and segment badge. Debounced 300ms. Highlights matching text. Recent searches cached. Used across multiple modules wherever customer selection needed.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-134",

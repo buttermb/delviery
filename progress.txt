@@ -3737,3 +3737,20 @@ Implementation follows all project rules:
 - Proper imports using `@/` alias throughout
 - Memoized formatted currency values
 - Export both named and default export for flexible usage
+
+## task-133: Create customer search with typeahead
+- Created `src/components/admin/customers/CustomerSearch.tsx` — typeahead search component
+- Searches customers by name, phone, and email using Supabase `.or()` filter
+- Debounced search with 300ms delay using existing `useDebounce` hook
+- Highlights matching text in results using `<mark>` tag with yellow background
+- Recent searches cached in localStorage with tenant-specific key (`floraiq_customer_recent_searches_{tenantId}`)
+- Stores up to 5 recent searches, auto-cleans entries older than 7 days
+- Shows customer segment badge using `CustomerSegmentBadge` component
+- Keyboard navigation support (ArrowUp/Down, Enter, Escape)
+- Avatar display with initials fallback
+- Two exports: `CustomerSearch` (base component) and `InlineCustomerSearch` (for forms with selected state)
+- All queries filter by `tenant_id` using `useTenantAdminAuth()`
+- Error logging via `logger` — no console.log statements
+- Loading skeleton while searching
+- Empty state when no results found
+- Clear button to reset search
