@@ -3851,3 +3851,39 @@ Implementation follows all project rules:
 - No console.log statements — used `logger` from `@/lib/logger`
 - Proper loading states and error handling throughout
 - Used shadcn/ui components: Dialog, Card, Table, RadioGroup, Progress, etc.
+
+## Task 138: Create customer export with order data
+**File:** `src/components/admin/customers/CustomerExport.tsx`
+**Status:** Complete
+
+### What was implemented:
+- CustomerExport component following same patterns as ProductExport
+- Export customer list with enriched data calculated in-component:
+  - LTV (lifetime value) from orders
+  - Order count, average order value
+  - Last order date, first order date, days since last order
+  - Customer segment (VIP, Active, New, At Risk, Churned) - calculated using same thresholds as useCustomerSegments
+  - Tags from customer_tags table joined with tags
+  - Total paid and outstanding balance from order payments
+  - Loyalty points and tier
+- Column selection via grouped field checkboxes with recommended/default fields
+- CSV and JSON export formats via useExport hook
+- Pre-export filtering by segment (dropdown select) and tags (badge toggles)
+- Activity logging handled by useExport hook with EntityType.CUSTOMER
+- Quick export dropdown and full options dialog
+
+### Patterns followed:
+- Used `useTenantAdminAuth()` for tenant context
+- All database queries filter by `tenant_id`
+- Used `logger` from `@/lib/logger` (no console.log)
+- Used `@/` alias for all imports
+- Proper loading states with Skeleton components
+- Error handling with logger.error
+- TanStack Query for data fetching with proper query keys
+- shadcn/ui components: Dialog, DropdownMenu, Select, Badge, Checkbox, etc.
+
+### Key technical decisions:
+- Calculated segment in-component rather than relying on stored segment to ensure freshness
+- Used same VIP threshold calculation (top 10% by spend) as useCustomerSegments
+- Joined customer_tags with tags table to get tag names for export
+- Supported filtering before export to allow targeted exports

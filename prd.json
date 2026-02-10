@@ -825,7 +825,7 @@
     "id": "task-138",
     "title": "Create customer export with order data",
     "description": "Export customer list with enriched data — LTV, order count, avg order value, last order date, segment, tags, total paid, outstanding balance. CSV and JSON. Column selection. Filter by segment or tags before export. Use useExport hook. Log export to activity_log.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-139",
