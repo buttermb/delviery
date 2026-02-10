@@ -292,3 +292,30 @@
 - Imports use `@/` alias as required
 - No console.log — all logging via `logger`
 - Default export for convenient importing: `export default useNotifications`
+
+## task-014: Create shared constants for entity types
+- Created `src/lib/constants/entityTypes.ts` with all required exports
+- ENTITY_TYPES object maps entity keys to database table names:
+  - ORDER → 'orders', PRODUCT → 'products', CUSTOMER → 'customers'
+  - VENDOR → 'vendors', MENU → 'disposable_menus', DELIVERY → 'deliveries'
+  - PAYMENT → 'payments', INVENTORY → 'inventory', STOREFRONT → 'storefronts'
+- Used `as const` assertion for proper type inference and immutability
+- TypeScript types exported:
+  - `EntityType` — union of entity key names (e.g., 'ORDER' | 'PRODUCT' | ...)
+  - `EntityTableName` — union of table name values
+- ENTITY_LABELS provides human-readable display names for each entity type
+- ENTITY_ICONS maps each entity to a lucide-react icon name:
+  - FileText, Package, Users, Building2, Menu, Truck, CreditCard, Warehouse, Store
+  - Note: returns icon NAME (string), not component — use with `icons[iconName]` from lucide-react
+- ENTITY_ROUTES maps each entity to its admin route pattern:
+  - Some routes use path params (e.g., '/admin/orders' + '/' + id)
+  - Some routes use query params (e.g., '/admin/inventory-hub?tab=products&product=' + id)
+- Helper functions added for convenience:
+  - `getEntityRoute(entityType, entityId, tenantSlug)` — builds full URL with tenant prefix
+  - `getEntityTableName(entityType)` — gets table name for database queries
+  - `getEntityLabel(entityType)` — gets display name for UI
+  - `getEntityIconName(entityType)` — gets icon name for rendering
+- Route handling distinguishes between query param routes (containing '=') and path param routes
+- All exports typed with proper Record<EntityType, string> for type safety
+- No console.log — types/constants file only
+- Imports use `@/` alias pattern

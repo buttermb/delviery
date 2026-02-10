@@ -81,7 +81,7 @@
     "id": "task-014",
     "title": "Create shared constants for entity types",
     "description": "Create src/lib/constants/entityTypes.ts — export ENTITY_TYPES object with keys ORDER, PRODUCT, CUSTOMER, VENDOR, MENU, DELIVERY, PAYMENT, INVENTORY, STOREFRONT. Each maps to the database table name. Also export ENTITY_LABELS for display names, ENTITY_ICONS mapping each to a lucide-react icon name, ENTITY_ROUTES mapping each to its admin route pattern.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-015",
