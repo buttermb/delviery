@@ -1077,7 +1077,7 @@
     "id": "task-180",
     "title": "Create menu scheduling system",
     "description": "Create src/components/admin/menus/MenuScheduler.tsx — schedule menus to auto-activate/deactivate. Set start and end dates/times. Recurring schedules (e.g. every Friday 5pm - Sunday midnight). Multiple schedules per menu. Calendar view of active menus. Conflicts detection — warn if products overlap across simultaneously active menus. Uses Supabase Edge Function for auto-activation.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-181",

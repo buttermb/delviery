@@ -5322,3 +5322,32 @@ Created a comprehensive menu order notification system that alerts admin when or
 - Build passes with no TypeScript errors
 - Status: PASSES
 
+
+
+## task-180: Create menu scheduling system
+- Created `src/components/admin/menus/MenuScheduler.tsx` — comprehensive scheduling system for menus
+- Features implemented:
+  - Schedule menus to auto-activate/deactivate with start and end dates/times
+  - Recurring schedules with day-of-week selection (e.g., Fri, Sat, Sun for weekend-only)
+  - Multiple schedules per menu with full CRUD operations
+  - Calendar view showing all active menus per day with monthly navigation
+  - Conflicts detection — warns if products overlap across simultaneously active menus
+- Key patterns used:
+  - `useTenantAdminAuth()` for tenant context
+  - All database queries filter by `tenant_id` for proper isolation
+  - TanStack Query for data fetching with proper queryKeys
+  - `useMutation` for create/update/delete operations
+  - All logging via `logger` from `@/lib/logger` — no console.log
+- Technical implementation:
+  - `useMenuSchedules` hook fetches schedules with menu names via join
+  - `useMenusWithProducts` hook fetches menus with their products for conflict detection
+  - Conflict detection compares time overlaps AND product overlaps between active schedules
+  - Recurrence rules stored as iCal-like strings (FREQ=WEEKLY;BYDAY=FR,SA,SU)
+  - Calendar uses date-fns for month navigation and day calculations
+- UI components:
+  - ScheduleForm component for creating/editing schedules
+  - CalendarDay component showing menus active on each day
+  - ConflictsPanel component displays warnings with overlapping product details
+  - Dialog-based edit/create flows with validation
+- Imports use `@/` alias as required
+- Loading and error states properly handled with Skeleton components and toast notifications
