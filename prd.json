@@ -1185,7 +1185,7 @@
     "id": "task-198",
     "title": "Create menu product recommendation engine",
     "description": "On menu builder, suggest products to add based on — popular products from other menus, products frequently bought together, high-margin products, new arrivals. Recommendation section in product selector. Based on order analytics and product performance. Helps optimize menu for maximum revenue.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-199",

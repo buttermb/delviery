@@ -5786,3 +5786,26 @@ Patterns followed:
 - All logging uses `logger` from `@/lib/logger` — no console.log
 - Used `useCallback` for memoizing expensive operations like winner calculations
 - `formatCurrency` helper for consistent currency display
+
+
+## task-198: Create menu product recommendation engine
+- Created `src/components/admin/menus/MenuProductRecommendations.tsx` for product recommendations in menu builder
+- Recommends products based on 4 categories:
+  - **Popular**: Products with high order counts from other menus (last 30 days)
+  - **Frequently Bought Together**: Products often purchased alongside current menu products (uses co-occurrence analysis)
+  - **High Margin**: Products with margin >= 40% (calculated from base_price vs cost_price)
+  - **New Arrivals**: Products added within the last 14 days
+- Scoring system prioritizes recommendations based on strength of signals
+- Each recommendation shows reason badge, price, category, and relevant stats
+- Add button integrates with parent menu builder via `onAddProduct` callback
+- Tab-based filtering to view recommendations by category
+- Data sources:
+  - `wholesale_inventory` for product catalog (filtered by tenant_id and in-stock items)
+  - `menu_orders` for order analytics (filtered by tenant_id, last 30 days)
+- Uses `useTenantAdminAuth()` for tenant context
+- All queries filter by `tenant_id` as required
+- Loading skeleton states while fetching data
+- Error and empty states with helpful messages
+- No console.log — uses `logger` from `@/lib/logger`
+- Proper import order: React → Third-party → Components → Utils
+- Build verified successful with no TypeScript errors
