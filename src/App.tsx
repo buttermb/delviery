@@ -163,6 +163,7 @@ const VerifyEmailPage = lazyWithRetry(() => import("./pages/saas/VerifyEmailPage
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
+const SetupWizardPage = lazy(() => import("./pages/admin/SetupWizardPage"));
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage").then(m => ({ default: m.PasswordResetPage })));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
@@ -313,6 +314,7 @@ const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").th
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
+const StoreMenuPage = lazy(() => import("./pages/store/StoreMenuPage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
@@ -611,6 +613,7 @@ const App = () => {
 
                                       {/* Public Store Landing Page */}
                                       <Route path="/store/:slug" element={<StoreLandingPage />} />
+                                      <Route path="/store/:slug/menu" element={<StoreMenuPage />} />
 
                                       {/* Encrypted Store Link (Private Shareable) */}
                                       <Route path="/s/:token" element={<EncryptedStorePage />} />
@@ -722,6 +725,9 @@ const App = () => {
                                       <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
                                       <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />
+
+                                      {/* Setup Wizard (must be before AdminLayout) */}
+                                      <Route path="/:tenantSlug/admin/setup-wizard" element={<TenantAdminProtectedRoute><Suspense fallback={<LoadingFallback />}><SetupWizardPage /></Suspense></TenantAdminProtectedRoute>} />
 
                                       {/* Welcome Page (must be before AdminLayout) */}
                                       <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />

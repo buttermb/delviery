@@ -194,19 +194,33 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const hasShownOnboardingRef = useRef(false);
   const [mfaRequired, setMfaRequired] = useState(false);
 
-  // Check onboarding status - only show once per session
+  // Check onboarding status - redirect to setup wizard once per session
   useEffect(() => {
     if (tenant && !loading && !tenant.onboarding_completed && !hasShownOnboardingRef.current) {
+      const currentPath = location.pathname;
+      const setupWizardPath = `/${tenant.slug}/admin/setup-wizard`;
+
+      // Don't redirect if already on setup wizard or auth-related pages
+      if (
+        currentPath.includes('/setup-wizard') ||
+        currentPath.includes('/login') ||
+        currentPath.includes('/auth/') ||
+        currentPath.includes('/verify-email') ||
+        currentPath.includes('/reset/')
+      ) {
+        return;
+      }
+
       // Mark as shown to prevent re-triggering
       hasShownOnboardingRef.current = true;
 
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
-        setOnboardingOpen(true);
-      }, 1000);
+        navigate(setupWizardPath, { replace: true });
+      }, 500);
       return () => clearTimeout(timer);
     }
-  }, [tenant, loading]);
+  }, [tenant, loading, location.pathname, navigate]);
 
   // Validate environment on mount
   useEffect(() => {
@@ -1478,10 +1492,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         onExtendSession={refreshAuthToken}
         onLogout={logout}
       />
-      <OnboardingWizard
-        open={onboardingOpen}
-        onOpenChange={setOnboardingOpen}
-      />
+      {/* Legacy onboarding dialog - kept for fallback if setup wizard is bypassed */}
+      {onboardingOpen && !location.pathname.includes('/setup-wizard') && (
+        <OnboardingWizard
+          open={onboardingOpen}
+          onOpenChange={setOnboardingOpen}
+        />
+      )}
       {/* Free Tier Onboarding - Only shows for free tier users after initial onboarding */}
       <FreeTierOnboardingFlow />
     </TenantAdminAuthContext.Provider>
