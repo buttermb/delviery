@@ -1299,7 +1299,7 @@
     "id": "task-217",
     "title": "Create delivery compliance checks",
     "description": "For cannabis delivery, enforce compliance checks. Age verification required before delivery. Check customer ID on file. Delivery address in licensed zone. Time of day restrictions. Maximum quantity limits. Compliance checklist for runner before completing delivery. Block delivery completion if checks fail. Audit log of all compliance checks.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-218",

@@ -7,3 +7,4 @@ export { DeliveryExceptions } from './DeliveryExceptions';
 export { RunnerMetricsPanel } from './RunnerMetricsPanel';
 export { RunnerLeaderboard } from './RunnerLeaderboard';
 export { WeeklyPerformanceReport } from './WeeklyPerformanceReport';
+export { DeliveryComplianceChecklist } from './DeliveryComplianceChecklist';

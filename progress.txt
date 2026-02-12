@@ -6196,3 +6196,14 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Contains: id, tenant_id, delivery_id, order_id, photo_url, signature_url, recipient_name, notes, location_lat, location_lng, captured_at, created_at
 - RLS policies for tenant isolation implemented
 - Marked as passes: true
+
+## task-217: Create delivery compliance checks
+- Four files implemented: types (`src/types/delivery-compliance.ts`), hook (`src/hooks/useDeliveryCompliance.ts`), component (`src/components/admin/delivery/DeliveryComplianceChecklist.tsx`), migration (`supabase/migrations/20260212130000_create_delivery_compliance_checks.sql`)
+- Six compliance check types: age_verification, id_on_file, licensed_zone, time_restriction, quantity_limit, customer_status
+- Hook provides: fetch checks, create/verify/override mutations, batch initialization, auto-verify system checks, can_complete_delivery RPC
+- Component features: progress bar, collapsible check details, manual verify/fail buttons, admin override dialog with reason, audit log viewer, blocking alert
+- Migration includes: delivery_compliance_checks table, delivery_compliance_audit_log table, RLS policies, trigger-based audit logging, can_complete_delivery RPC function
+- Fixed rule violations: changed .single() to .maybeSingle() (3 occurrences), fixed import ordering (React -> Third-party -> Types -> Components -> Utils), removed unused queryKeys import, moved sonner import to third-party group, separated DEFAULT_COMPLIANCE_SETTINGS value import from type imports
+- Exported DeliveryComplianceChecklist from delivery barrel file (index.ts)
+- TypeScript compilation passes with no errors
+- Marked as passes: true
