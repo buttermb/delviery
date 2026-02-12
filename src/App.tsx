@@ -270,6 +270,7 @@ const PricingTiersPage = lazy(() => import("./pages/admin/wholesale/PricingTiers
 const DeveloperTools = lazy(() => import("./pages/admin/DeveloperTools"));
 const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
 const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
+const DeliveryZonesPage = lazy(() => import("./pages/admin/DeliveryZones"));
 
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
@@ -987,6 +988,7 @@ const App = () => {
                                         <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
                                         <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
                                         <Route path="delivery-tracking" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                        <Route path="delivery-zones" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryZonesPage /></FeatureProtectedRoute>} />
                                         <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                         <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                         <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />

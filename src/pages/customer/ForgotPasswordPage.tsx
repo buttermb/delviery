@@ -56,7 +56,6 @@ export function CustomerForgotPasswordPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
-  const [formError, setFormError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
   const requestTimestamps = useRef<number[]>([]);
