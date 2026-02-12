@@ -6154,3 +6154,15 @@ Technical notes:
 - Proper error handling with toast notifications
 - Loading states during submission and location capture
 - Tabs UI separates photo and signature capture for better mobile UX
+
+## 2026-02-12 06:13:52 - DeliveryScheduler Component
+Created src/components/admin/delivery/DeliveryScheduler.tsx
+- Calendar view showing scheduled deliveries by week
+- Time slot management with capacity limits per slot
+- Slot availability visualization with utilization percentages
+- Block full slots automatically
+- CRUD operations for time slot configuration
+- Created migration 20260212120000_add_delivery_time_slots.sql with RLS policies
+- Uses useTenantContext for tenant isolation
+- Uses TanStack Query with proper queryKeys
+- Follows all FloraIQ coding conventions
