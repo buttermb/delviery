@@ -1257,7 +1257,7 @@
     "id": "task-210",
     "title": "Create Supabase migration for delivery_proofs table",
     "description": "Create supabase/migrations/add_delivery_proofs.sql. Columns — id uuid primary key, tenant_id uuid, delivery_id uuid, order_id uuid, photo_url text, signature_url text, recipient_name text, notes text, location_lat decimal, location_lng decimal, captured_at timestamptz, created_at timestamptz. RLS by tenant_id.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-211",

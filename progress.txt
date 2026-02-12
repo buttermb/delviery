@@ -6190,3 +6190,9 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Composite score formula: 30% deliveries + 30% on-time + 20% avg time + 20% rating
 - Error handling for missing tables (delivery_exceptions, runner_location_history)
 - Components export from `src/components/admin/delivery/index.ts`
+
+## task-210: Create Supabase migration for delivery_proofs table
+- Migration file already exists at supabase/migrations/add_delivery_proofs.sql
+- Contains: id, tenant_id, delivery_id, order_id, photo_url, signature_url, recipient_name, notes, location_lat, location_lng, captured_at, created_at
+- RLS policies for tenant isolation implemented
+- Marked as passes: true
