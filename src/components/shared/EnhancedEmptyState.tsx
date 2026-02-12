@@ -10,6 +10,9 @@ export type EmptyStateType =
   | "no_menus"
   | "no_products"
   | "no_customers"
+  | "no_drivers"
+  | "no_deliveries"
+  | "no_analytics"
   | "no_data"
   | "generic";
 
@@ -73,6 +76,21 @@ const emptyStateConfig: Record<
     emoji: "👥",
     defaultTitle: "No Customers",
     defaultDescription: "Customers will appear here once they start ordering.",
+  },
+  no_drivers: {
+    emoji: "🚗",
+    defaultTitle: "No Drivers Yet",
+    defaultDescription: "Add drivers to manage deliveries and track your fleet.",
+  },
+  no_deliveries: {
+    emoji: "🚚",
+    defaultTitle: "No Deliveries Yet",
+    defaultDescription: "Deliveries will appear here once orders are dispatched.",
+  },
+  no_analytics: {
+    emoji: "📊",
+    defaultTitle: "No Analytics Data Yet",
+    defaultDescription: "Analytics will populate once you start processing orders.",
   },
   no_data: {
     emoji: "📊",

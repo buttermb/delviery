@@ -12,7 +12,8 @@ import {
   Users,
   TrendingUp,
   DollarSign,
-  Tag
+  Tag,
+  Plus,
 } from "lucide-react";
 import {
   Select,
@@ -397,9 +398,15 @@ export default function CustomerCRMPage() {
             data={filteredCustomers}
             isLoading={isLoading}
             emptyState={{
+              type: searchTerm ? undefined : "no_customers",
               icon: Users,
-              title: "No Customers Found",
-              description: "No customers match your current filters. Try adjusting your search or filter criteria.",
+              title: searchTerm ? "No Customers Found" : "No Customers Yet",
+              description: searchTerm
+                ? "No customers match your current filters. Try adjusting your search or filter criteria."
+                : "Customers will appear here once they start placing orders.",
+              primaryAction: searchTerm
+                ? { label: "Clear Search", onClick: () => setSearchTerm('') }
+                : { label: "Add Your First Customer", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
               compact: true
             }}
             mobileRenderer={(customer: any) => (
