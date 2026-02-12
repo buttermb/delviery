@@ -6166,3 +6166,27 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Uses useTenantContext for tenant isolation
 - Uses TanStack Query with proper queryKeys
 - Follows all FloraIQ coding conventions
+
+## task-216: Create delivery runner performance tracking
+- Created `src/hooks/useRunnerMetrics.ts` with three main hooks:
+  - `useRunnerMetrics(options)`: Fetches individual runner performance metrics
+  - `useWeeklyPerformanceReport(weekOffset)`: Generates weekly team performance reports
+  - `useRunnerLeaderboard(options)`: Returns ranked list of runners by composite score
+- Metrics tracked:
+  - Deliveries completed (total and weekly)
+  - Average delivery time (from pickup to delivery)
+  - On-time rate (within 60 minutes threshold)
+  - Customer ratings (from runner.rating field)
+  - Exceptions count (from delivery_exceptions table)
+  - Distance covered (calculated via Haversine formula from location history)
+  - Week-over-week change percentage
+- Created supporting components:
+  - `RunnerMetricsPanel`: Displays individual runner metrics (full and compact modes)
+  - `WeeklyPerformanceReport`: Weekly team report with runner breakdown and insights
+  - `RunnerLeaderboard`: Ranked runner list with period selector (week/month/all)
+- Extended `queryKeys.runners` with `metrics`, `leaderboard`, and `weeklyReport` factories
+- All queries filter by `tenant_id` via `useTenantContext()`
+- Used `logger` from `@/lib/logger` for all debug/error logging
+- Composite score formula: 30% deliveries + 30% on-time + 20% avg time + 20% rating
+- Error handling for missing tables (delivery_exceptions, runner_location_history)
+- Components export from `src/components/admin/delivery/index.ts`

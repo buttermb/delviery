@@ -1293,7 +1293,7 @@
     "id": "task-216",
     "title": "Create delivery runner performance tracking",
     "description": "Create src/hooks/useRunnerMetrics.ts — track runner performance. Metrics — deliveries completed, average delivery time, on-time rate, customer ratings, exceptions count, distance covered. Show on runner detail page. Weekly performance report. Runner leaderboard on delivery dashboard. Used for runner management and optimization.",
-    "passes": false
+    "passes": true
   },
   {
     "id": "task-217",
