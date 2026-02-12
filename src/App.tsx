@@ -312,6 +312,7 @@ const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"
 const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
+const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
@@ -607,6 +608,9 @@ const App = () => {
                                       {/* Public Marketplace (B2B) */}
                                       <Route path="/marketplace" element={<PublicMarketplacePage />} />
                                       <Route path="/marketplace/listings/:listingId" element={<PublicListingDetailPage />} />
+
+                                      {/* Public Store Landing Page */}
+                                      <Route path="/store/:slug" element={<StoreLandingPage />} />
 
                                       {/* Encrypted Store Link (Private Shareable) */}
                                       <Route path="/s/:token" element={<EncryptedStorePage />} />
