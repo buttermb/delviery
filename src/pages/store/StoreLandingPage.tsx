@@ -282,7 +282,7 @@ export default function StoreLandingPage() {
             </div>
 
             {/* CTA */}
-            <Link to={`/shop/${store.slug}`}>
+            <Link to={`/store/${store.slug}/menu`}>
               <Button
                 size="lg"
                 className="rounded-full px-8 py-6 text-base font-semibold shadow-xl hover:shadow-2xl transition-all bg-white hover:bg-white/90"
