@@ -12,9 +12,10 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface MobileBottomNavProps {
   cartItemCount: number;
   primaryColor: string;
+  onCartClick?: () => void;
 }
 
-export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNavProps) {
+export function MobileBottomNav({ cartItemCount, primaryColor, onCartClick }: MobileBottomNavProps) {
   const { storeSlug } = useParams();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
@@ -22,7 +23,7 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
   const navItems = [
     { path: `/shop/${storeSlug}`, icon: Home, label: 'Home', exact: true },
     { path: `/shop/${storeSlug}/products`, icon: Search, label: 'Browse' },
-    { path: `/shop/${storeSlug}/cart`, icon: ShoppingCart, label: 'Cart', badge: cartItemCount },
+    { path: `/shop/${storeSlug}/cart`, icon: ShoppingCart, label: 'Cart', badge: cartItemCount, onClick: onCartClick },
     { path: `/shop/${storeSlug}/wishlist`, icon: Heart, label: 'Wishlist' },
     { path: `/shop/${storeSlug}/account`, icon: User, label: 'Account' },
   ];
@@ -42,20 +43,14 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
       aria-label="Main"
     >
       <div className="grid grid-cols-6 h-16">
-        {navItems.map(({ path, icon: Icon, label, badge, exact }) => {
+        {navItems.map(({ path, icon: Icon, label, badge, exact, onClick }) => {
           const active = isActive(path, exact);
-          return (
-            <Link
-              key={path}
-              to={path}
-              aria-current={active ? 'page' : undefined}
-              aria-label={`Navigate to ${label}`}
-              className={cn(
-                'flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[48px] min-w-[48px] touch-manipulation active:scale-95',
-                active ? 'text-primary' : 'text-muted-foreground'
-              )}
-              style={{ color: active ? primaryColor : undefined }}
-            >
+          const commonClasses = cn(
+            'flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[48px] min-w-[48px] touch-manipulation active:scale-95',
+            active ? 'text-primary' : 'text-muted-foreground'
+          );
+          const content = (
+            <>
               <div className="relative">
                 <Icon className="w-5 h-5" aria-hidden="true" />
                 {badge !== undefined && badge > 0 && (
@@ -74,6 +69,34 @@ export function MobileBottomNav({ cartItemCount, primaryColor }: MobileBottomNav
                   style={{ backgroundColor: primaryColor }}
                 />
               )}
+            </>
+          );
+
+          if (onClick) {
+            return (
+              <button
+                key={path}
+                type="button"
+                onClick={onClick}
+                aria-label={label}
+                className={commonClasses}
+                style={{ color: active ? primaryColor : undefined }}
+              >
+                {content}
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={path}
+              to={path}
+              aria-current={active ? 'page' : undefined}
+              aria-label={`Navigate to ${label}`}
+              className={commonClasses}
+              style={{ color: active ? primaryColor : undefined }}
+            >
+              {content}
             </Link>
           );
         })}

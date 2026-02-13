@@ -1,10 +1,10 @@
 /**
  * CartDrawer - Slide-in cart panel
- * Shows cart items, quantities, and checkout CTA
+ * Shows cart items, quantities, delivery fee, minimum order notice, and checkout CTA
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Truck, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,6 +27,9 @@ interface CartDrawerProps {
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveItem: (productId: string) => void;
   accentColor?: string;
+  deliveryFee?: number;
+  freeDeliveryThreshold?: number;
+  minimumOrderAmount?: number;
 }
 
 export function CartDrawer({
@@ -36,6 +39,9 @@ export function CartDrawer({
   onUpdateQuantity,
   onRemoveItem,
   accentColor = '#10b981',
+  deliveryFee = 0,
+  freeDeliveryThreshold,
+  minimumOrderAmount,
 }: CartDrawerProps) {
   const navigate = useNavigate();
   const { storeSlug } = useParams();
@@ -43,9 +49,15 @@ export function CartDrawer({
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
+  const qualifiesForFreeDelivery = freeDeliveryThreshold != null && subtotal >= freeDeliveryThreshold;
+  const effectiveDeliveryFee = qualifiesForFreeDelivery ? 0 : deliveryFee;
+  const total = subtotal + effectiveDeliveryFee;
+  const belowMinimum = minimumOrderAmount != null && minimumOrderAmount > 0 && subtotal < minimumOrderAmount;
+
   const handleCheckout = () => {
+    if (belowMinimum) return;
     onClose();
-    navigate(`/shop/${storeSlug}/cart`);
+    navigate(`/shop/${storeSlug}/checkout`);
   };
 
   return (
@@ -175,24 +187,77 @@ export function CartDrawer({
                 </ScrollArea>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 space-y-4">
+                <div className="p-6 border-t border-white/10 space-y-3">
+                  {/* Minimum Order Notice */}
+                  {belowMinimum && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-amber-300 text-xs">
+                        Minimum order is {formatCurrency(minimumOrderAmount)}. Add{' '}
+                        {formatCurrency(minimumOrderAmount! - subtotal)} more to checkout.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Free delivery progress */}
+                  {freeDeliveryThreshold != null && !qualifiesForFreeDelivery && subtotal > 0 && (
+                    <div className="text-center">
+                      <p className="text-emerald-400/80 text-xs">
+                        Add {formatCurrency(freeDeliveryThreshold - subtotal)} more for free delivery
+                      </p>
+                      <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min((subtotal / freeDeliveryThreshold) * 100, 100)}%`,
+                            backgroundColor: accentColor,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Subtotal */}
                   <div className="flex items-center justify-between">
                     <span className="text-white/60 text-sm">Subtotal</span>
-                    <span className="text-white text-xl font-light">
+                    <span className="text-white text-sm">
                       {formatCurrency(subtotal)}
                     </span>
                   </div>
 
+                  {/* Delivery Fee */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm flex items-center gap-1.5">
+                      <Truck className="w-3.5 h-3.5" />
+                      Delivery
+                    </span>
+                    {qualifiesForFreeDelivery ? (
+                      <span className="text-emerald-400 text-sm font-medium">Free</span>
+                    ) : effectiveDeliveryFee > 0 ? (
+                      <span className="text-white text-sm">{formatCurrency(effectiveDeliveryFee)}</span>
+                    ) : (
+                      <span className="text-white/40 text-sm">Free</span>
+                    )}
+                  </div>
+
+                  {/* Total */}
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                    <span className="text-white text-sm font-medium">Total</span>
+                    <span className="text-white text-xl font-light">
+                      {formatCurrency(total)}
+                    </span>
+                  </div>
+
                   <p className="text-white/40 text-xs text-center">
-                    Shipping & taxes calculated at checkout
+                    Taxes calculated at checkout
                   </p>
 
                   {/* Checkout Button */}
                   <Button
                     onClick={handleCheckout}
-                    className="w-full py-6 rounded-full text-sm font-medium tracking-widest uppercase transition-all duration-300 group"
-                    style={{ backgroundColor: accentColor }}
+                    disabled={belowMinimum}
+                    className="w-full py-6 rounded-full text-sm font-medium tracking-widest uppercase transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: belowMinimum ? undefined : accentColor }}
                   >
                     <span className="flex items-center gap-2">
                       Checkout

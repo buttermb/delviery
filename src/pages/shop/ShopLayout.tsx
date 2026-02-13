@@ -29,6 +29,8 @@ import { FloatingCartButton } from '@/components/shop/FloatingCartButton';
 import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
 import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
+import { CartDrawer } from '@/components/shop/CartDrawer';
+import { useShopCart } from '@/hooks/useShopCart';
 
 interface StoreInfo {
   id: string;
@@ -74,6 +76,7 @@ interface ShopContextType {
   cartItemCount: number;
   setCartItemCount: (count: number) => void;
   isPreviewMode: boolean;
+  openCartDrawer: () => void;
 }
 
 const ShopContext = createContext<ShopContextType>({
@@ -82,6 +85,7 @@ const ShopContext = createContext<ShopContextType>({
   cartItemCount: 0,
   setCartItemCount: () => { },
   isPreviewMode: false,
+  openCartDrawer: () => { },
 });
 
 export const useShop = () => useContext(ShopContext);
@@ -94,6 +98,7 @@ export default function ShopLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [ageVerified, setAgeVerified] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
   // Check if in preview mode
   const isPreviewMode = searchParams.get('preview') === 'true';
@@ -139,6 +144,14 @@ export default function ShopLayout() {
     enabled: !!storeSlug,
     retry: false,
   });
+
+  // Cart management via useShopCart for drawer integration
+  const shopCart = useShopCart({
+    storeId: store?.id,
+    onCartChange: setCartItemCount,
+  });
+
+  const openCartDrawer = () => setCartDrawerOpen(true);
 
   // SEO: Update page title - MUST be before conditional returns
   useEffect(() => {
@@ -383,7 +396,7 @@ export default function ShopLayout() {
   // Luxury theme layout
   if (isLuxuryTheme) {
     return (
-      <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
+      <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
         <div className="min-h-dvh bg-[#F5F7F8] text-neutral-900" style={themeStyles}>
           {/* Admin Preview Banner */}
           {isPreviewMode && (
@@ -421,8 +434,32 @@ export default function ShopLayout() {
             <MobileBottomNav
               cartItemCount={cartItemCount}
               primaryColor="#10b981"
+              onCartClick={openCartDrawer}
             />
           )}
+
+          {/* Cart Drawer */}
+          <CartDrawer
+            isOpen={cartDrawerOpen}
+            onClose={() => setCartDrawerOpen(false)}
+            items={shopCart.cartItems.map((item) => ({
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              imageUrl: item.imageUrl,
+              variant: item.variant,
+            }))}
+            onUpdateQuantity={(productId, quantity) => {
+              shopCart.setQuantity(productId, quantity);
+            }}
+            onRemoveItem={(productId) => {
+              shopCart.removeItem(productId);
+            }}
+            accentColor={accentColor}
+            deliveryFee={store.default_delivery_fee}
+            freeDeliveryThreshold={store.free_delivery_threshold}
+          />
 
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
@@ -436,7 +473,7 @@ export default function ShopLayout() {
 
   // Default theme layout
   return (
-    <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
+    <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
         className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
         style={themeStyles}
@@ -512,19 +549,24 @@ export default function ShopLayout() {
                 </Button>
                 {!isPreviewMode && (
                   <>
-                    <Link to={`/shop/${storeSlug}/cart`} data-testid="cart-button">
-                      <Button variant="ghost" size="icon" className="relative" data-testid="cart-count">
-                        <ShoppingCart className="w-5 h-5" />
-                        {cartItemCount > 0 && (
-                          <Badge
-                            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                            style={{ backgroundColor: store.primary_color }}
-                          >
-                            {cartItemCount}
-                          </Badge>
-                        )}
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="relative"
+                      data-testid="cart-button"
+                      onClick={openCartDrawer}
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      {cartItemCount > 0 && (
+                        <Badge
+                          className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                          style={{ backgroundColor: store.primary_color }}
+                          data-testid="cart-count"
+                        >
+                          {cartItemCount}
+                        </Badge>
+                      )}
+                    </Button>
                     <Link to={`/shop/${storeSlug}/account`}>
                       <Button variant="ghost" size="icon">
                         <User className="w-5 h-5" />
@@ -565,13 +607,15 @@ export default function ShopLayout() {
                   </Link>
                   {!isPreviewMode && (
                     <>
-                      <Link
-                        to={`/shop/${storeSlug}/cart`}
-                        className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
-                        onClick={() => setMobileMenuOpen(false)}
+                      <button
+                        className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98] text-left"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          openCartDrawer();
+                        }}
                       >
                         Cart ({cartItemCount})
-                      </Link>
+                      </button>
                       <Link
                         to={`/shop/${storeSlug}/account`}
                         className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
@@ -624,21 +668,37 @@ export default function ShopLayout() {
           </footer>
         )}
 
-        {/* Floating Cart Button for Luxury Theme */}
-        {isLuxuryTheme && !isPreviewMode && (
-          <FloatingCartButton
-            primaryColor={accentColor}
-            onCheckout={handleCartCheckout}
-          />
-        )}
-
         {/* Mobile Bottom Navigation - hide in preview mode and luxury theme */}
         {!isPreviewMode && !isLuxuryTheme && (
           <MobileBottomNav
             cartItemCount={cartItemCount}
             primaryColor={store.primary_color}
+            onCartClick={openCartDrawer}
           />
         )}
+
+        {/* Cart Drawer */}
+        <CartDrawer
+          isOpen={cartDrawerOpen}
+          onClose={() => setCartDrawerOpen(false)}
+          items={shopCart.cartItems.map((item) => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            imageUrl: item.imageUrl,
+            variant: item.variant,
+          }))}
+          onUpdateQuantity={(productId, quantity) => {
+            shopCart.setQuantity(productId, quantity);
+          }}
+          onRemoveItem={(productId) => {
+            shopCart.removeItem(productId);
+          }}
+          accentColor={store.primary_color}
+          deliveryFee={store.default_delivery_fee}
+          freeDeliveryThreshold={store.free_delivery_threshold}
+        />
 
         {/* Offline Indicator */}
         <OfflineIndicator position="top" showSyncStatus />
