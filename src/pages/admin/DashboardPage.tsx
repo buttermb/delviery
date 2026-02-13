@@ -29,6 +29,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
+import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
 
 // Lazy load RevenueWidget for better performance
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
@@ -156,6 +157,9 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Setup Completion Checklist */}
+      <SetupCompletionWidget />
 
       {/* Revenue Section - Lazy Loaded */}
       <Suspense fallback={<RevenueWidgetFallback />}>
