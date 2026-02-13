@@ -27,6 +27,7 @@ import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalytics
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
 import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
+import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -861,6 +862,20 @@ export function OrderDetailsPage() {
                 queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
               }}
             />
+
+            {/* Delivery P&L */}
+            {(order.delivery_fee > 0 || order.delivery_address) && (
+              <DeliveryPLCard
+                orderId={order.id}
+                deliveryFee={order.delivery_fee || 0}
+                tipAmount={((order as unknown as Record<string, unknown>).tip_amount as number) || 0}
+                courierId={order.courier_id}
+                distanceMiles={((order as unknown as Record<string, unknown>).distance_miles as number) || null}
+                deliveryTimeMinutes={((order as unknown as Record<string, unknown>).eta_minutes as number) || null}
+                deliveryZone={((order as unknown as Record<string, unknown>).delivery_zone as string) || null}
+                deliveryBorough={((order as unknown as Record<string, unknown>).delivery_borough as string) || null}
+              />
+            )}
 
             {/* Customer Info */}
             <Card>

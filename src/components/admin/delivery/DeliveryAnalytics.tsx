@@ -57,6 +57,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalyticsDateRangePicker } from '@/components/admin/disposable-menus/AnalyticsDateRangePicker';
+import { DeliveryProfitabilityTab } from '@/components/admin/delivery/DeliveryProfitabilityTab';
+import { useDeliveryCostAnalytics } from '@/hooks/useDeliveryCosts';
 
 // Constants
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -151,6 +153,15 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
+
+  // Fetch delivery cost P&L data
+  const {
+    data: deliveryCosts = [],
+    isLoading: costsLoading,
+  } = useDeliveryCostAnalytics(
+    dateRange?.from?.toISOString(),
+    dateRange?.to?.toISOString()
+  );
 
   // Fetch delivery data
   const { data, isLoading, error } = useQuery({
@@ -699,6 +710,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
       <Tabs defaultValue="trends" className="space-y-4">
         <TabsList>
           <TabsTrigger value="trends">Trends</TabsTrigger>
+          <TabsTrigger value="profitability">Profitability</TabsTrigger>
           <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
           <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
           <TabsTrigger value="failures">Failures</TabsTrigger>
@@ -813,6 +825,14 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Profitability Tab */}
+        <TabsContent value="profitability" className="space-y-4">
+          <DeliveryProfitabilityTab
+            costs={deliveryCosts}
+            isLoading={costsLoading}
+          />
         </TabsContent>
 
         {/* Breakdown Tab */}

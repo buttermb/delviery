@@ -1082,4 +1082,18 @@ export const queryKeys = {
     abandonmentRate: (tenantId?: string, menuId?: string) =>
       [...queryKeys.abandonedCarts.all, 'abandonment-rate', tenantId, menuId] as const,
   },
+
+  // Delivery Costs (P&L)
+  deliveryCosts: {
+    all: ['delivery-costs'] as const,
+    lists: () => [...queryKeys.deliveryCosts.all, 'list'] as const,
+    list: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.deliveryCosts.lists(), { tenantId, ...filters }] as const,
+    byOrder: (tenantId: string, orderId: string) =>
+      [...queryKeys.deliveryCosts.all, 'order', tenantId, orderId] as const,
+    analytics: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.deliveryCosts.all, 'analytics', { tenantId, ...filters }] as const,
+    byZone: (tenantId?: string) =>
+      [...queryKeys.deliveryCosts.all, 'by-zone', tenantId] as const,
+  },
 } as const;
