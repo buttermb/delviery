@@ -36,6 +36,8 @@ import { useTablePreferences } from "@/hooks/useTablePreferences";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
+import { useDeliveryETA } from "@/hooks/useDeliveryETA";
+import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
@@ -266,6 +268,15 @@ export default function Orders() {
     staleTime: 15_000,
     gcTime: 120_000,
   });
+
+  // Delivery ETA tracking for in-transit orders
+  const inTransitOrderIds = useMemo(
+    () => orders
+      .filter((o) => ['in_transit', 'out_for_delivery'].includes(o.status))
+      .map((o) => o.id),
+    [orders]
+  );
+  const { etaMap } = useDeliveryETA(inTransitOrderIds);
 
   // Mutations
   const updateStatusMutation = useMutation({
@@ -648,6 +659,16 @@ export default function Orders() {
       }
     },
     { header: "Method", accessorKey: "delivery_method", className: "capitalize" },
+    {
+      header: "ETA",
+      className: "w-[130px]",
+      cell: (order) => (
+        <DeliveryETACell
+          eta={etaMap[order.id]}
+          orderStatus={order.status}
+        />
+      ),
+    },
     {
       header: "Total",
       cell: (order) => <span className="font-mono font-medium">${order.total_amount?.toFixed(2)}</span>
