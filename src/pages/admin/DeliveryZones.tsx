@@ -69,6 +69,7 @@ import {
 } from 'lucide-react';
 import type { DeliveryZone, DeliveryZoneFormData, Polygon, DeliveryHours } from '@/types/delivery-zone';
 import { DEFAULT_DELIVERY_HOURS } from '@/types/delivery-zone';
+import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 
 // Fix Leaflet default marker icon issue
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -476,6 +477,7 @@ export default function DeliveryZones() {
               <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
                 <Map className="h-7 w-7" />
                 Delivery Zones
+                <FieldHelp tooltip={fieldHelpTexts.deliveryZonePolygon.tooltip} size="md" />
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Define delivery areas, fees, and hours
@@ -691,7 +693,10 @@ export default function DeliveryZones() {
 
             {/* ZIP Codes */}
             <div className="space-y-2">
-              <Label htmlFor="zip_codes">ZIP Codes (optional)</Label>
+              <Label htmlFor="zip_codes" className="flex items-center gap-1.5">
+                ZIP Codes (optional)
+                <FieldHelp tooltip={fieldHelpTexts.deliveryZoneZipCodes.tooltip} example={fieldHelpTexts.deliveryZoneZipCodes.example} />
+              </Label>
               <Input
                 id="zip_codes"
                 {...form.register('zip_codes')}
@@ -783,7 +788,10 @@ export default function DeliveryZones() {
 
             {/* Priority */}
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority" className="flex items-center gap-1.5">
+                Priority
+                <FieldHelp tooltip={fieldHelpTexts.deliveryZonePriority.tooltip} example={fieldHelpTexts.deliveryZonePriority.example} />
+              </Label>
               <Input
                 type="number"
                 id="priority"

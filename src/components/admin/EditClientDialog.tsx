@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { Loader2 } from "lucide-react";
+import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
 
 interface EditClientDialogProps {
   clientId: string;
@@ -215,7 +216,10 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="credit_limit">Credit Limit ($)</Label>
+                <Label htmlFor="credit_limit" className="flex items-center gap-1.5">
+                  Credit Limit ($)
+                  <FieldHelp tooltip={fieldHelpTexts.creditLimit.tooltip} example={fieldHelpTexts.creditLimit.example} />
+                </Label>
                 <Input
                   id="credit_limit"
                   type="number"
@@ -227,7 +231,10 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="payment_terms">Payment Terms (days)</Label>
+                <Label htmlFor="payment_terms" className="flex items-center gap-1.5">
+                  Payment Terms (days)
+                  <FieldHelp tooltip={fieldHelpTexts.paymentTerms.tooltip} example={fieldHelpTexts.paymentTerms.example} />
+                </Label>
                 <Select
                   value={formData.payment_terms}
                   onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}

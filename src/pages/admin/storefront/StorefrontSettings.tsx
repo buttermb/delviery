@@ -44,6 +44,7 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
+import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 // Skeleton already imported above
 
 interface DeliveryZone {
@@ -555,7 +556,10 @@ export default function StorefrontSettings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="slug">Store URL Slug</Label>
+                    <Label htmlFor="slug" className="flex items-center gap-1.5">
+                      Store URL Slug
+                      <FieldHelp tooltip={fieldHelpTexts.tenantSlug.tooltip} example={fieldHelpTexts.tenantSlug.example} />
+                    </Label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">/shop/</span>
                       <Input

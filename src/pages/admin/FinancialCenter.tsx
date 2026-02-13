@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function FinancialCenter() {
@@ -212,7 +213,10 @@ export default function FinancialCenter() {
 
       {/* Credit Out (Who Owes You) */}
       <Card className="p-6 border-l-4 border-l-yellow-500">
-        <h2 className="text-lg font-semibold mb-4">🔴 Credit Out (Who Owes You)</h2>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          🔴 Credit Out (Who Owes You)
+          <FieldHelp tooltip={fieldHelpTexts.creditSystem.tooltip} size="md" />
+        </h2>
         
         <div className="mb-4">
           <div className="text-3xl font-bold font-mono mb-1">
