@@ -315,6 +315,7 @@ const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageChecko
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
 const StoreMenuPage = lazy(() => import("./pages/store/StoreMenuPage"));
+const StoreProductPage = lazy(() => import("./pages/store/StoreProductPage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
@@ -614,6 +615,7 @@ const App = () => {
                                       {/* Public Store Landing Page */}
                                       <Route path="/store/:slug" element={<StoreLandingPage />} />
                                       <Route path="/store/:slug/menu" element={<StoreMenuPage />} />
+                                      <Route path="/store/:slug/product/:id" element={<StoreProductPage />} />
 
                                       {/* Encrypted Store Link (Private Shareable) */}
                                       <Route path="/s/:token" element={<EncryptedStorePage />} />
