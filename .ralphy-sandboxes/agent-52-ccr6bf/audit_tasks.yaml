@@ -1,0 +1,84 @@
+tasks:
+  - title: Audit Authentication Flow
+    description: |
+      Audit the authentication flow in TenantAdminAuthContext.tsx. Check for:
+      - Proper token validation
+      - Session management security
+      - Protected route enforcement
+      Output findings with file:line references.
+    completed: true
+  - title: Verify Tenant Isolation
+    description: >
+      Review all database queries in admin pages for proper tenant isolation.
+      Ensure:
+
+      - All queries filter by tenant_id
+
+      - No cross-tenant data leakage possible
+
+      - RLS policies are properly applied
+
+      Output findings with file:line references.
+    completed: true
+  - title: Check XSS and Injection Vulnerabilities
+    description: |
+      Scan admin components for XSS and injection vulnerabilities:
+      - Unsafe innerHTML/dangerouslySetInnerHTML usage
+      - Unescaped user input in templates
+      - SQL injection in raw queries
+      Output findings with file:line references.
+    completed: true
+  - title: Review File Upload Security
+    description: |
+      Audit file upload functionality for security issues:
+      - File type validation
+      - Size limits
+      - Path traversal prevention
+      Output findings with file:line references.
+    completed: true
+  - title: TypeScript Strict Mode Compliance
+    description: |
+      Find violations of TypeScript strict mode:
+      - Any `any` type usage
+      - Missing type annotations
+      - Implicit any in function parameters
+      Output findings with file:line references.
+  - title: Import Alias Compliance
+    description: |
+      Find files not using @/ import aliases:
+      - Relative imports that should use @/
+      - Inconsistent import patterns
+      Output findings with file:line references.
+  - title: Logger Usage Audit
+    description: |
+      Find console.log/warn/error that should use @/lib/logger:
+      - Direct console usage
+      - Missing structured logging
+      Output findings with file:line references.
+  - title: Duplicate Code Detection
+    description: |
+      Identify duplicate code patterns across admin components:
+      - Copy-pasted logic
+      - Similar components that could be consolidated
+      Output findings with file:line references.
+  - title: Loading States Audit
+    description: |
+      Check async operations for proper loading states:
+      - API calls without loading indicators
+      - Missing skeleton states
+      - Buttons without disabled state during submit
+      Output findings with file:line references.
+  - title: Error Handling Audit
+    description: |
+      Verify error handling patterns:
+      - Uncaught promise rejections
+      - Missing toast.error() notifications
+      - Generic error messages
+      Output findings with file:line references.
+  - title: Accessibility Audit
+    description: |
+      Check keyboard navigation and ARIA compliance:
+      - Missing ARIA labels
+      - Non-focusable interactive elements
+      - Missing keyboard handlers
+      Output findings with file:line references.

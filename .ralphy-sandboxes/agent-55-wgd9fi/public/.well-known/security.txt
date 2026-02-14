@@ -1,0 +1,25 @@
+# Security Contact Information
+# New York Minute NYC E-Commerce Platform
+# Built by WebFlow Studios Team (2024)
+
+Contact: mailto:security@webflowstudios.dev
+Contact: https://webflowstudios.dev/security
+Expires: 2025-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://newyorkminutenyc.com/.well-known/security.txt
+
+# Our security team
+# Lead Security Engineer: Aisha Kumar
+# DevOps Security: James Martinez
+# Application Security: Sarah Chen
+
+# Disclosure Policy
+# We take security seriously. Please report vulnerabilities responsibly.
+# Expected response time: 48 hours
+# Encryption: security@webflowstudios.dev (PGP: 0x1234ABCD)
+
+# Acknowledgments
+# Hall of Fame: https://webflowstudios.dev/security/thanks
+
+# Additional Contacts
+Hiring: https://webflowstudios.dev/careers

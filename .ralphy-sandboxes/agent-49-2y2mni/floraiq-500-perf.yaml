@@ -1,0 +1,1623 @@
+tasks:
+  - title: Add placeholderData keepPreviousData to default query options in
+      src/lib/react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Increase gcTime from 10 minutes to 15 minutes for admin queries in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Create ADMIN_PANEL_QUERY_CONFIG preset with staleTime 10 minutes in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Create INSTANT_CACHE_CONFIG preset with staleTime Infinity for static
+      data in react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Create ANALYTICS_QUERY_CONFIG with refetchInterval 60000 in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Add refetchIntervalInBackground false to REALTIME_QUERY_CONFIG in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Implement onError callback to track slow queries over 500ms in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Add performance timing to queryCache for debugging in react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Create src/lib/queryRegistry.ts with QueryRegistry class using Map for
+      deduplication
+    parallel_group: 2
+    completed: true
+  - title: Implement deduplicateQuery function with key and queryFn in
+      queryRegistry.ts
+    parallel_group: 2
+    completed: true
+  - title: Add TTL-based cleanup for stale promises in queryRegistry.ts
+    parallel_group: 2
+    completed: true
+  - title: Export getActiveQueryCount function for debugging in queryRegistry.ts
+    parallel_group: 2
+    completed: true
+  - title: Integrate queryRegistry with React Query queryFn wrapper
+    parallel_group: 2
+    completed: true
+  - title: Add dashboard.widgets query key to src/lib/queryKeys.ts
+    parallel_group: 2
+    completed: true
+  - title: Add dashboard.alerts query key to queryKeys.ts
+    parallel_group: 2
+    completed: true
+  - title: Add inventory.summary query key to queryKeys.ts
+    parallel_group: 2
+    completed: true
+  - title: Add orders.pipeline query key to queryKeys.ts
+    parallel_group: 3
+    completed: true
+  - title: Add customers.recent query key to queryKeys.ts
+    parallel_group: 3
+    completed: true
+  - title: Add finance.snapshot query key with dateRange param to queryKeys.ts
+    parallel_group: 3
+    completed: true
+  - title: Add analytics.realtime query key to queryKeys.ts
+    parallel_group: 3
+    completed: true
+  - title: Audit and remove duplicate query key definitions in queryKeys.ts
+    parallel_group: 3
+    completed: true
+  - title: Add JSDoc comments to all query key factories in queryKeys.ts
+    parallel_group: 3
+    completed: true
+  - title: Increase staleTime from 15s to 60s in useDashboardStats.ts line 369
+    parallel_group: 3
+    completed: true
+  - title: Decrease refetchInterval from 30s to 60s in useDashboardStats.ts line 368
+    parallel_group: 3
+    completed: true
+  - title: Add placeholderData using previous query result in useDashboardStats.ts
+    parallel_group: 4
+    completed: false
+  - title: Wrap Promise.allSettled in try-catch for graceful degradation in
+      useDashboardStats.ts
+    parallel_group: 4
+    completed: false
+  - title: Add performance.now timing around database calls in useDashboardStats.ts
+    parallel_group: 4
+    completed: false
+  - title: Cache rangeStart and rangeEnd calculations in useMemo in
+      useDashboardStats.ts
+    parallel_group: 4
+    completed: false
+  - title: Split inventory queries into separate hook for better caching from
+      useDashboardStats.ts
+    parallel_group: 4
+    completed: false
+  - title: Add select clause to only fetch required columns in useDashboardStats.ts
+    parallel_group: 4
+    completed: false
+  - title: Add prefetch for inventory-alerts query in usePrefetchDashboard.ts
+    parallel_group: 4
+    completed: false
+  - title: Add prefetch for pending-orders-count query in usePrefetchDashboard.ts
+    parallel_group: 5
+    completed: false
+  - title: Add prefetch for low-stock-items query in usePrefetchDashboard.ts
+    parallel_group: 5
+    completed: false
+  - title: Increase staleTime from 2 min to 5 min in usePrefetchDashboard.ts line 75
+    parallel_group: 5
+    completed: false
+  - title: Add error retry with exponential backoff in usePrefetchDashboard.ts
+    parallel_group: 5
+    completed: false
+  - title: Cache tenant ID lookup to avoid repeat queries in usePrefetchDashboard.ts
+    parallel_group: 5
+    completed: false
+  - title: Add prefetchOnLogin function for auth flow in usePrefetchDashboard.ts
+    parallel_group: 5
+    completed: false
+  - title: Create useDashboardMetrics hook to consolidate all dashboard data fetching
+    parallel_group: 5
+    completed: false
+  - title: Implement dashboard data persistence in sessionStorage for instant reload
+    parallel_group: 5
+    completed: false
+  - title: Add request deduplication to useWholesaleData hook
+    parallel_group: 6
+    completed: false
+  - title: Add request deduplication to useProducts hook
+    parallel_group: 6
+    completed: false
+  - title: Add request deduplication to useOrders hook
+    parallel_group: 6
+    completed: false
+  - title: Add request deduplication to useCustomers hook
+    parallel_group: 6
+    completed: false
+  - title: Review and consolidate duplicate query definitions across all hooks
+    parallel_group: 6
+    completed: false
+  - title: Create DASHBOARD_QUERY_CONFIG and apply to DashboardPage.tsx queries
+    parallel_group: 6
+    completed: false
+  - title: Set gcTime 30 minutes for dashboard queries in DashboardPage.tsx
+    parallel_group: 6
+    completed: false
+  - title: Disable refetchInterval on dashboard when tab is hidden using
+      visibilitychange
+    parallel_group: 7
+    completed: false
+  - title: Memoize dashboard metric calculations with useMemo in DashboardPage.tsx
+    parallel_group: 7
+    completed: false
+  - title: Add networkMode offlineFirst to all query configs in react-query-config.ts
+    parallel_group: 7
+    completed: false
+  - title: Remove deliveries from DEFAULT_TABLES in useRealtimeSync.ts line 26
+    parallel_group: 7
+    completed: false
+  - title: Remove customers from DEFAULT_TABLES in useRealtimeSync.ts line 27
+    parallel_group: 7
+    completed: false
+  - title: Remove payments from DEFAULT_TABLES in useRealtimeSync.ts line 28
+    parallel_group: 7
+    completed: false
+  - title: Remove inventory_transfers from DEFAULT_TABLES in useRealtimeSync.ts line
+      29
+    parallel_group: 8
+    completed: false
+  - title: Remove courier_earnings from DEFAULT_TABLES in useRealtimeSync.ts line 31
+    parallel_group: 8
+    completed: false
+  - title: Remove storefront_orders from DEFAULT_TABLES in useRealtimeSync.ts line 32
+    parallel_group: 8
+    completed: false
+  - title: Remove invoices from DEFAULT_TABLES in useRealtimeSync.ts line 33
+    parallel_group: 8
+    completed: false
+  - title: Keep only orders wholesale_orders products menu_orders in DEFAULT_TABLES
+    parallel_group: 8
+    completed: false
+  - title: Add usePageSpecificRealtime option for granular control in
+      useRealtimeSync.ts
+    parallel_group: 8
+    completed: false
+  - title: Create src/hooks/useOrdersRealtime.ts for OrdersHubPage only
+    parallel_group: 8
+    completed: false
+  - title: Create src/hooks/useInventoryRealtime.ts for InventoryHubPage only
+    parallel_group: 9
+    completed: false
+  - title: Create src/hooks/useDeliveriesRealtime.ts for FulfillmentHubPage only
+    parallel_group: 9
+    completed: false
+  - title: Create src/hooks/useFinanceRealtime.ts for FinanceHubPage only
+    parallel_group: 9
+    completed: false
+  - title: Create src/hooks/useStorefrontRealtime.ts for StorefrontHubPage only
+    parallel_group: 9
+    completed: false
+  - title: Add visibility API check to pause subscriptions when tab hidden in
+      useRealtimeSync.ts
+    parallel_group: 9
+    completed: false
+  - title: Implement connection pooling for multiple tables in useRealtimeSync.ts
+    parallel_group: 9
+    completed: false
+  - title: Add exponential backoff for failed connections in useRealtimeSync.ts
+    parallel_group: 9
+    completed: false
+  - title: Log connection establishment time for monitoring in useRealtimeSync.ts
+    parallel_group: 10
+    completed: false
+  - title: Add enabledTables prop to selectively subscribe in useRealtimeSync.ts
+    parallel_group: 10
+    completed: false
+  - title: Implement subscriptionPriority for critical vs non-critical tables
+    parallel_group: 10
+    completed: false
+  - title: Add cleanup verification to prevent memory leaks in useRealtimeSync.ts
+    parallel_group: 10
+    completed: false
+  - title: Implement subscription cleanup on component unmount in useRealtimeSync.ts
+    parallel_group: 10
+    completed: false
+  - title: Add debug logging for subscription connection times in useRealtimeSync.ts
+    parallel_group: 10
+    completed: false
+  - title: Import usePrefetchDashboard hook in OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Add onMouseEnter handler to sidebar links in OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Implement 150ms debounce for prefetch trigger in OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Map sidebar routes to prefetch functions in OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Add prefetch for tenantSlug admin dashboard route in OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Add prefetch for tenantSlug admin orders-hub route in OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Add prefetch for tenantSlug admin inventory-hub route in
+      OptimizedSidebar.tsx
+    parallel_group: 11
+    completed: false
+  - title: Add prefetch for tenantSlug admin customers-hub route in
+      OptimizedSidebar.tsx
+    parallel_group: 12
+    completed: false
+  - title: Add prefetch for tenantSlug admin finance-hub route in OptimizedSidebar.tsx
+    parallel_group: 12
+    completed: false
+  - title: Log prefetch success and failure for debugging in OptimizedSidebar.tsx
+    parallel_group: 12
+    completed: false
+  - title: Create src/hooks/usePrefetchOrders.ts with wholesale_orders menu_orders
+      queries
+    parallel_group: 12
+    completed: false
+  - title: Create src/hooks/usePrefetchInventory.ts with products stock_alerts queries
+    parallel_group: 12
+    completed: false
+  - title: Create src/hooks/usePrefetchCustomers.ts with customers wholesale_clients
+      queries
+    parallel_group: 12
+    completed: false
+  - title: Create src/hooks/usePrefetchFinance.ts with invoices payments queries
+    parallel_group: 12
+    completed: false
+  - title: Create src/hooks/usePrefetchStorefront.ts with marketplace data queries
+    parallel_group: 13
+    completed: false
+  - title: Check for document.startViewTransition support in OptimizedSidebar.tsx
+    parallel_group: 13
+    completed: false
+  - title: Wrap navigate calls in view transition in OptimizedSidebar.tsx
+    parallel_group: 13
+    completed: false
+  - title: Add CSS for view transition animations in global styles
+    parallel_group: 13
+    completed: false
+  - title: Create fallback for browsers without view transition support
+    parallel_group: 13
+    completed: false
+  - title: Add view-transition-name to main content area in AdminLayout.tsx
+    parallel_group: 13
+    completed: false
+  - title: Create src/hooks/useScrollRestoration.ts with scroll position Map
+    parallel_group: 13
+    completed: false
+  - title: Save scroll position on route leave in useScrollRestoration.ts
+    parallel_group: 14
+    completed: false
+  - title: Restore scroll position on route enter in useScrollRestoration.ts
+    parallel_group: 14
+    completed: false
+  - title: Handle edge cases for deep-linked URLs in useScrollRestoration.ts
+    parallel_group: 14
+    completed: false
+  - title: Clear scroll cache on logout in useScrollRestoration.ts
+    parallel_group: 14
+    completed: false
+  - title: Apply useScrollRestoration to AdminLayout.tsx
+    parallel_group: 14
+    completed: false
+  - title: Wrap Outlet in Suspense with SkeletonAdminLayout in AdminLayout.tsx
+    parallel_group: 14
+    completed: false
+  - title: Add route-specific skeleton components for each hub page
+    parallel_group: 14
+    completed: false
+  - title: Implement loading priority header first then content in AdminLayout.tsx
+    parallel_group: 15
+    completed: false
+  - title: Add error boundary around route content in AdminLayout.tsx
+    parallel_group: 15
+    completed: false
+  - title: Create useViewTransition hook for consistent behavior across sidebar
+    parallel_group: 15
+    completed: false
+  - title: Add loading skeleton during route transitions in AdminLayout.tsx
+    parallel_group: 15
+    completed: false
+  - title: Implement route-level Suspense with LoadingFallback component
+    parallel_group: 15
+    completed: false
+  - title: Add NProgress progress bar for slow transitions
+    parallel_group: 15
+    completed: false
+  - title: Add touch event handling for mobile prefetch in OptimizedSidebar.tsx
+    parallel_group: 15
+    completed: false
+  - title: Create usePrefetchOnFocus hook for keyboard navigation
+    parallel_group: 16
+    completed: false
+  - title: Prefetch dashboard data when hovering on Dashboard link
+    parallel_group: 16
+    completed: false
+  - title: Handle scroll restoration for tabbed interfaces
+    parallel_group: 16
+    completed: false
+  - title: Wire prefetchOnHover to all AdaptiveSidebar navigation links
+    parallel_group: 16
+    completed: false
+  - title: Add authInitializedRef useRef false near line 100 in
+      TenantAdminAuthContext.tsx
+    parallel_group: 16
+    completed: false
+  - title: Check authInitializedRef.current at start of init effect in
+      TenantAdminAuthContext.tsx
+    parallel_group: 16
+    completed: false
+  - title: Set authInitializedRef.current true after successful auth in
+      TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Remove location from effect dependencies in TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Skip token refresh if token expires in more than 5 minutes in
+      TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Cache tenant data in ref to prevent refetch in TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Memoize context value with useMemo in TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Implement proactive token refresh 5 min before expiry in
+      TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Cache token expiry check in ref in TenantAdminAuthContext.tsx
+    parallel_group: 17
+    completed: false
+  - title: Add token validity cache in sessionStorage in TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Reduce token validation API calls in TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Implement silent refresh without UI blocking in TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Cache admin and tenant data in sessionStorage in TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Restore session from cache on mount before API call in
+      TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Show cached data immediately and refresh in background in
+      TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Add lastValidated timestamp to cache in TenantAdminAuthContext.tsx
+    parallel_group: 18
+    completed: false
+  - title: Skip validation if validated less than 5 minutes ago in
+      TenantAdminAuthContext.tsx
+    parallel_group: 19
+    completed: false
+  - title: Add early return for authenticated users on protected routes
+    parallel_group: 19
+    completed: false
+  - title: Prevent token refresh check on every route change in
+      TenantAdminAuthContext.tsx
+    parallel_group: 19
+    completed: false
+  - title: Memoize StatCard component with React.memo in DashboardHubPage.tsx
+    parallel_group: 19
+    completed: false
+  - title: Add placeholderData to useDashboardStats call in DashboardHubPage.tsx
+    parallel_group: 19
+    completed: false
+  - title: Lazy load DashboardTour component in DashboardHubPage.tsx
+    parallel_group: 19
+    completed: false
+  - title: Defer below-fold widgets with IntersectionObserver in DashboardHubPage.tsx
+    parallel_group: 19
+    completed: false
+  - title: Cache formatted currency values with useMemo in DashboardHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Add skeleton loading for each section independently in DashboardHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Reduce re-renders by splitting into smaller components in
+      DashboardHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Add staleTime 60000 to useUnifiedOrders query in OrdersHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Memoize tabs array outside component in OrdersHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Lazy load Papa papaparse only when export triggered in OrdersHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Defer export data fetch until button clicked in OrdersHubPage.tsx
+    parallel_group: 20
+    completed: false
+  - title: Add skeleton to each tab Suspense fallback in OrdersHubPage.tsx
+    parallel_group: 21
+    completed: false
+  - title: Memoize quickActions calculation in OrdersHubPage.tsx
+    parallel_group: 21
+    completed: false
+  - title: Add useRealtimeSync with only orders wholesale_orders menu_orders in
+      OrdersHubPage.tsx
+    parallel_group: 21
+    completed: false
+  - title: Implement virtual scrolling with react-window for order list in Orders.tsx
+    parallel_group: 21
+    completed: false
+  - title: Reduce initial page size from 50 to 25 in Orders.tsx
+    parallel_group: 21
+    completed: false
+  - title: Add cursor-based pagination in Orders.tsx
+    parallel_group: 21
+    completed: false
+  - title: Memoize order row rendering with React.memo in Orders.tsx
+    parallel_group: 21
+    completed: false
+  - title: Lazy load OrderMergeDialog in Orders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Lazy load OrderExportDialog in Orders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Defer loading order details until row expanded in Orders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Add optimistic updates for status changes in Orders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Reduce polling interval from 10s to 30s when tab hidden in LiveOrders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Add visual indicator for stale data in LiveOrders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Implement WebSocket fallback for realtime in LiveOrders.tsx
+    parallel_group: 22
+    completed: false
+  - title: Memoize order card components in LiveOrders.tsx
+    parallel_group: 23
+    completed: false
+  - title: Add staleTime 300000 5 min to product queries in InventoryHubPage.tsx
+    parallel_group: 23
+    completed: false
+  - title: Memoize tabs array outside component in InventoryHubPage.tsx
+    parallel_group: 23
+    completed: false
+  - title: Lazy load image components in product grid in InventoryHubPage.tsx
+    parallel_group: 23
+    completed: false
+  - title: Add placeholder images while loading in InventoryHubPage.tsx
+    parallel_group: 23
+    completed: false
+  - title: Implement virtual grid with react-window in ProductManagement.tsx
+    parallel_group: 23
+    completed: false
+  - title: Reduce initial product fetch to 50 items in ProductManagement.tsx
+    parallel_group: 23
+    completed: false
+  - title: Add infinite scroll for remaining products in ProductManagement.tsx
+    parallel_group: 24
+    completed: false
+  - title: Lazy load product variant data on expand in ProductManagement.tsx
+    parallel_group: 24
+    completed: false
+  - title: Defer category tree loading in ProductManagement.tsx
+    parallel_group: 24
+    completed: false
+  - title: Add optimistic updates for stock adjustments in ProductManagement.tsx
+    parallel_group: 24
+    completed: false
+  - title: Memoize product card with React.memo in ProductManagement.tsx
+    parallel_group: 24
+    completed: false
+  - title: Cache product images in service worker
+    parallel_group: 24
+    completed: false
+  - title: Cache inventory metrics for 5 minutes in InventoryDashboard.tsx
+    parallel_group: 24
+    completed: false
+  - title: Lazy load chart components recharts in InventoryDashboard.tsx
+    parallel_group: 25
+    completed: false
+  - title: Add skeleton for chart loading in InventoryDashboard.tsx
+    parallel_group: 25
+    completed: false
+  - title: Defer alert list loading in InventoryDashboard.tsx
+    parallel_group: 25
+    completed: false
+  - title: Add STATIC_QUERY_CONFIG to payment settings query in FinanceHubPage.tsx
+    parallel_group: 25
+    completed: false
+  - title: Lazy load InvoiceDetailPage component in FinanceHubPage.tsx
+    parallel_group: 25
+    completed: false
+  - title: Cache invoice list for 2 minutes in FinanceHubPage.tsx
+    parallel_group: 25
+    completed: false
+  - title: Add optimistic updates for payment recording in FinanceHubPage.tsx
+    parallel_group: 25
+    completed: false
+  - title: Add virtual scrolling to customer list in CustomerHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Lazy load customer detail modal in CustomerHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Cache customer search results in CustomerHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Defer activity log loading in CustomerHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Add staleTime 600000 10 min to storefront settings in StorefrontHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Lazy load storefront builder components in StorefrontHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Cache theme and branding data in StorefrontHubPage.tsx
+    parallel_group: 26
+    completed: false
+  - title: Defer analytics widgets loading in StorefrontHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Optimize shift data fetching in POSHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Cache product catalog for offline access in POSHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Add service worker sync for POS transactions in POSHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Lazy load receipt components in POSHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Lazy load ALL chart components in AnalyticsHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Add skeleton placeholders for charts in AnalyticsHubPage.tsx
+    parallel_group: 27
+    completed: false
+  - title: Defer data loading until chart visible with IntersectionObserver in
+      AnalyticsHubPage.tsx
+    parallel_group: 28
+    completed: false
+  - title: Cache historical analytics data in AnalyticsHubPage.tsx
+    parallel_group: 28
+    completed: false
+  - title: Add React.memo to src/components/admin/ui/StatCard.tsx
+    parallel_group: 28
+    completed: false
+  - title: Add React.memo to src/components/admin/ui/AlertBadge.tsx
+    parallel_group: 28
+    completed: false
+  - title: Add React.memo to src/components/admin/orders/OrderRow.tsx
+    parallel_group: 28
+    completed: false
+  - title: Add React.memo to src/components/admin/products/ProductCard.tsx
+    parallel_group: 28
+    completed: false
+  - title: Add React.memo to src/components/admin/customers/CustomerRow.tsx
+    parallel_group: 28
+    completed: false
+  - title: Add useMemo to all filtered and sorted list operations
+    parallel_group: 29
+    completed: false
+  - title: Add useCallback to all event handlers passed as props
+    parallel_group: 29
+    completed: false
+  - title: Memoize expensive dashboard calculations
+    parallel_group: 29
+    completed: false
+  - title: Memoize formatted currency values across components
+    parallel_group: 29
+    completed: false
+  - title: Memoize formatted date values across components
+    parallel_group: 29
+    completed: false
+  - title: Lazy load src/components/admin/charts directory
+    parallel_group: 29
+    completed: false
+  - title: Lazy load src/components/admin/pdf directory
+    parallel_group: 29
+    completed: false
+  - title: Lazy load src/components/admin/maps directory
+    parallel_group: 30
+    completed: false
+  - title: Lazy load src/components/pos directory
+    parallel_group: 30
+    completed: false
+  - title: Lazy load @react-pdf/renderer only when generating PDF
+    parallel_group: 30
+    completed: false
+  - title: Lazy load recharts only when rendering charts
+    parallel_group: 30
+    completed: false
+  - title: Lazy load leaflet only when rendering maps
+    parallel_group: 30
+    completed: false
+  - title: Lazy load RevenueWidget in DashboardPage.tsx
+    parallel_group: 30
+    completed: false
+  - title: Lazy load ActivityWidget in DashboardPage.tsx
+    parallel_group: 30
+    completed: false
+  - title: Lazy load AlertsWidget in DashboardPage.tsx
+    parallel_group: 31
+    completed: false
+  - title: Lazy load DashboardWidgetGrid component
+    parallel_group: 31
+    completed: false
+  - title: Lazy load SmartNotificationsCenter component
+    parallel_group: 31
+    completed: false
+  - title: Create dedicated WidgetSkeleton fallback component
+    parallel_group: 31
+    completed: false
+  - title: Wrap lazy components in Suspense with skeletons
+    parallel_group: 31
+    completed: false
+  - title: Create src/components/admin/VirtualizedOrderList.tsx with tanstack virtual
+    parallel_group: 31
+    completed: false
+  - title: Create src/components/admin/VirtualizedProductGrid.tsx with tanstack
+      virtual
+    parallel_group: 31
+    completed: false
+  - title: Create src/components/admin/VirtualizedCustomerList.tsx with tanstack
+      virtual
+    parallel_group: 32
+    completed: false
+  - title: Integrate tanstack react-virtual for virtualization
+    parallel_group: 32
+    completed: false
+  - title: Add row height estimation for variable content in virtual lists
+    parallel_group: 32
+    completed: false
+  - title: Implement sticky headers for table virtualization
+    parallel_group: 32
+    completed: false
+  - title: Add loading lazy to all product images
+    parallel_group: 32
+    completed: false
+  - title: Implement image placeholder with skeleton for products
+    parallel_group: 32
+    completed: false
+  - title: Use WebP format with fallback for product images
+    parallel_group: 32
+    completed: false
+  - title: Add srcset for responsive images
+    parallel_group: 33
+    completed: false
+  - title: Implement image caching in service worker
+    parallel_group: 33
+    completed: false
+  - title: Add React.memo to sidebar navigation items
+    parallel_group: 33
+    completed: false
+  - title: Add vendor-react chunk with react react-dom react-router-dom in
+      vite.config.ts
+    parallel_group: 33
+    completed: false
+  - title: Add vendor-ui chunk with radix-ui components in vite.config.ts
+    parallel_group: 33
+    completed: false
+  - title: Add vendor-charts chunk with recharts d3 in vite.config.ts
+    parallel_group: 33
+    completed: false
+  - title: Add vendor-forms chunk with react-hook-form zod hookform/resolvers in
+      vite.config.ts
+    parallel_group: 33
+    completed: false
+  - title: Add vendor-pdf chunk with @react-pdf/renderer jspdf html2canvas in
+      vite.config.ts
+    parallel_group: 34
+    completed: false
+  - title: Add vendor-map chunk with leaflet react-leaflet mapbox-gl in vite.config.ts
+    parallel_group: 34
+    completed: false
+  - title: Add vendor-query chunk with tanstack/react-query in vite.config.ts
+    parallel_group: 34
+    completed: false
+  - title: Add vendor-table chunk with tanstack/react-table in vite.config.ts
+    parallel_group: 34
+    completed: false
+  - title: Add vendor-calendar chunk with react-day-picker date-fns in vite.config.ts
+    parallel_group: 34
+    completed: false
+  - title: Add vendor-encryption chunk with crypto-js in vite.config.ts
+    parallel_group: 34
+    completed: false
+  - title: Replace lodash with lodash-es for tree shaking
+    parallel_group: 34
+    completed: false
+  - title: Import only used Lucide icons instead of entire library
+    parallel_group: 35
+    completed: false
+  - title: Audit unused dependencies with depcheck
+    parallel_group: 35
+    completed: false
+  - title: Remove unused Radix UI components from bundle
+    parallel_group: 35
+    completed: false
+  - title: Split large utility files into smaller modules
+    parallel_group: 35
+    completed: false
+  - title: Add link rel modulepreload for critical chunks in index.html
+    parallel_group: 35
+    completed: false
+  - title: Add link rel prefetch for DashboardPage chunk
+    parallel_group: 35
+    completed: false
+  - title: Add link rel prefetch for Orders page chunk
+    parallel_group: 35
+    completed: false
+  - title: Add link rel prefetch for Products page chunk
+    parallel_group: 36
+    completed: false
+  - title: Add link rel prefetch for Customers page chunk
+    parallel_group: 36
+    completed: false
+  - title: Implement route-based preloading hints in App.tsx
+    parallel_group: 36
+    completed: false
+  - title: Add critical CSS inline in index.html
+    parallel_group: 36
+    completed: false
+  - title: Analyze bundle with rollup-plugin-visualizer
+    parallel_group: 36
+    completed: false
+  - title: Remove unused dependencies from bundle
+    parallel_group: 36
+    completed: false
+  - title: Implement cursor-based pagination for Orders
+    parallel_group: 36
+    completed: false
+  - title: Implement cursor-based pagination for Products
+    parallel_group: 37
+    completed: false
+  - title: Add infinite scroll to order lists
+    parallel_group: 37
+    completed: false
+  - title: Limit initial data fetch to 25 items across all lists
+    parallel_group: 37
+    completed: false
+  - title: Add Load More button for subsequent pages
+    parallel_group: 37
+    completed: false
+  - title: Implement page size preferences persistence
+    parallel_group: 37
+    completed: false
+  - title: Fetch only required columns in order lists
+    parallel_group: 37
+    completed: false
+  - title: Fetch only required columns in product lists
+    parallel_group: 37
+    completed: false
+  - title: Avoid fetching related data unless expanded
+    parallel_group: 38
+    completed: false
+  - title: Implement detail-on-demand pattern for lists
+    parallel_group: 38
+    completed: false
+  - title: Use .single for single record fetches
+    parallel_group: 38
+    completed: false
+  - title: Avoid select star in queries replace with explicit columns
+    parallel_group: 38
+    completed: false
+  - title: Implement stale-while-revalidate for lists
+    parallel_group: 38
+    completed: false
+  - title: Use gcTime 30 min for static data
+    parallel_group: 38
+    completed: false
+  - title: Use gcTime 5 min for dynamic data
+    parallel_group: 38
+    completed: false
+  - title: Clear specific cache on mutations
+    parallel_group: 39
+    completed: false
+  - title: Implement optimistic updates for status changes
+    parallel_group: 39
+    completed: false
+  - title: Add cache warming on login
+    parallel_group: 39
+    completed: false
+  - title: Create migration add index on orders tenant_id status
+    parallel_group: 39
+    completed: false
+  - title: Create migration add index on orders tenant_id created_at DESC
+    parallel_group: 39
+    completed: false
+  - title: Create migration add index on products tenant_id is_active
+    parallel_group: 39
+    completed: false
+  - title: Create migration add index on wholesale_orders tenant_id status
+    parallel_group: 39
+    completed: false
+  - title: Create migration add index on customers tenant_id created_at DESC
+    parallel_group: 40
+    completed: false
+  - title: Create migration add index on invoices tenant_id status
+    parallel_group: 40
+    completed: false
+  - title: Create migration add index on menu_orders tenant_id status
+    parallel_group: 40
+    completed: false
+  - title: Create migration add partial index on products WHERE stock_quantity less
+      than 10
+    parallel_group: 40
+    completed: false
+  - title: Create migration add materialized view mv_dashboard_metrics
+    parallel_group: 40
+    completed: false
+  - title: Create migration add materialized view mv_inventory_summary
+    parallel_group: 40
+    completed: false
+  - title: Create migration add materialized view mv_revenue_daily
+    parallel_group: 40
+    completed: false
+  - title: Create migration add refresh trigger on order completion
+    parallel_group: 41
+    completed: false
+  - title: Create migration add scheduled refresh every 5 minutes for materialized
+      views
+    parallel_group: 41
+    completed: false
+  - title: Create migration add get_dashboard_stats function
+    parallel_group: 41
+    completed: false
+  - title: Create migration add get_inventory_summary function
+    parallel_group: 41
+    completed: false
+  - title: Create migration add get_pending_orders_count function
+    parallel_group: 41
+    completed: false
+  - title: Create migration add get_low_stock_items function with threshold param
+    parallel_group: 41
+    completed: false
+  - title: Review and optimize wholesale_orders_unified view
+    parallel_group: 41
+    completed: false
+  - title: Review and optimize menu_orders_unified view
+    parallel_group: 42
+    completed: false
+  - title: Add LIMIT to all recent queries
+    parallel_group: 42
+    completed: false
+  - title: Add pagination to all list queries
+    parallel_group: 42
+    completed: false
+  - title: Replace SELECT star with explicit columns in all queries
+    parallel_group: 42
+    completed: false
+  - title: Add EXPLAIN ANALYZE to slow queries and optimize
+    parallel_group: 42
+    completed: false
+  - title: Fix RLS policy warnings for account_logs table
+    parallel_group: 42
+    completed: false
+  - title: Fix RLS policy warnings for activity_logs table
+    parallel_group: 42
+    completed: false
+  - title: Fix RLS policy warnings for menu_orders table
+    parallel_group: 43
+    completed: false
+  - title: Fix RLS policy warnings for marketplace_reviews table
+    parallel_group: 43
+    completed: false
+  - title: Update SECURITY DEFINER functions to include SET search_path
+    parallel_group: 43
+    completed: false
+  - title: Add response caching headers Cache-Control max-age 30 to admin-dashboard
+      function
+    parallel_group: 43
+    completed: false
+  - title: Parallelize ALL database queries with Promise.all in admin-dashboard
+      function
+    parallel_group: 43
+    completed: false
+  - title: Reduce SELECT columns to only required fields in admin-dashboard function
+    parallel_group: 43
+    completed: false
+  - title: Add tenant_id index hints to queries in admin-dashboard function
+    parallel_group: 43
+    completed: false
+  - title: Implement query result caching in Deno KV in admin-dashboard function
+    parallel_group: 44
+    completed: false
+  - title: Add performance timing logs to admin-dashboard function
+    parallel_group: 44
+    completed: false
+  - title: Create supabase/functions/tenant-dashboard-v2 optimized endpoint
+    parallel_group: 44
+    completed: false
+  - title: Use single aggregate SQL query in tenant-dashboard-v2 function
+    parallel_group: 44
+    completed: false
+  - title: Implement server-side caching with 30s TTL in tenant-dashboard-v2 function
+    parallel_group: 44
+    completed: false
+  - title: Add ETag support for conditional requests in tenant-dashboard-v2 function
+    parallel_group: 44
+    completed: false
+  - title: Return minimal JSON payload in tenant-dashboard-v2 function
+    parallel_group: 44
+    completed: false
+  - title: Add gzip compression to tenant-dashboard-v2 function
+    parallel_group: 45
+    completed: false
+  - title: Create supabase/functions/batch-query for combined queries
+    parallel_group: 45
+    completed: false
+  - title: Accept array of query definitions in batch-query function
+    parallel_group: 45
+    completed: false
+  - title: Execute all queries in parallel in batch-query function
+    parallel_group: 45
+    completed: false
+  - title: Return combined results in single response from batch-query function
+    parallel_group: 45
+    completed: false
+  - title: Add query result caching to batch-query function
+    parallel_group: 45
+    completed: false
+  - title: Create supabase/functions/prefetch-bundle for combined data
+    parallel_group: 45
+    completed: false
+  - title: Accept sections parameter in prefetch-bundle function
+    parallel_group: 46
+    completed: false
+  - title: Use parallel queries for all sections in prefetch-bundle function
+    parallel_group: 46
+    completed: false
+  - title: Add aggressive caching headers to prefetch-bundle function
+    parallel_group: 46
+    completed: false
+  - title: Implement conditional GET with ETag in prefetch-bundle function
+    parallel_group: 46
+    completed: false
+  - title: Add response caching to credits-balance function
+    parallel_group: 46
+    completed: false
+  - title: Reduce payload size in portal-data function
+    parallel_group: 46
+    completed: false
+  - title: Add pagination to invoice-management function
+    parallel_group: 46
+    completed: false
+  - title: Add optimistic response to wholesale-order-create function
+    parallel_group: 47
+    completed: false
+  - title: Add webhook batching to update-order-status function
+    parallel_group: 47
+    completed: false
+  - title: Queue notifications async in notify-order-placed function
+    parallel_group: 47
+    completed: false
+  - title: Add request batching to collect-metrics function
+    parallel_group: 47
+    completed: false
+  - title: Add background processing to generate-report function
+    parallel_group: 47
+    completed: false
+  - title: Cache predictions for 1 hour in predict-revenue function
+    parallel_group: 47
+    completed: false
+  - title: Increase cache from 1h to 6h in fetch-weather function
+    parallel_group: 47
+    completed: false
+  - title: Skip token validation if valid cache in tenant-admin-auth function
+    parallel_group: 48
+    completed: false
+  - title: Add rate limiting to verify-email-code function
+    parallel_group: 48
+    completed: false
+  - title: Reduce response payload in auth-refresh function
+    parallel_group: 48
+    completed: false
+  - title: Add pagination to get-active-sessions function
+    parallel_group: 48
+    completed: false
+  - title: Create consistent skeleton components for all widgets
+    parallel_group: 48
+    completed: false
+  - title: Add skeleton to Orders table
+    parallel_group: 48
+    completed: false
+  - title: Add skeleton to Products grid
+    parallel_group: 48
+    completed: false
+  - title: Add skeleton to Dashboard metrics
+    parallel_group: 49
+    completed: false
+  - title: Add skeleton to sidebar navigation
+    parallel_group: 49
+    completed: false
+  - title: Implement progressive loading skeleton then data
+    parallel_group: 49
+    completed: false
+  - title: Replace spinners with skeletons where possible
+    parallel_group: 49
+    completed: false
+  - title: Add shimmer animation to skeletons
+    parallel_group: 49
+    completed: false
+  - title: Reduce skeleton animation CPU usage
+    parallel_group: 49
+    completed: false
+  - title: Implement loading priorities critical first
+    parallel_group: 49
+    completed: false
+  - title: Add error boundaries around all widgets
+    parallel_group: 50
+    completed: false
+  - title: Implement retry buttons for failed fetches
+    parallel_group: 50
+    completed: false
+  - title: Show stale data with refresh indicator on error
+    parallel_group: 50
+    completed: false
+  - title: Add offline indicator for network issues
+    parallel_group: 50
+    completed: false
+  - title: Reduce touch delay on navigation for mobile
+    parallel_group: 50
+    completed: false
+  - title: Implement pull-to-refresh on mobile
+    parallel_group: 50
+    completed: false
+  - title: Optimize bottom navigation rendering for mobile
+    parallel_group: 50
+    completed: false
+  - title: Reduce component rerenders on scroll
+    parallel_group: 50
+    completed: false
+  - title: Add performance.now tracking to critical paths
+    parallel_group: 50
+    completed: false
+  - title: Log query execution times for monitoring
+    parallel_group: 50
+    completed: false
+  - title: Add API response caching for GET requests in sw.js
+    parallel_group: 51
+    completed: false
+  - title: Implement stale-while-revalidate for dashboard data in sw.js
+    parallel_group: 51
+    completed: false
+  - title: Cache static assets aggressively with 1 year TTL in sw.js
+    parallel_group: 51
+    completed: false
+  - title: Add offline fallback for all admin pages in sw.js
+    parallel_group: 51
+    completed: false
+  - title: Implement background sync for mutations in sw.js
+    parallel_group: 51
+    completed: false
+  - title: Add Web Vitals tracking LCP FID CLS
+    parallel_group: 51
+    completed: false
+  - title: Log slow queries to analytics
+    parallel_group: 51
+    completed: false
+  - title: Track route transition times
+    parallel_group: 52
+    completed: false
+  - title: Monitor bundle size in CI/CD
+    parallel_group: 52
+    completed: false
+  - title: Add performance regression tests
+    parallel_group: 52
+    completed: false
+  - title: Create performance debug panel for dev only
+    parallel_group: 52
+    completed: false
+  - title: Add query cache inspector for debugging
+    parallel_group: 52
+    completed: false
+  - title: Log realtime subscription status
+    parallel_group: 52
+    completed: false
+  - title: Track memory usage patterns
+    parallel_group: 52
+    completed: false
+  - title: Audit and remove unused hooks from src/hooks
+    parallel_group: 53
+    completed: false
+  - title: Remove unused components from src/components
+    parallel_group: 53
+    completed: false
+  - title: Clean up deprecated query keys in queryKeys.ts
+    parallel_group: 53
+    completed: false
+  - title: Remove console.log statements from production code
+    parallel_group: 53
+    completed: false
+  - title: Remove unused imports across all files
+    parallel_group: 53
+    completed: false
+  - title: Consolidate duplicate utility functions
+    parallel_group: 53
+    completed: false
+  - title: Merge similar hooks into reusable patterns
+    parallel_group: 53
+    completed: false
+  - title: Standardize data fetching patterns across hooks
+    parallel_group: 54
+    completed: false
+  - title: Create shared table components
+    parallel_group: 54
+    completed: false
+  - title: Remove as any type casts where possible
+    parallel_group: 54
+    completed: false
+  - title: Add proper TypeScript types to untyped functions
+    parallel_group: 54
+    completed: false
+  - title: Regenerate Supabase types from database schema
+    parallel_group: 54
+    completed: false
+  - title: Create typed Supabase query helpers
+    parallel_group: 54
+    completed: false
+  - title: Remove TODO and FIXME comments by implementing fixes
+    parallel_group: 54
+    completed: false
+  - title: Consolidate dashboard queries into single hook useDashboardBundle
+    parallel_group: 55
+    completed: false
+  - title: Reduce dashboard widget count on initial load
+    parallel_group: 55
+    completed: false
+  - title: Defer below-fold widget loading on dashboard
+    parallel_group: 55
+    completed: false
+  - title: Cache dashboard layout preferences in localStorage
+    parallel_group: 55
+    completed: false
+  - title: Optimize chart rendering performance on dashboard
+    parallel_group: 55
+    completed: false
+  - title: Implement virtual scrolling for order list in OrdersPage
+    parallel_group: 55
+    completed: false
+  - title: Lazy load order details on expand in OrdersPage
+    parallel_group: 55
+    completed: false
+  - title: Defer order item fetching until needed in OrdersPage
+    parallel_group: 56
+    completed: false
+  - title: Optimize order status badge rendering
+    parallel_group: 56
+    completed: false
+  - title: Cache order filters in sessionStorage
+    parallel_group: 56
+    completed: false
+  - title: Implement virtual grid for products in ProductsPage
+    parallel_group: 56
+    completed: false
+  - title: Lazy load product images with blur placeholder
+    parallel_group: 56
+    completed: false
+  - title: Defer variant data loading until product expanded
+    parallel_group: 56
+    completed: false
+  - title: Optimize product search with debounce
+    parallel_group: 56
+    completed: false
+  - title: Cache category tree in memory
+    parallel_group: 57
+    completed: false
+  - title: Optimize stock level queries with materialized view
+    parallel_group: 57
+    completed: false
+  - title: Implement batch updates for inventory adjustments
+    parallel_group: 57
+    completed: false
+  - title: Lazy load history data in inventory page
+    parallel_group: 57
+    completed: false
+  - title: Optimize alert calculations with database function
+    parallel_group: 57
+    completed: false
+  - title: Add React.memo to OrderStatusBadge component
+    parallel_group: 57
+    completed: false
+  - title: Add React.memo to ProductPriceDisplay component
+    parallel_group: 57
+    completed: false
+  - title: Add React.memo to CustomerAvatar component
+    parallel_group: 58
+    completed: false
+  - title: Add React.memo to InventoryBadge component
+    parallel_group: 58
+    completed: false
+  - title: Add React.memo to MetricCard component
+    parallel_group: 58
+    completed: false
+  - title: Optimize table sorting with useMemo
+    parallel_group: 58
+    completed: false
+  - title: Optimize table filtering with useMemo
+    parallel_group: 58
+    completed: false
+  - title: Add useCallback to table row click handlers
+    parallel_group: 58
+    completed: false
+  - title: Add useCallback to form submit handlers
+    parallel_group: 58
+    completed: false
+  - title: Optimize modal rendering with portal
+    parallel_group: 59
+    completed: false
+  - title: Defer modal content loading until opened
+    parallel_group: 59
+    completed: false
+  - title: Add skeleton loading to all modal content
+    parallel_group: 59
+    completed: false
+  - title: Optimize dropdown menu rendering
+    parallel_group: 59
+    completed: false
+  - title: Add virtual scrolling to long dropdown lists
+    parallel_group: 59
+    completed: false
+  - title: Optimize combobox search with debounce
+    parallel_group: 59
+    completed: false
+  - title: Cache combobox options in memory
+    parallel_group: 59
+    completed: false
+  - title: Implement form state persistence in sessionStorage
+    parallel_group: 60
+    completed: false
+  - title: Add form autosave with debounce
+    parallel_group: 60
+    completed: false
+  - title: Optimize form validation with Zod schema caching
+    parallel_group: 60
+    completed: false
+  - title: Defer non-critical form field validation
+    parallel_group: 60
+    completed: false
+  - title: Add optimistic updates to form submissions
+    parallel_group: 60
+    completed: false
+  - title: Cache form default values
+    parallel_group: 60
+    completed: false
+  - title: Optimize file upload with chunked uploads
+    parallel_group: 60
+    completed: false
+  - title: Add progress indicator for file uploads
+    parallel_group: 61
+    completed: false
+  - title: Implement drag and drop with preview
+    parallel_group: 61
+    completed: false
+  - title: Optimize image compression before upload
+    parallel_group: 61
+    completed: false
+  - title: Add form error recovery from localStorage
+    parallel_group: 61
+    completed: false
+  - title: Implement undo functionality for forms
+    parallel_group: 61
+    completed: false
+  - title: Add keyboard shortcuts for form navigation
+    parallel_group: 61
+    completed: false
+  - title: Optimize select components with virtualization
+    parallel_group: 61
+    completed: false
+  - title: Add typeahead search to select components
+    parallel_group: 62
+    completed: false
+  - title: Cache select options per tenant
+    parallel_group: 62
+    completed: false
+  - title: Optimize date picker rendering
+    parallel_group: 62
+    completed: false
+  - title: Add date range presets for quick selection
+    parallel_group: 62
+    completed: false
+  - title: Cache timezone calculations
+    parallel_group: 62
+    completed: false
+  - title: Optimize currency input formatting
+    parallel_group: 62
+    completed: false
+  - title: Implement search indexing for products
+    parallel_group: 62
+    completed: false
+  - title: Implement search indexing for customers
+    parallel_group: 63
+    completed: false
+  - title: Implement search indexing for orders
+    parallel_group: 63
+    completed: false
+  - title: Add fuzzy search support with fuse.js
+    parallel_group: 63
+    completed: false
+  - title: Cache recent search queries
+    parallel_group: 63
+    completed: false
+  - title: Add search suggestions from cache
+    parallel_group: 63
+    completed: false
+  - title: Implement search result highlighting
+    parallel_group: 63
+    completed: false
+  - title: Optimize global search with debounce 300ms
+    parallel_group: 63
+    completed: false
+  - title: Add search filters for quick refinement
+    parallel_group: 64
+    completed: false
+  - title: Implement search history
+    parallel_group: 64
+    completed: false
+  - title: Add keyboard shortcuts for search
+    parallel_group: 64
+    completed: false
+  - title: Optimize search results rendering with virtualization
+    parallel_group: 64
+    completed: false
+  - title: Add search result previews
+    parallel_group: 64
+    completed: false
+  - title: Cache search results for 5 minutes
+    parallel_group: 64
+    completed: false
+  - title: Implement search across multiple entities
+    parallel_group: 64
+    completed: false
+  - title: Add barcode search support
+    parallel_group: 65
+    completed: false
+  - title: Optimize barcode scanning performance
+    parallel_group: 65
+    completed: false
+  - title: Add QR code search support
+    parallel_group: 65
+    completed: false
+  - title: Implement voice search placeholder
+    parallel_group: 65
+    completed: false
+  - title: Add search analytics tracking
+    parallel_group: 65
+    completed: false
+  - title: Batch notification fetching into single query
+    parallel_group: 65
+    completed: false
+  - title: Cache notifications for 2 minutes
+    parallel_group: 65
+    completed: false
+  - title: Implement notification read status tracking
+    parallel_group: 66
+    completed: false
+  - title: Add notification grouping by type
+    parallel_group: 66
+    completed: false
+  - title: Optimize notification badge count query
+    parallel_group: 66
+    completed: false
+  - title: Add notification preferences caching
+    parallel_group: 66
+    completed: false
+  - title: Implement notification snooze functionality
+    parallel_group: 66
+    completed: false
+  - title: Add push notification support
+    parallel_group: 66
+    completed: false
+  - title: Optimize notification sound playback
+    parallel_group: 66
+    completed: false
+  - title: Add notification action buttons
+    parallel_group: 67
+    completed: false
+  - title: Implement notification archiving
+    parallel_group: 67
+    completed: false
+  - title: Add notification search
+    parallel_group: 67
+    completed: false
+  - title: Optimize notification list rendering
+    parallel_group: 67
+    completed: false
+  - title: Add notification filters
+    parallel_group: 67
+    completed: false
+  - title: Implement notification digest emails
+    parallel_group: 67
+    completed: false
+  - title: Add do not disturb mode
+    parallel_group: 67
+    completed: false
+  - title: Optimize realtime notification delivery
+    parallel_group: 68
+    completed: false
+  - title: Add notification priority levels
+    parallel_group: 68
+    completed: false
+  - title: Implement notification templates
+    parallel_group: 68
+    completed: false
+  - title: Add notification scheduling
+    parallel_group: 68
+    completed: false
+  - title: Implement report caching with 15 minute TTL
+    parallel_group: 68
+    completed: false
+  - title: Add background report generation
+    parallel_group: 68
+    completed: false
+  - title: Optimize chart data aggregation on server
+    parallel_group: 68
+    completed: false
+  - title: Add report scheduling functionality
+    parallel_group: 69
+    completed: false
+  - title: Implement report export to CSV
+    parallel_group: 69
+    completed: false
+  - title: Implement report export to PDF
+    parallel_group: 69
+    completed: false
+  - title: Implement report export to Excel
+    parallel_group: 69
+    completed: false
+  - title: Add report sharing via link
+    parallel_group: 69
+    completed: false
+  - title: Optimize report filtering queries
+    parallel_group: 69
+    completed: false
+  - title: Add report bookmarking
+    parallel_group: 69
+    completed: false
+  - title: Implement custom date range for reports
+    parallel_group: 70
+    completed: false
+  - title: Add comparison reports between periods
+    parallel_group: 70
+    completed: false
+  - title: Optimize report chart rendering
+    parallel_group: 70
+    completed: false
+  - title: Add report drill-down functionality
+    parallel_group: 70
+    completed: false
+  - title: Implement report templates
+    parallel_group: 70
+    completed: false
+  - title: Add report annotations
+    parallel_group: 70
+    completed: false
+  - title: Optimize large dataset visualization
+    parallel_group: 70
+    completed: false
+  - title: Add report caching in IndexedDB
+    parallel_group: 71
+    completed: false
+  - title: Implement incremental report updates
+    parallel_group: 71
+    completed: false
+  - title: Add report versioning
+    parallel_group: 71
+    completed: false
+  - title: Add loading state to all buttons during async operations
+    parallel_group: 71
+    completed: false
+  - title: Implement disabled state styling for all interactive elements
+    parallel_group: 71
+    completed: false
+  - title: Add focus ring styling for accessibility
+    parallel_group: 71
+    completed: false
+  - title: Optimize animation performance with will-change
+    parallel_group: 71
+    completed: false
+  - title: Add reduced motion support for accessibility
+    parallel_group: 71
+    completed: false
+  - title: Implement high contrast mode
+    parallel_group: 72
+    completed: false
+  - title: Add screen reader announcements for dynamic content
+    parallel_group: 72
+    completed: false
+  - title: Optimize font loading with font-display swap
+    parallel_group: 72
+    completed: false
+  - title: Add preconnect hints for external domains
+    parallel_group: 72
+    completed: false
+  - title: Implement DNS prefetch for API domains
+    parallel_group: 72
+    completed: false
+  - title: Optimize CSS with PurgeCSS
+    parallel_group: 72
+    completed: false
+  - title: Add critical CSS extraction
+    parallel_group: 72
+    completed: false
+  - title: Implement CSS containment for layout performance
+    parallel_group: 73
+    completed: false
+  - title: Add content-visibility auto for off-screen content
+    parallel_group: 73
+    completed: false
+  - title: Optimize scroll performance with passive event listeners
+    parallel_group: 73
+    completed: false
+  - title: Add intersection observer for lazy loading
+    parallel_group: 73
+    completed: false
+  - title: Implement resize observer for responsive layouts
+    parallel_group: 73
+    completed: false
+  - title: Optimize requestAnimationFrame usage
+    parallel_group: 73
+    completed: false
+  - title: Add debounced window resize handler
+    parallel_group: 73
+    completed: false
+  - title: Implement throttled scroll handler
+    parallel_group: 74
+    completed: false
+  - title: Optimize event delegation for list items
+    parallel_group: 74
+    completed: false
+  - title: Add cleanup for all event listeners on unmount
+    parallel_group: 74
+    completed: false
+  - title: Implement memory leak detection in development
+    parallel_group: 74
+    completed: false
+  - title: Add component profiling in development
+    parallel_group: 74
+    completed: false
+  - title: Optimize re-render detection with React DevTools
+    parallel_group: 74
+    completed: false
+  - title: Add performance budget enforcement in CI
+    parallel_group: 74
+    completed: false
+  - title: Implement lighthouse CI for performance monitoring
+    parallel_group: 75
+    completed: false
+  - title: Add bundle size tracking in CI
+    parallel_group: 75
+    completed: false
+  - title: Implement automated performance testing
+    parallel_group: 75
+    completed: false
+  - title: Add real user monitoring with Web Vitals
+    parallel_group: 75
+    completed: false

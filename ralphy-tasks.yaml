@@ -1,0 +1,1402 @@
+tasks:
+  - title: Create delivery runner performance tracking
+    description: Create src/hooks/useRunnerMetrics.ts — track runner performance.
+      Metrics — deliveries completed, average delivery time, on-time rate,
+      customer ratings, exceptions count, distance covered. Show on runner
+      detail page. Weekly performance report. Runner leaderboard on delivery
+      dashboard. Used for runner management and optimization.
+    completed: true
+  - title: Create delivery compliance checks
+    description: For cannabis delivery, enforce compliance checks. Age verification
+      required before delivery. Check customer ID on file. Delivery address in
+      licensed zone. Time of day restrictions. Maximum quantity limits.
+      Compliance checklist for runner before completing delivery. Block delivery
+      completion if checks fail. Audit log of all compliance checks.
+    completed: true
+  - title: Create delivery batch creation from orders
+    description: Create src/components/admin/delivery/BatchCreate.tsx — select
+      multiple confirmed orders and create deliveries in batch. Auto-group
+      orders by zone. Suggest runners for each zone group. Create delivery
+      records for all selected orders at once. Progress indicator. Success
+      summary with any failures. Massive time saver for operations.
+    completed: true
+  - title: Create delivery ETAs on order list
+    description: On the admin orders list, show delivery ETA column for orders in
+      delivery. Calculate based on runner's current location, remaining stops,
+      and historical delivery times. Update in real-time. Overdue deliveries
+      highlighted in red. Clicking ETA opens delivery detail in panel. Connects
+      order view to real-time delivery tracking.
+    completed: true
+  - title: Create delivery cost tracking and P&L
+    description: Track delivery costs per order — runner pay, fuel estimate, time
+      cost. Compare to delivery fee collected. Show delivery P&L on order detail
+      and delivery analytics. Profitable vs unprofitable deliveries breakdown.
+      Route optimization suggestions for unprofitable zones. Connects delivery
+      to financial analytics.
+    completed: false
+  - title: Create delivery customer rating
+    description: After delivery, customer can rate experience (1-5 stars) and leave
+      comment. Rating linked to delivery, order, runner, and customer records.
+      Show average rating per runner. Recent reviews on delivery dashboard. Low
+      rating triggers admin notification. Used in runner performance tracking
+      and customer feedback loop.
+    completed: false
+  - title: Create unified analytics dashboard
+    description: Create src/pages/admin/AnalyticsDashboard.tsx — single page
+      aggregating analytics from all modules. Revenue chart
+      (daily/weekly/monthly), order volume, customer growth, inventory turnover,
+      delivery performance, menu conversion rates. All data filtered by
+      tenant_id. Date range picker affects all charts. Summary stats cards at
+      top. Uses recharts for all visualizations.
+    completed: false
+  - title: Create revenue analytics component
+    description: Create src/components/admin/analytics/RevenueAnalytics.tsx —
+      detailed revenue analysis. Total revenue, revenue by product, by category,
+      by customer segment, by order source (admin/storefront/menu). Revenue
+      trend chart. Day-of-week heatmap. Hour-of-day distribution. Compare
+      current period to previous period. Revenue per customer metric.
+    completed: false
+  - title: Create product performance analytics
+    description: Create src/components/admin/analytics/ProductPerformance.tsx —
+      which products drive business. Top sellers by revenue and units. Slow
+      movers list. Product margin analysis. Stock turn rate. Products
+      approaching stockout. Category performance comparison. Product discovery —
+      new products vs established. Uses order and inventory data.
+    completed: false
+  - title: Create customer analytics component
+    description: Create src/components/admin/analytics/CustomerAnalytics.tsx —
+      customer health metrics. New vs returning customer ratio. Customer
+      acquisition trend. Average LTV by segment. Retention rate (cohort
+      analysis). Top customers table. Customer concentration risk (top 10%
+      revenue share). Churn prediction. Uses customer, order, and payment data.
+    completed: false
+  - title: Create sales funnel analytics
+    description: Create src/components/admin/analytics/SalesFunnel.tsx — full funnel
+      from menu view to delivery. Steps — menu views, product views, add to
+      cart, checkout started, order placed, payment received, delivery
+      completed. Drop-off rates between each step. Funnel by menu and
+      storefront. Uses menu_events, abandoned_carts, orders, payments,
+      deliveries data.
+    completed: false
+  - title: Create inventory analytics component
+    description: Create src/components/admin/analytics/InventoryAnalytics.tsx —
+      inventory health overview. Stock value over time. Turn rate by category.
+      Dead stock identification. Reorder accuracy (were reorders timely).
+      Stockout incidents count and revenue impact estimate. Inventory efficiency
+      score. Uses inventory_history and order data.
+    completed: false
+  - title: Create delivery analytics component
+    description: Create src/components/admin/analytics/DeliveryMetrics.tsx —
+      delivery performance deep dive. Average delivery time trend. On-time rate
+      by zone and runner. Failed delivery analysis. Delivery cost vs revenue.
+      Peak hours chart. Zone performance comparison. Route efficiency score.
+      Uses delivery and order data with location data.
+    completed: false
+  - title: Create vendor analytics component
+    description: Create src/components/admin/analytics/VendorAnalytics.tsx — vendor
+      relationship insights. Spend by vendor pie chart. Lead time trends. Price
+      change impact on margins. Vendor reliability scores. Purchase order
+      fulfillment accuracy. Cost comparison for products available from multiple
+      vendors. Uses PO, product, and inventory data.
+    completed: false
+  - title: Create financial overview analytics
+    description: Create src/components/admin/analytics/FinancialOverview.tsx — P&L
+      style overview. Revenue, COGS (from vendor costs), gross margin, delivery
+      costs, net margin. Cash flow projection based on outstanding invoices and
+      payables. Compare periods. Trend charts. Export financial summary report.
+      Aggregates data from orders, payments, vendors, delivery costs.
+    completed: false
+  - title: Create custom report builder
+    description: Create src/pages/admin/ReportBuilder.tsx — drag-and-drop report
+      builder. Select data sources (orders, products, customers, deliveries,
+      inventory). Choose metrics and dimensions. Apply filters. Preview report.
+      Save as template. Schedule automated delivery via email. Export PDF/CSV.
+      Connects all modules through a unified reporting interface.
+    completed: false
+  - title: Create analytics date range context provider
+    description: Create src/contexts/AnalyticsDateContext.tsx — shared date range
+      state for analytics. When user changes date range on any analytics
+      component, all components on the page update. Presets — today, 7d, 30d,
+      90d, custom range. Compare mode (current vs previous period). Persists
+      selection in URL params. All analytics components consume this context.
+    completed: false
+  - title: Create analytics data export hub
+    description: Create src/components/admin/analytics/ExportHub.tsx — centralized
+      export for all analytics data. Select modules to include, date range,
+      format (CSV/JSON/PDF). Scheduled exports — daily, weekly, monthly
+      automated reports. Email delivery. Export history log. Uses useExport hook
+      with multi-module data aggregation.
+    completed: false
+  - title: Create real-time analytics ticker
+    description: Create src/components/admin/analytics/RealtimeTicker.tsx —
+      horizontal scrolling ticker on analytics dashboard showing live metrics.
+      Orders in last hour, revenue today, active deliveries, menu views right
+      now. Updates every 10 seconds via lightweight queries. Gives instant pulse
+      of business activity. Subscribes to realtime changes.
+    completed: false
+  - title: Create analytics cohort analysis
+    description: Create src/components/admin/analytics/CohortAnalysis.tsx — customer
+      cohort retention analysis. Group customers by first order month. Track
+      retention (returning orders) over subsequent months. Heatmap
+      visualization. Identify best and worst performing cohorts. Correlate with
+      marketing or menu changes. Uses customer and order data across months.
+    completed: false
+  - title: Create analytics goal tracking
+    description: Create src/components/admin/analytics/GoalTracker.tsx — set
+      monthly/weekly goals for key metrics. Goals for revenue, order count, new
+      customers, delivery time. Progress bar for each goal.
+      On-track/behind/ahead indicator. Historical goal achievement. Set goals in
+      settings, track on dashboard. Motivational and connects analytics to
+      business objectives.
+    completed: false
+  - title: Create Supabase migration for analytics_goals table
+    description: Create supabase/migrations/add_analytics_goals.sql. Columns — id
+      uuid primary key, tenant_id uuid, metric_name text, target_value decimal,
+      period_type text (daily/weekly/monthly), period_start date, period_end
+      date, current_value decimal default 0, created_at timestamptz. RLS by
+      tenant_id.
+    completed: false
+  - title: Create analytics comparison tools
+    description: Create src/hooks/useAnalyticsComparison.ts — compare any two time
+      periods. Returns current period metrics and previous period metrics with
+      percentage change for each. Used across all analytics components. Support
+      custom date ranges. Shows sparklines for trend direction. Green/red
+      indicators for improvement/decline.
+    completed: false
+  - title: Create analytics drill-down functionality
+    description: In all analytics charts, clicking a data point drills down to
+      underlying records. Click a revenue bar → see orders for that day. Click a
+      product in top sellers → see product detail. Click a customer segment →
+      see customer list filtered to that segment. Uses useEntityNavigation for
+      cross-module navigation. Breadcrumb trail for drill-down path.
+    completed: false
+  - title: Create analytics alerts and thresholds
+    description: Create src/components/admin/settings/AnalyticsAlerts.tsx —
+      configure alert thresholds for analytics metrics. Alert when daily revenue
+      drops below X, when order count exceeds capacity, when delivery time
+      exceeds Y minutes. Notifications via useNotificationDispatcher. Dashboard
+      shows active alerts. Configurable per metric. Connects analytics to
+      notification module.
+    completed: false
+  - title: Create analytics API for external consumption
+    description: Create Supabase Edge Function analytics-api that exposes analytics
+      data via authenticated API. Endpoints for revenue, orders, inventory,
+      customers summary. API key authentication per tenant. Rate limited.
+      Documentation page in admin. Useful for integrating with external BI
+      tools. Respects tenant isolation.
+    completed: false
+  - title: Create tenant settings hub page
+    description: Create src/pages/admin/SettingsHub.tsx — central settings page
+      organized by category. Categories — General (business info), Orders
+      (auto-confirm, SLA targets), Inventory (thresholds, auto-reorder),
+      Delivery (zones, fees, slots), Menus (defaults, themes), Notifications
+      (channels, preferences), Compliance (licenses, requirements), Users
+      (roles, permissions). Each category links to its settings page.
+    completed: false
+  - title: Create business profile settings
+    description: Create src/components/admin/settings/BusinessProfile.tsx — edit
+      tenant business information. Name, logo, address, phone, email, website,
+      tax ID, license numbers. This data is used across all modules — on
+      receipts, invoices, menus, storefront, compliance docs. Changes propagate
+      to all modules that display business info. Supabase Storage for logo.
+    completed: false
+  - title: Create order settings page
+    description: Create src/components/admin/settings/OrderSettings.tsx — configure
+      order behavior. Auto-confirm orders (yes/no), default payment method, tax
+      rate, order number prefix, SLA targets (minutes for each stage),
+      auto-assign rules, require customer for orders (yes/no), minimum order
+      amount. Saved to tenant_settings jsonb. Applied across order module.
+    completed: false
+  - title: Create inventory settings page
+    description: Create src/components/admin/settings/InventorySettings.tsx —
+      configure inventory behavior. Default low stock threshold, critical stock
+      threshold, auto-reorder enabled, reorder lead time buffer, inventory count
+      frequency, barcode scanning enabled. Saved to tenant_settings. Applied by
+      inventory hooks and components.
+    completed: false
+  - title: Create delivery settings page
+    description: Create src/components/admin/settings/DeliverySettings.tsx —
+      configure delivery behavior. Default delivery fee, free delivery
+      threshold, delivery hours, max deliveries per slot, require proof of
+      delivery, require age verification, allow scheduled deliveries, delivery
+      radius. Saved to tenant_settings. Applied in delivery creation and
+      storefront checkout.
+    completed: false
+  - title: Create notification settings page
+    description: Create src/components/admin/settings/NotificationSettings.tsx —
+      configure which notifications are enabled. Toggle per notification type —
+      new order, low stock, delivery completed, customer signup, etc. Channel
+      selection per type — in-app, email, SMS. Quiet hours. Admin vs staff
+      notification routing. Saved to tenant_settings. Applied by
+      useNotificationDispatcher.
+    completed: false
+  - title: Create user and role management page
+    description: Create src/pages/admin/UserManagement.tsx — manage staff users for
+      the tenant. Invite users by email. Assign roles — admin, manager, staff,
+      runner. Custom role creation. Permission matrix per role. Deactivate
+      users. Show last active, login history. Role changes logged to
+      activity_log. Permission changes affect all module access via
+      usePermissions.
+    completed: false
+  - title: Create role permission matrix editor
+    description: Create src/components/admin/settings/PermissionMatrix.tsx — visual
+      grid of roles vs permissions. Permissions include view/edit/delete for
+      each module (orders, products, customers, etc). Checkbox grid. Pre-defined
+      role templates. Custom roles inherit from templates. Changes apply
+      immediately. Audit log for permission changes. Used by usePermissions
+      hook.
+    completed: false
+  - title: Create compliance settings page
+    description: Create src/components/admin/settings/ComplianceSettings.tsx —
+      configure compliance requirements for the tenant's jurisdiction. Required
+      fields for products (lab test, THC content, etc), required for customers
+      (age verification, ID), required for delivery (ID check, photo proof),
+      license information, expiration tracking. Non-compliant entities flagged
+      across all modules.
+    completed: false
+  - title: Create compliance audit log
+    description: Create src/pages/admin/ComplianceAudit.tsx — comprehensive audit
+      trail for all compliance-related actions. Track who verified customer IDs,
+      when lab tests were uploaded, delivery compliance checks performed,
+      license renewals. Filterable by entity type, user, date range. Exportable
+      for regulatory inspection. Connects compliance to activity_log.
+    completed: false
+  - title: Create tax configuration settings
+    description: Create src/components/admin/settings/TaxSettings.tsx — configure
+      tax rates and rules. Default tax rate, product-specific rates, tax-exempt
+      categories, tax-exempt customers. Tax applied automatically in order
+      creation, storefront checkout, and invoices. Tax collected tracking for
+      reporting. Show tax breakdown on receipts.
+    completed: false
+  - title: Create integrations settings page
+    description: Create src/pages/admin/Integrations.tsx — manage external
+      integrations. Sections for payment processors, SMS providers, email
+      services, accounting software, POS systems. Each integration shows status
+      (connected/disconnected), last sync, and settings. Connect/disconnect
+      actions. API key management. Webhook URL configuration. Connects admin to
+      external systems.
+    completed: false
+  - title: Create webhook management
+    description: Create src/components/admin/settings/Webhooks.tsx — configure
+      outgoing webhooks for events. Select events to trigger webhooks
+      (order_created, payment_received, etc). Set URL, headers, secret. Test
+      webhook with sample payload. Webhook delivery log with success/failure.
+      Retry failed webhooks. Connects FloraIQ events to external systems.
+    completed: false
+  - title: Create Supabase migration for webhooks table
+    description: Create supabase/migrations/add_webhooks.sql. Columns — id uuid
+      primary key, tenant_id uuid, event_type text, url text, headers jsonb,
+      secret text, is_active boolean default true, last_triggered_at
+      timestamptz, failure_count integer default 0. Table webhook_deliveries —
+      id uuid, webhook_id uuid, event_data jsonb, status text, response_code
+      integer, created_at timestamptz. RLS by tenant_id.
+    completed: false
+  - title: Create audit log viewer
+    description: Create src/pages/admin/AuditLog.tsx — view all activity_log
+      entries. Filter by module, action type, user, date range. Search by
+      entity. Show user, action, entity, timestamp, changes (from metadata).
+      Pagination. Export to CSV. Infinite scroll option. Color-coded by action
+      type. This is the single view into all system activity across all modules.
+    completed: false
+  - title: Create backup and data export settings
+    description: Create src/components/admin/settings/DataManagement.tsx — export
+      all tenant data. Export customers, orders, products, inventory, vendor
+      data as ZIP of CSVs. Data retention settings. Scheduled backups. GDPR
+      compliance — customer data deletion requests. Data export request creates
+      background job. Download link emailed when ready.
+    completed: false
+  - title: Create tenant branding settings
+    description: Create src/components/admin/settings/BrandingSettings.tsx —
+      customize branding across all customer-facing elements. Primary/secondary
+      colors, logo, favicon, email templates, receipt header/footer, menu
+      default theme, storefront theme. Preview each branded element. Changes
+      apply to menus, storefront, receipts, invoices, and customer
+      communications.
+    completed: false
+  - title: Create system health monitoring
+    description: Create src/components/admin/settings/SystemHealth.tsx — monitor
+      system connectivity. Check Supabase connection, realtime subscription
+      status, storage access, Edge Function status. Show each service as
+      green/yellow/red. Last check timestamp. Auto-check every 60 seconds.
+      Manual refresh button. Alert when service degraded. Uses useModuleHealth
+      hook.
+    completed: false
+  - title: Create feature flags settings
+    description: Create src/components/admin/settings/FeatureFlags.tsx — toggle
+      features on/off per tenant. Flags for — loyalty_points_enabled,
+      delivery_tracking_enabled, storefront_enabled, customer_accounts_enabled,
+      recurring_orders_enabled, api_access_enabled. Stored in tenant_settings.
+      Checked by feature gate hook. UI components conditionally render based on
+      flags.
+    completed: false
+  - title: Create useFeatureFlag hook
+    description: Create src/hooks/useFeatureFlag.ts — checks if a feature flag is
+      enabled for current tenant. Returns boolean. Uses useTenantContext to get
+      tenant settings. Caches flag values. Used across all modules to
+      conditionally render features. Example — if
+      (!useFeatureFlag('loyalty_enabled')) return null in loyalty components.
+      Centralized feature gating.
+    completed: false
+  - title: Create unified search results page
+    description: Create src/pages/admin/SearchResults.tsx — when global search Cmd+K
+      results are clicked and there are many results, show full search results
+      page. Results grouped by entity type with tabs. Each result shows relevant
+      preview info and status badge. Click navigates to entity. Results
+      paginated. Search query editable from results page.
+    completed: false
+  - title: Create recent activity widget for dashboard
+    description: 'Create src/components/admin/dashboard/RecentActivity.tsx — shows
+      latest activity across all modules. "John created order #1234", "Stock low
+      for Product X", "New customer signed up", "Delivery completed for order
+      #1235". Each entry clickable to related entity. Auto-refreshes every 30
+      seconds. Shows last 20 activities. Filter by module.'
+    completed: false
+  - title: Create quick create modal hub
+    description: Create src/components/admin/shared/QuickCreate.tsx — keyboard
+      shortcut (Shift+N) opens modal with create options. Tabs for Order,
+      Product, Customer, Vendor, Menu. Each tab shows a compact creation form.
+      On submit, navigates to new entity detail page. Used from anywhere in
+      admin. Pre-fills context when available (e.g. create order from customer
+      page pre-fills customer).
+    completed: false
+  - title: Create cross-module link resolver
+    description: Create src/hooks/useLinkResolver.ts — given any entity reference
+      (type + id), resolves to a display card with name, status, and link. Used
+      by all components that display entity references. Caches resolutions.
+      Batch resolves multiple references efficiently. Fallback for deleted
+      entities. Every cross-module link uses this for consistent rendering.
+    completed: false
+  - title: Create admin keyboard shortcuts
+    description: Create src/hooks/useKeyboardShortcuts.ts — register global keyboard
+      shortcuts. Cmd+K = search, Shift+N = quick create, Cmd+1-9 = navigate to
+      modules, Escape = close modals/panels, Cmd+E = export current view. Show
+      shortcut hints in UI. Shortcuts configurable in settings. Uses
+      usePermissions to only register shortcuts for accessible modules.
+    completed: false
+  - title: Create onboarding wizard for new tenants
+    description: Create src/pages/admin/Onboarding.tsx — step-by-step wizard for new
+      tenants. Steps — business profile, add first products, configure delivery
+      zones, create first menu, invite staff. Progress tracker. Skip and return
+      later. Onboarding status tracked in tenant_settings. Dashboard shows
+      onboarding progress if incomplete. Each step connects to its module's
+      creation flow.
+    completed: false
+  - title: Create module connection health checker
+    description: Create src/hooks/useModuleConnections.ts — verify all
+      interconnections are working. Check that orders link to products
+      correctly, inventory sync fires on order confirm, storefront products
+      match admin, delivery creates from orders, notifications dispatch on
+      events. Run on demand from system health page. Report shows each
+      connection as pass/fail.
+    completed: false
+  - title: Create data consistency validator
+    description: Create src/hooks/useDataConsistency.ts — checks for data
+      inconsistencies across modules. Orphaned order items (product deleted but
+      order item references it), inventory mismatches (calculated vs stored),
+      customer records without valid contact info, deliveries without orders.
+      Run on demand. Report shows issues with fix suggestions.
+    completed: false
+  - title: Create admin dashboard widget customization
+    description: Create src/components/admin/dashboard/WidgetConfigurator.tsx — let
+      users customize their dashboard layout. Drag-drop widgets — stats cards,
+      recent activity, low stock, pending orders, delivery map, revenue chart,
+      quick actions. Save layout per user. Default layouts per role (admin sees
+      everything, runner sees deliveries). Widget size options.
+    completed: false
+  - title: Create cross-module notification center page
+    description: Create src/pages/admin/NotificationCenter.tsx — full page view of
+      all notifications. Tabs — All, Orders, Inventory, Deliveries, Customers,
+      System. Each notification shows title, message, timestamp, related entity
+      link, read status. Bulk mark as read. Filter by type and date. Infinite
+      scroll. Settings link to notification preferences. Central hub for all
+      module alerts.
+    completed: false
+  - title: Create module interconnection documentation
+    description: Create src/docs/interconnections.md — developer documentation
+      describing all module interconnections. Which events trigger which
+      updates, which hooks connect which modules, data flow diagrams in mermaid
+      format. List of all eventBus events and their subscribers. Query
+      invalidation map. Useful for debugging and onboarding new developers.
+    completed: false
+  - title: Create performance monitoring for interconnected queries
+    description: Create src/hooks/useQueryPerformance.ts — monitors TanStack Query
+      performance across interconnected modules. Track query execution times,
+      cache hit rates, waterfall of dependent queries. Log slow queries (>1s) to
+      logger.warn. Show performance dashboard in dev mode. Helps identify
+      bottlenecks in cross-module data fetching.
+    completed: false
+  - title: Create end-to-end interconnectivity smoke test
+    description: Create src/tests/interconnectivity-smoke.test.ts — test that
+      verifies key interconnections work. Test 1 — create order, verify
+      inventory decremented. Test 2 — create customer, verify appears in
+      customer list and is selectable in order creation. Test 3 — create
+      product, verify appears on menu builder. Test 4 — complete delivery,
+      verify order status updates. Uses testing-library and mock Supabase.
+    completed: false
+  - title: Create admin help and documentation system
+    description: Create src/components/admin/shared/HelpPanel.tsx — contextual help
+      panel accessible from any admin page. Shows documentation relevant to
+      current module. Keyboard shortcut hints. Links to settings that affect
+      current module. "How to" guides for common tasks. Search help content.
+      Connects user to system documentation based on context.
+    completed: false
+  - title: Create tenant data migration tool
+    description: Create src/pages/admin/DataMigration.tsx — import data from other
+      systems. Support CSV import for orders, products, customers, vendors.
+      Field mapping interface. Validation and preview. Dry run option. Import
+      progress tracking. Error log for failed records. Useful for onboarding
+      tenants migrating from other platforms. Connects to all entity creation
+      hooks.
+    completed: false
+  - title: Create admin activity summary email
+    description: Create Supabase Edge Function for daily activity summary email to
+      admin. Summarize — orders received, revenue, new customers, inventory
+      alerts, delivery stats, notable events. Formatted HTML email. Configurable
+      in notification settings — daily, weekly, or disabled. Aggregates data
+      from all modules into single digest. The ultimate interconnection — all
+      modules summarized in one email.
+    completed: false
+  - title: Create mobile responsive admin layout
+    description: Ensure AdminLayout, AdminSidebar, all data tables, detail pages,
+      modals, and forms are fully responsive. Sidebar collapses to bottom nav on
+      mobile. Tables become card-based on small screens. Modals become
+      full-screen on mobile. Touch-friendly controls. Swipe gestures for
+      navigation. All interconnected components maintain functionality on
+      mobile.
+    completed: false
+  - title: Create progressive web app configuration
+    description: Configure PWA for admin panel. Service worker for offline
+      capability. Cache critical assets. Offline queue for mutations (creates,
+      updates) — replay when online. Push notifications for order alerts.
+      Install prompt. App manifest with tenant branding. Offline indicator
+      banner. Connects PWA capabilities to notification and sync modules.
+    completed: false
+  - title: Create admin dark mode support
+    description: "Add dark mode toggle to admin panel. Uses Tailwind dark: classes.
+      Respect system preference by default. Manual override persisted in user
+      settings. All components — cards, tables, charts, modals, sidebars —
+      properly themed. Chart colors adjust for dark backgrounds. Consistent dark
+      mode across all interconnected modules. Toggle in header."
+    completed: false
+  - title: Create final interconnectivity verification checklist
+    description: Create a comprehensive checklist component at
+      src/components/admin/shared/InterconnectivityCheck.tsx that admin can run
+      to verify all modules are properly connected. Checks — order creation
+      decrements inventory, storefront orders appear in admin, customer LTV
+      calculates correctly, delivery updates order status, menu products sync
+      with catalog, notifications fire on events, analytics reflect all modules,
+      search finds all entities. Green/red status for each check. One-click run
+      all.
+    completed: false
+  - title: Create payment processing hub page
+    description: Create src/pages/admin/Payments.tsx — central payment management
+      page. Show all payments with status, amount, order reference, customer,
+      method, date. Filter by status (pending/completed/failed/refunded),
+      method, date range, amount range. Stats cards — total collected today,
+      pending, refunded. Each payment links to order and customer.
+    completed: false
+  - title: Create payment detail page
+    description: Create src/pages/admin/PaymentDetail.tsx — full payment detail
+      view. Payment amount, method, status, timestamp, order reference
+      (clickable), customer (clickable), transaction ID, processing fees. Refund
+      button if completed. Payment history timeline. Related order items.
+      Connected to order and customer modules bidirectionally.
+    completed: false
+  - title: Create payment recording on orders
+    description: In order detail page, add payment recording section. Record payment
+      — amount, method (cash/card/transfer/credit), reference number, notes.
+      Partial payments supported. Payment progress bar. When fully paid, update
+      order payment_status. Publish payment_received event to eventBus. Create
+      notification. Log to activity_log.
+    completed: false
+  - title: Create Supabase migration for payments table
+    description: Create supabase/migrations/add_payments.sql if not exists. Columns
+      — id uuid primary key, tenant_id uuid, order_id uuid, customer_id uuid,
+      amount decimal not null, method text, status text
+      (pending/completed/failed/refunded), transaction_id text, processing_fee
+      decimal default 0, notes text, processed_by uuid, created_at timestamptz,
+      updated_at timestamptz. RLS by tenant_id.
+    completed: false
+  - title: Create payment refund workflow
+    description: Create src/components/admin/payments/RefundFlow.tsx — guided refund
+      process. Select payment to refund. Full or partial amount. Reason
+      selection (customer_request/defective/wrong_item/other). Confirmation
+      step. On confirm — create refund record, update payment status, optionally
+      restore inventory, update order status, notify customer, log to activity.
+      Connects payments to inventory and orders.
+    completed: false
+  - title: Create payment method analytics
+    description: Create src/components/admin/analytics/PaymentMethods.tsx —
+      breakdown of payment methods used. Pie chart of methods
+      (cash/card/transfer). Trend of each method over time. Average transaction
+      value per method. Processing fee totals per method. Helps understand
+      customer payment preferences. Data from payments table.
+    completed: false
+  - title: Create outstanding payments report
+    description: Create src/components/admin/payments/OutstandingReport.tsx — all
+      orders with pending payments. Aging buckets — 0-7 days, 8-14 days, 15-30
+      days, 30+ days. Total outstanding amount. Customer-level aggregation of
+      outstanding. One-click to send payment reminder. Priority sorting by
+      amount and age. Export to CSV.
+    completed: false
+  - title: Create payment reconciliation tool
+    description: Create src/components/admin/payments/Reconciliation.tsx — match
+      payments to orders. Upload bank statement CSV. Auto-match by amount and
+      date. Flag unmatched transactions. Manual matching interface.
+      Reconciliation report. Marks orders as paid when matched. Useful for
+      cash-heavy cannabis businesses.
+    completed: false
+  - title: Create daily cash register/till management
+    description: Create src/pages/admin/CashRegister.tsx — track cash register
+      operations. Open register with starting float. Record sales throughout
+      day. Track cash in/cash out. Close register with count. Variance report
+      (expected vs actual). Daily register report. Links to orders processed
+      during shift. Per-user register sessions.
+    completed: false
+  - title: Create Supabase migration for register_sessions table
+    description: Create supabase/migrations/add_register_sessions.sql. Columns — id
+      uuid primary key, tenant_id uuid, user_id uuid, opening_float decimal,
+      closing_amount decimal, expected_amount decimal, variance decimal, status
+      text (open/closed), opened_at timestamptz, closed_at timestamptz, notes
+      text. RLS by tenant_id.
+    completed: false
+  - title: Create payment-customer credit integration
+    description: When recording payment, option to apply customer credit. Show
+      credit balance. Partial credit + partial cash/card. On credit use, deduct
+      from customer credit balance. Create credit transaction record. Update
+      payment with credit_applied amount. Connects payment flow to customer
+      credit system.
+    completed: false
+  - title: Create payment-loyalty points integration
+    description: When payment completed, auto-calculate and award loyalty points.
+      Points rate from tenant settings. Show points earned on receipt. When
+      customer redeems points, create negative payment adjustment. Points
+      transaction linked to payment and order. Connects payment to loyalty
+      module.
+    completed: false
+  - title: Create vendor payment tracking page
+    description: Create src/pages/admin/VendorPayments.tsx — track payments to
+      vendors. Linked to purchase orders. Payment status per PO. Total
+      outstanding to each vendor. Payment schedule. Mark PO as paid. Payment
+      history per vendor. Outstanding payables dashboard widget. Connects vendor
+      module to payment tracking.
+    completed: false
+  - title: Create payment notifications
+    description: When payment is received, notify relevant parties. Notify admin of
+      payment received. Notify customer of payment confirmation. If payment
+      fails, notify admin immediately. If refund processed, notify customer. All
+      via useNotificationDispatcher. Email receipt option for completed
+      payments.
+    completed: false
+  - title: Create tip tracking on payments
+    description: Add tip_amount field to payments. Optional tip entry during payment
+      recording. Tips tracked separately in analytics. Tip distribution to
+      runners for delivery orders. Daily tip report per runner. Tip totals on
+      payment dashboard. Connects to delivery runner compensation tracking.
+    completed: false
+  - title: Create payment dashboard stats
+    description: On main dashboard, add payment stats widget. Today's collections,
+      outstanding invoices, failed payments needing attention, refunds
+      processed. Each stat clickable to filtered payment list. Uses
+      useDashboardStats hook extended with payment metrics. Real-time updates.
+    completed: false
+  - title: Create split payment support
+    description: Allow splitting payment for one order across multiple methods.
+      Example — $50 cash + $30 card. Each split creates separate payment record
+      linked to same order. Total must equal order amount. UI shows payment
+      method strips that sum to total. Useful for in-person transactions.
+    completed: false
+  - title: Create payment export for accounting
+    description: Export payment data in accounting-friendly format. Include date,
+      order number, customer, amount, method, tax, processing fees, net amount.
+      Group by day or week. Export as CSV compatible with QuickBooks, Xero,
+      Wave. Scheduled export option. Connects payment module to external
+      accounting.
+    completed: false
+  - title: Create invoice tracking page
+    description: Create src/pages/admin/Invoices.tsx — manage all invoices generated
+      from orders. Invoice list with status (draft/sent/paid/overdue). Link to
+      order and customer. Resend invoice action. Payment recording from invoice.
+      Overdue invoice alerts. Aging report. Connects orders, payments, and
+      customer billing.
+    completed: false
+  - title: Create payment dispute management
+    description: Create src/components/admin/payments/Disputes.tsx — track payment
+      disputes/chargebacks. Record dispute with reason, evidence, status. Link
+      to original payment and order. Timeline of dispute resolution. Outcome
+      tracking. Dispute rate analytics. Connects payment issues to order and
+      customer history.
+    completed: false
+  - title: Create messaging hub page
+    description: Create src/pages/admin/Messages.tsx — central messaging interface.
+      Tabs — Customer Messages, Staff Messages, Broadcast. Customer
+      conversations threaded by customer. Staff messages for internal
+      communication. Search messages. Message templates. Unread badge counts.
+      Connects to customer records and order references.
+    completed: false
+  - title: Create customer messaging from order context
+    description: On order detail page, add "Message Customer" action. Opens
+      messaging panel pre-filled with customer contact and order reference.
+      Message templates for common scenarios — order confirmation, delay
+      notification, delivery update, payment reminder. Send via SMS or in-app.
+      Message logged to customer communication history.
+    completed: false
+  - title: Create broadcast messaging system
+    description: Create src/components/admin/messages/Broadcast.tsx — send messages
+      to customer groups. Select audience — all customers, segment (VIP, active,
+      at_risk), tag-based, custom list. Message templates with merge fields
+      (name, last order). Schedule send time. Track delivery and open rates.
+      Connects customer segmentation to communication.
+    completed: false
+  - title: Create Supabase migration for messages table
+    description: Create supabase/migrations/add_messages.sql. Columns — id uuid
+      primary key, tenant_id uuid, sender_type text (admin/customer/system),
+      sender_id uuid, recipient_type text, recipient_id uuid, channel text
+      (sms/email/in_app), subject text, body text, reference_type text,
+      reference_id uuid, status text (draft/sent/delivered/read/failed), sent_at
+      timestamptz, created_at timestamptz. RLS by tenant_id.
+    completed: false
+  - title: Create message template management
+    description: Create src/components/admin/messages/Templates.tsx — CRUD for
+      message templates. Template fields — name, channel (SMS/email), subject,
+      body with merge variables ({customer_name}, {order_number},
+      {delivery_eta}). Category tags. Usage count. Last used date. Clone
+      template. Preview with sample data. Used across all messaging touchpoints.
+    completed: false
+  - title: Create Supabase migration for message_templates table
+    description: Create supabase/migrations/add_message_templates.sql. Columns — id
+      uuid primary key, tenant_id uuid, name text, channel text, subject text,
+      body text, variables jsonb, category text, usage_count integer default 0,
+      is_active boolean default true, created_at timestamptz. RLS by tenant_id.
+    completed: false
+  - title: Create automated message triggers
+    description: Create src/components/admin/settings/AutoMessages.tsx — configure
+      automated messages for events. Triggers — order_confirmed,
+      delivery_dispatched, delivery_completed, payment_received,
+      welcome_new_customer, birthday, re_engagement (no order in X days). Map
+      triggers to templates. Enable/disable per trigger. Connects eventBus
+      events to customer communication.
+    completed: false
+  - title: Create staff internal messaging
+    description: 'Create src/components/admin/messages/StaffChat.tsx — simple
+      internal messaging between staff. Mention orders, products, customers by
+      typing @ and searching. Mentioned entities become clickable links. Useful
+      for coordination — "Check order #1234, customer says wrong item". Group
+      channels for teams. Connects staff communication to all entity modules.'
+    completed: false
+  - title: Create delivery runner messaging
+    description: 'Message delivery runners from order or delivery detail. Pre-built
+      messages — "Customer is not responding", "Address update: [new address]",
+      "Call customer before delivery". Runner can reply from mobile view.
+      Message history on delivery record. Connects messaging to delivery
+      operations.'
+    completed: false
+  - title: Create customer feedback request automation
+    description: After order delivery, auto-send feedback request to customer.
+      Configurable delay (1 hour, 1 day). Simple rating form link. Feedback
+      linked to order, customer, runner. Results on delivery analytics
+      dashboard. Response rate tracking. Template customizable. Connects
+      post-delivery communication to analytics.
+    completed: false
+  - title: Create message analytics
+    description: Create src/components/admin/analytics/MessageAnalytics.tsx —
+      messaging performance metrics. Total messages sent by channel. Delivery
+      rate, open rate (email), response rate. Broadcast performance. Template
+      usage ranking. Best performing messages. Customer engagement score based
+      on message interactions. Connects messaging to analytics module.
+    completed: false
+  - title: Create SMS integration connector
+    description: Create src/lib/sms/connector.ts — abstraction layer for SMS
+      providers (Twilio, etc). Send SMS, check delivery status, receive replies.
+      Configurable in integrations settings. Fallback handling. Rate limiting.
+      Cost tracking per message. Connected to messaging system and automated
+      triggers.
+    completed: false
+  - title: Create email integration connector
+    description: Create src/lib/email/connector.ts — abstraction layer for email
+      sending (SendGrid, SES, etc). Send transactional emails with templates.
+      Track delivery and opens. Configurable in integrations settings. HTML
+      email template rendering with tenant branding. Connected to messaging,
+      invoices, reports.
+    completed: false
+  - title: Create customer communication preferences
+    description: On customer detail page, manage communication preferences.
+      Opt-in/opt-out per channel (SMS, email, in-app). Preferred language. Quiet
+      hours. Frequency preference. Unsubscribe link in messages. Preferences
+      respected by all messaging modules. Stored on customer record.
+      GDPR/compliance friendly.
+    completed: false
+  - title: Create message scheduling
+    description: Create src/components/admin/messages/MessageScheduler.tsx —
+      schedule messages for future sending. Date/time picker. Preview before
+      schedule. Scheduled messages queue visible in messaging hub. Cancel or
+      edit scheduled messages. Timezone-aware using tenant settings. Used for
+      broadcasts and individual messages.
+    completed: false
+  - title: Create POS interface page
+    description: Create src/pages/admin/POS.tsx — point of sale interface for
+      walk-in customers. Product grid with categories. Quick search by name or
+      barcode. Add to cart with quantity. Customer assignment (optional — search
+      or walk-in). Running total display. Payment processing. Receipt
+      generation. Optimized for touch and speed. Full-screen mode.
+    completed: false
+  - title: Create POS product grid
+    description: Create src/components/admin/pos/ProductGrid.tsx — touch-friendly
+      product grid for POS. Products displayed as cards with image, name, price.
+      Category tabs for filtering. Quick search bar. Stock indicator on each
+      card. Tap to add to cart. Long-press for product details. Grayed out for
+      out-of-stock. Synced with product catalog in real-time.
+    completed: false
+  - title: Create POS cart component
+    description: Create src/components/admin/pos/POSCart.tsx — shopping cart sidebar
+      in POS. Shows added items with quantity controls (+/-/remove). Subtotal,
+      tax, total calculations. Customer selection optional. Apply discount
+      (percentage or fixed). Apply customer credit. Notes field. Checkout
+      button. Cart persists during session via state.
+    completed: false
+  - title: Create POS checkout flow
+    description: Create src/components/admin/pos/POSCheckout.tsx — streamlined
+      checkout. Payment method selection (cash/card). Cash payment shows change
+      calculator. Card payment integration. Split payment support. Apply loyalty
+      points. Generate receipt. Create order record in database with source=pos.
+      Decrement inventory. Update cash register. Award loyalty points. All
+      interconnected.
+    completed: false
+  - title: Create POS receipt printing
+    description: Create src/components/admin/pos/POSReceipt.tsx — generates receipt
+      for POS transactions. Business info from tenant profile, items, prices,
+      tax, total, payment method, change given, date/time, transaction ID. Print
+      button for receipt printer. Email receipt option. Receipt linked to order.
+      Uses tenant branding settings.
+    completed: false
+  - title: Create POS customer lookup
+    description: In POS, quick customer lookup by phone number scan or manual entry.
+      If found, show customer name, loyalty points, credit balance, purchase
+      history summary. Apply customer-specific pricing. Award loyalty points. If
+      not found, offer to create new customer. Fast typeahead search. Connects
+      POS to full customer module.
+    completed: false
+  - title: Create POS inventory real-time check
+    description: POS displays real-time inventory for every product in grid. When
+      stock changes (from admin order, storefront order, or another POS
+      terminal), grid updates instantly via Supabase realtime. Prevents selling
+      out-of-stock items. Low stock warning on product cards. Out of stock items
+      hidden or crossed out.
+    completed: false
+  - title: Create POS daily summary report
+    description: Create src/components/admin/pos/DailyReport.tsx — end-of-day POS
+      summary. Total transactions count, total revenue, average transaction
+      value, payment method breakdown, top selling products, customer count (new
+      vs returning), cash register reconciliation. Compare to previous day.
+      Print or export report. Connected to register session.
+    completed: false
+  - title: Create POS barcode scanning support
+    description: Create src/hooks/useBarcodeScanner.ts — listen for barcode scanner
+      input. Detect barcode scan pattern (rapid keystrokes ending in Enter).
+      Lookup product by barcode/SKU. Auto-add to POS cart. Beep sound on
+      successful scan. Error sound and toast if product not found. Supports USB
+      and Bluetooth scanners. Connects physical hardware to product catalog.
+    completed: false
+  - title: Create POS discount and promo code support
+    description: In POS checkout, add promo code entry field. Validate against
+      active promotions table. Apply percentage or fixed discount.
+      Customer-specific discounts auto-applied when customer selected. Manual
+      discount with manager approval (permission check). Discount logged on
+      order. Discount analytics tracking.
+    completed: false
+  - title: Create Supabase migration for promotions table
+    description: Create supabase/migrations/add_promotions.sql. Columns — id uuid
+      primary key, tenant_id uuid, code text unique per tenant, name text,
+      discount_type text (percentage/fixed), discount_value decimal,
+      min_order_amount decimal, max_uses integer, current_uses integer default
+      0, applies_to text (all/category/product), applies_to_ids uuid[],
+      start_date timestamptz, end_date timestamptz, is_active boolean default
+      true, created_at timestamptz. RLS by tenant_id.
+    completed: false
+  - title: Create POS hold order functionality
+    description: In POS, ability to hold current cart and start new transaction.
+      Show held orders list. Resume held order. Hold order preserved with items
+      and customer. Timeout after configurable period (auto-cancel held order).
+      Useful when customer steps away. Held order items still reserved in
+      inventory temporarily.
+    completed: false
+  - title: Create POS quick product favorites
+    description: Create src/components/admin/pos/Favorites.tsx — pinned favorite
+      products in POS for one-tap access. Each staff member can customize their
+      favorites. Most sold products auto-suggested. Drag-to-reorder favorites.
+      Category-level favorites for quick access. Stored per user in
+      user_settings. Speeds up frequent transactions.
+    completed: false
+  - title: Create POS multi-terminal support
+    description: Support multiple POS terminals for same tenant. Each terminal has
+      unique ID. Inventory changes synchronized in real-time across terminals.
+      Individual register sessions per terminal. Transaction log per terminal.
+      Conflict handling for simultaneous stock access. Terminal management in
+      settings.
+    completed: false
+  - title: Create POS returns and exchanges
+    description: Create src/components/admin/pos/Returns.tsx — process returns at
+      POS. Lookup original order by receipt number or customer. Select items to
+      return. Reason selection. Refund to original payment method or store
+      credit. Inventory restored for returned items. Return logged as separate
+      transaction linked to original order. Connects POS to refund, inventory,
+      and customer credit modules.
+    completed: false
+  - title: Create POS to delivery handoff
+    description: In POS, option to convert walk-in order to delivery. Customer
+      provides delivery address. Calculate delivery fee. Assign to runner. Order
+      source changes from pos to pos_delivery. Delivery record created. Customer
+      notified. Connects POS workflow to delivery module seamlessly.
+    completed: false
+  - title: Create POS analytics integration
+    description: POS transactions feed into main analytics. Revenue attributed to
+      POS channel. Compare POS vs online sales. Peak hours heatmap for POS.
+      Items per transaction average. Customer conversion (walk-in to
+      registered). POS-specific dashboard widget. All POS data flows through
+      same order and payment pipeline.
+    completed: false
+  - title: Create POS offline mode
+    description: Create src/hooks/usePOSOffline.ts — POS continues working when
+      internet drops. Cache product catalog locally. Queue transactions in
+      IndexedDB. Sync when connection restored. Show offline indicator.
+      Inventory quantities may be stale — show warning. Payment processing
+      limited to cash in offline mode. Critical for uninterrupted retail
+      operations.
+    completed: false
+  - title: Create POS staff quick login
+    description: Create src/components/admin/pos/StaffLogin.tsx — fast staff
+      switching on POS terminal. PIN-based login instead of full email/password.
+      Staff avatar selection grid. Quick switch between staff without full
+      logout. Each transaction tagged with current staff. Shift tracking per
+      staff member. Connects to user management module.
+    completed: false
+  - title: Create POS training mode
+    description: Create src/hooks/usePOSTrainingMode.ts — training mode for new
+      staff. All POS functionality works but no real transactions created. No
+      inventory affected. No payments processed. Clear "TRAINING" watermark on
+      screen. Training transactions logged separately. Manager can
+      enable/disable per terminal. Connects to user permissions.
+    completed: false
+  - title: Create POS end-of-day closeout workflow
+    description: Create src/components/admin/pos/CloseoutWizard.tsx — guided
+      end-of-day process. Steps — count cash drawer, reconcile with expected
+      amount, record variance, close register session, generate day summary
+      report, review held orders (cancel or process), export transactions,
+      backup data. Each step validates before proceeding. Final summary page
+      with all stats.
+    completed: false
+  - title: Create POS customer display
+    description: Create src/components/admin/pos/CustomerDisplay.tsx — secondary
+      display showing cart to customer. Running total, items being scanned,
+      loyalty points earned, promotions applied. Can be shown on separate
+      monitor or tablet. Real-time sync with POS cart state. Tenant branding.
+      After payment shows thank you with points earned.
+    completed: false
+  - title: Create POS integration with loyalty module
+    description: Full loyalty integration in POS. Show points balance when customer
+      selected. Option to redeem points at checkout. Points redemption creates
+      credit applied to payment. Points earned displayed on receipt. Tier status
+      shown. Tier upgrade notification at POS. Connects POS checkout to loyalty
+      points and customer modules.
+    completed: false
+  - title: Create POS product modifier support
+    description: Create src/components/admin/pos/ProductModifiers.tsx — add
+      modifiers to POS items. Modifiers like size (1g/3.5g/7g), grade (A/B/C),
+      preparation notes. Modifiers can adjust price. Configured per product in
+      product settings. Shown as popup when adding product to cart. Modifier
+      selections stored on order items. Connects to product variant system.
+    completed: false
+  - title: Create B2B marketplace landing page
+    description: Create src/pages/admin/Marketplace.tsx — internal B2B marketplace
+      dashboard. Browse wholesale offerings from connected vendors. Product
+      catalog with wholesale pricing. Minimum order quantities. Vendor ratings
+      visible. Quick order from marketplace. Connects vendor product catalogs to
+      tenant purchasing workflow.
+    completed: false
+  - title: Create marketplace product listing
+    description: Create src/components/admin/marketplace/ProductListing.tsx —
+      display marketplace products with vendor info, wholesale price, MOQ, lead
+      time, compliance badges. Compare prices across vendors for same product.
+      Add to purchase order cart. Filter by category, vendor, price range,
+      availability. Connected to vendor catalog sync.
+    completed: false
+  - title: Create marketplace order placement
+    description: Create src/components/admin/marketplace/MarketplaceOrder.tsx —
+      place wholesale orders through marketplace. Select products and
+      quantities. Auto-creates purchase order linked to vendor. Payment terms
+      from vendor record. Expected delivery calculation from lead time.
+      Confirmation flow. PO notification to vendor. Connects marketplace to PO
+      and vendor modules.
+    completed: false
+  - title: Create marketplace vendor storefront
+    description: Create src/pages/marketplace/VendorStorefront.tsx — public-facing
+      vendor storefront within FloraIQ marketplace. Vendors can list products
+      for other tenants to browse. Product catalog, pricing, MOQs, compliance
+      docs. Buyer inquiries. Connected to vendor profile and product management.
+    completed: false
+  - title: Create marketplace search and discovery
+    description: Create src/hooks/useMarketplaceSearch.ts — search marketplace
+      products across all vendors. Full-text search on product name and
+      description. Filter by THC/CBD range, product type, vendor location, price
+      range. Sort by price, rating, relevance. Results show vendor badge and
+      compliance status. Connected to vendor and product modules.
+    completed: false
+  - title: Create marketplace price comparison tool
+    description: Create src/components/admin/marketplace/PriceCompare.tsx — compare
+      same or similar products across multiple vendors. Side-by-side pricing,
+      MOQs, lead times, ratings. Historical price chart per vendor. Best deal
+      highlighting. One-click to add best option to PO. Connects marketplace to
+      vendor analytics and purchase orders.
+    completed: false
+  - title: Create marketplace order tracking
+    description: Track marketplace orders from placement to delivery. Status
+      timeline — ordered, confirmed by vendor, shipped, in transit, received.
+      Updates from vendor side. ETA tracking. Discrepancy reporting on receipt.
+      Auto-update inventory on receive. Connects marketplace orders to inventory
+      and PO receiving.
+    completed: false
+  - title: Create marketplace messaging between buyer and vendor
+    description: In marketplace, messaging between tenants (buyer and vendor).
+      Discuss pricing, product availability, custom orders. Messages linked to
+      specific products or POs. Message history preserved. Notification on new
+      messages. Connects to messaging module with marketplace-specific context.
+    completed: false
+  - title: Create marketplace analytics
+    description: Create src/components/admin/analytics/MarketplaceAnalytics.tsx —
+      marketplace usage metrics. Products browsed, POs created through
+      marketplace, total marketplace spend, vendor response times, price savings
+      vs direct ordering, popular search terms. Helps tenants optimize
+      purchasing. Data from marketplace events and POs.
+    completed: false
+  - title: Create marketplace wishlist and alerts
+    description: Save products to wishlist in marketplace. Set price alerts — notify
+      when product price drops below threshold. Set availability alerts — notify
+      when out-of-stock product becomes available. Wishlist on marketplace
+      dashboard. Alerts via notification system. Connects marketplace browsing
+      to notification module.
+    completed: false
+  - title: Create marketplace compliance verification
+    description: Marketplace products must show compliance status. Verify vendor
+      licenses are current. Product lab test results available. COA (Certificate
+      of Analysis) download. Non-compliant products flagged or hidden.
+      Compliance filter in search. Regulatory badge display. Connects
+      marketplace to compliance verification system.
+    completed: false
+  - title: Create marketplace bulk ordering
+    description: Create src/components/admin/marketplace/BulkOrder.tsx — import
+      product list (CSV) and auto-match to marketplace products. Bulk add to PO.
+      Split across multiple vendors automatically based on best price or
+      preferred vendor. Preview before submission. Useful for large restocking
+      orders. Connects import utility to marketplace and PO system.
+    completed: false
+  - title: Create marketplace vendor rating from buyer
+    description: After receiving marketplace order, rate vendor on delivery time,
+      product quality, communication, packaging. Rating linked to PO and vendor.
+      Aggregate ratings visible on marketplace. Helps other tenants choose
+      vendors. Rating history on vendor profile. Connects marketplace experience
+      to vendor analytics.
+    completed: false
+  - title: Create marketplace saved vendor list
+    description: Save preferred vendors in marketplace. Quick access to their
+      catalogs. Auto-notify on new products from saved vendors. Preferred vendor
+      pricing if applicable. Saved vendors list on marketplace dashboard.
+      Connects vendor relationships to marketplace discovery.
+    completed: false
+  - title: Create marketplace trending products
+    description: Create src/components/admin/marketplace/Trending.tsx — show
+      trending products across marketplace. Based on order volume, search
+      frequency, and price changes. Updated daily. Category-specific trends.
+      Helps tenants discover popular products. Connected to marketplace
+      analytics and search data.
+    completed: false
+  - title: Create API key management page
+    description: Create src/pages/admin/APIKeys.tsx — generate and manage API keys
+      per tenant. Key name, permissions scope, rate limit, expiration. Revoke
+      keys. Usage statistics per key. Last used timestamp. Connected to
+      integrations settings. Enables external systems to interact with FloraIQ
+      data.
+    completed: false
+  - title: Create REST API for orders
+    description: Create Supabase Edge Function api-orders — CRUD endpoints for
+      orders. GET /orders (list with pagination), GET /orders/:id (detail with
+      items), POST /orders (create), PATCH /orders/:id (update status). API key
+      authentication. Tenant isolation via API key. Rate limiting. Returns same
+      data as admin UI. Enables external order integrations.
+    completed: false
+  - title: Create REST API for products
+    description: Create Supabase Edge Function api-products — CRUD endpoints for
+      products. GET /products (list with filters), GET /products/:id (detail
+      with inventory), POST /products (create), PATCH /products/:id (update).
+      Stock level included in response. Category and vendor references. Enables
+      external product catalog integrations.
+    completed: false
+  - title: Create REST API for customers
+    description: Create Supabase Edge Function api-customers — CRUD endpoints for
+      customers. GET /customers (list with search), GET /customers/:id (detail
+      with order history), POST /customers (create), PATCH /customers/:id
+      (update). LTV and segment included. Enables CRM integrations and external
+      customer management.
+    completed: false
+  - title: Create REST API for inventory
+    description: Create Supabase Edge Function api-inventory — inventory endpoints.
+      GET /inventory (all products with stock levels), GET
+      /inventory/:productId/history (stock history), POST
+      /inventory/:productId/adjust (stock adjustment). Adjustment creates
+      inventory_history entry. Enables external inventory management system
+      sync.
+    completed: false
+  - title: Create webhook delivery system
+    description: Create src/lib/webhooks/dispatcher.ts — when events fire on
+      eventBus, check for matching webhook subscriptions. Format payload with
+      event data. Send HTTP POST with HMAC signature. Retry on failure (3
+      attempts with exponential backoff). Log delivery status. Connects internal
+      events to external systems.
+    completed: false
+  - title: Create webhook event formatting
+    description: Create src/lib/webhooks/formatters.ts — format webhook payloads for
+      each event type. Standard envelope — event_type, timestamp, tenant_id,
+      data. Event-specific data includes all relevant entity data. For
+      order_created — full order with items, customer, totals. For
+      inventory_changed — product, old quantity, new quantity, reason.
+    completed: false
+  - title: Create webhook testing interface
+    description: Create src/components/admin/settings/WebhookTester.tsx — test
+      webhook endpoints from admin. Select event type, view sample payload, send
+      test request to configured URL, view response. Debug failed webhooks with
+      request/response logs. Retry failed deliveries manually. Connects webhook
+      configuration to debugging tools.
+    completed: false
+  - title: Create API usage analytics
+    description: Create src/components/admin/analytics/APIUsage.tsx — track API
+      usage per key and endpoint. Request count, error rate, response time, top
+      endpoints, rate limit hits. Usage trend chart. Alert when approaching rate
+      limits. Billing-relevant metrics if API is metered. Connected to API key
+      management.
+    completed: false
+  - title: Create inbound webhook receiver
+    description: Create Supabase Edge Function webhook-receiver — receive incoming
+      webhooks from external systems. Verify signatures. Route to appropriate
+      handler based on source. Create or update entities in FloraIQ. Log all
+      received webhooks. Error handling and retry guidance. Enables external
+      systems to push data into FloraIQ.
+    completed: false
+  - title: Create Zapier/integration connector
+    description: Create src/components/admin/integrations/ZapierConnect.tsx —
+      connect FloraIQ to Zapier. Expose triggers (new order, new customer, low
+      stock) and actions (create order, update product, send message). OAuth
+      flow for Zapier. Enables no-code integrations with hundreds of external
+      tools. Connects FloraIQ to broader ecosystem.
+    completed: false
+  - title: Create API documentation page
+    description: Create src/pages/admin/APIDocs.tsx — interactive API documentation.
+      List all endpoints with parameters, example requests/responses,
+      authentication guide. Try-it-out feature (send requests from docs). Code
+      examples in curl, JavaScript, Python. Connected to actual API endpoints.
+      Auto-generated from endpoint definitions.
+    completed: false
+  - title: Create data sync status dashboard
+    description: Create src/components/admin/integrations/SyncStatus.tsx — overview
+      of all external sync connections. Show each integration (POS, accounting,
+      marketplace, webhooks) with last sync time, status (healthy/error),
+      records synced. Trigger manual sync. View sync logs. Alert on sync
+      failures. Centralizes all external connectivity status.
+    completed: false
+  - title: Create CSV/API import queue
+    description: Create src/pages/admin/ImportQueue.tsx — manage all data imports
+      (CSV, API, marketplace). Show queue with status
+      (pending/processing/completed/failed). Progress bars for active imports.
+      Error details for failed records. Retry failed imports. Import history.
+      Connects all import pathways into single management interface.
+    completed: false
+  - title: Create external POS integration
+    description: Create Supabase Edge Function pos-integration — sync with external
+      POS systems. Receive transaction data from external POS. Map to FloraIQ
+      orders and inventory. Bidirectional product sync. External POS
+      configuration in integrations settings. Connects FloraIQ to hardware POS
+      terminals used in physical stores.
+    completed: false
+  - title: Create mobile admin dashboard
+    description: Create src/pages/mobile/MobileDashboard.tsx — mobile-optimized
+      admin dashboard. Key stats cards in scrollable grid. Quick action buttons
+      — create order, scan barcode, view deliveries. Recent notifications.
+      Swipe-to-refresh. Bottom navigation bar. All data from same hooks as
+      desktop dashboard. Responsive design with touch targets.
+    completed: false
+  - title: Create mobile order creation flow
+    description: Create src/pages/mobile/MobileOrderCreate.tsx — streamlined order
+      creation for mobile. Product search with barcode scanning. Camera scan for
+      barcodes. Customer quick lookup by phone. Simplified form with essential
+      fields only. Large touch targets. Swipe between steps. Same inventory
+      validation as desktop. Creates same order records.
+    completed: false
+  - title: Create mobile inventory scanner
+    description: Create src/pages/mobile/InventoryScanner.tsx — scan products and
+      update inventory on mobile. Camera barcode scanning. Show current stock.
+      Quick adjust (+/-) buttons. Batch scan mode for audits. Scan history log.
+      Syncs to inventory_history. Useful for warehouse staff doing stock counts.
+      Offline scan queue with sync.
+    completed: false
+  - title: Create mobile customer lookup
+    description: Create src/pages/mobile/CustomerLookup.tsx — quick customer lookup
+      on mobile. Search by phone, name, email. Show customer card with key info
+      — name, phone, LTV, last order, loyalty points. Quick actions — create
+      order, view orders, send message. Tap phone to call. Tap email to compose.
+      Same data as desktop customer module.
+    completed: false
+  - title: Create mobile delivery runner app
+    description: Enhance src/pages/mobile/RunnerView.tsx — full runner delivery app.
+      Route view with navigation integration. Order details for each stop.
+      Customer contact (tap to call/message). Status update buttons with one-tap
+      confirm. Photo capture for proof of delivery. Signature capture. Offline
+      capability. Location tracking. Connected to delivery and order modules.
+    completed: false
+  - title: Create mobile push notification support
+    description: Create src/lib/pushNotifications.ts — register for web push
+      notifications. Service worker handles notification display. Notification
+      click opens relevant admin page. Permission request flow. Notification
+      preferences synced with server. Works on mobile and desktop PWA. Connected
+      to notification dispatcher.
+    completed: false
+  - title: Create mobile product quick edit
+    description: Create src/pages/mobile/ProductQuickEdit.tsx — scan product
+      barcode, quickly update price or stock. Large input fields for mobile.
+      Confirm button with haptic feedback. History of recent edits. Batch edit
+      mode. Changes sync immediately to product and inventory modules. Useful
+      for field price updates.
+    completed: false
+  - title: Create mobile report viewer
+    description: Create src/pages/mobile/MobileReports.tsx — view key reports on
+      mobile. Daily sales summary, inventory alerts, delivery performance.
+      Charts optimized for small screens. Swipe between report sections. Share
+      report via mobile share sheet. Data from same analytics hooks. Responsive
+      charts using recharts.
+    completed: false
+  - title: Create mobile menu builder preview
+    description: Create src/pages/mobile/MenuPreview.tsx — preview how menus look on
+      mobile devices while editing. Side-by-side with desktop preview. Test
+      customer ordering flow from mobile perspective. Check touch targets and
+      scrolling. Directly connected to menu builder state. Live preview updates.
+    completed: false
+  - title: Create mobile staff time tracking
+    description: Create src/pages/mobile/TimeTracking.tsx — clock in/out for staff
+      on mobile. GPS location capture at clock in. Break tracking. Shift
+      summary. Connected to user management. Time data used for labor cost
+      analysis in financial analytics. Manager approval workflow. Overtime
+      alerts.
+    completed: false
+  - title: Create Supabase migration for time_entries table
+    description: Create supabase/migrations/add_time_entries.sql. Columns — id uuid
+      primary key, tenant_id uuid, user_id uuid, clock_in timestamptz, clock_out
+      timestamptz, break_minutes integer default 0, location_lat decimal,
+      location_lng decimal, status text (active/completed/approved), notes text,
+      approved_by uuid. RLS by tenant_id.
+    completed: false
+  - title: Create mobile offline data sync
+    description: Create src/lib/offlineSync.ts — comprehensive offline sync for
+      mobile. Cache critical data (products, customers, active orders) in
+      IndexedDB. Queue mutations when offline. Sync queue when back online with
+      conflict resolution. Show sync status indicator. Priority sync for orders
+      and inventory. Connected to all CRUD operations across modules.
+    completed: false
+  - title: Create mobile camera integration
+    description: Create src/hooks/useCamera.ts — unified camera access for mobile
+      features. Barcode scanning, product photo capture, proof of delivery
+      photo, receipt scanning. Camera permission handling. Image compression
+      before upload. Gallery fallback. Connected to product images, delivery
+      proofs, and inventory scanning.
+    completed: false
+  - title: Create mobile location services
+    description: Create src/hooks/useLocation.ts — unified location services.
+      Current location for delivery tracking, geo-fencing for clock-in, address
+      validation for customer orders, zone detection for delivery fee
+      calculation. Permission handling. Battery-efficient tracking for runners.
+      Connected to delivery, POS, and time tracking modules.
+    completed: false
+  - title: Create mobile quick actions widget
+    description: Create src/components/mobile/QuickActionsWidget.tsx — floating
+      action button on mobile with expandable quick actions. Scan barcode,
+      create order, view notifications, search. Contextual actions based on
+      current page. Customizable per user role. Runner sees delivery actions,
+      admin sees full menu. Connected to usePermissions and role system.
+    completed: false
+  - title: Create mobile inter-module navigation
+    description: Create src/components/mobile/MobileNav.tsx — bottom navigation bar
+      optimized for mobile. 5 tabs — Dashboard, Orders, Products, Deliveries,
+      More. Badge counts on tabs (pending orders, low stock, active deliveries).
+      Swipe gestures between major sections. Deep linking support — open
+      specific order from notification. Connected to sidebar badges and
+      notification system.
+    completed: false
+  - title: Create mobile data usage optimization
+    description: Create src/hooks/useDataOptimization.ts — reduce data usage on
+      mobile. Lazy load images. Paginate with smaller page sizes on mobile.
+      Cache aggressively. Reduce realtime subscription frequency. Compress API
+      responses. Detect connection quality and adjust. Connected to all data
+      fetching hooks with mobile-specific overrides.
+    completed: false
+  - title: Create mobile app install prompt
+    description: Create src/components/mobile/InstallPrompt.tsx — PWA install prompt
+      for mobile users. Detect if not installed. Show banner with install
+      benefits. Defer prompt to appropriate moment (after 2nd visit or after
+      completing action). Track install rate. Connected to PWA configuration.
+      Branded with tenant logo.
+    completed: false
+  - title: Create mobile accessibility features
+    description: Ensure all mobile views are accessible. Screen reader support with
+      proper ARIA labels. High contrast mode. Font size adjustment. Touch target
+      minimum 44px. Keyboard navigation support for connected keyboards. Voice
+      input for search. Connected to user settings for preferences. WCAG 2.1 AA
+      compliance.
+    completed: false
+  - title: Create mobile feedback and support
+    description: Create src/components/mobile/FeedbackButton.tsx — in-app feedback
+      and support access on mobile. Bug report with screenshot capture. Feature
+      request form. Help articles search. Contact support action. Feedback
+      linked to current page context and user role. Connected to messaging
+      system for support tickets.
+    completed: false
+  - title: Create universal entity link component
+    description: Create src/components/admin/shared/EntityLink.tsx — smart link
+      component. Pass entityType and entityId, it renders the entity name as a
+      clickable link. Resolves name from cache or lightweight query. Tooltip
+      shows preview on hover. Opens DetailPanel on click if modifier key held.
+      Used EVERYWHERE any entity is referenced in any module. Single component
+      powering all cross-module linking.
+    completed: false
+  - title: Create cascade delete protection
+    description: Create src/hooks/useCascadeCheck.ts — before deleting any entity,
+      check for dependent records across modules. Deleting a product? Check for
+      active orders, menu listings, PO items. Deleting a customer? Check for
+      open orders, outstanding balance. Show warning dialog with list of
+      dependencies. Prevent delete if critical dependencies exist. Option to
+      archive instead.
+    completed: false
+  - title: Create cross-module data refresh orchestrator
+    description: Create src/hooks/useRefreshOrchestrator.ts — when a critical action
+      happens (order created, payment received, stock adjusted), orchestrate
+      query invalidation across ALL affected modules in the correct order.
+      Prevents stale data anywhere. Central place to define which actions
+      invalidate which query keys. Replaces ad-hoc invalidation scattered across
+      modules.
+    completed: false
+  - title: Create tenant onboarding completion checker
+    description: Create src/hooks/useOnboardingStatus.ts — checks if tenant has
+      completed essential setup across all modules. Has products? Has delivery
+      zones? Has menu? Has payment method configured? Has compliance info? Show
+      progress on dashboard. Nudge to complete missing steps. Each check queries
+      respective module. Guides new tenants to full interconnectivity.
+    completed: false
+  - title: Create cross-module duplicate detection
+    description: Create src/hooks/useDuplicateDetection.ts — when creating any
+      entity, check for potential duplicates. New customer — check phone/email
+      exists. New product — check SKU/name similarity. New vendor — check
+      name/license match. Show merge suggestion if duplicate found. Prevents
+      data fragmentation. Connected to all creation forms.
+    completed: false
+  - title: Create universal audit trail viewer
+    description: Enhance activity_log viewer to show audit trail for any entity from
+      any module. On any detail page, show audit tab with full history — who
+      created, who edited what, status changes, related actions (payment on
+      order, delivery on order). Timeline format. Filter by action type. Export
+      audit trail. Universal across all modules.
+    completed: false
+  - title: Create system-wide data integrity check
+    description: Create Supabase Edge Function data-integrity-check — scheduled
+      function that verifies data consistency. Checks — order totals match sum
+      of items, inventory quantities match history, customer LTV matches order
+      totals, payment totals match order totals, delivery count matches assigned
+      orders. Report emailed to admin. Fix suggestions for discrepancies.
+    completed: false
+  - title: Create cross-module bulk action framework
+    description: Create src/hooks/useBulkAction.ts — generic bulk action framework
+      used by all data tables. Select items → choose action → confirm → execute
+      with progress → results summary. Actions trigger proper cross-module side
+      effects (bulk order confirm triggers bulk inventory decrement). Error
+      handling for partial failures. Undo support where possible.
+    completed: false
+  - title: Create universal entity timeline component
+    description: Create src/components/admin/shared/EntityTimeline.tsx — shows
+      complete timeline for any entity type. Aggregates data from activity_log,
+      order events, payment events, delivery events, communications, notes. Each
+      event rendered with icon, description, user, and timestamp. Clickable
+      references to related entities. Used on every detail page.
+    completed: false
+  - title: Create admin dashboard personalization
+    description: Each admin user can personalize their dashboard. Drag-drop widgets
+      from all modules. Resize widgets. Save layout per user. Quick-switch
+      between role-based presets (manager view, operations view, finance view).
+      Widgets from orders, inventory, deliveries, analytics, customers, payments
+      all available. Connects every module to the central dashboard.
+    completed: false
+  - title: Create cross-module report scheduler
+    description: Create src/pages/admin/ReportScheduler.tsx — schedule automated
+      reports from any module. Select report type (sales, inventory, delivery,
+      customer, financial). Set schedule (daily/weekly/monthly). Choose format
+      (PDF/CSV). Email recipients. Reports pull data from respective module
+      analytics. History of generated reports. Download past reports.
+    completed: false
+  - title: Create tenant migration between environments
+    description: Create src/lib/tenantMigration.ts — export entire tenant
+      configuration and data. Useful for migrating between staging and
+      production. Export includes settings, user roles, products, customers,
+      menus, templates, rules. Import to new environment. Validates data
+      integrity on import. Connected to all module data stores.
+    completed: false
+  - title: Create cross-module changelog
+    description: Create src/pages/admin/Changelog.tsx — show what changed across all
+      modules. New features enabled, settings changed, significant data changes.
+      Admin-generated changelog entries. Automatic entries for major events
+      (100th order, new record day). Helps team stay informed. Connects system
+      events to team communication.
+    completed: false
+  - title: Create entity relationship graph visualization
+    description: Create src/components/admin/shared/RelationshipGraph.tsx — visual
+      graph showing how an entity connects to others. For an order — shows
+      customer, products, delivery, payment, runner as connected nodes.
+      Interactive — click any node to navigate. Uses d3 force-directed graph or
+      similar. Available on any detail page. Ultimate visualization of
+      interconnectivity.
+    completed: false
+  - title: Create admin quick switch between modules
+    description: Create src/components/admin/shared/ModuleSwitcher.tsx — Cmd+J opens
+      module switcher. List all modules with keyboard navigation. Recent pages
+      in each module. Jump to any module page in 2 keystrokes. Shows badge
+      counts. Fuzzy search module names. Faster than sidebar navigation.
+      Connected to route system and permissions.
+    completed: false
+  - title: Create system-wide error tracking
+    description: Create src/lib/errorTracking.ts — capture and aggregate errors from
+      all modules. Error boundary catches in each module report to central
+      tracker. Group errors by module, frequency, and severity. Admin alert for
+      new error patterns. Error dashboard in settings. Helps identify
+      interconnection failures. Connected to module health checker.
+    completed: false
+  - title: Create cross-module data migration tools
+    description: Create src/pages/admin/DataTools.tsx — admin tools for data
+      management across modules. Merge duplicate records (customers, products).
+      Fix orphaned references. Recalculate derived fields (LTV, stock levels).
+      Repair broken interconnections. Audit and fix mode. Runs with progress
+      tracking. Admin-only access.
+    completed: false
+  - title: Create system startup self-test
+    description: Create src/hooks/useStartupCheck.ts — when admin panel loads, run
+      quick self-test. Verify Supabase connection, realtime working, auth valid,
+      tenant loaded, critical tables accessible. Show subtle loading indicator
+      during check. Red banner if any check fails. Helps proactively identify
+      issues before they affect operations. Tests core interconnections.
+    completed: false
+  - title: Create admin session activity tracking
+    description: Create src/hooks/useSessionTracking.ts — track admin user sessions.
+      Pages visited, actions taken, time spent per module, features used. Data
+      helps understand which modules and interconnections are most valuable.
+      Anonymized analytics for product improvement. Session replay capability
+      for debugging. Connected to user management.
+    completed: false
+  - title: Create interconnectivity test suite runner
+    description: Create src/pages/admin/SystemTests.tsx — admin-accessible test
+      suite that verifies all interconnections are working. One-click runs tests
+      for each module connection. Results displayed in real-time. Pass/fail with
+      details. History of test runs. Schedule automated test runs. The
+      definitive check that the entire interconnected system is healthy. Run
+      after deployments and updates.
+    completed: false

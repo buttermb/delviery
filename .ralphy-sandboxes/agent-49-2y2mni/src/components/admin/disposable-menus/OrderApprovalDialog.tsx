@@ -1,0 +1,382 @@
+import { logger } from '@/lib/logger';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  CheckCircle,
+  XCircle,
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  DollarSign,
+  AlertCircle,
+  Truck
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { cleanProductName } from '@/utils/productName';
+import { formatDistanceToNow } from 'date-fns';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { useFeatureFlags } from '@/config/featureFlags';
+
+interface OrderItem {
+  product_name?: string;
+  quantity?: number;
+  price_per_unit?: number;
+  [key: string]: unknown;
+}
+
+interface Order {
+  id: string;
+  status: string;
+  created_at: string;
+  contact_name?: string;
+  contact_phone?: string;
+  delivery_address?: string;
+  delivery_method?: string;
+  payment_method?: string;
+  customer_notes?: string | null;
+  order_items?: OrderItem[];
+  [key: string]: unknown;
+}
+
+interface OrderApprovalDialogProps {
+  order: Order;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApprovalDialogProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejectionForm, setShowRejectionForm] = useState(false);
+  const queryClient = useQueryClient();
+  const { shouldAutoApprove } = useFeatureFlags();
+
+  const orderItems = useMemo(() =>
+    Array.isArray(order.order_items) ? order.order_items : [],
+    [order.order_items]
+  );
+  const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) =>
+    sum + (item.quantity || 0), 0
+  );
+
+  const handleApprove = useCallback(async () => {
+    setIsProcessing(true);
+    try {
+      // Update order status
+      const { error: updateError } = await supabase
+        .from('menu_orders')
+        .update({
+          status: 'confirmed',
+          approved_at: new Date().toISOString()
+        })
+        .eq('id', order.id);
+
+      if (updateError) throw updateError;
+
+      // Create wholesale_order and deduct from inventory
+      const orderItemsData = orderItems.map((item: OrderItem) => ({
+        product_name: item.product_name,
+        quantity_lbs: item.quantity,
+        price_per_lb: item.price_per_unit
+      }));
+
+      const { data: wholesaleOrder, error: wholesaleError } = await supabase.functions.invoke('wholesale-order-create', {
+        body: {
+          client_data: {
+            business_name: order.contact_name || 'Menu Order Customer',
+            contact_name: order.contact_name,
+            contact_phone: order.contact_phone,
+            delivery_address: order.delivery_address || 'N/A'
+          },
+          order_items: orderItemsData,
+          delivery_method: order.delivery_method,
+          payment_method: order.payment_method,
+          notes: order.customer_notes || `Menu order #${order.id.slice(0, 8)}`
+        }
+      });
+
+      if (wholesaleError) throw wholesaleError;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (wholesaleOrder && typeof wholesaleOrder === 'object' && 'error' in wholesaleOrder && wholesaleOrder.error) {
+        const errorMessage = typeof wholesaleOrder.error === 'string' ? wholesaleOrder.error : 'Failed to create wholesale order';
+        throw new Error(errorMessage);
+      }
+
+      toast.success('Order approved and created in wholesale system');
+      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+      onOpenChange(false);
+    } catch (error: unknown) {
+      toast.error('Failed to approve order', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [order, orderItems, queryClient, onOpenChange]);
+
+  // Auto-approve when feature flag is active; runs once on dialog open
+  useEffect(() => {
+    if (open && shouldAutoApprove('ORDERS')) {
+      handleApprove()
+        .catch((e) => {
+          // Non-blocking; warn and keep dialog open
+          logger.warn('Auto-approve (menu order) failed', e instanceof Error ? e : new Error(String(e)), { component: 'OrderApprovalDialog' });
+        });
+    }
+  }, [open, shouldAutoApprove, handleApprove]);
+
+  const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('menu_orders')
+        .update({
+          status: 'rejected',
+          rejection_reason: rejectionReason,
+          rejected_at: new Date().toISOString()
+        })
+        .eq('id', order.id);
+
+      if (error) throw error;
+
+      toast.success('Order rejected');
+      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      onOpenChange(false);
+    } catch (error: unknown) {
+      toast.error('Failed to reject order', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Order #{order.id.slice(0, 8)}</DialogTitle>
+            <Badge variant={order.status === 'pending' ? 'default' : order.status === 'confirmed' ? 'outline' : 'destructive'}>
+              {order.status}
+            </Badge>
+          </div>
+          <DialogDescription>
+            Placed {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Customer Information */}
+          <div>
+            <h3 className="font-semibold mb-3">Customer Information</h3>
+            <div className="grid grid-cols-2 gap-4 bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className="font-medium">{order.contact_name || 'Anonymous'}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="font-medium">{order.contact_phone || 'N/A'}</p>
+                </div>
+              </div>
+              {order.delivery_address && (
+                <div className="col-span-2 flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Delivery Address</p>
+                    <p className="font-medium">{order.delivery_address}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Order Details */}
+          <div>
+            <h3 className="font-semibold mb-3">Order Details</h3>
+            <div className="space-y-3">
+              {orderItems.map((item: OrderItem, idx: number) => (
+                <div key={idx} className="flex justify-between items-center bg-muted/30 rounded-lg p-3">
+                  <div>
+                    <p className="font-medium">{cleanProductName(item.product_name || 'Product')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      ${item.price_per_unit}/lb × {item.quantity} lbs
+                    </p>
+                  </div>
+                  <p className="font-bold text-primary">
+                    ${((item.price_per_unit || 0) * (item.quantity || 0)).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal ({totalQuantity} lbs)</span>
+                <span>${order.total_amount?.toLocaleString() || '0'}</span>
+              </div>
+              {order.delivery_method === 'delivery' && (
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Delivery Fee</span>
+                  <span>$200</span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span className="text-primary">${order.total_amount?.toLocaleString() || '0'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Delivery & Payment Info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm font-medium">Delivery Method</p>
+              </div>
+              <p className="text-lg font-semibold">
+                {order.delivery_method === 'delivery' ? 'Delivery' : 'Pickup'}
+              </p>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm font-medium">Payment Method</p>
+              </div>
+              <p className="text-lg font-semibold">
+                {order.payment_method === 'cash' ? 'Cash' :
+                  order.payment_method === 'crypto' ? 'Crypto' : 'Credit'}
+              </p>
+            </div>
+          </div>
+
+          {/* Urgency */}
+          <div className="bg-muted/50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm font-medium">Urgency</p>
+            </div>
+            <p className="text-lg font-semibold">
+              {order.urgency === 'asap' ? 'ASAP (Today/Tomorrow)' :
+                order.urgency === 'this_week' ? 'This Week' :
+                  order.specific_date ? new Date(String(jsonToStringOrNumber(order.specific_date as any))).toLocaleDateString() : 'Not specified'}
+            </p>
+          </div>
+
+          {/* Notes */}
+          {order.notes && (
+            <div>
+              <Label className="mb-2 block">Customer Notes</Label>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm">{jsonToString(order.notes as any)}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Rejection Form */}
+          {showRejectionForm && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <Label htmlFor="rejection-reason" className="mb-2 block">
+                  Rejection Reason *
+                </Label>
+                <Textarea
+                  id="rejection-reason"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Explain why this order is being rejected..."
+                  rows={3}
+                />
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2">
+          {order.status === 'pending' && !showRejectionForm && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setShowRejectionForm(true)}
+                disabled={isProcessing}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Reject
+              </Button>
+              <Button
+                onClick={handleApprove}
+                disabled={isProcessing}
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Approve Order
+              </Button>
+            </>
+          )}
+
+          {showRejectionForm && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowRejectionForm(false);
+                  setRejectionReason('');
+                }}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={isProcessing || !rejectionReason.trim()}
+              >
+                Confirm Rejection
+              </Button>
+            </>
+          )}
+
+          {order.status !== 'pending' && (
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

@@ -1,0 +1,221 @@
+tasks:
+  - title: Build tenant onboarding wizard after first login
+    description: "After admin creates account and logs in first time, show a
+      step-by-step setup wizard. Step 1: Business name, slug, logo upload. Step
+      2: Add first products (bulk CSV import or manual). Step 3: Set delivery
+      zones and fees. Step 4: Invite first driver. Step 5: Preview storefront.
+      Progress bar at top. Skip button but warn what they'll miss. Mark
+      onboarding_completed in tenant settings."
+    completed: true
+  - title: Build empty state components for every major section
+    description: "Create reusable EmptyState component with icon, title,
+      description, action button. Implement for: no products yet, no orders yet,
+      no drivers yet, no deliveries yet, no customers yet, no menus yet, no
+      analytics data yet. Each empty state has contextual CTA like Add Your
+      First Product. Use throughout admin panel wherever data lists could be
+      empty."
+    completed: true
+  - title: Build contextual help tooltips and info popovers
+    description: "Add info icons next to complex fields throughout admin panel.
+      Hover/click shows explanation popover. Cover: tenant slug (what it does),
+      RLS (why data is isolated), delivery zones (how polygon matching works),
+      menu burn settings (what happens when triggered), credit system (how
+      credits are consumed). Use Radix UI Tooltip/Popover components."
+    completed: true
+  - title: Build admin quick-start checklist dashboard widget
+    description: "Dashboard widget showing setup completion. Checklist items:
+      profile complete, first product added, delivery zone set, first driver
+      approved, first order received, storefront customized, payment configured.
+      Each item links to relevant page. Progress percentage. Dismissable after
+      all complete."
+    completed: true
+  - title: Build session timeout and auto-logout
+    description: Track last activity timestamp. After 30 min inactivity, show
+      warning modal with 60 second countdown. If no action, logout and redirect
+      to login. Reset timer on any click/keypress/navigation. Show remaining
+      time in warning. Configurable timeout in tenant settings.
+  - title: Build role-based route guards for all admin pages
+    description: Create ProtectedRoute wrapper component. Check user role (owner,
+      admin, manager, staff) against required role for each route. Redirect to
+      unauthorized page if insufficient permissions. Owner sees everything.
+      Admin sees most. Manager sees operations. Staff sees assigned tasks only.
+      Define role hierarchy in constants file.
+  - title: Build audit log for critical actions
+    description: "Create audit_logs table (id, tenant_id, user_id, action,
+      entity_type, entity_id, old_values, new_values, ip_address, created_at).
+      Log: product price changes, order status changes, driver
+      approval/deactivation, settings changes, user role changes, delivery
+      reassignment. Admin page to view audit log with filters. RLS by
+      tenant_id."
+  - title: Build API rate limiting and abuse prevention
+    description: "Track storefront API calls per IP. Rate limit: 100 requests/min
+      for browsing, 10 orders/hour per phone number, 5 failed login attempts
+      then 15 min lockout. Show friendly rate limit message to customers. Log
+      suspicious activity. Admin notification for potential abuse."
+  - title: Build invite-only user management for tenant teams
+    description: Admin can invite team members by email. Invite creates pending
+      record with role assignment. Invitee gets link to set password and join
+      tenant. List pending invites with resend/revoke options. Team members page
+      showing all users with roles. Remove team member option.
+  - title: Build global error boundary with recovery options
+    description: "React ErrorBoundary wrapping app. Catches render errors, shows
+      friendly error page. Options: retry (re-render), go home, report bug. Log
+      error details to console and optional error tracking. Different error UIs
+      for: network error, auth error, not found, server error. Toast
+      notification for non-fatal errors."
+  - title: Build offline detection and graceful degradation
+    description: Detect network status changes. Show persistent banner when offline.
+      Queue failed mutations for retry when back online. Storefront shows cached
+      products when offline. Admin shows read-only mode when offline. Toast when
+      connection restored. Auto-retry queued operations.
+  - title: Build optimistic updates for common actions
+    description: "Implement optimistic UI updates for: add to cart, update quantity,
+      toggle product visibility, update order status, claim delivery. Show
+      immediate UI change, revert if server call fails with error toast. Use
+      TanStack Query optimistic update pattern with onMutate/onError/onSettled."
+  - title: Build form validation with inline errors across all forms
+    description: "Audit every form in admin panel and storefront. Add zod schemas
+      for validation. Show inline error messages below fields on blur and
+      submit. Highlight invalid fields with red border. Prevent submit until
+      valid. Cover: product forms, checkout form, settings forms, driver
+      registration, login forms. Reusable FormField component with error
+      display."
+  - title: Build retry logic for failed Supabase operations
+    description: "Create useRetryMutation hook. On network error or 5xx, retry up to
+      3 times with exponential backoff (1s, 2s, 4s). Show retrying toast. After
+      max retries, show permanent error with manual retry button. Apply to all
+      critical mutations: place order, update inventory, complete delivery."
+  - title: Build skeleton loading screens for every page
+    description: "Create skeleton components matching layout of: product grid, order
+      list, delivery dashboard, driver list, analytics charts, settings forms.
+      Pulse animation. Show immediately on page load before data arrives. Use
+      Suspense boundaries where possible. No more blank screens or spinner-only
+      states."
+  - title: Build image optimization and lazy loading pipeline
+    description: "Product images: resize on upload to thumbnail (150px), medium
+      (400px), large (800px). Serve appropriate size based on context (grid vs
+      detail). Lazy load images below fold with IntersectionObserver. Blur
+      placeholder while loading. WebP format with JPEG fallback. Max upload size
+      5MB with client-side compression."
+  - title: Build data prefetching for common navigation paths
+    description: Prefetch data on hover/focus of navigation links. Product list
+      prefetches on menu hover. Order details prefetch on order row hover. Use
+      TanStack Query prefetchQuery. Prefetch next page of paginated lists. Makes
+      navigation feel instant.
+  - title: Build virtual scrolling for large lists
+    description: "Implement react-window or similar for: product catalog (100+
+      items), order history, audit log, customer list, delivery history. Only
+      render visible rows plus buffer. Maintains scroll position. Search/filter
+      still works. Smooth scrolling on mobile."
+  - title: Build unified toast notification system
+    description: "Create global toast provider using sonner or similar. Toast types:
+      success (green), error (red), warning (yellow), info (blue), loading
+      (spinner). Auto-dismiss after 4 seconds except errors. Action button in
+      toast for undo operations. Queue multiple toasts. Position bottom-right on
+      desktop, top on mobile. Use throughout app replacing all alert() calls."
+  - title: Build real-time notification center for admin
+    description: "Bell icon in admin header with unread count badge. Dropdown
+      showing recent notifications: new order, driver went online, delivery
+      completed, low stock alert, new customer review, system alerts. Mark as
+      read on click. Link to relevant page. Powered by Supabase realtime
+      subscriptions. Notification preferences in settings."
+  - title: Build sound alerts for critical admin events
+    description: "Optional sound notifications for: new order (cash register ding),
+      delivery issue (alert tone), driver went offline during delivery
+      (warning). Toggle in admin settings. Use Web Audio API. Respect browser
+      permissions. Mute button in header. Different sounds for different
+      events."
+  - title: Build email notification templates
+    description: "HTML email templates for: order confirmation (to customer), new
+      order alert (to admin), delivery assigned (to driver), delivery complete
+      (to customer with proof photo), weekly summary (to admin). Template
+      components with tenant branding. Stub email sending function ready for
+      SendGrid/Resend integration."
+  - title: Build global command palette for admin panel
+    description: "Cmd+K opens command palette overlay. Search across: products,
+      orders, customers, drivers, settings pages. Quick actions: create product,
+      view recent orders, go to settings. Recent searches. Keyboard navigation
+      with arrow keys. Fuzzy matching. Results grouped by category."
+  - title: Build advanced order filtering and saved views
+    description: "Order list page: multi-select status filter, date range picker,
+      customer search, driver filter, amount range, sort options. Save filter
+      combinations as named views (e.g. Todays Pending, This Week Completed).
+      Quick filter tabs at top. URL params sync so filters are
+      shareable/bookmarkable."
+  - title: Build product search with autocomplete
+    description: Admin product search with debounced autocomplete dropdown. Shows
+      product name, SKU, category, stock level in results. Click to navigate to
+      product. Search across name, SKU, description, category. Highlight
+      matching text. Recent searches stored locally.
+  - title: Build bulk product import from CSV
+    description: Admin page to upload CSV file. Parse and preview data in table. Map
+      CSV columns to product fields. Validate data (required fields, number
+      formats, category matching). Show errors per row. Import valid rows, skip
+      invalid with error report. Template CSV download. Handle 500+ products
+      efficiently.
+  - title: Build bulk product actions (edit, delete, categorize)
+    description: "Checkbox selection on product list. Select all on page / select
+      all matching filter. Bulk actions dropdown: change category, update price
+      by percentage, toggle visibility, delete with confirmation. Progress bar
+      for large operations. Undo option for 10 seconds after bulk action."
+  - title: Build bulk order export and reporting
+    description: Export orders to CSV/Excel with all fields. Date range selector.
+      Filter by status before export. Include customer info, items, totals,
+      delivery details. Summary row with totals. Scheduled daily/weekly export
+      option (stub). Download as formatted Excel with headers.
+  - title: Build inventory conflict resolution for concurrent orders
+    description: "When two customers order last item simultaneously: use Supabase
+      RPC with row-level locking. First order succeeds, second gets friendly out
+      of stock message with similar product suggestions. Decrement stock
+      atomically. Prevent negative inventory. Admin alert when stock conflict
+      occurs."
+  - title: Build order cancellation and refund flow
+    description: Customer can cancel if status is confirmed (not yet preparing).
+      Admin can cancel at any stage with reason. Cancellation restores inventory
+      quantities. Refund record created. Customer gets cancellation
+      notification. Driver gets unassigned notification if was assigned. Order
+      marked cancelled with reason and timestamp.
+  - title: Build delivery handoff and reassignment logic
+    description: If driver goes offline during delivery, auto-flag for admin
+      attention after 5 min. Admin can reassign to another driver. New driver
+      sees full delivery details and current status. Original driver gets
+      notification of reassignment. Customer tracking seamlessly switches to new
+      driver. Audit log records reassignment.
+  - title: Build store hours enforcement and scheduled ordering
+    description: "Storefront checks tenant operating hours. If closed: show closed
+      banner with next open time, allow browsing but disable cart/checkout.
+      Scheduled orders: let customers place orders for future delivery windows
+      during open hours. Admin sets available time slots per day. Orders queue
+      and appear at scheduled time."
+  - title: Build product variant and sizing support
+    description: "Products can have variants: size (1g, 3.5g, 7g, 14g, 28g), type
+      variations. Variant selector on product detail page. Each variant has own
+      price and stock level. Cart shows selected variant. Inventory tracks per
+      variant. Admin manages variants in product edit form."
+  - title: Build address validation and delivery zone matching
+    description: Checkout address field with autocomplete (Google Places API stub).
+      Validate address is within tenant delivery zones (point-in-polygon check).
+      If outside zone, show friendly message with delivery area map. Suggest
+      nearest valid address. Save validated addresses for returning customers by
+      phone number.
+  - title: Build real-time admin dashboard with live counters
+    description: "Dashboard shows live updating numbers: orders today, revenue
+      today, active deliveries, drivers online, avg delivery time today. Numbers
+      animate when changing. Sparkline mini-charts showing trend. Compare to
+      yesterday/last week. Auto-refresh every 30 seconds via Supabase realtime."
+  - title: Build product performance analytics
+    description: "Per-product analytics page: units sold over time chart, revenue
+      generated, views-to-purchase conversion (if tracking views), average
+      rating, stock turnover rate. Top 10 products table with sorting. Slow
+      movers identification (low sales last 30 days). Category performance
+      breakdown."
+  - title: Build driver performance analytics
+    description: "Per-driver stats page: deliveries completed, average delivery
+      time, customer ratings, on-time percentage, earnings history, active hours
+      per day chart. Leaderboard across all drivers. Flag underperformers (low
+      rating or slow times). Compare driver metrics side by side."
+  - title: Build customer insights dashboard
+    description: "Customer analytics: new vs returning ratio, average order value
+      trend, order frequency distribution, top customers by spend, customer
+      lifetime value estimate, popular ordering times heatmap, most ordered
+      products per customer segment. Cohort analysis by first order month."

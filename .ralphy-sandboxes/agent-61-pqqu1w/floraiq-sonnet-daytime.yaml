@@ -1,0 +1,463 @@
+tasks:
+  - title: In src/main.tsx delete the hardcoded Aikido token string on line 14
+    parallel_group: 1
+    completed: true
+  - title: In src/constants/storageKeys.ts wrap the JSON.parse on line 168 in
+      try-catch returning null on error
+    parallel_group: 1
+    completed: true
+  - title: In src/contexts/CustomerAuthContext.tsx find all JSON.parse calls and
+      wrap each in try-catch
+    parallel_group: 1
+    completed: true
+  - title: In src/contexts/SuperAdminAuthContext.tsx find all JSON.parse calls and
+      wrap each in try-catch
+    parallel_group: 1
+    completed: true
+  - title: In src/contexts/TenantAdminAuthContext.tsx find all JSON.parse calls and
+      wrap each in try-catch
+    parallel_group: 1
+    completed: true
+  - title: In src/contexts/AuthContext.tsx add .catch to the Promise chain on line 95
+    parallel_group: 1
+    completed: true
+  - title: In src/contexts/AdminContext.tsx add .catch to the Promise chain on line 83
+    parallel_group: 1
+    completed: true
+  - title: In src/contexts/TenantContext.tsx add .catch to Promise chains on lines
+      90-93
+    parallel_group: 1
+    completed: true
+  - title: In src/components/CartDrawer.tsx add .catch to the Promise chain on line 31
+    parallel_group: 1
+    completed: true
+  - title: In src/config/featureFlags.ts add if statement checking NODE_ENV
+      production before AUTO_APPROVE
+    parallel_group: 1
+    completed: true
+  - title: In StorefrontBuilder.tsx line 31 change width calc to w-full
+    parallel_group: 2
+  - title: In StorefrontBuilder.tsx line 31 remove the -m-3 -m-4 -m-6 negative margins
+    parallel_group: 2
+  - title: In StorefrontSettingsLivePreview.tsx line 62 change max-w-320px to
+      max-w-375px
+    parallel_group: 2
+  - title: In StorefrontSettingsLivePreview.tsx line 64 change max-w-600px to
+      max-w-768px
+    parallel_group: 2
+  - title: In StorefrontDashboard.tsx line 573 add sm:grid-cols-2 between
+      grid-cols-1 and md:grid-cols-4
+    parallel_group: 2
+  - title: In StorefrontDashboard.tsx line 675 add sm:grid-cols-2 between
+      grid-cols-1 and lg:grid-cols-3
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 568 change w-24 to w-full sm:w-24
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 843 change w-32 to w-full sm:w-32
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 856 change w-24 to w-full sm:w-24
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 870 change w-24 to w-full sm:w-24
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 960 change w-28 to w-full sm:w-28
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 971 change w-28 to w-full sm:w-28
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 1238 change w-28 to w-full sm:w-28
+    parallel_group: 2
+  - title: In BuilderPreview.tsx line 36 change width 375px to width 100% maxWidth
+      375px
+    parallel_group: 2
+  - title: In BuilderPreview.tsx line 37 change width 768px to width 100% maxWidth
+      768px
+    parallel_group: 2
+  - title: In BuilderPreview.tsx line 38 change width 1200px to width 100% maxWidth
+      1200px
+    parallel_group: 2
+  - title: In BuilderPreview.tsx line 48 change minHeight 800px to calc 100vh - 200px
+    parallel_group: 2
+  - title: In StorefrontSettings.tsx line 444 change 320px to 400px in grid-cols
+    parallel_group: 2
+  - title: In src/index.css line 47 remove the important flag
+    parallel_group: 2
+  - title: In src/index.css line 90 remove the important flag
+    parallel_group: 2
+  - title: In src/index.css line 96 remove the important flag
+    parallel_group: 3
+  - title: In src/index.css lines 261-263 remove the important flags
+    parallel_group: 3
+  - title: In src/index.css line 109 remove or comment out the global max-width 100%
+      rule
+    parallel_group: 3
+  - title: In StorefrontSettings.tsx lines 833-884 change flex items-center to flex
+      flex-col sm:flex-row
+    parallel_group: 3
+  - title: Add transition-colors class to body element in src/index.css for theme
+      transitions
+    parallel_group: 3
+  - title: In AdaptiveSidebar.tsx add dark:bg-gray-900 dark:text-white classes to
+      main container
+    parallel_group: 3
+  - title: In all Card components add dark:bg-gray-800 dark:border-gray-700 classes
+    parallel_group: 3
+  - title: In all Table components add dark:bg-gray-800 dark:text-gray-100 classes
+    parallel_group: 3
+  - title: In all Input components add dark:bg-gray-700 dark:border-gray-600
+      dark:text-white classes
+    parallel_group: 3
+  - title: In all Button components verify dark mode classes exist for visibility
+    parallel_group: 3
+  - title: Remove ts-nocheck from src/hooks/crm/useInvites.ts and add any missing
+      type annotations
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/utils/featureAvailability.ts and add type
+      annotations
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/pages/vendor/VendorOrderDetailPage.tsx and fix
+      types
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/pages/vendor/VendorLoginPage.tsx and fix types
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/pages/vendor/VendorDashboardPage.tsx and fix
+      types
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/lib/api/marketplace.ts and fix types
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/lib/workflowEngine.ts and add type annotations
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/pages/UserAccount.tsx and fix types
+    parallel_group: 4
+  - title: Remove ts-nocheck from src/utils/productionLogger.ts and fix types
+    parallel_group: 4
+  - title: In tsconfig.json set noImplicitAny to true
+    parallel_group: 4
+  - title: In SuperAdminLayout.tsx line 74 remove ts-ignore and add proper type
+      assertion
+    parallel_group: 5
+  - title: In SuperAdminLayout.tsx line 146 remove ts-ignore and add proper type
+      assertion
+    parallel_group: 5
+  - title: In bi-engine.ts line 86 remove ts-ignore and add explicit type annotation
+    parallel_group: 5
+  - title: In bi-engine.ts line 126 remove ts-ignore and add explicit type annotation
+    parallel_group: 5
+  - title: In useAttentionQueue.ts line 100 remove ts-ignore and fix the type
+    parallel_group: 5
+  - title: In useAttentionQueue.ts line 225 remove ts-ignore and fix the type
+    parallel_group: 5
+  - title: In auditLog.ts line 31 remove ts-ignore and fix schema type
+    parallel_group: 5
+  - title: In auditLog.ts line 47 remove ts-ignore and fix schema type
+    parallel_group: 5
+  - title: In eslint.config.js line 23 change no-unused-vars from off to error
+    parallel_group: 6
+  - title: In eslint.config.js line 25 change no-explicit-any from warn to error
+    parallel_group: 6
+  - title: In eslint.config.js line 26 change ban-ts-comment from warn to error
+    parallel_group: 6
+  - title: Run npx eslint --fix src to auto-fix all fixable issues
+    parallel_group: 6
+  - title: Run grep -r console.log src and remove all console.log statements found
+    parallel_group: 6
+  - title: In ThemeContext.tsx change default useState value from system to light
+    parallel_group: 7
+  - title: In ThemeContext.tsx add localStorage.setItem when theme changes
+    parallel_group: 7
+  - title: In ThemeContext.tsx add localStorage.getItem on initial load
+    parallel_group: 7
+  - title: In AdminLayout.tsx import ThemeToggle component at the top
+    parallel_group: 7
+  - title: In AdminLayout.tsx add ThemeToggle component next to the notification
+      bell in header
+    parallel_group: 7
+  - title: In AdminLayout.tsx line 96 remove the ForceLightMode wrapper if it exists
+    parallel_group: 7
+  - title: In MobileBottomNav.tsx add a theme toggle button icon
+    parallel_group: 7
+  - title: In LoginPage.tsx add Eye and EyeOff import from lucide-react
+    parallel_group: 7
+  - title: In LoginPage.tsx add showPassword state and toggle button for password
+      field
+    parallel_group: 7
+  - title: In SignupPage.tsx add showPassword state and toggle button for password
+      field
+    parallel_group: 7
+  - title: In LoginPage.tsx add a remember me Checkbox component
+    parallel_group: 7
+  - title: In all auth pages add disabled and loading state to submit buttons
+    parallel_group: 7
+  - title: In all auth pages add autocomplete attribute to email and password inputs
+    parallel_group: 7
+  - title: In ForgotPasswordPage.tsx add rate limit countdown state and display
+    parallel_group: 7
+  - title: In PasswordResetPage.tsx add password strength indicator div with colors
+    parallel_group: 7
+  - title: In sidebar-navigation.ts add Dashboard item to Command Center section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Hotbox item to Command Center section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Live Orders item to Command Center section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add POS item to Command Center section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Live Map item to Command Center section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add All Orders and B2B Orders to Orders section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Stock Levels and Alerts to Inventory section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Transfers and Barcodes to Inventory section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add CRM and Invoices to Customers section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Support and Loyalty to Customers section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Revenue and Expenses to Finance section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Payouts to Finance section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Fleet and Couriers to Fulfillment section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Tracking to Fulfillment section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Drivers item under Fulfillment section
+    parallel_group: 8
+  - title: In sidebar-navigation.ts add Reviews and Coupons to Marketing section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Live Chat to Marketing section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Reports and Advanced to Analytics section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Export to Analytics section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Team and Roles to Operations section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Vendors and Purchase Orders to Operations
+      section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Locations and Activity Logs to Operations
+      section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Webhooks to Integrations section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Local AI to Integrations section
+    parallel_group: 9
+  - title: In sidebar-navigation.ts add Help Center and Priority Support to Settings
+      section
+    parallel_group: 9
+  - title: In App.tsx add lazy import for TeamManagement page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for FrontedInventory page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for CustomerInvoices page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for RunnerLocationTracking page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for LiveMap page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for PointOfSale page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for LocationsManagement page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for AdminLiveChat page
+    parallel_group: 10
+  - title: In App.tsx add lazy import for AdminNotifications page
+    parallel_group: 10
+  - title: In App.tsx add Route for team-management path
+    parallel_group: 10
+  - title: In App.tsx add Route for fronted-inventory path
+    parallel_group: 10
+  - title: In App.tsx add Route for customer-invoices path
+    parallel_group: 10
+  - title: In App.tsx add Route for live-map path
+    parallel_group: 10
+  - title: In App.tsx add Route for pos-system path
+    parallel_group: 10
+  - title: In App.tsx add Route for locations path
+    parallel_group: 10
+  - title: In OrdersHubPage.tsx line 93 add onClick handler that calls export function
+    parallel_group: 11
+  - title: In OrdersHubPage.tsx add papaparse import at the top of file
+    parallel_group: 11
+  - title: In OrdersHubPage.tsx create exportToCSV function using papaparse
+    parallel_group: 11
+  - title: In SmartDashboard.tsx line 284 add useMutation for status update
+    parallel_group: 11
+  - title: In AdvancedProductFilters.tsx replace prompt with Dialog component import
+    parallel_group: 11
+  - title: In AdvancedProductFilters.tsx add Dialog state and replace prompt call
+    parallel_group: 11
+  - title: In StorefrontSettings.tsx add Skeleton import from shadcn
+    parallel_group: 11
+  - title: In StorefrontSettings.tsx add isLoading check that shows Skeleton
+    parallel_group: 11
+  - title: In StorefrontSettings.tsx add toast.success call in save mutation onSuccess
+    parallel_group: 11
+  - title: In StorefrontSettings.tsx add toast.error call in save mutation onError
+    parallel_group: 11
+  - title: In AdaptiveSidebar.tsx wrap navItems in useMemo hook
+    parallel_group: 11
+  - title: In SidebarMenuItem.tsx add Tooltip wrapper when sidebar is collapsed
+    parallel_group: 11
+  - title: In SidebarMenuItem.tsx add scroll-into-view when item becomes active
+    parallel_group: 11
+  - title: In sidebar.tsx add framer-motion import for animations
+    parallel_group: 11
+  - title: In sidebar.tsx wrap collapsible content in motion.div with height animation
+    parallel_group: 11
+  - title: Create src/components/ErrorBoundary.tsx with basic error boundary component
+    parallel_group: 12
+  - title: In src/main.tsx wrap App component with ErrorBoundary
+    parallel_group: 12
+  - title: In OrdersHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In InventoryHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In CustomerHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In FinanceHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In FulfillmentHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In AnalyticsHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In OperationsHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In StorefrontHubPage.tsx wrap content with ErrorBoundary
+    parallel_group: 12
+  - title: In OrdersHubPage.tsx add Skeleton component for loading state
+    parallel_group: 13
+  - title: In InventoryHubPage.tsx add Skeleton component for loading state
+    parallel_group: 13
+  - title: In CustomerHubPage.tsx add Skeleton component for loading state
+    parallel_group: 13
+  - title: In FinanceHubPage.tsx add Skeleton component for loading state
+    parallel_group: 13
+  - title: In FulfillmentHubPage.tsx add Skeleton component for loading state
+    parallel_group: 13
+  - title: In AnalyticsHubPage.tsx add Skeleton component for loading state
+    parallel_group: 13
+  - title: In TenantAdminDashboardPage.tsx add Skeleton for KPI cards loading
+    parallel_group: 13
+  - title: In HotboxPage.tsx add Skeleton for order cards loading
+    parallel_group: 13
+  - title: In LiveOrders.tsx add Skeleton for orders loading
+    parallel_group: 13
+  - title: In AdaptiveSidebar.tsx add Skeleton while navigation config loads
+    parallel_group: 13
+  - title: In TenantAdminDashboardPage.tsx add loading state to all action buttons
+    parallel_group: 14
+  - title: In HotboxPage.tsx add loading state to status update buttons
+    parallel_group: 14
+  - title: In LiveOrders.tsx add loading state to action buttons
+    parallel_group: 14
+  - title: In POSHubPage.tsx add loading state to checkout button
+    parallel_group: 14
+  - title: In InventoryHubPage.tsx add loading state to save buttons
+    parallel_group: 14
+  - title: In CustomerHubPage.tsx add loading state to action buttons
+    parallel_group: 14
+  - title: In FinanceHubPage.tsx add loading state to export buttons
+    parallel_group: 14
+  - title: In StorefrontSettings.tsx add loading state to save button
+    parallel_group: 14
+  - title: In all Dialog components add loading state to confirm buttons
+    parallel_group: 14
+  - title: In all Form components add disabled state when isSubmitting is true
+    parallel_group: 14
+  - title: Add Loader2 icon import from lucide-react to files with loading buttons
+    parallel_group: 14
+  - title: Add animate-spin class to Loader2 icons in loading buttons
+    parallel_group: 14
+  - title: In delete confirmation dialogs add loading state during deletion
+    parallel_group: 14
+  - title: In bulk action buttons add loading state during processing
+    parallel_group: 14
+  - title: Add double-click prevention by disabling button on first click
+    parallel_group: 14
+  - title: In StorefrontSettings.tsx add useEffect for Ctrl+S keyboard shortcut to
+      save
+    parallel_group: 15
+  - title: In OrdersHubPage.tsx add useEffect for Ctrl+E keyboard shortcut to export
+    parallel_group: 15
+  - title: In AdminLayout.tsx add useEffect for Ctrl+K to open command palette
+    parallel_group: 15
+  - title: Create src/components/KeyboardShortcutsModal.tsx with list of shortcuts
+    parallel_group: 15
+  - title: In AdminLayout.tsx add useEffect for question mark key to open shortcuts
+      modal
+    parallel_group: 15
+  - title: In POSHubPage.tsx add keyboard shortcuts for common POS actions
+    parallel_group: 15
+  - title: In HotboxPage.tsx add keyboard shortcuts for status updates
+    parallel_group: 15
+  - title: Add event.preventDefault to all keyboard shortcut handlers
+    parallel_group: 15
+  - title: Add aria-keyshortcuts attribute to buttons with shortcuts
+    parallel_group: 15
+  - title: In KeyboardShortcutsModal list Ctrl+S Ctrl+E Ctrl+K and question mark
+      shortcuts
+    parallel_group: 15
+  - title: In TenantAdminDashboardPage.tsx add useEffect setting document.title to
+      Dashboard
+    parallel_group: 16
+  - title: In OrdersHubPage.tsx add useEffect setting document.title to Orders
+    parallel_group: 16
+  - title: In InventoryHubPage.tsx add useEffect setting document.title to Inventory
+    parallel_group: 16
+  - title: In CustomerHubPage.tsx add useEffect setting document.title to Customers
+    parallel_group: 16
+  - title: In FinanceHubPage.tsx add useEffect setting document.title to Finance
+    parallel_group: 16
+  - title: In StorefrontHubPage.tsx add useEffect setting document.title to Storefront
+    parallel_group: 16
+  - title: In SettingsHubPage.tsx add useEffect setting document.title to Settings
+    parallel_group: 16
+  - title: In HotboxPage.tsx add useEffect setting document.title to Hotbox
+    parallel_group: 16
+  - title: In POSHubPage.tsx add useEffect setting document.title to Point of Sale
+    parallel_group: 16
+  - title: In all auth pages add useEffect setting appropriate document.title
+    parallel_group: 16
+  - title: In SignupPage.tsx add email format validation with regex
+    parallel_group: 17
+  - title: In SignupPage.tsx add real-time email validation feedback
+    parallel_group: 17
+  - title: In PasswordResetPage.tsx add password min length 8 validation
+    parallel_group: 17
+  - title: In PasswordResetPage.tsx add password uppercase letter validation
+    parallel_group: 17
+  - title: In PasswordResetPage.tsx add password number validation
+    parallel_group: 17
+  - title: In PasswordResetPage.tsx add password special character validation
+    parallel_group: 17
+  - title: In all form inputs add required attribute where needed
+    parallel_group: 17
+  - title: In all email inputs add type email attribute
+    parallel_group: 17
+  - title: In all phone inputs add type tel attribute
+    parallel_group: 17
+  - title: In all number inputs add type number and min max attributes
+    parallel_group: 17
+  - title: Run find src -name "*.tsx" -exec grep -l "console.log" and remove all
+      console.log
+    parallel_group: 18
+  - title: Run find src -name "*.ts" -exec grep -l "console.log" and remove all
+      console.log
+    parallel_group: 18
+  - title: Remove any unused imports flagged by TypeScript
+    parallel_group: 18
+  - title: Add missing React imports where JSX is used
+    parallel_group: 18
+  - title: Fix any missing key props in array map renders
+    parallel_group: 18
+  - title: Add alt text to all img tags that are missing it
+    parallel_group: 18
+  - title: Add aria-label to all icon-only buttons
+    parallel_group: 18
+  - title: Run npm run build and note any remaining errors
+    parallel_group: 18
+  - title: Run npm run lint and note any remaining warnings
+    parallel_group: 18
+  - title: Fix any TypeScript errors shown by npm run build
+    parallel_group: 18

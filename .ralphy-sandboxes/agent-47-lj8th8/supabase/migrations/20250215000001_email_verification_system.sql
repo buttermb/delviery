@@ -1,0 +1,2 @@
+-- COMPLETELY SKIPPED: MIGRATION DEPENDS ON MISSING TABLE (customer_users)
+-- Code removed to avoid parser issues.

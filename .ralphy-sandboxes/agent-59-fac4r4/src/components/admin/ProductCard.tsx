@@ -1,0 +1,276 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Copy,
+  Edit,
+  Trash2,
+  Package,
+  TrendingUp,
+} from "lucide-react";
+import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Printer, Store } from "lucide-react";
+import { useProductThumbnail } from "@/hooks/useOptimizedImage";
+import LongPressMenu from "@/components/mobile/LongPressMenu";
+
+interface Product {
+  id: string;
+  name: string;
+  category?: string;
+  price?: number;
+  stock_quantity?: number;
+  available_quantity?: number;
+  in_stock?: boolean;
+  image_url?: string;
+  sku?: string;
+  low_stock_alert?: number;
+  strain_name?: string;
+  cost_per_unit?: number;
+  wholesale_price?: number;
+}
+
+interface ProductCardProps {
+  product: Product;
+  onEdit?: (productId: string) => void;
+  onDelete?: (productId: string) => void;
+  onAddToMenu?: (productId: string) => void;
+  onPrintLabel?: () => void;
+  onPublish?: (productId: string) => void;
+  onDuplicate?: (productId: string) => void;
+}
+
+export function ProductCard({
+  product,
+  onEdit,
+  onDelete,
+  onAddToMenu,
+  onPrintLabel,
+  onPublish,
+  onDuplicate,
+}: ProductCardProps) {
+  const availableQty = Number(product.available_quantity || 0);
+  const isInStock = availableQty > 0;
+  const reorderPoint = typeof product.low_stock_alert === 'number' ? product.low_stock_alert : 10;
+  const stockQuantity = availableQty;
+
+  // Optimized image for mobile performance
+  const { src: optimizedImageSrc, srcSet } = useProductThumbnail(product.image_url);
+
+  const profitMargin = (cost: number, price: number) => {
+    if (!cost || !price) return 0;
+    return (((price - cost) / price) * 100).toFixed(1);
+  };
+
+  const costPerUnit = Number(product.cost_per_unit || 0);
+  const wholesalePrice = Number(product.wholesale_price || 0);
+  const margin = profitMargin(costPerUnit, wholesalePrice);
+
+  // Build long-press menu items for mobile
+  const longPressItems = [
+    ...(onEdit ? [{ label: 'Edit', icon: <Edit className="h-4 w-4" />, onSelect: () => onEdit(product.id) }] : []),
+    ...(onDuplicate ? [{ label: 'Duplicate', icon: <Copy className="h-4 w-4" />, onSelect: () => onDuplicate(product.id) }] : []),
+    ...(onAddToMenu ? [{ label: 'Add to Menu', icon: <Package className="h-4 w-4" />, onSelect: () => onAddToMenu(product.id) }] : []),
+    ...(onPrintLabel && product.sku ? [{ label: 'Print Label', icon: <Printer className="h-4 w-4" />, onSelect: onPrintLabel }] : []),
+    ...(onPublish ? [{ label: 'Publish to Store', icon: <Store className="h-4 w-4" />, onSelect: () => onPublish(product.id) }] : []),
+    ...(onDelete ? [{ label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onSelect: () => onDelete(product.id), destructive: true }] : []),
+  ];
+
+  const cardContent = (
+    <Card
+      className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] hover:shadow-lg transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--tenant-primary))]/30"
+    >
+      {/* Product Image */}
+      {product.image_url ? (
+        <div className="relative aspect-square overflow-hidden bg-[hsl(var(--tenant-surface))]">
+          <img
+            src={optimizedImageSrc || product.image_url}
+            srcSet={srcSet}
+            alt={product.name}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+          {product.category && (
+            <Badge className="absolute top-3 right-3 bg-[hsl(var(--tenant-bg))]/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm">
+              {product.category}
+            </Badge>
+          )}
+          {!isInStock && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+              <Badge variant="destructive">
+                Out of Stock
+              </Badge>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="relative aspect-square bg-gradient-to-br from-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-surface))]/50 flex items-center justify-center">
+          <Package className="h-16 w-16 text-[hsl(var(--tenant-text-light))]" />
+          {!isInStock && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+              <Badge variant="destructive">
+                Out of Stock
+              </Badge>
+            </div>
+          )}
+        </div>
+      )}
+
+      <CardContent className="p-5">
+        {/* Header with Actions */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-lg text-[hsl(var(--tenant-text))] group-hover:text-[hsl(var(--tenant-primary))] transition-colors mb-1">
+              {String(product.name || '')}
+            </h3>
+            {product.strain_name && (
+              <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
+                {String(product.strain_name)}
+              </p>
+            )}
+            {product.sku && (
+              <code className="text-xs text-[hsl(var(--tenant-text-light))] bg-[hsl(var(--tenant-surface))] px-2 py-1 rounded">
+                {String(product.sku)}
+              </code>
+            )}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-[hsl(var(--tenant-text-light))] hover:text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onEdit && (
+                <DropdownMenuItem onClick={() => onEdit(product.id)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+              )}
+              {onDuplicate && (
+                <DropdownMenuItem onClick={() => onDuplicate(product.id)}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicate
+                </DropdownMenuItem>
+              )}
+              {onAddToMenu && (
+                <DropdownMenuItem onClick={() => onAddToMenu(product.id)}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Add to Menu
+                </DropdownMenuItem>
+              )}
+              {onPrintLabel && product.sku && (
+                <DropdownMenuItem onClick={onPrintLabel}>
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Label
+                </DropdownMenuItem>
+              )}
+              {onPublish && (
+                <DropdownMenuItem onClick={() => onPublish(product.id)}>
+                  <Store className="h-4 w-4 mr-2" />
+                  Publish to Store
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <DropdownMenuItem
+                  onClick={() => onDelete(product.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Pricing */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[hsl(var(--tenant-text-light))]">Wholesale Price</span>
+            <span className="text-lg font-bold text-[hsl(var(--tenant-primary))]">
+              {formatCurrency(wholesalePrice)}
+            </span>
+          </div>
+          {costPerUnit > 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[hsl(var(--tenant-text-light))]">Cost</span>
+              <span className="text-[hsl(var(--tenant-text-light))]">
+                {formatCurrency(costPerUnit)}
+              </span>
+            </div>
+          )}
+          {margin && Number(margin) > 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[hsl(var(--tenant-text-light))]">Margin</span>
+              <span className="text-success font-semibold flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                {margin}%
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Stock Status */}
+        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
+            <span className="text-sm font-medium text-[hsl(var(--tenant-text))]">
+              Stock: {String(stockQuantity)} units
+            </span>
+          </div>
+          <InventoryStatusBadge
+            quantity={stockQuantity}
+            lowStockThreshold={reorderPoint}
+          />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(product.id)}
+              className="flex-1 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
+          {onAddToMenu && (
+            <Button
+              size="sm"
+              onClick={() => onAddToMenu(product.id)}
+              className="flex-1 bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Menu
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Wrap with LongPressMenu for mobile context actions
+  if (longPressItems.length > 0) {
+    return (
+      <LongPressMenu items={longPressItems}>
+        {cardContent}
+      </LongPressMenu>
+    );
+  }
+
+  return cardContent;
+}

@@ -1,0 +1,120 @@
+tasks:
+  - title: Add Dashboard Skeleton Loaders
+    description: |
+      Add skeleton loading states to the admin dashboard while data fetches.
+      - Replace spinner with skeleton cards matching final layout
+      - Use shadcn Skeleton component
+      - Apply to all dashboard metric cards and charts
+      Files: src/pages/admin/Dashboard.tsx and related components
+    completed: true
+  - title: Improve Table Empty States
+    description: |
+      Add helpful empty states to all admin data tables.
+      - Create EmptyState component with icon, message, and action
+      - Add to products, orders, customers, inventory tables
+      - Include "Add First Item" CTA button
+      Files: src/pages/admin/*.tsx table components
+    completed: true
+  - title: Add Bulk Actions to Product Table
+    description: |
+      Implement bulk selection and actions for products.
+      - Add checkbox column for multi-select
+      - Add bulk action bar (Archive, Delete, Update Status)
+      - Show selected count
+      - Confirm dialog for destructive actions
+      Files: src/pages/admin/Products.tsx
+  - title: Improve Form Validation Feedback
+    description: |
+      Enhance form validation across admin forms.
+      - Add inline validation messages
+      - Highlight invalid fields with red border
+      - Show success checkmarks for valid fields
+      - Use react-hook-form with zod validation
+      Files: src/pages/admin/forms/*.tsx
+  - title: Add Keyboard Shortcuts
+    description: |
+      Implement keyboard shortcuts for power users.
+      - Ctrl+N: New item (context-aware)
+      - Ctrl+S: Save current form
+      - Escape: Close modal/cancel
+      - Arrow keys: Navigate tables
+      Create useKeyboardShortcuts hook
+      Files: src/hooks/useKeyboardShortcuts.ts
+  - title: Optimize Query Deduplication
+    description: |
+      Review and optimize TanStack Query usage.
+      - Ensure proper staleTime and cacheTime
+      - Add query deduplication for repeated calls
+      - Implement optimistic updates for mutations
+      - Use queryKeys factory consistently
+      Files: src/hooks/useAdmin*.ts
+  - title: Add Virtual Scrolling to Large Tables
+    description: |
+      Implement virtual scrolling for tables with many rows.
+      - Use @tanstack/react-virtual
+      - Apply to orders, products, customers lists
+      - Maintain current pagination as fallback
+      Files: src/components/admin/DataTable.tsx
+  - title: Lazy Load Admin Modules
+    description: |
+      Implement code splitting for admin routes.
+      - Use React.lazy for admin page components
+      - Add Suspense boundaries with loading states
+      - Split heavy components (charts, editors)
+      Files: src/routes/admin.tsx
+  - title: Add Data Export Functionality
+    description: |
+      Allow exporting admin data to CSV/Excel.
+      - Add Export button to all data tables
+      - Support CSV and Excel formats
+      - Include current filters in export
+      - Show progress for large exports
+      Files: src/components/admin/ExportButton.tsx
+  - title: Implement Undo/Redo for Forms
+    description: |
+      Add undo/redo functionality for complex forms.
+      - Track form state history
+      - Add Undo/Redo buttons
+      - Keyboard shortcuts Ctrl+Z/Ctrl+Y
+      - Limit history to 10 states
+      Files: src/hooks/useFormHistory.ts
+  - title: Add Error Boundaries per Section
+    description: |
+      Implement granular error boundaries.
+      - Wrap each admin section in ErrorBoundary
+      - Show section-specific error UI
+      - Add "Try Again" recovery action
+      - Log errors to monitoring service
+      Files: src/components/admin/ErrorBoundary.tsx
+  - title: Improve Offline Handling
+    description: |
+      Add offline detection and queuing.
+      - Detect network status changes
+      - Queue mutations when offline
+      - Show offline indicator banner
+      - Sync when connection restored
+      Files: src/hooks/useOfflineQueue.ts
+  - title: Add ARIA Labels to Interactive Elements
+    description: |
+      Audit and add missing ARIA attributes.
+      - Add aria-label to icon buttons
+      - Add aria-describedby to form fields
+      - Ensure proper heading hierarchy
+      - Add skip navigation link
+      Files: src/pages/admin/**/*.tsx
+  - title: Improve Focus Management
+    description: |
+      Enhance keyboard navigation.
+      - Trap focus in modals
+      - Return focus after modal close
+      - Add visible focus indicators
+      - Ensure logical tab order
+      Files: src/components/admin/Modal.tsx
+  - title: Add Admin Action Logging
+    description: |
+      Log important admin actions for audit trail.
+      - Create activity log table
+      - Log CRUD operations with user/timestamp
+      - Add Activity Log page in admin
+      - Support filtering by action type
+      Files: src/pages/admin/ActivityLog.tsx

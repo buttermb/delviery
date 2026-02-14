@@ -1,0 +1,1246 @@
+tasks:
+  - title: Add placeholderData keepPreviousData to default query options in
+      src/lib/react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Increase staleTime from 5 min to 10 min for admin panel queries in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Create ADMIN_PANEL_QUERY_CONFIG preset with optimized cache settings in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Add refetchIntervalInBackground false to all query configs in
+      react-query-config.ts
+    parallel_group: 1
+    completed: true
+  - title: Create STATIC_QUERY_CONFIG with staleTime Infinity for settings and
+      static data
+    parallel_group: 1
+    completed: true
+  - title: Add networkMode offlineFirst to support offline-first behavior
+    parallel_group: 1
+    completed: true
+  - title: Remove deliveries from DEFAULT_TABLES in useRealtimeSync.ts to reduce
+      subscriptions
+    parallel_group: 2
+    completed: true
+  - title: Remove customers from DEFAULT_TABLES in useRealtimeSync.ts
+    parallel_group: 2
+    completed: true
+  - title: Remove payments from DEFAULT_TABLES in useRealtimeSync.ts
+    parallel_group: 2
+    completed: true
+  - title: Remove invoices from DEFAULT_TABLES in useRealtimeSync.ts
+    parallel_group: 2
+    completed: true
+  - title: Remove inventory_transfers from DEFAULT_TABLES in useRealtimeSync.ts
+    parallel_group: 2
+    completed: true
+  - title: Keep only orders wholesale_orders products menu_orders in DEFAULT_TABLES
+    parallel_group: 2
+    completed: true
+  - title: Add visibility API check to pause subscriptions when tab hidden in
+      useRealtimeSync.ts
+    parallel_group: 3
+    completed: true
+  - title: Create useOrdersRealtime hook for Orders pages only in
+      src/hooks/useOrdersRealtime.ts
+    parallel_group: 3
+    completed: true
+  - title: Create useInventoryRealtime hook for Inventory pages only in
+      src/hooks/useInventoryRealtime.ts
+    parallel_group: 3
+    completed: true
+  - title: Add authInitializedRef useRef false to prevent re-init in
+      TenantAdminAuthContext.tsx
+    parallel_group: 3
+    completed: true
+  - title: Check authInitializedRef.current at start of init effect in
+      TenantAdminAuthContext.tsx
+    parallel_group: 3
+    completed: true
+  - title: Set authInitializedRef.current true after successful auth in
+      TenantAdminAuthContext.tsx
+    parallel_group: 3
+    completed: true
+  - title: Remove location from effect dependencies in TenantAdminAuthContext.tsx
+    parallel_group: 4
+    completed: true
+  - title: Cache tenant data in sessionStorage for instant restore in
+      TenantAdminAuthContext.tsx
+    parallel_group: 4
+    completed: true
+  - title: Skip token validation if validated less than 5 minutes ago in
+      TenantAdminAuthContext.tsx
+    parallel_group: 4
+    completed: true
+  - title: Memoize context value with useMemo in TenantAdminAuthContext.tsx
+    parallel_group: 4
+    completed: true
+  - title: Add 150ms debounced prefetch on sidebar link hover in OptimizedSidebar.tsx
+    parallel_group: 4
+    completed: true
+  - title: Implement View Transitions API for smooth route changes in
+      OptimizedSidebar.tsx
+    parallel_group: 4
+    completed: true
+  - title: Create fallback for browsers without View Transitions support
+    parallel_group: 5
+    completed: true
+  - title: Create useScrollRestoration hook to preserve scroll position in
+      src/hooks/useScrollRestoration.ts
+    parallel_group: 5
+    completed: true
+  - title: Apply useScrollRestoration to AdminLayout.tsx for all admin routes
+    parallel_group: 5
+    completed: true
+  - title: Wrap Outlet in Suspense with skeleton fallback in AdminLayout.tsx
+    parallel_group: 5
+    completed: true
+  - title: Add error boundary around route content in AdminLayout.tsx
+    parallel_group: 5
+    completed: true
+  - title: Create usePrefetchOrders hook for orders hub prefetching
+    parallel_group: 5
+    completed: true
+  - title: Create usePrefetchInventory hook for inventory hub prefetching
+    parallel_group: 6
+    completed: true
+  - title: Create usePrefetchCustomers hook for customers hub prefetching
+    parallel_group: 6
+    completed: true
+  - title: Add React.memo to ProductCard component in
+      src/components/admin/products/ProductCard.tsx
+    parallel_group: 6
+    completed: true
+  - title: Add React.memo to OrderRow component in
+      src/components/admin/orders/OrderRow.tsx
+    parallel_group: 6
+    completed: true
+  - title: Add React.memo to CustomerRow component in
+      src/components/admin/customers/CustomerRow.tsx
+    parallel_group: 6
+    completed: true
+  - title: Add React.memo to StatCard component in
+      src/components/admin/ui/StatCard.tsx
+    parallel_group: 6
+    completed: true
+  - title: Add React.memo to AlertBadge component
+    parallel_group: 7
+    completed: true
+  - title: Add React.memo to OrderStatusBadge component
+    parallel_group: 7
+    completed: true
+  - title: Add React.memo to sidebar navigation items
+    parallel_group: 7
+    completed: true
+  - title: Add useMemo to all filtered and sorted list operations across components
+    parallel_group: 7
+    completed: true
+  - title: Add useCallback to all event handlers passed as props
+    parallel_group: 7
+    completed: true
+  - title: Memoize formatted currency values with useMemo across all components
+    parallel_group: 7
+    completed: true
+  - title: Lazy load all chart components from recharts with dynamic import
+    parallel_group: 8
+    completed: true
+  - title: Lazy load @react-pdf/renderer only when generating PDF
+    parallel_group: 8
+    completed: true
+  - title: Lazy load leaflet only when rendering maps
+    parallel_group: 8
+    completed: true
+  - title: Lazy load mapbox-gl only when rendering maps
+    parallel_group: 8
+    completed: true
+  - title: Lazy load RevenueWidget in DashboardPage.tsx
+    parallel_group: 8
+    completed: true
+  - title: Lazy load ActivityWidget in DashboardPage.tsx
+    parallel_group: 8
+    completed: true
+  - title: Lazy load AlertsWidget in DashboardPage.tsx
+    parallel_group: 9
+    completed: true
+  - title: Lazy load OrderMergeDialog in Orders.tsx
+    parallel_group: 9
+    completed: true
+  - title: Lazy load OrderExportDialog in Orders.tsx
+    parallel_group: 9
+    completed: true
+  - title: Create WidgetSkeleton fallback component for lazy loaded widgets
+    parallel_group: 9
+    completed: true
+  - title: Implement virtual scrolling with tanstack-virtual for Orders list
+    parallel_group: 9
+    completed: true
+  - title: Implement virtual scrolling for Products grid
+    parallel_group: 9
+    completed: true
+  - title: Implement virtual scrolling for Customers list
+    parallel_group: 9
+    completed: true
+  - title: Add row height estimation for variable content in virtual lists
+    parallel_group: 10
+    completed: true
+  - title: Add vendor-charts chunk for recharts d3 in vite.config.ts manualChunks
+    parallel_group: 10
+    completed: true
+  - title: Add vendor-pdf chunk for react-pdf jspdf html2canvas in vite.config.ts
+    parallel_group: 10
+    completed: true
+  - title: Add vendor-forms chunk for react-hook-form zod in vite.config.ts
+    parallel_group: 10
+    completed: true
+  - title: Add vendor-map chunk for leaflet react-leaflet mapbox in vite.config.ts
+    parallel_group: 10
+    completed: true
+  - title: Import only used Lucide icons instead of entire library across all files
+    parallel_group: 10
+    completed: true
+  - title: Replace lodash with lodash-es for better tree shaking
+    parallel_group: 11
+    completed: true
+  - title: Create migration add composite index on orders tenant_id status for
+      filtered queries
+    parallel_group: 11
+    completed: true
+  - title: Create migration add composite index on orders tenant_id created_at DESC
+    parallel_group: 11
+    completed: true
+  - title: Create migration add composite index on products tenant_id is_active
+    parallel_group: 11
+    completed: true
+  - title: Create migration add composite index on wholesale_orders tenant_id status
+    parallel_group: 11
+    completed: true
+  - title: Create migration add composite index on customers tenant_id created_at DESC
+    parallel_group: 12
+    completed: true
+  - title: Create migration add composite index on invoices tenant_id status
+    parallel_group: 12
+    completed: true
+  - title: Create migration add composite index on menu_orders tenant_id status
+    parallel_group: 12
+    completed: true
+  - title: Create migration add partial index on products WHERE stock_quantity less
+      than 10
+    parallel_group: 12
+    completed: true
+  - title: Create migration add get_dashboard_stats RPC function with tenant_id
+      date_range params
+    parallel_group: 12
+    completed: true
+  - title: Create migration add get_inventory_summary RPC function with tenant_id
+      param
+    parallel_group: 12
+    completed: true
+  - title: Create migration add get_pending_orders_count RPC function
+    parallel_group: 13
+    completed: false
+  - title: Create migration add get_low_stock_items RPC function with threshold param
+    parallel_group: 13
+    completed: false
+  - title: Create migration add materialized view mv_dashboard_metrics for
+      aggregated stats
+    parallel_group: 13
+    completed: false
+  - title: Create migration add materialized view mv_inventory_summary for stock
+      levels
+    parallel_group: 13
+    completed: false
+  - title: Fix RLS policy warnings for account_logs table with proper restrictions
+    parallel_group: 13
+    completed: false
+  - title: Fix RLS policy warnings for activity_logs table
+    parallel_group: 13
+    completed: false
+  - title: Fix RLS policy warnings for menu_orders table
+    parallel_group: 14
+    completed: false
+  - title: Update SECURITY DEFINER functions to include SET search_path public pg_temp
+    parallel_group: 14
+    completed: false
+  - title: Create supabase/functions/tenant-dashboard-v2 optimized dashboard endpoint
+    parallel_group: 14
+    completed: false
+  - title: Use single aggregate SQL query in tenant-dashboard-v2 function
+    parallel_group: 14
+    completed: false
+  - title: Add Cache-Control max-age 30 headers to tenant-dashboard-v2 function
+    parallel_group: 14
+    completed: false
+  - title: Add ETag support for conditional requests in tenant-dashboard-v2 function
+    parallel_group: 14
+    completed: false
+  - title: Create supabase/functions/batch-query for combining multiple queries
+    parallel_group: 15
+    completed: false
+  - title: Execute all queries in parallel in batch-query function with Promise.all
+    parallel_group: 15
+    completed: false
+  - title: Create supabase/functions/prefetch-bundle for sidebar hover prefetch
+    parallel_group: 15
+    completed: false
+  - title: Add response caching to admin-dashboard function
+    parallel_group: 15
+    completed: false
+  - title: Parallelize ALL database queries with Promise.all in admin-dashboard
+      function
+    parallel_group: 15
+    completed: false
+  - title: Reduce SELECT columns to only required fields in admin-dashboard function
+    parallel_group: 15
+    completed: false
+  - title: Add response caching to credits-balance function
+    parallel_group: 16
+    completed: false
+  - title: Reduce payload size in portal-data function
+    parallel_group: 16
+    completed: false
+  - title: Add pagination to invoice-management function
+    parallel_group: 16
+    completed: false
+  - title: Cache predictions for 1 hour in predict-revenue function
+    parallel_group: 16
+    completed: false
+  - title: Skip token validation if valid cache in tenant-admin-auth function
+    parallel_group: 16
+    completed: false
+  - title: Add gzip compression to all edge function responses
+    parallel_group: 16
+    completed: false
+  - title: Build ModernDashboardPage with responsive grid layout and KPI cards
+    parallel_group: 17
+    completed: false
+  - title: Create RevenueChart component with daily weekly monthly toggle using
+      Recharts
+    parallel_group: 17
+    completed: false
+  - title: Build OrdersWidget showing last 10 orders with status badges and quick
+      actions
+    parallel_group: 17
+    completed: false
+  - title: Create LowStockWidget displaying products below threshold with reorder
+      button
+    parallel_group: 17
+    completed: false
+  - title: Build TopProductsWidget with horizontal bar chart of best sellers
+    parallel_group: 17
+    completed: false
+  - title: Create RecentCustomersWidget showing new signups this week with avatars
+    parallel_group: 17
+    completed: false
+  - title: Build QuickActionsCard with buttons for new order product customer invoice
+    parallel_group: 18
+    completed: false
+  - title: Create AlertsWidget showing unread notifications with dismiss and action
+      buttons
+    parallel_group: 18
+    completed: false
+  - title: Build RevenueGoalProgress ring chart showing monthly target vs actual
+    parallel_group: 18
+    completed: false
+  - title: Create PendingOrdersCount badge with pulse animation updating via realtime
+    parallel_group: 18
+    completed: false
+  - title: Build DeliveryStatusWidget showing active in-transit completed counts
+    parallel_group: 18
+    completed: false
+  - title: Create TeamActivityFeed showing recent actions by team members with
+      timestamps
+    parallel_group: 18
+    completed: false
+  - title: Build HotboxWidget showing orders ready for pickup with countdown timers
+    parallel_group: 19
+    completed: false
+  - title: Create LiveOrdersCounter with animated number and new order notification
+      sound
+    parallel_group: 19
+    completed: false
+  - title: Build CourierStatusWidget showing available busy offline driver counts
+    parallel_group: 19
+    completed: false
+  - title: Create DashboardNotificationBell with dropdown showing recent alerts
+    parallel_group: 19
+    completed: false
+  - title: Build GlobalSearchBar with command palette style search across all modules
+    parallel_group: 19
+    completed: false
+  - title: Create DashboardSkeleton loading state matching exact widget layout
+    parallel_group: 19
+    completed: false
+  - title: Build DashboardRefreshButton with loading spinner and last updated time
+    parallel_group: 20
+    completed: false
+  - title: Create DashboardDatePicker to filter all widgets by custom date range
+    parallel_group: 20
+    completed: false
+  - title: Build DashboardLayoutCustomizer with drag-drop widget arrangement
+    parallel_group: 20
+    completed: false
+  - title: Create MobileDashboard with stacked single-column optimized layout
+    parallel_group: 20
+    completed: false
+  - title: Build DashboardTour using react-joyride for onboarding new users
+    parallel_group: 20
+    completed: false
+  - title: Create InventoryValueWidget showing total stock value with trend arrow
+    parallel_group: 20
+    completed: false
+  - title: Build OutstandingInvoicesWidget showing unpaid amount and count
+    parallel_group: 21
+    completed: false
+  - title: Create CustomerGrowthChart showing new vs returning customers over time
+    parallel_group: 21
+    completed: false
+  - title: Build ProfitMarginWidget showing gross margin percentage with sparkline
+    parallel_group: 21
+    completed: false
+  - title: Create AverageOrderValueWidget with comparison to previous period
+    parallel_group: 21
+    completed: false
+  - title: Build ConversionRateWidget for storefront visitors to purchases
+    parallel_group: 21
+    completed: false
+  - title: Create useDashboardBundle hook consolidating all dashboard data fetching
+    parallel_group: 21
+    completed: false
+  - title: Implement dashboard data persistence in sessionStorage for instant reload
+    parallel_group: 22
+    completed: false
+  - title: Cache dashboard layout preferences in localStorage
+    parallel_group: 22
+    completed: false
+  - title: Build OrdersListPage with DataTable showing all orders with advanced
+      pagination
+    parallel_group: 22
+    completed: false
+  - title: Create OrderFilters component with status date customer product amount
+      filters
+    parallel_group: 22
+    completed: false
+  - title: Build OrderDetailsPage showing full order info with editable timeline
+    parallel_group: 22
+    completed: false
+  - title: Create OrderStatusStepper with pending confirmed packed shipped delivered
+      states
+    parallel_group: 22
+    completed: false
+  - title: Build CreateOrderForm with customer autocomplete and product picker with
+      variants
+    parallel_group: 23
+    completed: false
+  - title: Create OrderItemsTable with quantity price discount tax columns and
+      inline edit
+    parallel_group: 23
+    completed: false
+  - title: Build OrderTotalsCard showing subtotal tax discount shipping total
+      breakdown
+    parallel_group: 23
+    completed: false
+  - title: Create OrderNotesSection with internal notes and customer notes tabs
+    parallel_group: 23
+    completed: false
+  - title: Build OrderActionsDropdown with edit cancel refund duplicate print options
+    parallel_group: 23
+    completed: false
+  - title: Create OrderPaymentStatus badge showing paid pending partial refunded
+      states
+    parallel_group: 23
+    completed: false
+  - title: Build BulkOrderActions for selecting multiple orders to update status or
+      export
+    parallel_group: 24
+    completed: false
+  - title: Create OrderExportButton generating CSV Excel PDF of filtered orders
+    parallel_group: 24
+    completed: false
+  - title: Build OrderPrintView with thermal receipt invoice and packing slip layouts
+    parallel_group: 24
+    completed: false
+  - title: Create OrderSearchBar with autocomplete for order number customer name
+      phone
+    parallel_group: 24
+    completed: false
+  - title: Build B2BOrdersTab filtering orders by wholesale business customers only
+    parallel_group: 24
+    completed: false
+  - title: Create StoreOrdersTab showing orders from public storefront
+    parallel_group: 24
+    completed: false
+  - title: Build MenuOrdersTab showing orders from disposable encrypted menus
+    parallel_group: 25
+    completed: false
+  - title: Create OrderAssignCourier modal with available courier list and ETA
+    parallel_group: 25
+    completed: false
+  - title: Build OrderTrackingTimeline showing all status changes with timestamps
+      and user
+    parallel_group: 25
+    completed: false
+  - title: Create OrderRefundModal with partial full refund options and reason
+      selection
+    parallel_group: 25
+    completed: false
+  - title: Build OrderDuplicateButton creating new order from existing with edits
+    parallel_group: 25
+    completed: false
+  - title: Create OrderEditModal for modifying items quantities prices before
+      confirmation
+    parallel_group: 25
+    completed: false
+  - title: Build OrderCancelModal with reason selection restock option and
+      notification toggle
+    parallel_group: 26
+    completed: false
+  - title: Create OrderInvoiceGenerator creating PDF invoice from order with branding
+    parallel_group: 26
+    completed: false
+  - title: Build OrderEmailButton to send confirmation receipt tracking emails via
+      template
+    parallel_group: 26
+    completed: false
+  - title: Create OrderSMSButton to send status updates via Twilio integration
+    parallel_group: 26
+    completed: false
+  - title: Build OrderTagsInput for custom categorization filtering and segmentation
+    parallel_group: 26
+    completed: false
+  - title: Create OrderSourceBadge showing POS storefront phone B2B manual source
+      icons
+    parallel_group: 26
+    completed: false
+  - title: Build OrderPriorityFlag with high normal low rush indicators and sorting
+    parallel_group: 27
+    completed: false
+  - title: Create OrderDeliveryWindow showing scheduled time slot with calendar picker
+    parallel_group: 27
+    completed: false
+  - title: Build OrderAddressCard with map preview directions link and edit button
+    parallel_group: 27
+    completed: false
+  - title: Create OrderCustomerCard showing customer info order history LTV and notes
+    parallel_group: 27
+    completed: false
+  - title: Build OrderPaymentMethodBadge showing cash card invoice crypto COD icons
+    parallel_group: 27
+    completed: false
+  - title: Create RecurringOrderSetup for subscription-style repeat orders with
+      schedule
+    parallel_group: 27
+    completed: false
+  - title: Build OrderSplitButton to split order into multiple shipments or invoices
+    parallel_group: 28
+    completed: false
+  - title: Create OrderMergeButton to combine multiple orders for same customer
+    parallel_group: 28
+    completed: false
+  - title: Build OrderHoldButton to pause order processing with reason and timer
+    parallel_group: 28
+    completed: false
+  - title: Create OrderRushButton to expedite order to front of queue with
+      notification
+    parallel_group: 28
+    completed: false
+  - title: Build OrderAuditLog showing all changes made to order with user and
+      timestamp
+    parallel_group: 28
+    completed: false
+  - title: Create LiveOrdersPage with real-time order feed and auto-refresh
+    parallel_group: 28
+    completed: false
+  - title: Build OrderKanbanView with drag-drop cards between status columns
+    parallel_group: 29
+    completed: false
+  - title: Create OrderCalendarView showing orders by delivery date
+    parallel_group: 29
+    completed: false
+  - title: Reduce initial page size from 50 to 25 in Orders.tsx
+    parallel_group: 29
+    completed: false
+  - title: Add cursor-based pagination to Orders queries
+    parallel_group: 29
+    completed: false
+  - title: Defer loading order details until row expanded in Orders.tsx
+    parallel_group: 29
+    completed: false
+  - title: Add optimistic updates for status changes in Orders.tsx
+    parallel_group: 29
+    completed: false
+  - title: Reduce polling interval from 10s to 30s when tab hidden in LiveOrders.tsx
+    parallel_group: 30
+    completed: false
+  - title: Add visual indicator for stale data in LiveOrders.tsx
+    parallel_group: 30
+    completed: false
+  - title: Build ProductsListPage with grid table toggle view and advanced filters
+    parallel_group: 30
+    completed: false
+  - title: Create ProductCard component with image name price stock badge quick
+      actions
+    parallel_group: 30
+    completed: false
+  - title: Build ProductDetailsPage with tabs for info variants inventory history
+    parallel_group: 30
+    completed: false
+  - title: Create CreateProductForm with all fields images variants pricing compliance
+    parallel_group: 30
+    completed: false
+  - title: Build ProductImageUploader with drag-drop multiple images reorder and crop
+    parallel_group: 31
+    completed: false
+  - title: Create ProductVariantsManager for size weight strain potency options with
+      pricing
+    parallel_group: 31
+    completed: false
+  - title: Build ProductPricingSection with retail wholesale bulk tiered pricing
+    parallel_group: 31
+    completed: false
+  - title: Create ProductCategorySelect with hierarchical categories and create new
+    parallel_group: 31
+    completed: false
+  - title: Build ProductTagsInput for search filter and compliance tags
+    parallel_group: 31
+    completed: false
+  - title: Create ProductStockLevelInput with low stock threshold and alert settings
+    parallel_group: 31
+    completed: false
+  - title: Build ProductBarcodeGenerator creating scannable UPC EAN barcodes
+    parallel_group: 32
+    completed: false
+  - title: Create ProductQRGenerator creating QR codes linking to product or menu
+    parallel_group: 32
+    completed: false
+  - title: Build ProductBulkImport from CSV Excel with validation preview and mapping
+    parallel_group: 32
+    completed: false
+  - title: Create ProductBulkExport to CSV Excel with selected fields and filters
+    parallel_group: 32
+    completed: false
+  - title: Build ProductArchiveButton with soft delete restore and permanent delete
+    parallel_group: 32
+    completed: false
+  - title: Create ProductDuplicateButton creating copy with new SKU and edits
+    parallel_group: 32
+    completed: false
+  - title: Build MenusListPage showing all product menus with status and stats
+    parallel_group: 33
+    completed: false
+  - title: Create CreateMenuForm with name description products selection and ordering
+    parallel_group: 33
+    completed: false
+  - title: Build MenuProductPicker with search filter drag ordering and bulk add
+    parallel_group: 33
+    completed: false
+  - title: Create MenuPreview showing customer-facing view with mobile desktop toggle
+    parallel_group: 33
+    completed: false
+  - title: Build MenuShareModal with link QR code embed code and social sharing
+    parallel_group: 33
+    completed: false
+  - title: Create MenuScheduler for time-based menu activation with calendar view
+    parallel_group: 33
+    completed: false
+  - title: Build StockLevelsPage with sortable filterable table of all products
+    parallel_group: 34
+    completed: false
+  - title: Create StockAdjustmentModal for manual corrections with reason and notes
+    parallel_group: 34
+    completed: false
+  - title: Build StockHistoryLog showing all stock changes with reason user timestamp
+    parallel_group: 34
+    completed: false
+  - title: Create StockTransferForm for moving stock between locations with tracking
+    parallel_group: 34
+    completed: false
+  - title: Build StockCountSession for physical inventory counts with variance report
+    parallel_group: 34
+    completed: false
+  - title: Create StockAlertsList showing all low stock out of stock expiring items
+    parallel_group: 34
+    completed: false
+  - title: Build StockAlertSettings configuring thresholds notifications per product
+    parallel_group: 35
+    completed: false
+  - title: Create StockForecastWidget predicting stockouts based on sales velocity
+    parallel_group: 35
+    completed: false
+  - title: Build StockReorderSuggestions based on sales lead time and par levels
+    parallel_group: 35
+    completed: false
+  - title: Create BarcodeScanner component using device camera with sound feedback
+    parallel_group: 35
+    completed: false
+  - title: Build BarcodeLookup searching products by scanned barcode instantly
+    parallel_group: 35
+    completed: false
+  - title: Create BarcodePrintQueue for batch printing product labels with templates
+    parallel_group: 35
+    completed: false
+  - title: Build InventoryValuationReport showing total inventory value by category
+    parallel_group: 36
+    completed: false
+  - title: Create InventoryAgeReport showing slow moving dead stock items
+    parallel_group: 36
+    completed: false
+  - title: Build InventoryTurnoverReport calculating turnover rates by product
+      category
+    parallel_group: 36
+    completed: false
+  - title: Create ProductPerformanceChart showing sales revenue margin over time
+    parallel_group: 36
+    completed: false
+  - title: Build ProductBundleCreator for creating product bundles with discount
+    parallel_group: 36
+    completed: false
+  - title: Create ProductKitBuilder for assembly products with components
+    parallel_group: 36
+    completed: false
+  - title: Reduce initial product fetch to 50 items in ProductManagement.tsx
+    parallel_group: 37
+    completed: false
+  - title: Add infinite scroll for remaining products in ProductManagement.tsx
+    parallel_group: 37
+    completed: false
+  - title: Lazy load product variant data on expand in ProductManagement.tsx
+    parallel_group: 37
+    completed: false
+  - title: Cache product images in service worker
+    parallel_group: 37
+    completed: false
+  - title: Build CustomersListPage with search filter segments and pagination
+    parallel_group: 37
+    completed: false
+  - title: Create CustomerCard showing name email phone order count LTV tier
+    parallel_group: 37
+    completed: false
+  - title: Build CustomerDetailsPage with profile orders notes activity tabs
+    parallel_group: 38
+    completed: false
+  - title: Create CreateCustomerForm with contact billing shipping compliance fields
+    parallel_group: 38
+    completed: false
+  - title: Build CustomerEditModal for updating all customer information
+    parallel_group: 38
+    completed: false
+  - title: Create CustomerAddressBook with multiple addresses default and validation
+    parallel_group: 38
+    completed: false
+  - title: Build CustomerOrderHistory table with status totals and reorder button
+    parallel_group: 38
+    completed: false
+  - title: Create CustomerNotesSection with pinned notes tags and team mentions
+    parallel_group: 38
+    completed: false
+  - title: Build CustomerTagsManager for segmentation targeting and automation
+    parallel_group: 39
+    completed: false
+  - title: Create CustomerMergeWizard for combining duplicate customers safely
+    parallel_group: 39
+    completed: false
+  - title: Build CustomerImportCSV with field mapping validation and duplicate
+      handling
+    parallel_group: 39
+    completed: false
+  - title: Create CustomerExportCSV with selected fields filters and segments
+    parallel_group: 39
+    completed: false
+  - title: Build CustomerSearchAutocomplete for order forms with recent and frequent
+    parallel_group: 39
+    completed: false
+  - title: Create CustomerBalanceCard showing credit balance invoices due and payments
+    parallel_group: 39
+    completed: false
+  - title: Build CustomerCreditLimitSetting with approval workflow and alerts
+    parallel_group: 40
+    completed: false
+  - title: Create CustomerPaymentTermsSelect with net15 net30 net60 COD options
+    parallel_group: 40
+    completed: false
+  - title: Build CustomerPriceListAssignment for custom pricing tiers and discounts
+    parallel_group: 40
+    completed: false
+  - title: Create CustomerDocuments uploader for licenses contracts IDs with expiry
+    parallel_group: 40
+    completed: false
+  - title: Build CustomerVerificationStatus for age ID license compliance checks
+    parallel_group: 40
+    completed: false
+  - title: Create CustomerReferralCode generator tracker and reward system
+    parallel_group: 40
+    completed: false
+  - title: Build CRMTimelinePage showing all interactions chronologically with filters
+    parallel_group: 41
+    completed: false
+  - title: Create CRMAddInteraction form for calls emails meetings notes with
+      templates
+    parallel_group: 41
+    completed: false
+  - title: Build CRMTaskManager for follow-ups with due dates reminders assignments
+    parallel_group: 41
+    completed: false
+  - title: Create CRMDealPipeline with stages drag-drop cards and probability
+    parallel_group: 41
+    completed: false
+  - title: Build InvoicesListPage with status filters search and batch actions
+    parallel_group: 41
+    completed: false
+  - title: Create CreateInvoiceForm with line items tax terms and payment options
+    parallel_group: 41
+    completed: false
+  - title: Build InvoicePDFGenerator with customizable branded template
+    parallel_group: 42
+    completed: false
+  - title: Create InvoiceEmailSender with template preview and tracking
+    parallel_group: 42
+    completed: false
+  - title: Build InvoicePaymentRecorder for marking invoices paid with method
+    parallel_group: 42
+    completed: false
+  - title: Create InvoiceAgeingReport showing overdue by 30 60 90 day periods
+    parallel_group: 42
+    completed: false
+  - title: Build SupportTicketsPage with status priority assignment and SLA
+    parallel_group: 42
+    completed: false
+  - title: Create CreateTicketForm with category description attachments and priority
+    parallel_group: 42
+    completed: false
+  - title: Build TicketDetailsPage with conversation thread and internal notes
+    parallel_group: 43
+    completed: false
+  - title: Create TicketAssignmentDropdown with team member list and workload
+    parallel_group: 43
+    completed: false
+  - title: Build LoyaltyPointsDisplay showing balance history and redemption options
+    parallel_group: 43
+    completed: false
+  - title: Create LoyaltyRewardsPage with redeemable rewards catalog and tiers
+    parallel_group: 43
+    completed: false
+  - title: Build LoyaltyEarnRules configuring points per dollar and bonus events
+    parallel_group: 43
+    completed: false
+  - title: Create LoyaltyTierSystem with bronze silver gold platinum benefits
+    parallel_group: 43
+    completed: false
+  - title: Build CustomerSegmentBuilder with rule-based dynamic segments
+    parallel_group: 44
+    completed: false
+  - title: Create CustomerAnalyticsDashboard with LTV churn retention cohorts
+    parallel_group: 44
+    completed: false
+  - title: Build FinanceDashboardPage with revenue expenses profit cash flow cards
+    parallel_group: 44
+    completed: false
+  - title: Create RevenueChart with line area bar chart options and comparisons
+    parallel_group: 44
+    completed: false
+  - title: Build RevenueByCategoryChart with pie donut breakdown and drill-down
+    parallel_group: 44
+    completed: false
+  - title: Create RevenueByChannelChart showing POS storefront B2B wholesale splits
+    parallel_group: 44
+    completed: false
+  - title: Build ExpensesListPage with category date vendor amount filters
+    parallel_group: 45
+    completed: false
+  - title: Create CreateExpenseForm with category vendor amount receipt upload
+    parallel_group: 45
+    completed: false
+  - title: Build ExpenseCategoryManager for custom expense categories with budgets
+    parallel_group: 45
+    completed: false
+  - title: Create ExpenseReceiptUploader with OCR data extraction and auto-fill
+    parallel_group: 45
+    completed: false
+  - title: Build ExpenseApprovalWorkflow for expenses over threshold with
+      notifications
+    parallel_group: 45
+    completed: false
+  - title: Create ExpenseExportButton for accounting software formats CSV QBO
+    parallel_group: 45
+    completed: false
+  - title: Build ProfitLossStatement with date range comparison and export
+    parallel_group: 46
+    completed: false
+  - title: Create CashFlowReport showing inflows outflows and projections
+    parallel_group: 46
+    completed: false
+  - title: Build TaxReportGenerator with sales tax summary by jurisdiction
+    parallel_group: 46
+    completed: false
+  - title: Create PayoutsListPage showing all payouts to vendors partners couriers
+    parallel_group: 46
+    completed: false
+  - title: Build CreatePayoutForm with vendor amount method and schedule
+    parallel_group: 46
+    completed: false
+  - title: Create PayoutScheduler for recurring automated vendor payments
+    parallel_group: 46
+    completed: false
+  - title: Build PayoutApprovalQueue for manager review and batch approval
+    parallel_group: 47
+    completed: false
+  - title: Create RevenueGoalSetter with monthly quarterly annual targets and tracking
+    parallel_group: 47
+    completed: false
+  - title: Build BudgetManager with category budgets variance tracking and alerts
+    parallel_group: 47
+    completed: false
+  - title: Create BudgetVsActualChart comparing planned to actual spending
+    parallel_group: 47
+    completed: false
+  - title: Build AccountsReceivableReport showing customer balances and aging
+    parallel_group: 47
+    completed: false
+  - title: Create AccountsPayableReport showing vendor balances and due dates
+    parallel_group: 47
+    completed: false
+  - title: Build PaymentMethodAnalytics showing cash card split trends over time
+    parallel_group: 48
+    completed: false
+  - title: Create StripeIntegration for payment processing with webhooks
+    parallel_group: 48
+    completed: false
+  - title: Build FulfillmentOverviewPage with orders by status counters and queue
+    parallel_group: 48
+    completed: false
+  - title: Create FulfillmentQueue showing orders ready to pack with priority sorting
+    parallel_group: 48
+    completed: false
+  - title: Build PackingSlipGenerator with order items barcode and custom notes
+    parallel_group: 48
+    completed: false
+  - title: Create PackingStation interface for warehouse workers with scanner
+    parallel_group: 48
+    completed: false
+  - title: Build FleetListPage showing all vehicles with status maintenance location
+    parallel_group: 49
+    completed: false
+  - title: Create CouriersListPage with status availability performance filters
+    parallel_group: 49
+    completed: false
+  - title: Build CourierProfilePage with stats routes earnings and ratings
+    parallel_group: 49
+    completed: false
+  - title: Create CourierScheduler with shift calendar drag-drop and availability
+    parallel_group: 49
+    completed: false
+  - title: Build CourierPerformanceMetrics with delivery times ratings and trends
+    parallel_group: 49
+    completed: false
+  - title: Create CourierPayoutCalculator with commission tips mileage and bonuses
+    parallel_group: 49
+    completed: false
+  - title: Build DeliveryRouteOptimizer suggesting optimal route order with map
+    parallel_group: 50
+    completed: false
+  - title: Create DeliveryBatchCreator grouping orders by zone time and capacity
+    parallel_group: 50
+    completed: false
+  - title: Build DeliveryZoneManager defining delivery areas on interactive map
+    parallel_group: 50
+    completed: false
+  - title: Create DeliveryFeeCalculator based on distance zone weight and time
+    parallel_group: 50
+    completed: false
+  - title: Build LiveMapPage with all active deliveries couriers as markers
+    parallel_group: 50
+    completed: false
+  - title: Create LiveMapCourierPopup showing courier details orders on click
+    parallel_group: 50
+    completed: false
+  - title: Build LiveMapRouteLines showing planned delivery routes with ETAs
+    parallel_group: 51
+    completed: false
+  - title: Create LiveMapETAUpdater recalculating ETAs based on traffic location
+    parallel_group: 51
+    completed: false
+  - title: Build DeliveryProofCapture for photo signature capture and storage
+    parallel_group: 51
+    completed: false
+  - title: Create DeliveryNotifications sending SMS email push updates to customers
+    parallel_group: 51
+    completed: false
+  - title: Build PickupOrdersQueue for customer pickup orders with ready alerts
+    parallel_group: 51
+    completed: false
+  - title: Create PickupReadyNotification alerting customer via SMS email push
+    parallel_group: 51
+    completed: false
+  - title: Build POSPage with full screen register interface optimized for touch
+    parallel_group: 52
+    completed: false
+  - title: Create POSProductGrid with category tabs search and quick filters
+    parallel_group: 52
+    completed: false
+  - title: Build POSCartSidebar showing items quantity totals with edit options
+    parallel_group: 52
+    completed: false
+  - title: Create POSQuantityControls with plus minus numpad and direct input
+    parallel_group: 52
+    completed: false
+  - title: Build POSDiscountButton applying item cart order discounts with reasons
+    parallel_group: 52
+    completed: false
+  - title: Create POSCustomerLookup with search quick create and recent customers
+    parallel_group: 52
+    completed: false
+  - title: Build POSPaymentModal with cash card split tip and change calculation
+    parallel_group: 53
+    completed: false
+  - title: Create POSCashCalculator for making change with bill coin breakdown
+    parallel_group: 53
+    completed: false
+  - title: Build POSReceiptPreview before printing with email SMS options
+    parallel_group: 53
+    completed: false
+  - title: Create POSThermalPrint sending to receipt printer with format options
+    parallel_group: 53
+    completed: false
+  - title: Build POSHoldOrder for saving and recalling orders later with notes
+    parallel_group: 53
+    completed: false
+  - title: Create POSBarcodeInput for scanner integration with sound feedback
+    parallel_group: 53
+    completed: false
+  - title: Build POSQuickKeys customizable grid for frequently sold items
+    parallel_group: 54
+    completed: false
+  - title: Create POSRefundFlow for processing returns with inventory adjustment
+    parallel_group: 54
+    completed: false
+  - title: Build POSCashDrawer open close count with variance tracking
+    parallel_group: 54
+    completed: false
+  - title: Create POSShiftManagement for clock in out with break tracking
+    parallel_group: 54
+    completed: false
+  - title: Build POSEndOfDay with reconciliation report and deposit slip
+    parallel_group: 54
+    completed: false
+  - title: Create POSSalesReport for current shift with hourly breakdown
+    parallel_group: 54
+    completed: false
+  - title: Build POSOfflineMode with queue and sync when reconnected
+    parallel_group: 55
+    completed: false
+  - title: Create POSLoyaltyLookup checking earning and redeeming points
+    parallel_group: 55
+    completed: false
+  - title: Build POSAgeVerification for compliance checking with ID scan
+    parallel_group: 55
+    completed: false
+  - title: Build DisposableMenusListPage showing all encrypted menus with stats
+    parallel_group: 55
+    completed: false
+  - title: Create CreateDisposableMenu wizard with products expiration password
+    parallel_group: 55
+    completed: false
+  - title: Build DisposableMenuEditor with product selection pricing customization
+    parallel_group: 55
+    completed: false
+  - title: Create DisposableMenuPreview showing exact customer view
+    parallel_group: 56
+    completed: false
+  - title: Build DisposableMenuShareModal with encrypted link QR social options
+    parallel_group: 56
+    completed: false
+  - title: Create DisposableMenuQRCode generator with logo and color customization
+    parallel_group: 56
+    completed: false
+  - title: Build DisposableMenuPasswordGate for customer access control
+    parallel_group: 56
+    completed: false
+  - title: Create DisposableMenuExpiration with countdown auto-deactivation
+    parallel_group: 56
+    completed: false
+  - title: Build DisposableMenuViewCounter tracking opens unique visitors
+    parallel_group: 56
+    completed: false
+  - title: Create DisposableMenuOrderCapture receiving orders with notifications
+    parallel_group: 57
+    completed: false
+  - title: Build DisposableMenuOrderNotification alerting admin on new order
+    parallel_group: 57
+    completed: false
+  - title: Create DisposableMenuRevoke for immediate deactivation with reason
+    parallel_group: 57
+    completed: false
+  - title: Build DisposableMenuAnalytics showing views orders conversion revenue
+    parallel_group: 57
+    completed: false
+  - title: Create DisposableMenuTemplates for quick creation from presets
+    parallel_group: 57
+    completed: false
+  - title: Build DisposableMenuScreenshotProtection preventing screen captures
+    parallel_group: 57
+    completed: false
+  - title: Build AnalyticsOverviewPage with key metric cards and trend indicators
+    parallel_group: 58
+    completed: false
+  - title: Create SalesOverTimeChart with customizable date range and granularity
+    parallel_group: 58
+    completed: false
+  - title: Build SalesByProductChart with top performers and drill-down
+    parallel_group: 58
+    completed: false
+  - title: Create SalesByCustomerChart showing biggest buyers and segments
+    parallel_group: 58
+    completed: false
+  - title: Build ConversionFunnelChart from visit to cart to purchase
+    parallel_group: 58
+    completed: false
+  - title: Create CustomerRetentionChart with cohort analysis visualization
+    parallel_group: 58
+    completed: false
+  - title: Build CustomerLifetimeValueChart by segment and acquisition source
+    parallel_group: 59
+    completed: false
+  - title: Create DeliveryPerformanceChart with on-time rates and trends
+    parallel_group: 59
+    completed: false
+  - title: Build PeakHoursHeatmap showing order volume by hour and day
+    parallel_group: 59
+    completed: false
+  - title: Create GeographicSalesMap with order density and revenue by area
+    parallel_group: 59
+    completed: false
+  - title: Build ProductAffinityReport showing frequently bought together
+    parallel_group: 59
+    completed: false
+  - title: Create CustomReportBuilder with drag-drop metrics dimensions filters
+    parallel_group: 59
+    completed: false
+  - title: Build SavedReportsManager for quick access and organization
+    parallel_group: 60
+    completed: false
+  - title: Create ScheduledReports for automated email delivery with formatting
+    parallel_group: 60
+    completed: false
+  - title: Build ExportToPDF with charts tables and professional formatting
+    parallel_group: 60
+    completed: false
+  - title: Create ExportToExcel with multiple sheets and formulas
+    parallel_group: 60
+    completed: false
+  - title: Build GoalTrackingWidget showing progress to targets with alerts
+    parallel_group: 60
+    completed: false
+  - title: Build SettingsPage with organized sections sidebar and search
+    parallel_group: 60
+    completed: false
+  - title: Create GeneralSettings with business name logo timezone currency
+    parallel_group: 61
+    completed: false
+  - title: Build NotificationSettings with email SMS push preferences by event
+    parallel_group: 61
+    completed: false
+  - title: Create SecuritySettings with 2FA session timeout IP whitelist
+    parallel_group: 61
+    completed: false
+  - title: Build BillingSettings showing plan usage invoices and payment method
+    parallel_group: 61
+    completed: false
+  - title: Create TaxSettings configuring tax rates by location with nexus
+    parallel_group: 61
+    completed: false
+  - title: Build EmailTemplateEditor for transactional emails with variables
+    parallel_group: 61
+    completed: false
+  - title: Create SMSTemplateEditor for notification messages with preview
+    parallel_group: 62
+    completed: false
+  - title: Build ReceiptTemplateEditor for POS receipts with logo and fields
+    parallel_group: 62
+    completed: false
+  - title: Create BrandingSettings with colors fonts and style customization
+    parallel_group: 62
+    completed: false
+  - title: Build APIKeysManager for third-party access with scopes
+    parallel_group: 62
+    completed: false
+  - title: Create WebhooksManager with URL events retry and logs
+    parallel_group: 62
+    completed: false
+  - title: Build IntegrationsHub showing all available integrations with status
+    parallel_group: 62
+    completed: false
+  - title: Create QuickBooksIntegration for accounting sync with mapping
+    parallel_group: 63
+    completed: false
+  - title: Build MetrcIntegration for cannabis compliance reporting
+    parallel_group: 63
+    completed: false
+  - title: Create TwilioIntegration for SMS notifications with templates
+    parallel_group: 63
+    completed: false
+  - title: Build SlackIntegration for team notifications with channels
+    parallel_group: 63
+    completed: false
+  - title: Create consistent skeleton components for all widgets and pages
+    parallel_group: 63
+    completed: false
+  - title: Build skeleton for Orders table with row placeholders
+    parallel_group: 63
+    completed: false
+  - title: Create skeleton for Products grid with card placeholders
+    parallel_group: 64
+    completed: false
+  - title: Build skeleton for Dashboard metrics with stat card placeholders
+    parallel_group: 64
+    completed: false
+  - title: Create skeleton for sidebar navigation
+    parallel_group: 64
+    completed: false
+  - title: Implement progressive loading skeleton then data pattern
+    parallel_group: 64
+    completed: false
+  - title: Replace spinners with skeletons across all loading states
+    parallel_group: 64
+    completed: false
+  - title: Add shimmer animation to all skeleton components
+    parallel_group: 64
+    completed: false
+  - title: Build error boundaries around all widgets and pages
+    parallel_group: 65
+    completed: false
+  - title: Create EmptyState components for all list pages with actions
+    parallel_group: 65
+    completed: false
+  - title: Implement retry buttons for failed fetches with exponential backoff
+    parallel_group: 65
+    completed: false
+  - title: Build offline indicator showing connection status with retry
+    parallel_group: 65
+    completed: false
+  - title: Create ToastNotifications for success error warning actions
+    parallel_group: 65
+    completed: false
+  - title: Build ConfirmationModal for destructive actions with warning
+    parallel_group: 65
+    completed: false
+  - title: Add API response caching for GET requests in sw.js
+    parallel_group: 66
+    completed: false
+  - title: Implement stale-while-revalidate for dashboard data in sw.js
+    parallel_group: 66
+    completed: false
+  - title: Add Web Vitals tracking LCP FID CLS for performance monitoring
+    parallel_group: 66
+    completed: false
+  - title: Build MobileNavigation with touch-optimized bottom tab bar
+    parallel_group: 66
+    completed: false
+  - title: Create PWAInstallPrompt encouraging app install with benefits
+    parallel_group: 66
+    completed: false
+  - title: Build PWAOfflineCache for critical pages and recent data
+    parallel_group: 66
+    completed: false
