@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useParams } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
 import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
@@ -46,6 +46,20 @@ import { InventorySyncIndicator } from '@/components/admin/storefront/InventoryS
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useMenuOrderNotifications } from '@/hooks/useMenuOrderNotifications';
+/** Closes the mobile sidebar on route change */
+function MobileSidebarCloser() {
+  const location = useLocation();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [location.pathname, isMobile, setOpenMobile]);
+
+  return null;
+}
+
 /**
  * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
@@ -145,6 +159,7 @@ const AdminLayout = () => {
 
         {/* Unified Layout with Sidebar (Optimized or Classic) */}
         <SidebarProvider>
+          <MobileSidebarCloser />
           <div className="min-h-dvh flex w-full premium-gradient-mesh">
             <SidebarErrorBoundary>
               <LiveBadgeProvider>
