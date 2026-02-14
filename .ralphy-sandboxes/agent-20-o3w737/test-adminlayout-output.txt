@@ -1,4 +1,0 @@
-[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
-
-[1m[46m RUN [49m[22m [36mv4.0.9 [39m[90mC:/Users/Alex/Downloads/delviery-fresh[39m
-

@@ -1,0 +1,237 @@
+tasks:
+  - title: Add React.lazy and Suspense to all route-level components
+    description: Wrap every page component in React.lazy with Suspense fallback skeleton. Split admin, storefront, delivery into separate chunks.
+
+  - title: Add skeleton loading states to dashboard widgets
+    description: Replace spinners with shimmer skeleton placeholders on dashboard cards, charts, and stats. Use consistent skeleton component.
+
+  - title: Fix mobile sidebar navigation overlay and close behavior
+    description: Sidebar should overlay on mobile with backdrop, close on route change, close on outside tap. Add hamburger toggle button.
+
+  - title: Add pull-to-refresh on mobile for order and product lists
+    description: Implement pull-to-refresh gesture on mobile list views for orders, products, inventory. Show refresh indicator.
+
+  - title: Fix table responsiveness - convert to card layout on mobile
+    description: All data tables should switch to stacked card layout below 768px. Show key fields only, tap to expand full details.
+
+  - title: Add touch-friendly action buttons on mobile order cards
+    description: Swipe actions or prominent tap targets for status update, call customer, view details on mobile order list.
+
+  - title: Optimize Supabase queries with proper select fields
+    description: Audit all Supabase queries - replace select(*) with explicit column lists. Reduce payload size on list endpoints.
+
+  - title: Add proper error boundaries with retry buttons
+    description: Wrap each major section in ErrorBoundary component showing friendly error message and retry button. Log errors.
+
+  - title: Fix form validation UX - show inline errors not toasts
+    description: All forms should show field-level inline errors below inputs. Highlight invalid fields red. Remove toast-only validation.
+
+  - title: Add debounced search to product and customer list pages
+    description: Search inputs should debounce 300ms before querying. Show search loading indicator. Clear button on search field.
+
+  - title: Fix mobile bottom navigation bar for storefront
+    description: Add sticky bottom nav for storefront mobile with Home, Browse, Cart, Orders, Account icons. Hide on scroll down show on scroll up.
+
+  - title: Add optimistic updates for order status changes
+    description: When user changes order status, update UI immediately before API confirms. Rollback on error with toast notification.
+
+  - title: Fix z-index stacking issues with modals and dropdowns
+    description: Audit all z-index values. Create z-index scale system. Fix modals appearing behind header, dropdowns clipped by overflow.
+
+  - title: Add proper empty states for all list views
+    description: Every list page needs illustrated empty state with helpful message and CTA button when no data exists. Not just blank.
+
+  - title: Optimize image loading with lazy load and WebP fallbacks
+    description: Product images should use loading=lazy, srcset for responsive sizes, WebP with JPEG fallback. Add blur placeholder.
+
+  - title: Fix keyboard navigation and focus management in modals
+    description: Modals should trap focus, close on Escape, return focus to trigger on close. Tab through interactive elements only.
+
+  - title: Add toast notification queue system
+    description: Stack multiple toasts vertically, auto-dismiss after 5s, allow manual dismiss. Limit to 3 visible. Different styles per type.
+
+  - title: Fix desktop sidebar collapse and expand with persistence
+    description: Sidebar should toggle between collapsed icon-only and expanded states. Save preference to localStorage. Smooth animation.
+
+  - title: Add loading button states to all form submissions
+    description: Every submit button should show spinner and disable during API call. Prevent double-submit. Re-enable on error.
+
+  - title: Fix page title and meta tags for each route
+    description: Set document.title on every route change. Add descriptive titles like FloraIQ - Orders, FloraIQ - Inventory for browser tabs.
+
+  - title: Add bulk actions toolbar for order list page
+    description: Checkbox select multiple orders, show floating toolbar with bulk actions - update status, export, print, assign driver.
+
+  - title: Fix date picker mobile UX and timezone handling
+    description: Date pickers should use native input on mobile. All dates display in user timezone. Date range picker for reports.
+
+  - title: Add infinite scroll or pagination to all list pages
+    description: Lists over 50 items should paginate or infinite scroll. Show item count. Remember scroll position on back navigation.
+
+  - title: Fix responsive header with search and notifications
+    description: Header should collapse gracefully on mobile. Search moves to expandable icon. Notification bell with unread badge count.
+
+  - title: Add offline indicator banner and retry queue
+    description: Show banner when offline. Queue failed mutations for retry when connection restores. Cache recent data for offline viewing.
+
+  - title: Optimize bundle size by removing unused dependencies
+    description: Run bundle analyzer. Remove unused imports and packages. Tree-shake properly. Target under 500KB initial bundle.
+
+  - title: Fix font loading with proper font-display swap
+    description: Add font-display swap to prevent FOIT. Preload critical fonts. Use system font stack as fallback during load.
+
+  - title: Add proper 404 and error pages with navigation
+    description: Custom 404 page with search and nav links. 500 error page with retry. Redirect unknown admin routes to dashboard.
+
+  - title: Fix accessibility - add aria labels to all interactive elements
+    description: Audit buttons, links, inputs for missing aria-labels. Add sr-only text to icon buttons. Fix color contrast ratios.
+
+  - title: Add confirmation dialogs for destructive actions
+    description: Delete product, cancel order, remove customer all need confirm dialog. Show what will be affected. Require typed confirmation for bulk.
+
+  - title: Fix mobile form layouts - single column with proper spacing
+    description: All forms should be single column on mobile. Proper input sizing for touch. Labels above inputs not beside. Adequate spacing.
+
+  - title: Add quick view drawer for products in list
+    description: Click product row opens right-side drawer with product details, stock levels, recent orders. Edit button to full page.
+
+  - title: Optimize TanStack Query cache and stale times
+    description: Set appropriate staleTime per query type - 30s for orders, 5min for products, 15min for settings. Configure gcTime properly.
+
+  - title: Fix scroll restoration on route navigation
+    description: Scroll to top on new page navigation. Restore scroll position on browser back. Preserve scroll in tab navigation.
+
+  - title: Add keyboard shortcuts for common admin actions
+    description: Cmd/Ctrl+K for search, N for new order, Escape to close modals. Show shortcut hints in tooltips. Add shortcuts help modal.
+
+  - title: Fix dark mode consistency across all components
+    description: Audit every component for dark mode. Fix hardcoded colors. Ensure charts, tables, cards, inputs all respect dark theme.
+
+  - title: Add real-time order count badge on sidebar nav
+    description: Show pending order count badge on Orders nav item. Update via Supabase realtime subscription. Animate on change.
+
+  - title: Fix print stylesheet for orders and invoices
+    description: Add @media print styles. Hide nav, footer, actions. Format order details for A4. Add business logo and address header.
+
+  - title: Add drag and drop for product image reordering
+    description: Product edit page should allow drag-drop to reorder images. Show thumbnail grid. Set primary image with star icon.
+
+  - title: Fix input autofocus on modal and page open
+    description: First input in modals and forms should autofocus on open. Search pages focus search input on mount. Proper focus ring.
+
+  - title: Add progressive loading for dashboard analytics
+    description: Dashboard should load critical stats first, then charts, then secondary widgets. Each loads independently with own skeleton.
+
+  - title: Fix mobile tap targets - minimum 44px touch areas
+    description: All clickable elements must be at least 44x44px on mobile. Add padding to small links and icons. Fix cramped button groups.
+
+  - title: Add batch import progress indicator for products
+    description: CSV import should show progress bar, current row count, error count. Allow cancel. Show summary with fix-needed items after.
+
+  - title: Optimize Supabase realtime subscriptions cleanup
+    description: Ensure all realtime subscriptions unsubscribe on component unmount. Use single channel per page not per component. Prevent leaks.
+
+  - title: Fix text truncation with tooltips on overflow
+    description: Long product names, customer names, addresses should truncate with ellipsis and show full text in tooltip on hover.
+
+  - title: Add sticky table headers for scrollable data tables
+    description: Table headers should stick to top when scrolling. Column sort indicators always visible. Works on both mobile and desktop.
+
+  - title: Fix color system and design token consistency
+    description: Create CSS custom properties for all colors. Replace hardcoded hex values. Ensure brand colors used consistently throughout.
+
+  - title: Add quick filters and saved views for order list
+    description: Filter pills for status, date range, customer. Save filter combos as named views. Remember last active filters per session.
+
+  - title: Fix image upload with preview, crop, and compression
+    description: Product image upload shows preview before save. Allow crop to square. Compress client-side before upload. Max 2MB limit.
+
+  - title: Add command palette search for admin navigation
+    description: Cmd+K opens search modal. Search across pages, orders, products, customers. Recent searches. Keyboard navigable results.
+
+  - title: Fix consistent card and container max-widths on desktop
+    description: Content should have max-width on large screens, not stretch to full. Center with consistent padding. Responsive breakpoints.
+
+  - title: Add onboarding checklist progress to dashboard
+    description: Show setup progress - add first product, configure payments, create menu, invite team. Dismissible after complete.
+
+  - title: Fix number input formatting for prices and quantities
+    description: Price inputs format as currency on blur. Quantity inputs allow only integers. Show increment/decrement buttons on desktop.
+
+  - title: Add breadcrumb navigation on detail pages
+    description: Product detail shows Products > Category > Product Name breadcrumb. Orders detail shows Orders > #12345. Clickable links.
+
+  - title: Optimize CSS with proper Tailwind purge configuration
+    description: Ensure Tailwind purges unused styles in production. Check all dynamic class names are safelisted. Target under 50KB CSS.
+
+  - title: Fix auto-save for long forms with draft indicator
+    description: Settings and product edit forms auto-save draft after 5s of no input. Show Saved/Unsaved indicator. Warn on navigate away.
+
+  - title: Add responsive chart sizing in analytics pages
+    description: Charts should resize on window resize. Use aspect ratio containers. Legend moves below chart on mobile. Touch-friendly tooltips.
+
+  - title: Fix consistent button sizing and hierarchy across app
+    description: Define primary, secondary, ghost, danger button variants. Consistent heights 36/40/44px. Icon buttons same height as text.
+
+  - title: Add network request retry with exponential backoff
+    description: Failed API requests retry 3 times with exponential backoff. Show retry indicator to user. Final failure shows error with manual retry.
+
+  - title: Fix select and dropdown menus on mobile - use native pickers
+    description: Dropdowns with many options should use native select on mobile for better scrolling. Custom dropdown on desktop only.
+
+  - title: Add inventory low stock warnings on dashboard and product list
+    description: Products below reorder point show yellow warning badge. Dashboard shows low stock count card. Click to see affected products.
+
+  - title: Fix consistent modal sizes and responsive behavior
+    description: Small modals for confirms, medium for forms, large for complex views. Full screen on mobile. Consistent close button position.
+
+  - title: Add CSV export for all data tables with current filters
+    description: Every list page gets Export CSV button. Exports with current search and filter applied. Include all visible columns.
+
+  - title: Fix authentication redirect flow and session refresh
+    description: Expired sessions redirect to login with return URL. After login redirect back. Refresh token before expiry. No flash of login page.
+
+  - title: Add product quick edit inline in table rows
+    description: Double-click price or stock quantity in table to edit inline. Tab to next editable cell. Enter to save, Escape to cancel.
+
+  - title: Fix consistent spacing and padding throughout application
+    description: Audit all page padding, card spacing, section gaps. Use 4px grid system consistently. Fix cramped and oversized areas.
+
+  - title: Add system status indicator in admin header
+    description: Small dot indicator in header showing system health - green normal, yellow degraded, red outage. Click for status details.
+
+  - title: Optimize initial page load with critical CSS inlining
+    description: Inline above-the-fold CSS. Defer non-critical styles. Preload key resources. Target under 3s First Contentful Paint.
+
+  - title: Fix order detail page layout for desktop two-column view
+    description: Order detail shows items and timeline in main column, customer info and actions in right sidebar. Stack on mobile.
+
+  - title: Add smart defaults and recent values for form fields
+    description: Category dropdowns remember last used. Price fields suggest based on similar products. Address fields autocomplete from history.
+
+  - title: Fix notification sound and browser notification support
+    description: Play subtle sound on new order if enabled. Request browser notification permission. Show new order notification when tab inactive.
+
+  - title: Add batch product price update tool
+    description: Select multiple products, apply percentage or fixed amount increase/decrease. Preview changes before applying. Undo available.
+
+  - title: Fix storefront product grid responsive columns
+    description: Product grid should be 4 cols on desktop, 3 on tablet, 2 on mobile. Consistent card heights. Proper gap spacing.
+
+  - title: Add global loading progress bar at top of page
+    description: Thin progress bar at top of viewport during page navigation and API calls. NProgress style. Completes smoothly on finish.
+
+  - title: Fix copy to clipboard for order IDs and tracking links
+    description: Click order ID to copy. Click tracking link to copy. Show brief copied tooltip. Works on mobile with share API fallback.
+
+  - title: Add customer order history timeline on customer detail
+    description: Customer page shows chronological timeline of all orders, communications, notes. Filter by type. Infinite scroll for history.
+
+  - title: Fix Supabase connection pooling and query batching
+    description: Use connection pooler URL. Batch related queries with Promise.all. Cancel in-flight queries on page navigation.
+
+  - title: Add responsive data visualization for analytics dashboard
+    description: Charts use canvas for performance. Responsive container queries. Touch pan and zoom on mobile. Lazy load off-screen charts.
+
+  - title: Fix menu builder drag and drop for mobile touch devices
+    description: Menu product reordering works with touch drag on mobile. Add grab handles. Visual drop target indicators. Haptic feedback.
