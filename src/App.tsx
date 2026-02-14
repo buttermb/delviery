@@ -38,6 +38,8 @@ import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { SkeletonAdminLayout } from "./components/loading/SkeletonAdminLayout";
 import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
+import { SkeletonStorefront } from "./components/loading/SkeletonStorefront";
+import { SkeletonCourier } from "./components/loading/SkeletonCourier";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
 import { setupGlobalErrorHandlers } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
@@ -456,9 +458,9 @@ const AuthConfirmPage = lazy(() => import("./pages/auth/AuthConfirmPage"));
 const SecureAccountPage = lazy(() => import("./pages/auth/SecureAccountPage").then(m => ({ default: m.SecureAccountPage })));
 
 // Feature Pages (Marketing)
-import FeatureCompliancePage from "./pages/features/CompliancePage";
-import FeatureLogisticsPage from "./pages/features/LogisticsPage";
-import FeatureEcommercePage from "./pages/features/EcommercePage";
+const FeatureCompliancePage = lazy(() => import("./pages/features/CompliancePage"));
+const FeatureLogisticsPage = lazy(() => import("./pages/features/LogisticsPage"));
+const FeatureEcommercePage = lazy(() => import("./pages/features/EcommercePage"));
 
 // Use the singleton QueryClient from centralized config
 const queryClient = appQueryClient;
@@ -613,15 +615,15 @@ const App = () => {
                                       <Route path="/marketplace/listings/:listingId" element={<PublicListingDetailPage />} />
 
                                       {/* Public Store Landing Page */}
-                                      <Route path="/store/:slug" element={<StoreLandingPage />} />
-                                      <Route path="/store/:slug/menu" element={<StoreMenuPage />} />
-                                      <Route path="/store/:slug/product/:id" element={<StoreProductPage />} />
+                                      <Route path="/store/:slug" element={<Suspense fallback={<SkeletonStorefront />}><StoreLandingPage /></Suspense>} />
+                                      <Route path="/store/:slug/menu" element={<Suspense fallback={<SkeletonStorefront />}><StoreMenuPage /></Suspense>} />
+                                      <Route path="/store/:slug/product/:id" element={<Suspense fallback={<SkeletonStorefront />}><StoreProductPage /></Suspense>} />
 
                                       {/* Encrypted Store Link (Private Shareable) */}
-                                      <Route path="/s/:token" element={<EncryptedStorePage />} />
+                                      <Route path="/s/:token" element={<Suspense fallback={<SkeletonStorefront />}><EncryptedStorePage /></Suspense>} />
 
                                       {/* White-Label Shop (Customer Storefront) */}
-                                      <Route path="/shop/:storeSlug" element={<ShopLayout />}>
+                                      <Route path="/shop/:storeSlug" element={<Suspense fallback={<SkeletonStorefront />}><ShopLayout /></Suspense>}>
                                         <Route index element={<ShopStorefrontPage />} />
                                         <Route path="products" element={<ShopProductCatalogPage />} />
                                         <Route path="products/:productId" element={<ShopProductDetailPage />} />
@@ -673,9 +675,11 @@ const App = () => {
                                       <Route path="/super-admin/auth/callback" element={<SuperAdminAuthCallback />} />
                                       <Route path="/super-admin/auth/mfa-challenge" element={<MFAChallengePage portal="super-admin" />} />
                                       <Route path="/super-admin/*" element={
-                                        <SuperAdminProtectedRouteNew>
-                                          <SuperAdminLayout />
-                                        </SuperAdminProtectedRouteNew>
+                                        <Suspense fallback={<SkeletonAdminLayout />}>
+                                          <SuperAdminProtectedRouteNew>
+                                            <SuperAdminLayout />
+                                          </SuperAdminProtectedRouteNew>
+                                        </Suspense>
                                       }>
                                         <Route path="dashboard" element={<SuperAdminDashboardPage />} />
                                         <Route path="monitoring" element={<SuperAdminMonitoringPage />} />
@@ -1104,87 +1108,93 @@ const App = () => {
                                       <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
 
                                       {/* ==================== COURIER PORTAL ==================== */}
-                                      <Route path="/courier/login" element={<CourierLoginPage />} />
+                                      <Route path="/courier/login" element={<Suspense fallback={<SkeletonCourier />}><CourierLoginPage /></Suspense>} />
                                       <Route
                                         path="/courier/*"
                                         element={
-                                          <ErrorBoundary title="Courier Portal Unavailable" description="We encountered an error loading the courier portal. Please try refreshing the page.">
-                                            <CourierProvider>
-                                              <Routes>
-                                                <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
-                                                <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
-                                                <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
-                                                <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
-                                                <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
-                                                <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
-                                              </Routes>
-                                            </CourierProvider>
-                                          </ErrorBoundary>
+                                          <Suspense fallback={<SkeletonCourier />}>
+                                            <ErrorBoundary title="Courier Portal Unavailable" description="We encountered an error loading the courier portal. Please try refreshing the page.">
+                                              <CourierProvider>
+                                                <Routes>
+                                                  <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
+                                                  <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
+                                                  <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
+                                                  <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
+                                                  <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
+                                                  <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
+                                                </Routes>
+                                              </CourierProvider>
+                                            </ErrorBoundary>
+                                          </Suspense>
                                         }
                                       />
 
                                       {/* ==================== CUSTOMER LOGIN LANDING (No Tenant) ==================== */}
-                                      <Route path="/customer/login" element={<CustomerLoginLanding />} />
-                                      <Route path="/shop/login" element={<CustomerLoginLanding />} />
+                                      <Route path="/customer/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginLanding /></Suspense>} />
+                                      <Route path="/shop/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginLanding /></Suspense>} />
 
                                       {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
-                                      <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
-                                      <Route path="/:tenantSlug/customer/signup" element={<CustomerSignUpPage />} />
-                                      <Route path="/:tenantSlug/customer/verify-email" element={<CustomerVerifyEmailPage />} />
-                                      <Route path="/:tenantSlug/customer/forgot-password" element={<CustomerForgotPasswordPage />} />
-                                      <Route path="/:tenantSlug/customer/reset-password" element={<CustomerResetPasswordPage />} />
-                                      <Route path="/:tenantSlug/customer/auth/callback" element={<CustomerAuthCallback />} />
-                                      <Route path="/:tenantSlug/customer/auth/mfa-challenge" element={<MFAChallengePage portal="customer" />} />
-                                      <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
-                                      <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
+                                      <Route path="/:tenantSlug/customer/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/signup" element={<Suspense fallback={<SkeletonStorefront />}><CustomerSignUpPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/verify-email" element={<Suspense fallback={<SkeletonStorefront />}><CustomerVerifyEmailPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/forgot-password" element={<Suspense fallback={<SkeletonStorefront />}><CustomerForgotPasswordPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/reset-password" element={<Suspense fallback={<SkeletonStorefront />}><CustomerResetPasswordPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/auth/callback" element={<Suspense fallback={<SkeletonStorefront />}><CustomerAuthCallback /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/auth/mfa-challenge" element={<Suspense fallback={<SkeletonStorefront />}><MFAChallengePage portal="customer" /></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/reset/:token" element={<Suspense fallback={<SkeletonStorefront />}><PasswordResetPage /></Suspense>} />
                                       {/* Public Routes */}
                                       <Route path="/portal/invoice/:token" element={<InvoicePublicPage />} />
                                       <Route path="/track" element={<DeliveryTrackingPage />} />
                                       <Route path="/track/:trackingCode" element={<DeliveryTrackingPage />} />
                                       <Route path="/:tenantSlug/shop" element={
-                                        <ErrorBoundary title="Shop Unavailable" description="We encountered an error loading the shop. Please try refreshing the page.">
-                                          <CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>
-                                        </ErrorBoundary>
+                                        <Suspense fallback={<SkeletonStorefront />}>
+                                          <ErrorBoundary title="Shop Unavailable" description="We encountered an error loading the shop. Please try refreshing the page.">
+                                            <CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>
+                                          </ErrorBoundary>
+                                        </Suspense>
                                       }>
                                         <Route index element={<Navigate to="dashboard" replace />} />
                                         <Route path="dashboard" element={<CustomerDashboardPage />} />
                                       </Route>
-                                      <Route path="/:tenantSlug/shop/cart" element={<CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/checkout" element={<CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/orders" element={<CustomerProtectedRoute><UnifiedOrdersPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/orders/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/orders/retail/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/cart" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/checkout" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/orders" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><UnifiedOrdersPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/orders/:orderId" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/orders/retail/:orderId" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/settings" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute></Suspense>} />
                                       {/* Retail Shopping Routes */}
-                                      <Route path="/:tenantSlug/shop/retail/businesses" element={<CustomerProtectedRoute><BusinessFinderPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/retail/businesses/:businessSlug/menu" element={<CustomerProtectedRoute><BusinessMenuPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/retail/businesses" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><BusinessFinderPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/retail/businesses/:businessSlug/menu" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><BusinessMenuPage /></CustomerProtectedRoute></Suspense>} />
                                       {/* Wholesale Marketplace Routes */}
-                                      <Route path="/:tenantSlug/shop/wholesale" element={<CustomerProtectedRoute><WholesaleMarketplacePage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/wholesale/cart" element={<CustomerProtectedRoute><WholesaleCartPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/wholesale/checkout" element={<CustomerProtectedRoute><WholesaleCheckoutPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/wholesale" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleMarketplacePage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/cart" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleCartPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/checkout" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleCheckoutPage /></CustomerProtectedRoute></Suspense>} />
                                       {/* Component renamed to avoid duplicate import */}
-                                      <Route path="/:tenantSlug/shop/wholesale/orders" element={<CustomerProtectedRoute><CustomerWholesaleOrdersPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/wholesale/orders/:orderId" element={<CustomerProtectedRoute><WholesaleOrderDetailPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/orders" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><CustomerWholesaleOrdersPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/orders/:orderId" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleOrderDetailPage /></CustomerProtectedRoute></Suspense>} />
 
                                       {/* ==================== VENDOR PORTAL (External Access) ==================== */}
                                       <Route
                                         path="/vendor/*"
                                         element={
-                                          <ErrorBoundary title="Vendor Portal Unavailable" description="We encountered an error loading the vendor portal. Please try refreshing the page.">
-                                            <VendorAuthProvider>
-                                              <Routes>
-                                                <Route path="login" element={<VendorLoginPage />} />
-                                                <Route path="dashboard" element={<ProtectedVendorRoute><VendorDashboardPage /></ProtectedVendorRoute>} />
-                                                <Route path="order/:orderId" element={<ProtectedVendorRoute><VendorOrderDetailPage /></ProtectedVendorRoute>} />
-                                              </Routes>
-                                            </VendorAuthProvider>
-                                          </ErrorBoundary>
+                                          <Suspense fallback={<LoadingFallback />}>
+                                            <ErrorBoundary title="Vendor Portal Unavailable" description="We encountered an error loading the vendor portal. Please try refreshing the page.">
+                                              <VendorAuthProvider>
+                                                <Routes>
+                                                  <Route path="login" element={<VendorLoginPage />} />
+                                                  <Route path="dashboard" element={<ProtectedVendorRoute><VendorDashboardPage /></ProtectedVendorRoute>} />
+                                                  <Route path="order/:orderId" element={<ProtectedVendorRoute><VendorOrderDetailPage /></ProtectedVendorRoute>} />
+                                                </Routes>
+                                              </VendorAuthProvider>
+                                            </ErrorBoundary>
+                                          </Suspense>
                                         }
                                       />
 
                                       {/* ==================== COMMUNITY FORUM (Global) ==================== */}
-                                      <Route path="/community/auth" element={<CommunityAuthPage />} />
-                                      <Route path="/community" element={<CommunityProtectedRoute><CommunityLayout /></CommunityProtectedRoute>}>
+                                      <Route path="/community/auth" element={<Suspense fallback={<LoadingFallback />}><CommunityAuthPage /></Suspense>} />
+                                      <Route path="/community" element={<Suspense fallback={<LoadingFallback />}><CommunityProtectedRoute><CommunityLayout /></CommunityProtectedRoute></Suspense>}>
                                         <Route index element={<CommunityHomePage />} />
                                         <Route path="c/:categorySlug" element={<CategoryPage />} />
                                         <Route path="post/:postId" element={<PostDetailPage />} />
