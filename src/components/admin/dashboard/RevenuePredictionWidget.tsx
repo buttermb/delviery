@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { 
-  Sparkles, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  AlertTriangle,
-  Loader2 
+import {
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertTriangle
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   LineChart,
   Line,
@@ -109,10 +109,41 @@ export function RevenuePredictionWidget() {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-sm text-muted-foreground">Loading predictions...</span>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Skeleton className="h-5 w-5 rounded" />
+            <Skeleton className="h-6 w-40" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Summary Cards skeleton */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-5 w-14 rounded-full" />
+              </div>
+            </div>
+          </div>
+          {/* Chart skeleton */}
+          <Skeleton className="h-64 w-full rounded-lg" />
+          {/* Daily Breakdown skeleton */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between p-2">
+                <Skeleton className="h-4 w-20" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
