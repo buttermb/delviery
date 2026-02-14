@@ -1,5 +1,7 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { logger } from "@/lib/logger";
+import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import { triggerHaptic } from '@/lib/utils/mobile';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,31 +47,36 @@ export function InventoryManagement() {
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
-  useEffect(() => {
-    async function loadInventory() {
-      if (!tenant?.id) return;
+  const loadInventory = useCallback(async () => {
+    if (!tenant?.id) return;
 
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('id, tenant_id, name, sku, batch_number, available_quantity, low_stock_alert, category, cost_per_unit, wholesale_price, price_per_lb')
-          .eq('tenant_id', tenant.id)
-          .order('name');
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, tenant_id, name, sku, batch_number, available_quantity, low_stock_alert, category, cost_per_unit, wholesale_price, price_per_lb')
+        .eq('tenant_id', tenant.id)
+        .order('name');
 
-        if (error) throw error;
-        // Map data to include warehouse_location as empty string for compatibility
-        setProducts(((data || []) as Array<Record<string, unknown>>).map(p => ({ ...p, warehouse_location: '' })) as Product[]);
-      } catch (error) {
-        logger.error('Error loading inventory', error, { component: 'InventoryManagement' });
-        toast.error("Failed to load inventory");
-      } finally {
-        setLoading(false);
-      }
+      if (error) throw error;
+      // Map data to include warehouse_location as empty string for compatibility
+      setProducts(((data || []) as Array<Record<string, unknown>>).map(p => ({ ...p, warehouse_location: '' })) as Product[]);
+    } catch (error) {
+      logger.error('Error loading inventory', error, { component: 'InventoryManagement' });
+      toast.error("Failed to load inventory");
+    } finally {
+      setLoading(false);
     }
-
-    loadInventory();
   }, [tenant?.id]);
+
+  useEffect(() => {
+    loadInventory();
+  }, [loadInventory]);
+
+  const handleRefresh = useCallback(async () => {
+    await loadInventory();
+    triggerHaptic('light');
+  }, [loadInventory]);
 
   // Memoize grouped inventory to prevent recalculation
   const groupedInventory = useMemo(() => {
@@ -238,6 +245,7 @@ export function InventoryManagement() {
   };
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
@@ -378,5 +386,6 @@ export function InventoryManagement() {
         onComplete={() => { setSelectedProductIds(new Set()); setBulkModalOpen(false); }}
       />
     </div>
+    </PullToRefresh>
   );
 }

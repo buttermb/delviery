@@ -6,6 +6,8 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import { triggerHaptic } from '@/lib/utils/mobile';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
@@ -160,6 +162,7 @@ export function ProductsListPage() {
     data: products = [],
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: queryKeys.products.byTenant(tenant?.id || ''),
     queryFn: async () => {
@@ -419,6 +422,11 @@ export function ProductsListPage() {
     }
   }, [selectedProducts.length, filteredProducts]);
 
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+    triggerHaptic('light');
+  }, [refetch]);
+
   // Virtual scrolling for grid view
   // Calculate items per row dynamically based on viewport
   const getColumnsPerRow = () => {
@@ -673,6 +681,7 @@ export function ProductsListPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -933,6 +942,7 @@ export function ProductsListPage() {
         onClose={() => setShowComparison(false)}
       />
     </div>
+    </PullToRefresh>
   );
 }
 
