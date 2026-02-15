@@ -149,20 +149,21 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
       const averageOrderValue = orderCount > 0 ? totalOrderValue / orderCount : 0;
 
       // Get customer preferences (stored in customer_preferences table if exists)
-      const { data: preferencesData } = await supabase
+      const { data: preferencesData } = await (supabase as any)
         .from('customer_preferences')
         .select('*')
         .eq('customer_id', customerData.id)
         .eq('tenant_id', tenantId)
         .maybeSingle();
 
-      const preferences: CustomerPreferences = preferencesData ? {
-        email_notifications: preferencesData.email_notifications ?? true,
-        sms_notifications: preferencesData.sms_notifications ?? false,
-        marketing_emails: preferencesData.marketing_emails ?? true,
-        preferred_delivery_time: preferencesData.preferred_delivery_time ?? null,
-        dietary_preferences: preferencesData.dietary_preferences ?? [],
-        favorite_categories: preferencesData.favorite_categories ?? [],
+      const prefs = preferencesData as any;
+      const preferences: CustomerPreferences = prefs ? {
+        email_notifications: prefs.email_notifications ?? true,
+        sms_notifications: prefs.sms_notifications ?? false,
+        marketing_emails: prefs.marketing_emails ?? true,
+        preferred_delivery_time: prefs.preferred_delivery_time ?? null,
+        dietary_preferences: prefs.dietary_preferences ?? [],
+        favorite_categories: prefs.favorite_categories ?? [],
       } : {
         email_notifications: true,
         sms_notifications: false,
@@ -206,7 +207,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     queryFn: async (): Promise<BrowsingHistoryItem[]> => {
       if (!profile?.id || !tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_browsing_history')
         .select(`
           id,
@@ -231,12 +232,12 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         return [];
       }
 
-      return (data ?? []).map((item: Record<string, unknown>) => ({
+      return (data ?? []).map((item: any) => ({
         id: item.id as string,
         product_id: item.product_id as string,
-        product_name: (item.products as Record<string, unknown>)?.name as string ?? 'Unknown Product',
-        product_image: (item.products as Record<string, unknown>)?.image_url as string | null,
-        product_price: Number((item.products as Record<string, unknown>)?.price) || 0,
+        product_name: item.products?.name ?? 'Unknown Product',
+        product_image: item.products?.image_url ?? null,
+        product_price: Number(item.products?.price) || 0,
         viewed_at: item.viewed_at as string,
       }));
     },
@@ -254,7 +255,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     queryFn: async (): Promise<WishlistItem[]> => {
       if (!profile?.id || !tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_wishlist')
         .select(`
           id,
@@ -279,14 +280,14 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         return [];
       }
 
-      return (data ?? []).map((item: Record<string, unknown>) => ({
+      return (data ?? []).map((item: any) => ({
         id: item.id as string,
         product_id: item.product_id as string,
-        product_name: (item.products as Record<string, unknown>)?.name as string ?? 'Unknown Product',
-        product_image: (item.products as Record<string, unknown>)?.image_url as string | null,
-        product_price: Number((item.products as Record<string, unknown>)?.price) || 0,
+        product_name: item.products?.name ?? 'Unknown Product',
+        product_image: item.products?.image_url ?? null,
+        product_price: Number(item.products?.price) || 0,
         added_at: item.created_at as string,
-        in_stock: Number((item.products as Record<string, unknown>)?.stock_quantity) > 0,
+        in_stock: Number(item.products?.stock_quantity) > 0,
       }));
     },
     enabled: enabled && !!profile?.id && !!tenantId,
@@ -300,7 +301,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_browsing_history')
         .upsert({
           customer_id: profile.id,
@@ -331,7 +332,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_wishlist')
         .insert({
           customer_id: profile.id,
@@ -366,7 +367,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_wishlist')
         .delete()
         .eq('customer_id', profile.id)
@@ -395,7 +396,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_preferences')
         .upsert({
           customer_id: profile.id,

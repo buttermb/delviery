@@ -339,7 +339,7 @@ export function useRelatedClientPayments(clientId: string | undefined) {
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    [...queryKeys.payments.byClient(clientId || ''), 'related'] as const,
+    ['related-client-payments', clientId || ''] as string[],
     async (): Promise<RelatedEntityItem[]> => {
       const { data: payments, error } = await supabase
         .from('customer_payments')
@@ -388,7 +388,7 @@ export function useRelatedEntities(
 
   // Create queries based on entity type
   const queries = useQueries({
-    queries: getQueriesForEntityType(entityType, entityId, tenantId),
+    queries: getQueriesForEntityType(entityType, entityId, tenantId) as any[],
   });
 
   // Check loading/error states
@@ -446,9 +446,9 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'customer'],
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('orders')
-          .select('customer_id, customer_name, customer_email, customer_phone')
+          .select('customer_id, customer_name')
           .eq('id', orderId!)
           .eq('tenant_id', tenantId!)
           .maybeSingle();
@@ -458,13 +458,13 @@ function getOrderQueries(
           throw error;
         }
 
-        if (!data || !data.customer_id) return null;
+        if (!data || !(data as any).customer_id) return null;
 
         return {
-          id: data.customer_id,
-          name: data.customer_name ?? 'Unknown',
-          email: data.customer_email ?? null,
-          phone: data.customer_phone ?? null,
+          id: (data as any).customer_id,
+          name: (data as any).customer_name ?? 'Unknown',
+          email: null,
+          phone: null,
         } as RelatedCustomer;
       },
       enabled,
@@ -474,12 +474,12 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'products'],
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('order_items')
           .select(`
             id,
             quantity,
-            unit_price,
+            price_at_order_time,
             product_id,
             products:product_id (
               id,
@@ -497,13 +497,13 @@ function getOrderQueries(
           throw error;
         }
 
-        return (data ?? []).map((item) => {
+        return (data ?? []).map((item: any) => {
           const product = item.products as { id: string; name: string; sku: string | null; price: number | null; image_url: string | null } | null;
           return {
             id: product?.id ?? item.product_id,
             name: product?.name ?? 'Unknown Product',
             sku: product?.sku ?? null,
-            price: item.unit_price ?? product?.price ?? null,
+            price: item.price_at_order_time ?? product?.price ?? null,
             quantity: item.quantity ?? 1,
             image_url: product?.image_url ?? null,
           } as RelatedProduct;
@@ -516,13 +516,11 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'delivery'],
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('wholesale_deliveries')
           .select(`
             id,
             status,
-            scheduled_at,
-            delivered_at,
             tracking_url,
             courier_id,
             couriers:courier_id (
@@ -541,16 +539,16 @@ function getOrderQueries(
 
         if (!data) return null;
 
-        const courier = data.couriers as { full_name: string | null; phone: string | null } | null;
+        const courier = (data as any).couriers as { full_name: string | null; phone: string | null } | null;
 
         return {
-          id: data.id,
-          status: data.status ?? 'pending',
+          id: (data as any).id,
+          status: (data as any).status ?? 'pending',
           courier_name: courier?.full_name ?? null,
           courier_phone: courier?.phone ?? null,
-          scheduled_at: data.scheduled_at ?? null,
-          delivered_at: data.delivered_at ?? null,
-          tracking_url: data.tracking_url ?? null,
+          scheduled_at: null,
+          delivered_at: null,
+          tracking_url: (data as any).tracking_url ?? null,
         } as RelatedDelivery;
       },
       enabled,
@@ -560,7 +558,7 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'payment'],
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('payments')
           .select('id, amount, status, payment_method, paid_at, transaction_id')
           .eq('order_id', orderId!)
@@ -576,12 +574,12 @@ function getOrderQueries(
         if (!data) return null;
 
         return {
-          id: data.id,
-          amount: data.amount ?? 0,
-          status: data.status ?? 'pending',
-          method: data.payment_method ?? null,
-          paid_at: data.paid_at ?? null,
-          transaction_id: data.transaction_id ?? null,
+          id: (data as any).id,
+          amount: (data as any).amount ?? 0,
+          status: (data as any).status ?? 'pending',
+          method: (data as any).payment_method ?? null,
+          paid_at: (data as any).paid_at ?? null,
+          transaction_id: (data as any).transaction_id ?? null,
         } as RelatedPayment;
       },
       enabled,
@@ -663,7 +661,7 @@ function getProductQueries(
       queryKey: [...queryKeys.products.related(tenantId ?? '', productId ?? ''), 'vendor'],
       queryFn: async () => {
         // First get the product's vendor_id
-        const { data: product, error: productError } = await supabase
+        const { data: product, error: productError } = await (supabase as any)
           .from('products')
           .select('vendor_id')
           .eq('id', productId!)
@@ -675,36 +673,28 @@ function getProductQueries(
           throw productError;
         }
 
-        if (!product?.vendor_id) return null;
+        if (!(product as any)?.vendor_id) return null;
 
         // Fetch vendor details using suppliers table
-        const { data: vendor, error: vendorError } = await (supabase as unknown as {
-          from: (table: string) => {
-            select: (columns: string) => {
-              eq: (column: string, value: string) => {
-                maybeSingle: () => Promise<{ data: { id: string; company_name: string | null; email: string | null; phone: string | null; contact_name: string | null } | null; error: Error | null }>;
-              };
-            };
-          };
-        })
+        const { data: vendor, error: vendorError } = await (supabase as any)
           .from('suppliers')
           .select('id, company_name, email, phone, contact_name')
-          .eq('id', product.vendor_id)
+          .eq('id', (product as any).vendor_id)
           .maybeSingle();
 
         if (vendorError) {
-          logger.error('Failed to fetch vendor', vendorError, { vendorId: product.vendor_id });
+          logger.error('Failed to fetch vendor', vendorError, { vendorId: (product as any).vendor_id });
           throw vendorError;
         }
 
         if (!vendor) return null;
 
         return {
-          id: vendor.id,
-          name: vendor.company_name ?? 'Unknown Vendor',
-          email: vendor.email ?? null,
-          phone: vendor.phone ?? null,
-          contact_name: vendor.contact_name ?? null,
+          id: (vendor as any).id,
+          name: (vendor as any).company_name ?? 'Unknown Vendor',
+          email: (vendor as any).email ?? null,
+          phone: (vendor as any).phone ?? null,
+          contact_name: (vendor as any).contact_name ?? null,
         } as RelatedVendor;
       },
       enabled,
@@ -773,7 +763,7 @@ function getProductQueries(
     {
       queryKey: [...queryKeys.products.related(tenantId ?? '', productId ?? ''), 'stock'],
       queryFn: async () => {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('inventory')
           .select(`
             id,
@@ -795,7 +785,7 @@ function getProductQueries(
         }
 
         let totalStock = 0;
-        const stock = (data ?? []).map((item) => {
+        const stock = (data ?? []).map((item: any) => {
           const location = item.locations as { id: string; name: string } | null;
           const quantity = item.quantity ?? 0;
           const reserved = item.reserved_quantity ?? 0;

@@ -47,7 +47,7 @@ interface UseProductPriceUpdateReturn {
  * Hook for managing product price updates with menu sync
  */
 export function useProductPriceUpdate(): UseProductPriceUpdateReturn {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);

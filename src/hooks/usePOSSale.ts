@@ -185,10 +185,7 @@ export function usePOSSale() {
       // If customer was attached, also update their stats
       if (input.customer_id && tenantId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.stats(input.customer_id),
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(input.customer_id),
+          queryKey: queryKeys.customers.details(),
         });
       }
 

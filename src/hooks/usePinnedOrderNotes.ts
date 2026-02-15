@@ -59,10 +59,10 @@ export const PIN_REASONS = [
 export type PinReason = typeof PIN_REASONS[number]['value'];
 
 export function usePinnedOrderNotes() {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
-  const currentUserId = user?.id;
+  const currentUserId = admin?.id;
 
   // Fetch pinned notes
   const { data: pinnedNotes = [], isLoading, error, refetch } = useQuery({

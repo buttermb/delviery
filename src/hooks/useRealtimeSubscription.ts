@@ -358,7 +358,7 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event,
           schema,

@@ -187,7 +187,7 @@ async function fetchOrganizationDetail(
   tenantId: string,
   orgId: string
 ): Promise<OrganizationWithStats | null> {
-  const { data: org, error } = await supabase
+  const { data: org, error } = await (supabase as any)
     .from('customer_organizations')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -206,18 +206,18 @@ async function fetchOrganizationDetail(
   if (!org) return null;
 
   // Get member count
-  const { count: memberCount } = await supabase
+  const { count: memberCount } = await (supabase as any)
     .from('organization_members')
     .select('*', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
-    .eq('organization_id', org.id);
+    .eq('organization_id', (org as any).id);
 
   // Get orders and LTV data
-  const { data: orderStats } = await supabase
+  const { data: orderStats } = await (supabase as any)
     .from('unified_orders')
     .select('total_amount, created_at')
     .eq('tenant_id', tenantId)
-    .eq('organization_id', org.id)
+    .eq('organization_id', (org as any).id)
     .in('status', ['completed', 'delivered', 'paid']);
 
   const validOrders = orderStats || [];
@@ -614,7 +614,7 @@ export function useOrganizationDetail({
     mutationFn: async (data: AddMemberFormValues): Promise<OrganizationMember> => {
       if (!tenantId || !organizationId) throw new Error('Missing context');
 
-      const { data: member, error } = await supabase
+      const { data: member, error } = await (supabase as any)
         .from('organization_members')
         .insert({
           tenant_id: tenantId,
@@ -664,7 +664,7 @@ export function useOrganizationDetail({
     mutationFn: async (memberId: string): Promise<void> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('organization_members')
         .delete()
         .eq('id', memberId)
@@ -706,7 +706,7 @@ export function useOrganizationDetail({
     }): Promise<OrganizationMember> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: updated, error } = await supabase
+      const { data: updated, error } = await (supabase as any)
         .from('organization_members')
         .update({
           ...data,
@@ -806,7 +806,7 @@ export function useOrganizationSearch(searchTerm: string) {
     queryFn: async () => {
       if (!tenantId || !searchTerm || searchTerm.length < 2) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_organizations')
         .select('id, name, legal_name, organization_type, status')
         .eq('tenant_id', tenantId)
@@ -851,7 +851,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
     queryFn: async () => {
       if (!tenantId || !customerId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('organization_members')
         .select(`
           *,
@@ -881,8 +881,8 @@ export function useCustomerOrganizations(customerId: string | undefined) {
 
   const organizations = useMemo(() => {
     return (data || [])
-      .filter((m) => m.organization)
-      .map((m) => ({
+      .filter((m: any) => m.organization)
+      .map((m: any) => ({
         membership: m,
         organization: m.organization,
       }));

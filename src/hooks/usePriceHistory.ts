@@ -75,7 +75,7 @@ export function usePriceHistory(productId: string | undefined, timeRange: '30d' 
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: [...queryKeys.products.detail(productId ?? ''), 'priceHistory', timeRange],
+    queryKey: [...queryKeys.products.details(), 'priceHistory', productId, timeRange],
     queryFn: async (): Promise<PriceHistoryEntry[]> => {
       if (!productId || !tenant?.id) {
         return [];
@@ -100,7 +100,7 @@ export function usePriceHistory(productId: string | undefined, timeRange: '30d' 
           break;
       }
 
-      let query = supabase
+      let query = (supabase as any)
         .from('pricing_history')
         .select('*')
         .eq('product_id', productId)
@@ -169,7 +169,7 @@ export function useRecentPriceChange(productId: string | undefined, withinDays: 
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: [...queryKeys.products.detail(productId ?? ''), 'recentPriceChange', withinDays],
+    queryKey: [...queryKeys.products.details(), 'recentPriceChange', productId, withinDays],
     queryFn: async (): Promise<RecentPriceChange | null> => {
       if (!productId || !tenant?.id) {
         return null;
@@ -201,7 +201,7 @@ export function useRecentPriceChange(productId: string | undefined, withinDays: 
  * Hook for logging a price change
  */
 export function useLogPriceChange() {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -215,7 +215,7 @@ export function useLogPriceChange() {
       }).rpc('log_price_change', {
         p_product_id: params.productId,
         p_tenant_id: tenant.id,
-        p_changed_by: user?.id ?? null,
+        p_changed_by: admin?.id ?? null,
         p_wholesale_old: params.wholesalePriceOld ?? null,
         p_wholesale_new: params.wholesalePriceNew ?? null,
         p_retail_old: params.retailPriceOld ?? null,
@@ -264,10 +264,10 @@ export function useLogPriceChange() {
     onSuccess: (_data, params) => {
       // Invalidate price history queries
       queryClient.invalidateQueries({
-        queryKey: [...queryKeys.products.detail(params.productId), 'priceHistory'],
+        queryKey: [...queryKeys.products.details(), 'priceHistory', params.productId],
       });
       queryClient.invalidateQueries({
-        queryKey: [...queryKeys.products.detail(params.productId), 'recentPriceChange'],
+        queryKey: [...queryKeys.products.details(), 'recentPriceChange', params.productId],
       });
     },
     onError: (error) => {

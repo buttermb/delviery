@@ -55,7 +55,7 @@ export function useProductArchive(options: UseProductArchiveOptions = {}) {
         .maybeSingle();
 
       // Use the RPC function for atomic archive operation
-      const { data, error } = await supabase.rpc('archive_product', {
+      const { data, error } = await (supabase as any).rpc('archive_product', {
         p_product_id: productId,
         p_tenant_id: tenant.id,
       });
@@ -127,7 +127,7 @@ export function useProductArchive(options: UseProductArchiveOptions = {}) {
         .maybeSingle();
 
       // Use the RPC function for atomic unarchive operation
-      const { data, error } = await supabase.rpc('unarchive_product', {
+      const { data, error } = await (supabase as any).rpc('unarchive_product', {
         p_product_id: productId,
         p_tenant_id: tenant.id,
       });

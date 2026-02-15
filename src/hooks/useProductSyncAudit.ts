@@ -97,7 +97,7 @@ export function useProductSyncAudit(
         return [];
       }
 
-      let query = supabase
+      let query = (supabase as any)
         .from('product_sync_audit')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -171,7 +171,7 @@ export function useProductsLatestSync(tenantId: string | null) {
       }
 
       // Get the latest sync record for each product
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('product_sync_audit')
         .select('*')
         .eq('tenant_id', tenantId)

@@ -240,7 +240,7 @@ export function useRelatedProducts({
       const productIds = sortedProducts.map(([pid]) => pid);
 
       // Step 4: Fetch product details
-      const { data: products, error: productsError } = await supabase
+      const { data: products, error: productsError } = await (supabase as any)
         .from('products')
         .select(
           'id, name, sku, image_url, price, category, is_active, stock_quantity, available_quantity'
@@ -259,7 +259,7 @@ export function useRelatedProducts({
       // Build related products list
       const productMap = new Map(
         (products ?? []).map((p) => {
-          const prod = p as ProductData;
+          const prod = p as unknown as ProductData;
           return [prod.id, prod];
         })
       );
@@ -481,7 +481,7 @@ export function useBulkRelatedProducts({
 
       const productDetailsMap = new Map(
         (products ?? []).map((p) => {
-          const prod = p as ProductData;
+          const prod = p as unknown as ProductData;
           return [prod.id, prod];
         })
       );
@@ -579,7 +579,7 @@ export function useStorefrontRelatedProducts({
       });
 
       // First get the tenant_id from the store
-      const { data: store, error: storeError } = await supabase
+      const { data: store, error: storeError } = await (supabase as any)
         .from('storefront_settings')
         .select('tenant_id')
         .eq('id', storeId)
@@ -593,11 +593,11 @@ export function useStorefrontRelatedProducts({
         throw storeError;
       }
 
-      if (!store?.tenant_id) {
+      if (!(store as any)?.tenant_id) {
         return { relatedProducts: [], totalCoOccurrences: 0 };
       }
 
-      const tenantId = store.tenant_id;
+      const tenantId = (store as any).tenant_id;
 
       // Calculate date range
       const now = new Date();
@@ -684,7 +684,7 @@ export function useStorefrontRelatedProducts({
       const productIds = sortedProducts.map(([pid]) => pid);
 
       // Fetch active products with stock
-      const { data: products, error: productsError } = await supabase
+      const { data: products, error: productsError } = await (supabase as any)
         .from('products')
         .select(
           'id, name, sku, image_url, price, category, is_active, stock_quantity, available_quantity'
@@ -702,7 +702,7 @@ export function useStorefrontRelatedProducts({
 
       const productMap = new Map(
         (products ?? []).map((p) => {
-          const prod = p as ProductData;
+          const prod = p as unknown as ProductData;
           return [prod.id, prod];
         })
       );
@@ -711,7 +711,7 @@ export function useStorefrontRelatedProducts({
       let totalCoOccurrences = 0;
 
       for (const [pid, count] of sortedProducts) {
-        const product = productMap.get(pid);
+        const product = productMap.get(pid) as any;
         if (!product) continue;
 
         const stock = product.available_quantity ?? product.stock_quantity ?? 0;

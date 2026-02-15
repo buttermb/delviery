@@ -272,10 +272,7 @@ export function useProcessRefund() {
       // Customer-specific invalidation
       if (input.customer_id) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(input.customer_id),
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.stats(input.customer_id),
+          queryKey: queryKeys.customers.details(),
         });
       }
 
