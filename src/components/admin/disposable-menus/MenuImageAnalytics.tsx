@@ -84,8 +84,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           .gte('accessed_at', startOfDay.toISOString())
           .lte('accessed_at', endOfDay.toISOString());
 
-        // @ts-expect-error - Avoid deep type instantiation
-        const { count: zooms } = await supabase
+        const { count: zooms } = await (supabase as any)
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
@@ -93,8 +92,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           .gte('accessed_at', startOfDay.toISOString())
           .lte('accessed_at', endOfDay.toISOString());
 
-        // @ts-expect-error - Avoid deep type instantiation
-        const { count: conversions } = await supabase
+        const { count: conversions } = await (supabase as any)
           .from('menu_orders')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)

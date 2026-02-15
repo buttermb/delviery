@@ -69,7 +69,7 @@ export function MenuProductOrderingDialog({
         product_id: item.product_id,
         custom_price: item.custom_price,
         display_order: item.display_order,
-        product: item.products as {
+        product: item.products as unknown as {
           id: string;
           name: string;
           price: number;

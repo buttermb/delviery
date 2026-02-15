@@ -143,7 +143,7 @@ const useMenuSchedules = (tenantId?: string) => {
       if (!tenantId) return [];
 
       // Use typed query to fetch from menu_schedules
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('menu_schedules')
         .select(`
           id,
@@ -165,17 +165,17 @@ const useMenuSchedules = (tenantId?: string) => {
         return [];
       }
 
-      return (data || []).map((schedule) => ({
-        id: schedule.id as string,
-        menuId: schedule.menu_id as string,
-        menuName: (schedule.disposable_menus as unknown as { name: string })?.name || 'Unknown Menu',
-        tenantId: schedule.tenant_id as string,
-        startTime: schedule.start_time as string,
-        endTime: schedule.end_time as string | null,
-        isRecurring: schedule.is_recurring as boolean,
-        recurrenceRule: schedule.recurrence_rule as string | null,
-        isActive: schedule.is_active as boolean,
-        createdAt: schedule.created_at as string,
+      return (data || []).map((schedule: any) => ({
+        id: schedule.id,
+        menuId: schedule.menu_id,
+        menuName: schedule.disposable_menus?.name || 'Unknown Menu',
+        tenantId: schedule.tenant_id,
+        startTime: schedule.start_time,
+        endTime: schedule.end_time,
+        isRecurring: schedule.is_recurring,
+        recurrenceRule: schedule.recurrence_rule,
+        isActive: schedule.is_active,
+        createdAt: schedule.created_at,
       }));
     },
     enabled: !!tenantId,
@@ -235,7 +235,7 @@ const useCreateSchedule = () => {
       isRecurring: boolean;
       recurrenceRule: string | null;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('menu_schedules')
         .insert({
           menu_id: scheduleData.menuId,
@@ -285,7 +285,7 @@ const useUpdateSchedule = () => {
       if (scheduleData.recurrenceRule !== undefined) updateData.recurrence_rule = scheduleData.recurrenceRule;
       if (scheduleData.isActive !== undefined) updateData.is_active = scheduleData.isActive;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('menu_schedules')
         .update(updateData)
         .eq('id', scheduleData.id)
@@ -314,7 +314,7 @@ const useDeleteSchedule = () => {
 
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('menu_schedules')
         .delete()
         .eq('id', id)

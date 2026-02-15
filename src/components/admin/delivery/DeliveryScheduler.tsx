@@ -199,7 +199,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
       if (!tenantId) return [];
 
       // First try to get from delivery_time_slots table
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_time_slots')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -216,7 +216,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
         return getDefaultTimeSlots();
       }
 
-      return data.map((slot) => ({
+      return (data || []).map((slot: any) => ({
         id: slot.id,
         label: slot.label,
         start_time: slot.start_time,
@@ -268,7 +268,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
         delivery_scheduled_at: order.delivery_scheduled_at!,
         slot_label: getSlotLabelForTime(order.delivery_scheduled_at!, timeSlots),
         status: order.status,
-        courier_name: order.couriers?.full_name || null,
+        courier_name: (order.couriers as any)?.full_name || null,
       }));
     },
     enabled: !!tenantId && timeSlots.length > 0,
@@ -348,7 +348,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
       };
 
       if (data.id) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('delivery_time_slots')
           .update(slotData)
           .eq('id', data.id)
@@ -356,7 +356,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('delivery_time_slots')
           .insert(slotData);
 
@@ -381,7 +381,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
     mutationFn: async (slotId: string) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('delivery_time_slots')
         .delete()
         .eq('id', slotId)

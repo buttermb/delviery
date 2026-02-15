@@ -319,7 +319,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
       if (!tenantId || !currentMenuId) return [];
 
       // Fetch access logs with utm parameters
-      const { data: logs, error: logsError } = await supabase
+      const { data: logs, error: logsError } = await (supabase as any)
         .from('menu_access_logs')
         .select('id, utm_source, utm_medium, utm_campaign')
         .eq('menu_id', currentMenuId);
@@ -329,7 +329,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
       }
 
       // Fetch orders
-      const { data: orders, error: ordersError } = await supabase
+      const { data: orders, error: ordersError } = await (supabase as any)
         .from('menu_orders')
         .select('id, utm_source')
         .eq('menu_id', currentMenuId)

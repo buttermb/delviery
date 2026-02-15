@@ -72,7 +72,7 @@ export function ProofOfDelivery({
   const form = useForm<ProofOfDeliveryFormData>({
     resolver: zodResolver(proofOfDeliverySchema),
     defaultValues: {
-      recipientName: delivery?.order?.customer_name || '',
+      recipientName: (delivery?.order as any)?.customer_name || '',
       notes: '',
     },
   });
@@ -259,7 +259,7 @@ export function ProofOfDelivery({
       const capturedAt = new Date().toISOString();
 
       // Store in database
-      const { error: insertError } = await supabase.from('delivery_proofs').insert({
+      const { error: insertError } = await (supabase as any).from('delivery_proofs').insert({
         id: proofId,
         tenant_id: tenant.id,
         delivery_id: deliveryId,

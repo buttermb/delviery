@@ -75,7 +75,7 @@ export function DeliveryStatusWidget() {
   };
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: queryKeys.deliveries.list({ tenantId: tenant?.id, widget: 'status' }),
+    queryKey: queryKeys.deliveries.list(tenant?.id, { widget: 'status' }),
     queryFn: async (): Promise<DeliveryStats> => {
       if (!tenant?.id) {
         return { active: 0, inTransit: 0, completed: 0, total: 0 };

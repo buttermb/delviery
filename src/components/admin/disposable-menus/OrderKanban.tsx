@@ -120,8 +120,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
         }
       }
 
-      // @ts-expect-error - Dynamic status value
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('menu_orders')
         .update(updates)
         .eq('id', orderId);

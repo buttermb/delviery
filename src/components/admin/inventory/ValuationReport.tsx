@@ -163,7 +163,7 @@ export function ValuationReport({ className }: ValuationReportProps) {
 
       // Fetch previous period inventory history for comparison
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
-      const { data: historyData, error: historyError } = await supabase
+      const { data: historyData, error: historyError } = await (supabase as any)
         .from('inventory_history')
         .select('product_id, previous_quantity, created_at')
         .eq('tenant_id', tenant.id)

@@ -16,8 +16,7 @@ export function LocationOverviewWidget() {
             today.setHours(0, 0, 0, 0);
 
             // Try to fetch locations from locations table
-            // @ts-expect-error - Deep type instantiation from Supabase query
-            const { data: locs } = await supabase
+            const { data: locs } = await (supabase as any)
                 .from('locations')
                 .select('id, name, address')
                 .eq('tenant_id', tenant.id)
