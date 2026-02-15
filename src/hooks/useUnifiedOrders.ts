@@ -344,7 +344,7 @@ export function useCreateUnifiedOrder() {
         .from('unified_orders')
         .select('*, items:unified_order_items(*)')
         .eq('id', orderId)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 

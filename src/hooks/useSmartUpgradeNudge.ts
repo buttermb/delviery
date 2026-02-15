@@ -203,7 +203,7 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
         .from('tenants')
         .select('created_at')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       const todayBurn = (todayUsage || []).reduce(
         (sum, t) => sum + Math.abs(t.amount),

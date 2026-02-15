@@ -11,6 +11,7 @@ import { useGuestCart } from "@/hooks/useGuestCart";
 import { SwipeableCartItem } from "@/components/SwipeableCartItem";
 import { haptics } from "@/utils/haptics";
 import { logger } from "@/lib/logger";
+import { useTenant } from "@/contexts/TenantContext";
 import type { AppUser } from "@/types/auth";
 import type { Product } from "@/types/product";
 import type { DbCartItem, GuestCartItemWithProduct, RenderCartItem } from "@/types/cart";
@@ -25,6 +26,8 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   const { guestCart, updateGuestCartItem, removeFromGuestCart } = useGuestCart();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id;
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -37,17 +40,18 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   }, []);
 
   const { data: dbCartItems = [] } = useQuery<DbCartItem[]>({
-    queryKey: ["cart", user?.id],
+    queryKey: ["cart", user?.id, tenantId],
     queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
+      if (!user || !tenantId) return [];
+      const { data, error } = await (supabase as any)
         .from("cart_items")
         .select("*, products(*)")
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("tenant_id", tenantId);
       if (error) throw error;
       return data as DbCartItem[];
     },
-    enabled: !!user,
+    enabled: !!user && !!tenantId,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });

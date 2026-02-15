@@ -30,7 +30,7 @@ export default function VerifyEmailPage() {
         .from('tenant_users')
         .select('email_verified, email')
         .eq('id', admin.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;

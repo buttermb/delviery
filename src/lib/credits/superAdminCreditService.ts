@@ -246,7 +246,7 @@ export async function getTenantCreditDetail(
       .from('tenants')
       .select('id, business_name, slug, is_free_tier, created_at')
       .eq('id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenant) {
       logger.error('Failed to get tenant', tenantError);
@@ -445,7 +445,7 @@ export async function refundTransaction(
       .from('credit_transactions')
       .select('*')
       .eq('id', transactionId)
-      .single();
+      .maybeSingle();
 
     if (txError || !originalTx) {
       return { success: false, error: 'Transaction not found' };

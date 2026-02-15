@@ -453,7 +453,7 @@ export default function PointOfSale() {
         thc_percent: null
       }));
 
-      await orderFlowManager.transitionOrderStatus(order.id, 'in_pos');
+      await orderFlowManager.transitionOrderStatus(order.id, 'in_pos', tenantId!);
       setCart(cartItems as any);
       if (order.customer_id) {
         const customer = customers.find(c => c.id === order.customer_id);
@@ -480,7 +480,7 @@ export default function PointOfSale() {
       onConfirm: async () => {
         setDialogLoading(true);
         try {
-          await orderFlowManager.transitionOrderStatus(order.id, 'cancelled');
+          await orderFlowManager.transitionOrderStatus(order.id, 'cancelled', tenantId!);
           toast({ title: 'Order cancelled' });
         } catch (error) {
           logger.error('Error cancelling order', error);

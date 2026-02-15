@@ -44,7 +44,7 @@ export function VendorOrderDetailPage() {
         `)
                 .eq("id", orderId as string)
                 .eq("seller_tenant_id", vendor?.tenant_id as string) // Security check
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data as unknown as MarketplaceOrder;
@@ -57,7 +57,8 @@ export function VendorOrderDetailPage() {
             const { error } = await supabase
                 .from('marketplace_orders')
                 .update({ status: newStatus })
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .eq('seller_tenant_id', vendor?.tenant_id as string);
 
             if (error) throw error;
         },

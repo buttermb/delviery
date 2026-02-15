@@ -22,16 +22,18 @@ export const orderFlowManager = {
     /**
      * Transition an order to a new status
      */
-    async transitionOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
+    async transitionOrderStatus(orderId: string, newStatus: OrderStatus, tenantId: string): Promise<void> {
         try {
             // Fetch current status
             const { data: order, error: fetchError } = await (supabase as any)
                 .from('disposable_menu_orders')
                 .select('status')
                 .eq('id', orderId)
-                .single();
+                .eq('tenant_id', tenantId)
+                .maybeSingle();
 
             if (fetchError) throw fetchError;
+            if (!order) throw new Error('Order not found');
             const currentStatus = order.status as OrderStatus;
 
             if (!this.canTransition(currentStatus, newStatus)) {
@@ -45,7 +47,8 @@ export const orderFlowManager = {
                     status: newStatus,
                     completed_at: newStatus === 'completed' ? new Date().toISOString() : null
                 })
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .eq('tenant_id', tenantId);
 
             if (updateError) throw updateError;
 

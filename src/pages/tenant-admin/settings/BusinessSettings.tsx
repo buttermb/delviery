@@ -229,7 +229,7 @@ export default function BusinessSettings() {
         .from('tenants')
         .select('*')
         .eq('id', tenant.id)
-        .single();
+        .maybeSingle();
 
       if (data && (data as any).operating_settings) {
         const settings = (data as any).operating_settings as { business_hours: BusinessHours };
@@ -250,7 +250,7 @@ export default function BusinessSettings() {
         .from('tenants')
         .select('*')
         .eq('id', tenant.id)
-        .single();
+        .maybeSingle();
 
       const currentSettings = ((current as any)?.operating_settings as any) || {};
 

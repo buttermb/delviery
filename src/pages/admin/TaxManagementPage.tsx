@@ -75,7 +75,7 @@ export default function TaxManagementPage() {
         .from('account_settings')
         .select('tax_rate')
         .eq('account_id', tenantId)
-        .single();
+        .maybeSingle();
 
       const taxRate = settings?.tax_rate || 8.875;
       const totalSales = (orders || []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);

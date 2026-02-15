@@ -96,7 +96,7 @@ export function CartItemStockWarning({
         .from('products')
         .select('stock_quantity, available_quantity')
         .eq('id', productId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return product?.available_quantity ?? product?.stock_quantity ?? 0;

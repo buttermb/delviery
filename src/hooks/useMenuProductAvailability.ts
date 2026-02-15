@@ -317,7 +317,7 @@ export const useIncrementRuleQuantity = () => {
         .select('current_quantity_used')
         .eq('id', ruleId)
         .eq('tenant_id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 

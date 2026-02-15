@@ -290,7 +290,8 @@ export default function WholesaleOrdersPage() {
         // Use flow manager for wholesale orders (includes editability checks)
         const result = await wholesaleOrderFlowManager.transitionOrderStatus(
           orderId,
-          newStatus as WholesaleOrderStatus
+          newStatus as WholesaleOrderStatus,
+          { tenantId: tenant.id }
         );
         if (!result.success) {
           toast.error('Cannot update status', { description: result.error });
@@ -343,7 +344,8 @@ export default function WholesaleOrdersPage() {
         for (const orderId of selectedOrders) {
           const result = await wholesaleOrderFlowManager.transitionOrderStatus(
             orderId,
-            status as WholesaleOrderStatus
+            status as WholesaleOrderStatus,
+            { tenantId: tenant.id }
           );
           if (result.success) {
             successCount++;

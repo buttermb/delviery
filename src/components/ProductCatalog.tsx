@@ -9,12 +9,15 @@ import { Loader2, Leaf, Cookie, Droplets, Cigarette, Wind, ChevronRight, Chevron
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { useTenant } from "@/contexts/TenantContext";
 import type { Product } from "@/types/product";
 
 const INITIAL_CATEGORIES_TO_SHOW = 2;
 
 const ProductCatalog = () => {
   const queryClient = useQueryClient();
+  const { tenant } = useTenant();
+  const tenantId = tenant?.id;
   const [showAllCategories, setShowAllCategories] = useState(false);
   const isMobile = useIsMobile();
   
@@ -26,6 +29,7 @@ const ProductCatalog = () => {
 
   // Realtime subscription for product updates
   useEffect(() => {
+    if (!tenantId) return;
     const channel = supabase
       .channel('product-catalog-updates')
       .on(
@@ -33,11 +37,12 @@ const ProductCatalog = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'products'
+          table: 'products',
+          filter: `tenant_id=eq.${tenantId}`
         },
         (payload) => {
           logger.debug('Product updated', { payload, component: 'ProductCatalog' });
-          queryClient.invalidateQueries({ queryKey: ["products"] });
+          queryClient.invalidateQueries({ queryKey: ["products", tenantId] });
         }
       )
       .subscribe();
@@ -45,19 +50,22 @@ const ProductCatalog = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, tenantId]);
 
   // Fetch all products with batch inventory
   const { data: allProducts = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .eq("tenant_id", tenantId)
         .eq("in_stock", true);
       if (error) throw error;
       return data;
     },
+    enabled: !!tenantId,
   });
 
   // Batch fetch inventory for all products

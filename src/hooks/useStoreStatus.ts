@@ -27,7 +27,7 @@ export function useStoreStatus(storeId: string | undefined) {
                 .from('marketplace_stores')
                 .select('is_active, operating_hours')
                 .eq('id', storeId)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data;

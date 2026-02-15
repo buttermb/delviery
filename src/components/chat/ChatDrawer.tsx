@@ -57,7 +57,7 @@ export function ChatDrawer({
                     .from('conversations')
                     .select('*')
                     .eq('id', conversationId)
-                    .single();
+                    .maybeSingle();
 
                 if (error) throw error;
                 return data;
@@ -81,7 +81,7 @@ export function ChatDrawer({
                     .from('marketplace_orders')
                     .select('*')
                     .eq('id', orderId)
-                    .single();
+                    .maybeSingle();
 
                 if (!order) throw new Error('Order not found');
 
@@ -177,6 +177,8 @@ export function ChatDrawer({
             supabase.rpc('mark_messages_read' as any, {
                 p_conversation_id: activeConversationId,
                 p_user_id: currentUserId,
+            }).then(({ error }: { error: unknown }) => {
+                if (error) logger.error('Failed to mark messages read', error);
             });
         }
     }, [activeConversationId, isOpen, currentUserId]);

@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,6 +41,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
   const { toast } = useToast();
+  const updateLocationRef = useRef<(lat: number, lng: number) => Promise<void>>();
 
   useEffect(() => {
     loadCourierData();
@@ -61,7 +62,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         lastLat = latitude;
         lastLng = longitude;
         logger.debug('Location update', { latitude, longitude, accuracy: position.coords.accuracy, component: 'CourierContext' });
-        updateLocation(latitude, longitude);
+        updateLocationRef.current?.(latitude, longitude);
       },
       (error) => {
         logger.error('Location error', error, { component: 'CourierContext' });
@@ -71,8 +72,8 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive"
         });
       },
-      { 
-        enableHighAccuracy: true, 
+      {
+        enableHighAccuracy: true,
         maximumAge: 5000, // Cache for only 5 seconds
         timeout: 10000 // 10 second timeout
       }
@@ -82,7 +83,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     const forceUpdateInterval = setInterval(() => {
       if (lastLat !== null && lastLng !== null) {
         logger.debug('Forcing location update', { lastLat, lastLng, component: 'CourierContext' });
-        updateLocation(lastLat, lastLng);
+        updateLocationRef.current?.(lastLat, lastLng);
       } else {
         // Try to get current position if we don't have one
         navigator.geolocation.getCurrentPosition(
@@ -91,7 +92,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
             lastLat = latitude;
             lastLng = longitude;
             logger.debug('Got current position', { latitude, longitude, component: 'CourierContext' });
-            updateLocation(latitude, longitude);
+            updateLocationRef.current?.(latitude, longitude);
           },
           (error) => {
             // Only log geolocation errors once to avoid console spam
@@ -109,7 +110,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       navigator.geolocation.clearWatch(watchId);
       clearInterval(forceUpdateInterval);
     };
-  }, [isOnline, courier]);
+  }, [isOnline, courier, toast]);
 
   const loadCourierData = async () => {
     try {
@@ -236,7 +237,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateLocation = async (lat: number, lng: number) => {
+  const updateLocation = useCallback(async (lat: number, lng: number) => {
     if (!courier) return;
 
     try {
@@ -294,7 +295,12 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       logger.error('Failed to update location', error as Error, { component: 'CourierContext' });
     }
-  };
+  }, [courier]);
+
+  // Keep ref in sync so the effect closure always calls the latest version
+  useEffect(() => {
+    updateLocationRef.current = updateLocation;
+  }, [updateLocation]);
 
   const refreshCourier = async () => {
     await loadCourierData();

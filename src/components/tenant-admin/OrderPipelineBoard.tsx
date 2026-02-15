@@ -278,7 +278,8 @@ export function OrderPipelineBoard() {
             // Use flow manager for proper inventory handling and validation
             const result = await wholesaleOrderFlowManager.transitionOrderStatus(
                 id,
-                status as WholesaleOrderStatus
+                status as WholesaleOrderStatus,
+                { tenantId }
             );
             if (!result.success) {
                 throw new Error(result.error || 'Failed to update status');

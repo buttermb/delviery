@@ -359,7 +359,7 @@ export function useVendorDocuments(vendorId: string) {
         .select('file_url')
         .eq('id', documentId)
         .eq('tenant_id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         logger.error('Failed to fetch document for deletion', fetchError, {

@@ -237,7 +237,7 @@ export default function ProductManagement() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
-  const { updateWithLock } = useOptimisticLock('products');
+  const { updateWithLock } = useOptimisticLock('products', tenant?.id);
 
   // Batch delete confirmation dialog
   const { dialogState: batchDeleteDialogState, confirm: confirmBatchDelete, closeDialog: closeBatchDeleteDialog, setLoading: setBatchDeleteLoading } = useConfirmDialog();
