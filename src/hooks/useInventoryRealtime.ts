@@ -71,18 +71,17 @@ export function useInventoryRealtime({
           if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
             const productId = (payload.new as { id: string }).id;
             queryClient.invalidateQueries({
-              queryKey: queryKeys.products.detail(productId)
+              queryKey: queryKeys.products.details()
             });
             queryClient.invalidateQueries({
-              queryKey: queryKeys.inventory.movements(productId)
+              queryKey: queryKeys.inventory.all
             });
           } else if (payload.old && typeof payload.old === 'object' && 'id' in payload.old) {
-            const productId = (payload.old as { id: string }).id;
             queryClient.invalidateQueries({
-              queryKey: queryKeys.products.detail(productId)
+              queryKey: queryKeys.products.details()
             });
             queryClient.invalidateQueries({
-              queryKey: queryKeys.inventory.movements(productId)
+              queryKey: queryKeys.inventory.all
             });
           }
         }
@@ -125,12 +124,11 @@ export function useInventoryRealtime({
 
           // If product_id is present, invalidate product-specific queries
           if (payload.new && typeof payload.new === 'object' && 'product_id' in payload.new) {
-            const productId = (payload.new as { product_id: string }).product_id;
             queryClient.invalidateQueries({
-              queryKey: queryKeys.inventory.movements(productId)
+              queryKey: queryKeys.inventory.all
             });
             queryClient.invalidateQueries({
-              queryKey: queryKeys.products.detail(productId)
+              queryKey: queryKeys.products.all
             });
           }
         }
@@ -173,12 +171,11 @@ export function useInventoryRealtime({
 
           // If product_id is present, invalidate product-specific queries
           if (payload.new && typeof payload.new === 'object' && 'product_id' in payload.new) {
-            const productId = (payload.new as { product_id: string }).product_id;
             queryClient.invalidateQueries({
-              queryKey: queryKeys.inventory.movements(productId)
+              queryKey: queryKeys.inventory.all
             });
             queryClient.invalidateQueries({
-              queryKey: queryKeys.products.detail(productId)
+              queryKey: queryKeys.products.all
             });
           }
         }

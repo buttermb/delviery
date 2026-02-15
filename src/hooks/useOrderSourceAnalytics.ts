@@ -88,7 +88,7 @@ export function useOrderSourceAnalytics(options: UseOrderSourceAnalyticsOptions 
       }
 
       // Fetch orders within the date range
-      const { data: orders, error } = await supabase
+      const { data: orders, error } = await (supabase as any)
         .from('orders')
         .select('id, order_source, total_amount, created_at')
         .eq('tenant_id', tenantId)
@@ -105,7 +105,7 @@ export function useOrderSourceAnalytics(options: UseOrderSourceAnalyticsOptions 
       }
 
       // Also try unified_orders for additional data
-      const { data: unifiedOrders } = await supabase
+      const { data: unifiedOrders } = await (supabase as any)
         .from('unified_orders')
         .select('id, source, total_amount, created_at')
         .eq('tenant_id', tenantId)

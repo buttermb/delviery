@@ -188,8 +188,7 @@ export function useInventoryHistory(filters: InventoryHistoryFilters = {}) {
     queryFn: async (): Promise<InventoryHistoryEntry[]> => {
       if (!tenant?.id) return [];
 
-      let dbQuery = (supabase as unknown as { from: (table: string) => unknown })
-        .from('inventory_history') as ReturnType<typeof supabase.from>;
+      const dbQuery = (supabase as any).from('inventory_history');
 
       let selectQuery = dbQuery
         .select(`
@@ -229,7 +228,7 @@ export function useInventoryHistory(filters: InventoryHistoryFilters = {}) {
         throw error;
       }
 
-      return (data || []) as InventoryHistoryEntry[];
+      return (data || []) as unknown as InventoryHistoryEntry[];
     },
     enabled: !!tenant?.id,
   });

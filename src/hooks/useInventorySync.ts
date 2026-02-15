@@ -148,20 +148,9 @@ export function useConfirmOrderInventory() {
             const previousProducts = new Map<string, ProductCacheEntry | undefined>();
 
             for (const item of items) {
-                const productKey = queryKeys.products.detail(item.product_id);
-                const previous = queryClient.getQueryData<ProductCacheEntry>(productKey);
-                previousProducts.set(item.product_id, previous);
-
-                // Optimistically decrement stock in product detail cache
-                if (previous) {
-                    queryClient.setQueryData<ProductCacheEntry>(productKey, {
-                        ...previous,
-                        stock_quantity: Math.max(0, (previous.stock_quantity || 0) - item.quantity),
-                        available_quantity: previous.available_quantity != null
-                            ? Math.max(0, previous.available_quantity - item.quantity)
-                            : undefined,
-                    });
-                }
+                const productKey = queryKeys.products.lists();
+                const previous = queryClient.getQueryData<ProductCacheEntry[]>(productKey);
+                previousProducts.set(item.product_id, previous?.[0]);
             }
 
             // Optimistically update product list caches
@@ -186,21 +175,8 @@ export function useConfirmOrderInventory() {
             return { previousProducts };
         },
 
-        onError: (error, { items }, context) => {
+        onError: (error, { items }, _context) => {
             logger.error('Confirm order inventory sync failed, rolling back', error);
-
-            // Rollback product detail caches
-            if (context?.previousProducts) {
-                for (const item of items) {
-                    const productKey = queryKeys.products.detail(item.product_id);
-                    const previous = context.previousProducts.get(item.product_id);
-                    if (previous) {
-                        queryClient.setQueryData(productKey, previous);
-                    } else {
-                        queryClient.removeQueries({ queryKey: productKey });
-                    }
-                }
-            }
 
             // Invalidate list caches to refetch correct state
             queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
@@ -280,20 +256,9 @@ export function useCancelOrderInventory() {
             const previousProducts = new Map<string, ProductCacheEntry | undefined>();
 
             for (const item of items) {
-                const productKey = queryKeys.products.detail(item.product_id);
-                const previous = queryClient.getQueryData<ProductCacheEntry>(productKey);
-                previousProducts.set(item.product_id, previous);
-
-                // Optimistically increment stock in product detail cache
-                if (previous) {
-                    queryClient.setQueryData<ProductCacheEntry>(productKey, {
-                        ...previous,
-                        stock_quantity: (previous.stock_quantity || 0) + item.quantity,
-                        available_quantity: previous.available_quantity != null
-                            ? previous.available_quantity + item.quantity
-                            : undefined,
-                    });
-                }
+                const productKey = queryKeys.products.lists();
+                const previous = queryClient.getQueryData<ProductCacheEntry[]>(productKey);
+                previousProducts.set(item.product_id, previous?.[0]);
             }
 
             // Optimistically update product list caches
@@ -318,21 +283,8 @@ export function useCancelOrderInventory() {
             return { previousProducts };
         },
 
-        onError: (error, { items }, context) => {
+        onError: (error, { items }, _context) => {
             logger.error('Cancel order inventory sync failed, rolling back', error);
-
-            // Rollback product detail caches
-            if (context?.previousProducts) {
-                for (const item of items) {
-                    const productKey = queryKeys.products.detail(item.product_id);
-                    const previous = context.previousProducts.get(item.product_id);
-                    if (previous) {
-                        queryClient.setQueryData(productKey, previous);
-                    } else {
-                        queryClient.removeQueries({ queryKey: productKey });
-                    }
-                }
-            }
 
             // Invalidate list caches to refetch correct state
             queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
