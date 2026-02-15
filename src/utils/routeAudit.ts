@@ -20,10 +20,14 @@ export interface RouteAuditResult {
 const VALID_ADMIN_ROUTES = new Set([
   // Dashboard & Command Center
   '/admin/dashboard',
+  '/admin/dashboard-hub',
   '/admin/hotbox',
   '/admin/live-map',
+  '/admin/command-center',
   '/admin/realtime-dashboard',
-  
+  '/admin/tv-dashboard',
+  '/admin/collection-mode',
+
   // Inventory
   '/admin/inventory-hub',
   '/admin/inventory/products',
@@ -33,20 +37,31 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/stock-alerts',
   '/admin/inventory-transfers',
   '/admin/fronted-inventory',
+  '/admin/fronted-inventory-analytics',
+  '/admin/dispatch-inventory',
   '/admin/catalog/images',
   '/admin/catalog/batches',
   '/admin/catalog/categories',
   '/admin/operations/receiving',
-  
+
   // Orders
   '/admin/orders',
   '/admin/order-analytics',
   '/admin/disposable-menus',
-  
+  '/admin/wholesale-orders/new',
+  '/admin/wholesale-orders/new-po',
+  '/admin/orders/offline-create',
+
   // Customers
   '/admin/customer-hub',
+  '/admin/customer-details',
+  '/admin/customer-reports',
+  '/admin/customer-invoices',
+  '/admin/customer-crm',
   '/admin/big-plug-clients',
-  
+  '/admin/crm/clients',
+  '/admin/crm/invoices',
+
   // Analytics
   '/admin/analytics-hub',
   '/admin/reports',
@@ -55,8 +70,9 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/sales-dashboard',
   '/admin/analytics/comprehensive',
   '/admin/advanced-analytics',
+  '/admin/advanced-reporting',
   '/admin/custom-reports',
-  
+
   // Finance
   '/admin/finance-hub',
   '/admin/billing',
@@ -64,33 +80,41 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/commission-tracking',
   '/admin/revenue-reports',
   '/admin/advanced-invoice',
-  
-  // Delivery
+
+  // Fulfillment & Delivery
+  '/admin/fulfillment-hub',
   '/admin/delivery-management',
   '/admin/delivery-hub',
+  '/admin/delivery-zones',
   '/admin/route-optimizer',
   '/admin/delivery-analytics',
-  
+  '/admin/gps-tracking',
+
   // POS
   '/admin/pos-system',
   '/admin/cash-register',
   '/admin/pos-analytics',
-  
+
   // Operations
   '/admin/operations-hub',
   '/admin/staff-management',
+  '/admin/team-members',
+  '/admin/team-management',
   '/admin/role-management',
   '/admin/activity-logs',
   '/admin/locations',
   '/admin/locations/warehouses',
   '/admin/locations/runners',
   '/admin/location-analytics',
-  
+  '/admin/vendor-management',
+  '/admin/purchase-orders',
+  '/admin/risk-management',
+
   // Users & Permissions
   '/admin/user-management',
   '/admin/permissions',
   '/admin/bulk-operations',
-  
+
   // Integrations
   '/admin/api-access',
   '/admin/webhooks',
@@ -98,24 +122,31 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/workflow-automation',
   '/admin/local-ai',
   '/admin/integrations-hub',
-  
-  // Compliance
+  '/admin/developer-tools',
   '/admin/data-export',
+
+  // Compliance
   '/admin/audit-trail',
   '/admin/compliance',
-  
+
   // Marketing & Storefront
   '/admin/storefront-hub',
   '/admin/marketing-hub',
   '/admin/marketing/reviews',
-  
+  '/admin/marketplace/dashboard',
+
+  // Communication
+  '/admin/live-chat',
+  '/admin/notifications',
+
   // Settings
   '/admin/settings',
+  '/admin/account-settings',
   '/admin/settings-hub',
-  '/admin/notifications',
+  '/admin/system-settings',
   '/admin/white-label',
   '/admin/custom-domain',
-  '/admin/help',
+  '/admin/help-hub',
   '/admin/priority-support',
 ]);
 
@@ -127,23 +158,17 @@ function getBasePath(fullPath: string): string {
 }
 
 /**
- * Validate a single sidebar path
+ * Validate a single sidebar path.
+ * Query params (?tab=, ?section=, etc.) are stripped before comparison
+ * so that hub paths with tab params don't produce false positives.
  */
 function validatePath(path: string): { valid: boolean; warning?: string } {
   const basePath = getBasePath(path);
-  
+
   if (VALID_ADMIN_ROUTES.has(basePath)) {
     return { valid: true };
   }
-  
-  // Check for common patterns that might be valid
-  if (basePath.includes('-hub') && path.includes('?tab=')) {
-    return { 
-      valid: false, 
-      warning: `Hub path with tab param may lose context: ${path}` 
-    };
-  }
-  
+
   return { valid: false };
 }
 
