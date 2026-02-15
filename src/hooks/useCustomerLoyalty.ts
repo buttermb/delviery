@@ -237,7 +237,7 @@ export const TIER_DISPLAY_INFO: Record<LoyaltyTier, { label: string; color: stri
 // ============================================================================
 
 async function fetchLoyaltyConfig(tenantId: string): Promise<LoyaltyConfig | null> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('loyalty_config')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -260,7 +260,7 @@ async function fetchCustomerLoyaltyStatus(
   config: LoyaltyConfig | null
 ): Promise<CustomerLoyaltyStatus> {
   // Get current points balance
-  const { data: pointsData, error: pointsError } = await supabase
+  const { data: pointsData, error: pointsError } = await (supabase as any)
     .from('loyalty_points')
     .select('points, type, created_at')
     .eq('tenant_id', tenantId)
@@ -347,7 +347,7 @@ async function fetchPointsHistory(
   customerId: string,
   limit = 50
 ): Promise<LoyaltyPointTransaction[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('loyalty_points')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -422,7 +422,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
 
       if (existing) {
         // Update existing
-        const { data: updated, error } = await supabase
+        const { data: updated, error } = await (supabase as any)
           .from('loyalty_config')
           .update({
             ...data,
@@ -450,7 +450,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
         return updated as LoyaltyConfig;
       } else {
         // Create new
-        const { data: created, error } = await supabase
+        const { data: created, error } = await (supabase as any)
           .from('loyalty_config')
           .insert({
             tenant_id: tenantId,
@@ -613,11 +613,11 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       if (!tenantId) throw new Error('No tenant context');
 
       // Get current balance to calculate balance_after
-      const { status } = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
-      const currentBalance = status?.current_points || 0;
+      const loyaltyStatus = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
+      const currentBalance = loyaltyStatus?.current_points || 0;
       const newBalance = currentBalance + params.points;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('loyalty_points')
         .insert({
           tenant_id: tenantId,
@@ -669,8 +669,8 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       if (!tenantId) throw new Error('No tenant context');
 
       // Get current balance
-      const status = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
-      const currentBalance = status?.current_points || 0;
+      const loyaltyStatus = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
+      const currentBalance = loyaltyStatus?.current_points || 0;
 
       if (params.points > currentBalance) {
         throw new Error(`Insufficient points. Current balance: ${currentBalance}`);
@@ -678,12 +678,12 @@ export function usePointsMutations(): UsePointsMutationsReturn {
 
       const newBalance = currentBalance - params.points;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('loyalty_points')
         .insert({
           tenant_id: tenantId,
           customer_id: params.customerId,
-          points: -params.points, // Negative for redemption
+          points: -params.points,
           type: 'redeemed',
           reference_type: params.orderId ? 'order' : null,
           reference_id: params.orderId || null,
@@ -730,11 +730,11 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       if (!tenantId) throw new Error('No tenant context');
 
       // Get current balance
-      const status = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
-      const currentBalance = status?.current_points || 0;
+      const loyaltyStatus = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
+      const currentBalance = loyaltyStatus?.current_points || 0;
       const newBalance = Math.max(0, currentBalance + params.points);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('loyalty_points')
         .insert({
           tenant_id: tenantId,
@@ -1030,7 +1030,7 @@ export async function awardPointsForOrder(
     const newBalance = status.current_points + points;
 
     // Insert points transaction
-    const { error } = await supabase.from('loyalty_points').insert({
+    const { error } = await (supabase as any).from('loyalty_points').insert({
       tenant_id: tenantId,
       customer_id: customerId,
       points,

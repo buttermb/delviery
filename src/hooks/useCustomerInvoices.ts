@@ -452,7 +452,7 @@ export function useCustomersList() {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: queryKeys.customers.list({ tenantId: tenant?.id }),
+    queryKey: queryKeys.customers.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

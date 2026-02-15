@@ -37,7 +37,7 @@ export function useCheckoutZoneValidation({ tenantId, storeId }: UseCheckoutZone
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_zones')
         .select('*')
         .eq('tenant_id', tenantId)

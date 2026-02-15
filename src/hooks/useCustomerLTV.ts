@@ -258,11 +258,11 @@ export function useCustomerLTV({
       const segment = calculateLTVSegment(totalSpend, orderCount);
 
       // Customer since date - prefer customer created_at, fallback to first order
-      const customerSinceDate = customer?.created_at ?? firstOrderDate?.toISOString() ?? null;
+      const customerSinceDate = (customer as any)?.created_at ?? firstOrderDate?.toISOString() ?? null;
 
       const ltv: CustomerLTV = {
         customerId,
-        customerName: customer?.full_name ?? null,
+        customerName: (customer as any)?.full_name ?? null,
         totalSpend: Math.round(totalSpend * 100) / 100,
         orderCount,
         avgOrderValue: Math.round(avgOrderValue * 100) / 100,
@@ -332,7 +332,7 @@ export function useBulkCustomerLTV({
       });
 
       // Fetch customers
-      let customersQuery = supabase
+      let customersQuery = (supabase as any)
         .from('contacts')
         .select('id, full_name, created_at')
         .eq('tenant_id', tenantId);

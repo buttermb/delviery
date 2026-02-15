@@ -266,7 +266,7 @@ export function useAbandonedCarts({
     mutationFn: async (cartId: string) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('abandoned_carts')
         .delete()
         .eq('id', cartId)
@@ -366,7 +366,7 @@ export function useAbandonmentRate(tenantId?: string, menuId?: string) {
       if (!tenantId) return null;
 
       // Get total carts (abandoned + completed orders) for this menu
-      let abandonedQuery = supabase
+      let abandonedQuery = (supabase as any)
         .from('abandoned_carts')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId);
@@ -377,8 +377,8 @@ export function useAbandonmentRate(tenantId?: string, menuId?: string) {
         .eq('tenant_id', tenantId);
 
       if (menuId) {
-        abandonedQuery = abandonedQuery.eq('menu_id', menuId);
-        ordersQuery = ordersQuery.eq('menu_id', menuId);
+        abandonedQuery = (abandonedQuery as any).eq('menu_id', menuId);
+        ordersQuery = (ordersQuery as any).eq('menu_id', menuId);
       }
 
       const [abandonedResult, ordersResult] = await Promise.all([

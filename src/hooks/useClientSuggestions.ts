@@ -207,8 +207,7 @@ export function useToggleClientFavorite() {
   const toggleFavorite = async (clientId: string, isFavorite: boolean) => {
     if (!tenant?.id) return false;
     try {
-      // @ts-expect-error - is_favorite field mismatch with Supabase types
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('wholesale_clients')
         .update({ is_favorite: isFavorite } as any)
         .eq('id', clientId)
