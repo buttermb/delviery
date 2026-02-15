@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -12,9 +13,39 @@ interface ProductFormData {
 interface BasicInfoStepProps {
   formData: ProductFormData;
   updateFormData: (data: Partial<ProductFormData>) => void;
+  showErrors?: boolean;
 }
 
-export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) {
+function getFieldError(
+  field: string,
+  value: unknown,
+  touched: boolean,
+  showErrors: boolean
+): string | null {
+  if (!touched && !showErrors) return null;
+  switch (field) {
+    case "name":
+      if (!value || !(value as string).trim()) return "Product name is required";
+      if ((value as string).trim().length > 100) return "Name must be 100 characters or less";
+      return null;
+    case "category":
+      if (!value) return "Category is required";
+      return null;
+    default:
+      return null;
+  }
+}
+
+export function BasicInfoStep({ formData, updateFormData, showErrors = false }: BasicInfoStepProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const markTouched = useCallback((field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }, []);
+
+  const nameError = getFieldError("name", formData.name, !!touched.name, showErrors);
+  const categoryError = getFieldError("category", formData.category, !!touched.category, showErrors);
+
   return (
     <div className="space-y-6">
       <div>
@@ -26,42 +57,51 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="name">Product Name *</Label>
+          <Label htmlFor="name">Product Name <span className="text-destructive">*</span></Label>
           <Input
             id="name"
             value={formData.name || ""}
             onChange={(e) => updateFormData({ name: e.target.value })}
+            onBlur={() => markTouched("name")}
             placeholder="Example: Blue Dream - Sativa"
-            className="mt-1.5"
+            className={`mt-1.5 ${nameError ? "border-destructive focus-visible:ring-destructive" : ""}`}
+            aria-invalid={!!nameError}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Example: "Blue Dream - Sativa"
-          </p>
+          {nameError ? (
+            <p className="text-sm text-destructive mt-1">{nameError}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Example: &quot;Blue Dream - Sativa&quot;
+            </p>
+          )}
         </div>
 
         <div>
           <Label htmlFor="strain">Strain Name (Optional)</Label>
           <AutocompleteInput
             value={(formData.strain_lineage as string) || (formData.strain_name as string) || ""}
-            onChange={(value) => updateFormData({ 
+            onChange={(value) => updateFormData({
               strain_lineage: value,
-              strain_name: value 
+              strain_name: value
             })}
             type="strain"
             placeholder="Strain name (e.g., Gelato, Runtz, OG Kush)"
             className="mt-1.5"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            The specific strain name (e.g., "Purple Haze", "OG Kush")
+            The specific strain name (e.g., &quot;Purple Haze&quot;, &quot;OG Kush&quot;)
           </p>
         </div>
 
         <div>
-          <Label>Category *</Label>
+          <Label>Category <span className="text-destructive">*</span></Label>
           <RadioGroup
             value={formData.category || ""}
-            onValueChange={(value) => updateFormData({ category: value })}
-            className="mt-3 space-y-2"
+            onValueChange={(value) => {
+              updateFormData({ category: value });
+              markTouched("category");
+            }}
+            className={`mt-3 space-y-2 ${categoryError ? "rounded-md ring-1 ring-destructive p-2" : ""}`}
           >
             {["flower", "edibles", "vapes", "concentrates"].map(
               (cat) => (
@@ -74,9 +114,13 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
               )
             )}
           </RadioGroup>
-          <p className="text-xs text-muted-foreground mt-1">
-            Choose the product category
-          </p>
+          {categoryError ? (
+            <p className="text-sm text-destructive mt-1">{categoryError}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Choose the product category
+            </p>
+          )}
         </div>
 
         <div>

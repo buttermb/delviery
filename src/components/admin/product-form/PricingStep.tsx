@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -13,15 +14,67 @@ interface ProductFormData {
 interface PricingStepProps {
   formData: ProductFormData;
   updateFormData: (data: Partial<ProductFormData>) => void;
+  showErrors?: boolean;
 }
 
-export function PricingStep({ formData, updateFormData }: PricingStepProps) {
+function getFieldError(
+  field: string,
+  value: unknown,
+  touched: boolean,
+  showErrors: boolean
+): string | null {
+  if (!touched && !showErrors) return null;
+  switch (field) {
+    case "price": {
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (value === "" || value === undefined || value === null || value === 0) return "Regular price is required";
+      if (isNaN(num) || num <= 0) return "Price must be a positive number";
+      if (num > 999999) return "Price must be less than $1,000,000";
+      return null;
+    }
+    case "stock_quantity": {
+      if (value === "" || value === undefined || value === null) return null; // Optional
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (isNaN(num)) return "Stock must be a valid number";
+      if (!Number.isInteger(num)) return "Stock quantity must be a whole number";
+      if (num < 0) return "Stock cannot be negative";
+      return null;
+    }
+    case "sale_price": {
+      if (value === "" || value === undefined || value === null) return null; // Optional
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (isNaN(num) || num < 0) return "Sale price must be a positive number";
+      return null;
+    }
+    case "cost_per_unit": {
+      if (value === "" || value === undefined || value === null) return null; // Optional
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (isNaN(num) || num < 0) return "Cost must be a positive number";
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
+export function PricingStep({ formData, updateFormData, showErrors = false }: PricingStepProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const markTouched = useCallback((field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }, []);
+
   const regularPrice = (formData.price as number) || 0;
   const salePrice = (formData.sale_price as number) || 0;
   const costPerUnit = (formData.cost_per_unit as number) || 0;
-  
+
   const profit = regularPrice - costPerUnit;
   const profitMargin = regularPrice > 0 ? ((profit / regularPrice) * 100).toFixed(1) : 0;
+
+  const priceError = getFieldError("price", formData.price, !!touched.price, showErrors);
+  const stockError = getFieldError("stock_quantity", formData.stock_quantity, !!touched.stock_quantity, showErrors);
+  const salePriceError = getFieldError("sale_price", formData.sale_price, !!touched.sale_price, showErrors);
+  const costError = getFieldError("cost_per_unit", formData.cost_per_unit, !!touched.cost_per_unit, showErrors);
 
   const addPriceVariation = (weight: string) => {
     const currentPrices = (formData.prices as Record<string, unknown>) || {};
@@ -54,7 +107,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="price">Regular Price *</Label>
+          <Label htmlFor="price">Regular Price <span className="text-destructive">*</span></Label>
           <div className="flex items-center mt-1.5">
             <span className="mr-2">$</span>
             <Input
@@ -67,9 +120,15 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
                 const value = e.target.value;
                 updateFormData({ price: value === "" ? 0 : parseFloat(value) || 0 });
               }}
+              onBlur={() => markTouched("price")}
               placeholder="45.00"
+              className={priceError ? "border-destructive focus-visible:ring-destructive" : ""}
+              aria-invalid={!!priceError}
             />
           </div>
+          {priceError && (
+            <p className="text-sm text-destructive mt-1">{priceError}</p>
+          )}
         </div>
 
         <div>
@@ -86,12 +145,19 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
                 const value = e.target.value;
                 updateFormData({ sale_price: value === "" ? "" : parseFloat(value) });
               }}
+              onBlur={() => markTouched("sale_price")}
               placeholder="35.00"
+              className={salePriceError ? "border-destructive focus-visible:ring-destructive" : ""}
+              aria-invalid={!!salePriceError}
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Leave blank if not on sale
-          </p>
+          {salePriceError ? (
+            <p className="text-sm text-destructive mt-1">{salePriceError}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              Leave blank if not on sale
+            </p>
+          )}
         </div>
       </div>
 
@@ -121,12 +187,19 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
               const value = e.target.value;
               updateFormData({ cost_per_unit: value === "" ? "" : parseFloat(value) });
             }}
+            onBlur={() => markTouched("cost_per_unit")}
             placeholder="20.00"
+            className={costError ? "border-destructive focus-visible:ring-destructive" : ""}
+            aria-invalid={!!costError}
           />
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          Used to calculate profit margins (not shown to customers)
-        </p>
+        {costError ? (
+          <p className="text-sm text-destructive mt-1">{costError}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground mt-1">
+            Used to calculate profit margins (not shown to customers)
+          </p>
+        )}
       </div>
 
       {typeof costPerUnit === 'number' && costPerUnit > 0 && typeof regularPrice === 'number' && regularPrice > 0 && (
@@ -144,22 +217,29 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
       <hr className="my-6" />
 
       <div>
-        <Label htmlFor="stock">Current Stock Quantity *</Label>
+        <Label htmlFor="stock">Current Stock Quantity</Label>
         <Input
           id="stock"
           type="number"
           min="0"
+          step="1"
           value={(formData.stock_quantity as string | number) || ""}
           onChange={(e) => {
             const value = e.target.value;
             updateFormData({ stock_quantity: value === "" ? "" : parseInt(value) });
           }}
+          onBlur={() => markTouched("stock_quantity")}
           placeholder="15"
-          className="mt-1.5"
+          className={`mt-1.5 ${stockError ? "border-destructive focus-visible:ring-destructive" : ""}`}
+          aria-invalid={!!stockError}
         />
-        <p className="text-xs text-muted-foreground mt-1">
-          Number of units available
-        </p>
+        {stockError ? (
+          <p className="text-sm text-destructive mt-1">{stockError}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground mt-1">
+            Number of units available (whole numbers only)
+          </p>
+        )}
       </div>
 
       <div>
