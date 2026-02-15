@@ -1,28 +1,42 @@
 import { logger } from '@/lib/logger';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Home, ArrowLeft, Search, HelpCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Home, ArrowLeft, Search, ShoppingBag, Package, HelpCircle } from 'lucide-react';
+import FloraIQLogo from '@/components/FloraIQLogo';
 import bugFinder from '@/utils/bugFinder';
-import { useEffect } from 'react';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     logger.error('404 Error: User attempted to access non-existent route', { pathname: location.pathname, component: 'NotFoundPage' });
-    // Report 404 to bug finder
     bugFinder.report404(location.pathname, {
       timestamp: new Date().toISOString(),
       referrer: document.referrer,
     });
   }, [location.pathname]);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (search.trim()) {
+      navigate(`/?q=${encodeURIComponent(search.trim())}`);
+    }
+  };
+
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background p-6">
       <Card className="max-w-2xl w-full">
         <CardContent className="pt-12 pb-12 px-6 text-center space-y-8">
+          {/* Branding */}
+          <div className="flex justify-center">
+            <FloraIQLogo size="lg" />
+          </div>
+
           {/* 404 Display */}
           <div className="space-y-4">
             <h1 className="text-8xl font-bold text-primary">404</h1>
@@ -32,8 +46,22 @@ export default function NotFoundPage() {
             </p>
           </div>
 
+          {/* Search */}
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-md mx-auto">
+            <Input
+              placeholder="Search for a page..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1"
+            />
+            <Button type="submit" variant="outline" className="gap-2">
+              <Search className="h-4 w-4" />
+              Search
+            </Button>
+          </form>
+
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               onClick={() => navigate('/')}
               className="gap-2"
@@ -54,39 +82,49 @@ export default function NotFoundPage() {
 
           {/* Helpful Links */}
           <div className="pt-8 border-t space-y-4">
-            <p className="text-sm font-medium">Popular Pages:</p>
+            <p className="text-sm font-medium text-muted-foreground">Quick Links:</p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/faq')}
+                onClick={() => navigate('/admin/dashboard')}
+                className="gap-2"
+              >
+                <Home className="h-4 w-4" />
+                Dashboard
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin/orders')}
+                className="gap-2"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Orders
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin/inventory-hub')}
+                className="gap-2"
+              >
+                <Package className="h-4 w-4" />
+                Products
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin/help-hub')}
                 className="gap-2"
               >
                 <HelpCircle className="h-4 w-4" />
-                FAQ
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/support')}
-                className="gap-2"
-              >
-                <Search className="h-4 w-4" />
-                Support
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/contact')}
-                className="gap-2"
-              >
-                Contact
+                Help
               </Button>
             </div>
           </div>
 
           {/* Error Details (for debugging) */}
-          {process.env.NODE_ENV === 'development' && (
+          {import.meta.env.DEV && (
             <div className="pt-4 border-t text-left">
               <p className="text-xs text-muted-foreground font-mono">
                 Attempted path: {location.pathname}
