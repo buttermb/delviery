@@ -1244,7 +1244,22 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Focus visible for better keyboard navigation */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary;
+    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
+  }
+
+  /* Interactive non-button elements (clickable cards, rows, list items) */
+  [role="button"]:not(button):focus-visible,
+  [tabindex="0"]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary rounded-md;
+  }
+
+  /* Ensure links have visible hover and focus states */
+  a:hover {
+    opacity: 0.85;
+  }
+
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
   }
 
   /* Fade in up animation for lists */

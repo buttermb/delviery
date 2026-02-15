@@ -61,7 +61,7 @@ export function KPICard({ title, value, icon, description, variant = 'default', 
   );
 
   if (fullPath) {
-    return <Link to={fullPath} className="block">{card}</Link>;
+    return <Link to={fullPath} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">{card}</Link>;
   }
 
   return card;
