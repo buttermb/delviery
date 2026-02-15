@@ -625,7 +625,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Fleet Management',
-        href: '/admin/delivery-hub?tab=fleet',
+        href: '/admin/fulfillment-hub?tab=fleet',
         icon: Truck,
         tier: 'enterprise'
       },
@@ -644,7 +644,7 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Drivers',
-        href: '/admin/drivers',
+        href: '/admin/fulfillment-hub?tab=fleet',
         icon: Car
       }
     ]
@@ -662,19 +662,19 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Financial Center',
-        href: '/admin/financial-center',
+        href: '/admin/finance-hub',
         icon: Landmark,
         tier: 'professional'
       },
       {
         title: 'Revenue',
-        href: '/admin/revenue',
+        href: '/admin/finance-hub?tab=revenue',
         icon: TrendingUp,
         tier: 'professional'
       },
       {
         title: 'Expenses',
-        href: '/admin/expenses',
+        href: '/admin/finance-hub?tab=expenses',
         icon: TrendingDown,
         tier: 'professional'
       },
@@ -741,7 +741,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Payouts',
-        href: '/admin/payouts',
+        href: '/admin/finance-hub?tab=commissions',
         icon: CreditCard,
         tier: 'professional'
       }
@@ -858,7 +858,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Export',
-        href: '/admin/analytics-export',
+        href: '/admin/analytics-hub?tab=export',
         icon: FileSpreadsheet,
         tier: 'professional'
       }
@@ -959,7 +959,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Help Center',
-        href: '/admin/help-center',
+        href: '/admin/help-hub',
         icon: HelpCircle
       },
       {
@@ -991,7 +991,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Automation',
-        href: '/admin/automation',
+        href: '/admin/workflow-automation',
         icon: Settings,
         tier: 'enterprise'
       }
