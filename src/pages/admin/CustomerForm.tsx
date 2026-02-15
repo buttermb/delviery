@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -395,7 +395,7 @@ export default function CustomerForm() {
                 className="bg-emerald-500 hover:bg-emerald-600 text-white"
               >
                 {loading ? (
-                  <>Saving...</>
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
