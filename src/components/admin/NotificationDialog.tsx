@@ -161,7 +161,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
               name="recipients"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Recipients</FormLabel>
+                  <FormLabel required>Recipients</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -224,7 +224,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notification Type</FormLabel>
+                  <FormLabel required>Notification Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -254,7 +254,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
               name="subject"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Subject</FormLabel>
+                  <FormLabel required>Subject</FormLabel>
                   <FormControl>
                     <Input placeholder="Important Update" {...field} />
                   </FormControl>
@@ -268,7 +268,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Message</FormLabel>
+                  <FormLabel required>Message</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Your notification message here..."

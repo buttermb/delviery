@@ -40,7 +40,7 @@ export function ActionConfigForm({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="to">To Email *</Label>
+              <Label htmlFor="to">To Email <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="to"
                 placeholder="user@example.com or {{trigger.customer_email}}"
@@ -52,7 +52,7 @@ export function ActionConfigForm({
               </p>
             </div>
             <div>
-              <Label htmlFor="subject">Subject *</Label>
+              <Label htmlFor="subject">Subject <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="subject"
                 placeholder="Order Confirmation #{{trigger.order_id}}"
@@ -61,7 +61,7 @@ export function ActionConfigForm({
               />
             </div>
             <div>
-              <Label htmlFor="body">Email Body *</Label>
+              <Label htmlFor="body">Email Body <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Textarea 
                 id="body"
                 placeholder="Your order has been received..."
@@ -88,7 +88,7 @@ export function ActionConfigForm({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="to">Phone Number *</Label>
+              <Label htmlFor="to">Phone Number <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="to"
                 placeholder="+1234567890 or {{trigger.customer_phone}}"
@@ -97,7 +97,7 @@ export function ActionConfigForm({
               />
             </div>
             <div>
-              <Label htmlFor="message">Message *</Label>
+              <Label htmlFor="message">Message <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Textarea 
                 id="message"
                 placeholder="Your order #{{trigger.order_id}} is confirmed!"
@@ -117,7 +117,7 @@ export function ActionConfigForm({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="url">Webhook URL *</Label>
+              <Label htmlFor="url">Webhook URL <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="url"
                 placeholder="https://api.example.com/webhook"
@@ -184,7 +184,7 @@ export function ActionConfigForm({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="operation">Operation *</Label>
+              <Label htmlFor="operation">Operation <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Select 
                 value={(formData.operation as string) || 'insert'}
                 onValueChange={(value) => setFormData({...formData, operation: value})}
@@ -201,7 +201,7 @@ export function ActionConfigForm({
               </Select>
             </div>
             <div>
-              <Label htmlFor="table">Table Name *</Label>
+              <Label htmlFor="table">Table Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="table"
                 placeholder="orders"
@@ -210,7 +210,7 @@ export function ActionConfigForm({
               />
             </div>
             <div>
-              <Label htmlFor="data">Data (JSON) *</Label>
+              <Label htmlFor="data">Data (JSON) <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Textarea 
                 id="data"
                 placeholder='{"status": "processing", "updated_at": "now()"}'
@@ -252,7 +252,7 @@ export function ActionConfigForm({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="order_id">Order ID Source *</Label>
+              <Label htmlFor="order_id">Order ID Source <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="order_id"
                 placeholder="{{trigger.order_id}}"
@@ -299,7 +299,7 @@ export function ActionConfigForm({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="product_id">Product ID Source *</Label>
+              <Label htmlFor="product_id">Product ID Source <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="product_id"
                 placeholder="{{trigger.product_id}}"
@@ -308,7 +308,7 @@ export function ActionConfigForm({
               />
             </div>
             <div>
-              <Label htmlFor="quantity_change">Quantity Change *</Label>
+              <Label htmlFor="quantity_change">Quantity Change <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input 
                 id="quantity_change"
                 type="number"
@@ -362,7 +362,7 @@ export function ActionConfigForm({
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="action-name">Action Name *</Label>
+        <Label htmlFor="action-name">Action Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
         <Input
           id="action-name"
           placeholder="e.g., Send Order Confirmation Email"

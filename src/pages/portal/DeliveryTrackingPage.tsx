@@ -414,7 +414,7 @@ export default function DeliveryTrackingPage() {
                     name="orderNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Order Number</FormLabel>
+                        <FormLabel required>Order Number</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -435,7 +435,7 @@ export default function DeliveryTrackingPage() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
+                        <FormLabel required>Phone Number</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

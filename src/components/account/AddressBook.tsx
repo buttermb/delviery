@@ -273,7 +273,7 @@ export default function AddressBook() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="address">Street Address *</Label>
+                  <Label htmlFor="address">Street Address <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                   <Input
                     id="address"
                     value={formData.address}
@@ -311,7 +311,7 @@ export default function AddressBook() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="zip">ZIP Code *</Label>
+                    <Label htmlFor="zip">ZIP Code <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                     <Input
                       id="zip"
                       value={formData.zip}

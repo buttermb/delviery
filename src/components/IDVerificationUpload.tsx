@@ -149,7 +149,7 @@ export default function IDVerificationUpload() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="idType">ID Type *</Label>
+            <Label htmlFor="idType">ID Type <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Select value={formData.idType} onValueChange={(value) => setFormData({ ...formData, idType: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Select ID type" />
@@ -163,7 +163,7 @@ export default function IDVerificationUpload() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dob">Date of Birth *</Label>
+            <Label htmlFor="dob">Date of Birth <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="dob"
               type="date"
@@ -187,7 +187,7 @@ export default function IDVerificationUpload() {
           </div>
 
           <div className="space-y-2">
-            <Label>ID Front * (Required)</Label>
+            <Label>ID Front <span className="text-destructive ml-0.5" aria-hidden="true">*</span> (Required)</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="file"
@@ -217,7 +217,7 @@ export default function IDVerificationUpload() {
           </div>
 
           <div className="space-y-2">
-            <Label>Selfie with ID * (Required)</Label>
+            <Label>Selfie with ID <span className="text-destructive ml-0.5" aria-hidden="true">*</span> (Required)</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="file"

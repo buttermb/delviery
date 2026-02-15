@@ -142,7 +142,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name *</FormLabel>
+                  <FormLabel required>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="John Doe" {...field} />
                   </FormControl>
@@ -155,7 +155,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number *</FormLabel>
+                  <FormLabel required>Phone Number</FormLabel>
                   <FormControl>
                     <Input placeholder="555-123-4567" {...field} />
                   </FormControl>
@@ -181,7 +181,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
               name="vehicle_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vehicle Type *</FormLabel>
+                  <FormLabel required>Vehicle Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

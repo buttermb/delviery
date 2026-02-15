@@ -387,7 +387,7 @@ export function SignupPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel required>Email</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -425,7 +425,7 @@ export function SignupPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel required>Password</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -462,7 +462,7 @@ export function SignupPage() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
+                        <FormLabel required>Confirm Password</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -510,7 +510,7 @@ export function SignupPage() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel required>Full Name</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -626,7 +626,7 @@ export function SignupPage() {
                       name="businessName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Name</FormLabel>
+                          <FormLabel required>Business Name</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />

@@ -95,7 +95,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="business_name">Business Name *</Label>
+                            <Label htmlFor="business_name">Business Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                             <Input
                                 id="business_name"
                                 value={formData.business_name}
@@ -116,7 +116,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="license_number">License Number *</Label>
+                        <Label htmlFor="license_number">License Number <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                         <Input
                             id="license_number"
                             value={formData.license_number}

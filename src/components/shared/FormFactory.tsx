@@ -61,6 +61,8 @@ export interface FormFieldConfig<TFieldValues extends FieldValues> {
     render?: (form: UseFormReturn<TFieldValues>) => ReactNode;
     /** Class name for the field container */
     className?: string;
+    /** Whether the field is required (shows red asterisk) */
+    required?: boolean;
 }
 
 export function FormFactory<T extends z.ZodType<any, any>>({
@@ -93,7 +95,7 @@ export function FormFactory<T extends z.ZodType<any, any>>({
                         name={field.name}
                         render={({ field: formField }) => (
                             <FormItem className={field.className}>
-                                <FormLabel>{field.label}</FormLabel>
+                                <FormLabel required={field.required}>{field.label}</FormLabel>
                                 <FormControl>
                                     {field.type === "custom" && field.render ? (
                                         field.render(form)

@@ -216,7 +216,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Name *</FormLabel>
+                    <FormLabel required>Product Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Blue Dream 3.5g" {...field} />
                     </FormControl>
@@ -231,7 +231,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price *</FormLabel>
+                      <FormLabel required>Price</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
                       </FormControl>

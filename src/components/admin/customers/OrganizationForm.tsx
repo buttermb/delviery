@@ -281,7 +281,7 @@ export function OrganizationForm({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Organization Name *</FormLabel>
+                        <FormLabel required>Organization Name</FormLabel>
                         <FormControl>
                           <Input placeholder="Acme Cannabis Co." {...field} />
                         </FormControl>
@@ -311,7 +311,7 @@ export function OrganizationForm({
                     name="organization_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Type *</FormLabel>
+                        <FormLabel required>Type</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>

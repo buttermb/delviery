@@ -267,8 +267,8 @@ export function ConvertToInvoiceDialog({
 
             {/* Client Selection */}
             <div className="space-y-3">
-              <Label htmlFor="client-select">Select Client *</Label>
-              
+              <Label htmlFor="client-select">Select Client <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+
               {/* Client Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

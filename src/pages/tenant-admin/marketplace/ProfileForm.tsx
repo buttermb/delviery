@@ -295,7 +295,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
             name="business_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Name *</FormLabel>
+                <FormLabel required>Business Name</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Your Business Name" />
                 </FormControl>
@@ -335,7 +335,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
             name="license_number"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>License Number *</FormLabel>
+                <FormLabel required>License Number</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="C11-0001234-LIC" />
                 </FormControl>
@@ -350,7 +350,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
               name="license_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>License Type *</FormLabel>
+                  <FormLabel required>License Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -375,7 +375,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
               name="license_state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>License State *</FormLabel>
+                  <FormLabel required>License State</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

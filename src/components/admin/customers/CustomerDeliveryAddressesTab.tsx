@@ -636,7 +636,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                 name="street_address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Street Address *</FormLabel>
+                    <FormLabel required>Street Address</FormLabel>
                     <FormControl>
                       <Input placeholder="123 Main Street" {...field} />
                     </FormControl>
@@ -665,7 +665,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City *</FormLabel>
+                      <FormLabel required>City</FormLabel>
                       <FormControl>
                         <Input placeholder="New York" {...field} />
                       </FormControl>
@@ -679,7 +679,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State *</FormLabel>
+                      <FormLabel required>State</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -705,7 +705,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                 name="zip_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ZIP Code *</FormLabel>
+                    <FormLabel required>ZIP Code</FormLabel>
                     <FormControl>
                       <Input placeholder="10001" maxLength={10} {...field} />
                     </FormControl>

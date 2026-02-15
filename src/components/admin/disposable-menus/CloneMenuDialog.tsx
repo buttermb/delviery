@@ -134,7 +134,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="newTitle">New Menu Title *</Label>
+            <Label htmlFor="newTitle">New Menu Title <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="newTitle"
               value={newTitle}

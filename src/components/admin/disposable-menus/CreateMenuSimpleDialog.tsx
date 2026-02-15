@@ -236,7 +236,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
           {currentStep === 1 && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="menu-name">Menu Name *</Label>
+                <Label htmlFor="menu-name">Menu Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="menu-name"
                   placeholder="VIP Wholesale Menu - November 2024"

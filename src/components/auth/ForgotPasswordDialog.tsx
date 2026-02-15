@@ -177,7 +177,7 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="email"
               type="email"

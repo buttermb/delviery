@@ -483,7 +483,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
               name="product_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Name *</FormLabel>
+                  <FormLabel required>Product Name</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Blue Dream - Premium Indoor" />
                   </FormControl>
@@ -498,7 +498,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                 name="product_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Type *</FormLabel>
+                    <FormLabel required>Product Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -549,7 +549,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description *</FormLabel>
+                  <FormLabel required>Description</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -629,7 +629,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                 name="base_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Base Price *</FormLabel>
+                    <FormLabel required>Base Price</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -650,7 +650,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                 name="quantity_available"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quantity Available *</FormLabel>
+                    <FormLabel required>Quantity Available</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -1004,7 +1004,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
               name="visibility"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Visibility *</FormLabel>
+                  <FormLabel required>Visibility</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

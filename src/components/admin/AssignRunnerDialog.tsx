@@ -58,7 +58,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="runner">Select Runner *</Label>
+            <Label htmlFor="runner">Select Runner <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Select value={selectedRunner} onValueChange={setSelectedRunner}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose a runner..." />

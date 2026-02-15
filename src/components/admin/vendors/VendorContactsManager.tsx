@@ -426,7 +426,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name *</FormLabel>
+                    <FormLabel required>Name</FormLabel>
                     <FormControl>
                       <Input placeholder="John Smith" {...field} />
                     </FormControl>

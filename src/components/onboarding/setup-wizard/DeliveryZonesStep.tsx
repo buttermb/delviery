@@ -171,7 +171,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Zone Name *</FormLabel>
+                <FormLabel required>Zone Name</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., Downtown, Suburbs" {...field} />
                 </FormControl>
@@ -201,7 +201,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
               name="delivery_fee"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Delivery Fee ($) *</FormLabel>
+                  <FormLabel required>Delivery Fee ($)</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" min="0" placeholder="5.00" {...field} />
                   </FormControl>

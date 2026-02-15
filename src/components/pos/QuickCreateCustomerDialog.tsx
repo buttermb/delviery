@@ -213,7 +213,7 @@ export function QuickCreateCustomerDialog({
                 name="first_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name *</FormLabel>
+                    <FormLabel required>First Name</FormLabel>
                     <FormControl>
                       <Input placeholder="John" autoFocus {...field} />
                     </FormControl>
@@ -226,7 +226,7 @@ export function QuickCreateCustomerDialog({
                 name="last_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name *</FormLabel>
+                    <FormLabel required>Last Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Doe" {...field} />
                     </FormControl>

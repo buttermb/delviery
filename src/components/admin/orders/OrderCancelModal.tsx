@@ -142,7 +142,7 @@ export function OrderCancelModal({
               name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cancellation Reason *</FormLabel>
+                  <FormLabel required>Cancellation Reason</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger data-autofocus>

@@ -263,7 +263,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               name="business_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Name *</FormLabel>
+                  <FormLabel required>Business Name</FormLabel>
                   <FormControl>
                     <Input placeholder="BigMike Wholesale" {...field} />
                   </FormControl>
@@ -278,7 +278,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="owner_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Owner Name *</FormLabel>
+                    <FormLabel required>Owner Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Mike Johnson" {...field} />
                     </FormControl>
@@ -292,7 +292,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="owner_email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Owner Email *</FormLabel>
+                    <FormLabel required>Owner Email</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="mike@bigmike.com" {...field} />
                     </FormControl>
@@ -338,7 +338,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="subscription_plan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subscription Plan *</FormLabel>
+                    <FormLabel required>Subscription Plan</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -361,7 +361,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="subscription_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status *</FormLabel>
+                    <FormLabel required>Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>

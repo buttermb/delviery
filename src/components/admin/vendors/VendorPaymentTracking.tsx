@@ -433,7 +433,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                       name="amount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Amount</FormLabel>
+                          <FormLabel required>Amount</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -453,7 +453,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                       name="payment_date"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Payment Date</FormLabel>
+                          <FormLabel required>Payment Date</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -467,7 +467,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                       name="payment_method"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Payment Method</FormLabel>
+                          <FormLabel required>Payment Method</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}

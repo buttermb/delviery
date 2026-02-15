@@ -150,7 +150,7 @@ export function BulkAssignRunnerDialog({
 
             {/* Runner Selection */}
             <div className="space-y-2">
-              <Label htmlFor="runner">Select Runner *</Label>
+              <Label htmlFor="runner">Select Runner <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Select value={selectedRunnerId} onValueChange={setSelectedRunnerId}>
                 <SelectTrigger id="runner">
                   <SelectValue placeholder="Choose a runner..." />

@@ -142,7 +142,7 @@ export default function InvitesPage() {
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Name</FormLabel>
+                                            <FormLabel required>Name</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="John Doe" {...field} />
                                             </FormControl>
@@ -155,7 +155,7 @@ export default function InvitesPage() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Email Address</FormLabel>
+                                            <FormLabel required>Email Address</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="client@example.com" {...field} />
                                             </FormControl>

@@ -331,7 +331,7 @@ export function VendorPaymentTermsManager({
                 name="payment_term_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment Terms *</FormLabel>
+                    <FormLabel required>Payment Terms</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
@@ -363,7 +363,7 @@ export function VendorPaymentTermsManager({
                   name="custom_days"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Custom Days *</FormLabel>
+                      <FormLabel required>Custom Days</FormLabel>
                       <FormControl>
                         <Input
                           type="number"

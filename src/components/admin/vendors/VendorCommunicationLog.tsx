@@ -461,7 +461,7 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
                   name="communication_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Type *</FormLabel>
+                      <FormLabel required>Type</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -515,7 +515,7 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content *</FormLabel>
+                    <FormLabel required>Content</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Details of the communication..."

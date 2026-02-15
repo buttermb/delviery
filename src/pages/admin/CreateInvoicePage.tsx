@@ -175,7 +175,7 @@ export default function CreateInvoicePage() {
                                     name="client_id"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Client</FormLabel>
+                                            <FormLabel required>Client</FormLabel>
                                             <FormControl>
                                                 <ClientSelector
                                                     value={field.value}
@@ -194,7 +194,7 @@ export default function CreateInvoicePage() {
                                         name="issue_date"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col">
-                                                <FormLabel>Issue Date</FormLabel>
+                                                <FormLabel required>Issue Date</FormLabel>
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <FormControl>
@@ -236,7 +236,7 @@ export default function CreateInvoicePage() {
                                         name="due_date"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col">
-                                                <FormLabel>Due Date</FormLabel>
+                                                <FormLabel required>Due Date</FormLabel>
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <FormControl>
@@ -276,7 +276,7 @@ export default function CreateInvoicePage() {
                                     name="status"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Status</FormLabel>
+                                            <FormLabel required>Status</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}

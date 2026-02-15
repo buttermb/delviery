@@ -554,7 +554,7 @@ export function VendorDocumentManager({ vendorId, vendorName }: VendorDocumentMa
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category *</FormLabel>
+                      <FormLabel required>Category</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -594,7 +594,7 @@ export function VendorDocumentManager({ vendorId, vendorName }: VendorDocumentMa
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Document Name *</FormLabel>
+                    <FormLabel required>Document Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., License 2024" {...field} />
                     </FormControl>

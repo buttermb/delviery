@@ -589,7 +589,7 @@ export function VendorComplianceTracking({
                 name="license_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>License Number *</FormLabel>
+                    <FormLabel required>License Number</FormLabel>
                     <FormControl>
                       <Input placeholder="ABC-123456" {...field} />
                     </FormControl>
@@ -603,7 +603,7 @@ export function VendorComplianceTracking({
                 name="license_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>License Type *</FormLabel>
+                    <FormLabel required>License Type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>

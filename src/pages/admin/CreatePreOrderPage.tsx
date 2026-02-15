@@ -151,7 +151,7 @@ export default function CreatePreOrderPage() {
                                     name="client_id"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Client</FormLabel>
+                                            <FormLabel required>Client</FormLabel>
                                             <FormControl>
                                                 <ClientSelector
                                                     value={field.value}

@@ -181,7 +181,7 @@ export function BusinessProfileStep({ onComplete }: BusinessProfileStepProps) {
             name="business_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Name *</FormLabel>
+                <FormLabel required>Business Name</FormLabel>
                 <FormControl>
                   <Input placeholder="My Cannabis Co." {...field} />
                 </FormControl>
@@ -195,7 +195,7 @@ export function BusinessProfileStep({ onComplete }: BusinessProfileStepProps) {
             name="slug"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Store URL Slug *</FormLabel>
+                <FormLabel required>Store URL Slug</FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground whitespace-nowrap">floraiq.co/</span>

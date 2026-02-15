@@ -450,7 +450,7 @@ export function ProofOfDelivery({
               name="recipientName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Recipient Name *</FormLabel>
+                  <FormLabel required>Recipient Name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter recipient's name"
