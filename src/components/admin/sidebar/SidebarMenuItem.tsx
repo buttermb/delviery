@@ -131,7 +131,8 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           onClick={handleClick}
           className={cn(
             "flex items-center gap-3 w-full",
-            item.hot && "font-semibold"
+            item.hot && "font-semibold",
+            isActive && "font-bold"
           )}
         >
           {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}

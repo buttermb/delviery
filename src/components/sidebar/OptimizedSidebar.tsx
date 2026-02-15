@@ -239,7 +239,7 @@ export function OptimizedSidebar({
                         'hover:bg-accent hover:text-accent-foreground',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         linkActive || isActive(item.path)
-                            ? 'bg-primary/10 text-primary font-medium'
+                            ? 'bg-primary/10 text-primary font-bold border-l-[3px] border-l-primary'
                             : 'text-muted-foreground'
                     )
                 }
