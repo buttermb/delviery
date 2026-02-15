@@ -69,7 +69,7 @@ export default function FinanceHubPage() {
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="finance-hub"
                         hubHref="finance-hub"

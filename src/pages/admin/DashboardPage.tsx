@@ -46,7 +46,7 @@ const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidge
 // Fallback component for RevenueWidget while loading
 function RevenueWidgetFallback() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <Skeleton className="h-7 w-32" />
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -208,7 +208,7 @@ export function DashboardPage() {
       </Suspense>
 
       {/* Orders Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <ShoppingCart className="h-5 w-5 text-blue-600" />
           Orders
@@ -256,7 +256,7 @@ export function DashboardPage() {
       </div>
 
       {/* Customers Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5 text-indigo-600" />
           Customers
@@ -296,7 +296,7 @@ export function DashboardPage() {
       </div>
 
       {/* Inventory Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Package className="h-5 w-5 text-purple-600" />
           Inventory

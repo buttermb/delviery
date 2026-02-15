@@ -189,7 +189,7 @@ const AdminLayout = () => {
             </SidebarErrorBoundary>
             <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-hidden">
               <AccountSwitcher />
-              <header className="glass-floating h-14 sm:h-14 flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
+              <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
                 {/* Sidebar trigger - 48px minimum touch target */}
                 <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-dropdown -ml-1 sm:ml-0 flex items-center justify-center" />
 
@@ -290,7 +290,7 @@ const AdminLayout = () => {
                 </div>
               </header>
               <main
-                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 pb-24 lg:pb-6"
+                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 lg:pb-6"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   minHeight: 0,

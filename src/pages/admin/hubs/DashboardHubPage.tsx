@@ -553,13 +553,13 @@ export function DashboardHubPage() {
       )}
 
       {/* Quick Actions (Task 3) */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold">Quick Actions</h2>
         <QuickActionsGrid tenantSlug={tenantSlug} />
       </div>
 
       {/* KPI Cards (Task 1) */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold">Key Metrics</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
@@ -628,7 +628,7 @@ export function DashboardHubPage() {
       </div>
 
       {/* Secondary KPI Row */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <Link to={buildUrl('finance-hub')} className="group flex items-center gap-2">
           <h2 className="text-lg font-semibold flex items-center gap-2 group-hover:text-primary transition-colors">
             <DollarSign className="h-5 w-5 text-green-600" />

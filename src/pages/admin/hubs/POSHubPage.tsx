@@ -94,7 +94,7 @@ export default function POSHubPage() {
     return (
         <div ref={containerRef} className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="border-b bg-card px-4 py-3">
+                <div className="border-b bg-card px-6 py-3">
                     {/* Hide breadcrumbs and title on register tab for fullscreen feel */}
                     {activeTab !== 'register' && (
                         <>

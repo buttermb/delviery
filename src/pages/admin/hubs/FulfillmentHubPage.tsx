@@ -73,7 +73,7 @@ export default function FulfillmentHubPage() {
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="fulfillment-hub"
                         hubHref="fulfillment-hub"

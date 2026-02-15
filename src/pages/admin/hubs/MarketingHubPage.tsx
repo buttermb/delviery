@@ -54,10 +54,10 @@ export default function MarketingHubPage() {
     }, [setSearchParams]);
 
     return (
-        <div className="min-h-0 bg-background flex flex-col -m-3 sm:-m-4 md:-m-6" style={{ height: 'calc(100vh - 56px)' }}>
+        <div className="min-h-0 bg-background flex flex-col -m-4 sm:-m-6" style={{ height: 'calc(100vh - 56px)' }}>
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full flex-1 min-h-0 flex flex-col">
                 {/* Header - Fixed Tabs */}
-                <div className="border-b bg-card px-4 py-4 shrink-0">
+                <div className="border-b bg-card px-6 py-4 shrink-0">
                     <HubBreadcrumbs
                         hubName="marketing-hub"
                         hubHref="marketing-hub"

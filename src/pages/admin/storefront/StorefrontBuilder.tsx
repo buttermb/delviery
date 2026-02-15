@@ -728,7 +728,7 @@ export function StorefrontBuilder({
 
     return (
         <div
-            className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : '-m-3 sm:-m-4 md:-m-6'}`}
+            className={`flex flex-col bg-muted overflow-hidden ${isFullScreen ? '' : '-m-4 sm:-m-6'}`}
             style={{
                 height: isFullScreen ? '100vh' : 'calc(100vh - 56px)',
                 width: isFullScreen ? '100%' : 'calc(100% + 1.5rem)'
