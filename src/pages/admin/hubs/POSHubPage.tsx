@@ -6,7 +6,7 @@
  * - Z-Reports: End of day reports
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';
@@ -45,16 +45,38 @@ type TabId = typeof tabs[number]['id'];
 export default function POSHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'register';
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
-    // Keyboard shortcuts for quick tab switching (1-4)
+    // Keyboard shortcuts for quick tab switching (1-4), scoped to POS hub only
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Don't trigger if user is typing in an input
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            const target = e.target as HTMLElement;
+
+            // Don't trigger if user is typing in an input or editable element
+            if (
+                target instanceof HTMLInputElement ||
+                target instanceof HTMLTextAreaElement ||
+                target instanceof HTMLSelectElement ||
+                target.isContentEditable
+            ) {
+                return;
+            }
+
+            // Don't trigger if a dialog, modal, or command palette is open
+            if (document.querySelector('[role="dialog"], [role="alertdialog"], [data-state="open"][role="dialog"]')) {
+                return;
+            }
+
+            // Don't trigger if focus is outside the POS hub container (unless on body)
+            if (
+                containerRef.current &&
+                target !== document.body &&
+                !containerRef.current.contains(target)
+            ) {
                 return;
             }
 
@@ -70,7 +92,7 @@ export default function POSHubPage() {
     }, [handleTabChange]);
 
     return (
-        <div className="space-y-0">
+        <div ref={containerRef} className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="border-b bg-card px-4 py-3">
                     {/* Hide breadcrumbs and title on register tab for fullscreen feel */}
