@@ -96,18 +96,17 @@ export default function DeliveryDashboard() {
 
   // Fetch all delivery-related orders
   const { data: orders = [], isLoading: loadingOrders, refetch } = useQuery({
-    queryKey: queryKeys.deliveries.list({ tenantId: tenant?.id, dashboard: true }),
+    queryKey: queryKeys.deliveries.list(tenant?.id, { dashboard: true }),
     queryFn: async (): Promise<DeliveryOrder[]> => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('orders')
         .select(`
           id,
           status,
           delivery_address,
           delivery_scheduled_at,
-          delivery_completed_at,
           courier_id,
           created_at,
           total_amount,
@@ -126,7 +125,7 @@ export default function DeliveryDashboard() {
         throw error;
       }
 
-      return (data || []) as DeliveryOrder[];
+      return (data || []) as unknown as DeliveryOrder[];
     },
     enabled: !!tenant?.id,
     staleTime: 30000,

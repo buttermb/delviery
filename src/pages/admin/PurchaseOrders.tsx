@@ -102,7 +102,7 @@ export default function PurchaseOrders() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from("purchase_orders")
         .select("*")
         .eq("tenant_id", tenant.id)
@@ -130,7 +130,7 @@ export default function PurchaseOrders() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error: vendorsError } = await supabase
+      const { data, error: vendorsError } = await (supabase as any)
         .from("vendors")
         .select("id, name")
         .eq("tenant_id", tenant.id);

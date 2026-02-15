@@ -120,12 +120,12 @@ export function OrdersListPage() {
 
   // Fetch orders with cross-module data
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.orders.list({ tenantId: tenant?.id, filters: activeFilters }),
+    queryKey: queryKeys.orders.list(tenant?.id, { filters: activeFilters }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
       // Fetch orders with extended fields
-      const { data: ordersData, error } = await supabase
+      const { data: ordersData, error } = await (supabase as any)
         .from('orders')
         .select(`
           id,
@@ -136,7 +136,6 @@ export function OrdersListPage() {
           user_id,
           courier_id,
           tenant_id,
-          order_source,
           payment_status
         `)
         .eq('tenant_id', tenant.id)
@@ -148,8 +147,8 @@ export function OrdersListPage() {
       }
 
       // Fetch user profiles for orders
-      const ordersList = ordersData || [];
-      const userIds = [...new Set(ordersList.map((o) => o.user_id).filter(Boolean))] as string[];
+      const ordersList = (ordersData || []) as any[];
+      const userIds = [...new Set(ordersList.map((o: any) => o.user_id).filter(Boolean))] as string[];
       let profilesMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
 
       if (userIds.length > 0) {
@@ -172,7 +171,7 @@ export function OrdersListPage() {
       }
 
       // Fetch order items for product filtering
-      const orderIds = ordersList.map((o) => o.id);
+      const orderIds = ordersList.map((o: any) => o.id);
       let orderProductsMap: Record<string, string[]> = {};
 
       if (orderIds.length > 0) {
@@ -195,13 +194,13 @@ export function OrdersListPage() {
       // Fetch delivery statuses for orders
       let deliveryStatusMap: Record<string, string> = {};
       if (orderIds.length > 0) {
-        const { data: deliveriesData } = await supabase
+        const { data: deliveriesData } = await (supabase as any)
           .from('deliveries')
           .select('order_id, status')
           .in('order_id', orderIds);
 
         if (deliveriesData) {
-          deliveryStatusMap = deliveriesData.reduce((acc, d) => {
+          deliveryStatusMap = (deliveriesData as any[]).reduce((acc: Record<string, string>, d: any) => {
             if (d.order_id) acc[d.order_id] = d.status || 'pending';
             return acc;
           }, {} as Record<string, string>);
@@ -209,7 +208,7 @@ export function OrdersListPage() {
       }
 
       // Merge orders with related data
-      return ordersList.map((order) => ({
+      return ordersList.map((order: any) => ({
         id: order.id,
         order_number: order.order_number || '',
         created_at: order.created_at || '',
@@ -218,7 +217,7 @@ export function OrdersListPage() {
         user_id: order.user_id || '',
         courier_id: order.courier_id || undefined,
         tenant_id: order.tenant_id || '',
-        order_source: order.order_source || undefined,
+        order_source: undefined,
         payment_status: order.payment_status || undefined,
         delivery_status: deliveryStatusMap[order.id] || undefined,
         delivery_method: undefined,

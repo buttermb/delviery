@@ -108,7 +108,8 @@ function AlertsWidgetFallback() {
 
 export function DashboardPage() {
   const { tenant } = useTenantAdminAuth();
-  const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats();
+  const { data: stats, isLoading, error } = useDashboardStats();
+  const dataUpdatedAt = Date.now();
 
   if (!tenant) {
     return (

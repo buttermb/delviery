@@ -60,7 +60,7 @@ export default function DeliveryManagement() {
 
   // Fetch Deliveries
   const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
-    queryKey: queryKeys.deliveries.list({ tenantId: tenant?.id }),
+    queryKey: queryKeys.deliveries.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

@@ -169,7 +169,7 @@ export async function fetchAttentionItems(
       .lt('estimated_delivery_time', now.toISOString()),
 
     // Active deliveries (on schedule)
-    supabase
+    (supabase as any)
       .from('deliveries')
       .select('id, created_at')
       .eq('tenant_id', tenantId)
@@ -185,7 +185,7 @@ export async function fetchAttentionItems(
       .eq('status', 'active'),
 
     // Low stock products
-    supabase
+    (supabase as any)
       .from('products')
       .select('id, name, stock_quantity')
       .eq('tenant_id', tenantId)

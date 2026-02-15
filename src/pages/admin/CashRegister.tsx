@@ -223,7 +223,7 @@ function CashRegisterContent() {
 
   // Load customers for selection
   const { data: customers = [] } = useQuery({
-    queryKey: queryKeys.customers.list({ tenantId }),
+    queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       try {
