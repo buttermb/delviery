@@ -31,8 +31,7 @@ export function RevenueChartWidget() {
       }
 
       // Get orders from last 30 days
-      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
-      const { data: orders } = await supabase
+      const { data: orders } = await (supabase as any)
         .from('wholesale_orders')
         .select('total_amount, created_at, status')
         .eq('account_id', account.id)

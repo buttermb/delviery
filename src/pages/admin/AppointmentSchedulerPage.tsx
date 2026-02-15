@@ -41,8 +41,7 @@ export default function AppointmentSchedulerPage() {
       if (!tenant?.id) return [];
 
       try {
-        // @ts-expect-error - Type instantiation is excessively deep
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("appointments")
           .select("*")
           .eq("tenant_id", tenant.id)

@@ -154,7 +154,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: StoreSettings | null; error: { code?: string; message?: string } | null }> } } } })
+      const { data, error } = await (supabase as any)
         .from('marketplace_stores')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -186,7 +186,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       const ids = formData.featured_product_ids || [];
       if (ids.length === 0) return [];
-      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { in: (col: string, vals: string[]) => Promise<{ data: Array<{ id: string; name: string; price: number; image_url: string | null; category: string | null }> | null; error: unknown }> } } })
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, price, image_url, category')
         .in('id', ids);
@@ -264,7 +264,7 @@ export default function StorefrontSettings() {
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
 
-      const { error } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+      const { error } = await (supabase as any)
         .from('marketplace_stores')
         .update({
           store_name: formData.store_name,

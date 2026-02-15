@@ -45,8 +45,7 @@ export function LocationOverviewWidget() {
                     const margin = todayRevenue > 0 ? 25 : 0;
 
                     // Check for issues (out of stock products)
-                    // @ts-expect-error - Deep type instantiation from Supabase query
-                    const { count: outOfStock } = await supabase
+                    const { count: outOfStock } = await (supabase as any)
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)

@@ -75,8 +75,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
 
-        // @ts-expect-error - Avoid deep type instantiation
-        const { count: views } = await supabase
+        const { count: views } = await (supabase as any)
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)

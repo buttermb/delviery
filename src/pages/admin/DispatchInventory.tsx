@@ -106,8 +106,7 @@ export default function DispatchInventory() {
   const handleBarcodeScan = async (barcode: string) => {
     if (!tenant) return;
     try {
-      // @ts-expect-error - Avoid deep Supabase type inference
-      const result = await supabase
+      const result = await (supabase as any)
         .from('products')
         .select('id, name, cost_per_unit, wholesale_price')
         .eq('barcode', barcode)
@@ -257,8 +256,7 @@ export default function DispatchInventory() {
         }));
 
         // Try atomic RPC first (preferred method - prevents race conditions)
-        // @ts-expect-error - RPC function not in auto-generated types
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic' as any, {
+        const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_fronted_inventory_atomic', {
           p_tenant_id: tenant.id,
           p_client_id: selectedClient.id,
           p_items: items,
@@ -384,8 +382,7 @@ export default function DispatchInventory() {
     await Promise.all(promises);
 
     // Update client's outstanding balance using atomic RPC if available, else direct update
-    // @ts-expect-error - RPC function not in auto-generated types
-    const { error: balanceError } = await supabase.rpc('adjust_client_balance' as any, {
+    const { error: balanceError } = await (supabase as any).rpc('adjust_client_balance', {
       p_client_id: selectedClient.id,
       p_amount: totalExpectedRevenue,
       p_operation: 'add'

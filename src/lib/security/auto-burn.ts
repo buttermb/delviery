@@ -95,11 +95,7 @@ export const logSuspiciousActivity = async (
     };
 
     // Use type assertion to handle dynamic table
-    const client = supabase as unknown as {
-      from: (table: string) => {
-        insert: (data: Record<string, unknown>) => Promise<{ error: unknown }>;
-      };
-    };
+    const client = supabase as any;
     await client.from('menu_security_events').insert(insertData);
 
     logger.warn('Suspicious activity logged', {
@@ -152,11 +148,7 @@ export const burnMenu = async (
     logger.warn('Initiating menu burn', { menuId, reason, burnType });
 
     // Log the burn event
-    const client = supabase as unknown as {
-      from: (table: string) => {
-        insert: (data: Record<string, unknown>) => Promise<{ error: unknown }>;
-      };
-    };
+    const client = supabase as any;
     await client.from('menu_security_events').insert({
       menu_id: menuId,
       event_type: 'auto_burn_triggered',

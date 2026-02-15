@@ -28,8 +28,7 @@ export function InventoryMovementLog() {
       if (!tenant?.id) return [];
 
       // Query wholesale_inventory_movements with product info via wholesale_inventory
-      // @ts-expect-error - Type instantiation depth issue
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("wholesale_inventory_movements")
         .select(`
           id,

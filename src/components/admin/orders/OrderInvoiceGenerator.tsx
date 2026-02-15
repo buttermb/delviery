@@ -761,14 +761,7 @@ export interface CreateOrderInvoiceInput {
 }
 
 // Helper to cast Supabase client to avoid deep type instantiation
-const db = supabase as unknown as {
-  from: (table: string) => {
-    select: (columns?: string) => unknown;
-    insert: (data: unknown) => unknown;
-    update: (data: unknown) => unknown;
-  };
-  rpc: (fn: string, params?: unknown) => Promise<{ data: unknown; error: Error | null }>;
-};
+const db = supabase as any;
 
 /**
  * Hook for generating and saving order invoices to database
@@ -824,7 +817,7 @@ export function useOrderInvoiceSave() {
         .join('\n\n');
 
       // Insert invoice record into customer_invoices table
-      const insertQuery = db.from('customer_invoices').insert({
+      const result = await db.from('customer_invoices').insert({
         tenant_id: tenant.id,
         customer_id: customerId,
         invoice_number: invoiceNumber,
@@ -837,11 +830,7 @@ export function useOrderInvoiceSave() {
         due_date: dueDate || null,
         notes: combinedNotes || null,
         line_items: lineItems,
-      }) as unknown as {
-        select: (cols: string) => { maybeSingle: () => Promise<{ data: unknown | null; error: Error | null }> };
-      };
-
-      const result = await insertQuery.select('*').maybeSingle();
+      }).select('*').maybeSingle();
 
       if (result.error) {
         throw result.error;

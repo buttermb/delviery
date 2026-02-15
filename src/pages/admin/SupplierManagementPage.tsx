@@ -83,9 +83,9 @@ export default function SupplierManagementPage() {
     mutationFn: async ({ id, supplierName }: { id: string; supplierName: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
-      const deleteQuery = supabase
+      const deleteQuery = (supabase as any)
         .from("wholesale_suppliers")
-        .delete() as unknown as { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: Error | null }> } };
+        .delete();
 
       const { error } = await deleteQuery
         .eq("id", id)

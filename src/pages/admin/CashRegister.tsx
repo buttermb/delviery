@@ -259,20 +259,7 @@ function CashRegisterContent() {
 
       try {
         // pos_transactions table may not be in generated types yet
-        const client = supabase as unknown as {
-          from: (table: string) => {
-            select: (cols: string) => {
-              eq: (col: string, val: string) => {
-                order: (col: string, opts: { ascending: boolean }) => {
-                  limit: (n: number) => Promise<{
-                    data: POSTransaction[] | null;
-                    error: { code?: string; message?: string } | null;
-                  }>;
-                };
-              };
-            };
-          };
-        };
+        const client = supabase as any;
         const { data, error } = await client
           .from('pos_transactions')
           .select('*')
@@ -403,12 +390,7 @@ function CashRegisterContent() {
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      const rpcClient = supabase as unknown as {
-        rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-          data: POSTransactionResult | null;
-          error: { code?: string; message?: string } | null;
-        }>;
-      };
+      const rpcClient = supabase as any;
       const { data: rpcResult, error: rpcError } = await rpcClient.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,

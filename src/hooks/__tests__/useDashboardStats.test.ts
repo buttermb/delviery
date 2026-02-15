@@ -73,8 +73,7 @@ describe('useDashboardStats', () => {
       );
 
       expect(dashboardQuery).toBeDefined();
-      // @ts-expect-error - accessing internal options
-      expect(dashboardQuery?.options?.refetchInterval).toBe(60_000);
+      expect((dashboardQuery as any)?.options?.refetchInterval).toBe(60_000);
     });
   });
 
@@ -88,8 +87,7 @@ describe('useDashboardStats', () => {
       );
 
       expect(dashboardQuery).toBeDefined();
-      // @ts-expect-error - accessing internal options
-      expect(dashboardQuery?.options?.staleTime).toBe(60_000);
+      expect((dashboardQuery as any)?.options?.staleTime).toBe(60_000);
     });
   });
 

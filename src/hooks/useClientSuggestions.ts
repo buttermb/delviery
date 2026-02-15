@@ -209,7 +209,7 @@ export function useToggleClientFavorite() {
     try {
       const { error } = await (supabase as any)
         .from('wholesale_clients')
-        .update({ is_favorite: isFavorite } as any)
+        .update({ is_favorite: isFavorite })
         .eq('id', clientId)
         .eq('tenant_id', tenant.id);
 

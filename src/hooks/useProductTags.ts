@@ -80,15 +80,7 @@ export function useProductTags() {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (field: string, value: string) => {
-              order: (field: string, options: { ascending: boolean }) => Promise<{ data: ProductTag[] | null; error: { code?: string; message: string } | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('product_tags')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -124,13 +116,7 @@ export function usePopularProductTags(limit = 10) {
       if (!tenant?.id) throw new Error('No tenant');
 
       // First get all tags
-      const { data: tags, error: tagsError } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (field: string, value: string) => Promise<{ data: ProductTag[] | null; error: { code?: string; message: string } | null }>;
-          };
-        };
-      })
+      const { data: tags, error: tagsError } = await (supabase as any)
         .from('product_tags')
         .select('*')
         .eq('tenant_id', tenant.id);
@@ -148,13 +134,7 @@ export function usePopularProductTags(limit = 10) {
 
       // Get assignment counts for each tag
       const tagIds = tags.map(t => t.id);
-      const { data: assignments, error: assignError } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            in: (field: string, values: string[]) => Promise<{ data: Array<{ tag_id: string }> | null; error: { code?: string; message: string } | null }>;
-          };
-        };
-      })
+      const { data: assignments, error: assignError } = await (supabase as any)
         .from('product_tag_assignments')
         .select('tag_id')
         .in('tag_id', tagIds);
@@ -196,13 +176,7 @@ export function useProductTagAssignments(productId: string | undefined) {
       if (!tenant?.id || !productId) throw new Error('No tenant or product');
 
       // First get assignments
-      const { data: assignments, error: assignError } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (field: string, value: string) => Promise<{ data: Array<{ id: string; product_id: string; tag_id: string }> | null; error: { code?: string; message: string } | null }>;
-          };
-        };
-      })
+      const { data: assignments, error: assignError } = await (supabase as any)
         .from('product_tag_assignments')
         .select('*')
         .eq('product_id', productId);
@@ -220,15 +194,7 @@ export function useProductTagAssignments(productId: string | undefined) {
 
       // Then get the tags for these assignments
       const tagIds = assignments.map(a => a.tag_id);
-      const { data: tags, error: tagsError } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            in: (field: string, values: string[]) => {
-              eq: (field: string, value: string) => Promise<{ data: ProductTag[] | null; error: { code?: string; message: string } | null }>;
-            };
-          };
-        };
-      })
+      const { data: tags, error: tagsError } = await (supabase as any)
         .from('product_tags')
         .select('*')
         .in('id', tagIds)
@@ -262,15 +228,7 @@ export function useCreateProductTag() {
     mutationFn: async (input: CreateProductTagInput) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (data: Record<string, unknown>) => {
-            select: () => {
-              maybeSingle: () => Promise<{ data: ProductTag | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('product_tags')
         .insert({
           tenant_id: tenant.id,
@@ -312,19 +270,7 @@ export function useUpdateProductTag() {
       if (input.name !== undefined) updateData.name = input.name.trim();
       if (input.color !== undefined) updateData.color = input.color;
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          update: (data: Record<string, unknown>) => {
-            eq: (field: string, value: string) => {
-              eq: (field: string, value: string) => {
-                select: () => {
-                  maybeSingle: () => Promise<{ data: ProductTag | null; error: Error | null }>;
-                };
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('product_tags')
         .update(updateData)
         .eq('id', input.id)
@@ -360,15 +306,7 @@ export function useDeleteProductTag() {
     mutationFn: async (tagId: string) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await (supabase as unknown as {
-        from: (table: string) => {
-          delete: () => {
-            eq: (field: string, value: string) => {
-              eq: (field: string, value: string) => Promise<{ error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { error } = await (supabase as any)
         .from('product_tags')
         .delete()
         .eq('id', tagId)
@@ -397,15 +335,7 @@ export function useAssignProductTag() {
 
   return useMutation({
     mutationFn: async ({ productId, tagId }: { productId: string; tagId: string }) => {
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (data: Record<string, unknown>) => {
-            select: () => {
-              maybeSingle: () => Promise<{ data: { id: string; product_id: string; tag_id: string } | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('product_tag_assignments')
         .insert({
           product_id: productId,
@@ -446,15 +376,7 @@ export function useRemoveProductTag() {
 
   return useMutation({
     mutationFn: async ({ productId, tagId }: { productId: string; tagId: string }) => {
-      const { error } = await (supabase as unknown as {
-        from: (table: string) => {
-          delete: () => {
-            eq: (field: string, value: string) => {
-              eq: (field: string, value: string) => Promise<{ error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { error } = await (supabase as any)
         .from('product_tag_assignments')
         .delete()
         .eq('product_id', productId)
@@ -499,11 +421,7 @@ export function useBatchAssignProductTags() {
         }))
       );
 
-      const { error } = await (supabase as unknown as {
-        from: (table: string) => {
-          upsert: (data: Array<Record<string, unknown>>, options: { onConflict: string; ignoreDuplicates: boolean }) => Promise<{ error: Error | null }>;
-        };
-      })
+      const { error } = await (supabase as any)
         .from('product_tag_assignments')
         .upsert(insertData, { onConflict: 'product_id,tag_id', ignoreDuplicates: true });
 
@@ -533,19 +451,7 @@ export function useSearchProductTags(searchTerm: string) {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (field: string, value: string) => {
-              ilike: (field: string, pattern: string) => {
-                order: (field: string, options: { ascending: boolean }) => {
-                  limit: (n: number) => Promise<{ data: ProductTag[] | null; error: { code?: string; message: string } | null }>;
-                };
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('product_tags')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -580,15 +486,7 @@ export function useProductTagsByIds(tagIds: string[]) {
     queryFn: async () => {
       if (!tenant?.id || tagIds.length === 0) return [];
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              in: (column: string, values: string[]) => Promise<{ data: ProductTag[] | null; error: { code?: string; message: string } | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('product_tags')
         .select('*')
         .eq('tenant_id', tenant.id)

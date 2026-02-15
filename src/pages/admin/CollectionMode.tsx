@@ -109,9 +109,8 @@ function useCollectionData() {
       if (error) throw error;
 
       // Fetch total payments per client
-      // @ts-expect-error - Type instantiation too deep
-      const { data: payments } = await supabase
-        .from('wholesale_payments' as any)
+      const { data: payments } = await (supabase as any)
+        .from('wholesale_payments')
         .select('client_id, amount')
         .eq('tenant_id', tenant?.id);
 

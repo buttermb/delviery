@@ -80,8 +80,7 @@ export default function MyListingsPage() {
     queryFn: async (): Promise<any[]> => {
       if (!tenantId || !profile?.id) return [];
 
-      // @ts-expect-error - Deep type instantiation error with Supabase query chains
-      const result = await supabase
+      const result = await (supabase as any)
         .from('marketplace_listings')
         .select('*')
         .eq('tenant_id', tenantId)

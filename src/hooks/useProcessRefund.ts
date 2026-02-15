@@ -122,12 +122,7 @@ export function useProcessRefund() {
       if (returnToInventory && input.items.length > 0) {
         for (const item of input.items) {
           // Use increment_stock RPC if available
-          const rpcClient = supabase as unknown as {
-            rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-              data: unknown;
-              error: { message?: string } | null;
-            }>;
-          };
+          const rpcClient = supabase as any;
 
           const { error: stockError } = await rpcClient.rpc('increment_stock', {
             p_product_id: item.product_id,
@@ -189,12 +184,7 @@ export function useProcessRefund() {
 
       // Step 4: Update customer balance/credit if customer is attached
       if (input.customer_id) {
-        const rpcClient = supabase as unknown as {
-          rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-            data: unknown;
-            error: { message?: string } | null;
-          }>;
-        };
+        const rpcClient = supabase as any;
 
         // Add credit to customer if refund method is store credit
         if (input.payment_method === 'store_credit') {

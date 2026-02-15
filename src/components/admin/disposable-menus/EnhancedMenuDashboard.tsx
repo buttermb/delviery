@@ -107,8 +107,7 @@ export function EnhancedMenuDashboard() {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      // @ts-expect-error - Menu type mismatch with Supabase generated types
-      const burned = menus?.filter((m: Menu) => 
+      const burned = (menus as Menu[])?.filter((m: Menu) =>
         (m.status === 'soft_burned' || m.status === 'hard_burned') &&
         m.burned_at &&
         new Date(m.burned_at) >= thirtyDaysAgo
@@ -119,8 +118,7 @@ export function EnhancedMenuDashboard() {
     enabled: !!menus,
   });
 
-  // @ts-expect-error - Menu type mismatch with Supabase generated types
-  const activeMenus = menus?.filter((m: Menu) => m.status === 'active') || [];
+  const activeMenus = (menus as Menu[])?.filter((m: Menu) => m.status === 'active') || [];
 
   return (
     <div className="space-y-6">

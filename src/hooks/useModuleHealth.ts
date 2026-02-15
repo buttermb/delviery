@@ -66,7 +66,7 @@ async function checkModuleHealth(
 
     switch (moduleName) {
       case 'products':
-        result = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { limit: (n: number) => Promise<{ error: { message: string } | null }> } } } })
+        result = await (supabase as any)
           .from('products')
           .select('id')
           .eq('tenant_id', tenantId)
@@ -74,7 +74,7 @@ async function checkModuleHealth(
         break;
 
       case 'orders':
-        result = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { limit: (n: number) => Promise<{ error: { message: string } | null }> } } } })
+        result = await (supabase as any)
           .from('orders')
           .select('id')
           .eq('tenant_id', tenantId)
@@ -82,7 +82,7 @@ async function checkModuleHealth(
         break;
 
       case 'customers':
-        result = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { limit: (n: number) => Promise<{ error: { message: string } | null }> } } } })
+        result = await (supabase as any)
           .from('customers')
           .select('id')
           .eq('tenant_id', tenantId)
@@ -91,7 +91,7 @@ async function checkModuleHealth(
 
       case 'inventory':
         // Inventory is typically checked via products table stock_quantity
-        result = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { limit: (n: number) => Promise<{ error: { message: string } | null }> } } } })
+        result = await (supabase as any)
           .from('products')
           .select('id, stock_quantity')
           .eq('tenant_id', tenantId)
@@ -99,7 +99,7 @@ async function checkModuleHealth(
         break;
 
       case 'deliveries':
-        result = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { limit: (n: number) => Promise<{ error: { message: string } | null }> } } } })
+        result = await (supabase as any)
           .from('deliveries')
           .select('id')
           .eq('tenant_id', tenantId)
@@ -107,7 +107,7 @@ async function checkModuleHealth(
         break;
 
       case 'menus':
-        result = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { limit: (n: number) => Promise<{ error: { message: string } | null }> } } } })
+        result = await (supabase as any)
           .from('disposable_menus')
           .select('id')
           .eq('tenant_id', tenantId)

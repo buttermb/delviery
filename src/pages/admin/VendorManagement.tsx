@@ -119,16 +119,7 @@ export function VendorManagement() {
       if (editingVendor) {
         if (!tenant?.id) throw new Error('Tenant context required');
 
-        const vendorClient = supabase as unknown as {
-          from: (table: string) => {
-            update: (data: Record<string, unknown>) => {
-              eq: (col: string, val: string) => {
-                eq: (col: string, val: string) => Promise<{ error: { message?: string } | null }>;
-              };
-            };
-            insert: (data: Record<string, unknown>) => Promise<{ error: { message?: string } | null }>;
-          };
-        };
+        const vendorClient = supabase as any;
         const { error } = await vendorClient
           .from('vendors')
           .update(vendorData as Record<string, unknown>)
@@ -142,11 +133,7 @@ export function VendorManagement() {
           description: 'Vendor updated successfully'
         });
       } else {
-        const insertClient = supabase as unknown as {
-          from: (table: string) => {
-            insert: (data: Record<string, unknown>) => Promise<{ error: { message?: string } | null }>;
-          };
-        };
+        const insertClient = supabase as any;
         const { error } = await insertClient
           .from('vendors')
           .insert({

@@ -36,15 +36,7 @@ export function useOrderTags(orderId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !orderId) throw new Error('No tenant or order');
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (column: string, value: string) => {
-              eq: (column: string, value: string) => Promise<{ data: OrderTag[] | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('order_tags')
         .select('*, tag:tags(*)')
         .eq('tenant_id', tenant.id)
@@ -73,15 +65,7 @@ export function useAssignOrderTag() {
     mutationFn: async ({ orderId, tagId }: { orderId: string; tagId: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (values: Record<string, unknown>) => {
-            select: (query: string) => {
-              maybeSingle: () => Promise<{ data: OrderTag | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('order_tags')
         .insert({
           tenant_id: tenant.id,
@@ -117,17 +101,7 @@ export function useRemoveOrderTag() {
     mutationFn: async ({ orderId, tagId }: { orderId: string; tagId: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await (supabase as unknown as {
-        from: (table: string) => {
-          delete: () => {
-            eq: (column: string, value: string) => {
-              eq: (column: string, value: string) => {
-                eq: (column: string, value: string) => Promise<{ error: Error | null }>;
-              };
-            };
-          };
-        };
-      })
+      const { error } = await (supabase as any)
         .from('order_tags')
         .delete()
         .eq('tenant_id', tenant.id)
@@ -172,11 +146,7 @@ export function useBatchAssignOrderTags() {
         }))
       );
 
-      const { error } = await (supabase as unknown as {
-        from: (table: string) => {
-          upsert: (values: Record<string, unknown>[], options: { onConflict: string; ignoreDuplicates: boolean }) => Promise<{ error: Error | null }>;
-        };
-      })
+      const { error } = await (supabase as any)
         .from('order_tags')
         .upsert(insertData, { onConflict: 'order_id,tag_id', ignoreDuplicates: true });
 
@@ -209,17 +179,7 @@ export function useBatchRemoveOrderTags() {
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await (supabase as unknown as {
-        from: (table: string) => {
-          delete: () => {
-            eq: (column: string, value: string) => {
-              in: (column: string, values: string[]) => {
-                in: (column: string, values: string[]) => Promise<{ error: Error | null }>;
-              };
-            };
-          };
-        };
-      })
+      const { error } = await (supabase as any)
         .from('order_tags')
         .delete()
         .eq('tenant_id', tenant.id)

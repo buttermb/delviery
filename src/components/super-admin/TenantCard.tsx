@@ -40,7 +40,6 @@ export const TenantCard = memo(function TenantCard({
   onLoginAs,
   onViewBilling 
 }: TenantCardProps) {
-
   const health = calculateHealthScore(tenant as any);
   const healthScore = health.score;
   const healthColor = getHealthTextColor(healthScore);

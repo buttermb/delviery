@@ -108,31 +108,7 @@ export function LowStockToPODialog({
       if (!tenantId) return [];
 
       // Fetch products below low stock threshold with vendor info
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (col: string, val: string) => {
-              or: (filter: string) => {
-                order: (col: string, opts: { ascending: boolean }) => Promise<{
-                  data: Array<{
-                    id: string;
-                    name: string;
-                    category: string | null;
-                    available_quantity: number | null;
-                    stock_quantity: number | null;
-                    low_stock_alert: number | null;
-                    vendor_id: string | null;
-                    vendor_name: string | null;
-                    cost_per_unit: number | null;
-                    reorder_quantity: number | null;
-                  }> | null;
-                  error: { message: string; code?: string } | null;
-                }>;
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('products')
         .select(
           'id, name, category, available_quantity, stock_quantity, low_stock_alert, vendor_id, vendor_name, cost_per_unit, reorder_quantity'

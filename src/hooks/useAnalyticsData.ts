@@ -499,17 +499,7 @@ async function fetchPaymentsData(
   weekStart: string
 ): Promise<{ collectionsToday: number; expectedThisWeek: number }> {
   // Today's collections from wholesale_payments
-  const { data: todayPayments, error: paymentsError } = await (supabase as unknown as {
-    from: (table: string) => {
-      select: (columns: string) => {
-        eq: (column: string, value: string) => {
-          gte: (column: string, value: string) => {
-            lte: (column: string, value: string) => Promise<{ data: Array<{ amount: number }> | null; error: unknown }>;
-          };
-        };
-      };
-    };
-  })
+  const { data: todayPayments, error: paymentsError } = await (supabase as any)
     .from('wholesale_payments')
     .select('amount')
     .eq('tenant_id', tenantId)
@@ -590,19 +580,7 @@ async function fetchInventoryHistory(
   startDate: string,
   endDate: string
 ): Promise<Array<{ change_type: string; created_at: string }>> {
-  const { data, error } = await (supabase as unknown as {
-    from: (table: string) => {
-      select: (columns: string) => {
-        eq: (column: string, value: string) => {
-          gte: (column: string, value: string) => {
-            lte: (column: string, value: string) => {
-              limit: (count: number) => Promise<{ data: Array<{ change_type: string; created_at: string }> | null; error: unknown }>;
-            };
-          };
-        };
-      };
-    };
-  })
+  const { data, error } = await (supabase as any)
     .from('inventory_history')
     .select('change_type, created_at')
     .eq('tenant_id', tenantId)

@@ -167,19 +167,7 @@ export function OrderPaymentStatusSync({
       if (!tenant?.id || !orderId) return null;
 
       // Use type assertion since payments table may not be in generated types
-      const { data, error: fetchError } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              eq: (column: string, value: string) => {
-                order: (column: string, options: { ascending: boolean }) => {
-                  maybeSingle: () => Promise<{ data: PaymentRecord | null; error: Error | null }>;
-                };
-              };
-            };
-          };
-        };
-      })
+      const { data, error: fetchError } = await (supabase as any)
         .from('payments')
         .select('id, order_id, tenant_id, amount, status, payment_method, transaction_id, paid_at, created_at')
         .eq('order_id', orderId)
@@ -278,11 +266,7 @@ export function OrderPaymentStatusSync({
       };
 
       // Insert payment record
-      const { error: insertError } = await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (record: Record<string, unknown>) => Promise<{ error: Error | null }>;
-        };
-      })
+      const { error: insertError } = await (supabase as any)
         .from('payments')
         .insert(paymentRecord);
 

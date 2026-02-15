@@ -187,7 +187,7 @@ async function restoreInventoryForCancelledOrders(
         };
 
         await (
-          supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> }
+          supabase as any
         )
           .from('inventory_history')
           .insert(historyEntry);

@@ -70,8 +70,7 @@ export default function BatchesPage() {
       if (!tenantId) return [];
 
       try {
-        // @ts-expect-error - Types will regenerate after migration adds notes column
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('inventory_batches')
           .select(`
             *,

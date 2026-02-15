@@ -117,10 +117,8 @@ export default function RevenueReports() {
       }
 
       // Products - count all orders for product analytics
-      // @ts-expect-error - Supabase type inference for join is tricky
-      if (order.order_items && Array.isArray(order.order_items)) {
-        // @ts-expect-error
-        order.order_items.forEach(item => {
+      if ((order as any).order_items && Array.isArray((order as any).order_items)) {
+        (order as any).order_items.forEach((item: any) => {
           const name = item.product_name || 'Unknown Product';
           productSales[name] = (productSales[name] || 0) + (item.quantity || 0);
         });

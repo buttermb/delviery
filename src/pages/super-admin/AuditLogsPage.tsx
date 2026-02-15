@@ -18,8 +18,7 @@ export default function AuditLogsPage() {
   const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: ['super-admin-audit-logs', actionFilter],
     queryFn: async () => {
-      // @ts-expect-error - audit_logs columns will be available after types regenerate
-      let query = supabase
+      let query = (supabase as any)
         .from('audit_logs')
         .select('id, action, resource_type, resource_id, tenant_id, actor_id, actor_type, timestamp, changes')
         .order('timestamp', { ascending: false })
@@ -71,7 +70,6 @@ export default function AuditLogsPage() {
     queryKey: ['audit-logs-actors', actorIds],
     queryFn: async () => {
       if (actorIds.length === 0) return [];
-      // @ts-expect-error - super_admins table exists but not in types yet
       const { data } = await (supabase as any)
         .from('super_admins')
         .select('id, email')

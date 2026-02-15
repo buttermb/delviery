@@ -279,8 +279,7 @@ export default function PointOfSale() {
       }));
 
       // Try atomic RPC first
-      // @ts-expect-error - RPC function create_pos_transaction_atomic not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic' as any, {
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: transactionItems,
         p_payment_method: paymentMethod,
@@ -382,9 +381,8 @@ export default function PointOfSale() {
 
       // Link pending order
       if (activeOrderId && tenantId) {
-        // @ts-expect-error - disposable_menu_orders table not in auto-generated types
-        await supabase
-          .from('disposable_menu_orders' as any)
+        await (supabase as any)
+          .from('disposable_menu_orders')
           .update({
             status: 'completed',
             pos_transaction_id: transactionId,

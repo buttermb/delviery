@@ -60,19 +60,7 @@ export function useVendorsWithStats() {
 
             // Get purchase order stats per vendor
             const vendorIds = vendors.map(v => v.id);
-            const { data: purchaseOrders, error: poError } = await (supabase as unknown as {
-                from: (table: string) => {
-                    select: (columns: string) => {
-                        eq: (column: string, value: string) => {
-                            in: (column: string, values: string[]) => Promise<{ data: Array<{
-                                vendor_id: string;
-                                total: number | null;
-                                created_at: string | null;
-                            }> | null; error: unknown }>;
-                        };
-                    };
-                };
-            })
+            const { data: purchaseOrders, error: poError } = await (supabase as any)
                 .from('purchase_orders')
                 .select('vendor_id, total, created_at')
                 .eq('tenant_id', tenant.id)
@@ -121,20 +109,7 @@ export function useVendorOrders(vendorId: string | null) {
         queryFn: async () => {
             if (!tenant?.id || !vendorId) return [];
 
-            const { data, error } = await (supabase as unknown as {
-                from: (table: string) => {
-                    select: (columns: string) => {
-                        eq: (column: string, value: string) => {
-                            eq: (column: string, value: string) => {
-                                order: (column: string, options: { ascending: boolean }) => Promise<{
-                                    data: VendorOrder[] | null;
-                                    error: unknown
-                                }>;
-                            };
-                        };
-                    };
-                };
-            })
+            const { data, error } = await (supabase as any)
                 .from('purchase_orders')
                 .select('id, po_number, status, total, expected_delivery_date, created_at, notes')
                 .eq('tenant_id', tenant.id)

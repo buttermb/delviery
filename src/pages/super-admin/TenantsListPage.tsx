@@ -139,7 +139,6 @@ export default function TenantsListPage() {
     if (healthFilter === 'all') return tenants;
 
     return tenants.filter((tenant) => {
-      // @ts-expect-error - tenant type mismatch will resolve when types regenerate
       const health = calculateHealthScore(tenant as any);
       const score = health.score;
 
@@ -414,7 +413,6 @@ export default function TenantsListPage() {
               </TableHeader>
               <TableBody>
                 {paginatedTenants.map((tenant) => {
-                  // @ts-expect-error - tenant type mismatch will resolve when types regenerate
                   const health = calculateHealthScore(tenant as any);
                   const healthScore = health.score;
                   return (

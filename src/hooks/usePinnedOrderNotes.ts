@@ -71,17 +71,7 @@ export function usePinnedOrderNotes() {
       if (!tenantId) return [];
 
       // Query order_notes with is_pinned = true
-      const { data, error: fetchError } = await (supabase as unknown as { from: (table: string) => {
-        select: (query: string) => {
-          eq: (field: string, value: unknown) => {
-            eq: (field: string, value: unknown) => {
-              order: (field: string, options: { ascending: boolean }) => {
-                limit: (count: number) => Promise<{ data: unknown[]; error: unknown }>;
-              };
-            };
-          };
-        };
-      }})
+      const { data, error: fetchError } = await (supabase as any)
         .from('order_notes')
         .select(`
           id,
@@ -131,13 +121,7 @@ export function usePinnedOrderNotes() {
         throw new Error('Missing required data');
       }
 
-      const { error: updateError } = await (supabase as unknown as { from: (table: string) => {
-        update: (data: Record<string, unknown>) => {
-          eq: (field: string, value: string) => {
-            eq: (field: string, value: string) => Promise<{ error: unknown }>;
-          };
-        };
-      }})
+      const { error: updateError } = await (supabase as any)
         .from('order_notes')
         .update({
           is_pinned: true,
@@ -169,13 +153,7 @@ export function usePinnedOrderNotes() {
         throw new Error('Missing tenant ID');
       }
 
-      const { error: updateError } = await (supabase as unknown as { from: (table: string) => {
-        update: (data: Record<string, unknown>) => {
-          eq: (field: string, value: string) => {
-            eq: (field: string, value: string) => Promise<{ error: unknown }>;
-          };
-        };
-      }})
+      const { error: updateError } = await (supabase as any)
         .from('order_notes')
         .update({
           is_pinned: false,

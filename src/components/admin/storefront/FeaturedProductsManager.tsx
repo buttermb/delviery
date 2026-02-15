@@ -191,7 +191,7 @@ export function FeaturedProductsManager({
     queryKey: ['storefront-products-list', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
-      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { eq: (col: string, val: boolean) => { order: (col: string) => Promise<{ data: Product[] | null; error: unknown }> } } } } })
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, price, image_url, category, in_stock')
         .eq('tenant_id', tenant.id)

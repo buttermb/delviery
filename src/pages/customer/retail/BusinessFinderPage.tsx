@@ -65,8 +65,7 @@ export default function BusinessFinderPage() {
   const { data: businesses = [], isLoading } = useQuery({
     queryKey: ['retail-businesses', stateFilter, deliveryFilter],
     queryFn: async () => {
-      // @ts-expect-error - Deep type instantiation from Supabase types
-      const query = supabase
+      const query = (supabase as any)
         .from('tenants')
         .select(`
           id,

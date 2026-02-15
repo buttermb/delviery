@@ -282,7 +282,7 @@ export function StorefrontBuilder({
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } })
+                const { data, error } = await (supabase as any)
                     .from('marketplace_stores')
                     .select('*')
                     .eq('tenant_id', tenant?.id || '')
@@ -409,7 +409,7 @@ export function StorefrontBuilder({
 
         setIsValidatingSlug(true);
         try {
-            const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } })
+            const { data, error } = await (supabase as any)
                 .from('marketplace_stores')
                 .select('id')
                 .eq('slug', slug)
@@ -446,7 +446,7 @@ export function StorefrontBuilder({
     // Create store mutation (deducts 500 credits)
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            const { data: newStore, error } = await (supabase as unknown as { from: (table: string) => { insert: (obj: unknown) => { select: () => { single: () => Promise<{ data: unknown; error: unknown }> } } } })
+            const { data: newStore, error } = await (supabase as any)
                 .from('marketplace_stores')
                 .insert({
                     tenant_id: tenant?.id,
@@ -522,7 +522,7 @@ export function StorefrontBuilder({
         mutationFn: async () => {
             const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
 
-            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(configToSave)),
@@ -553,7 +553,7 @@ export function StorefrontBuilder({
         mutationFn: async () => {
             const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
 
-            const { error } = await (supabase as unknown as { from: (table: string) => { update: (obj: unknown) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(configToSave)),

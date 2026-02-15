@@ -232,17 +232,7 @@ async function fetchEntityName(
 
   try {
     // Use type assertion for dynamic table access
-    const { data, error } = await (supabase as unknown as {
-      from: (table: string) => {
-        select: (columns: string) => {
-          eq: (col1: string, val1: string) => {
-            eq: (col2: string, val2: string) => {
-              maybeSingle: () => Promise<{ data: EntityNameResult | null; error: Error | null }>;
-            };
-          };
-        };
-      };
-    })
+    const { data, error } = await (supabase as any)
       .from(config.table)
       .select(`id, ${config.nameColumn}`)
       .eq('id', entityId)

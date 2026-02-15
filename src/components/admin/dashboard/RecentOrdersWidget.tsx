@@ -41,8 +41,7 @@ export function RecentOrdersWidget() {
         wholesale_clients: { business_name: string } | null;
       }
 
-      // @ts-expect-error - Complex Supabase query with joins exceeds TypeScript recursion depth limit
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('wholesale_orders')
         .select(`
           id,

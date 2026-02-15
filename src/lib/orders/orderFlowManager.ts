@@ -25,16 +25,13 @@ export const orderFlowManager = {
     async transitionOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
         try {
             // Fetch current status
-            // @ts-expect-error - Outdated Supabase types
-            const { data: order, error: fetchError } = await supabase
-                // @ts-expect-error - Table not in types
+            const { data: order, error: fetchError } = await (supabase as any)
                 .from('disposable_menu_orders')
                 .select('status')
                 .eq('id', orderId)
                 .single();
 
             if (fetchError) throw fetchError;
-            // @ts-expect-error - Outdated types
             const currentStatus = order.status as OrderStatus;
 
             if (!this.canTransition(currentStatus, newStatus)) {
@@ -42,9 +39,7 @@ export const orderFlowManager = {
             }
 
             // Update status
-            // @ts-expect-error - Outdated Supabase types
-            const { error: updateError } = await supabase
-                // @ts-expect-error - Table not in types
+            const { error: updateError } = await (supabase as any)
                 .from('disposable_menu_orders')
                 .update({
                     status: newStatus,

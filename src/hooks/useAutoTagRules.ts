@@ -108,17 +108,7 @@ export function useEnsureAutoTag() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Check if tag exists
-      const { data: existingTag, error: findError } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (column: string, value: string) => {
-              eq: (column: string, value: string) => {
-                maybeSingle: () => Promise<{ data: { id: string; name: string; color: string } | null; error: Error | null }>;
-              };
-            };
-          };
-        };
-      })
+      const { data: existingTag, error: findError } = await (supabase as any)
         .from('tags')
         .select('id, name, color')
         .eq('tenant_id', tenant.id)
@@ -136,15 +126,7 @@ export function useEnsureAutoTag() {
 
       // Create the tag
       const color = AUTO_TAG_COLORS[tagName] || '#6B7280';
-      const { data: newTag, error: createError } = await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (values: Record<string, unknown>) => {
-            select: (query: string) => {
-              maybeSingle: () => Promise<{ data: { id: string; name: string; color: string } | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data: newTag, error: createError } = await (supabase as any)
         .from('tags')
         .insert({
           tenant_id: tenant.id,
@@ -268,15 +250,7 @@ export function useCustomersByTags(tagIds: string[]) {
       if (!tenant?.id || tagIds.length === 0) return [];
 
       // Get customer IDs that have all selected tags
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (column: string, value: string) => {
-              in: (column: string, values: string[]) => Promise<{ data: { contact_id: string }[] | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('customer_tags')
         .select('contact_id')
         .eq('tenant_id', tenant.id)
@@ -315,13 +289,7 @@ export function useTagCounts() {
     queryFn: async () => {
       if (!tenant?.id) return {};
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (query: string) => {
-            eq: (column: string, value: string) => Promise<{ data: { tag_id: string }[] | null; error: Error | null }>;
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('customer_tags')
         .select('tag_id')
         .eq('tenant_id', tenant.id);

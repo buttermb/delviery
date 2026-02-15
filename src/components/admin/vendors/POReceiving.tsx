@@ -334,7 +334,7 @@ export function POReceiving({
             };
 
             // Use type assertion for dynamic table access
-            const { error: historyError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+            const { error: historyError } = await (supabase as any)
               .from('inventory_history')
               .insert(historyEntry);
 

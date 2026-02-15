@@ -143,7 +143,6 @@ export default function SuperAdminDashboardPage() {
         active.length > 0 ? (recentCancelled.length / active.length) * 100 : 0;
 
       // Calculate health score (average of all tenants)
-      // @ts-expect-error - tenant type mismatch will resolve when types regenerate
       const healthScores = tenants.map((t) => calculateHealthScore(t as any).score);
       const avgHealthScore =
         healthScores.length > 0
@@ -178,7 +177,6 @@ export default function SuperAdminDashboardPage() {
 
       return tenants
         .map((tenant) => {
-          // @ts-expect-error - tenant type mismatch will resolve when types regenerate
           const health = calculateHealthScore(tenant as any);
           return {
             ...tenant,
@@ -255,8 +253,7 @@ export default function SuperAdminDashboardPage() {
   const { data: recentActivity = [] } = useQuery({
     queryKey: ['super-admin-recent-activity'],
     queryFn: async () => {
-      // @ts-expect-error - audit_logs columns will be available after types regenerate
-      const { data: logs, error } = await supabase
+      const { data: logs, error } = await (supabase as any)
         .from('audit_logs')
         .select('id, action, resource_type, resource_id, tenant_id, timestamp, changes')
         .order('timestamp', { ascending: false })
@@ -354,7 +351,6 @@ export default function SuperAdminDashboardPage() {
         .eq('subscription_status', 'active')
         .gte('created_at', thirtyDaysAgo.toISOString());
 
-      // @ts-expect-error - type mismatch will resolve when types regenerate
       const recentConverted = convertedTenants?.filter((t: any) =>
         recentTrials.some((rt: any) => rt.id === t.id)
       ) || [];

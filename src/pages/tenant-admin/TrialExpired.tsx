@@ -35,7 +35,6 @@ export default function TrialExpiredPage() {
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   // Fetch tenant stats
-  // @ts-expect-error - Complex query return type
   const { data: tenantStats } = useQuery<TenantStats | null>({
     queryKey: ["trial-expired-stats", tenant?.id],
     queryFn: async (): Promise<TenantStats | null> => {
@@ -44,8 +43,7 @@ export default function TrialExpiredPage() {
       const usage = tenant?.usage || { products: 0, customers: 0, menus: 0, revenue: 0 };
 
       // Get revenue if any
-      // @ts-expect-error - Deep instantiation error from Supabase types
-      const ordersQuery = await supabase
+      const ordersQuery = await (supabase as any)
         .from("menu_orders")
         .select("total_amount")
         .eq("tenant_id", tenant.id)

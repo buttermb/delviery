@@ -287,7 +287,7 @@ function useCustomersWithEnrichedData(
         .in('customer_id', customerIds);
 
       // Fetch customer tags
-      const { data: customerTags } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { in: (col: string, vals: string[]) => Promise<{ data: Array<{ contact_id: string; tag: { id: string; name: string; color: string } | null }> | null }> } } } })
+      const { data: customerTags } = await (supabase as any)
         .from('customer_tags')
         .select('contact_id, tag:tags(id, name, color)')
         .eq('tenant_id', tenantId)

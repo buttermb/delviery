@@ -305,7 +305,7 @@ async function applySegmentTag(
   const tagName = SEGMENT_TAGS[segment];
 
   // First, find or create the tag
-  let { data: tag, error: tagError } = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (col: string, val: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: { id: string } | null; error: unknown }> } } } } })
+  let { data: tag, error: tagError } = await (supabase as any)
     .from('tags')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -319,7 +319,7 @@ async function applySegmentTag(
 
   // Create tag if it doesn't exist
   if (!tag) {
-    const { data: newTag, error: createError } = await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => { select: (columns: string) => { maybeSingle: () => Promise<{ data: { id: string } | null; error: unknown }> } } } })
+    const { data: newTag, error: createError } = await (supabase as any)
       .from('tags')
       .insert({
         tenant_id: tenantId,
@@ -345,7 +345,7 @@ async function applySegmentTag(
 
   // Remove old segment tags first
   const allSegmentTagNames = Object.values(SEGMENT_TAGS);
-  const { data: existingTags } = await (supabase as unknown as { from: (table: string) => { select: (columns: string) => { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ data: Array<{ tag_id: string; tag: { name: string } }> | null }> } } } })
+  const { data: existingTags } = await (supabase as any)
     .from('customer_tags')
     .select('tag_id, tag:tags(name)')
     .eq('tenant_id', tenantId)
@@ -355,7 +355,7 @@ async function applySegmentTag(
     for (const existing of existingTags) {
       const existingTagName = (existing.tag as unknown as { name: string })?.name;
       if (existingTagName && allSegmentTagNames.includes(existingTagName) && existing.tag_id !== tag.id) {
-        await (supabase as unknown as { from: (table: string) => { delete: () => { eq: (col: string, val: string) => { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } } } })
+        await (supabase as any)
           .from('customer_tags')
           .delete()
           .eq('tenant_id', tenantId)
@@ -366,7 +366,7 @@ async function applySegmentTag(
   }
 
   // Apply the new segment tag (upsert to avoid duplicates)
-  const { error: assignError } = await (supabase as unknown as { from: (table: string) => { upsert: (data: Record<string, unknown>, options: Record<string, unknown>) => Promise<{ error: unknown }> } })
+  const { error: assignError } = await (supabase as any)
     .from('customer_tags')
     .upsert(
       {

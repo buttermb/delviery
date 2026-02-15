@@ -68,8 +68,7 @@ export function LocationMapWidget() {
       }, {});
 
       // Get active runners with location data
-      // @ts-expect-error - Deep instantiation error from Supabase types
-      const { data: runners } = await supabase
+      const { data: runners } = await (supabase as any)
         .from('wholesale_runners')
         .select('id, full_name, status, current_lat, current_lng')
         .eq('account_id', account.id)

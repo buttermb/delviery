@@ -73,7 +73,7 @@ export function usePurchaseOrders() {
   const updatePurchaseOrderStatus = useMutation({
     mutationFn: async ({ id, status, poNumber }: { id: string; status: string; poNumber?: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: Error | null }> } } } })
+      const { error } = await (supabase as any)
         .from('purchase_orders')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id)
@@ -110,11 +110,11 @@ export function usePurchaseOrders() {
     mutationFn: async ({ id, poNumber }: { id: string; poNumber?: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
       // First, delete items scoped to tenant's PO
-      await (supabase as unknown as { from: (table: string) => { delete: () => { eq: (col: string, val: string) => Promise<unknown> } } })
+      await (supabase as any)
         .from('purchase_order_items').delete().eq('purchase_order_id', id);
 
       // Then delete the PO
-      const { error } = await (supabase as unknown as { from: (table: string) => { delete: () => { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: Error | null }> } } } })
+      const { error } = await (supabase as any)
         .from('purchase_orders').delete().eq('id', id).eq('tenant_id', tenant.id);
       if (error) throw error;
       return { id, poNumber };

@@ -438,8 +438,7 @@ describe('Admin Panel Navigation & Data Flow', () => {
     });
 
     it('getSidebarConfigByTier defaults to starter for unknown tier', () => {
-      // @ts-expect-error testing invalid input
-      expect(getSidebarConfigByTier('unknown')).toBe(STARTER_SIDEBAR);
+      expect(getSidebarConfigByTier('unknown' as any)).toBe(STARTER_SIDEBAR);
     });
 
     it('legacy getSidebarConfig maps operation sizes correctly', () => {

@@ -287,28 +287,7 @@ function useCustomerActivities(
       // Fetch menu interactions (from activity_logs)
       if (filterType === 'all' || filterType === 'menu') {
         try {
-          const { data: menuLogs } = await (supabase as unknown as {
-            from: (table: string) => {
-              select: (cols: string) => {
-                eq: (col: string, val: string) => {
-                  eq: (col: string, val: string) => {
-                    eq: (col: string, val: string) => {
-                      order: (col: string, opts: { ascending: boolean }) => {
-                        limit: (n: number) => Promise<{ data: Array<{
-                          id: string;
-                          action: string;
-                          description: string | null;
-                          metadata: Record<string, unknown> | null;
-                          resource_id: string | null;
-                          created_at: string;
-                        }> | null }>
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }).from('activity_logs')
+          const { data: menuLogs } = await (supabase as any).from('activity_logs')
             .select('id, action, description, metadata, resource_id, created_at')
             .eq('tenant_id', tenantId)
             .eq('category', 'menu')
@@ -342,25 +321,7 @@ function useCustomerActivities(
       // Fetch communications (SMS/email logs)
       if (filterType === 'all' || filterType === 'communication') {
         try {
-          const { data: commLogs } = await (supabase as unknown as {
-            from: (table: string) => {
-              select: (cols: string) => {
-                eq: (col: string, val: string) => {
-                  eq: (col: string, val: string) => {
-                    order: (col: string, opts: { ascending: boolean }) => {
-                      limit: (n: number) => Promise<{ data: Array<{
-                        id: string;
-                        type: string;
-                        subject: string | null;
-                        status: string;
-                        created_at: string;
-                      }> | null }>
-                    }
-                  }
-                }
-              }
-            }
-          }).from('communication_logs')
+          const { data: commLogs } = await (supabase as any).from('communication_logs')
             .select('id, type, subject, status, created_at')
             .eq('tenant_id', tenantId)
             .eq('customer_id', customerId)
@@ -394,24 +355,7 @@ function useCustomerActivities(
       // Fetch notes
       if (filterType === 'all' || filterType === 'note') {
         try {
-          const { data: notes } = await (supabase as unknown as {
-            from: (table: string) => {
-              select: (cols: string) => {
-                eq: (col: string, val: string) => {
-                  eq: (col: string, val: string) => {
-                    order: (col: string, opts: { ascending: boolean }) => {
-                      limit: (n: number) => Promise<{ data: Array<{
-                        id: string;
-                        content: string;
-                        created_by_email: string | null;
-                        created_at: string;
-                      }> | null }>
-                    }
-                  }
-                }
-              }
-            }
-          }).from('customer_notes')
+          const { data: notes } = await (supabase as any).from('customer_notes')
             .select('id, content, created_by_email, created_at')
             .eq('tenant_id', tenantId)
             .eq('customer_id', customerId)
@@ -446,26 +390,7 @@ function useCustomerActivities(
       // Fetch credit changes
       if (filterType === 'all' || filterType === 'credit') {
         try {
-          const { data: credits } = await (supabase as unknown as {
-            from: (table: string) => {
-              select: (cols: string) => {
-                eq: (col: string, val: string) => {
-                  eq: (col: string, val: string) => {
-                    order: (col: string, opts: { ascending: boolean }) => {
-                      limit: (n: number) => Promise<{ data: Array<{
-                        id: string;
-                        amount: number;
-                        type: string;
-                        description: string | null;
-                        balance_after: number;
-                        created_at: string;
-                      }> | null }>
-                    }
-                  }
-                }
-              }
-            }
-          }).from('customer_credits')
+          const { data: credits } = await (supabase as any).from('customer_credits')
             .select('id, amount, type, description, balance_after, created_at')
             .eq('tenant_id', tenantId)
             .eq('customer_id', customerId)

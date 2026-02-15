@@ -1161,4 +1161,39 @@ export const queryKeys = {
     byZone: (tenantId?: string) =>
       [...queryKeys.deliveryCosts.all, 'by-zone', tenantId] as const,
   },
+
+  // Delivery Map
+  deliveryMap: {
+    all: ['delivery-map'] as const,
+  },
+
+  // Finance Summary
+  financeSummary: {
+    all: ['finance-summary'] as const,
+  },
+
+  // Revenue Today
+  revenueToday: {
+    all: ['revenue-today'] as const,
+  },
+
+  // Accounts Receivable
+  accountsReceivable: {
+    all: ['accounts-receivable'] as const,
+  },
+
+  // Inventory Valuation
+  inventoryValuation: {
+    all: ['inventory-valuation'] as const,
+  },
+
+  // Order Kanban (standalone key)
+  orderKanban: {
+    all: ['order-kanban'] as const,
+  },
+
+  // Order Pipeline (standalone key)
+  orderPipeline: {
+    all: ['order-pipeline'] as const,
+  },
 } as const;

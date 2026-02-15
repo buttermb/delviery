@@ -99,8 +99,7 @@ export function OrderDetailPage() {
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!store?.id || !orderId || !customerId) return null;
 
-      // @ts-expect-error - marketplace_orders view types
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .from('marketplace_orders')
         .select('*')
         .eq('id', orderId)
