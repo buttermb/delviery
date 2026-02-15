@@ -15,5 +15,8 @@ rules:
   - Use useTenantAdminAuth() for tenant context
   - Use .maybeSingle() not .single()
   - "Commit with message: feat: [task title]"
+  - Read CLAUDE.md for project rules
+  - Never create files named nul, con, prn, aux - Windows reserved names
+  - Never run git add on dist/ or nul files
 boundaries:
   never_touch: null
