@@ -130,7 +130,7 @@ export function usePrefetchCustomers({
           await Promise.allSettled([
             // 1. Recent customers (default list view)
             queryClient.prefetchQuery({
-              queryKey: queryKeys.customers.list({ tenantId, limit: 50 }),
+              queryKey: queryKeys.customers.list(tenantId, { limit: 50 }),
               queryFn: async () => {
                 const { data, error } = await supabase
                   .from('customers')
@@ -257,7 +257,7 @@ export function usePrefetchCustomers({
 
             // 5. Active customers (common filter)
             queryClient.prefetchQuery({
-              queryKey: queryKeys.customers.list({ tenantId, status: 'active', limit: 25 }),
+              queryKey: queryKeys.customers.list(tenantId, { status: 'active', limit: 25 }),
               queryFn: async () => {
                 const { data, error } = await supabase
                   .from('customers')

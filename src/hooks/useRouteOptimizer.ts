@@ -247,7 +247,7 @@ export function useRouteOptimizer(
     queryFn: async (): Promise<DeliveryStop[]> => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('deliveries')
         .select(`
           id,
@@ -276,10 +276,10 @@ export function useRouteOptimizer(
         throw error;
       }
 
-      return (data || []).map((d) => ({
+      return (data || []).map((d: any) => ({
         id: d.id,
         orderId: d.order_id,
-        orderNumber: (d.orders as { tracking_code?: string })?.tracking_code,
+        orderNumber: d.orders?.tracking_code,
         address: d.delivery_address || '',
         lat: d.delivery_lat || 0,
         lng: d.delivery_lng || 0,
@@ -330,7 +330,7 @@ export function useRouteOptimizer(
 
       // Get active delivery counts
       const runnerIds = (runners || []).map((r) => r.id);
-      const { data: deliveryCounts } = await supabase
+      const { data: deliveryCounts } = await (supabase as any)
         .from('deliveries')
         .select('runner_id')
         .eq('tenant_id', tenant.id)
@@ -338,7 +338,7 @@ export function useRouteOptimizer(
         .in('status', ['assigned', 'picked_up', 'in_transit']);
 
       const countMap = new Map<string, number>();
-      (deliveryCounts || []).forEach((d) => {
+      (deliveryCounts || []).forEach((d: any) => {
         const current = countMap.get(d.runner_id) || 0;
         countMap.set(d.runner_id, current + 1);
       });
@@ -527,7 +527,7 @@ export function useRouteOptimizer(
         route_order: index + 1,
       }));
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('deliveries')
         .update({
           runner_id: runnerId,
@@ -544,7 +544,7 @@ export function useRouteOptimizer(
 
       // Update route order for each delivery
       for (const item of stopOrder) {
-        await supabase
+        await (supabase as any)
           .from('deliveries')
           .update({ route_order: item.route_order })
           .eq('id', item.id)

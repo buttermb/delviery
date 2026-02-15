@@ -156,7 +156,7 @@ export function useRunnerMetrics(options: UseRunnerMetricsOptions = {}) {
       }
 
       // Fetch exceptions count
-      const { count: exceptionsCount, error: exceptionsError } = await supabase
+      const { count: exceptionsCount, error: exceptionsError } = await (supabase as any)
         .from('delivery_exceptions')
         .select('id', { count: 'exact', head: true })
         .eq('courier_id', runnerId)
@@ -324,7 +324,7 @@ export function useWeeklyPerformanceReport(weekOffset = 0) {
       }
 
       // Fetch exceptions for the week
-      const { data: exceptions, error: exceptionsError } = await supabase
+      const { data: exceptions, error: exceptionsError } = await (supabase as any)
         .from('delivery_exceptions')
         .select('id, courier_id')
         .eq('tenant_id', tenantId)
@@ -383,7 +383,7 @@ export function useWeeklyPerformanceReport(weekOffset = 0) {
         }
       });
 
-      allExceptions.forEach((exception) => {
+      allExceptions.forEach((exception: any) => {
         if (exception.courier_id) {
           const runnerData = runnerMap.get(exception.courier_id);
           if (runnerData) {

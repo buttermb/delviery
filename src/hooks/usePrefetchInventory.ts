@@ -219,7 +219,7 @@ export function usePrefetchInventory({
 
             // 5. Products list for inventory management
             queryClient.prefetchQuery({
-              queryKey: queryKeys.products.list({ tenantId, limit: 50 }),
+              queryKey: queryKeys.products.list(tenantId, { limit: 50 }),
               queryFn: async () => {
                 const { data, error } = await supabase
                   .from('products')
