@@ -20,8 +20,10 @@ import {
 import {
   validateFile,
   ALLOWED_MIME_TYPES,
-  FILE_SIZE_LIMITS,
 } from '@/lib/fileValidation';
+
+const MAX_PRODUCT_IMAGE_SIZE_MB = 2;
+const MAX_PRODUCT_IMAGE_SIZE_BYTES = MAX_PRODUCT_IMAGE_SIZE_MB * 1024 * 1024;
 
 /**
  * Single image item in the uploader (exported for external use)
@@ -75,7 +77,7 @@ interface ProductImageUploaderProps {
  * - Additional images grid with reordering
  * - Image dimension validation (400x400 min, 4096x4096 max)
  * - File type validation (JPEG, PNG, WebP, GIF)
- * - Max file size: 10MB
+ * - Max file size: 2MB
  * - Upload progress indicators
  * - Set any image as main
  * - Remove images with confirmation
@@ -107,10 +109,20 @@ export function ProductImageUploader({
       const uploadId = `${file.name}-${Date.now()}`;
 
       try {
+        // Client-side 2MB limit for product images
+        if (file.size > MAX_PRODUCT_IMAGE_SIZE_BYTES) {
+          toast({
+            title: 'File too large',
+            description: `Maximum file size is ${MAX_PRODUCT_IMAGE_SIZE_MB}MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`,
+            variant: 'destructive',
+          });
+          return null;
+        }
+
         // Validate file using security validation
         const fileValidation = await validateFile(file, {
           context: 'productImage',
-          maxSize: FILE_SIZE_LIMITS.image,
+          maxSize: MAX_PRODUCT_IMAGE_SIZE_BYTES,
           allowedTypes: [...ALLOWED_MIME_TYPES.productImage],
         });
 
@@ -499,7 +511,7 @@ export function ProductImageUploader({
                     Browse Files
                   </Button>
                   <p className="text-xs text-muted-foreground mt-4">
-                    Min: 400×400px • Max: 4096×4096px • JPG, PNG, WebP • Max 10MB
+                    Min: 400×400px • Max: 4096×4096px • JPG, PNG, WebP • Max {MAX_PRODUCT_IMAGE_SIZE_MB}MB
                   </p>
                 </>
               )}
