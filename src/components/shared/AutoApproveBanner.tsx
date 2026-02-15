@@ -16,7 +16,7 @@ export const AutoApproveBanner: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className="w-full z-[60] sticky top-0 bg-amber-500/95 text-black text-sm px-4 py-2 flex items-center justify-center shadow-sm"
+      className="w-full z-sticky sticky top-0 bg-amber-500/95 text-black text-sm px-4 py-2 flex items-center justify-center shadow-sm"
       data-testid="auto-approve-banner"
     >
       <strong className="font-semibold mr-2">Auto‑Approve Mode:</strong>

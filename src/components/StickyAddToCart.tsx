@@ -34,7 +34,7 @@ const StickyAddToCart = ({
       "safe-area-bottom",
       className
     )}
-    style={{ zIndex: 40 }}
+    style={{ zIndex: 100 }}
     >
       <div className="container px-4 py-3">
         <div className="flex items-center justify-between gap-3">

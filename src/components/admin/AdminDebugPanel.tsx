@@ -102,7 +102,7 @@ function SimplifiedDebugPanel() {
   const warnCount = logs.filter(l => l.level === 'warn').length;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999]">
+    <div className="fixed bottom-4 right-4 z-max">
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant={errorCount > 0 ? "destructive" : "secondary"}
@@ -248,7 +248,7 @@ function FullAdminDebugPanel() {
   const warnCount = logs.filter(l => l.level === 'warn').length;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999]">
+    <div className="fixed bottom-4 right-4 z-max">
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant={errorCount > 0 ? "destructive" : "secondary"}

@@ -100,7 +100,7 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
                   <SelectTrigger className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="z-[100]">
+                  <SelectContent>
                     <SelectItem value="soft">
                       Soft Burn (Can be regenerated)
                     </SelectItem>

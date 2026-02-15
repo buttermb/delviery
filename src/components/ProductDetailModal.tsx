@@ -266,7 +266,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         {/* Mobile-Optimized Close Button - Always visible with high contrast */}
         <button
           onClick={() => onOpenChange(false)}
-          className="fixed right-4 top-4 z-[9999] rounded-full bg-background/80 text-foreground hover:bg-background border border-border transition-all md:hidden touch-manipulation active:scale-95 backdrop-blur-sm"
+          className="fixed right-4 top-4 z-max rounded-full bg-background/80 text-foreground hover:bg-background border border-border transition-all md:hidden touch-manipulation active:scale-95 backdrop-blur-sm"
           aria-label="Close"
           style={{ 
             touchAction: 'manipulation',

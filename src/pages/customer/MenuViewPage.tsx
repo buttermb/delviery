@@ -401,7 +401,7 @@ export default function CustomerMenuViewPage() {
 
         {/* Sticky Cart Footer */}
         {totalItems > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4 z-50 safe-area-bottom" style={{ zIndex: 50 }}>
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4 z-sticky safe-area-bottom" style={{ zIndex: 100 }}>
             <div className="container mx-auto flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative">

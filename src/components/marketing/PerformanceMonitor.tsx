@@ -57,7 +57,7 @@ export function PerformanceMonitor() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="fixed top-4 right-4 z-[9999] bg-black/90 text-white px-4 py-2 rounded-lg font-mono text-sm backdrop-blur-sm"
+          className="fixed top-4 right-4 z-max bg-black/90 text-white px-4 py-2 rounded-lg font-mono text-sm backdrop-blur-sm"
         >
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${fpsColor}`} />

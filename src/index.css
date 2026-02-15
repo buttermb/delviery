@@ -530,12 +530,10 @@ body.keyboard-open [data-radix-dialog-content] {
     --z-base: 0;
     --z-dropdown: 50;
     --z-sticky: 100;
-    --z-fixed: 200;
-    --z-modal-backdrop: 400;
-    --z-modal: 500;
-    --z-popover: 600;
-    --z-tooltip: 700;
-    --z-toast: 800;
+    --z-overlay: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
     --z-max: 9999;
 
     /* Unified Design System - Border Radius */
@@ -742,12 +740,10 @@ body.keyboard-open [data-radix-dialog-content] {
     --z-base: 0;
     --z-dropdown: 50;
     --z-sticky: 100;
-    --z-fixed: 200;
-    --z-modal-backdrop: 400;
-    --z-modal: 500;
-    --z-popover: 600;
-    --z-tooltip: 700;
-    --z-toast: 800;
+    --z-overlay: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
     --z-max: 9999;
 
     /* Unified Design System - Border Radius (same for dark) */
@@ -1636,7 +1632,7 @@ body.keyboard-open [data-radix-dialog-content] {
       padding: 1rem;
       background: hsl(var(--marketing-bg));
       border-top: 1px solid hsl(var(--marketing-border));
-      z-index: 40;
+      z-index: 100;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
     }
 
@@ -1659,41 +1655,35 @@ body.keyboard-open [data-radix-dialog-content] {
       transition: max-height 0.5s ease-in;
     }
 
-    /* Mobile input focus fixes - prevent z-index issues */
+    /* Mobile input focus fixes */
     input:focus,
     textarea:focus,
     select:focus {
       position: relative;
-      z-index: 9999 !important;
       transform: none !important;
     }
 
-    /* Fix chat widget and bottom nav z-index hierarchy */
+    /* Fix chat widget z-index — modal level (200) */
     [data-chat-widget] {
-      z-index: 60 !important;
+      z-index: 200 !important;
     }
 
-    /* Ensure bottom navigation doesn't overlap inputs */
-    /* Note: Bottom nav z-index is set inline in component (z-index: 100) */
-    /* This rule only applies to navs without explicit z-index */
+    /* Bottom navigation — sticky level (100) */
     nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
-      z-index: 50 !important;
+      z-index: 100 !important;
     }
 
-    /* Input containers should be above bottom nav */
-    /* Note: SheetContent uses explicit z-index: 120, so this doesn't apply */
+    /* Input containers in modals/sheets — relative positioning only */
     .chat-input-container,
     .mobile-input-container:not([style*="z-index"]) {
-      z-index: 70 !important;
       position: relative;
     }
 
-    /* Dialog and Sheet inputs should be on top */
+    /* Dialog and Sheet inputs should be above siblings */
     [role="dialog"] input:focus,
     [role="dialog"] textarea:focus,
     [data-radix-dialog-content] input:focus,
     [data-radix-dialog-content] textarea:focus {
-      z-index: 9999 !important;
       position: relative;
     }
 
@@ -1759,52 +1749,40 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Mobile input focus fixes - prevent z-index issues */
+  /* Mobile z-index and input fixes */
   @media (max-width: 768px) {
 
-    /* Ensure inputs are always on top when focused */
+    /* Mobile input focus */
     input:focus,
     textarea:focus,
     select:focus {
       position: relative;
-      z-index: 9999 !important;
       transform: none !important;
     }
 
-    /* Fix chat widget and bottom nav z-index hierarchy */
+    /* Chat widget — modal level (200) */
     [data-chat-widget] {
-      z-index: 60 !important;
+      z-index: 200 !important;
     }
 
-    /* Ensure bottom navigation doesn't overlap inputs */
-    /* Note: Bottom nav z-index is set inline in component (z-index: 100) */
-    /* This rule only applies to navs without explicit z-index */
+    /* Bottom navigation — sticky level (100) */
     nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
-      z-index: 50 !important;
+      z-index: 100 !important;
     }
 
-    /* Input containers should be above bottom nav */
-    /* Note: SheetContent uses explicit z-index: 120, so this doesn't apply */
+    /* Input containers in modals/sheets */
     .chat-input-container,
     .mobile-input-container:not([style*="z-index"]) {
-      z-index: 70 !important;
       position: relative;
     }
 
-    /* Dialog and Sheet inputs should be on top */
+    /* Dialog and Sheet inputs */
     [role="dialog"] input:focus,
     [role="dialog"] textarea:focus,
     [data-radix-dialog-content] input:focus,
     [data-radix-dialog-content] textarea:focus {
-      z-index: 9999 !important;
       position: relative;
     }
-
-    /* REMOVED: body.keyboard-open scroll lock - was causing admin layout to be stuck
-     * The position: fixed and overflow: hidden on body was preventing scrolling.
-     * Main content containers handle their own scrolling.
-     * Keyboard handling is managed by JavaScript in useKeyboardDetection hook.
-     */
 
     /* Smooth scroll for inputs into view */
     input:focus,

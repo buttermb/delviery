@@ -107,8 +107,8 @@ export function CustomerMobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom transition-all duration-200"
-          style={{ zIndex: 50 }}
+          className="fixed bottom-0 left-0 right-0 z-sticky bg-white/80 backdrop-blur-md border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom transition-all duration-200"
+          style={{ zIndex: 100 }}
           role="navigation"
           aria-label="Customer mobile navigation"
         >

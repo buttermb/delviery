@@ -204,7 +204,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed rounded-full w-14 h-14 shadow-lg z-[60] touch-target",
+          "fixed rounded-full w-14 h-14 shadow-lg z-sticky touch-target",
           isMobile ? "bottom-20 right-4 safe-area-bottom" : "bottom-6 right-6"
         )}
         size="icon"
@@ -223,7 +223,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           ? "bottom-0 left-0 right-0 top-auto h-[calc(100vh-4rem)] max-h-[600px] rounded-t-2xl rounded-b-none safe-area-bottom"
           : "bottom-6 right-6 w-96 h-[600px] rounded-lg"
       )}
-      style={{ zIndex: 60 }}
+      style={{ zIndex: 200 }}
       data-chat-widget="main"
     >
       {/* Header */}
@@ -294,7 +294,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           "border-t space-y-2 bg-background chat-input-container",
           isMobile ? "p-3 pb-safe sticky bottom-0" : "p-4"
         )}
-        style={{ zIndex: 70 }}
+        style={{ zIndex: 1 }}
         data-chat-widget="input-container"
       >
         {mode === 'ai' && (
@@ -329,9 +329,9 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
               "min-h-[44px] text-base flex-1 mobile-input-container",
               isMobile && "text-base"
             )}
-            style={isMobile && isInputFocused ? { 
+            style={isMobile && isInputFocused ? {
               position: 'relative',
-              zIndex: 9999 
+              zIndex: 1
             } : undefined}
           />
           <Button 

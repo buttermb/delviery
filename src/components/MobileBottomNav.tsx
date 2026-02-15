@@ -85,7 +85,7 @@ const MobileBottomNav = ({ onCartClick: _onCartClick, onAuthClick }: MobileBotto
         isVisible ? "translate-y-0 bottom-0" : "translate-y-full bottom-0"
       )}
       style={{
-        zIndex: 50,
+        zIndex: 100,
         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
       }}
     >

@@ -296,7 +296,7 @@ export function TutorialOverlay({
           key="tutorial-overlay"
           ref={overlayRef}
           data-tutorial-overlay
-          className="fixed inset-0 z-[9999] pointer-events-none"
+          className="fixed inset-0 z-max pointer-events-none"
           aria-modal="true"
           aria-labelledby="tutorial-title"
           role="dialog"
