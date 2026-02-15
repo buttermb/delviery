@@ -20,6 +20,7 @@ import {
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
 const BillingPage = lazy(() => import('@/pages/tenant-admin/BillingPage'));
@@ -48,6 +49,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function SettingsHubPage() {
+    usePageTitle('Settings');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'general';
 

@@ -33,6 +33,7 @@ import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load RevenueWidget for better performance
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
@@ -118,6 +119,7 @@ const PERIOD_LABELS: Record<DashboardPeriod, string> = {
 };
 
 export function DashboardPage() {
+  usePageTitle('Dashboard');
   const { tenant } = useTenantAdminAuth();
   const [period, setPeriod] = useState<DashboardPeriod>('30d');
   const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useDashboardStats(period);

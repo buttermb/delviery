@@ -63,6 +63,7 @@ import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // ============================================================================
 // KPI Card Components
@@ -473,6 +474,7 @@ function pctChange(today: number, yesterday: number): number {
 // ============================================================================
 
 export function DashboardHubPage() {
+  usePageTitle('Dashboard');
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats();

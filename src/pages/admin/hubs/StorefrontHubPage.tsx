@@ -29,6 +29,7 @@ import { lazy, Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const StorefrontDashboard = lazy(() => import('@/pages/admin/storefront/StorefrontDashboard'));
 const StorefrontProducts = lazy(() => import('@/pages/admin/storefront/StorefrontProducts'));
@@ -70,6 +71,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function StorefrontHubPage() {
+    usePageTitle('Storefront');
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';

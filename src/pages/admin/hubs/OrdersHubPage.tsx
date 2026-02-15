@@ -30,6 +30,7 @@ import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -118,6 +119,7 @@ function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export')
 }
 
 export default function OrdersHubPage() {
+    usePageTitle('Orders');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'live';
     const { navigateToAdmin } = useTenantNavigation();

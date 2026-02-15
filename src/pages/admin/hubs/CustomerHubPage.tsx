@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { QuickCreateCustomerDialog } from '@/components/pos/QuickCreateCustomerDialog';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement').then(m => ({ default: m.CustomerManagement })));
@@ -64,6 +65,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function CustomerHubPage() {
+    usePageTitle('Customers');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
     const [createDialogOpen, setCreateDialogOpen] = useState(false);

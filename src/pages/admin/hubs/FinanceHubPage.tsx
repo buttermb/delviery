@@ -23,6 +23,7 @@ import {
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
 const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage').then(m => ({ default: m.InvoicesPage })));
@@ -59,6 +60,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function FinanceHubPage() {
+    usePageTitle('Finance');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'overview';
 

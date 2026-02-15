@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const _TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -116,6 +117,7 @@ const faqs = [
 ];
 
 export default function HelpHubPage() {
+    usePageTitle('Help Center');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'getting-started';
     const { toast } = useToast();

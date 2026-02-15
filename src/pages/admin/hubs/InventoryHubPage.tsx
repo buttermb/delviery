@@ -27,6 +27,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Fragment, lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const ProductManagement = lazy(() => import('@/pages/admin/ProductManagement'));
@@ -65,6 +66,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function InventoryHubPage() {
+    usePageTitle('Inventory');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'products';
     const { navigateToAdmin } = useTenantNavigation();

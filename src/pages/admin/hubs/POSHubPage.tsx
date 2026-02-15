@@ -20,6 +20,7 @@ import ZReportContent from './panels/ZReportPanel';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const POSAnalyticsPage = lazy(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
 
@@ -43,6 +44,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function POSHubPage() {
+    usePageTitle('Point of Sale');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'register';
     const containerRef = useRef<HTMLDivElement>(null);

@@ -21,6 +21,7 @@ import {
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
 const WebhooksPage = lazy(() => import('@/pages/tenant-admin/WebhooksPage'));
@@ -54,6 +55,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function IntegrationsHubPage() {
+    usePageTitle('Integrations');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'api';
 

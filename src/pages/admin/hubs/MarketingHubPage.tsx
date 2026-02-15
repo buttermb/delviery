@@ -18,6 +18,7 @@ import {
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
@@ -46,6 +47,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function MarketingHubPage() {
+    usePageTitle('Marketing');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'loyalty';
 

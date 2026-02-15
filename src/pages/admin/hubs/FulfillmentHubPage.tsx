@@ -26,6 +26,7 @@ import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const DeliveryManagement = lazy(() => import('@/pages/admin/DeliveryManagement'));
@@ -61,6 +62,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function FulfillmentHubPage() {
+    usePageTitle('Fulfillment');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
     const { navigateToAdmin } = useTenantNavigation();

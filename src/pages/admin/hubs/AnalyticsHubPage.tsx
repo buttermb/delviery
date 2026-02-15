@@ -28,6 +28,7 @@ import {
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage'));
@@ -73,6 +74,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function AnalyticsHubPage() {
+    usePageTitle('Analytics');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'overview';
 
