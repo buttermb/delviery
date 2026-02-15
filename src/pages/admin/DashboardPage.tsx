@@ -11,10 +11,11 @@
  * Uses TanStack Query with 30s auto-refresh for real-time data.
  */
 
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import PackageX from "lucide-react/dist/esm/icons/package-x";
@@ -25,6 +26,7 @@ import Activity from "lucide-react/dist/esm/icons/activity";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
@@ -118,7 +120,11 @@ const PERIOD_LABELS: Record<DashboardPeriod, string> = {
 export function DashboardPage() {
   const { tenant } = useTenantAdminAuth();
   const [period, setPeriod] = useState<DashboardPeriod>('30d');
-  const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats(period);
+  const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useDashboardStats(period);
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   if (!tenant) {
     return (
@@ -170,6 +176,16 @@ export function DashboardPage() {
               Updated {lastUpdated}
             </Badge>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isFetching}
+            aria-label="Refresh dashboard"
+            className="h-8 w-8"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </div>
 
