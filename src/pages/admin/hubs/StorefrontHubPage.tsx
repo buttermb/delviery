@@ -9,7 +9,7 @@
  * - Settings: Store configuration
  */
 
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     LayoutDashboard,
@@ -70,6 +70,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function StorefrontHubPage() {
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
 
@@ -98,7 +99,7 @@ export default function StorefrontHubPage() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => window.open(`/shop`, '_blank')}
+                                onClick={() => window.open(`/shop/${tenantSlug}`, '_blank')}
                                 className="gap-2"
                             >
                                 <ExternalLink className="h-4 w-4" />
