@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { OrderLink } from '@/components/admin/cross-links';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 export function RecentOrdersWidget() {
   const navigate = useNavigate();
@@ -127,9 +128,12 @@ export function RecentOrdersWidget() {
                       orderNumber={`#${order.order_number || order.id.slice(0, 8)}`}
                     />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {order.wholesale_clients?.business_name || 'Client'} • {format(new Date(order.created_at), 'MMM d, h:mm a')}
-                  </div>
+                  <TruncatedText
+                    text={`${order.wholesale_clients?.business_name || 'Client'} • ${format(new Date(order.created_at), 'MMM d, h:mm a')}`}
+                    className="text-sm text-muted-foreground"
+                    maxWidthClass="max-w-[220px]"
+                    as="div"
+                  />
                 </div>
               </div>
               <div className="flex items-center gap-3">

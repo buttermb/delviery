@@ -19,6 +19,7 @@ import {
 import { MoreVertical, Printer, Store } from "lucide-react";
 import { useProductThumbnail } from "@/hooks/useOptimizedImage";
 import LongPressMenu from "@/components/mobile/LongPressMenu";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 
 interface Product {
   id: string;
@@ -126,9 +127,11 @@ export function ProductCard({
         {/* Header with Actions */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="font-bold text-lg text-[hsl(var(--tenant-text))] group-hover:text-[hsl(var(--tenant-primary))] transition-colors mb-1">
-              {String(product.name || '')}
-            </h3>
+            <TruncatedText
+              text={String(product.name || '')}
+              className="font-bold text-lg text-[hsl(var(--tenant-text))] group-hover:text-[hsl(var(--tenant-primary))] transition-colors mb-1"
+              as="p"
+            />
             {product.strain_name && (
               <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
                 {String(product.strain_name)}

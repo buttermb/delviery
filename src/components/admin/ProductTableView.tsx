@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 import {
   Table,
   TableBody,
@@ -111,11 +112,11 @@ export function ProductTableView({
       case "name":
         return (
           <div
-            className="cursor-pointer hover:bg-accent px-2 py-1 rounded"
+            className="cursor-pointer hover:bg-accent px-2 py-1 rounded max-w-[200px]"
             onClick={() => startEdit(product.id, field, product[field])}
           >
-            <p className="font-medium">{product.name}</p>
-            <p className="text-xs text-muted-foreground">{(product.category || 'uncategorized')}</p>
+            <TruncatedText text={product.name} className="font-medium" as="p" />
+            <p className="text-xs text-muted-foreground truncate">{(product.category || 'uncategorized')}</p>
           </div>
         );
       case "price":

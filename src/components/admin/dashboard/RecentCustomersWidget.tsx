@@ -17,6 +17,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { subDays, formatDistanceToNow } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import { queryKeys } from '@/lib/queryKeys';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 interface RecentCustomer {
   id: string;
@@ -121,12 +122,10 @@ export function RecentCustomersWidget() {
                 {getInitials(customer)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">
-                  {getCustomerName(customer)}
-                </div>
-                <div className="text-sm text-muted-foreground flex items-center gap-1 truncate">
+                <TruncatedText text={getCustomerName(customer)} className="font-medium" as="div" />
+                <div className="text-sm text-muted-foreground flex items-center gap-1 min-w-0">
                   <Mail className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{customer.email}</span>
+                  <TruncatedText text={customer.email} className="text-sm text-muted-foreground" />
                 </div>
               </div>
               <Badge variant="secondary" className="shrink-0 text-xs">

@@ -42,6 +42,7 @@ import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import CopyButton from "@/components/CopyButton";
 import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilter";
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 import { TagManager } from "@/components/admin/TagManager";
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -721,9 +722,11 @@ export function CustomerManagement() {
                         {customer.first_name?.[0]}{customer.last_name?.[0]}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base truncate">
-                          {customer.first_name} {customer.last_name}
-                        </h3>
+                        <TruncatedText
+                          text={`${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown'}
+                          className="font-semibold text-base"
+                          as="p"
+                        />
                         <p className="text-sm text-muted-foreground truncate">
                           {customer._encryptedIndicator ? (
                             <span className="flex items-center gap-1 text-amber-600">

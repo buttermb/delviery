@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -248,7 +249,7 @@ export function EditWholesaleOrderDialog({
               <Card key={item.id} className="p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{item.product_name}</p>
+                    <TruncatedText text={item.product_name} className="font-medium" as="p" />
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center gap-1">
                         <Button
