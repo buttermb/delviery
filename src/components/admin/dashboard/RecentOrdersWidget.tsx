@@ -87,7 +87,7 @@ export function RecentOrdersWidget() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(getFullPath('/admin/wholesale-clients/new-order'))}
+          onClick={() => navigate(getFullPath('/admin/orders'))}
         >
           View All
           <ArrowRight className="h-4 w-4 ml-1" />
@@ -116,7 +116,7 @@ export function RecentOrdersWidget() {
             <div
               key={order.id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate(getFullPath(`/admin/wholesale-clients/new-order?order=${order.id}`))}
+              onClick={() => navigate(getFullPath(`/admin/orders`))}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />
