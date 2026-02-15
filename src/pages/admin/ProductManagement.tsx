@@ -126,6 +126,7 @@ export default function ProductManagement() {
 
   // Read URL search params for filtering
   const urlSearch = searchParams.get('search') || '';
+  const urlNewProduct = searchParams.get('new') === 'true';
 
   // Use optimistic list for products
   const {
@@ -170,6 +171,14 @@ export default function ProductManagement() {
 
   // Margin threshold for alerts (default 20%)
   const marginThreshold = 20;
+
+  // Auto-open create dialog when ?new=true is in URL
+  useEffect(() => {
+    if (urlNewProduct) {
+      setEditingProduct(null);
+      setIsDialogOpen(true);
+    }
+  }, [urlNewProduct]);
 
   // Fetch store settings for potency alerts
   useQuery({
