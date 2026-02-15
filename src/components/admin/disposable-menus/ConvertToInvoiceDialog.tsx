@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Search, FileText, Package } from 'lucide-react';
+import { Loader2, Search, FileText, Package, AlertTriangle, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -53,7 +53,7 @@ export function ConvertToInvoiceDialog({
   const [isConverting, setIsConverting] = useState(false);
 
   // Fetch wholesale clients for selection
-  const { data: clients, isLoading: clientsLoading } = useQuery({
+  const { data: clients, isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useQuery({
     queryKey: queryKeys.wholesaleClients.list({ filter: 'all' }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -285,6 +285,15 @@ export function ConvertToInvoiceDialog({
               {clientsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : clientsError ? (
+                <div className="flex flex-col items-center gap-2 py-6">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <p className="text-sm text-destructive">Failed to load clients</p>
+                  <Button variant="outline" size="sm" onClick={() => refetchClients()}>
+                    <RefreshCw className="mr-2 h-3 w-3" />
+                    Retry
+                  </Button>
                 </div>
               ) : (
                 <Select value={selectedClientId} onValueChange={setSelectedClientId}>

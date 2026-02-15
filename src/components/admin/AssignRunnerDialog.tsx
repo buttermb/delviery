@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAssignDelivery } from "@/hooks/useWholesaleData";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, AlertTriangle } from "lucide-react";
 
 interface AssignRunnerDialogProps {
   orderId: string;
@@ -19,7 +19,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
   const [selectedRunner, setSelectedRunner] = useState("");
   const assignDelivery = useAssignDelivery();
 
-  const { data: runners, isLoading } = useQuery({
+  const { data: runners, isLoading, isError } = useQuery({
     queryKey: ["available-runners"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -66,6 +66,13 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
               <SelectContent>
                 {isLoading ? (
                   <SelectItem value="loading" disabled>Loading runners...</SelectItem>
+                ) : isError ? (
+                  <SelectItem value="error" disabled>
+                    <span className="flex items-center gap-1.5 text-destructive">
+                      <AlertTriangle className="h-3 w-3" />
+                      Failed to load runners
+                    </span>
+                  </SelectItem>
                 ) : runners?.length === 0 ? (
                   <SelectItem value="none" disabled>No available runners</SelectItem>
                 ) : (

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle, Package, Radio } from "lucide-react";
+import { Plus, Trash2, ChevronsUpDown, Check, AlertTriangle, Package, Radio, Loader2, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -79,7 +79,7 @@ interface StockChangeWarning {
 }
 
 export function LineItemsEditor({ items, onChange, onValidationChange }: LineItemsEditorProps) {
-    const { data: products = [], isLoading, refetch } = useProducts();
+    const { data: products = [], isLoading, isError, refetch } = useProducts();
     const accountId = useAccountIdSafe();
     const queryClient = useQueryClient();
 
@@ -419,6 +419,8 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                                         onSelect={(productId) => handleUpdateItem(index, "item_id", productId)}
                                                         products={products || []}
                                                         isLoading={isLoading}
+                                                        isError={isError}
+                                                        onRetry={() => refetch()}
                                                         hasError={isFieldTouched(itemId, "product") && !!errors.product}
                                                     />
                                                     {isFieldTouched(itemId, "product") && errors.product && (
@@ -559,10 +561,12 @@ interface ProductSelectorProps {
     onSelect: (value: string) => void;
     products: Product[];
     isLoading: boolean;
+    isError?: boolean;
+    onRetry?: () => void;
     hasError?: boolean;
 }
 
-function ProductSelector({ value, onSelect, products, isLoading, hasError }: ProductSelectorProps) {
+function ProductSelector({ value, onSelect, products, isLoading, isError, onRetry, hasError }: ProductSelectorProps) {
     const [open, setOpen] = useState(false);
 
     const selectedProduct = products.find((p) => p.id === value);
@@ -600,7 +604,30 @@ function ProductSelector({ value, onSelect, products, isLoading, hasError }: Pro
                         <CommandEmpty>No product found.</CommandEmpty>
                         <CommandGroup>
                             {isLoading ? (
-                                <CommandItem disabled>Loading...</CommandItem>
+                                <div className="flex items-center justify-center py-6">
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                    <span className="ml-2 text-sm text-muted-foreground">Loading products...</span>
+                                </div>
+                            ) : isError ? (
+                                <div className="flex flex-col items-center gap-2 py-6 px-4">
+                                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                                    <p className="text-sm text-destructive">Failed to load products</p>
+                                    {onRetry && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={onRetry}
+                                        >
+                                            <RefreshCw className="mr-2 h-3 w-3" />
+                                            Retry
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : products.length === 0 ? (
+                                <div className="py-6 px-4 text-center">
+                                    <Package className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
+                                    <p className="text-sm text-muted-foreground">No products available</p>
+                                </div>
                             ) : (
                                 products.map((product) => (
                                     <CommandItem

@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2 } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2, AlertTriangle } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import type { Database } from "@/integrations/supabase/types";
@@ -65,7 +65,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
   });
 
   // Fetch vendors
-  const { data: vendors } = useQuery({
+  const { data: vendors, isLoading: vendorsLoading, isError: vendorsError } = useQuery({
     queryKey: ["vendors"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -84,7 +84,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
   });
 
   // Fetch products for dropdown
-  const { data: products } = useQuery({
+  const { data: products, isLoading: productsLoading, isError: productsError } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -280,11 +280,29 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                     <SelectValue placeholder="Select a supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {vendors?.map((vendor) => (
-                      <SelectItem key={vendor.id} value={vendor.id}>
-                        {vendor.name || vendor.contact_name}
+                    {vendorsLoading ? (
+                      <SelectItem value="loading" disabled>
+                        <span className="flex items-center gap-1.5">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Loading suppliers...
+                        </span>
                       </SelectItem>
-                    ))}
+                    ) : vendorsError ? (
+                      <SelectItem value="error" disabled>
+                        <span className="flex items-center gap-1.5 text-destructive">
+                          <AlertTriangle className="h-3 w-3" />
+                          Failed to load suppliers
+                        </span>
+                      </SelectItem>
+                    ) : !vendors || vendors.length === 0 ? (
+                      <SelectItem value="none" disabled>No suppliers available</SelectItem>
+                    ) : (
+                      vendors.map((vendor) => (
+                        <SelectItem key={vendor.id} value={vendor.id}>
+                          {vendor.name || vendor.contact_name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -338,11 +356,29 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                       <SelectValue placeholder="Select a product" />
                     </SelectTrigger>
                     <SelectContent>
-                      {products?.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name} ({product.sku})
+                      {productsLoading ? (
+                        <SelectItem value="loading" disabled>
+                          <span className="flex items-center gap-1.5">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Loading products...
+                          </span>
                         </SelectItem>
-                      ))}
+                      ) : productsError ? (
+                        <SelectItem value="error" disabled>
+                          <span className="flex items-center gap-1.5 text-destructive">
+                            <AlertTriangle className="h-3 w-3" />
+                            Failed to load products
+                          </span>
+                        </SelectItem>
+                      ) : !products || products.length === 0 ? (
+                        <SelectItem value="none" disabled>No products available</SelectItem>
+                      ) : (
+                        products.map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.name} ({product.sku})
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

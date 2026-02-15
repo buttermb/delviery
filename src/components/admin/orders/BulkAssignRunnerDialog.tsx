@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, Truck, User, Phone, Package } from 'lucide-react';
+import { Star, Truck, User, Phone, Package, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
 import { Label } from '@/components/ui/label';
@@ -64,7 +64,7 @@ export function BulkAssignRunnerDialog({
   const [selectedRunnerId, setSelectedRunnerId] = useState('');
 
   // Fetch available runners
-  const { data: runners, isLoading: isLoadingRunners } = useAvailableRunners({
+  const { data: runners, isLoading: isLoadingRunners, isError: isRunnersError } = useAvailableRunners({
     enabled: open,
     onlyAvailable: false, // Show all runners, filter by status badge
   });
@@ -162,6 +162,13 @@ export function BulkAssignRunnerDialog({
                       <Skeleton className="h-8 w-full" />
                       <Skeleton className="h-8 w-full" />
                     </div>
+                  ) : isRunnersError ? (
+                    <SelectItem value="error" disabled>
+                      <span className="flex items-center gap-1.5 text-destructive">
+                        <AlertTriangle className="h-3 w-3" />
+                        Failed to load runners
+                      </span>
+                    </SelectItem>
                   ) : !runners || runners.length === 0 ? (
                     <SelectItem value="none" disabled>
                       No runners available

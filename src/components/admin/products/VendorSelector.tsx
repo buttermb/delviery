@@ -6,8 +6,8 @@
  * Supports auto-population of vendor-specific fields.
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { Check, ChevronsUpDown, Star, Package, Building2, Loader2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Check, ChevronsUpDown, Star, Package, Building2, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -76,7 +76,7 @@ export function VendorSelector({
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
-  const { data: vendors, isLoading } = useVendorsWithStats();
+  const { data: vendors, isLoading, isError, refetch } = useVendorsWithStats();
 
   // Find currently selected vendor
   const selectedVendor = useMemo(() => {
@@ -169,6 +169,19 @@ export function VendorSelector({
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-sm text-muted-foreground">Loading vendors...</span>
               </div>
+            ) : isError ? (
+              <div className="flex flex-col items-center gap-2 py-6 px-4">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <p className="text-sm text-destructive">Failed to load vendors</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                >
+                  <RefreshCw className="mr-2 h-3 w-3" />
+                  Retry
+                </Button>
+              </div>
             ) : (
               <>
                 <CommandEmpty>
@@ -187,7 +200,13 @@ export function VendorSelector({
                       </Button>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground">No vendors found</span>
+                    <div className="px-2 py-3">
+                      <Building2 className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">No vendors found</p>
+                      {allowCreate && (
+                        <p className="text-xs text-muted-foreground mt-1">Type a name to create one</p>
+                      )}
+                    </div>
                   )}
                 </CommandEmpty>
                 <CommandGroup>
