@@ -98,6 +98,7 @@ interface ProductWithSettings {
   minimum_price: number | null;
   min_expiry_days: number | null;
   unit_type: string | null;
+  brand?: string | null;
   slug: string | null;
 }
 
