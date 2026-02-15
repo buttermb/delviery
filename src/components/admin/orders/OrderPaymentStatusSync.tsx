@@ -218,8 +218,8 @@ export function OrderPaymentStatusSync({
     enabled: !!tenant?.id && !!orderId,
     callback: useCallback(
       (payload) => {
-        const newRecord = payload.new as PaymentRecord | null;
-        const oldRecord = payload.old as PaymentRecord | null;
+        const newRecord = payload.new as unknown as PaymentRecord | null;
+        const oldRecord = payload.old as unknown as PaymentRecord | null;
 
         // Only process if related to this order
         if (
@@ -235,7 +235,7 @@ export function OrderPaymentStatusSync({
 
           // Invalidate queries to refetch
           queryClient.invalidateQueries({ queryKey: paymentQueryKey });
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
 
           // Notify parent of status change
@@ -303,7 +303,7 @@ export function OrderPaymentStatusSync({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentQueryKey });
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Payment recorded successfully');
       setShowPaymentDialog(false);

@@ -167,7 +167,7 @@ export function DuplicateOrderButton({
       }, 0);
 
       // Create new order in unified_orders
-      const { data: newOrder, error: orderError } = await supabase
+      const { data: newOrder, error: orderError } = await (supabase as any)
         .from('unified_orders')
         .insert({
           tenant_id: tenant.id,

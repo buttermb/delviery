@@ -148,7 +148,7 @@ export function OrderDeliveryStatusSync({
     queryFn: async (): Promise<DeliveryRecord | null> => {
       if (!tenant?.id || !orderId) return null;
 
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .from('deliveries')
         .select(`
           id,
@@ -201,8 +201,8 @@ export function OrderDeliveryStatusSync({
     enabled: !!tenant?.id && !!orderId,
     callback: useCallback(
       (payload) => {
-        const newRecord = payload.new as DeliveryRecord | null;
-        const oldRecord = payload.old as DeliveryRecord | null;
+        const newRecord = payload.new as unknown as DeliveryRecord | null;
+        const oldRecord = payload.old as unknown as DeliveryRecord | null;
 
         // Only process if related to this order
         if (
@@ -219,7 +219,7 @@ export function OrderDeliveryStatusSync({
 
           // Invalidate queries to refetch
           queryClient.invalidateQueries({ queryKey: deliveryQueryKey });
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
 
           // Notify parent of status change
@@ -280,7 +280,7 @@ export function OrderDeliveryStatusSync({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Order marked as delivered');
     },

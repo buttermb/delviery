@@ -28,7 +28,7 @@ import {
 import {
   Popover,
   PopoverContent,
-  PopoverAnchor,
+  PopoverTrigger,
 } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -111,7 +111,7 @@ export function OrderThreadedNotes({
   orderNumber,
   className,
 }: OrderThreadedNotesProps) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const { dispatchNotification } = useNotificationDispatcher();
 
@@ -122,7 +122,7 @@ export function OrderThreadedNotes({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const tenantId = tenant?.id;
-  const currentUserId = user?.id;
+  const currentUserId = admin?.id;
 
   // Query key for notes
   const notesQueryKey = ['order-notes', orderId, tenantId];
@@ -133,7 +133,7 @@ export function OrderThreadedNotes({
     queryFn: async (): Promise<TeamMember[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_users')
         .select('id, user_id, email, full_name, first_name, last_name, avatar_url, role')
         .eq('tenant_id', tenantId)
@@ -693,7 +693,7 @@ export function OrderThreadedNotes({
         <form onSubmit={handleSubmit} className="space-y-3 pt-3 border-t">
           <div className="relative">
             <Popover open={showMentionPopover} onOpenChange={setShowMentionPopover}>
-              <PopoverAnchor asChild>
+              <PopoverTrigger asChild>
                 <Textarea
                   ref={textareaRef}
                   value={noteContent}
@@ -703,7 +703,7 @@ export function OrderThreadedNotes({
                   className="resize-none pr-10"
                   disabled={createNoteMutation.isPending}
                 />
-              </PopoverAnchor>
+              </PopoverTrigger>
               <PopoverContent
                 className="w-64 p-0"
                 align="start"

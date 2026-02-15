@@ -146,23 +146,18 @@ export function OrderRefundModal({
 
     if (!order || !validation.valid) return;
 
-    refundOrder(
-      {
-        orderId: order.id,
-        refundType,
-        amount: refundAmount,
-        reason,
-        refundMethod,
-        notes: notes ? sanitizeTextareaInput(notes, 500) : null,
-        restoreInventory,
-      },
-      {
-        onSuccess: () => {
-          handleOpenChange(false);
-          onSuccess?.();
-        },
-      }
-    );
+    refundOrder({
+      orderId: order.id,
+      refundType,
+      amount: refundAmount,
+      reason,
+      refundMethod,
+      notes: notes ? sanitizeTextareaInput(notes, 500) : null,
+      restoreInventory,
+    });
+
+    handleOpenChange(false);
+    onSuccess?.();
   };
 
   if (!order) return null;

@@ -94,7 +94,7 @@ export function OrderProductQuickView({
     queryFn: async (): Promise<ProductDetails | null> => {
       if (!tenant?.id || !productId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select(`
           id,
@@ -113,8 +113,7 @@ export function OrderProductQuickView({
           strain_type,
           thc_percent,
           cbd_percent,
-          created_at,
-          updated_at
+          created_at
         `)
         .eq('id', productId)
         .eq('tenant_id', tenant.id)
@@ -128,7 +127,7 @@ export function OrderProductQuickView({
         throw error;
       }
 
-      return data;
+      return data as ProductDetails | null;
     },
     enabled: isOpen && !!tenant?.id && !!productId,
   });
@@ -140,7 +139,7 @@ export function OrderProductQuickView({
       if (!tenant?.id || !productId) return [];
 
       // Try to fetch from product_price_history table
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('product_price_history')
         .select('id, old_price, new_price, price_type, changed_at, changed_by')
         .eq('product_id', productId)
