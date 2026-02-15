@@ -7,6 +7,7 @@
  * - Insights: Customer analytics
  */
 
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -18,10 +19,14 @@ import {
     PieChart,
     Headphones,
     Star,
+    Plus,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { QuickCreateCustomerDialog } from '@/components/pos/QuickCreateCustomerDialog';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 // Lazy load tab content for performance
 const CustomerManagement = lazy(() => import('@/pages/admin/CustomerManagement').then(m => ({ default: m.CustomerManagement })));
@@ -61,6 +66,8 @@ type TabId = typeof tabs[number]['id'];
 export default function CustomerHubPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const { tenant } = useTenantAdminAuth();
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });
@@ -83,6 +90,12 @@ export default function CustomerHubPage() {
                                 Manage contacts, clients, and relationships
                             </p>
                         </div>
+                        {activeTab === 'contacts' && (
+                            <Button onClick={() => setCreateDialogOpen(true)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Customer
+                            </Button>
+                        )}
                     </div>
                     <div className="overflow-x-auto">
                         <TabsList className="inline-flex min-w-max gap-0.5">
@@ -161,6 +174,15 @@ export default function CustomerHubPage() {
                     </Suspense>
                 </TabsContent>
             </Tabs>
+
+            {tenant && (
+                <QuickCreateCustomerDialog
+                    open={createDialogOpen}
+                    onOpenChange={setCreateDialogOpen}
+                    tenantId={tenant.id}
+                    onSuccess={() => setCreateDialogOpen(false)}
+                />
+            )}
         </div>
     );
 }
