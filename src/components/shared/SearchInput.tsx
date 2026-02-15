@@ -18,7 +18,7 @@ export function SearchInput({
     onSearch,
     className,
     defaultValue = "",
-    delay = 500,
+    delay = 300,
     isLoading = false,
 }: SearchInputProps) {
     const [value, setValue] = useState(defaultValue);
