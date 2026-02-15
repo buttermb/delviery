@@ -100,7 +100,7 @@ async function createNotification(
   entityId: string,
   userId?: string | null
 ): Promise<void> {
-  const { error } = await supabase.from('notifications').insert({
+  const { error } = await (supabase as any).from('notifications').insert({
     tenant_id: tenantId,
     user_id: userId ?? null,
     title,
@@ -173,7 +173,7 @@ async function fetchDeliveryInfo(
   tenantId: string
 ): Promise<DeliveryInfo | null> {
   // Try unified_orders first (covers most order types)
-  const { data: orderData, error: orderError } = await supabase
+  const { data: orderData, error: orderError } = await (supabase as any)
     .from('unified_orders')
     .select(`
       id,
@@ -202,27 +202,27 @@ async function fetchDeliveryInfo(
 
   if (orderData) {
     const runnerName =
-      orderData.profiles && typeof orderData.profiles === 'object' && 'full_name' in orderData.profiles
-        ? (orderData.profiles.full_name as string | null)
+      (orderData as any).profiles && typeof (orderData as any).profiles === 'object' && 'full_name' in (orderData as any).profiles
+        ? ((orderData as any).profiles.full_name as string | null)
         : null;
 
     return {
-      id: orderData.id,
-      orderId: orderData.id,
-      orderNumber: orderData.order_number,
-      runnerId: orderData.runner_id,
+      id: (orderData as any).id,
+      orderId: (orderData as any).id,
+      orderNumber: (orderData as any).order_number,
+      runnerId: (orderData as any).runner_id,
       runnerName,
-      customerId: orderData.customer_id,
-      customerName: orderData.customer_name,
-      customerEmail: orderData.customer_email,
-      customerPhone: orderData.customer_phone,
-      deliveryAddress: orderData.delivery_address,
-      status: orderData.status,
+      customerId: (orderData as any).customer_id,
+      customerName: (orderData as any).customer_name,
+      customerEmail: (orderData as any).customer_email,
+      customerPhone: (orderData as any).customer_phone,
+      deliveryAddress: (orderData as any).delivery_address,
+      status: (orderData as any).status,
     };
   }
 
   // Fallback to orders table
-  const { data: fallbackData, error: fallbackError } = await supabase
+  const { data: fallbackData, error: fallbackError } = await (supabase as any)
     .from('orders')
     .select(`
       id,
@@ -250,17 +250,17 @@ async function fetchDeliveryInfo(
   }
 
   return {
-    id: fallbackData.id,
-    orderId: fallbackData.id,
-    orderNumber: fallbackData.order_number,
-    runnerId: fallbackData.courier_id,
+    id: (fallbackData as any).id,
+    orderId: (fallbackData as any).id,
+    orderNumber: (fallbackData as any).order_number,
+    runnerId: (fallbackData as any).courier_id,
     runnerName: null,
-    customerId: fallbackData.customer_id,
-    customerName: fallbackData.customer_name,
-    customerEmail: fallbackData.customer_email,
-    customerPhone: fallbackData.customer_phone,
-    deliveryAddress: fallbackData.delivery_address,
-    status: fallbackData.status,
+    customerId: (fallbackData as any).customer_id,
+    customerName: (fallbackData as any).customer_name,
+    customerEmail: (fallbackData as any).customer_email,
+    customerPhone: (fallbackData as any).customer_phone,
+    deliveryAddress: (fallbackData as any).delivery_address,
+    status: (fallbackData as any).status,
   };
 }
 

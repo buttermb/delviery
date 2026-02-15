@@ -317,7 +317,7 @@ export function useCustomerSegment({
 
       const segmentData: CustomerSegmentData = {
         customerId,
-        customerName: customer?.full_name ?? null,
+        customerName: (customer as any)?.full_name ?? null,
         segment,
         activitySegment,
         isVip,
@@ -379,7 +379,7 @@ export function useCustomerSegments({
       });
 
       // Fetch all customers
-      const { data: customers, error: customersError } = await supabase
+      const { data: customers, error: customersError } = await (supabase as any)
         .from('contacts')
         .select('id, full_name')
         .eq('tenant_id', tenantId);

@@ -184,7 +184,7 @@ async function fetchCustomerCreditTransactions(
 // ============================================================================
 
 export function useCustomerCredit(customerId: string | undefined): UseCustomerCreditReturn {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -226,7 +226,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
           transaction_type: params.transactionType || 'issued',
           reason: params.reason || 'Manual credit issued',
           order_id: params.orderId || null,
-          created_by: user?.id || null,
+          created_by: admin?.id || null,
         })
         .select()
         .single();
@@ -281,7 +281,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
           transaction_type: 'used',
           reason: params.reason || 'Credit applied to order',
           order_id: params.orderId || null,
-          created_by: user?.id || null,
+          created_by: admin?.id || null,
         })
         .select()
         .single();

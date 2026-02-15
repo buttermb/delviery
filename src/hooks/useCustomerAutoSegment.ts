@@ -191,8 +191,8 @@ async function fetchCurrentSegment(
   }
 
   return {
-    segment: (data?.segment as CustomerSegment) ?? null,
-    name: data?.full_name ?? null,
+    segment: ((data as any)?.segment as CustomerSegment) ?? null,
+    name: (data as any)?.full_name ?? null,
   };
 }
 
@@ -419,7 +419,7 @@ async function notifyAdminVipUpgrade(
   customerName: string | null,
   totalSpend: number
 ): Promise<void> {
-  const { error } = await supabase.from('notifications').insert({
+  const { error } = await (supabase as any).from('notifications').insert({
     tenant_id: tenantId,
     user_id: null, // Notify all admins
     title: 'Customer Upgraded to VIP',

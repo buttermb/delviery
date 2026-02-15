@@ -135,7 +135,7 @@ async function fetchActiveFlags(
   tenantId: string,
   customerId: string
 ): Promise<CustomerFlagWithCreator[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('customer_flags')
     .select(`
       *,
@@ -153,7 +153,7 @@ async function fetchActiveFlags(
       component: 'useCustomerFlags'
     });
 
-    const { data: simpleData, error: simpleError } = await supabase
+    const { data: simpleData, error: simpleError } = await (supabase as any)
       .from('customer_flags')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -181,7 +181,7 @@ async function fetchFlagHistory(
   customerId: string,
   limit = 50
 ): Promise<CustomerFlagWithCreator[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('customer_flags')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -206,7 +206,7 @@ async function fetchFlagHistory(
 // ============================================================================
 
 export function useCustomerFlags(customerId: string | undefined): UseCustomerFlagsReturn {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -248,7 +248,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
     mutationFn: async (params: AddFlagParams): Promise<CustomerFlag> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_flags')
         .insert({
           tenant_id: tenantId,
@@ -257,7 +257,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
           flag_reason: params.flagReason,
           reason_details: params.reasonDetails || null,
           is_active: true,
-          created_by: user?.id || null,
+          created_by: admin?.id || null,
         })
         .select()
         .single();
@@ -298,12 +298,12 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
     mutationFn: async (params: ResolveFlagParams): Promise<CustomerFlag> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_flags')
         .update({
           is_active: false,
           resolved_at: new Date().toISOString(),
-          resolved_by: user?.id || null,
+          resolved_by: admin?.id || null,
           resolution_notes: params.resolutionNotes || null,
           updated_at: new Date().toISOString(),
         })
@@ -405,7 +405,7 @@ export async function isCustomerBlocked(
   customerId: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc('is_customer_blocked', {
+    const { data, error } = await (supabase as any).rpc('is_customer_blocked', {
       p_customer_id: customerId,
       p_tenant_id: tenantId,
     });
@@ -438,7 +438,7 @@ export async function getActiveCustomerFlags(
   customerId: string
 ): Promise<CustomerFlag[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('customer_flags')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -497,7 +497,7 @@ export async function isCustomerBlockedByEmail(
     }
 
     // Check if customer is blocked
-    const { data: blockFlag, error: flagError } = await supabase
+    const { data: blockFlag, error: flagError } = await (supabase as any)
       .from('customer_flags')
       .select('flag_reason')
       .eq('tenant_id', tenantId)

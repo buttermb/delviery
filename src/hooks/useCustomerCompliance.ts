@@ -179,7 +179,7 @@ async function fetchCustomerComplianceData(
     .eq('id', tenantId)
     .maybeSingle();
 
-  const tenantSettings = tenantData?.metadata as TenantSettings | null;
+  const tenantSettings = (tenantData as any)?.metadata as TenantSettings | null;
   const requirements: ComplianceRequirements = {
     ...DEFAULT_REQUIREMENTS,
     ...(tenantSettings?.compliance_requirements || {}),
@@ -201,7 +201,7 @@ async function fetchCustomerComplianceData(
   );
 
   // Fetch delivery zones for the tenant
-  const { data: storefrontSettings } = await supabase
+  const { data: storefrontSettings } = await (supabase as any)
     .from('storefront_settings')
     .select('delivery_zones')
     .eq('tenant_id', tenantId)
@@ -213,7 +213,7 @@ async function fetchCustomerComplianceData(
     ageVerification as AgeVerification | null,
     requirements,
     monthlySpent,
-    storefrontSettings?.delivery_zones
+    (storefrontSettings as any)?.delivery_zones
   );
 
   const failedChecks = checks.filter(

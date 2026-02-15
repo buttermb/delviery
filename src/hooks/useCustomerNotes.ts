@@ -70,7 +70,7 @@ export function useCustomerNotes(customerId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !customerId) throw new Error('No tenant or customer');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .select(`
           *,
@@ -105,7 +105,7 @@ export function useCustomerPinnedNotes(customerId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !customerId) throw new Error('No tenant or customer');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .select(`
           *,
@@ -121,7 +121,7 @@ export function useCustomerPinnedNotes(customerId: string | undefined) {
         throw error;
       }
 
-      return (data || []) as CustomerNote[];
+      return (data || []) as unknown as CustomerNote[];
     },
     enabled: !!tenant?.id && !!customerId,
     staleTime: 30000,
@@ -139,7 +139,7 @@ export function useOrderLinkedNotes(orderId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !orderId) throw new Error('No tenant or order');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .select(`
           *,
@@ -154,7 +154,7 @@ export function useOrderLinkedNotes(orderId: string | undefined) {
         throw error;
       }
 
-      return (data || []) as CustomerNote[];
+      return (data || []) as unknown as CustomerNote[];
     },
     enabled: !!tenant?.id && !!orderId,
     staleTime: 30000,
@@ -174,7 +174,7 @@ export function useSearchCustomerNotes(customerId: string | undefined, searchQue
         return [];
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .select(`
           *,
@@ -191,7 +191,7 @@ export function useSearchCustomerNotes(customerId: string | undefined, searchQue
         throw error;
       }
 
-      return (data || []) as CustomerNote[];
+      return (data || []) as unknown as CustomerNote[];
     },
     enabled: !!tenant?.id && !!customerId && searchQuery.trim().length > 0,
     staleTime: 10000,
@@ -221,7 +221,7 @@ export function useCreateCustomerNote() {
         throw new Error('Customer not found');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .insert({
           tenant_id: tenant.id,
@@ -245,7 +245,7 @@ export function useCreateCustomerNote() {
         throw error;
       }
 
-      return data as CustomerNote;
+      return data as unknown as CustomerNote;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
@@ -283,7 +283,7 @@ export function useUpdateCustomerNote() {
       if (input.note_type !== undefined) updateData.note_type = input.note_type;
       if (input.is_pinned !== undefined) updateData.is_pinned = input.is_pinned;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .update(updateData)
         .eq('id', input.id)
@@ -299,7 +299,7 @@ export function useUpdateCustomerNote() {
         throw error;
       }
 
-      return data as CustomerNote;
+      return data as unknown as CustomerNote;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
@@ -333,7 +333,7 @@ export function useDeleteCustomerNote() {
     mutationFn: async ({ noteId, customerId, orderId }: { noteId: string; customerId: string; orderId?: string | null }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_notes')
         .delete()
         .eq('id', noteId)
@@ -378,7 +378,7 @@ export function useTogglePinNote() {
     mutationFn: async ({ noteId, isPinned, customerId }: { noteId: string; isPinned: boolean; customerId: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_notes')
         .update({ is_pinned: !isPinned, updated_at: new Date().toISOString() })
         .eq('id', noteId)
@@ -391,7 +391,7 @@ export function useTogglePinNote() {
         throw error;
       }
 
-      return { ...data, customerId } as CustomerNote & { customerId: string };
+      return { ...data, customerId } as unknown as CustomerNote & { customerId: string };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({

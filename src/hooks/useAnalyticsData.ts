@@ -703,7 +703,7 @@ export function useOrderAnalytics(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: queryKeys.analytics.orders({ tenantId, startDate: startDate?.toISOString(), endDate: endDate?.toISOString(), orderType }),
+    queryKey: queryKeys.analytics.orders(tenantId, { startDate: startDate?.toISOString(), endDate: endDate?.toISOString(), orderType }),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       return fetchOrdersData(tenantId, startOfDay(startDate).toISOString(), endOfDay(endDate).toISOString(), orderType);
@@ -749,7 +749,7 @@ export function useCustomerAnalytics(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: queryKeys.analytics.customers({ tenantId, startDate: startDate?.toISOString(), endDate: endDate?.toISOString() }),
+    queryKey: queryKeys.analytics.customers(tenantId, { startDate: startDate?.toISOString(), endDate: endDate?.toISOString() }),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       return fetchCustomersData(tenantId, startOfDay(startDate).toISOString(), endOfDay(endDate).toISOString());

@@ -123,9 +123,9 @@ export function useSaveDeliveryCost() {
         notes: input.notes || null,
       };
 
-      const { data, error } = await supabase
-        .from('delivery_costs' as 'orders')
-        .upsert(payload as Record<string, unknown>, {
+      const { data, error } = await (supabase as any)
+        .from('delivery_costs')
+        .upsert(payload, {
           onConflict: 'tenant_id,order_id',
         })
         .select()

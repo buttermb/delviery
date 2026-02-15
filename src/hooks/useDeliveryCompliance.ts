@@ -50,7 +50,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
     queryFn: async () => {
       if (!tenantId || !orderId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('delivery_compliance_checks')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -58,7 +58,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
         .order('created_at', { ascending: true });
 
       if (deliveryId) {
-        query = query.eq('delivery_id', deliveryId);
+        query = (query as any).eq('delivery_id', deliveryId);
       }
 
       const { data, error } = await query;
@@ -90,7 +90,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
         return { can_complete: false, blocking_checks: [], all_passed: false };
       }
 
-      const { data, error } = await supabase.rpc('can_complete_delivery', {
+      const { data, error } = await (supabase as any).rpc('can_complete_delivery', {
         p_tenant_id: tenantId,
         p_order_id: orderId,
       });
@@ -109,8 +109,8 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
         throw error;
       }
 
-      if (data && data.length > 0) {
-        return data[0] as CanCompleteDeliveryResult;
+      if (data && (data as any).length > 0) {
+        return (data as any)[0] as CanCompleteDeliveryResult;
       }
 
       return { can_complete: true, blocking_checks: [], all_passed: true };
@@ -124,7 +124,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
     mutationFn: async (input: CreateComplianceCheckInput) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_compliance_checks')
         .insert({
           tenant_id: tenantId,
@@ -161,7 +161,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
     mutationFn: async (input: VerifyComplianceCheckInput) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_compliance_checks')
         .update({
           status: input.status,
@@ -198,7 +198,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
     mutationFn: async (input: OverrideComplianceCheckInput) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_compliance_checks')
         .update({
           status: 'override' as ComplianceCheckStatus,
@@ -371,7 +371,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       }
 
       // Insert all checks
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_compliance_checks')
         .insert(
           checks.map((check) => ({
@@ -567,17 +567,17 @@ export function useComplianceAuditLog(orderId?: string, deliveryId?: string) {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('delivery_compliance_audit_log')
         .select('*')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
       if (orderId) {
-        query = query.eq('order_id', orderId);
+        query = (query as any).eq('order_id', orderId);
       }
       if (deliveryId) {
-        query = query.eq('delivery_id', deliveryId);
+        query = (query as any).eq('delivery_id', deliveryId);
       }
 
       const { data, error } = await query;
