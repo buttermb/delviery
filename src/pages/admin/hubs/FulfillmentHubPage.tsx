@@ -123,14 +123,14 @@ export default function FulfillmentHubPage() {
                 {/* Pending Shipments Tab */}
                 <TabsContent value="pending" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders />
+                        <LiveOrders statusFilter="pending" />
                     </Suspense>
                 </TabsContent>
 
                 {/* In Transit Tab */}
                 <TabsContent value="in-transit" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders />
+                        <LiveOrders statusFilter="in_transit" />
                     </Suspense>
                 </TabsContent>
 

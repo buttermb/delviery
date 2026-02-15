@@ -27,7 +27,11 @@ interface MenuOrderRaw {
   } | null;
 }
 
-export default function LiveOrders() {
+interface LiveOrdersProps {
+  statusFilter?: string;
+}
+
+export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -142,9 +146,22 @@ export default function LiveOrders() {
         }));
 
         // Combine
-        return [...normOrders, ...normMenuOrders].sort(
+        let combined = [...normOrders, ...normMenuOrders].sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
+
+        // Apply status filter if provided
+        if (statusFilter === 'pending') {
+          combined = combined.filter(o =>
+            ['pending', 'confirmed', 'preparing', 'ready_for_pickup'].includes(o.status)
+          );
+        } else if (statusFilter === 'in_transit') {
+          combined = combined.filter(o =>
+            ['in_transit', 'delivered'].includes(o.status)
+          );
+        }
+
+        return combined;
 
       } catch (err) {
         logger.error('Failed to fetch live orders', err);
