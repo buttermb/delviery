@@ -124,7 +124,7 @@ export default function InventoryAudit() {
       if (!tenant?.id) return [];
 
       // Query inventory_history for audit entries grouped by date
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('inventory_history')
         .select('id, tenant_id, created_at, performed_by, notes')
         .eq('tenant_id', tenant.id)
@@ -139,7 +139,7 @@ export default function InventoryAudit() {
 
       // Group by date to show audit sessions
       const auditSessions = new Map<string, AuditHistoryRecord>();
-      for (const entry of data || []) {
+      for (const entry of (data || []) as any[]) {
         const dateKey = format(new Date(entry.created_at), 'yyyy-MM-dd HH:mm');
         if (!auditSessions.has(dateKey)) {
           auditSessions.set(dateKey, {
@@ -268,7 +268,7 @@ export default function InventoryAudit() {
       }));
 
       // Insert history entries
-      const { error: historyError } = await supabase
+      const { error: historyError } = await (supabase as any)
         .from('inventory_history')
         .insert(historyEntries);
 

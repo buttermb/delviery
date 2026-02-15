@@ -117,14 +117,14 @@ export function RoleManagement() {
         // Fetch permissions for each role
         const rolesWithPermissions = await Promise.all(
           (rolesData || []).map(async (role) => {
-            const { data: permData } = await supabase
+            const { data: permData } = await (supabase as any)
               .from('tenant_role_permissions')
-              .select('permission_key')
+              .select('permission')
               .eq('role_id', role.id);
 
             return {
               ...role,
-              permissions: (permData || []).map((p) => p.permission_key),
+              permissions: (permData || []).map((p: any) => p.permission),
             };
           })
         );
@@ -167,12 +167,13 @@ export function RoleManagement() {
 
       // Add permissions
       if (data.permissions.length > 0) {
-        const { error: permError } = await supabase
+        const { error: permError } = await (supabase as any)
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
               role_id: roleData.id,
-              permission_key: perm,
+              permission: perm,
+              tenant_id: tenant?.id,
             }))
           );
 
@@ -242,12 +243,13 @@ export function RoleManagement() {
       await supabase.from('tenant_role_permissions').delete().eq('role_id', id);
 
       if (data.permissions.length > 0) {
-        const { error: permError } = await supabase
+        const { error: permError } = await (supabase as any)
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
               role_id: id,
-              permission_key: perm,
+              permission: perm,
+              tenant_id: tenant?.id,
             }))
           );
 
@@ -306,7 +308,7 @@ export function RoleManagement() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) });
+      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
       toast({ title: 'Role deleted', description: 'The role has been deleted successfully.' });
       setRoleToDelete(null);
       setIsDeleteDialogOpen(false);

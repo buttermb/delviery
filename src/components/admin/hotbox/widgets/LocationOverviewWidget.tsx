@@ -49,7 +49,7 @@ export function LocationOverviewWidget() {
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)
-                        .lte('available_quantity', 0)
+                        .lte('stock_quantity', 0)
                         .eq('status', 'active');
 
                     // Check for low stock
@@ -57,8 +57,8 @@ export function LocationOverviewWidget() {
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)
-                        .gt('available_quantity', 0)
-                        .lt('available_quantity', 10)
+                        .gt('stock_quantity', 0)
+                        .lt('stock_quantity', 10)
                         .eq('status', 'active');
 
                     const issues = (outOfStock || 0) + Math.floor((lowStock || 0) / 5);

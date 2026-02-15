@@ -131,7 +131,7 @@ export default function InventoryDashboard() {
         };
       }
 
-      const { data: products, error } = await supabase
+      const { data: products, error } = await (supabase as any)
         .from('products')
         .select('id, stock_quantity, price, min_stock_level, in_stock')
         .eq('tenant_id', tenantId);
@@ -141,18 +141,19 @@ export default function InventoryDashboard() {
         throw error;
       }
 
-      const totalProducts = products?.length || 0;
-      const totalQuantity = products?.reduce((sum, p) => sum + (p.stock_quantity || 0), 0) || 0;
-      const totalStockValue = products?.reduce(
-        (sum, p) => sum + (p.stock_quantity || 0) * (p.price || 0),
+      const productsList = (products || []) as any[];
+      const totalProducts = productsList.length;
+      const totalQuantity = productsList.reduce((sum: number, p: any) => sum + (p.stock_quantity || 0), 0);
+      const totalStockValue = productsList.reduce(
+        (sum: number, p: any) => sum + (p.stock_quantity || 0) * (p.price || 0),
         0
-      ) || 0;
-      const outOfStockCount = products?.filter((p) => (p.stock_quantity || 0) === 0).length || 0;
-      const lowStockCount = products?.filter((p) => {
+      );
+      const outOfStockCount = productsList.filter((p: any) => (p.stock_quantity || 0) === 0).length;
+      const lowStockCount = productsList.filter((p: any) => {
         const qty = p.stock_quantity || 0;
         const minLevel = p.min_stock_level || 10;
         return qty > 0 && qty <= minLevel;
-      }).length || 0;
+      }).length;
 
       return {
         totalProducts,
@@ -210,7 +211,7 @@ export default function InventoryDashboard() {
     queryFn: async (): Promise<StockDistribution[]> => {
       if (!tenantId) return [];
 
-      const { data: products, error } = await supabase
+      const { data: products, error } = await (supabase as any)
         .from('products')
         .select('stock_quantity, min_stock_level')
         .eq('tenant_id', tenantId);
@@ -226,7 +227,7 @@ export default function InventoryDashboard() {
       let adequate = 0;
       let overstocked = 0;
 
-      products?.forEach((p) => {
+      (products as any[])?.forEach((p: any) => {
         const qty = p.stock_quantity || 0;
         const minLevel = p.min_stock_level || 10;
         const maxLevel = minLevel * 5;
@@ -261,11 +262,11 @@ export default function InventoryDashboard() {
     queryFn: async (): Promise<LowStockProduct[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, sku, stock_quantity, price, category, min_stock_level')
         .eq('tenant_id', tenantId)
-        .or('stock_quantity.eq.0,stock_quantity.lte.min_stock_level')
+        .or('stock_quantity.eq.0,stock_quantity.lte.10')
         .order('stock_quantity', { ascending: true })
         .limit(20);
 
@@ -274,7 +275,7 @@ export default function InventoryDashboard() {
         throw error;
       }
 
-      return (data || []).map((p) => ({
+      return (data || []).map((p: any) => ({
         ...p,
         min_stock_level: p.min_stock_level || 10,
       })) as LowStockProduct[];

@@ -64,8 +64,8 @@ export default function CustomerDetails() {
   const { isReady: _encryptionIsReady } = useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<unknown[]>([]);
-  const [payments, setPayments] = useState<unknown[]>([]);
-  const [notes, setNotes] = useState<unknown[]>([]);
+  const [payments, setPayments] = useState<Array<{ id: string; amount: number; created_at: string; payment_method: string; payment_status: string }>>([]);
+  const [notes, setNotes] = useState<Array<{ id: string; created_at: string; note: string; profiles?: { full_name: string } }>>([]);
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
@@ -133,17 +133,18 @@ export default function CustomerDetails() {
       setPayments(paymentsData || []);
 
       // Load notes
-      const { data: notesData, error: notesError } = await supabase
+      const { data: notesData, error: notesError } = await (supabase as any)
         .from('customer_notes')
-        .select(`
-          *,
-          profiles:created_by(full_name)
-        `)
+        .select('id, created_at, note, note_type')
         .eq('customer_id', id)
         .order('created_at', { ascending: false });
 
       if (notesError) throw notesError;
-      setNotes(notesData || []);
+      setNotes((notesData || []).map((n: any) => ({
+        id: n.id,
+        created_at: n.created_at,
+        note: n.note,
+      })));
 
       // Calculate outstanding balance (total orders - total payments)
       const ordersTotal = (ordersData || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);

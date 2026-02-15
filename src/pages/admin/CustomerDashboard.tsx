@@ -196,22 +196,25 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
       const customerIds = Array.from(customerMap.keys());
       if (customerIds.length === 0) return [];
 
-      const { data: customers } = await supabase
+      const { data: customers } = await (supabase as any)
         .from('contacts')
-        .select('id, full_name, email')
+        .select('id, first_name, last_name, name, email')
         .eq('tenant_id', tenantId)
         .in('id', customerIds);
 
       const customerNameMap = new Map(
-        (customers ?? []).map(c => [c.id, { name: c.full_name, email: c.email }])
+        (customers ?? []).map((c: any) => [c.id, { name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unknown', email: c.email }])
       );
 
       return Array.from(customerMap.values())
-        .map(activity => ({
-          ...activity,
-          customerName: customerNameMap.get(activity.customerId)?.name || 'Unknown',
-          customerEmail: customerNameMap.get(activity.customerId)?.email || '',
-        }))
+        .map(activity => {
+          const info = customerNameMap.get(activity.customerId) as any;
+          return {
+            ...activity,
+            customerName: info?.name || 'Unknown',
+            customerEmail: info?.email || '',
+          };
+        })
         .slice(0, 10);
     },
     enabled: !!tenantId,
@@ -672,9 +675,9 @@ export default function CustomerDashboard() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={cn("text-xs", getSegmentColorClasses(customer.segment))}
+                            className={cn("text-xs", getSegmentColorClasses(customer.segment as CustomerSegment))}
                           >
-                            {getSegmentLabel(customer.segment)}
+                            {getSegmentLabel(customer.segment as CustomerSegment)}
                           </Badge>
                         </TableCell>
                       </TableRow>

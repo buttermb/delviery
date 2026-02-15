@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
+import { DollarSign, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
 import { useState } from "react";
