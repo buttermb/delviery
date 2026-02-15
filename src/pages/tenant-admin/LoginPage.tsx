@@ -163,14 +163,25 @@ export default function TenantAdminLoginPage() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <div className="text-center mb-6">
             <Building2 className="h-12 w-12 text-[hsl(var(--tenant-text-light))] mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-[hsl(var(--tenant-text))] mb-2">Tenant Not Found</h1>
-            <p className="text-[hsl(var(--tenant-text-light))]">
-              The tenant "{tenantSlug}" could not be found or is inactive.
+            <h1 className="text-2xl font-bold text-[hsl(var(--tenant-text))] mb-2">Business Not Found</h1>
+            <p className="text-[hsl(var(--tenant-text-light))] mb-2">
+              We couldn't find a business at <strong>"{tenantSlug}"</strong>.
+            </p>
+            <p className="text-sm text-[hsl(var(--tenant-text-light))]">
+              This may mean the URL is incorrect, or the business account has been deactivated. Please check the link you were given and try again.
             </p>
           </div>
-          <Button asChild variant="outline" className="w-full">
-            <Link to="/">Go to Home</Link>
-          </Button>
+          <div className="space-y-3">
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Go to FloraIQ Home
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full">
+              <Link to="/signup">Don't have an account? Sign up</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
