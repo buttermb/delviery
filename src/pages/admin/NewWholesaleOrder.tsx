@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { IntegerInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -726,8 +727,7 @@ export default function NewWholesaleOrder() {
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
-                                <Input
-                                  type="number"
+                                <IntegerInput
                                   value={product.qty}
                                   onChange={(e) => handleUpdateQty(product.id, Number(e.target.value))}
                                   className="h-7 w-16 text-center"

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput, IntegerInput } from "@/components/ui/currency-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Edit, Trash2, Copy, MoreVertical } from "lucide-react";
@@ -117,9 +118,7 @@ export function InlineProductEdit({
             <label className="text-xs text-muted-foreground">Price</label>
             {isEditingPrice ? (
               <div className="flex items-center gap-1 mt-1">
-                <Input
-                  type="number"
-                  step="0.01"
+                <CurrencyInput
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
                   className="h-8"
@@ -155,8 +154,7 @@ export function InlineProductEdit({
             <label className="text-xs text-muted-foreground">Stock</label>
             {isEditingStock ? (
               <div className="flex items-center gap-1 mt-1">
-                <Input
-                  type="number"
+                <IntegerInput
                   value={editStock}
                   onChange={(e) => setEditStock(e.target.value)}
                   className="h-8"

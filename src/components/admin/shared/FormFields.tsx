@@ -5,6 +5,7 @@ import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput, IntegerInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -172,6 +173,8 @@ interface NumberFieldProps<TFieldValues extends FieldValues, TName extends Field
   step?: number;
   /** Input placeholder text */
   placeholder?: string;
+  /** Variant: 'default' for standard number, 'currency' for price fields, 'integer' for whole numbers */
+  variant?: 'default' | 'currency' | 'integer';
 }
 
 export function NumberField<TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>({
@@ -186,6 +189,7 @@ export function NumberField<TFieldValues extends FieldValues, TName extends Fiel
   required,
   disabled,
   className,
+  variant = 'default',
 }: NumberFieldProps<TFieldValues, TName>) {
   return (
     <Controller
@@ -199,22 +203,50 @@ export function NumberField<TFieldValues extends FieldValues, TName extends Fiel
             required={required}
             description={description}
           />
-          <Input
-            {...field}
-            id={name}
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            placeholder={placeholder}
-            disabled={disabled}
-            error={!!error}
-            value={field.value ?? ''}
-            onChange={(e) => {
-              const value = e.target.value;
-              field.onChange(value === '' ? undefined : Number(value));
-            }}
-          />
+          {variant === 'currency' ? (
+            <CurrencyInput
+              id={name}
+              placeholder={placeholder}
+              disabled={disabled}
+              error={!!error}
+              value={field.value ?? ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                field.onChange(value === '' ? undefined : Number(value));
+              }}
+            />
+          ) : variant === 'integer' ? (
+            <IntegerInput
+              id={name}
+              min={min}
+              max={max}
+              placeholder={placeholder}
+              disabled={disabled}
+              error={!!error}
+              value={field.value ?? ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                field.onChange(value === '' ? undefined : parseInt(value, 10));
+              }}
+            />
+          ) : (
+            <Input
+              {...field}
+              id={name}
+              type="number"
+              min={min}
+              max={max}
+              step={step}
+              placeholder={placeholder}
+              disabled={disabled}
+              error={!!error}
+              value={field.value ?? ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                field.onChange(value === '' ? undefined : Number(value));
+              }}
+            />
+          )}
           <FieldError message={error?.message} />
         </div>
       )}

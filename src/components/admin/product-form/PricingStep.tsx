@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput, IntegerInput } from "@/components/ui/currency-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -108,13 +109,9 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="price">Regular Price <span className="text-destructive">*</span></Label>
-          <div className="flex items-center mt-1.5">
-            <span className="mr-2">$</span>
-            <Input
+          <div className="mt-1.5">
+            <CurrencyInput
               id="price"
-              type="number"
-              min="0"
-              step="0.01"
               value={(formData.price as string | number) || ""}
               onChange={(e) => {
                 const value = e.target.value;
@@ -133,13 +130,9 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
 
         <div>
           <Label htmlFor="sale-price">Sale Price (Optional)</Label>
-          <div className="flex items-center mt-1.5">
-            <span className="mr-2">$</span>
-            <Input
+          <div className="mt-1.5">
+            <CurrencyInput
               id="sale-price"
-              type="number"
-              min="0"
-              step="0.01"
               value={(formData.sale_price as string | number) || ""}
               onChange={(e) => {
                 const value = e.target.value;
@@ -175,13 +168,9 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
 
       <div>
         <Label htmlFor="cost">Cost Per Unit (Your Cost - Private)</Label>
-        <div className="flex items-center mt-1.5">
-          <span className="mr-2">$</span>
-          <Input
+        <div className="mt-1.5">
+          <CurrencyInput
             id="cost"
-            type="number"
-            min="0"
-            step="0.01"
             value={(formData.cost_per_unit as string | number) || ""}
             onChange={(e) => {
               const value = e.target.value;
@@ -218,11 +207,9 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
 
       <div>
         <Label htmlFor="stock">Current Stock Quantity</Label>
-        <Input
+        <IntegerInput
           id="stock"
-          type="number"
-          min="0"
-          step="1"
+          min={0}
           value={(formData.stock_quantity as string | number) || ""}
           onChange={(e) => {
             const value = e.target.value;
@@ -275,12 +262,8 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
             .map(([weight, price]) => (
               <div key={weight} className="flex gap-2 items-center">
                 <Input value={weight} disabled className="w-24" />
-                <div className="flex items-center flex-1">
-                  <span className="mr-2">$</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
+                <div className="flex-1">
+                  <CurrencyInput
                     value={price === "" ? "" : (typeof price === 'number' ? price : 0)}
                     onChange={(e) => updatePriceVariation(weight, e.target.value)}
                     placeholder="0.00"

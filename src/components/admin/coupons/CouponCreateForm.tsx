@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -248,11 +249,9 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
               <Label htmlFor="discount_value">
                 Discount Value <span className="text-destructive">*</span>
               </Label>
-              <Input
+              <CurrencyInput
                 id="discount_value"
-                type="number"
-                min="0"
-                step="0.01"
+                showPrefix={formData.discount_type !== "percentage"}
                 value={formData.discount_value}
                 onChange={(e) =>
                   setFormData({
@@ -273,11 +272,8 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
 
             <div className="space-y-2">
               <Label htmlFor="min_purchase">Minimum Purchase</Label>
-              <Input
+              <CurrencyInput
                 id="min_purchase"
-                type="number"
-                min="0"
-                step="0.01"
                 value={formData.min_purchase}
                 onChange={(e) =>
                   setFormData({ ...formData, min_purchase: e.target.value })

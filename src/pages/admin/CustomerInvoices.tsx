@@ -7,6 +7,7 @@ import { InvoiceLink } from '@/components/admin/cross-links';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput, IntegerInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -488,19 +489,16 @@ export default function CustomerInvoices() {
                         />
                       </div>
                       <div className="col-span-2">
-                        <Input
-                          type="number"
+                        <IntegerInput
                           placeholder="Qty"
-                          min="1"
+                          min={1}
                           value={item.quantity}
                           onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                           required
                         />
                       </div>
                       <div className="col-span-2">
-                        <Input
-                          type="number"
-                          step="0.01"
+                        <CurrencyInput
                           placeholder="Rate"
                           value={item.rate}
                           onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)}

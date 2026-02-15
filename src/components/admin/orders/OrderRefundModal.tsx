@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -251,21 +252,14 @@ export function OrderRefundModal({
           {refundType === 'partial' && (
             <div className="space-y-2">
               <Label htmlFor="refund-amount">Refund Amount</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="refund-amount"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  max={order.total_amount}
-                  value={partialAmount}
-                  onChange={(e) => setPartialAmount(e.target.value)}
-                  placeholder="0.00"
-                  className={`pl-9 ${validation.error ? 'border-destructive' : ''}`}
-                  required
-                />
-              </div>
+              <CurrencyInput
+                id="refund-amount"
+                value={partialAmount}
+                onChange={(e) => setPartialAmount(e.target.value)}
+                placeholder="0.00"
+                className={validation.error ? 'border-destructive' : ''}
+                required
+              />
               {validation.error && (
                 <div className="flex items-center gap-1.5 text-destructive text-sm">
                   <AlertCircle className="h-4 w-4 shrink-0" />

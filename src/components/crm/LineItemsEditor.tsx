@@ -8,6 +8,7 @@ import type { LineItem } from "@/types/crm";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput, IntegerInput } from "@/components/ui/currency-input";
 import {
     Table,
     TableBody,
@@ -482,9 +483,8 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
-                                                <Input
-                                                    type="number"
-                                                    min="1"
+                                                <IntegerInput
+                                                    min={1}
                                                     value={item.quantity}
                                                     onChange={(e) => handleUpdateItem(index, "quantity", e.target.value)}
                                                     onBlur={() => markFieldTouched(itemId, "quantity")}
@@ -506,21 +506,15 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
-                                                <div className="relative">
-                                                    <span className="absolute left-2 top-2.5 text-muted-foreground">$</span>
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        step="0.01"
-                                                        value={item.unit_price}
-                                                        onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
-                                                        onBlur={() => markFieldTouched(itemId, "price")}
-                                                        className={cn(
-                                                            "pl-6 h-9",
-                                                            isFieldTouched(itemId, "price") && errors.price && "border-destructive focus-visible:ring-destructive"
-                                                        )}
-                                                    />
-                                                </div>
+                                                <CurrencyInput
+                                                    value={item.unit_price}
+                                                    onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
+                                                    onBlur={() => markFieldTouched(itemId, "price")}
+                                                    className={cn(
+                                                        "h-9",
+                                                        isFieldTouched(itemId, "price") && errors.price && "border-destructive focus-visible:ring-destructive"
+                                                    )}
+                                                />
                                                 {isFieldTouched(itemId, "price") && errors.price && (
                                                     <span className="text-[11px] text-destructive">{errors.price}</span>
                                                 )}

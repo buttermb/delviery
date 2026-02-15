@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import { IntegerInput } from '@/components/ui/currency-input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Minus, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -98,9 +98,8 @@ export function InlineStockEdit({
   if (isEditing) {
     return (
       <div className={cn("flex items-center gap-1", className)}>
-        <Input
+        <IntegerInput
           ref={inputRef}
-          type="number"
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
