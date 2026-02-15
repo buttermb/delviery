@@ -2406,4 +2406,52 @@ body.keyboard-open [data-radix-dialog-content] {
   a[href^="http"]::after {
     content: none; /* Don't clutter with URLs */
   }
+
+  /* ---- Invoice Print Styles ---- */
+  .invoice-print-document {
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .invoice-print-document [data-slot="card-header"] {
+    background: white !important;
+    border-bottom: 2px solid #1f2937 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .invoice-print-document [data-slot="card-content"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .invoice-print-document table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .invoice-print-document th {
+    background-color: #f3f4f6 !important;
+    border-bottom: 2px solid #d1d5db !important;
+    padding: 8px 12px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+  }
+
+  .invoice-print-document td {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 8px 12px !important;
+    color: #374151 !important;
+  }
+
+  /* Totals section prints clearly */
+  .invoice-print-document .text-muted-foreground {
+    color: #4b5563 !important;
+  }
+
+  .invoice-print-document .font-bold {
+    color: #111827 !important;
+  }
 }
