@@ -199,7 +199,7 @@ export default function CustomerDetails() {
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
-      <div className="min-h-dvh bg-gray-50 p-6">
+      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
         <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
 
         <div className="max-w-7xl mx-auto space-y-6">
@@ -212,18 +212,18 @@ export default function CustomerDetails() {
 
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                   <User className="w-10 h-10 text-emerald-600" />
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                       {customer.first_name} {customer.last_name}
                     </h1>
                     <Badge
                       className={customer.customer_type === 'medical'
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/30'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-800'
                       }
                     >
                       {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
@@ -266,7 +266,7 @@ export default function CustomerDetails() {
                       ${customer.total_spent?.toFixed(2) || '0.00'}
                     </p>
                   </div>
-                  <div className="p-3 bg-emerald-100 rounded-lg">
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                     <DollarSign className="w-6 h-6 text-emerald-600" />
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export default function CustomerDetails() {
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{orders.length}</p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-lg">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <ShoppingBag className="w-6 h-6 text-blue-600" />
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export default function CustomerDetails() {
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Loyalty Points</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{customer.loyalty_points || 0}</p>
                   </div>
-                  <div className="p-3 bg-emerald-100 rounded-lg">
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                     <Gift className="w-6 h-6 text-emerald-600" />
                   </div>
                 </div>
@@ -310,7 +310,7 @@ export default function CustomerDetails() {
                       ${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-lg">
+                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                     <Star className="w-6 h-6 text-purple-600" />
                   </div>
                 </div>
@@ -447,10 +447,10 @@ export default function CustomerDetails() {
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
                       <Badge className={
-                        (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800' :
-                          (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800' :
-                            (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
+                        (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
+                          (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                            (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                              'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                       }>
                         {(customer.loyalty_points || 0) >= 1000 ? '⭐ VIP' :
                           (customer.loyalty_points || 0) >= 500 ? '🥇 Gold' :

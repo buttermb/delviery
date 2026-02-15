@@ -45,7 +45,7 @@ interface PODetailProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500",
+  draft: "bg-gray-500 dark:bg-gray-600",
   submitted: "bg-blue-500",
   approved: "bg-green-500",
   received: "bg-emerald-500",
@@ -54,7 +54,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusChange }: PODetailProps) {
   const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
-  
+
   const { data: items, isLoading: itemsLoading } = useQuery({
     queryKey: queryKeys.purchaseOrders.items(purchaseOrder.id),
     queryFn: async () => {
@@ -384,4 +384,3 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
     </Dialog>
   );
 }
-

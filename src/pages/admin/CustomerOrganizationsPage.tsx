@@ -78,7 +78,7 @@ export default function CustomerOrganizationsPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-gray-50 p-6">
+    <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
       <SEOHead
         title="Customer Organizations | Admin"
         description="Manage customer organizations and groups for B2B wholesale relationships"
@@ -92,7 +92,7 @@ export default function CustomerOrganizationsPage() {
               <Building2 className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Customer Organizations</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Customer Organizations</h1>
               <p className="text-muted-foreground">
                 Manage organizations for B2B wholesale relationships and group pricing
               </p>

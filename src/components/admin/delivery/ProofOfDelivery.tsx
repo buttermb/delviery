@@ -415,7 +415,7 @@ export function ProofOfDelivery({
 
               {/* Signature Tab */}
               <TabsContent value="signature" className="space-y-4">
-                <div className="border-2 border-dashed border-muted rounded-lg overflow-hidden bg-white">
+                <div className="border-2 border-dashed border-muted rounded-lg overflow-hidden bg-white dark:bg-zinc-950">
                   <SignatureCanvasLib
                     ref={sigCanvas}
                     onBegin={handleSignatureBegin}

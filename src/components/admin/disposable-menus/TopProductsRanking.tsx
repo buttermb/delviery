@@ -17,7 +17,7 @@ interface TopProductsRankingProps {
   metric?: 'views' | 'conversions' | 'revenue';
 }
 
-export const TopProductsRanking = ({ 
+export const TopProductsRanking = ({
   products,
   title = 'Top Performing Products',
   metric = 'views'
@@ -40,7 +40,7 @@ export const TopProductsRanking = ({
       case 1:
         return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20';
       case 2:
-        return 'bg-gray-400/10 text-gray-700 border-gray-400/20';
+        return 'bg-gray-400/10 text-gray-700 border-gray-400/20 dark:bg-gray-500/20 dark:text-gray-300 dark:border-gray-500/30';
       case 3:
         return 'bg-warning/10 text-warning border-warning/20';
       default:
@@ -97,7 +97,7 @@ export const TopProductsRanking = ({
                 <div className="flex items-center justify-center">
                   {getRankIcon(product.rank)}
                 </div>
-                
+
                 <div className="flex-1">
                   <h4 className="font-semibold text-base">{product.product_name}</h4>
                   <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">

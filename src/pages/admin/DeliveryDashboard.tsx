@@ -303,7 +303,7 @@ export default function DeliveryDashboard() {
       case 'busy':
         return 'bg-amber-500/10 text-amber-600';
       case 'offline':
-        return 'bg-gray-500/10 text-gray-600';
+        return 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400';
       default:
         return 'bg-muted text-muted-foreground';
     }

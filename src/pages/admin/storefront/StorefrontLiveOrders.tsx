@@ -67,7 +67,7 @@ const STATUS_COLORS: Record<string, string> = {
   preparing: 'bg-blue-500',
   ready: 'bg-green-500',
   out_for_delivery: 'bg-purple-500',
-  delivered: 'bg-gray-500',
+  delivered: 'bg-gray-500 dark:bg-gray-600',
 };
 
 export interface LiveOrder {
@@ -543,7 +543,7 @@ export function StorefrontLiveOrders() {
                         <Clock className="h-3 w-3" />
                         <span>{getTimeSince(order.created_at)}</span>
                       </div>
-                      <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500'}>
+                      <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500 dark:bg-gray-600'}>
                         {STATUS_LABELS[order.status] || order.status}
                       </Badge>
                       <span className="font-semibold text-sm">{formatCurrency(orderTotal)}</span>

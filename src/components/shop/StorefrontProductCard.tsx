@@ -94,7 +94,7 @@ export function StorefrontProductCard({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="bg-white rounded-3xl border border-neutral-100 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-neutral-200/50 transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden">
+            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-neutral-200/50 transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden">
 
                 {/* Image Container */}
                 <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden bg-neutral-50 cursor-pointer">
@@ -113,7 +113,7 @@ export function StorefrontProductCard({
                             aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                             className={cn(
                                 "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
-                                isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white text-neutral-400 hover:text-red-500 border-white"
+                                isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white dark:bg-zinc-900 text-neutral-400 hover:text-red-500 border-white dark:border-zinc-900"
                             )}
                         >
                             <svg className={cn("w-5 h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
@@ -121,7 +121,7 @@ export function StorefrontProductCard({
                         <button
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
                             aria-label="Quick view product"
-                            className="w-10 h-10 rounded-full bg-white text-neutral-400 hover:text-[#015358] border border-white flex items-center justify-center shadow-lg transition-colors delay-75"
+                            className="w-10 h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-[#015358] border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ color: isHovered ? accentColor : undefined }}
                         >
                             <Eye className="w-5 h-5" aria-hidden="true" />

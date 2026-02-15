@@ -190,7 +190,7 @@ export default function StorefrontDashboard() {
         .gte('created_at', startOfToday.toISOString())
         .not('status', 'eq', 'cancelled');
 
-      // Yesterday's revenue  
+      // Yesterday's revenue
       const { data: yesterdayOrders } = await supabase
         .from('storefront_orders')
         .select('total')
@@ -364,7 +364,7 @@ export default function StorefrontDashboard() {
       case 'out_for_delivery': return 'bg-orange-500';
       case 'delivered': return 'bg-green-500';
       case 'cancelled': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      default: return 'bg-gray-500 dark:bg-gray-600';
     }
   };
 

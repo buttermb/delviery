@@ -345,7 +345,7 @@ export default function ShopLayout() {
         className="min-h-dvh flex items-center justify-center"
         style={{ backgroundColor: store.primary_color }}
       >
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
           {store.logo_url && (
             <img
               src={store.logo_url}
@@ -492,7 +492,7 @@ export default function ShopLayout() {
         )}
 
         {/* Header - Luxury vs Standard */}
-        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white border-b shadow-sm'}`}>
+        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white dark:bg-zinc-950 border-b shadow-sm'}`}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -535,7 +535,7 @@ export default function ShopLayout() {
                   Deals
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
-                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800'}>
+                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>

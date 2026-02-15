@@ -189,9 +189,9 @@ export default function ProductVisibilityManager() {
                                         </TableCell>
                                         <TableCell>
                                             <Badge className={
-                                                listing.status === 'active' ? 'bg-green-100 text-green-700 hover:bg-green-100' :
-                                                    listing.status === 'draft' ? 'bg-gray-100 text-gray-700 hover:bg-gray-100' :
-                                                        'bg-red-100 text-red-700 hover:bg-red-100'
+                                                listing.status === 'active' ? 'bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-900' :
+                                                    listing.status === 'draft' ? 'bg-gray-100 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-800' :
+                                                        'bg-red-100 text-red-700 hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-900'
                                             }>
                                                 {listing.status}
                                             </Badge>

@@ -156,7 +156,7 @@ export function HotItemsSection({
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-2xl p-3 space-y-3">
+              <div key={i} className="bg-white dark:bg-zinc-950 rounded-2xl p-3 space-y-3">
                 <Skeleton className="aspect-square w-full rounded-xl" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -318,7 +318,7 @@ function HotItemCard({
       transition={{ duration: 0.4, delay: index * 0.05 }}
       className="group"
     >
-      <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative transform hover:-translate-y-1">
+      <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative transform hover:-translate-y-1">
         {/* Image */}
         <Link
           to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`}

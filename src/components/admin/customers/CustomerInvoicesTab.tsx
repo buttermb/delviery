@@ -45,7 +45,7 @@ function getStatusBadgeStyles(status: string | null): string {
     case 'void':
       return 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-900/30 dark:text-gray-500 dark:border-gray-800';
     default:
-      return 'bg-gray-100 text-gray-700 border-gray-200';
+      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800';
   }
 }
 

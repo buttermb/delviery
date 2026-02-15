@@ -566,7 +566,7 @@ export default function StorefrontCoupons() {
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-gray-500/10 text-gray-700">
+                          <Badge variant="outline" className="bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
                             Inactive
                           </Badge>
                         )}

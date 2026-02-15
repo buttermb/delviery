@@ -55,7 +55,7 @@ const ORDER_STATUS_COLORS: Record<OrderStatus, StatusColorConfig> = {
   shipped: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' },
   delivered: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
   cancelled: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' },
-  refunded: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' },
+  refunded: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-200 dark:border-gray-700' },
 };
 
 /**
@@ -65,7 +65,7 @@ const INVENTORY_STATUS_COLORS: Record<InventoryStatus, StatusColorConfig> = {
   in_stock: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
   low_stock: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200' },
   out_of_stock: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' },
-  discontinued: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' },
+  discontinued: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-200 dark:border-gray-700' },
 };
 
 /**
@@ -73,7 +73,7 @@ const INVENTORY_STATUS_COLORS: Record<InventoryStatus, StatusColorConfig> = {
  */
 const CUSTOMER_STATUS_COLORS: Record<CustomerStatus, StatusColorConfig> = {
   active: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
-  inactive: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' },
+  inactive: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-200 dark:border-gray-700' },
   vip: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200' },
   suspended: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' },
   pending_verification: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200' },
@@ -98,7 +98,7 @@ const PAYMENT_STATUS_COLORS: Record<PaymentStatus, StatusColorConfig> = {
   pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200' },
   completed: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
   failed: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' },
-  refunded: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' },
+  refunded: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-200 dark:border-gray-700' },
   cancelled: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' },
 };
 
@@ -106,19 +106,19 @@ const PAYMENT_STATUS_COLORS: Record<PaymentStatus, StatusColorConfig> = {
  * Menu status color mappings
  */
 const MENU_STATUS_COLORS: Record<MenuStatus, StatusColorConfig> = {
-  draft: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' },
+  draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-200 dark:border-gray-700' },
   active: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
   expired: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200' },
-  archived: { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-200' },
+  archived: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-500 dark:text-gray-400', border: 'border-gray-200 dark:border-gray-700' },
 };
 
 /**
  * Default fallback colors for unknown statuses
  */
 const DEFAULT_STATUS_COLORS: StatusColorConfig = {
-  bg: 'bg-gray-100',
-  text: 'text-gray-800',
-  border: 'border-gray-200',
+  bg: 'bg-gray-100 dark:bg-gray-800',
+  text: 'text-gray-800 dark:text-gray-200',
+  border: 'border-gray-200 dark:border-gray-700',
 };
 
 /**

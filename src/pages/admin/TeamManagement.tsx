@@ -316,9 +316,9 @@ export default function TeamManagement() {
       case 'member':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
       case 'viewer':
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30';
       default:
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30';
     }
   };
 
@@ -340,7 +340,7 @@ export default function TeamManagement() {
         );
       default:
         return (
-          <Badge variant="outline" className="bg-gray-500/10 text-gray-600 border-gray-500/20">
+          <Badge variant="outline" className="bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30">
             {status}
           </Badge>
         );

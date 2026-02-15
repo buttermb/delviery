@@ -281,7 +281,7 @@ export default function AccountPage() {
       out_for_delivery: 'bg-orange-100 text-orange-800',
       delivered: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
-      refunded: 'bg-gray-100 text-gray-800',
+      refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
     };
     return (
       <Badge variant="outline" className={colors[status] || ''}>
@@ -296,7 +296,7 @@ export default function AccountPage() {
   if (!isLoggedIn) {
     return (
       <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
-        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white">
+        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-zinc-950">
           <CardHeader className="text-center pb-2 pt-8">
             <div
               className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center shadow-inner"
@@ -330,7 +330,7 @@ export default function AccountPage() {
                     value={magicCode}
                     onChange={(e) => setMagicCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="000000"
-                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-white"
+                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-white dark:bg-zinc-950"
                     onKeyDown={(e) => e.key === 'Enter' && handleVerifyMagicCode()}
                     autoFocus
                   />
@@ -381,7 +381,7 @@ export default function AccountPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-neutral-50 focus:bg-white transition-all"
+                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-neutral-50 dark:bg-neutral-900 focus:bg-white dark:focus:bg-zinc-950 transition-all"
                     onKeyDown={(e) => e.key === 'Enter' && handleEmailLookup()}
                   />
                 </div>
@@ -400,7 +400,7 @@ export default function AccountPage() {
                       <span className="w-full border-t border-neutral-200" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase tracking-wider font-bold">
-                      <span className="bg-white px-4 text-neutral-400">or continue with</span>
+                      <span className="bg-white dark:bg-zinc-950 px-4 text-neutral-400">or continue with</span>
                     </div>
                   </div>
 
@@ -444,7 +444,7 @@ export default function AccountPage() {
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
-                  className="h-12 rounded-lg bg-neutral-50 border-neutral-200 focus:bg-white"
+                  className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus:bg-white dark:focus:bg-zinc-950"
                 />
                 <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0">
                   <Search className="w-5 h-5" />
@@ -473,7 +473,7 @@ export default function AccountPage() {
   // Logged in view
   return (
     <div className="container mx-auto px-4 py-8 min-h-dvh bg-[#F5F7F8]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 bg-white p-6 rounded-3xl shadow-sm border border-neutral-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 bg-white dark:bg-zinc-950 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg" style={{ backgroundColor: store.primary_color }}>
             {email.charAt(0).toUpperCase()}
@@ -821,7 +821,7 @@ function WishlistSection({
             {products.map((product: any) => (
               <div
                 key={product.product_id}
-                className="flex items-center gap-6 p-6 border border-neutral-100 rounded-2xl bg-white hover:shadow-md transition-shadow group"
+                className="flex items-center gap-6 p-6 border border-neutral-100 dark:border-neutral-800 rounded-2xl bg-white dark:bg-zinc-950 hover:shadow-md transition-shadow group"
               >
                 <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
                   <div className="w-24 h-24 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0 relative">
@@ -1116,8 +1116,3 @@ function QuickReorderButton({
     </Button>
   );
 }
-
-
-
-
-

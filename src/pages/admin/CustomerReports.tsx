@@ -137,7 +137,7 @@ export default function CustomerReports() {
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50 p-6">
+    <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <SEOHead
           title="Customer Reports | Admin"
@@ -147,8 +147,8 @@ export default function CustomerReports() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Customer Reports & Analytics</h1>
-            <p className="text-gray-500 mt-1">Insights into your customer base</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Customer Reports & Analytics</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Insights into your customer base</p>
           </div>
           <Button
             onClick={handleExportReport}
@@ -164,7 +164,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Total Customers</CardTitle>
-              <div className="p-2 bg-emerald-100 rounded-lg">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                 <Users className="h-5 w-5 text-emerald-600" />
               </div>
             </CardHeader>
@@ -180,7 +180,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Active Customers</CardTitle>
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                 <ShoppingBag className="h-5 w-5 text-blue-600" />
               </div>
             </CardHeader>
@@ -195,7 +195,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">At Risk</CardTitle>
-              <div className="p-2 bg-amber-100 rounded-lg">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
                 <Calendar className="h-5 w-5 text-amber-600" />
               </div>
             </CardHeader>
@@ -208,7 +208,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Medical Patients</CardTitle>
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                 <Award className="h-5 w-5 text-blue-600" />
               </div>
             </CardHeader>
@@ -226,7 +226,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Total Revenue</CardTitle>
-              <div className="p-2 bg-emerald-100 rounded-lg">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                 <DollarSign className="h-5 w-5 text-emerald-600" />
               </div>
             </CardHeader>
@@ -239,7 +239,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Avg Order Value</CardTitle>
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                 <BarChart3 className="h-5 w-5 text-blue-600" />
               </div>
             </CardHeader>
@@ -252,7 +252,7 @@ export default function CustomerReports() {
           <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Avg Lifetime Value</CardTitle>
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
             </CardHeader>

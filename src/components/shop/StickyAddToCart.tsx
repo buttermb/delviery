@@ -62,7 +62,7 @@ export function StickyAddToCart({
   if (!isVisible || !isScrolled) return null;
 
   return (
-    <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t shadow-lg z-40 safe-area-pb">
+    <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white dark:bg-zinc-950 border-t shadow-lg z-40 safe-area-pb">
       <div className="flex items-center gap-3 p-3">
         {/* Product Info */}
         <div className="flex-1 min-w-0">
@@ -144,6 +144,5 @@ export function StickyAddToCart({
 }
 
 export default StickyAddToCart;
-
 
 

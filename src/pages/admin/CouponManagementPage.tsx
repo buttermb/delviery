@@ -56,7 +56,7 @@ type Coupon = Database['public']['Tables']['coupon_codes']['Row'];
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-500",
-  inactive: "bg-gray-500",
+  inactive: "bg-gray-500 dark:bg-gray-600",
   expired: "bg-red-500",
 };
 
@@ -81,7 +81,7 @@ export default function CouponManagementPage() {
     queryKey: queryKeys.coupons.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
-      
+
       let query = (supabase
         .from("coupon_codes")
         .select("*") as any)
@@ -349,11 +349,11 @@ export default function CouponManagementPage() {
                             <code className="text-sm bg-muted px-2 py-1 rounded">
                               {coupon.code}
                             </code>
-                            <CopyButton 
-                              text={coupon.code} 
-                              label="Code" 
-                              size="icon" 
-                              variant="ghost" 
+                            <CopyButton
+                              text={coupon.code}
+                              label="Code"
+                              size="icon"
+                              variant="ghost"
                               showLabel={false}
                               className="h-6 w-6"
                             />
@@ -498,4 +498,3 @@ export default function CouponManagementPage() {
     </div>
   );
 }
-

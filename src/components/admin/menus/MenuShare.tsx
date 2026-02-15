@@ -852,11 +852,11 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
                 <div className="bg-muted/50 p-4 rounded-lg">
                   <p className="text-sm font-medium mb-2">Preview</p>
                   <div
-                    className="border rounded-lg bg-white overflow-hidden"
+                    className="border rounded-lg bg-white dark:bg-zinc-950 overflow-hidden"
                     style={{ width: '100%', maxWidth: parseInt(embedWidth, 10) }}
                   >
                     <div
-                      className="bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-muted-foreground text-sm"
+                      className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 flex items-center justify-center text-muted-foreground text-sm"
                       style={{ height: Math.min(parseInt(embedHeight, 10), 200) }}
                     >
                       <Eye className="h-6 w-6 mr-2 opacity-50" />

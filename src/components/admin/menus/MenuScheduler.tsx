@@ -550,7 +550,7 @@ function CalendarDay({ date, schedules, isCurrentMonth, isToday, onClick }: Cale
               'text-[10px] px-1 py-0.5 rounded truncate',
               schedule.isActive
                 ? 'bg-green-500/20 text-green-700'
-                : 'bg-gray-500/20 text-gray-600'
+                : 'bg-gray-500/20 text-gray-600 dark:bg-gray-500/30 dark:text-gray-400'
             )}
           >
             {schedule.menuName}
