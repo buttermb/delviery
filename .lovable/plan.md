@@ -1,40 +1,39 @@
 
 
-## Fix: TypeScript Build Error in `useMenuExpiration.ts`
+## Fix: TypeScript Build Errors in `useMenuExpiration.ts`
 
-### Problem
-The file `src/hooks/useMenuExpiration.ts` has **8 TypeScript compilation errors** starting at line 50. The root cause is overly complex inline type assertions (`as unknown as { ... }`) used to work around Supabase client typing. These massive single-line type casts have syntax issues that break the build.
+### Current Status
+The build is **still broken** with 8 TypeScript errors in `src/hooks/useMenuExpiration.ts`. The previous fix attempts did not successfully modify the file -- all 8 locations still contain the malformed `as unknown as { from: ... }` type assertions.
 
-### Solution
-Replace all the verbose `as unknown as { ... }` type assertions with a simple `any` cast pattern. Since the Supabase client is already typed via the auto-generated types, and these queries are just working around missing table definitions in the generated types, a clean cast is sufficient and far more maintainable.
+### What's Wrong
+Line 50 (and 7 other locations) have extremely long inline type casts that the TypeScript compiler cannot parse. These cause cascading syntax errors through line 74.
 
-### Changes
+### Fix
+Replace the verbose type assertion on each of these 8 lines with `(supabase as any)`:
 
-**File: `src/hooks/useMenuExpiration.ts`**
+| Line | Query Target | Operation |
+|------|-------------|-----------|
+| 50 | `disposable_menus` | select (expiring menus) |
+| 85 | `disposable_menus` | select (recently expired) |
+| 123 | `disposable_menus` | select single (archive prep) |
+| 153 | `disposable_menus` | update (archive) |
+| 171 | `menu_schedule_history` | insert (log archive) |
+| 241 | `disposable_menus` | update (reactivate) |
+| 252 | `menu_schedule_history` | insert (log reactivation) |
+| 296 | `disposable_menus` | select (auto-deactivation check) |
 
-Replace each instance of the long inline type assertion pattern:
+Each line changes from:
 ```typescript
-// BEFORE (broken, 200+ character single-line type casts):
 await (supabase as unknown as { from: (table: string) => { select: ... } })
-  .from('disposable_menus')
-  ...
-
-// AFTER (clean, working):
-await (supabase as any)
-  .from('disposable_menus')
-  ...
 ```
-
-This applies to approximately 6 locations in the file (lines 50, 85, 123, 153, 171, 241, 252, 296).
-
-### Why This Is Safe
-- The Supabase client already provides runtime type safety via its SDK
-- These casts exist only because `disposable_menus` and `menu_schedule_history` may not be in the auto-generated types yet
-- Using `as any` is the standard pattern for tables not yet in generated types
-- All query results are already typed via the return type annotations (`ExpiringMenu[]`, `ArchivedMenu[]`)
+To:
+```typescript
+await (supabase as any)
+```
 
 ### Technical Details
 - **Files modified:** 1 (`src/hooks/useMenuExpiration.ts`)
-- **Risk:** Low -- only removing broken type assertions, no logic changes
+- **Risk:** Low -- only replacing broken type casts, zero logic changes
 - **Build impact:** Resolves all 8 TS errors, unblocking the build
+- **Why safe:** Runtime behavior is identical; return types are already annotated on the containing functions
 
