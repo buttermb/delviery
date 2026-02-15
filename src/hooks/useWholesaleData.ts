@@ -50,7 +50,7 @@ export const useWholesaleOrders = () => {
       const { data, error } = await (supabase as any)
         .from("wholesale_orders")
         .select(`
-          id, tenant_id, client_id, runner_id, order_number, status, total_amount, created_at, updated_at,
+          id, tenant_id, client_id, runner_id, order_number, status, total_amount, created_at,
           client:wholesale_clients(business_name, contact_name),
           runner:wholesale_runners(full_name, phone)
         `)
@@ -449,7 +449,7 @@ export const useWholesaleDeliveries = () => {
       const { data, error } = await (supabase as any)
         .from("wholesale_deliveries")
         .select(`
-          id, tenant_id, order_id, runner_id, status, current_location, notes, created_at, updated_at,
+          id, tenant_id, order_id, runner_id, status, current_location, notes, created_at,
           order:wholesale_orders(order_number, total_amount, delivery_address),
           runner:wholesale_runners(full_name, phone, vehicle_type)
         `)
