@@ -156,7 +156,7 @@ function useReorderConfig(productId: string) {
       if (!tenant?.id || !productId) return null;
 
       // Fetch product's reorder settings
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('low_stock_alert, vendor_id, reorder_quantity, auto_reorder_enabled')
         .eq('id', productId)
@@ -196,7 +196,7 @@ export function usePendingReorders() {
       if (!tenant?.id) return [];
 
       // Fetch products that are at or below reorder point with auto-reorder enabled
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select(`
           id,

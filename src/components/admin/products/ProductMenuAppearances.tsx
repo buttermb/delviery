@@ -178,7 +178,7 @@ function useAvailableMenus(productId: string | undefined, tenantId: string | und
         .from('disposable_menus')
         .select('id, name, status, expiration_date, never_expires')
         .eq('tenant_id', tenantId)
-        .neq('status', 'burned')
+        .not('status', 'in', '("burned","hard_burned","soft_burned")')
         .order('created_at', { ascending: false });
 
       if (error) {

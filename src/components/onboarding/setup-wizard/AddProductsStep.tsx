@@ -62,7 +62,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('products')
         .insert({
           tenant_id: tenant.id,
@@ -155,7 +155,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
         // Insert in batches of 50
         for (let i = 0; i < products.length; i += 50) {
           const batch = products.slice(i, i + 50);
-          const { error } = await supabase.from('products').insert(batch);
+          const { error } = await (supabase as any).from('products').insert(batch);
 
           if (error) {
             logger.error('Batch insert failed', error, { component: 'AddProductsStep', batchIndex: i });

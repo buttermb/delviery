@@ -229,7 +229,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
 
       const results = await Promise.all(
         updates.map(async ({ productId, newCost }) => {
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('products')
             .update({
               cost_price: newCost,
@@ -274,7 +274,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
         is_active: true,
       }));
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .insert(productsToCreate)
         .select();
@@ -344,7 +344,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
               ? 'exact_sku'
               : 'name_match';
 
-            const currentCost = existingProduct.cost_price || 0;
+            const currentCost = (existingProduct as any).cost_price || 0;
             priceChange = item.vendorPrice - currentCost;
 
             // Calculate margin based on selling price
@@ -920,8 +920,8 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                               {formatCurrency(item.catalogItem.vendorPrice)}
                             </TableCell>
                             <TableCell className="text-right text-muted-foreground">
-                              {item.existingProduct?.cost_price !== undefined
-                                ? formatCurrency(item.existingProduct.cost_price || 0)
+                              {(item.existingProduct as any)?.cost_price !== undefined
+                                ? formatCurrency((item.existingProduct as any).cost_price || 0)
                                 : '-'}
                             </TableCell>
                             <TableCell className="text-right">
@@ -974,8 +974,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
-                    onNextPage={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    onPrevPage={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    onPageSizeChange={() => {}}
                     totalItems={filteredAndSortedProducts.length}
                     pageSize={pageSize}
                   />

@@ -116,7 +116,7 @@ const PAYMENT_METHODS = [
 ];
 
 export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTrackingProps) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -138,7 +138,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payments')
         .select(`
           *,
@@ -167,7 +167,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('purchase_orders')
         .select('id, po_number, total, payment_status, paid_amount')
         .eq('account_id', tenant.id)
@@ -225,13 +225,13 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
   const {
     currentPage,
     totalPages,
-    paginatedData,
+    paginatedItems: paginatedData,
     goToPage,
+    previousPage: prevPage,
     nextPage,
-    prevPage,
-  } = usePagination({
-    data: payments || [],
-    pageSize: 10,
+    changePageSize,
+  } = usePagination(payments || [], {
+    defaultPageSize: 10,
   });
 
   // Create payment mutation
@@ -239,7 +239,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     mutationFn: async (values: PaymentFormValues) => {
       if (!tenant?.id) throw new Error('No tenant ID');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payments')
         .insert({
           tenant_id: tenant.id,
@@ -250,7 +250,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
           purchase_order_id: values.purchase_order_id || null,
           reference_number: values.reference_number || null,
           notes: values.notes || null,
-          created_by: user?.id,
+          created_by: admin?.id,
         })
         .select()
         .single();
@@ -619,8 +619,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={goToPage}
-                    onNextPage={nextPage}
-                    onPrevPage={prevPage}
+                    onPageSizeChange={changePageSize}
                     totalItems={payments.length}
                     pageSize={10}
                   />

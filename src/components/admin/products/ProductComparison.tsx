@@ -164,7 +164,7 @@ function useProductRevenueData(productIds: string[]) {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('order_items')
         .select(`
           product_id,

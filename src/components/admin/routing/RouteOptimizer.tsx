@@ -41,7 +41,6 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Mapbox & Map Components
 import 'mapbox-gl/dist/mapbox-gl.css';
-// @ts-expect-error - react-map-gl types
 import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/mapbox';
 
 // ----------------------------------------------------------------------------

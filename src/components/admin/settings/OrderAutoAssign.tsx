@@ -103,7 +103,7 @@ export function OrderAutoAssign() {
     queryFn: async (): Promise<TenantSettings | null> => {
       if (!tenant?.id) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_settings')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -156,7 +156,7 @@ export function OrderAutoAssign() {
       };
 
       // Upsert to handle both create and update
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tenant_settings')
         .upsert(updateData, {
           onConflict: 'tenant_id',

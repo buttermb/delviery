@@ -130,7 +130,7 @@ export function CommunicationHistory({
         body: item.body || '',
         status: (item.status as CommunicationItem['status']) || 'sent',
         sentAt: new Date(item.sent_at || item.created_at || new Date()),
-        createdByName: (item.profiles as { full_name: string | null } | null)?.full_name,
+        createdByName: (item.profiles as any)?.full_name,
       }));
     },
     enabled: !!customerId && !!tenantId,

@@ -13,14 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { ProductSyncStatus } from '@/hooks/useStorefrontProductSync';
-import type { ConnectionStatus } from '@/hooks/useRealTimeSubscription';
-import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
-import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
-import Clock from 'lucide-react/dist/esm/icons/clock';
-import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
-import Wifi from 'lucide-react/dist/esm/icons/wifi';
-import WifiOff from 'lucide-react/dist/esm/icons/wifi-off';
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
+import { CheckCircle, RefreshCw, Clock, AlertCircle, Wifi, WifiOff, Loader2 } from 'lucide-react';
 
 interface ProductSyncStatusIndicatorProps {
   /** Sync status for the product */

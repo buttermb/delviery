@@ -756,7 +756,7 @@ function DocumentCard({ document, onEdit, onDelete }: DocumentCardProps) {
 
       {/* Expiration Warning */}
       {expirationStatus && (
-        <Badge variant={expirationStatus.variant} className="text-xs">
+        <Badge variant={expirationStatus.variant === 'warning' ? 'destructive' : expirationStatus.variant} className="text-xs">
           <AlertTriangle className="mr-1 h-3 w-3" />
           {expirationStatus.label}
         </Badge>

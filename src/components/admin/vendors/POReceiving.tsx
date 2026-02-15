@@ -126,7 +126,7 @@ export function POReceiving({
           product:products(id, name, sku, barcode, stock_quantity)
         `)
         .eq('purchase_order_id', purchaseOrder.id)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true }) as any;
 
       if (error) {
         logger.error('Failed to fetch PO items', error, { component: 'POReceiving' });
@@ -257,7 +257,7 @@ export function POReceiving({
         const productId = item.product_id;
 
         // Update PO item with received quantity
-        const { error: updateItemError } = await supabase
+        const { error: updateItemError } = await (supabase as any)
           .from('purchase_order_items')
           .update({
             quantity_received: receivedQty,
@@ -350,7 +350,7 @@ export function POReceiving({
       }
 
       // Update PO status to received
-      const { error: updatePOError } = await supabase
+      const { error: updatePOError } = await (supabase as any)
         .from('purchase_orders')
         .update({
           status: 'received',

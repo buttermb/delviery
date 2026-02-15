@@ -125,7 +125,7 @@ function LiveMapDemoMobile() {
 export function LiveMapDemo() {
   const { shouldUseStaticFallback } = useMobileOptimized();
   const [drivers, setDrivers] = useState(INITIAL_DRIVERS);
-  const [stats] = useState({ active: 2, delivered: 12, onTime: 98 });
+  const [stats, setStats] = useState({ active: 2, delivered: 12, onTime: 98 });
 
   // Animate driver positions (only on desktop)
   useEffect(() => {

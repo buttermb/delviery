@@ -518,7 +518,7 @@ export function TopNav({
           </NavDropdown>
 
           {/* Communication */}
-          <NavDropdown icon={Mail} label="Comms" shortcut="⌘6">
+          <NavDropdown icon={MessageSquare} label="Comms" shortcut="⌘6">
             <MenuSection title="">
               <MenuItem
                 icon={Send}

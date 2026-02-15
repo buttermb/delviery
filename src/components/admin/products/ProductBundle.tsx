@@ -287,7 +287,7 @@ function useBundleSales(bundleId?: string) {
       if (!tenant?.id || !bundleId) return null;
 
       // Fetch order items where product_id = bundleId
-      const { data: orderItems, error } = await supabase
+      const { data: orderItems, error } = await (supabase as any)
         .from('order_items')
         .select(`
           quantity,
@@ -660,7 +660,7 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
 
       if (editingBundle) {
         // Update existing bundle
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('products')
           .update({
             ...bundleData,
@@ -678,7 +678,7 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
         }
       } else {
         // Create new bundle
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('products')
           .insert(bundleData);
 

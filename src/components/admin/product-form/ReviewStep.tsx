@@ -121,14 +121,14 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
               {formData.weight_kg && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Weight:</span>
-                  <span className="font-medium">{formData.weight_kg} kg</span>
+                  <span className="font-medium">{String(formData.weight_kg)} kg</span>
                 </div>
               )}
               {(formData.length_cm || formData.width_cm || formData.height_cm) && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Dimensions:</span>
                   <span className="font-medium">
-                    {formData.length_cm || "-"} × {formData.width_cm || "-"} × {formData.height_cm || "-"} cm
+                    {String(formData.length_cm || "-")} × {String(formData.width_cm || "-")} × {String(formData.height_cm || "-")} cm
                   </span>
                 </div>
               )}
