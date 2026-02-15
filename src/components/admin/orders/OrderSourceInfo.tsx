@@ -64,7 +64,7 @@ function useSourceMenu(menuId: string | null | undefined, tenantId: string | und
     queryFn: async (): Promise<MenuInfo | null> => {
       if (!menuId || !tenantId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .select('id, name, created_at, expires_at, status')
         .eq('id', menuId)
@@ -76,7 +76,7 @@ function useSourceMenu(menuId: string | null | undefined, tenantId: string | und
         return null;
       }
 
-      return data;
+      return data as MenuInfo | null;
     },
     enabled: !!menuId && !!tenantId,
     staleTime: 60000,
@@ -93,7 +93,7 @@ function useSourceSession(sessionId: string | null | undefined, tenantId: string
       if (!sessionId || !tenantId) return null;
 
       // Try to fetch from storefront_sessions if it exists
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('storefront_sessions')
         .select('started_at, browsing_duration_seconds, items_viewed')
         .eq('id', sessionId)

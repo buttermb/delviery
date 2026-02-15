@@ -523,4 +523,3 @@ export function OrderComms({
 }
 
 export { CommEntryItem };
-export type { OrderCommsProps, CommunicationEntry, CommType };

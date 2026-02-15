@@ -270,7 +270,7 @@ export function AssignDeliveryRunnerDialog({
       );
 
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       queryClient.invalidateQueries({ queryKey: ['available-runners-with-load'] });
       queryClient.invalidateQueries({ queryKey: ['wholesale-deliveries'] });

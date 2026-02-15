@@ -13,6 +13,7 @@ import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import User from "lucide-react/dist/esm/icons/user";
 import Bot from "lucide-react/dist/esm/icons/bot";
 import History from "lucide-react/dist/esm/icons/history";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

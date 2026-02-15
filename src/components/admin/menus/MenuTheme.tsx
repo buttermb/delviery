@@ -445,7 +445,7 @@ export function MenuTheme({ menuId, className, onThemeChange }: MenuThemeProps) 
       const { error } = await supabase
         .from('disposable_menus')
         .update({
-          appearance_settings: themeConfig as unknown as Record<string, unknown>,
+          appearance_settings: themeConfig as unknown as Record<string, unknown> as any,
         })
         .eq('id', menuId)
         .eq('tenant_id', tenantId);

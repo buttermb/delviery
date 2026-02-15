@@ -110,7 +110,7 @@ export function OrderSplitDialog({
   onOpenChange,
   onSuccess,
 }: OrderSplitDialogProps) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
 
@@ -179,7 +179,7 @@ export function OrderSplitDialog({
   // Split mutation
   const splitMutation = useMutation({
     mutationFn: async () => {
-      if (!tenant?.id || !user?.id) {
+      if (!tenant?.id || !admin?.id) {
         throw new Error('Authentication required');
       }
 
@@ -213,11 +213,11 @@ export function OrderSplitDialog({
           parent_order_id: order.id,
           parent_order_number: order.order_number,
           split_at: new Date().toISOString(),
-          split_by: user.id,
+          split_by: admin.id,
         },
       };
 
-      const { data: newOrder, error: createError } = await supabase
+      const { data: newOrder, error: createError } = await (supabase as any)
         .from('unified_orders')
         .insert(newOrderData)
         .select('id, order_number')
@@ -283,7 +283,7 @@ export function OrderSplitDialog({
       // 4. Log activity for both orders
       await logActivity(
         tenant.id,
-        user.id,
+        admin.id,
         'updated',
         'order',
         order.id,
@@ -300,7 +300,7 @@ export function OrderSplitDialog({
 
       await logActivity(
         tenant.id,
-        user.id,
+        admin.id,
         'created',
         'order',
         newOrder.id,

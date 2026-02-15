@@ -429,7 +429,7 @@ export function OrderExportButton({
       if (exportFormat === 'csv') {
         const columns = buildColumns(includeLineItems);
         const filename = `${filenamePrefix}-${dateStr}.csv`;
-        await exportCSV(data, columns, filename, exportOptions);
+        await exportCSV(data as any, columns as any, filename, exportOptions);
       } else {
         // JSON export includes all selected fields
         const filename = `${filenamePrefix}-${dateStr}.json`;

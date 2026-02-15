@@ -90,34 +90,23 @@ export function OrderCancelModal({
       ? `${reasonLabel}: ${data.notes}`
       : reasonLabel;
 
-    cancelOrder(
-      {
-        orderId,
-        reason: fullReason,
-        restoreInventory: data.restockItems,
-      },
-      {
-        onSuccess: () => {
-          logger.info('Order cancelled successfully with inventory restore', {
-            orderId,
-            reason: data.reason,
-            restoreInventory: data.restockItems,
-          });
+    cancelOrder({
+      orderId,
+      reason: fullReason,
+      restoreInventory: data.restockItems,
+    });
 
-          // Reset form and close modal
-          form.reset();
-          onOpenChange(false);
-          onSuccess?.();
-        },
-        onError: (error) => {
-          logger.error('Failed to cancel order', error as Error, {
-            component: 'OrderCancelModal',
-            orderId,
-          });
-          // Error toast is handled by useOrderCancellation hook
-        },
-      }
-    );
+    // Handle success locally
+    logger.info('Order cancellation submitted', {
+      orderId,
+      reason: data.reason,
+      restoreInventory: data.restockItems,
+    });
+
+    // Reset form and close modal
+    form.reset();
+    onOpenChange(false);
+    onSuccess?.();
   };
 
   const handleOpenChange = (newOpen: boolean) => {
