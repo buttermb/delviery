@@ -1,13 +1,13 @@
 /**
  * Mobile Bottom Navigation
- * Sticky bottom nav for mobile users
+ * Sticky bottom nav for mobile users — hides on scroll down, shows on scroll up
  */
 
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { Home, Search, ShoppingCart, User, Heart, Moon, Sun } from 'lucide-react';
+import { Home, Search, ShoppingCart, User, ClipboardList } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface MobileBottomNavProps {
   cartItemCount: number;
@@ -18,13 +18,35 @@ interface MobileBottomNavProps {
 export function MobileBottomNav({ cartItemCount, primaryColor, onCartClick }: MobileBottomNavProps) {
   const { storeSlug } = useParams();
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  const handleScroll = useCallback(() => {
+    const currentY = window.scrollY;
+    if (currentY > lastScrollY.current && currentY > 60) {
+      setHidden(true);
+    } else {
+      setHidden(false);
+    }
+    lastScrollY.current = currentY;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  // Reset visibility on route change
+  useEffect(() => {
+    setHidden(false);
+    lastScrollY.current = 0;
+  }, [location.pathname]);
 
   const navItems = [
     { path: `/shop/${storeSlug}`, icon: Home, label: 'Home', exact: true },
     { path: `/shop/${storeSlug}/products`, icon: Search, label: 'Browse' },
     { path: `/shop/${storeSlug}/cart`, icon: ShoppingCart, label: 'Cart', badge: cartItemCount, onClick: onCartClick },
-    { path: `/shop/${storeSlug}/wishlist`, icon: Heart, label: 'Wishlist' },
+    { path: `/shop/${storeSlug}/orders`, icon: ClipboardList, label: 'Orders' },
     { path: `/shop/${storeSlug}/account`, icon: User, label: 'Account' },
   ];
 
@@ -37,12 +59,15 @@ export function MobileBottomNav({ cartItemCount, primaryColor, onCartClick }: Mo
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t shadow-lg z-50"
+      className={cn(
+        "md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t shadow-lg z-50 transition-transform duration-300",
+        hidden && "translate-y-full"
+      )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Main"
     >
-      <div className="grid grid-cols-6 h-16">
+      <div className="grid grid-cols-5 h-16">
         {navItems.map(({ path, icon: Icon, label, badge, exact, onClick }) => {
           const active = isActive(path, exact);
           const commonClasses = cn(
@@ -100,21 +125,6 @@ export function MobileBottomNav({ cartItemCount, primaryColor, onCartClick }: Mo
             </Link>
           );
         })}
-        <button
-          type="button"
-          onClick={toggleTheme}
-          aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-          className="flex flex-col items-center justify-center gap-1 transition-colors relative min-h-[44px] min-w-[44px] text-muted-foreground hover:text-primary"
-        >
-          <div className="relative">
-            {theme === 'light' ? (
-              <Moon className="w-5 h-5" aria-hidden="true" />
-            ) : (
-              <Sun className="w-5 h-5" aria-hidden="true" />
-            )}
-          </div>
-          <span className="text-[10px] font-medium">{theme === 'light' ? 'Dark' : 'Light'}</span>
-        </button>
       </div>
     </nav>
   );
