@@ -20,42 +20,42 @@ export function QuickActionsMenu() {
       icon: Package,
       label: "New Order",
       description: "Create wholesale order",
-      path: "/admin/new-wholesale-order",
+      path: "/admin/wholesale-orders/new",
       color: "bg-success"
     },
     {
       icon: Users,
       label: "Clients",
       description: "Manage B2B clients",
-      path: "/admin/wholesale-clients",
+      path: "/admin/customer-hub?tab=contacts",
       color: "bg-info"
     },
     {
       icon: DollarSign,
       label: "Financials",
       description: "Cash flow & P&L",
-      path: "/admin/financial-center",
+      path: "/admin/finance-hub",
       color: "bg-primary"
     },
     {
       icon: Truck,
       label: "Fleet",
       description: "Runners & deliveries",
-      path: "/admin/delivery-hub?tab=fleet",
+      path: "/admin/fulfillment-hub?tab=fleet",
       color: "bg-warning"
     },
     {
       icon: BarChart3,
       label: "Inventory",
       description: "Stock management",
-      path: "/admin/wholesale-inventory-manage",
+      path: "/admin/inventory-hub",
       color: "bg-info"
     },
     {
       icon: Settings,
       label: "Setup",
       description: "Initialize data",
-      path: "/admin/wholesale-setup",
+      path: "/admin/settings",
       color: "bg-muted"
     }
   ];
