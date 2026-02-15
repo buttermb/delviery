@@ -76,7 +76,7 @@ export default function ReceivingPage() {
       if (!tenantId) return [];
 
       try {
-        let query = supabase
+        let query = (supabase as any)
           .from('receiving_records')
           .select(`
             *,

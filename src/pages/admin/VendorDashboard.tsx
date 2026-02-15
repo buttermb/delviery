@@ -142,9 +142,9 @@ export default function VendorDashboard() {
       }
 
       // Get active POs (draft, submitted, approved statuses)
-      const { data: activePOs, error: poError } = await supabase
+      const { data: activePOs, error: poError } = await (supabase as any)
         .from('purchase_orders')
-        .select('id, status, total_amount, expected_delivery_date, received_at')
+        .select('id, status, total, expected_delivery_date, received_at')
         .eq('tenant_id', tenantId)
         .in('status', ['draft', 'submitted', 'approved']);
 
@@ -154,9 +154,9 @@ export default function VendorDashboard() {
       }
 
       // Get all POs for payables and delivery rate calculation
-      const { data: allPOs, error: allPoError } = await supabase
+      const { data: allPOs, error: allPoError } = await (supabase as any)
         .from('purchase_orders')
-        .select('id, status, total_amount, expected_delivery_date, received_at')
+        .select('id, status, total, expected_delivery_date, received_at')
         .eq('tenant_id', tenantId);
 
       if (allPoError) {
@@ -167,7 +167,7 @@ export default function VendorDashboard() {
       // Calculate outstanding payables (approved POs not yet received)
       const outstandingPayables = (allPOs || [])
         .filter((po) => po.status === 'approved' || po.status === 'submitted')
-        .reduce((sum, po) => sum + (po.total_amount || 0), 0);
+        .reduce((sum: number, po: any) => sum + (po.total || 0), 0);
 
       // Calculate on-time delivery rate
       const receivedPOs = (allPOs || []).filter((po) => po.status === 'received');
@@ -215,9 +215,9 @@ export default function VendorDashboard() {
       if (!vendors || vendors.length === 0) return [];
 
       // Get PO data for each vendor
-      const { data: purchaseOrders, error: poError } = await supabase
+      const { data: purchaseOrders, error: poError } = await (supabase as any)
         .from('purchase_orders')
-        .select('vendor_id, total_amount, status')
+        .select('vendor_id, total, status')
         .eq('tenant_id', tenantId)
         .in('status', ['approved', 'received']);
 
@@ -227,7 +227,7 @@ export default function VendorDashboard() {
       }
 
       // Get vendor ratings
-      const { data: ratings, error: ratingsError } = await supabase
+      const { data: ratings, error: ratingsError } = await (supabase as any)
         .from('vendor_ratings')
         .select('vendor_id, overall_score')
         .eq('tenant_id', tenantId);
@@ -239,10 +239,10 @@ export default function VendorDashboard() {
 
       // Aggregate data per vendor
       const vendorSpendMap = new Map<string, { totalSpend: number; poCount: number }>();
-      (purchaseOrders || []).forEach((po) => {
+      (purchaseOrders || []).forEach((po: any) => {
         if (po.vendor_id) {
           const existing = vendorSpendMap.get(po.vendor_id) || { totalSpend: 0, poCount: 0 };
-          existing.totalSpend += po.total_amount || 0;
+          existing.totalSpend += po.total || 0;
           existing.poCount += 1;
           vendorSpendMap.set(po.vendor_id, existing);
         }
@@ -250,7 +250,7 @@ export default function VendorDashboard() {
 
       // Calculate average rating per vendor
       const vendorRatingsMap = new Map<string, number[]>();
-      (ratings || []).forEach((r) => {
+      (ratings || []).forEach((r: any) => {
         if (r.vendor_id && r.overall_score !== null) {
           const scores = vendorRatingsMap.get(r.vendor_id) || [];
           scores.push(r.overall_score);
@@ -290,13 +290,13 @@ export default function VendorDashboard() {
     queryFn: async (): Promise<POActivity[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('purchase_orders')
         .select(`
           id,
           po_number,
           status,
-          total_amount,
+          total,
           created_at,
           vendor_id,
           vendors!purchase_orders_vendor_id_fkey (name)
@@ -310,12 +310,12 @@ export default function VendorDashboard() {
         throw error;
       }
 
-      return (data || []).map((po) => ({
+      return (data || []).map((po: any) => ({
         id: po.id,
         poNumber: po.po_number || `PO-${po.id.slice(0, 8)}`,
-        vendorName: (po.vendors as { name: string } | null)?.name || 'Unknown Vendor',
+        vendorName: po.vendors?.name || 'Unknown Vendor',
         status: po.status || 'draft',
-        totalAmount: po.total_amount || 0,
+        totalAmount: po.total || 0,
         createdAt: po.created_at || new Date().toISOString(),
       }));
     },
@@ -328,7 +328,7 @@ export default function VendorDashboard() {
     queryFn: async (): Promise<VendorCategory[]> => {
       if (!tenantId) return [];
 
-      const { data: vendors, error } = await supabase
+      const { data: vendors, error } = await (supabase as any)
         .from('vendors')
         .select('id, category')
         .eq('account_id', tenantId);
@@ -340,7 +340,7 @@ export default function VendorDashboard() {
 
       // Count vendors by category
       const categoryMap = new Map<string, number>();
-      (vendors || []).forEach((v) => {
+      (vendors || []).forEach((v: any) => {
         const category = (v.category as string) || 'Uncategorized';
         categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
       });

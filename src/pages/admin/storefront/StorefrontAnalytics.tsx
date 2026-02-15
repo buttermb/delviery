@@ -53,7 +53,7 @@ export default function StorefrontAnalytics() {
 
   // Fetch summary metrics
   const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: queryKeys.analytics.orders({ storeId: store?.id, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
+    queryKey: queryKeys.analytics.orders(tenant?.id, { storeId: store?.id, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
     queryFn: async (): Promise<OrderMetrics> => {
       if (!store?.id) return { totalOrders: 0, totalRevenue: 0, conversionRate: 0, averageOrderValue: 0 };
 

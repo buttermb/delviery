@@ -53,7 +53,7 @@ export function LocationOverviewWidget() {
                         .eq('status', 'active');
 
                     // Check for low stock
-                    const { count: lowStock } = await supabase
+                    const { count: lowStock } = await (supabase as any)
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)

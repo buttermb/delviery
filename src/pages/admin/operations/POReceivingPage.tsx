@@ -126,12 +126,12 @@ export default function POReceivingPage() {
     queryFn: async () => {
       if (!tenant?.id) return {};
 
-      const { data: vendorData } = await supabase
+      const { data: vendorData } = await (supabase as any)
         .from('vendors')
         .select('id, name')
         .eq('tenant_id', tenant.id);
 
-      const { data: supplierData } = await supabase
+      const { data: supplierData } = await (supabase as any)
         .from('wholesale_suppliers')
         .select('id, supplier_name')
         .eq('tenant_id', tenant.id);

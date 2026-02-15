@@ -275,7 +275,7 @@ export function ProductCatalogPage() {
           logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
-        return (data || []).map((item: RpcProduct) => transformProduct(item));
+        return (data || []).map((item: any) => transformProduct(item as RpcProduct));
       } catch (err) {
         logger.error('Error fetching products', err, { storeId: store.id });
         throw err;

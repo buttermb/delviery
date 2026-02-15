@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 export function CreatePostPage() {
   const navigate = useNavigate();
   const { data: categories } = useQuery({
-    queryKey: queryKeys.forum.categories.lists(),
+    queryKey: ['forum', 'categories'],
     queryFn: () => forumApi.getCategories(),
   });
   const { data: profile } = useForumProfile();

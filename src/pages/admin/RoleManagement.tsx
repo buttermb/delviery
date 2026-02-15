@@ -338,7 +338,7 @@ export function RoleManagement() {
     });
     // Expand categories that have selected permissions
     const categoriesWithSelections = PERMISSION_CATEGORIES.filter((cat) =>
-      cat.permissions.some((p) => role.permissions?.includes(p.key))
+      cat.permissions.some((p) => (role.permissions || []).includes(p.key))
     ).map((cat) => cat.name);
     setExpandedCategories(categoriesWithSelections);
     setIsDialogOpen(true);
@@ -516,7 +516,7 @@ export function RoleManagement() {
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <p className="text-muted-foreground">Failed to load roles. Please try again.</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) })}>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['roles', tenantId] })}>
           Retry
         </Button>
       </div>

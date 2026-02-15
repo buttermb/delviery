@@ -17,7 +17,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LiveDeliveryMap } from '@/components/admin/LiveDeliveryMap';
 import { RouteReplayMap } from '@/components/admin/maps/RouteReplayMap';
-import { useRunnerLocationHistory } from '@/hooks/useRunnerLocationHistory';
+import { useRunnerLocationHistory, LocationPoint } from '@/hooks/useRunnerLocationHistory';
 import { queryKeys } from '@/lib/queryKeys';
 import { calculateETA, ETAResult } from '@/lib/utils/eta-calculation';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';

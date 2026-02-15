@@ -122,7 +122,7 @@ export default function SignUpPage() {
 
   // Phone verification state
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
-  const [_phoneHash, setPhoneHash] = useState<string | null>(null);
+  const [phoneHash, setPhoneHash] = useState<string | null>(null);
   const [pendingFormData, setPendingFormData] = useState<SignupFormData | null>(null);
 
   const form = useForm<SignupFormData>({

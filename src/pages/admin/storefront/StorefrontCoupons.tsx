@@ -278,7 +278,7 @@ export default function StorefrontCoupons() {
             <p className="text-muted-foreground">Please create a store first.</p>
             <Button
               className="mt-4"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
+              onClick={() => window.location.href = `/${tenantSlug}/admin/storefront`}
             >
               Go to Dashboard
             </Button>

@@ -427,7 +427,7 @@ export default function PurchaseOrders() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm">{getVendorName(po.vendor_id)}</span>
+                          <span className="text-sm">{getVendorName(po.vendor_id) as string}</span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">-</span>

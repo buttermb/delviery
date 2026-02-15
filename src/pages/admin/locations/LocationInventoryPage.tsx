@@ -49,7 +49,7 @@ export default function LocationInventoryPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
 
-  const { inventory, summary, isLoading, error, refetch } = useLocationInventory(selectedLocationId);
+  const { data: inventory = [], isLoading, error, refetch } = useLocationInventory(selectedLocationId);
 
   const selectedLocation = selectedLocationId ? getLocationById(selectedLocationId) : null;
 

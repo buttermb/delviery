@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles, Shield, Clock, Coins, ArrowLeft } from "lucide-react";
+import { Check, Loader2, Sparkles, Shield, Clock, Coins, ArrowLeft, Zap } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 import { handleError } from '@/utils/errorHandling/handlers';
