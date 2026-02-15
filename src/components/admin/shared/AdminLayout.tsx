@@ -299,20 +299,22 @@ export function AdminLayout({
           {/* Page Content */}
           <main className="flex-1 overflow-auto">
             <div className={cn('p-4 lg:p-6', contentClassName)}>
-              {/* Page Header */}
-              {!hideHeader && title && (
-                <PageHeader
-                  title={title}
-                  subtitle={subtitle}
-                  breadcrumbs={breadcrumbs}
-                  badge={badge}
-                  actions={actions}
-                  className="mb-6"
-                />
-              )}
+              <div className="max-w-7xl mx-auto w-full">
+                {/* Page Header */}
+                {!hideHeader && title && (
+                  <PageHeader
+                    title={title}
+                    subtitle={subtitle}
+                    breadcrumbs={breadcrumbs}
+                    badge={badge}
+                    actions={actions}
+                    className="mb-6"
+                  />
+                )}
 
-              {/* Children */}
-              {children}
+                {/* Children */}
+                {children}
+              </div>
             </div>
           </main>
         </div>

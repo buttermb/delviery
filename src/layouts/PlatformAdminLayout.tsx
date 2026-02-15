@@ -28,7 +28,9 @@ export default function PlatformAdminLayout() {
                 <div className="pl-64 flex-1 flex flex-col min-h-dvh">
                     <main className="flex-1 overflow-visible">
                         <div className="p-8">
-                            <Outlet />
+                            <div className="max-w-7xl mx-auto w-full">
+                                <Outlet />
+                            </div>
                         </div>
                     </main>
                 </div>

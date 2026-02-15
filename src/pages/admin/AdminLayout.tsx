@@ -296,11 +296,13 @@ const AdminLayout = () => {
                   minHeight: 0,
                 }}
               >
-                <AdminErrorBoundary>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Outlet />
-                  </Suspense>
-                </AdminErrorBoundary>
+                <div className="max-w-7xl mx-auto w-full">
+                  <AdminErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Outlet />
+                    </Suspense>
+                  </AdminErrorBoundary>
+                </div>
               </main>
             </div>
           </div>

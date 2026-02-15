@@ -225,7 +225,9 @@ export function SuperAdminLayout() {
           'px-4 md:px-6'
         )}
       >
-        <Outlet />
+        <div className="max-w-7xl mx-auto w-full">
+          <Outlet />
+        </div>
       </main>
 
       {/* Command Palette */}

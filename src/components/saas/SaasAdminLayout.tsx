@@ -67,7 +67,9 @@ export function SaasAdminLayout() {
 
           {/* Main Content */}
           <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))] pb-20 lg:pb-4 min-h-0">
-            <Outlet />
+            <div className="max-w-7xl mx-auto w-full">
+              <Outlet />
+            </div>
           </main>
         </div>
 
