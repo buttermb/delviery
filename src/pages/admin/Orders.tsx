@@ -36,6 +36,7 @@ import { useTablePreferences } from "@/hooks/useTablePreferences";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
+import { invalidateOnEvent } from "@/lib/invalidation";
 import { useDeliveryETA } from "@/hooks/useDeliveryETA";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
@@ -287,9 +288,14 @@ export default function Orders() {
     },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
+      // Optimistic local update for immediate UI feedback
       queryClient.setQueryData(['orders', tenant?.id, statusFilter], (old: Order[] = []) =>
         old.map(o => o.id === data.id ? { ...o, status: data.status } : o)
       );
+      // Cross-panel invalidation for dashboard, analytics, badges, fulfillment
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, { orderId: data.id });
+      }
     },
     onError: (error) => {
       logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
@@ -412,10 +418,11 @@ export default function Orders() {
       if (error) throw error;
 
       toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
-      // Invalidate related queries for consistency
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      // Cross-panel invalidation for dashboard, analytics, badges, fulfillment, inventory
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id);
+        invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id);
+      }
       setSelectedOrders([]);
     } catch (error) {
       // Rollback on error
@@ -513,7 +520,9 @@ export default function Orders() {
       if (error) throw error;
 
       toast.success(`Order #${order.order_number || order.id.slice(0, 8)} cancelled`);
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, { orderId: order.id });
+      }
       triggerHaptic('medium');
     } catch (error) {
       logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });

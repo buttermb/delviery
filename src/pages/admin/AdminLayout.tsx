@@ -46,6 +46,8 @@ import { InventorySyncIndicator } from '@/components/admin/storefront/InventoryS
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useMenuOrderNotifications } from '@/hooks/useMenuOrderNotifications';
+import { useQueryClient } from '@tanstack/react-query';
+import { initEventBusInvalidationBridge } from '@/lib/eventBusInvalidationBridge';
 /** Closes the mobile sidebar on route change */
 function MobileSidebarCloser() {
   const location = useLocation();
@@ -78,12 +80,19 @@ const AdminLayout = () => {
 
   // Get tenant context for realtime sync
   const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
 
   // Enable real-time cross-panel data synchronization
   useRealtimeSync({
     tenantId: tenant?.id,
     enabled: !!tenant?.id,
   });
+
+  // Bridge eventBus events to query invalidation system
+  useEffect(() => {
+    if (!tenant?.id) return;
+    return initEventBusInvalidationBridge(queryClient, tenant.id);
+  }, [queryClient, tenant?.id]);
 
   // Enable keyboard shortcuts
   const { shortcutsVisible, setShortcutsVisible } = useAdminKeyboardShortcuts();

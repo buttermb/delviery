@@ -103,10 +103,10 @@ export function invalidateOnEvent(
       // Customer detail (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(metadata.customerId),
+          queryKey: queryKeys.customers.detail(tenantId, metadata.customerId),
         });
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.stats(metadata.customerId),
+          queryKey: queryKeys.customers.stats(tenantId, metadata.customerId),
         });
       }
     },
@@ -118,7 +118,7 @@ export function invalidateOnEvent(
 
       if (metadata?.orderId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.orders.detail(metadata.orderId),
+          queryKey: queryKeys.orders.detail(tenantId, metadata.orderId),
         });
       }
     },
@@ -150,7 +150,7 @@ export function invalidateOnEvent(
       // Customer detail (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(metadata.customerId),
+          queryKey: queryKeys.customers.detail(tenantId, metadata.customerId),
         });
       }
     },
@@ -199,10 +199,10 @@ export function invalidateOnEvent(
       // Customer (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(metadata.customerId),
+          queryKey: queryKeys.customers.detail(tenantId, metadata.customerId),
         });
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.stats(metadata.customerId),
+          queryKey: queryKeys.customers.stats(tenantId, metadata.customerId),
         });
       }
 
@@ -249,7 +249,7 @@ export function invalidateOnEvent(
       // Specific product
       if (metadata?.productId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.products.detail(metadata.productId),
+          queryKey: queryKeys.products.detail(tenantId, metadata.productId),
         });
         queryClient.invalidateQueries({
           queryKey: queryKeys.inventory.movements(metadata.productId),
@@ -295,7 +295,7 @@ export function invalidateOnEvent(
 
       if (metadata?.productId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.products.detail(metadata.productId),
+          queryKey: queryKeys.products.detail(tenantId, metadata.productId),
         });
       }
     },
@@ -325,7 +325,7 @@ export function invalidateOnEvent(
 
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(metadata.customerId),
+          queryKey: queryKeys.customers.detail(tenantId, metadata.customerId),
         });
         queryClient.invalidateQueries({
           queryKey: queryKeys.crm.clients.detail(metadata.customerId),
@@ -371,10 +371,10 @@ export function invalidateOnEvent(
       // Customer detail (if provided)
       if (metadata?.customerId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(metadata.customerId),
+          queryKey: queryKeys.customers.detail(tenantId, metadata.customerId),
         });
         queryClient.invalidateQueries({
-          queryKey: queryKeys.payments.byClient(metadata.customerId),
+          queryKey: queryKeys.payments.byClient(tenantId, metadata.customerId),
         });
       }
     },
@@ -423,7 +423,7 @@ export function invalidateOnEvent(
 
       if (metadata?.menuId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.menus.detail(metadata.menuId),
+          queryKey: queryKeys.menus.detail(tenantId, metadata.menuId),
         });
       }
     },
@@ -436,7 +436,7 @@ export function invalidateOnEvent(
 
       if (metadata?.menuId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.menus.detail(metadata.menuId),
+          queryKey: queryKeys.menus.detail(tenantId, metadata.menuId),
         });
       }
     },

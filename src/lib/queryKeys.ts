@@ -68,6 +68,28 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.wholesaleOrders.details(), id] as const,
   },
 
+  // Wholesale Deliveries
+  wholesaleDeliveries: {
+    all: ['wholesale-deliveries'] as const,
+    lists: () => [...queryKeys.wholesaleDeliveries.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.wholesaleDeliveries.lists(), filters] as const,
+    details: () => [...queryKeys.wholesaleDeliveries.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.wholesaleDeliveries.details(), id] as const,
+  },
+
+  // Wholesale Payments
+  wholesalePayments: {
+    all: ['wholesale-payments'] as const,
+    lists: () => [...queryKeys.wholesalePayments.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.wholesalePayments.lists(), filters] as const,
+    details: () => [...queryKeys.wholesalePayments.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.wholesalePayments.details(), id] as const,
+    byClient: (clientId: string) =>
+      [...queryKeys.wholesalePayments.all, 'client', clientId] as const,
+  },
+
   // Wholesale Clients
   wholesaleClients: {
     all: ['wholesale-clients'] as const,
@@ -1081,6 +1103,40 @@ export const queryKeys = {
       [...queryKeys.abandonedCarts.all, 'stats', tenantId] as const,
     abandonmentRate: (tenantId?: string, menuId?: string) =>
       [...queryKeys.abandonedCarts.all, 'abandonment-rate', tenantId, menuId] as const,
+  },
+
+  // Live/Pending Orders (used across dashboard, badges, fulfillment)
+  liveOrders: {
+    all: ['live-orders'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.liveOrders.all, tenantId] as const,
+  },
+
+  pendingOrders: {
+    all: ['pending-orders'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.pendingOrders.all, tenantId] as const,
+  },
+
+  // Admin Badge Counts
+  badgeCounts: {
+    all: ['admin-badge-counts'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.badgeCounts.all, tenantId] as const,
+  },
+
+  // Fulfillment Queue
+  fulfillmentQueue: {
+    all: ['fulfillment-queue'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.fulfillmentQueue.all, tenantId] as const,
+  },
+
+  // Dashboard Stats (standalone)
+  dashboardStats: {
+    all: ['dashboard-stats'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.dashboardStats.all, tenantId] as const,
   },
 
   // Delivery Ratings
