@@ -23,10 +23,12 @@ import {
     UserCog,
     ScrollText,
     Shield,
+    ClipboardCheck,
     Calendar,
     Headphones,
     MapPin,
     Truck,
+    Mail,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -59,7 +61,7 @@ const tabs = [
     // People Management
     { id: 'team', label: 'Team', icon: Users, group: 'People' },
     { id: 'roles', label: 'Roles', icon: UserCog, group: 'People' },
-    { id: 'invites', label: 'Invites', icon: Users, group: 'People' },
+    { id: 'invites', label: 'Invites', icon: Mail, group: 'People' },
     // Supply Chain
     { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
     { id: 'purchase-orders', label: 'POs', icon: FileText, group: 'Supply' },
@@ -67,7 +69,7 @@ const tabs = [
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
-    { id: 'quality', label: 'Quality Control', icon: Shield, group: 'Compliance' },
+    { id: 'quality', label: 'Quality Control', icon: ClipboardCheck, group: 'Compliance' },
     { id: 'activity', label: 'Logs', icon: ScrollText, group: 'Compliance' },
     // Facilities
     { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },
