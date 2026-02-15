@@ -22,7 +22,7 @@ import {
     FileText,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
+import { Fragment, lazy, Suspense, useMemo, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
@@ -208,15 +208,15 @@ export default function OrdersHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
                                             <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

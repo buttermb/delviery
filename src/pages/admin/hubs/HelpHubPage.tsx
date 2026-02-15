@@ -23,7 +23,7 @@ import {
     Lightbulb,
     ExternalLink,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -206,15 +206,15 @@ export default function HelpHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
                                             <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>
