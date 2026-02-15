@@ -444,6 +444,24 @@ body.keyboard-open [data-radix-dialog-content] {
     --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Storefront Brand Colors — NYM Design Teal */
+    --shop-primary: 184 78% 17%;
+    /* #015358 - Dark Teal */
+    --shop-accent: 174 87% 42%;
+    /* #0EC7BA - Bright Teal */
+    --shop-accent-hover: 174 87% 37%;
+    /* #0AB0A5 - Teal hover */
+    --shop-bg: 200 20% 97%;
+    /* #F5F7F8 - Light off-white */
+
+    /* SaaS Brand Colors — Warm Forest Green */
+    --saas-primary: 150 48% 15%;
+    /* #1B4332 - Forest Green */
+    --saas-text: 214 20% 23%;
+    /* #2D3748 - Warm Gray */
+    --saas-bg: 30 30% 96%;
+    /* #F8F5F0 - Warm Linen */
+
     /* Marketing Site Colors - Flowhub Bespoke Style */
     --marketing-primary: 254 70% 28%;
     /* #2E1679 - Deep Indigo */
@@ -684,6 +702,15 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Dark input */
     --ring: 160 84% 39%;
     /* emerald-500 */
+
+    /* Storefront Brand Colors — Dark Mode */
+    --shop-primary: 174 87% 42%;
+    /* Swap: accent becomes primary in dark */
+    --shop-accent: 184 78% 30%;
+    /* Lighter teal */
+    --shop-accent-hover: 184 78% 25%;
+    --shop-bg: 222 47% 11%;
+    /* Dark background */
 
     /* Marketing Site Colors - Dark Theme (Forced Light Mode for consistency) */
     --marketing-primary: 254 70% 28%;
@@ -2227,7 +2254,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Gradient text for headlines */
   .text-gradient-blue {
-    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, theme(colors.blue.500), theme(colors.indigo.500), theme(colors.violet.500));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -2366,7 +2393,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Card styling for print */
   [data-slot="card"] {
-    border: 1px solid #d1d5db !important;
+    border: 1px solid theme(colors.gray.300) !important;
     box-shadow: none !important;
     break-inside: avoid;
     page-break-inside: avoid;
@@ -2417,7 +2444,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   .invoice-print-document [data-slot="card-header"] {
     background: white !important;
-    border-bottom: 2px solid #1f2937 !important;
+    border-bottom: 2px solid theme(colors.gray.800) !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
@@ -2433,25 +2460,25 @@ body.keyboard-open [data-radix-dialog-content] {
   }
 
   .invoice-print-document th {
-    background-color: #f3f4f6 !important;
-    border-bottom: 2px solid #d1d5db !important;
+    background-color: theme(colors.gray.100) !important;
+    border-bottom: 2px solid theme(colors.gray.300) !important;
     padding: 8px 12px !important;
     font-weight: 600 !important;
-    color: #111827 !important;
+    color: theme(colors.gray.900) !important;
   }
 
   .invoice-print-document td {
-    border-bottom: 1px solid #e5e7eb !important;
+    border-bottom: 1px solid theme(colors.gray.200) !important;
     padding: 8px 12px !important;
-    color: #374151 !important;
+    color: theme(colors.gray.700) !important;
   }
 
   /* Totals section prints clearly */
   .invoice-print-document .text-muted-foreground {
-    color: #4b5563 !important;
+    color: theme(colors.gray.600) !important;
   }
 
   .invoice-print-document .font-bold {
-    color: #111827 !important;
+    color: theme(colors.gray.900) !important;
   }
 }

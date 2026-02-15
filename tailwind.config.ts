@@ -90,6 +90,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        shop: {
+          primary: "hsl(var(--shop-primary))",
+          accent: "hsl(var(--shop-accent))",
+          "accent-hover": "hsl(var(--shop-accent-hover))",
+          bg: "hsl(var(--shop-bg))",
+        },
+        saas: {
+          primary: "hsl(var(--saas-primary))",
+          text: "hsl(var(--saas-text))",
+          bg: "hsl(var(--saas-bg))",
+        },
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',

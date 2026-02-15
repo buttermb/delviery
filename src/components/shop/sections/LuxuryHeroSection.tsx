@@ -27,12 +27,12 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
   const heroRef = useRef<HTMLDivElement>(null);
   const { storeSlug } = useParams();
 
-  const accentColor = styles?.accent_color || '#0EC7BA';
+  const accentColor = styles?.accent_color || 'hsl(174 87% 42%)';
 
   return (
     <section
       ref={heroRef}
-      className="relative min-h-[60vh] flex items-center justify-center overflow-hidden bg-[#015358]"
+      className="relative min-h-[60vh] flex items-center justify-center overflow-hidden bg-shop-primary"
     >
       {/* Animated Mesh Gradient Background */}
       <div className="absolute inset-0 overflow-hidden">
@@ -89,7 +89,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
             transition={{ delay: 0.2 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mx-auto"
           >
-            <span className="flex h-2 w-2 rounded-full bg-[#0EC7BA] animate-pulse"></span>
+            <span className="flex h-2 w-2 rounded-full bg-shop-accent animate-pulse"></span>
             <span className="text-white/90 text-xs font-medium tracking-wide uppercase">Now Delivering</span>
           </motion.div>
 
@@ -100,7 +100,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
             )}
             {content.heading_line_2 && (
               <span
-                className="block text-transparent bg-clip-text bg-gradient-to-r from-[#0EC7BA] to-white"
+                className="block text-transparent bg-clip-text bg-gradient-to-r from-shop-accent to-white"
               >
                 {content.heading_line_2}
               </span>
@@ -108,7 +108,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
             {!content.heading_line_1 && !content.heading_line_2 && (
               <>
                 <span className="block">Premium</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#0EC7BA] to-white">Cannabis</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-shop-accent to-white">Cannabis</span>
               </>
             )}
           </h1>
@@ -138,8 +138,8 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
                   size="lg"
                   className="group relative min-w-[200px] h-14 text-lg font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-[0_0_40px_-10px_rgba(14,199,186,0.5)] overflow-hidden"
                   style={{
-                    backgroundColor: '#0EC7BA',
-                    color: '#015358',
+                    backgroundColor: 'hsl(var(--shop-accent))',
+                    color: 'hsl(var(--shop-primary))',
                   }}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -173,7 +173,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md">
-                  <svg className="w-5 h-5 text-[#0EC7BA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-shop-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -185,7 +185,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md">
-                  <svg className="w-5 h-5 text-[#0EC7BA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-shop-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>

@@ -224,7 +224,7 @@ export function OrdersHubPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-dvh bg-[#F5F7F8]">
+    <div className="container mx-auto px-4 py-8 min-h-dvh bg-shop-bg">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">

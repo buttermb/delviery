@@ -301,17 +301,17 @@ export function LoginPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen flex w-full bg-[#F8F5F0]">
+      <div className="min-h-screen flex w-full bg-saas-bg">
 
         {/* LEFT SIDE - FORM */}
-        <div className="w-full lg:w-[40%] flex flex-col relative z-10 bg-white/50 lg:bg-[#F8F5F0] backdrop-blur-sm lg:backdrop-blur-none transition-all duration-500">
+        <div className="w-full lg:w-[40%] flex flex-col relative z-10 bg-white/50 lg:bg-saas-bg backdrop-blur-sm lg:backdrop-blur-none transition-all duration-500">
 
           {/* Header */}
           <div className="p-6 md:p-8 flex items-center justify-between">
             <div className="cursor-pointer" onClick={() => navigate('/')}>
               <FloraIQLogo size="md" />
             </div>
-            <ThemeToggle className="hover:bg-[#1B4332]/10 text-[#1B4332]" />
+            <ThemeToggle className="hover:bg-saas-primary/10 text-saas-primary" />
           </div>
 
           {/* Form Content */}
@@ -321,8 +321,8 @@ export function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl font-medium text-[#1B4332] mb-3">Welcome back</h1>
-              <p className="text-[#2D3748]/80 text-lg mb-8 font-light">
+              <h1 className="text-4xl md:text-5xl font-medium text-saas-primary mb-3">Welcome back</h1>
+              <p className="text-saas-text/80 text-lg mb-8 font-light">
                 Please enter your details to sign in.
               </p>
 
@@ -363,13 +363,13 @@ export function LoginPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-[#2D3748] font-medium text-sm ml-1">Email Address</FormLabel>
+                        <FormLabel className="text-saas-text font-medium text-sm ml-1">Email Address</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <Input
                               {...field}
                               type="email"
-                              className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                              className="h-12 bg-white border-slate-200 focus:border-saas-primary focus:ring-1 focus:ring-saas-primary/20 rounded-xl pl-4 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="you@company.com"
                               autoComplete="email"
                             />
@@ -386,20 +386,20 @@ export function LoginPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-[#2D3748] font-medium text-sm ml-1">Password</FormLabel>
+                        <FormLabel className="text-saas-text font-medium text-sm ml-1">Password</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <Input
                               {...field}
                               type={showPassword ? "text" : "password"}
-                              className="h-12 bg-white border-slate-200 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                              className="h-12 bg-white border-slate-200 focus:border-saas-primary focus:ring-1 focus:ring-saas-primary/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="••••••••"
                               autoComplete="current-password"
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-3.5 text-slate-400 hover:text-[#1B4332] transition-colors"
+                              className="absolute right-3 top-3.5 text-slate-400 hover:text-saas-primary transition-colors"
                             >
                               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                             </button>

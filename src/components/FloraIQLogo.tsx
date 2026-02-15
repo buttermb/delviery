@@ -22,7 +22,7 @@ const FloraIQLogo = ({
   const sizes = sizeMap[size];
 
   return (
-    <div className={cn('flex items-center font-sans font-bold tracking-tight text-[#0f3a22]', !iconOnly && sizes.gap, sizes.container, className)}>
+    <div className={cn('flex items-center font-sans font-bold tracking-tight text-green-950', !iconOnly && sizes.gap, sizes.container, className)}>
       <FlowerIcon className={sizes.icon} />
       {!iconOnly && <span>FloraIQ</span>}
     </div>

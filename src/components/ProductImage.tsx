@@ -23,7 +23,7 @@ export default function ProductImage({ src, alt, className = '' }: ProductImageP
       {/* Loading spinner */}
       {isLoading && hasImage && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-10">
-          <div className="w-12 h-12 border-2 border-[#0EC7BA]/30 border-t-[#0EC7BA] rounded-full animate-spin" />
+          <div className="w-12 h-12 border-2 border-shop-accent/30 border-t-shop-accent rounded-full animate-spin" />
         </div>
       )}
 

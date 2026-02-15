@@ -121,7 +121,7 @@ export function StorefrontProductCard({
                         <button
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
                             aria-label="Quick view product"
-                            className="w-10 h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-[#015358] border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
+                            className="w-10 h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ color: isHovered ? accentColor : undefined }}
                         >
                             <Eye className="w-5 h-5" aria-hidden="true" />

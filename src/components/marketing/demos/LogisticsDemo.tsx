@@ -141,7 +141,7 @@ export function LogisticsDemo() {
             {/* 1. LIGHT MODE 3D MAP BACKGROUND */}
             <div className="absolute inset-0 perspective-[1000px] overflow-hidden bg-slate-50">
                 {/* Tilted Map Plane */}
-                <div className="w-[140%] h-[140%] absolute top-[-20%] left-[-20%] bg-[#f1f5f9] transform rotate-x-60 scale-100"
+                <div className="w-[140%] h-[140%] absolute top-[-20%] left-[-20%] bg-slate-100 transform rotate-x-60 scale-100"
                     style={{ transform: 'rotateX(35deg) rotateZ(-10deg) translateY(-50px)' }}>
 
                     {/* Environment: Parks & Zones */}
