@@ -10,6 +10,7 @@ import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { Search, Keyboard } from "lucide-react";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
+import { BreadcrumbProvider } from "@/contexts/BreadcrumbContext";
 import { InstallPWA } from "@/components/InstallPWA";
 import { Suspense, useMemo } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
@@ -187,6 +188,7 @@ const AdminLayout = () => {
                 )}
               </LiveBadgeProvider>
             </SidebarErrorBoundary>
+            <BreadcrumbProvider>
             <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-hidden">
               <AccountSwitcher />
               <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
@@ -305,6 +307,7 @@ const AdminLayout = () => {
                 </div>
               </main>
             </div>
+            </BreadcrumbProvider>
           </div>
         </SidebarProvider>
 

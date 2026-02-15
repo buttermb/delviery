@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -279,6 +280,9 @@ export function OrderDetailsPage() {
     },
     enabled: !!tenant?.id && !!orderId,
   });
+
+  // Set breadcrumb label to show order number
+  useBreadcrumbLabel(order ? `Order #${order.order_number}` : null);
 
   // Update order status mutation
   const updateStatusMutation = useMutation({

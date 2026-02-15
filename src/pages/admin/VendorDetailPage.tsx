@@ -40,6 +40,7 @@ import { VendorDocumentManager } from '@/components/admin/vendors/VendorDocument
 import { VendorQuickProductLink } from '@/components/admin/vendors/VendorQuickProductLink';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { SEOHead } from '@/components/SEOHead';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 type Vendor = Database['public']['Tables']['vendors']['Row'];
 
@@ -70,6 +71,9 @@ export default function VendorDetailPage() {
     },
     enabled: !!tenant?.id && !!vendorId,
   });
+
+  // Set breadcrumb label to show vendor name
+  useBreadcrumbLabel(vendor?.name ?? null);
 
   const handleBack = () => {
     navigateToAdmin('vendors');

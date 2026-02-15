@@ -44,6 +44,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
+import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 
 export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
@@ -58,6 +59,9 @@ export default function InvoiceDetailPage() {
     const voidInvoiceMutation = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
+
+    // Set breadcrumb label to show invoice number
+    useBreadcrumbLabel(invoice ? `Invoice #${invoice.invoice_number}` : null);
 
     if (isLoading) {
         return <div className="p-8 text-center">Loading invoice details...</div>;

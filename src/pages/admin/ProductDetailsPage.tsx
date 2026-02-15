@@ -23,6 +23,7 @@ import { ProductStorefrontPreview } from '@/components/admin/products/ProductSto
 import { ProductMarginAlert } from '@/components/admin/products/ProductMarginAlert';
 import { ProductSyncStatusIndicator } from '@/components/admin/products/ProductSyncStatusIndicator';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useProductArchive } from '@/hooks/useProductArchive';
 import { useStorefrontProductSync } from '@/hooks/useStorefrontProductSync';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
@@ -60,6 +61,9 @@ export default function ProductDetailsPage() {
     const { data: product, isLoading, error } = useProduct({ productId });
     const { data: inventoryHistory = [], isLoading: historyLoading } = useProductInventoryHistory(productId);
     const { data: frontedInventory = [], isLoading: frontedLoading } = useProductFrontedInventory(productId);
+
+    // Set breadcrumb label to show product name
+    useBreadcrumbLabel(product ? product.name : null);
 
     // Product sync status for real-time storefront updates
     const {

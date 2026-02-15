@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { formatCurrency } from '@/lib/formatters';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 export default function ClientDetail() {
   const { id } = useParams<{ id: string; tenantSlug: string }>();
@@ -101,6 +102,9 @@ export default function ClientDetail() {
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
   const { data: _payments = [] } = useClientPayments(id || "");
+
+  // Set breadcrumb label to show client business name
+  useBreadcrumbLabel(client?.business_name ?? null);
 
   if (clientLoading || ordersLoading) {
     return (

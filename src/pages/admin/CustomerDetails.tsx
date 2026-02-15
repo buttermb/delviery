@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
@@ -74,6 +75,11 @@ export default function CustomerDetails() {
 
   // Get tenant_id from tenant context or customer data
   const tenantId = tenant?.id || customer?.tenant_id;
+
+  // Set breadcrumb label to show customer name
+  useBreadcrumbLabel(
+    customer ? `${customer.first_name} ${customer.last_name}` : null
+  );
 
   // Use the customer credit hook for credit balance management
   const {

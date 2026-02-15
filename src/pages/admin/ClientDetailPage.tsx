@@ -28,6 +28,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
@@ -38,6 +39,9 @@ export default function ClientDetailPage() {
 
     const relatedInvoices = useRelatedClientInvoices(clientId);
     const relatedPreOrders = useRelatedClientPreOrders(clientId);
+
+    // Set breadcrumb label to show client name
+    useBreadcrumbLabel(client?.name ?? null);
 
     if (isLoading) {
         return (
