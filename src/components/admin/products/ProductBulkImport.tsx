@@ -407,7 +407,7 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
             }));
 
           if (inventoryEntries.length > 0) {
-            const { error: inventoryError } = await supabase
+            const { error: inventoryError } = await (supabase as any)
               .from("inventory_history")
               .insert(inventoryEntries);
 

@@ -18,7 +18,7 @@ import {
   Truck, Store, Wallet, Banknote, Shield, Clock,
   CheckCircle, Bitcoin, Zap, Coins, Copy,
   Navigation, Tag, ChevronDown, Edit2, Calendar, Share2, MessageCircle,
-  Locate, Building
+  Locate, Building, KeyRound as Key
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showErrorToast } from '@/utils/toastHelpers';

@@ -128,7 +128,7 @@ function useAffectedMenusAndStores(
       } else if (menuProducts) {
         for (const mp of menuProducts) {
           const menu = mp.disposable_menus as unknown as DisposableMenu;
-          if (menu?.tenant_id === tenantId && menu.status !== 'burned') {
+          if (menu?.tenant_id === tenantId && !['burned', 'hard_burned', 'soft_burned'].includes(menu.status ?? '')) {
             affectedItems.push({
               id: menu.id,
               menuProductId: mp.id,

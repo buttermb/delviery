@@ -7,6 +7,7 @@ import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import Repeat from "lucide-react/dist/esm/icons/repeat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -402,7 +402,7 @@ export function ProductExport({
     return productsToExport.map(product => {
       const row: ExportRow = {};
       for (const fieldId of selectedFields) {
-        const value = (product as Record<string, unknown>)[fieldId];
+        const value = (product as unknown as Record<string, unknown>)[fieldId];
         if (value === undefined || value === null) {
           row[fieldId] = null;
         } else if (typeof value === 'object') {

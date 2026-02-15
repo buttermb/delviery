@@ -143,7 +143,7 @@ export function InventoryAlerts() {
     queryFn: async (): Promise<TenantSettings | null> => {
       if (!tenant?.id) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_settings')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -168,7 +168,7 @@ export function InventoryAlerts() {
     queryFn: async (): Promise<ProductOverride[]> => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, sku, low_stock_alert, critical_stock_alert, stock_quantity, available_quantity')
         .eq('tenant_id', tenant.id)
@@ -263,7 +263,7 @@ export function InventoryAlerts() {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tenant_settings')
         .upsert(updateData, {
           onConflict: 'tenant_id',

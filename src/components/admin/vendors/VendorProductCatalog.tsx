@@ -126,13 +126,13 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
   const {
     currentPage,
     totalPages,
-    paginatedData,
+    paginatedItems: paginatedData,
     goToPage,
+    previousPage: prevPage,
     nextPage,
-    prevPage,
-  } = usePagination({
-    data: filteredProducts,
-    pageSize: 10,
+    changePageSize,
+  } = usePagination(filteredProducts, {
+    defaultPageSize: 10,
   });
 
   // Calculate summary stats
@@ -397,8 +397,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={goToPage}
-                    onNextPage={nextPage}
-                    onPrevPage={prevPage}
+                    onPageSizeChange={changePageSize}
                     totalItems={filteredProducts.length}
                     pageSize={10}
                   />

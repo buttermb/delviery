@@ -75,7 +75,7 @@ async function fetchActivityLogs(
   tenantId: string,
   filters: ActivityLogFilters
 ): Promise<ActivityLogEntry[]> {
-  let query = supabase
+  let query = (supabase as any)
     .from('activity_log')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -160,7 +160,7 @@ export function useActivityLog(options: UseActivityLogOptions = {}): UseActivity
       return queryKeys.activity.byUser(tenantId, filters.userId);
     }
 
-    return queryKeys.activity.list(tenantId, filters);
+    return queryKeys.activity.list(tenantId, filters as Record<string, unknown>);
   }, [tenantId, filters]);
 
   // Query for fetching activity logs

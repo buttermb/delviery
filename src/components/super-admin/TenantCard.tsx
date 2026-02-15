@@ -40,7 +40,7 @@ export const TenantCard = memo(function TenantCard({
   onLoginAs,
   onViewBilling 
 }: TenantCardProps) {
-  // @ts-expect-error - tenant type mismatch will resolve when types regenerate
+
   const health = calculateHealthScore(tenant as any);
   const healthScore = health.score;
   const healthColor = getHealthTextColor(healthScore);

@@ -121,13 +121,13 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
   const {
     currentPage,
     totalPages,
-    paginatedData,
+    paginatedItems: paginatedData,
     goToPage,
+    previousPage: prevPage,
     nextPage,
-    prevPage,
-  } = usePagination({
-    data: filteredOrders,
-    pageSize: 10,
+    changePageSize,
+  } = usePagination(filteredOrders, {
+    defaultPageSize: 10,
   });
 
   // Calculate summary stats
@@ -430,8 +430,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={goToPage}
-                    onNextPage={nextPage}
-                    onPrevPage={prevPage}
+                    onPageSizeChange={changePageSize}
                     totalItems={filteredOrders.length}
                     pageSize={10}
                   />

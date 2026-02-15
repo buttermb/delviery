@@ -77,7 +77,7 @@ export function useAbandonedCarts({
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('abandoned_carts')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -108,7 +108,7 @@ export function useAbandonedCarts({
       if (!tenantId) return null;
 
       // Get total abandoned carts
-      const { count: totalAbandoned, error: countError } = await supabase
+      const { count: totalAbandoned, error: countError } = await (supabase as any)
         .from('abandoned_carts')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId);
@@ -119,7 +119,7 @@ export function useAbandonedCarts({
       }
 
       // Get recovered count
-      const { count: recoveredCount, error: recoveredError } = await supabase
+      const { count: recoveredCount, error: recoveredError } = await (supabase as any)
         .from('abandoned_carts')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -131,7 +131,7 @@ export function useAbandonedCarts({
       }
 
       // Get total value of abandoned carts
-      const { data: valueData, error: valueError } = await supabase
+      const { data: valueData, error: valueError } = await (supabase as any)
         .from('abandoned_carts')
         .select('total_value, menu_id')
         .eq('tenant_id', tenantId)
@@ -180,7 +180,7 @@ export function useAbandonedCarts({
     }) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('abandoned_carts')
         .update({
           recovered: true,
@@ -215,7 +215,7 @@ export function useAbandonedCarts({
       if (!tenantId) throw new Error('No tenant context');
 
       // Check if there's already an abandoned cart for this session
-      const { data: existing } = await supabase
+      const { data: existing } = await (supabase as any)
         .from('abandoned_carts')
         .select('id')
         .eq('tenant_id', tenantId)
@@ -225,7 +225,7 @@ export function useAbandonedCarts({
 
       if (existing) {
         // Update existing abandoned cart
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('abandoned_carts')
           .update({
             cart_items: cartData.cart_items,
@@ -241,7 +241,7 @@ export function useAbandonedCarts({
         if (error) throw error;
       } else {
         // Create new abandoned cart
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('abandoned_carts')
           .insert([{
             ...cartData,

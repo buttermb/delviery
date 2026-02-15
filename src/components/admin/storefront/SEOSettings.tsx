@@ -199,7 +199,7 @@ export function SEOSettings() {
     queryFn: async (): Promise<TenantSEOSettings | null> => {
       if (!tenant?.id) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_settings')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -224,7 +224,7 @@ export function SEOSettings() {
     queryFn: async (): Promise<ProductSEOOverride[]> => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, slug, seo_title, seo_description, image_url')
         .eq('tenant_id', tenant.id)
@@ -343,7 +343,7 @@ export function SEOSettings() {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase.from('tenant_settings').upsert(updateData, {
+      const { error } = await (supabase as any).from('tenant_settings').upsert(updateData, {
         onConflict: 'tenant_id',
       });
 
@@ -383,7 +383,7 @@ export function SEOSettings() {
     }) => {
       if (!tenant?.id) throw new Error('No tenant ID');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('products')
         .update({
           seo_title: values.seo_title || null,
@@ -455,7 +455,7 @@ export function SEOSettings() {
       sitemapEntries.push(`</urlset>`);
 
       // Update last generated timestamp
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tenant_settings')
         .upsert(
           {
@@ -503,7 +503,7 @@ export function SEOSettings() {
       if (!tenant?.id) return;
 
       try {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('products')
           .update({
             seo_title: null,
