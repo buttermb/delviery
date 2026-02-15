@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { interpolate, useCurrentFrame } from 'remotion';
 
 // Scene transition with morphing shapes

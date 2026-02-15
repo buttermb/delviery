@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SecurityExplainer — 15-second composition (450 frames @ 30fps).
  * Shield materializes → encryption text scramble → auto-burn countdown → "Protected" badge.

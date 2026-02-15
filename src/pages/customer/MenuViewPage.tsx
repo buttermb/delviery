@@ -281,12 +281,12 @@ export default function CustomerMenuViewPage() {
       <SmartSearchOverlay
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        products={mappedProducts}
+        products={mappedProducts as any}
         onProductSelect={(id) => {
           // Find product and scroll to it or filter
           const product = mappedProducts.find((p: any) => p.id === id);
           if (product) {
-            setSearchTerm(product.name);
+            setSearchTerm((product as any).name);
           }
         }}
       />

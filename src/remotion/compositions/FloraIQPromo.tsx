@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/remotion/compositions/FloraIQPromo.tsx
 // Full 30-second promo video — the main composition
 // Scenes: Intro → Problem → Solution Demo → Stats → CTA

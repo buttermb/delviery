@@ -42,15 +42,15 @@ import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 import { queryKeys } from '@/lib/queryKeys';
 
 // Permission categories for UI organization
-const PERMISSION_CATEGORIES = {
-  orders: ['orders.view', 'orders.create', 'orders.edit', 'orders.delete'],
-  products: ['products.view', 'products.create', 'products.edit', 'products.delete'],
-  customers: ['customers.view', 'customers.create', 'customers.edit', 'customers.delete'],
-  inventory: ['inventory.view', 'inventory.adjust'],
-  reports: ['reports.view', 'reports.export'],
-  settings: ['settings.view', 'settings.edit'],
-  team: ['team.view', 'team.invite', 'team.manage'],
-};
+const PERMISSION_CATEGORIES = [
+  { name: 'Orders', permissions: [{ key: 'orders.view', label: 'View Orders' }, { key: 'orders.create', label: 'Create Orders' }, { key: 'orders.edit', label: 'Edit Orders' }, { key: 'orders.delete', label: 'Delete Orders' }] },
+  { name: 'Products', permissions: [{ key: 'products.view', label: 'View Products' }, { key: 'products.create', label: 'Create Products' }, { key: 'products.edit', label: 'Edit Products' }, { key: 'products.delete', label: 'Delete Products' }] },
+  { name: 'Customers', permissions: [{ key: 'customers.view', label: 'View Customers' }, { key: 'customers.create', label: 'Create Customers' }, { key: 'customers.edit', label: 'Edit Customers' }, { key: 'customers.delete', label: 'Delete Customers' }] },
+  { name: 'Inventory', permissions: [{ key: 'inventory.view', label: 'View Inventory' }, { key: 'inventory.adjust', label: 'Adjust Inventory' }] },
+  { name: 'Reports', permissions: [{ key: 'reports.view', label: 'View Reports' }, { key: 'reports.export', label: 'Export Reports' }] },
+  { name: 'Settings', permissions: [{ key: 'settings.view', label: 'View Settings' }, { key: 'settings.edit', label: 'Edit Settings' }] },
+  { name: 'Team', permissions: [{ key: 'team.view', label: 'View Team' }, { key: 'team.invite', label: 'Invite Members' }, { key: 'team.manage', label: 'Manage Team' }] },
+];
 
 // Get human-readable permission label
 function getPermissionLabel(permission: string): string {
@@ -641,7 +641,7 @@ export function RoleManagement() {
                             <div className="flex flex-col items-start gap-0.5">
                               <span className="font-medium text-sm">{category.name}</span>
                               <span className="text-xs text-muted-foreground font-normal">
-                                {category.description}
+                                {category.permissions.length} permissions
                               </span>
                             </div>
                             <Badge variant="secondary" className="ml-auto mr-2 text-xs">
@@ -668,7 +668,7 @@ export function RoleManagement() {
                                       {permission.label}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                      {permission.description}
+                                      {permission.key}
                                     </span>
                                   </div>
                                 </label>

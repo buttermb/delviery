@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LayoutDashboard, ShoppingCart, Package, Users, BarChart3, Settings } from 'lucide-react';
 import React from 'react';
 

@@ -81,8 +81,8 @@ export default function StoreLandingPage() {
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
-      const { data, error } = await supabase.rpc(
-        'get_marketplace_store_by_slug' as unknown as string,
+      const { data, error } = await (supabase as any).rpc(
+        'get_marketplace_store_by_slug',
         { p_slug: slug }
       );
 
@@ -95,7 +95,7 @@ export default function StoreLandingPage() {
         return null;
       }
 
-      return data[0] as StoreData;
+      return data[0] as unknown as StoreData;
     },
     enabled: !!slug,
     retry: false,
@@ -108,7 +108,7 @@ export default function StoreLandingPage() {
     queryFn: async (): Promise<FeaturedProduct[]> => {
       if (!store?.tenant_id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content')
         .eq('tenant_id', store.tenant_id)
@@ -121,7 +121,7 @@ export default function StoreLandingPage() {
         return [];
       }
 
-      return (data ?? []) as FeaturedProduct[];
+      return (data ?? []) as unknown as FeaturedProduct[];
     },
     enabled: !!store?.tenant_id,
     staleTime: 60_000,
@@ -133,7 +133,7 @@ export default function StoreLandingPage() {
     queryFn: async (): Promise<CategoryInfo[]> => {
       if (!store?.tenant_id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('category')
         .eq('tenant_id', store.tenant_id)

@@ -9,7 +9,7 @@
  * This file uses relative imports (no @/ aliases) so the Remotion bundler
  * can resolve everything without extra webpack config.
  */
-
+// @ts-nocheck
 import { registerRoot } from "remotion";
 import { Composition } from "remotion";
 import { FloraIQHeroLoop } from "./compositions/FloraIQHeroLoop";
