@@ -64,6 +64,20 @@ function MobileSidebarCloser() {
   return null;
 }
 
+/** Scrolls the admin main content area to top on route change */
+function ScrollMainToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const mainEl = document.getElementById('admin-main-content');
+    if (mainEl) {
+      mainEl.scrollTo(0, 0);
+    }
+  }, [pathname]);
+
+  return null;
+}
+
 /**
  * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
@@ -178,6 +192,7 @@ const AdminLayout = () => {
         {/* Unified Layout with Sidebar (Optimized or Classic) */}
         <SidebarProvider defaultOpen={sidebarDefaultOpen}>
           <MobileSidebarCloser />
+          <ScrollMainToTop />
           <div className="min-h-dvh flex w-full premium-gradient-mesh">
             <SidebarErrorBoundary>
               <LiveBadgeProvider>
@@ -292,6 +307,7 @@ const AdminLayout = () => {
                 </div>
               </header>
               <main
+                id="admin-main-content"
                 className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 lg:pb-6"
                 style={{
                   WebkitOverflowScrolling: 'touch',
