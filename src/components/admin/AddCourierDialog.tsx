@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -87,6 +87,13 @@ export const AddCourierDialog = ({
       age_verified: true,
     },
   });
+
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
 
   const onSubmit = async (data: CourierFormData) => {
     setIsSubmitting(true);

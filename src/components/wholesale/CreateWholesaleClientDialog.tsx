@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,21 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
         payment_terms: 'net_30',
         address: ''
     });
+
+    // Reset form when dialog closes without submit
+    useEffect(() => {
+        if (!open) {
+            setFormData({
+                business_name: '',
+                contact_name: '',
+                email: '',
+                phone: '',
+                license_number: '',
+                payment_terms: 'net_30',
+                address: ''
+            });
+        }
+    }, [open]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

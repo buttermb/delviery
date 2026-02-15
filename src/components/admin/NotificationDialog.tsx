@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Allows super admin to send notifications to tenants
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -70,6 +70,13 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
       priority: 'medium',
     },
   });
+
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
 
   const recipients = form.watch('recipients');
 

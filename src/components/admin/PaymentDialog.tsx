@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,16 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
   const [notes, setNotes] = useState("");
 
   const processPayment = useProcessPayment();
+
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      setAmount("");
+      setPaymentMethod("cash");
+      setReferenceNumber("");
+      setNotes("");
+    }
+  }, [open]);
 
   // Validation for payment amount
   const paymentValidation = useMemo(() => {

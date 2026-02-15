@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { logOrderCreate, logOrderCreateError } from '@/lib/debug/logger';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,19 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
     deliveryAddress: '',
     notes: '',
   });
+
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      setFormData({
+        contactName: '',
+        contactPhone: '',
+        contactEmail: '',
+        deliveryAddress: '',
+        notes: '',
+      });
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
