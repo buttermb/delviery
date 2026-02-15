@@ -146,7 +146,7 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      let query = supabase
+      let query = (supabase as any)
         .from('unified_orders')
         .select(`
           *,
@@ -169,11 +169,11 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
       }
 
       // Apply priority filter
-      if (priority) {
+       if (priority) {
         if (Array.isArray(priority)) {
-          query = query.in('priority', priority);
+          (query as any) = query.in('priority', priority);
         } else {
-          query = query.eq('priority', priority);
+          (query as any) = query.eq('priority', priority);
         }
       }
 
@@ -196,7 +196,7 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
         throw error;
       }
 
-      let orders = data as UnifiedOrder[];
+      let orders = data as unknown as UnifiedOrder[];
 
       // Sort by priority client-side if requested
       if (sortByPriority && orders.length > 0) {
@@ -296,7 +296,7 @@ export function useUnifiedOrder(orderId: string | undefined) {
         throw new Error('Order not found');
       }
 
-      return data as UnifiedOrder;
+      return data as unknown as UnifiedOrder;
     },
     enabled: !!tenant?.id && !!orderId,
   });
@@ -348,7 +348,7 @@ export function useCreateUnifiedOrder() {
 
       if (fetchError) throw fetchError;
 
-      return order as UnifiedOrder;
+      return order as unknown as UnifiedOrder;
     },
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -461,7 +461,7 @@ export function useUpdateOrderStatus() {
         throw error;
       }
 
-      return data as UnifiedOrder;
+      return data as unknown as UnifiedOrder;
     },
     onMutate: async ({ orderId, status, notes }) => {
       await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -542,7 +542,7 @@ export function useUpdateOrderStatus() {
           // Update customer stats on order completion
           if (data.customer_id) {
             queryClient.invalidateQueries({
-              queryKey: queryKeys.customers.stats(data.customer_id),
+             queryKey: queryKeys.customers.stats(tenant?.id || '', data.customer_id),
             });
           }
         }
@@ -556,7 +556,7 @@ export function useUpdateOrderStatus() {
           queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
           if (data.customer_id) {
             queryClient.invalidateQueries({
-              queryKey: queryKeys.customers.stats(data.customer_id),
+             queryKey: queryKeys.customers.stats(tenant?.id || '', data.customer_id),
             });
           }
         }
@@ -639,7 +639,7 @@ export function useCancelOrder() {
         });
       }
 
-      return data as UnifiedOrder;
+      return data as unknown as UnifiedOrder;
     },
     onMutate: async ({ orderId, reason }) => {
       await queryClient.cancelQueries({ queryKey: unifiedOrdersKeys.lists() });
@@ -703,10 +703,10 @@ export function useCancelOrder() {
         // Update customer stats if attached
         if (data.customer_id) {
           queryClient.invalidateQueries({
-            queryKey: queryKeys.customers.stats(data.customer_id),
+             queryKey: queryKeys.customers.stats(tenant?.id || '', data.customer_id),
           });
           queryClient.invalidateQueries({
-            queryKey: queryKeys.customers.detail(data.customer_id),
+            queryKey: queryKeys.customers.detail(tenant?.id || '', data.customer_id),
           });
         }
       }

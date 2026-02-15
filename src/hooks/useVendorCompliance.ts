@@ -173,7 +173,7 @@ export function getDaysUntilExpiration(
 // ============================================================================
 
 export function useVendorCompliance(vendorId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -185,7 +185,7 @@ export function useVendorCompliance(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_compliance')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -216,7 +216,7 @@ export function useVendorCompliance(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_compliance')
         .insert({
           tenant_id: tenantId,
@@ -242,7 +242,7 @@ export function useVendorCompliance(vendorId: string) {
       }
 
       // Log audit entry
-      await logAuditEntry(tenantId, data.id, 'created', {
+      await logAuditEntry(tenantId, (data as any).id, 'created', {
         license_number: input.license_number,
         license_type: input.license_type,
       });
@@ -266,7 +266,7 @@ export function useVendorCompliance(vendorId: string) {
       }
 
       // Fetch current state for audit
-      const { data: currentData } = await supabase
+      const { data: currentData } = await (supabase as any)
         .from('vendor_compliance')
         .select('*')
         .eq('id', input.id)
@@ -329,7 +329,7 @@ export function useVendorCompliance(vendorId: string) {
         updateData.notes = input.notes;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_compliance')
         .update(updateData)
         .eq('id', input.id)
@@ -367,7 +367,7 @@ export function useVendorCompliance(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_compliance')
         .delete()
         .eq('id', complianceId)
@@ -397,7 +397,7 @@ export function useVendorCompliance(vendorId: string) {
     changes: Record<string, unknown>
   ) => {
     try {
-      await supabase.from('vendor_compliance_audit').insert({
+      await (supabase as any).from('vendor_compliance_audit').insert({
         tenant_id: tenantIdVal,
         vendor_compliance_id: complianceId,
         action,
@@ -448,7 +448,7 @@ export function useVendorCompliance(vendorId: string) {
 // ============================================================================
 
 export function useVendorComplianceDocuments(complianceId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -462,7 +462,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_compliance_documents')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -491,7 +491,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_compliance_documents')
         .insert({
           tenant_id: tenantId,
@@ -531,7 +531,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
         throw new Error('No tenant context');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_compliance_documents')
         .delete()
         .eq('id', documentId)
@@ -582,7 +582,7 @@ export function useVendorComplianceAudit(complianceId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_compliance_audit')
         .select('*')
         .eq('tenant_id', tenantId)

@@ -112,7 +112,7 @@ export function useVendorPOSuggestions(): UseVendorPOSuggestionsResult {
       if (!tenantId) return { products: [], vendors: new Map<string, string>() };
 
       // Get products with vendor assignments
-      const { data: products, error: productsError } = await supabase
+      const { data: products, error: productsError } = await (supabase as any)
         .from('products')
         .select('id, vendor_id, cost_per_unit')
         .eq('tenant_id', tenantId)
@@ -126,7 +126,7 @@ export function useVendorPOSuggestions(): UseVendorPOSuggestionsResult {
       }
 
       // Get unique vendor IDs
-      const vendorIds = [...new Set((products || []).map((p) => p.vendor_id).filter(Boolean))];
+      const vendorIds = [...new Set((products || []).map((p: any) => p.vendor_id).filter(Boolean))] as string[];
 
       if (vendorIds.length === 0) {
         return { products: products || [], vendors: new Map<string, string>() };

@@ -195,7 +195,7 @@ export function getPaymentUrgency(
 // ============================================================================
 
 export function useVendorPaymentTerms(vendorId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -207,7 +207,7 @@ export function useVendorPaymentTerms(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payment_terms')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -237,7 +237,7 @@ export function useVendorPaymentTerms(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payment_terms')
         .upsert(
           {
@@ -293,7 +293,7 @@ export function useVendorPaymentTerms(vendorId: string) {
         updateData.notes = input.notes;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payment_terms')
         .update(updateData)
         .eq('id', input.id)
@@ -326,7 +326,7 @@ export function useVendorPaymentTerms(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_payment_terms')
         .delete()
         .eq('id', termsId)
@@ -394,7 +394,7 @@ export function usePayablesAging(vendorId?: string) {
         throw new Error('No tenant context');
       }
 
-      let query = supabase
+      let query = (supabase as any)
         .from('purchase_orders')
         .select(`
           id,
@@ -522,7 +522,7 @@ export function useUpcomingPayments(daysAhead: number = 7) {
       const futureDate = new Date();
       futureDate.setDate(today.getDate() + daysAhead);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('purchase_orders')
         .select(`
           id,
@@ -596,7 +596,7 @@ export function useOverduePayments() {
 
       const today = new Date().toISOString().split('T')[0];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('purchase_orders')
         .select(`
           id,

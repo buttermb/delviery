@@ -158,7 +158,7 @@ export function getRatingColor(score: number): string {
 // ============================================================================
 
 export function useVendorRatings(vendorId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -170,7 +170,7 @@ export function useVendorRatings(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_ratings')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -199,7 +199,7 @@ export function useVendorRatings(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_ratings')
         .select('price_rating, quality_rating, reliability_rating, communication_rating, compliance_rating, overall_score')
         .eq('tenant_id', tenantId)
@@ -261,7 +261,7 @@ export function useVendorRatings(vendorId: string) {
         compliance_rating: input.compliance_rating,
       });
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_ratings')
         .insert({
           tenant_id: tenantId,
@@ -309,7 +309,7 @@ export function useVendorRatings(vendorId: string) {
       }
 
       // Fetch current data for recalculating overall score
-      const { data: currentData } = await supabase
+      const { data: currentData } = await (supabase as any)
         .from('vendor_ratings')
         .select('*')
         .eq('id', input.id)
@@ -330,12 +330,12 @@ export function useVendorRatings(vendorId: string) {
 
       const overallScore = calculateOverallScore(updatedRatings);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_ratings')
         .update({
           ...updatedRatings,
           overall_score: overallScore,
-          notes: input.notes !== undefined ? input.notes : currentData.notes,
+          notes: input.notes !== undefined ? input.notes : (currentData as any).notes,
         })
         .eq('id', input.id)
         .eq('tenant_id', tenantId)
@@ -370,7 +370,7 @@ export function useVendorRatings(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_ratings')
         .delete()
         .eq('id', ratingId)
@@ -430,7 +430,7 @@ export function useVendorRatingHistory(vendorId: string, limit = 10) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_ratings')
         .select('*')
         .eq('tenant_id', tenantId)

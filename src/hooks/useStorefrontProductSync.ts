@@ -16,7 +16,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useEventBus } from '@/hooks/useEventBus';
-import { useRealTimeSubscription, type ConnectionStatus } from '@/hooks/useRealTimeSubscription';
+import { useRealTimeSubscription, type ConnectionStatus } from '@/hooks/useRealtimeSubscription';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
@@ -366,7 +366,7 @@ export function useStorefrontProductSync(
         const { data: { user } } = await supabase.auth.getUser();
 
         // Use an anonymous insert that relies on RLS
-        const { error } = await supabase.from('activity_logs').insert({
+        const { error } = await (supabase as any).from('activity_logs').insert({
           tenant_id: change.tenantId,
           user_id: user?.id,
           entity_type: 'product',
