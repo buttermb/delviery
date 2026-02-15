@@ -62,6 +62,12 @@ interface LineItemsEditorProps {
     onValidationChange?: (validation: InventoryValidationResult) => void;
 }
 
+interface LineItemError {
+    product?: string;
+    quantity?: string;
+    price?: string;
+}
+
 // Interface for tracking stock changes
 interface StockChangeWarning {
     productId: string;
@@ -80,6 +86,30 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
     const previousStockRef = useRef<Map<string, number>>(new Map());
     // Stock change warnings
     const [stockWarnings, setStockWarnings] = useState<StockChangeWarning[]>([]);
+    // Per-item field touch state for inline validation on blur
+    const [touchedFields, setTouchedFields] = useState<Map<string, Set<string>>>(new Map());
+
+    const markFieldTouched = useCallback((itemId: string, field: string) => {
+        setTouchedFields((prev) => {
+            const next = new Map(prev);
+            const fields = new Set(next.get(itemId) || []);
+            fields.add(field);
+            next.set(itemId, fields);
+            return next;
+        });
+    }, []);
+
+    const isFieldTouched = useCallback((itemId: string, field: string) => {
+        return touchedFields.get(itemId)?.has(field) ?? false;
+    }, [touchedFields]);
+
+    const getItemErrors = useCallback((item: LineItem): LineItemError => {
+        const errors: LineItemError = {};
+        if (!item.item_id) errors.product = "Select a product";
+        if (item.quantity < 1) errors.quantity = "Min 1";
+        if (item.unit_price < 0) errors.price = "Must be 0 or more";
+        return errors;
+    }, []);
 
     // Real-time subscription to products table for live stock updates
     const { status: realtimeStatus } = useRealTimeSubscription({
@@ -242,7 +272,7 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
         onChange(newItems);
     };
 
-    const handleUpdateItem = (index: number, field: keyof LineItem, value: any) => {
+    const handleUpdateItem = (index: number, field: keyof LineItem, value: string | number) => {
         const newItems = [...items];
         const item = { ...newItems[index] };
 
@@ -251,10 +281,10 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
         } else if (field === "unit_price") {
             item.unit_price = Number(value);
         } else if (field === "description") {
-            item.description = value;
+            item.description = String(value);
         } else if (field === "item_id") {
             // When product is selected
-            const product = products?.find((p) => p.id === value);
+            const product = products?.find((p) => p.id === String(value));
             if (product) {
                 item.item_id = product.id;
                 item.description = product.name;
@@ -370,6 +400,8 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                             items.map((item, index) => {
                                 const stockInfo = getStockInfo(item);
                                 const hasStockIssue = stockInfo && (stockInfo.isOutOfStock || stockInfo.isInsufficientStock);
+                                const itemId = item.id || String(index);
+                                const errors = getItemErrors(item);
 
                                 return (
                                     <TableRow
@@ -378,12 +410,20 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                     >
                                         <TableCell>
                                             <div className="flex flex-col gap-2">
-                                                <ProductSelector
-                                                    value={item.item_id}
-                                                    onSelect={(productId) => handleUpdateItem(index, "item_id", productId)}
-                                                    products={products || []}
-                                                    isLoading={isLoading}
-                                                />
+                                                <div
+                                                    onBlur={() => markFieldTouched(itemId, "product")}
+                                                >
+                                                    <ProductSelector
+                                                        value={item.item_id}
+                                                        onSelect={(productId) => handleUpdateItem(index, "item_id", productId)}
+                                                        products={products || []}
+                                                        isLoading={isLoading}
+                                                        hasError={isFieldTouched(itemId, "product") && !!errors.product}
+                                                    />
+                                                    {isFieldTouched(itemId, "product") && errors.product && (
+                                                        <p className="text-[11px] text-destructive mt-1">{errors.product}</p>
+                                                    )}
+                                                </div>
                                                 <Input
                                                     placeholder="Description (optional)"
                                                     value={item.description}
@@ -447,11 +487,16 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                                     min="1"
                                                     value={item.quantity}
                                                     onChange={(e) => handleUpdateItem(index, "quantity", e.target.value)}
+                                                    onBlur={() => markFieldTouched(itemId, "quantity")}
                                                     className={cn(
                                                         "h-9",
-                                                        hasStockIssue && "border-destructive focus-visible:ring-destructive"
+                                                        hasStockIssue && "border-destructive focus-visible:ring-destructive",
+                                                        isFieldTouched(itemId, "quantity") && errors.quantity && "border-destructive focus-visible:ring-destructive"
                                                     )}
                                                 />
+                                                {isFieldTouched(itemId, "quantity") && errors.quantity && (
+                                                    <span className="text-[11px] text-destructive">{errors.quantity}</span>
+                                                )}
                                                 {stockInfo?.isInsufficientStock && !stockInfo.isOutOfStock && (
                                                     <span className="text-[10px] text-amber-600 font-medium">
                                                         Max: {stockInfo.available}
@@ -460,16 +505,25 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="relative">
-                                                <span className="absolute left-2 top-2.5 text-muted-foreground">$</span>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={item.unit_price}
-                                                    onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
-                                                    className="pl-6 h-9"
-                                                />
+                                            <div className="flex flex-col gap-1">
+                                                <div className="relative">
+                                                    <span className="absolute left-2 top-2.5 text-muted-foreground">$</span>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={item.unit_price}
+                                                        onChange={(e) => handleUpdateItem(index, "unit_price", e.target.value)}
+                                                        onBlur={() => markFieldTouched(itemId, "price")}
+                                                        className={cn(
+                                                            "pl-6 h-9",
+                                                            isFieldTouched(itemId, "price") && errors.price && "border-destructive focus-visible:ring-destructive"
+                                                        )}
+                                                    />
+                                                </div>
+                                                {isFieldTouched(itemId, "price") && errors.price && (
+                                                    <span className="text-[11px] text-destructive">{errors.price}</span>
+                                                )}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
@@ -511,9 +565,10 @@ interface ProductSelectorProps {
     onSelect: (value: string) => void;
     products: Product[];
     isLoading: boolean;
+    hasError?: boolean;
 }
 
-function ProductSelector({ value, onSelect, products, isLoading }: ProductSelectorProps) {
+function ProductSelector({ value, onSelect, products, isLoading, hasError }: ProductSelectorProps) {
     const [open, setOpen] = useState(false);
 
     const selectedProduct = products.find((p) => p.id === value);
@@ -527,7 +582,8 @@ function ProductSelector({ value, onSelect, products, isLoading }: ProductSelect
                     aria-expanded={open}
                     className={cn(
                         "w-full justify-between h-9",
-                        !value && "text-muted-foreground"
+                        !value && "text-muted-foreground",
+                        hasError && "border-destructive focus-visible:ring-destructive"
                     )}
                 >
                     <span className="flex items-center gap-1.5 truncate">
