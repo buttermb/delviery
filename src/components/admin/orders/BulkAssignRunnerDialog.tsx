@@ -127,7 +127,7 @@ export function BulkAssignRunnerDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }} className="space-y-4 py-4">
             {/* Selected Orders Summary */}
             <div className="bg-muted/50 rounded-lg p-3">
               <div className="flex items-center gap-2 text-sm font-medium mb-2">
@@ -240,7 +240,7 @@ export function BulkAssignRunnerDialog({
               secondaryLabel="Cancel"
               onSecondary={handleClose}
             />
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
 

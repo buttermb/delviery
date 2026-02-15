@@ -56,7 +56,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }} className="space-y-4">
           <div>
             <Label htmlFor="runner">Select Runner <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Select value={selectedRunner} onValueChange={setSelectedRunner}>
@@ -131,7 +131,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
             secondaryLabel="Cancel"
             onSecondary={() => onOpenChange(false)}
           />
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

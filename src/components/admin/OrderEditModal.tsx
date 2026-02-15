@@ -308,7 +308,7 @@ export function OrderEditModal({
           </Alert>
         )}
 
-        <div className="space-y-6 py-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6 py-4">
           {/* Current Status */}
           <div>
             <Label className="text-muted-foreground">Current Status</Label>
@@ -484,27 +484,27 @@ export function OrderEditModal({
               />
             </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || !canEdit}
-            className="bg-emerald-600 hover:bg-emerald-700"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !canEdit}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

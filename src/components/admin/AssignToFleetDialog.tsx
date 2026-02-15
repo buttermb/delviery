@@ -151,6 +151,7 @@ export function AssignToFleetDialog({
           </div>
         )}
 
+        <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }}>
         <ScrollArea className="max-h-[400px] pr-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -232,6 +233,7 @@ export function AssignToFleetDialog({
 
         <div className="flex gap-3 pt-4 border-t">
           <Button
+            type="button"
             variant="outline"
             onClick={() => {
               onOpenChange(false);
@@ -243,7 +245,7 @@ export function AssignToFleetDialog({
             Cancel
           </Button>
           <Button
-            onClick={handleAssign}
+            type="submit"
             disabled={!selectedRunnerId || assigning}
             className="flex-1 bg-emerald-500 hover:bg-emerald-600"
           >
@@ -260,6 +262,7 @@ export function AssignToFleetDialog({
             )}
           </Button>
         </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

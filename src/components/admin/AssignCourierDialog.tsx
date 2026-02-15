@@ -204,7 +204,7 @@ export const AssignCourierDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }} className="space-y-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -245,7 +245,7 @@ export const AssignCourierDialog = ({
 
               <div className="flex gap-2">
                 <Button
-                  onClick={handleAssign}
+                  type="submit"
                   disabled={!selectedCourierId || assigning}
                   className="flex-1"
                 >
@@ -253,6 +253,7 @@ export const AssignCourierDialog = ({
                   Assign Selected
                 </Button>
                 <Button
+                  type="button"
                   onClick={handleAutoAssign}
                   disabled={assigning}
                   variant="outline"
@@ -264,7 +265,7 @@ export const AssignCourierDialog = ({
               </div>
             </>
           )}
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

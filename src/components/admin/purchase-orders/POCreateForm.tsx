@@ -263,6 +263,18 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         </div>
 
         {/* Step Content */}
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStepIndex < steps.length - 1) {
+            if (currentStep === "supplier" && !formData.supplier_id) {
+              toast.error("Please select a supplier");
+              return;
+            }
+            setCurrentStep(steps[currentStepIndex + 1].key);
+          } else {
+            handleSubmit();
+          }
+        }}>
         <div className="space-y-4">
           {currentStep === "supplier" && (
             <div className="space-y-4">
@@ -491,6 +503,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-4 border-t">
           <Button
+            type="button"
             variant="outline"
             onClick={() => {
               if (currentStepIndex > 0) {
@@ -508,13 +521,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
 
           {currentStepIndex < steps.length - 1 ? (
             <Button
-              onClick={() => {
-                if (currentStep === "supplier" && !formData.supplier_id) {
-                  toast.error("Please select a supplier");
-                  return;
-                }
-                setCurrentStep(steps[currentStepIndex + 1].key);
-              }}
+              type="submit"
               className="min-h-[44px] touch-manipulation"
             >
               Next
@@ -522,7 +529,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
             </Button>
           ) : (
             <Button
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="min-h-[44px] touch-manipulation"
             >
@@ -531,6 +538,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
             </Button>
           )}
         </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -202,6 +202,7 @@ export function ConvertToInvoiceDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <form onSubmit={(e) => { e.preventDefault(); handleConvert(); }}>
         <ScrollArea className="max-h-[calc(90vh-200px)] pr-4">
           <div className="space-y-6">
             {/* Order Summary */}
@@ -341,11 +342,11 @@ export function ConvertToInvoiceDialog({
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isConverting}>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isConverting}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleConvert} 
+          <Button
+            type="submit"
             disabled={!selectedClientId || isConverting}
           >
             {isConverting ? (
@@ -361,6 +362,7 @@ export function ConvertToInvoiceDialog({
             )}
           </Button>
         </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

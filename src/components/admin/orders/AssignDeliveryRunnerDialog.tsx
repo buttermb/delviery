@@ -316,7 +316,7 @@ export function AssignDeliveryRunnerDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }} className="space-y-4 py-4">
           {isLoadingRunners ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -428,16 +428,16 @@ export function AssignDeliveryRunnerDialog({
               </div>
             </div>
           )}
-        </div>
 
-        <DialogFooterActions
-          primaryLabel={assignMutation.isPending ? 'Assigning...' : 'Assign Runner'}
-          onPrimary={handleAssign}
-          primaryDisabled={!selectedRunnerId || runnersWithProximity.length === 0}
-          primaryLoading={assignMutation.isPending}
-          secondaryLabel="Cancel"
-          onSecondary={() => onOpenChange(false)}
-        />
+          <DialogFooterActions
+            primaryLabel={assignMutation.isPending ? 'Assigning...' : 'Assign Runner'}
+            onPrimary={handleAssign}
+            primaryDisabled={!selectedRunnerId || runnersWithProximity.length === 0}
+            primaryLoading={assignMutation.isPending}
+            secondaryLabel="Cancel"
+            onSecondary={() => onOpenChange(false)}
+          />
+        </form>
       </DialogContent>
     </Dialog>
   );
