@@ -447,8 +447,8 @@ export function DataTable<TData extends Record<string, unknown>>({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <Table>
+      <div>
+        <Table containerClassName="max-h-[600px]">
           <TableHeader>
             <TableRow>
               {enableSelection && (

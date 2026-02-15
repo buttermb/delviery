@@ -171,7 +171,7 @@ export function ResponsiveTable<T>({
                     />
                 ) : (
                     <div className="rounded-md border dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-                        <Table>
+                        <Table containerClassName="max-h-[600px]">
                             <TableHeader>
                                 <TableRow>
                                     {columns.map((col, index) => (
