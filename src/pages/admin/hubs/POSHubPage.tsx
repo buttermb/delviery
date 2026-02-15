@@ -72,32 +72,35 @@ export default function POSHubPage() {
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                {/* Tab Header - Only show when NOT on register (register is fullscreen) */}
-                {activeTab !== 'register' && (
-                    <div className="border-b bg-card px-4 py-3">
-                        <HubBreadcrumbs
-                            hubName="pos-system"
-                            hubHref="pos-system"
-                            currentTab={tabs.find(t => t.id === activeTab)?.label}
-                        />
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h1 className="text-2xl font-bold">Point of Sale</h1>
-                                <p className="text-muted-foreground text-sm">
-                                    Cash register, shifts, and end-of-day reports
-                                </p>
+                <div className="border-b bg-card px-4 py-3">
+                    {/* Hide breadcrumbs and title on register tab for fullscreen feel */}
+                    {activeTab !== 'register' && (
+                        <>
+                            <HubBreadcrumbs
+                                hubName="pos-system"
+                                hubHref="pos-system"
+                                currentTab={tabs.find(t => t.id === activeTab)?.label}
+                            />
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h1 className="text-2xl font-bold">Point of Sale</h1>
+                                    <p className="text-muted-foreground text-sm">
+                                        Cash register, shifts, and end-of-day reports
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                        <TabsList className="grid w-full max-w-lg grid-cols-4">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-                    </div>
-                )}
+                        </>
+                    )}
+                    {/* Tab bar always visible so user can switch tabs */}
+                    <TabsList className="grid w-full max-w-lg grid-cols-4">
+                        {tabs.map((tab) => (
+                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                <tab.icon className="h-4 w-4" />
+                                <span className="hidden sm:inline">{tab.label}</span>
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
 
                 {/* Register Tab - Full screen POS */}
                 <TabsContent value="register" className="m-0">
