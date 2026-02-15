@@ -116,7 +116,7 @@ export default function OperationsHubPage() {
                                         )}
                                         <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
                                     </>
                                 );
