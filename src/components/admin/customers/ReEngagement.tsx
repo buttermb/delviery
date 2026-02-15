@@ -159,7 +159,7 @@ function useAtRiskCustomers(tenantId: string | undefined, riskFilter: CustomerRi
       logger.debug('[ReEngagement] Fetching at-risk customers', { tenantId, riskFilter });
 
       // Fetch customers with their order history
-      const { data: customers, error: customersError } = await supabase
+      const { data: customers, error: customersError } = await (supabase as any)
         .from('customers')
         .select(`
           id,
@@ -324,7 +324,7 @@ function useAddCustomerNote(tenantId: string | undefined) {
     mutationFn: async ({ customerId, content }: { customerId: string; content: string }) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error } = await supabase.from('customer_notes').insert({
+      const { error } = await (supabase as any).from('customer_notes').insert({
         tenant_id: tenantId,
         customer_id: customerId,
         content,
@@ -377,7 +377,7 @@ function useCreatePromoOffer(tenantId: string | undefined) {
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
       // Create a customer-specific coupon
-      const { error } = await supabase.from('coupons').insert({
+      const { error } = await (supabase as any).from('coupons').insert({
         tenant_id: tenantId,
         code: code.toUpperCase(),
         discount_type: 'percentage',
@@ -392,7 +392,7 @@ function useCreatePromoOffer(tenantId: string | undefined) {
       if (error) throw error;
 
       // Also add a note about the offer
-      await supabase.from('customer_notes').insert({
+      await (supabase as any).from('customer_notes').insert({
         tenant_id: tenantId,
         customer_id: customerId,
         content: `Re-engagement promotional offer created: ${discountPercent}% off with code ${code.toUpperCase()} (expires in ${expiresInDays} days)`,
@@ -439,7 +439,7 @@ function useSendMessage(tenantId: string | undefined) {
       if (!tenantId) throw new Error('No tenant ID');
 
       // Log the communication attempt
-      const { error } = await supabase.from('communication_logs').insert({
+      const { error } = await (supabase as any).from('communication_logs').insert({
         tenant_id: tenantId,
         customer_id: customerId,
         type: channel,
@@ -452,7 +452,7 @@ function useSendMessage(tenantId: string | undefined) {
       if (error) throw error;
 
       // Add note about the message
-      await supabase.from('customer_notes').insert({
+      await (supabase as any).from('customer_notes').insert({
         tenant_id: tenantId,
         customer_id: customerId,
         content: `Re-engagement ${channel.toUpperCase()} sent: "${message.slice(0, 100)}${message.length > 100 ? '...' : ''}"`,

@@ -590,9 +590,8 @@ export function OrganizationDetail({
             <div className="space-y-2">
               <Label>Customer</Label>
               <SmartClientPicker
-                value={selectedCustomerId}
-                onChange={setSelectedCustomerId}
-                placeholder="Search for a customer..."
+                selectedClient={null}
+                onSelect={(client) => setSelectedCustomerId(client.id)}
               />
             </div>
 

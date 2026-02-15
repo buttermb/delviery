@@ -66,7 +66,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
   const [granularity, setGranularity] = useState<Granularity>('daily');
 
   const { data: revenueData, isLoading, error } = useQuery({
-    queryKey: queryKeys.analytics.revenue({ storeId, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString(), granularity }),
+    queryKey: queryKeys.analytics.revenue(storeId, { from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString(), granularity }),
     queryFn: async (): Promise<{ data: RevenueDataPoint[]; totalRevenue: number }> => {
       let query = supabase
         .from('storefront_orders')

@@ -201,7 +201,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_delivery_addresses')
         .select('*')
         .eq('customer_id', customerId)
@@ -244,7 +244,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       };
 
       if (editingAddress) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('customer_delivery_addresses')
           .update(addressData)
           .eq('id', editingAddress.id)
@@ -252,7 +252,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('customer_delivery_addresses')
           .insert(addressData);
 
@@ -277,7 +277,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
     mutationFn: async (addressId: string) => {
       if (!tenant?.id) throw new Error('Tenant not found');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_delivery_addresses')
         .delete()
         .eq('id', addressId)
@@ -304,7 +304,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
     mutationFn: async (addressId: string) => {
       if (!tenant?.id) throw new Error('Tenant not found');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_delivery_addresses')
         .update({ is_primary: true })
         .eq('id', addressId)
@@ -503,7 +503,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
               icon={MapPin}
               title="No Delivery Addresses"
               description="Add delivery addresses for this customer to use when creating orders."
-              action={{
+              primaryAction={{
                 label: 'Add First Address',
                 onClick: () => handleOpenDialog(),
               }}

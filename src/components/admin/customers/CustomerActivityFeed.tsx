@@ -207,7 +207,7 @@ function useCustomerActivities(
 
       // Fetch payments (from unified_orders with payment info)
       if (filterType === 'all' || filterType === 'payment') {
-        const { data: payments } = await supabase
+        const { data: payments } = await (supabase as any)
           .from('unified_orders')
           .select('id, created_at, amount_paid, payment_status, payment_method')
           .eq('customer_id', customerId)
@@ -242,7 +242,7 @@ function useCustomerActivities(
 
       // Fetch deliveries
       if (filterType === 'all' || filterType === 'delivery') {
-        const { data: deliveries } = await supabase
+        const { data: deliveries } = await (supabase as any)
           .from('deliveries')
           .select('id, created_at, status, completed_at, order_id')
           .eq('tenant_id', tenantId)

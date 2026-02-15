@@ -126,8 +126,7 @@ export function BulkInventoryModal({
           if (updateError) throw updateError;
 
           // Record inventory movement history entry
-          // @ts-expect-error - tenant_id column added via migration after types were generated
-          const { error: historyError } = await (supabase as any)
+           const { error: historyError } = await (supabase as any)
             .from("wholesale_inventory_movements")
             .insert({
               tenant_id: tenant.id,

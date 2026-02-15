@@ -224,7 +224,7 @@ export function SpecialPricing({
     queryFn: async () => {
       if (!tenantId) throw new Error('Tenant ID is required');
 
-      let query = supabase
+      let query = (supabase as any)
         .from('customer_pricing')
         .select(`
           *,
@@ -290,7 +290,7 @@ export function SpecialPricing({
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_groups')
         .select('id, name')
         .eq('tenant_id', tenantId)
@@ -352,7 +352,7 @@ export function SpecialPricing({
         is_active: values.is_active,
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_pricing')
         .insert(insertData)
         .select()
@@ -402,7 +402,7 @@ export function SpecialPricing({
         updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_pricing')
         .update(updateData)
         .eq('id', id)
@@ -437,7 +437,7 @@ export function SpecialPricing({
     mutationFn: async (id: string) => {
       if (!tenantId) throw new Error('Tenant ID is required');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_pricing')
         .delete()
         .eq('id', id)
@@ -468,7 +468,7 @@ export function SpecialPricing({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
       if (!tenantId) throw new Error('Tenant ID is required');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_pricing')
         .update({ is_active: isActive, updated_at: new Date().toISOString() })
         .eq('id', id)
@@ -721,7 +721,7 @@ export function SpecialPricing({
               icon={DollarSign}
               title="No Pricing Rules"
               description="Create custom pricing rules for specific customers or groups."
-              action={{
+              primaryAction={{
                 label: 'Add Pricing Rule',
                 onClick: handleOpenCreate,
               }}
@@ -1148,7 +1148,7 @@ export async function getApplicableSpecialPricing(
 ): Promise<CustomerPricing[]> {
   const now = new Date().toISOString();
 
-  let query = supabase
+  let query = (supabase as any)
     .from('customer_pricing')
     .select(`
       *,
