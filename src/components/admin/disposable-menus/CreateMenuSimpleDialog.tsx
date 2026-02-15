@@ -415,7 +415,6 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
               )}
             </div>
           )}
-        </div>
 
           {/* Footer Actions */}
           <div className="flex items-center justify-between pt-6 border-t">
