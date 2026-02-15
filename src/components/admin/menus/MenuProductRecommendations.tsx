@@ -305,7 +305,7 @@ export function MenuProductRecommendations({
         throw error;
       }
 
-      return (data || []) as ProductRow[];
+      return (data || []) as unknown as ProductRow[];
     },
     enabled: !!tenantId,
     staleTime: 60 * 1000,

@@ -152,8 +152,7 @@ export function SLAComplianceWidget({ className }: SLAComplianceWidgetProps) {
         </div>
         <Progress
           value={compliancePercentage}
-          className="h-2"
-          indicatorClassName={getProgressColor()}
+          className={`h-2 ${getProgressColor()}`}
         />
       </div>
 

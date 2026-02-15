@@ -152,7 +152,7 @@ export function MenuFeedback({ menuId: propMenuId, className }: MenuFeedbackProp
       }
 
       // Fetch feedback with customer info via order relationship
-      const { data: feedback, error } = await supabase
+      const { data: feedback, error } = await (supabase as any)
         .from('menu_feedback')
         .select(`
           id,
@@ -214,7 +214,7 @@ export function MenuFeedback({ menuId: propMenuId, className }: MenuFeedbackProp
   // Delete feedback mutation
   const deleteFeedbackMutation = useMutation({
     mutationFn: async (feedbackId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('menu_feedback')
         .delete()
         .eq('id', feedbackId)

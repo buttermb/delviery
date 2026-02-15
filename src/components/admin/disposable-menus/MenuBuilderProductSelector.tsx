@@ -340,7 +340,7 @@ function SelectedProductsSummary({
       const product = products.find(p => p.id === sp.productId);
       return product ? { ...product, customPrice: sp.customPrice } : null;
     })
-    .filter((p): p is MenuProduct & { customPrice?: number } => p !== null);
+    .filter((p): p is NonNullable<typeof p> => p !== null);
 
   return (
     <div className="space-y-3 border-b pb-4 mb-4">
@@ -407,7 +407,7 @@ export function MenuBuilderProductSelector({
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('wholesale_inventory')
         .select('id, product_name, base_price, sku, description, image_url, category, quantity_units')
         .eq('tenant_id', tenant.id)

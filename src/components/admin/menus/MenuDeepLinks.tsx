@@ -309,7 +309,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
       if (!tenantId || !currentMenuId) return [];
 
       // Query menu_access_logs for deep link clicks (where product param is present)
-      const { data: logs, error } = await supabase
+      const { data: logs, error } = await (supabase as any)
         .from('menu_access_logs')
         .select('id, product_id, created_at')
         .eq('menu_id', currentMenuId)

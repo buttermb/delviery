@@ -168,7 +168,7 @@ export function BatchCreate({ className }: BatchCreateProps) {
     queryFn: async (): Promise<DeliveryZone[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_zones')
         .select('*')
         .eq('tenant_id', tenantId)

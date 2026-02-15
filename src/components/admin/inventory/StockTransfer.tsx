@@ -112,7 +112,7 @@ export function StockTransfer({ className }: StockTransferProps) {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => unknown })
+      const { data, error } = await (supabase as any)
         .from('locations')
         .select('id, name, city, state, status')
         .eq('tenant_id', tenant.id)
@@ -158,7 +158,7 @@ export function StockTransfer({ className }: StockTransferProps) {
 
       // Try to fetch from stock_transfers table
       try {
-        const { data, error } = await (supabase as unknown as { from: (table: string) => unknown })
+        const { data, error } = await (supabase as any)
           .from('stock_transfers')
           .select(`
             *,
@@ -262,7 +262,7 @@ export function StockTransfer({ className }: StockTransferProps) {
       };
 
       // Insert stock transfer
-      const { data: transfer, error: transferError } = await (supabase as unknown as { from: (table: string) => unknown })
+      const { data: transfer, error: transferError } = await (supabase as any)
         .from('stock_transfers')
         .insert(transferData)
         .select()
@@ -307,7 +307,7 @@ export function StockTransfer({ className }: StockTransferProps) {
 
         // Log decrease at source location
         try {
-          await (supabase as unknown as { from: (table: string) => unknown })
+          await (supabase as any)
             .from('inventory_history')
             .insert({
               tenant_id: tenant.id,
@@ -329,7 +329,7 @@ export function StockTransfer({ className }: StockTransferProps) {
 
         // Log increase at destination location (pending receipt)
         try {
-          await (supabase as unknown as { from: (table: string) => unknown })
+          await (supabase as any)
             .from('inventory_history')
             .insert({
               tenant_id: tenant.id,
@@ -369,7 +369,7 @@ export function StockTransfer({ className }: StockTransferProps) {
       // Create notification for destination location admin (if notifications table exists)
       try {
         const sourceName = locations.find(l => l.id === sourceLocationId)?.name || 'Source';
-        await (supabase as unknown as { from: (table: string) => unknown })
+        await (supabase as any)
           .from('notifications')
           .insert({
             tenant_id: tenant.id,
@@ -415,7 +415,7 @@ export function StockTransfer({ className }: StockTransferProps) {
         throw new Error('Authentication required');
       }
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => unknown })
+      const { data, error } = await (supabase as any)
         .from('stock_transfers')
         .update({
           status: newStatus,

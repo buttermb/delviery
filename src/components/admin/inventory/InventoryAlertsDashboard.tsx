@@ -29,8 +29,7 @@ export function InventoryAlertsDashboard() {
     queryFn: async () => {
       if (!tenant?.id) return [];
       
-      // @ts-expect-error - Deep type instantiation issue
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('inventory_alerts')
         .select('*')
         .eq('tenant_id', tenant.id)

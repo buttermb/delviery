@@ -200,7 +200,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
         throw fetchError;
       }
 
-      return (orders || []) as DeliveryOrder[];
+      return (orders || []) as unknown as DeliveryOrder[];
     },
     enabled: !!tenantId && !!dateRange?.from && !!dateRange?.to,
     staleTime: 60000,

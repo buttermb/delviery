@@ -85,8 +85,7 @@ export function ActivityFeedWidget() {
       });
 
       // Recent customers (simplified - basic fields only)
-      // @ts-expect-error - Avoid type instantiation
-      const { data: customers } = await supabase
+      const { data: customers } = await (supabase as any)
         .from('customers')
         .select('id, email, created_at')
         .eq('tenant_id', tenant.id)
