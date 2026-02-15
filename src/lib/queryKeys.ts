@@ -1083,6 +1083,15 @@ export const queryKeys = {
       [...queryKeys.abandonedCarts.all, 'abandonment-rate', tenantId, menuId] as const,
   },
 
+  // Delivery Ratings
+  deliveryRatings: {
+    all: ['delivery-ratings'] as const,
+    byToken: (trackingToken: string) =>
+      [...queryKeys.deliveryRatings.all, 'token', trackingToken] as const,
+    recent: (tenantId: string, limit: number) =>
+      [...queryKeys.deliveryRatings.all, 'recent', tenantId, limit] as const,
+  },
+
   // Delivery Costs (P&L)
   deliveryCosts: {
     all: ['delivery-costs'] as const,
