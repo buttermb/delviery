@@ -7,6 +7,39 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 /**
+ * Dashboard date range period options
+ */
+export type DashboardPeriod = '7d' | '30d' | '90d' | 'mtd' | 'ytd';
+
+/**
+ * Compute the start date for a given dashboard period
+ */
+function getPeriodStartDate(period: DashboardPeriod): Date {
+  const now = new Date();
+  switch (period) {
+    case '7d': {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      d.setDate(d.getDate() - 7);
+      return d;
+    }
+    case '30d': {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      d.setDate(d.getDate() - 30);
+      return d;
+    }
+    case '90d': {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      d.setDate(d.getDate() - 90);
+      return d;
+    }
+    case 'mtd':
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+    case 'ytd':
+      return new Date(now.getFullYear(), 0, 1);
+  }
+}
+
+/**
  * Trend direction indicator for dashboard stats
  */
 export type TrendDirection = 'up' | 'down' | 'flat';
@@ -114,12 +147,11 @@ function createStatWithTrend(current: number, previous: number): StatWithTrend {
  * Raw dashboard stats hook that fetches all data from Supabase
  * Used internally by useDashboardStats
  */
-function useRawDashboardStats() {
+function useRawDashboardStats(period: DashboardPeriod = '30d') {
   const { tenantId } = useTenantContext();
 
-
   return useQuery({
-    queryKey: queryKeys.dashboard.stats(tenantId),
+    queryKey: [...queryKeys.dashboard.stats(tenantId), period],
     queryFn: async (): Promise<DashboardStats> => {
       if (!tenantId) {
         return getEmptyStats();
@@ -130,7 +162,7 @@ function useRawDashboardStats() {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const periodStart = getPeriodStartDate(period);
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
       const thirtyDaysAgo = new Date();
@@ -180,12 +212,12 @@ function useRawDashboardStats() {
           .gte('created_at', today.toISOString())
           .not('status', 'in', '("cancelled","rejected","refunded")'),
 
-        // Total orders MTD
+        // Total orders in period
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
-          .gte('created_at', startOfMonth.toISOString())
+          .gte('created_at', periodStart.toISOString())
           .not('status', 'in', '("cancelled","rejected","refunded")'),
 
         // Completed orders today
@@ -211,12 +243,12 @@ function useRawDashboardStats() {
           .select('id, stock_quantity, low_stock_alert, price, in_stock')
           .eq('tenant_id', tenantId),
 
-        // Revenue MTD (sum of completed/delivered orders)
+        // Revenue in period (sum of completed/delivered orders)
         supabase
           .from('orders')
           .select('total_amount')
           .eq('tenant_id', tenantId)
-          .gte('created_at', startOfMonth.toISOString())
+          .gte('created_at', periodStart.toISOString())
           .in('status', ['completed', 'delivered']),
 
         // Revenue last month (for growth calculation)
@@ -252,12 +284,12 @@ function useRawDashboardStats() {
           .gte('created_at', yesterday.toISOString())
           .lt('created_at', today.toISOString()),
 
-        // New customers in the last 30 days
+        // New customers in the selected period
         supabase
           .from('customers')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
-          .gte('created_at', thirtyDaysAgo.toISOString()),
+          .gte('created_at', periodStart.toISOString()),
 
         // Total customers
         supabase
@@ -550,8 +582,8 @@ function getEmptyStatsWithTrends(): DashboardStatsWithTrends {
  * );
  * ```
  */
-export function useDashboardStats() {
-  const rawQuery = useRawDashboardStats();
+export function useDashboardStats(period: DashboardPeriod = '30d') {
+  const rawQuery = useRawDashboardStats(period);
 
   // Memoize the stats with trends calculation
   const statsWithTrends = useMemo((): DashboardStatsWithTrends => {
@@ -619,6 +651,7 @@ export function useDashboardStats() {
 
     // Query state
     data: rawQuery.data,
+    dataUpdatedAt: rawQuery.dataUpdatedAt,
     isLoading: rawQuery.isLoading,
     isPending: rawQuery.isPending,
     isFetching: rawQuery.isFetching,

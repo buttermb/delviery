@@ -11,10 +11,11 @@
  * Uses TanStack Query with 30s auto-refresh for real-time data.
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import PackageX from "lucide-react/dist/esm/icons/package-x";
 import Package from "lucide-react/dist/esm/icons/package";
@@ -24,7 +25,7 @@ import Activity from "lucide-react/dist/esm/icons/activity";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -106,9 +107,18 @@ function AlertsWidgetFallback() {
   );
 }
 
+const PERIOD_LABELS: Record<DashboardPeriod, string> = {
+  '7d': '7D',
+  '30d': '30D',
+  '90d': '90D',
+  'mtd': 'MTD',
+  'ytd': 'YTD',
+};
+
 export function DashboardPage() {
   const { tenant } = useTenantAdminAuth();
-  const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats();
+  const [period, setPeriod] = useState<DashboardPeriod>('30d');
+  const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats(period);
 
   if (!tenant) {
     return (
@@ -134,18 +144,33 @@ export function DashboardPage() {
         hubHref="dashboard"
       />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Real-time overview of your operations
           </p>
         </div>
-        {lastUpdated && (
-          <Badge variant="secondary" className="text-xs">
-            Updated {lastUpdated}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <ToggleGroup
+            type="single"
+            value={period}
+            onValueChange={(val) => { if (val) setPeriod(val as DashboardPeriod); }}
+            size="sm"
+            variant="outline"
+          >
+            {(Object.keys(PERIOD_LABELS) as DashboardPeriod[]).map((key) => (
+              <ToggleGroupItem key={key} value={key} aria-label={`Show ${PERIOD_LABELS[key]} data`}>
+                {PERIOD_LABELS[key]}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          {lastUpdated && (
+            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+              Updated {lastUpdated}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -163,7 +188,7 @@ export function DashboardPage() {
 
       {/* Revenue Section - Lazy Loaded */}
       <Suspense fallback={<RevenueWidgetFallback />}>
-        <RevenueWidget />
+        <RevenueWidget period={period} />
       </Suspense>
 
       {/* Orders Section */}
@@ -202,10 +227,10 @@ export function DashboardPage() {
                 href="/admin/orders?status=completed"
               />
               <KPICard
-                title="Orders (MTD)"
+                title={`Orders (${PERIOD_LABELS[period]})`}
                 value={stats?.totalOrdersMTD ?? 0}
                 icon={<ShoppingCart className="h-5 w-5" />}
-                description="Total this month"
+                description={`Total in selected period`}
                 variant="default"
                 href="/admin/orders"
               />
@@ -237,7 +262,7 @@ export function DashboardPage() {
                 title="New Customers"
                 value={stats?.newCustomers ?? 0}
                 icon={<UserPlus className="h-5 w-5" />}
-                description="Joined in the last 30 days"
+                description={`Joined in the last ${PERIOD_LABELS[period]}`}
                 variant="success"
                 href="/admin/customer-hub"
               />
