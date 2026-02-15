@@ -59,7 +59,7 @@ const tabs = [
     { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight, group: 'Movement' },
     { id: 'dispatch', label: 'Dispatch', icon: Truck, group: 'Movement' },
     // Tracking & Tools
-    { id: 'fronted', label: 'Owed', icon: CreditCard, group: 'Tools' },
+    { id: 'fronted', label: 'Fronted', icon: CreditCard, group: 'Tools' },
     { id: 'barcodes', label: 'Barcodes', icon: Barcode, group: 'Tools' },
 ] as const;
 

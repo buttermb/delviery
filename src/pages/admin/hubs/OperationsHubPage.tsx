@@ -67,7 +67,7 @@ const tabs = [
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
-    { id: 'quality', label: 'QC', icon: Shield, group: 'Compliance' },
+    { id: 'quality', label: 'Quality Control', icon: Shield, group: 'Compliance' },
     { id: 'activity', label: 'Logs', icon: ScrollText, group: 'Compliance' },
     // Facilities
     { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },

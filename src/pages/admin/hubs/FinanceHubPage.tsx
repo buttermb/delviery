@@ -51,7 +51,7 @@ const tabs = [
     { id: 'tax', label: 'Tax', icon: Building2, group: 'Core' },
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
-    { id: 'collections', label: 'Collect', icon: Wallet, group: 'Transactions' },
+    { id: 'collections', label: 'Collections', icon: Wallet, group: 'Transactions' },
     { id: 'payouts', label: 'Payouts', icon: Banknote, group: 'Transactions' },
     // Utilities
     { id: 'builder', label: 'Builder', icon: FileEdit, group: 'Tools' },

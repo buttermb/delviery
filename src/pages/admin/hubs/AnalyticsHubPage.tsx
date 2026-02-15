@@ -68,7 +68,7 @@ const tabs = [
     { id: 'export', label: 'Export', icon: Download, group: 'Reports' },
     // Strategy (Enterprise)
     { id: 'strategy', label: 'Strategy', icon: Target, group: 'Strategy' },
-    { id: 'board', label: 'Board', icon: Presentation, group: 'Strategy' },
+    { id: 'board', label: 'Board Report', icon: Presentation, group: 'Strategy' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
