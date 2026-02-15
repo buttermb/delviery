@@ -123,7 +123,7 @@ export function useMenuEvents(config: UseMenuEventsConfig) {
       };
 
       // Call the database function
-      const { error } = await supabase.rpc('log_menu_event', {
+      const { error } = await (supabase as any).rpc('log_menu_event', {
         p_tenant_id: tenantId,
         p_menu_id: menuId,
         p_session_id: sessionId,
@@ -268,7 +268,7 @@ export async function trackMenuEvent(
   }
 ): Promise<boolean> {
   try {
-    const { error } = await supabase.rpc('log_menu_event', {
+    const { error } = await (supabase as any).rpc('log_menu_event', {
       p_tenant_id: tenantId,
       p_menu_id: menuId,
       p_session_id: sessionId,

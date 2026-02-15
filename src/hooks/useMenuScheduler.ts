@@ -36,7 +36,7 @@ export interface MenuScheduleHistoryEntry {
  */
 export const useMenuSchedule = (menuId?: string) => {
   return useQuery({
-    queryKey: [...queryKeys.menus.detail(menuId || ''), 'schedule'],
+    queryKey: ['menu-schedule', menuId],
     queryFn: async () => {
       if (!menuId) return null;
 
@@ -91,7 +91,7 @@ export const useMenuSchedule = (menuId?: string) => {
  */
 export const useMenuScheduleHistory = (menuId?: string) => {
   return useQuery({
-    queryKey: [...queryKeys.menus.detail(menuId || ''), 'schedule-history'],
+    queryKey: ['menu-schedule-history', menuId],
     queryFn: async () => {
       if (!menuId) return [];
 
@@ -207,7 +207,7 @@ export const useUpdateMenuSchedule = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.menus.detail(variables.menuId) });
+      queryClient.invalidateQueries({ queryKey: ['menu-schedule', variables.menuId] });
 
       if (variables.isScheduled) {
         showSuccessToast(
@@ -281,7 +281,7 @@ export const useCancelMenuSchedule = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.menus.detail(variables.menuId) });
+      queryClient.invalidateQueries({ queryKey: ['menu-schedule', variables.menuId] });
       showSuccessToast('Schedule Cancelled', 'Menu scheduling has been disabled');
     },
     onError: (error: unknown) => {

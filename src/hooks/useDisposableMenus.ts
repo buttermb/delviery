@@ -7,7 +7,7 @@ import { queryKeys } from '@/lib/queryKeys';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
-    queryKey: queryKeys.menus.list({ tenantId }),
+    queryKey: queryKeys.menus.list(tenantId),
     queryFn: async () => {
       // Optimized query - select specific columns, use count for orders
       let query = (supabase as any)

@@ -326,7 +326,7 @@ export function useOrderConfirmation(): UseOrderConfirmationResult {
 
       // Optimistic update - mark order as confirmed in cache
       queryClient.setQueriesData(
-        { queryKey: queryKeys.orders.detail(orderId) },
+        { queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) },
         (old: Record<string, unknown> | undefined) => {
           if (!old) return old;
           return { ...old, status: 'confirmed' };

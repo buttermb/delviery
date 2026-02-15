@@ -109,7 +109,7 @@ async function fetchOrganizations(
   tenantId: string,
   filters?: OrganizationFilters
 ): Promise<OrganizationWithStats[]> {
-  let query = supabase
+  let query = (supabase as any)
     .from('customer_organizations')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -142,18 +142,18 @@ async function fetchOrganizations(
 
   for (const org of data || []) {
     // Get member count
-    const { count: memberCount } = await supabase
+    const { count: memberCount } = await (supabase as any)
       .from('organization_members')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .eq('organization_id', org.id);
+      .eq('organization_id', (org as any).id);
 
     // Get orders and LTV data
-    const { data: orderStats } = await supabase
+    const { data: orderStats } = await (supabase as any)
       .from('unified_orders')
       .select('total_amount, created_at')
       .eq('tenant_id', tenantId)
-      .eq('organization_id', org.id)
+      .eq('organization_id', (org as any).id)
       .in('status', ['completed', 'delivered', 'paid']);
 
     const validOrders = orderStats || [];
@@ -234,20 +234,20 @@ async function fetchOrganizationDetail(
   }
 
   return {
-    ...org,
+    ...(org as Record<string, unknown>),
     member_count: memberCount || 0,
     total_ltv: Math.round(totalLtv * 100) / 100,
     total_orders: totalOrders,
     avg_order_value: Math.round(avgOrderValue * 100) / 100,
     last_order_date: lastOrderDate,
-  };
+  } as unknown as OrganizationWithStats;
 }
 
 async function fetchOrganizationMembers(
   tenantId: string,
   orgId: string
 ): Promise<OrganizationMember[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('organization_members')
     .select(`
       *,
@@ -270,7 +270,7 @@ async function fetchOrganizationMembers(
       component: 'useOrganizations',
     });
 
-    const { data: simpleData, error: simpleError } = await supabase
+    const { data: simpleData, error: simpleError } = await (supabase as any)
       .from('organization_members')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -300,7 +300,7 @@ export function useOrganizations({
   filters,
   enabled = true,
 }: UseOrganizationsOptions = {}): UseOrganizationsReturn {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -322,7 +322,7 @@ export function useOrganizations({
     mutationFn: async (data: OrganizationFormValues): Promise<Organization> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: created, error } = await supabase
+      const { data: created, error } = await (supabase as any)
         .from('customer_organizations')
         .insert({
           tenant_id: tenantId,
@@ -354,7 +354,7 @@ export function useOrganizations({
           pricing_tier_id: data.pricing_tier_id || null,
           discount_percentage: data.discount_percentage || null,
           notes: data.notes || null,
-          created_by: user?.id || null,
+          created_by: admin?.id || null,
         })
         .select()
         .single();
@@ -393,7 +393,7 @@ export function useOrganizations({
     }): Promise<Organization> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: updated, error } = await supabase
+      const { data: updated, error } = await (supabase as any)
         .from('customer_organizations')
         .update({
           ...data,
@@ -435,14 +435,14 @@ export function useOrganizations({
       if (!tenantId) throw new Error('No tenant context');
 
       // First remove all members
-      await supabase
+      await (supabase as any)
         .from('organization_members')
         .delete()
         .eq('organization_id', id)
         .eq('tenant_id', tenantId);
 
       // Then delete organization
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_organizations')
         .delete()
         .eq('id', id)
@@ -479,7 +479,7 @@ export function useOrganizations({
     }): Promise<void> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_organizations')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id)

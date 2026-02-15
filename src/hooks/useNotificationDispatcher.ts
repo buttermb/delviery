@@ -42,7 +42,7 @@ interface CreateNotificationParams {
 async function createNotification(params: CreateNotificationParams): Promise<void> {
   const { tenantId, userId, title, message, type, entityType, entityId } = params;
 
-  const { error } = await supabase.from('notifications').insert({
+  const { error } = await (supabase as any).from('notifications').insert({
     tenant_id: tenantId,
     user_id: userId,
     title,

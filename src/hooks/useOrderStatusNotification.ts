@@ -103,7 +103,7 @@ async function createNotification(
   entityId: string,
   userId?: string | null
 ): Promise<void> {
-  const { error } = await supabase.from('notifications').insert({
+  const { error } = await (supabase as any).from('notifications').insert({
     tenant_id: tenantId,
     user_id: userId ?? null,
     title,
@@ -138,7 +138,7 @@ async function fetchOrderInfo(
   orderId: string,
   tenantId: string
 ): Promise<OrderInfo | null> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('unified_orders')
     .select(`
       id,

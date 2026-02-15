@@ -25,8 +25,8 @@ export function useDeliveryCostByOrder(orderId: string | undefined) {
       if (!tenantId || !orderId) return null;
 
       try {
-        const { data, error } = await supabase
-          .from('delivery_costs' as 'orders')
+        const { data, error } = await (supabase as any)
+          .from('delivery_costs')
           .select('*')
           .eq('tenant_id', tenantId)
           .eq('order_id', orderId)
@@ -62,8 +62,8 @@ export function useDeliveryCostAnalytics(dateFrom?: string, dateTo?: string) {
       if (!tenantId) return [];
 
       try {
-        let query = supabase
-          .from('delivery_costs' as 'orders')
+        let query = (supabase as any)
+          .from('delivery_costs')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });

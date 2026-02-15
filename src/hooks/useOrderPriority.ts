@@ -63,7 +63,7 @@ export function usePrioritySettings() {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_priority_settings')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -112,7 +112,7 @@ export function useUpdatePrioritySettings() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Upsert settings
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_priority_settings')
         .upsert({
           tenant_id: tenant.id,
@@ -146,7 +146,7 @@ export function useUpdatePrioritySettings() {
  * Hook to update order priority
  */
 export function useUpdateOrderPriority() {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -154,10 +154,10 @@ export function useUpdateOrderPriority() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Use the RPC function for proper tracking
-      const { error } = await supabase.rpc('update_order_priority', {
+      const { error } = await (supabase as any).rpc('update_order_priority', {
         p_order_id: orderId,
         p_priority: priority,
-        p_user_id: user?.id || null,
+        p_user_id: admin?.id || null,
       });
 
       if (error) {
@@ -219,7 +219,7 @@ export function usePriorityNotifications(options: { unacknowledgedOnly?: boolean
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      let query = supabase
+      let query = (supabase as any)
         .from('order_priority_notifications')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -249,18 +249,18 @@ export function usePriorityNotifications(options: { unacknowledgedOnly?: boolean
  * Hook to acknowledge a priority notification
  */
 export function useAcknowledgeNotification() {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (notificationId: string) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('order_priority_notifications')
         .update({
           acknowledged: true,
-          acknowledged_by: user?.id,
+          acknowledged_by: admin?.id,
           acknowledged_at: new Date().toISOString(),
         })
         .eq('id', notificationId)
@@ -289,18 +289,18 @@ export function useAcknowledgeNotification() {
  * Hook to acknowledge all notifications
  */
 export function useAcknowledgeAllNotifications() {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('order_priority_notifications')
         .update({
           acknowledged: true,
-          acknowledged_by: user?.id,
+          acknowledged_by: admin?.id,
           acknowledged_at: new Date().toISOString(),
         })
         .eq('tenant_id', tenant.id)
@@ -337,7 +337,7 @@ export function useUrgentNotificationCount() {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { count, error } = await supabase
+      const { count, error } = await (supabase as any)
         .from('order_priority_notifications')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenant.id)
