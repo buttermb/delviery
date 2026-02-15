@@ -116,10 +116,10 @@ export default function CustomerForm() {
           phone: customer.phone || '',
           date_of_birth: customer.date_of_birth || '',
           address: customer.address || '',
-          customer_type: customer.customer_type || 'recreational',
+          customer_type: (customer.customer_type || 'recreational') as 'medical' | 'recreational',
           medical_card_number: customer.medical_card_number || '',
           medical_card_expiration: customer.medical_card_expiration || '',
-          status: customer.status || 'active',
+          status: (customer.status || 'active') as 'active' | 'inactive' | 'suspended',
         });
       }
     } catch (error) {
