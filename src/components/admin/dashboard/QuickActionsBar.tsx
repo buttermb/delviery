@@ -38,7 +38,7 @@ export function QuickActionsBar() {
   ];
 
   return (
-    <Card className="p-3 sm:p-4">
+    <Card className="p-4 sm:p-6">
       <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:gap-3 sm:flex-wrap">
         <span className="text-sm font-medium text-muted-foreground hidden sm:inline">Quick Actions:</span>
         <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap sm:gap-3">

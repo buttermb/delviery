@@ -185,7 +185,7 @@ export default function CustomerCRMPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-3 sm:p-4">
+      <Card className="p-4 sm:p-6">
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           {/* Search */}
           <div className="flex-1">

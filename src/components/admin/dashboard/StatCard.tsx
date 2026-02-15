@@ -68,7 +68,7 @@ export function StatCard({
   const cardContent = (
     <Card
       className={cn(
-        'p-4 sm:p-6 border-2 hover:shadow-lg transition-all',
+        'p-4 sm:p-6 hover:shadow-md transition-all',
         colorClasses[color],
         isClickable && 'hover:scale-[1.02] cursor-pointer'
       )}

@@ -20,7 +20,7 @@ export function RecentItemsWidget() {
     };
 
     return (
-        <Card className="col-span-full md:col-span-1 shadow-sm border-none bg-gradient-to-br from-card to-muted/10">
+        <Card className="col-span-full md:col-span-1 bg-gradient-to-br from-card to-muted/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Recent Items</CardTitle>
                 <Button variant="ghost" size="sm" onClick={clearRecentItems} className="h-6 text-xs text-muted-foreground">
