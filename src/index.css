@@ -2292,3 +2292,118 @@ body.keyboard-open [data-radix-dialog-content] {
   animation: new-order-highlight 2s ease-out;
   transition: background-color 0.5s ease-out, border-color 0.5s ease-out;
 }
+
+/* ========================================
+   PRINT STYLES — Orders & Invoices
+   Hides sidebar/nav, formats A4 with business header
+   ======================================== */
+
+@media print {
+  /* Force color printing */
+  * {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* A4 page setup */
+  @page {
+    size: A4;
+    margin: 1.5cm 2cm;
+  }
+
+  /* Hide all navigation and chrome */
+  [data-sidebar],
+  .glass-floating,
+  .mobile-bottom-nav,
+  nav,
+  aside,
+  .no-print,
+  .print\\:hidden,
+  [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+
+  /* Reset layout — full width, no overflow hiding */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .min-h-dvh,
+  .h-dvh {
+    min-height: auto !important;
+    height: auto !important;
+  }
+
+  .overflow-hidden,
+  .overflow-y-auto,
+  .overflow-x-hidden {
+    overflow: visible !important;
+  }
+
+  /* Make main content full width, remove padding adjustments */
+  .flex-1.flex.flex-col {
+    width: 100% !important;
+  }
+
+  .max-w-5xl,
+  .max-w-7xl {
+    max-width: 100% !important;
+  }
+
+  /* Remove backgrounds and shadows */
+  .premium-gradient-mesh {
+    background-image: none !important;
+    background: white !important;
+  }
+
+  .glass-card,
+  .glass-panel {
+    background: white !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Card styling for print */
+  [data-slot="card"] {
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Tables should not break across pages */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Print business header */
+  .print-business-header {
+    display: block !important;
+  }
+
+  /* Badge styling for print */
+  [data-slot="badge"] {
+    border: 1px solid currentColor !important;
+  }
+
+  /* Remove animations and transitions */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure links show URL in print if useful */
+  a[href^="http"]::after {
+    content: none; /* Don't clutter with URLs */
+  }
+}

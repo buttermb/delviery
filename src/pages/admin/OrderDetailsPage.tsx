@@ -83,6 +83,7 @@ import Copy from "lucide-react/dist/esm/icons/copy";
 import Calendar from "lucide-react/dist/esm/icons/calendar";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Printer from "lucide-react/dist/esm/icons/printer";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -416,8 +417,23 @@ export function OrderDetailsPage() {
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('orders')}>
       <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+        {/* Print-only business header — hidden on screen, shown on print */}
+        <div className="hidden print:block print-business-header border-b-2 border-black pb-4 mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold">{tenant?.name || 'FloraIQ'}</h1>
+              <p className="text-sm text-gray-600 mt-1">Order Confirmation</p>
+            </div>
+            <div className="text-right text-sm text-gray-600">
+              <p>Order #{order.order_number}</p>
+              <p>{format(new Date(order.created_at), 'PPP')}</p>
+              <p className="capitalize">Status: {order.status.replace('_', ' ')}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('orders')}>
               <ArrowLeft className="h-4 w-4" />
@@ -437,7 +453,12 @@ export function OrderDetailsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 mr-1" />
+              Print
+            </Button>
+
             {order.tracking_token && (
               <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl}>
                 <Copy className="w-4 h-4 mr-1" />
@@ -703,7 +724,7 @@ export function OrderDetailsPage() {
                                   <p className="text-xs text-muted-foreground">{item.variant}</p>
                                 )}
                                 {item.product_id && (
-                                  <p className="text-xs text-primary">Click to view details</p>
+                                  <p className="text-xs text-primary print:hidden">Click to view details</p>
                                 )}
                               </div>
                             </div>
@@ -819,62 +840,74 @@ export function OrderDetailsPage() {
               </CardContent>
             </Card>
 
-            {/* Order Source with Traceability */}
-            <OrderSourceInfo
-              source={order.order_source}
-              sourceMenuId={order.source_menu_id}
-              sourceSessionId={order.source_session_id}
-            />
-
-            {/* Storefront Session Link - Customer Journey Details */}
-            {order.source_session_id && (
-              <StorefrontSessionLink
-                sessionId={order.source_session_id}
-                menuId={order.source_menu_id}
+            {/* Order Source with Traceability — hide on print */}
+            <div className="print:hidden">
+              <OrderSourceInfo
+                source={order.order_source}
+                sourceMenuId={order.source_menu_id}
+                sourceSessionId={order.source_session_id}
               />
+            </div>
+
+            {/* Storefront Session Link - Customer Journey Details — hide on print */}
+            {order.source_session_id && (
+              <div className="print:hidden">
+                <StorefrontSessionLink
+                  sessionId={order.source_session_id}
+                  menuId={order.source_menu_id}
+                />
+              </div>
             )}
 
-            {/* Order Analytics Insights */}
-            <OrderAnalyticsInsights
-              orderId={order.id}
-              customerId={order.customer_id}
-              orderTotal={order.total_amount}
-              orderCreatedAt={order.created_at}
-              orderItems={order.order_items}
-            />
-
-            {/* Payment Status with Real-time Sync */}
-            <OrderPaymentStatusSync
-              orderId={order.id}
-              orderAmount={order.total_amount}
-              currentPaymentStatus={order.payment_status}
-              autoUpdateOrderStatus={true}
-              onPaymentStatusChange={() => {
-                queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
-              }}
-            />
-
-            {/* Delivery Status with Real-time Sync */}
-            <OrderDeliveryStatusSync
-              orderId={order.id}
-              autoUpdateOrderStatus={true}
-              onDeliveryStatusChange={() => {
-                queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
-              }}
-            />
-
-            {/* Delivery P&L */}
-            {(order.delivery_fee > 0 || order.delivery_address) && (
-              <DeliveryPLCard
+            {/* Order Analytics Insights — hide on print */}
+            <div className="print:hidden">
+              <OrderAnalyticsInsights
                 orderId={order.id}
-                deliveryFee={order.delivery_fee || 0}
-                tipAmount={((order as unknown as Record<string, unknown>).tip_amount as number) || 0}
-                courierId={order.courier_id}
-                distanceMiles={((order as unknown as Record<string, unknown>).distance_miles as number) || null}
-                deliveryTimeMinutes={((order as unknown as Record<string, unknown>).eta_minutes as number) || null}
-                deliveryZone={((order as unknown as Record<string, unknown>).delivery_zone as string) || null}
-                deliveryBorough={((order as unknown as Record<string, unknown>).delivery_borough as string) || null}
+                customerId={order.customer_id}
+                orderTotal={order.total_amount}
+                orderCreatedAt={order.created_at}
+                orderItems={order.order_items}
               />
+            </div>
+
+            {/* Payment Status with Real-time Sync — hide on print */}
+            <div className="print:hidden">
+              <OrderPaymentStatusSync
+                orderId={order.id}
+                orderAmount={order.total_amount}
+                currentPaymentStatus={order.payment_status}
+                autoUpdateOrderStatus={true}
+                onPaymentStatusChange={() => {
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+                }}
+              />
+            </div>
+
+            {/* Delivery Status with Real-time Sync — hide on print */}
+            <div className="print:hidden">
+              <OrderDeliveryStatusSync
+                orderId={order.id}
+                autoUpdateOrderStatus={true}
+                onDeliveryStatusChange={() => {
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+                }}
+              />
+            </div>
+
+            {/* Delivery P&L — hide on print */}
+            {(order.delivery_fee > 0 || order.delivery_address) && (
+              <div className="print:hidden">
+                <DeliveryPLCard
+                  orderId={order.id}
+                  deliveryFee={order.delivery_fee || 0}
+                  tipAmount={((order as unknown as Record<string, unknown>).tip_amount as number) || 0}
+                  courierId={order.courier_id}
+                  distanceMiles={((order as unknown as Record<string, unknown>).distance_miles as number) || null}
+                  deliveryTimeMinutes={((order as unknown as Record<string, unknown>).eta_minutes as number) || null}
+                  deliveryZone={((order as unknown as Record<string, unknown>).delivery_zone as string) || null}
+                  deliveryBorough={((order as unknown as Record<string, unknown>).delivery_borough as string) || null}
+                />
+              </div>
             )}
 
             {/* Customer Info */}
@@ -906,7 +939,7 @@ export function OrderDetailsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full mt-2"
+                    className="w-full mt-2 print:hidden"
                     onClick={() => navigateToAdmin(`customers/${order.customer_id}`)}
                   >
                     View Customer Profile
@@ -957,40 +990,48 @@ export function OrderDetailsPage() {
               </Card>
             )}
 
-            {/* Internal Threaded Notes with @mentions */}
-            <OrderThreadedNotes
-              orderId={order.id}
-              orderNumber={order.order_number}
-            />
+            {/* Internal Threaded Notes with @mentions — hide on print */}
+            <div className="print:hidden">
+              <OrderThreadedNotes
+                orderId={order.id}
+                orderNumber={order.order_number}
+              />
+            </div>
 
-            {/* Related Entities Panel */}
-            <OrderRelatedEntitiesPanel orderId={order.id} />
+            {/* Related Entities Panel — hide on print */}
+            <div className="print:hidden">
+              <OrderRelatedEntitiesPanel orderId={order.id} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Product Quick View Panel */}
-      <OrderProductQuickView
-        isOpen={!!quickViewProductId}
-        onClose={() => {
-          setQuickViewProductId(null);
-          setQuickViewProductName('');
-        }}
-        productId={quickViewProductId}
-        productName={quickViewProductName}
-      />
+      {/* Product Quick View Panel — hidden on print */}
+      <div className="print:hidden">
+        <OrderProductQuickView
+          isOpen={!!quickViewProductId}
+          onClose={() => {
+            setQuickViewProductId(null);
+            setQuickViewProductName('');
+          }}
+          productId={quickViewProductId}
+          productName={quickViewProductName}
+        />
+      </div>
 
-      {/* Assign Delivery Runner Dialog */}
-      <AssignDeliveryRunnerDialog
-        orderId={order.id}
-        orderNumber={order.order_number}
-        deliveryAddress={order.delivery_address}
-        open={showAssignRunnerDialog}
-        onOpenChange={setShowAssignRunnerDialog}
-        onAssigned={() => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
-        }}
-      />
+      {/* Assign Delivery Runner Dialog — hidden on print */}
+      <div className="print:hidden">
+        <AssignDeliveryRunnerDialog
+          orderId={order.id}
+          orderNumber={order.order_number}
+          deliveryAddress={order.delivery_address}
+          open={showAssignRunnerDialog}
+          onOpenChange={setShowAssignRunnerDialog}
+          onAssigned={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+          }}
+        />
+      </div>
     </SwipeBackWrapper>
   );
 }
