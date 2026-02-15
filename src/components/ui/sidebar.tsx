@@ -5,6 +5,7 @@ import { Menu, PanelLeft } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { STORAGE_KEYS, safeStorage } from "@/constants/storageKeys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -143,8 +144,10 @@ const SidebarProvider = React.forwardRef<
         _setOpen(openState);
       }
 
-      // This sets the cookie to keep the sidebar state.
+      // Persist sidebar state to cookie and localStorage
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      // Store collapsed state in localStorage for reliable persistence across sessions
+      safeStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, openState ? 'false' : 'true');
     },
     [setOpenProp, open],
   );
