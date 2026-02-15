@@ -80,7 +80,7 @@ export default function ImagesPage() {
 
   // Load products for assignment
   const { data: products = [] } = useQuery({
-    queryKey: queryKeys.products.list({ tenantId, forImages: true }),
+    queryKey: queryKeys.products.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase

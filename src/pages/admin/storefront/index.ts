@@ -5,7 +5,7 @@
 
 export { default as StorefrontDashboard } from './StorefrontDashboard';
 export { default as StorefrontSettings } from './StorefrontSettings';
-export { default as StorefrontBuilder } from './StorefrontBuilder';
+export { StorefrontBuilder } from './StorefrontBuilder';
 export { default as StorefrontProducts } from './StorefrontProducts';
 export { default as StorefrontOrders } from './StorefrontOrders';
 export { default as StorefrontBundles } from './StorefrontBundles';

@@ -41,7 +41,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 export default function BillingDashboard() {
   const { tenant, refresh } = useTenant();
   const { toast } = useToast();
-  const _queryClient = useQueryClient();
+  const queryClient = _queryClient || {};
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('');
 

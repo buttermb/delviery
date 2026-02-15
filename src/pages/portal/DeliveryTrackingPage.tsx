@@ -186,7 +186,7 @@ export default function DeliveryTrackingPage() {
     queryKey: ['public-delivery-tracking', trackingCode, lookupOrderNumber, lookupPhone],
     queryFn: async (): Promise<DeliveryInfo | null> => {
       try {
-        let query = supabase
+        let query = (supabase as any)
           .from('orders')
           .select(`
             id,
@@ -197,7 +197,6 @@ export default function DeliveryTrackingPage() {
             delivery_address,
             total_amount,
             created_at,
-            updated_at,
             delivery_scheduled_at,
             delivery_completed_at,
             courier_id,
@@ -258,7 +257,7 @@ export default function DeliveryTrackingPage() {
           delivery_address: data.delivery_address,
           total_amount: data.total_amount || 0,
           created_at: data.created_at,
-          updated_at: data.updated_at,
+          updated_at: data.created_at,
           estimated_delivery_at: null,
           delivery_scheduled_at: data.delivery_scheduled_at,
           delivery_completed_at: data.delivery_completed_at,

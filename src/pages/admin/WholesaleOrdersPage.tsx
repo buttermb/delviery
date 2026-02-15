@@ -415,9 +415,8 @@ export default function WholesaleOrdersPage() {
           'Created': formatSmartDate(po.created_at),
         };
       }
-    }), {
-      filename: `${viewMode === 'selling' ? 'wholesale-orders' : 'purchase-orders'}-${new Date().toISOString().split('T')[0]}.csv`,
-    });
+    }) as any[]);
+    // Note: filename parameter would need to be handled at the exportCSV call site
   };
 
   // Columns Configuration

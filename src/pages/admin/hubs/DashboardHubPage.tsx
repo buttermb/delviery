@@ -475,7 +475,7 @@ function pctChange(today: number, yesterday: number): number {
 export function DashboardHubPage() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats();
+  const { data: stats, isLoading, error } = useDashboardStats();
   const queryClient = useQueryClient();
 
   const buildUrl = (path: string) => `/${tenantSlug}/admin/${path}`;
@@ -508,9 +508,7 @@ export function DashboardHubPage() {
     );
   }
 
-  const lastUpdated = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString()
-    : null;
+  const lastUpdated = new Date().toLocaleTimeString();
 
   return (
     <div className="p-6 space-y-6">

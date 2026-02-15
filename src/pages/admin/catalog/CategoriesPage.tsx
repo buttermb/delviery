@@ -122,7 +122,7 @@ export default function CategoriesPage() {
         }
         if (error) throw error;
         setTableMissing(false);
-        return (data || []) as Category[];
+        return (data || []) as unknown as Category[];
       } catch (error) {
         if ((error as { code?: string })?.code === '42P01') {
           setTableMissing(true);
