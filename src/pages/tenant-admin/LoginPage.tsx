@@ -411,6 +411,17 @@ export default function TenantAdminLoginPage() {
                 <span className="text-xs sm:text-sm">Go to Customer Portal →</span>
               </Link>
             </div>
+            <div className="pt-3 sm:pt-4 border-t border-border">
+              <p className="text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/signup"
+                  className="text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
