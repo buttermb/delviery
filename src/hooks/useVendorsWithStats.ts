@@ -100,7 +100,7 @@ export function useVendorsWithStats() {
 
       // Fetch aggregate ratings for all vendors
       const vendorIds = vendors.map((v) => v.id);
-      const { data: ratings, error: ratingsError } = await supabase
+      const { data: ratings, error: ratingsError } = await (supabase as any)
         .from('vendor_ratings')
         .select('vendor_id, overall_score')
         .eq('tenant_id', tenantId)
@@ -116,9 +116,10 @@ export function useVendorsWithStats() {
       const ratingMap = new Map<string, { total: number; count: number }>();
       if (ratings) {
         for (const rating of ratings) {
-          const existing = ratingMap.get(rating.vendor_id) || { total: 0, count: 0 };
-          ratingMap.set(rating.vendor_id, {
-            total: existing.total + rating.overall_score,
+          const r = rating as any;
+          const existing = ratingMap.get(r.vendor_id) || { total: 0, count: 0 };
+          ratingMap.set(r.vendor_id, {
+            total: existing.total + r.overall_score,
             count: existing.count + 1,
           });
         }
@@ -143,7 +144,7 @@ export function useVendorsWithStats() {
           zip_code: vendor.zip_code,
           license_number: vendor.license_number,
           payment_terms: vendor.payment_terms,
-          lead_time_days: vendor.lead_time_days,
+          lead_time_days: (vendor as any).lead_time_days || null,
           status: vendor.status,
           notes: vendor.notes,
           product_count: productCountMap.get(vendor.name) || 0,
@@ -202,7 +203,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         .eq('vendor_name', vendorName);
 
       // Fetch ratings
-      const { data: ratings } = await supabase
+      const { data: ratings } = await (supabase as any)
         .from('vendor_ratings')
         .select('overall_score')
         .eq('tenant_id', tenantId)
@@ -211,7 +212,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
       const avgRating =
         ratings && ratings.length > 0
           ? Math.round(
-              (ratings.reduce((sum, r) => sum + r.overall_score, 0) / ratings.length) * 10
+              (ratings.reduce((sum: number, r: any) => sum + r.overall_score, 0) / ratings.length) * 10
             ) / 10
           : null;
 
@@ -227,7 +228,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         zip_code: vendor.zip_code,
         license_number: vendor.license_number,
         payment_terms: vendor.payment_terms,
-        lead_time_days: vendor.lead_time_days,
+        lead_time_days: (vendor as any).lead_time_days || null,
         status: vendor.status,
         notes: vendor.notes,
         product_count: productCount || 0,

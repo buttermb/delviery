@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Menu, LogOut, DollarSign, Clock, Settings } from 'lucide-react';
+import { Menu, LogOut, DollarSign, Clock, Settings, Package, Truck } from 'lucide-react';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
@@ -213,7 +213,7 @@ export default function CourierDashboardPage() {
                     className="w-full justify-start"
                     onClick={() => navigate('/courier/dashboard')}
                   >
-                    <Package className="mr-2 h-4 w-4" />
+                    <Truck className="mr-2 h-4 w-4" />
                     Dashboard
                   </Button>
                   <Button

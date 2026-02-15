@@ -15,12 +15,17 @@ export interface LocationInventoryItem {
   product_id: string;
   location_id: string;
   quantity: number;
+  reserved_quantity?: number;
   product?: {
     id: string;
     name: string;
     sku?: string;
     category?: string;
     image_url?: string;
+  };
+  location?: {
+    id: string;
+    name: string;
   };
 }
 

@@ -123,8 +123,8 @@ export default function StoreMenuPage() {
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
-      const { data, error } = await supabase.rpc(
-        'get_marketplace_store_by_slug' as unknown as string,
+      const { data, error } = await (supabase as any).rpc(
+        'get_marketplace_store_by_slug',
         { p_slug: slug }
       );
 
@@ -134,7 +134,7 @@ export default function StoreMenuPage() {
       }
 
       if (!data || !Array.isArray(data) || data.length === 0) return null;
-      return data[0] as StoreData;
+      return data[0] as unknown as StoreData;
     },
     enabled: !!slug,
     retry: false,
@@ -148,7 +148,7 @@ export default function StoreMenuPage() {
     queryFn: async (): Promise<MenuProduct[]> => {
       if (!store?.tenant_id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select(
           'product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content, description, display_order, created_at'
@@ -162,7 +162,7 @@ export default function StoreMenuPage() {
         return [];
       }
 
-      return (data ?? []) as MenuProduct[];
+      return (data ?? []) as unknown as MenuProduct[];
     },
     enabled: !!store?.tenant_id,
     staleTime: 60_000,

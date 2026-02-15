@@ -158,7 +158,7 @@ export default function CustomerInvoices() {
         }
 
         // Fallback: Try Edge Function
-        const { data: _edgeData, error: edgeError } = await callAdminFunction({
+        const { data: edgeData, error: edgeError } = await callAdminFunction({
           functionName: 'invoice-management',
           body: { action: 'list', tenant_id: tenant.id },
           errorMessage: 'Failed to load invoices',

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useEncryption } from "@/lib/hooks/useEncryption";
+import { decryptCustomerData } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +59,7 @@ export default function CustomerCRMPage() {
   const { data: dashboardMetrics } = useCRMDashboard();
 
   const { data: customers, isLoading } = useQuery({
-    queryKey: queryKeys.customers.list({ lifecycle: lifecycleFilter, segment: segmentFilter }),
+    queryKey: queryKeys.customers.list(tenant?.id, { lifecycle: lifecycleFilter, segment: segmentFilter }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -304,7 +305,7 @@ export default function CustomerCRMPage() {
                 <CardDescription>Latest actions across your CRM</CardDescription>
               </CardHeader>
               <CardContent>
-                <ActivityTimeline activities={dashboardMetrics?.recentActivity || []} />
+                <ActivityTimeline activities={(dashboardMetrics?.recentActivity || []) as any} />
               </CardContent>
             </Card>
             <Card className="col-span-3">

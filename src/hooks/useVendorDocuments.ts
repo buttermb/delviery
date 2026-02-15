@@ -101,7 +101,7 @@ const STORAGE_PREFIX = 'vendor-documents';
 // ============================================================================
 
 export function useVendorDocuments(vendorId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -116,7 +116,7 @@ export function useVendorDocuments(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_documents')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -262,16 +262,16 @@ export function useVendorDocuments(vendorId: string) {
       // Get user name for uploaded_by_name
       let uploadedByName: string | null = null;
       if (user?.id) {
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('tenant_users')
           .select('full_name')
           .eq('user_id', user.id)
           .eq('tenant_id', tenantId)
           .maybeSingle();
-        uploadedByName = profile?.full_name ?? user.email ?? null;
+        uploadedByName = (profile as any)?.full_name ?? user.email ?? null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_documents')
         .insert({
           tenant_id: tenantId,
@@ -320,7 +320,7 @@ export function useVendorDocuments(vendorId: string) {
       if (input.expiration_date !== undefined) updateData.expiration_date = input.expiration_date;
       if (input.notes !== undefined) updateData.notes = input.notes;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_documents')
         .update(updateData)
         .eq('id', input.id)
@@ -354,7 +354,7 @@ export function useVendorDocuments(vendorId: string) {
       }
 
       // First get the document to find the file path
-      const { data: doc, error: fetchError } = await supabase
+      const { data: doc, error: fetchError } = await (supabase as any)
         .from('vendor_documents')
         .select('file_url')
         .eq('id', documentId)
@@ -371,7 +371,7 @@ export function useVendorDocuments(vendorId: string) {
       }
 
       // Delete from database
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_documents')
         .delete()
         .eq('id', documentId)
@@ -387,10 +387,10 @@ export function useVendorDocuments(vendorId: string) {
       }
 
       // Try to delete from storage (don't fail if this fails)
-      if (doc?.file_url) {
+      if ((doc as any)?.file_url) {
         try {
           // Extract path from URL
-          const url = new URL(doc.file_url);
+          const url = new URL((doc as any).file_url);
           const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/documents\/(.+)/);
           if (pathMatch?.[1]) {
             await supabase.storage.from(STORAGE_BUCKET).remove([pathMatch[1]]);

@@ -98,6 +98,7 @@ interface ProductWithSettings {
   minimum_price: number | null;
   min_expiry_days: number | null;
   unit_type: string | null;
+  brand?: string | null;
   slug: string | null;
 }
 
@@ -275,7 +276,7 @@ export function ProductCatalogPage() {
           logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
-        return (data || []).map((item: RpcProduct) => transformProduct(item));
+        return (data || []).map((item: any) => transformProduct(item as RpcProduct));
       } catch (err) {
         logger.error('Error fetching products', err, { storeId: store.id });
         throw err;

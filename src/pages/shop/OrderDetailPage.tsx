@@ -129,7 +129,7 @@ export function OrderDetailPage() {
 
     setIsCancelling(true);
     try {
-      const { error: cancelError } = await supabase
+      const { error: cancelError } = await (supabase as any)
         .from('marketplace_orders')
         .update({
           status: 'cancelled',

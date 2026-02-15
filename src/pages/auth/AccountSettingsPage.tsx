@@ -328,7 +328,7 @@ function PasswordTab() {
       if (error) throw error;
 
       toast.success('Password updated successfully');
-      setCurrentPassword('');
+      setNewPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {

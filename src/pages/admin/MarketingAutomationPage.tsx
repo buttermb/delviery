@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -88,7 +89,7 @@ export default function MarketingAutomationPage() {
   });
 
   const handleEditCampaign = (campaign: MarketingCampaign) => {
-    setEditingCampaign(campaign);
+    _setEditingCampaign(campaign);
     setIsCreateOpen(true);
   };
 

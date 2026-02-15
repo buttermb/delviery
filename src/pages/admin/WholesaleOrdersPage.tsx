@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { quickExportCSV } from '@/lib/utils/exportUtils';
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
@@ -390,7 +391,7 @@ export default function WholesaleOrdersPage() {
       ? filteredOrders.filter((o) => selectedOrders.includes(o.id))
       : filteredOrders;
 
-    exportCSV(dataToExport.map((order) => {
+    quickExportCSV(dataToExport.map((order) => {
       if (viewMode === 'selling') {
         const wo = order as WholesaleOrder;
         return {
@@ -415,9 +416,8 @@ export default function WholesaleOrdersPage() {
           'Created': formatSmartDate(po.created_at),
         };
       }
-    }), {
-      filename: `${viewMode === 'selling' ? 'wholesale-orders' : 'purchase-orders'}-${new Date().toISOString().split('T')[0]}.csv`,
-    });
+    }) as any[], `wholesale-orders-${viewMode}.csv`);
+    // Note: filename parameter would need to be handled at the exportCSV call site
   };
 
   // Columns Configuration

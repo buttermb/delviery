@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Building2, ArrowLeft } from "lucide-react";
+import { Loader2, Building2, ArrowLeft, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { handleError } from '@/utils/errorHandling/handlers';
 

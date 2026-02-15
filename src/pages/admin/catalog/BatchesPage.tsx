@@ -100,7 +100,7 @@ export default function BatchesPage() {
 
   // Fetch products for dropdown
   const { data: products } = useQuery({
-    queryKey: queryKeys.products.list({ tenantId }),
+    queryKey: queryKeys.products.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

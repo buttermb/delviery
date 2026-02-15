@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,7 +49,32 @@ export default function LocationInventoryPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
 
-  const { inventory, summary, isLoading, error, refetch } = useLocationInventory(selectedLocationId);
+  const { data: inventory = [], isLoading, error, refetch } = useLocationInventory(selectedLocationId);
+
+  // Compute summary by product for "all locations" view
+  const summary = useMemo(() => {
+    if (selectedLocationId || !inventory.length) return [];
+    const map = new Map<string, { product_id: string; product_name: string; sku: string; location_count: number; total_quantity: number; total_reserved: number }>();
+    for (const item of inventory) {
+      const pid = (item as any).product_id || item.product?.id || item.id;
+      const existing = map.get(pid);
+      if (existing) {
+        existing.location_count += 1;
+        existing.total_quantity += item.quantity || 0;
+        existing.total_reserved += (item as any).reserved_quantity || 0;
+      } else {
+        map.set(pid, {
+          product_id: pid,
+          product_name: item.product?.name || 'Unknown',
+          sku: item.product?.sku || '',
+          location_count: 1,
+          total_quantity: item.quantity || 0,
+          total_reserved: (item as any).reserved_quantity || 0,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [inventory, selectedLocationId]);
 
   const selectedLocation = selectedLocationId ? getLocationById(selectedLocationId) : null;
 
@@ -379,10 +404,10 @@ export default function LocationInventoryPage() {
                     </TableCell>
                     <TableCell
                       className={`text-right font-mono ${
-                        item.available_quantity <= 0 ? 'text-red-500' : 'text-green-500'
+                        (item.total_quantity - item.total_reserved) <= 0 ? 'text-destructive' : 'text-green-500'
                       }`}
                     >
-                      {item.available_quantity.toLocaleString()}
+                      {(item.total_quantity - item.total_reserved).toLocaleString()}
                     </TableCell>
                   </TableRow>
                 ))}

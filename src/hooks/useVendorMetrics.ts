@@ -152,7 +152,7 @@ export function useVendorsComparison(vendorIds: string[]) {
       const endDate = new Date().toISOString();
 
       // Fetch all vendors' POs
-      const { data: allPOs, error } = await supabase
+      const { data: allPOs, error } = await (supabase as any)
         .from('purchase_orders')
         .select(`
           id,
@@ -243,7 +243,7 @@ async function fetchPurchaseOrders(
   startDate: string,
   endDate: string
 ): Promise<PurchaseOrderRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('purchase_orders')
     .select(`
       id,
@@ -290,7 +290,7 @@ async function fetchVendorPayments(
   startDate: string,
   endDate: string
 ): Promise<VendorPaymentRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('vendor_payments')
     .select(`
       id,
@@ -329,7 +329,7 @@ async function fetchPurchaseOrderItems(
   vendorId: string
 ): Promise<POItemRow[]> {
   // First get all PO IDs for this vendor
-  const { data: poIds, error: poError } = await supabase
+  const { data: poIds, error: poError } = await (supabase as any)
     .from('purchase_orders')
     .select('id')
     .eq('tenant_id', tenantId)

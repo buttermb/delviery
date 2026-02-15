@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import FloraIQLogo from '@/components/FloraIQLogo';
 import {
   Check, ArrowRight, Zap, Shield,
-  Globe, Lock, TrendingUp, Star, Activity
+  Globe, Lock, TrendingUp, Star, Activity, Users
 } from 'lucide-react';
 
 import {

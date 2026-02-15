@@ -126,7 +126,7 @@ export default function DeliveryZones() {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const drawnItemsRef = useRef<L.FeatureGroup | null>(null);
   const drawControlRef = useRef<L.Control.Draw | null>(null);
-  const zoneLayersRef = useRef<Map<string, L.Polygon>>(new Map());
+  const zoneLayersRef = useRef<Map<string, L.Polygon> | null>(null);
 
   // UI state
   const [isMapReady, setIsMapReady] = useState(false);

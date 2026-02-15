@@ -97,7 +97,7 @@ export const COMMUNICATION_TYPE_OPTIONS = Object.entries(COMMUNICATION_TYPE_LABE
 // ============================================================================
 
 export function useVendorCommunications(vendorId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -112,7 +112,7 @@ export function useVendorCommunications(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_communication_logs')
         .select(`
           *,
@@ -187,16 +187,16 @@ export function useVendorCommunications(vendorId: string) {
       // Get user name for created_by_name
       let createdByName: string | null = null;
       if (user?.id) {
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('tenant_users')
           .select('full_name')
           .eq('user_id', user.id)
           .eq('tenant_id', tenantId)
           .maybeSingle();
-        createdByName = profile?.full_name ?? user.email ?? null;
+        createdByName = (profile as any)?.full_name ?? user.email ?? null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_communication_logs')
         .insert({
           tenant_id: tenantId,
@@ -253,7 +253,7 @@ export function useVendorCommunications(vendorId: string) {
       if (input.contact_phone !== undefined) updateData.contact_phone = input.contact_phone;
       if (input.communication_date !== undefined) updateData.communication_date = input.communication_date;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_communication_logs')
         .update(updateData)
         .eq('id', input.id)
@@ -289,7 +289,7 @@ export function useVendorCommunications(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_communication_logs')
         .delete()
         .eq('id', communicationId)
@@ -360,7 +360,7 @@ export function useVendorPurchaseOrders(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('purchase_orders')
         .select('id, po_number, status, created_at')
         .eq('tenant_id', tenantId)

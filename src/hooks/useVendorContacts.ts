@@ -79,7 +79,7 @@ export interface CreateContactHistoryInput {
 // ============================================================================
 
 export function useVendorContacts(vendorId: string) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin: user } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -91,7 +91,7 @@ export function useVendorContacts(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_contacts')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -120,7 +120,7 @@ export function useVendorContacts(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_contacts')
         .insert({
           tenant_id: tenantId,
@@ -170,7 +170,7 @@ export function useVendorContacts(vendorId: string) {
       if (input.is_primary !== undefined) updateData.is_primary = input.is_primary;
       if (input.notes !== undefined) updateData.notes = input.notes;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_contacts')
         .update(updateData)
         .eq('id', input.id)
@@ -203,7 +203,7 @@ export function useVendorContacts(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vendor_contacts')
         .delete()
         .eq('id', contactId)
@@ -232,7 +232,7 @@ export function useVendorContacts(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_contacts')
         .update({ is_primary: true })
         .eq('id', contactId)
@@ -265,7 +265,7 @@ export function useVendorContacts(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_contact_history')
         .insert({
           tenant_id: tenantId,
@@ -336,7 +336,7 @@ export function useVendorContactHistory(contactId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_contact_history')
         .select('*')
         .eq('tenant_id', tenantId)

@@ -42,15 +42,15 @@ import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 import { queryKeys } from '@/lib/queryKeys';
 
 // Permission categories for UI organization
-const PERMISSION_CATEGORIES = {
-  orders: ['orders.view', 'orders.create', 'orders.edit', 'orders.delete'],
-  products: ['products.view', 'products.create', 'products.edit', 'products.delete'],
-  customers: ['customers.view', 'customers.create', 'customers.edit', 'customers.delete'],
-  inventory: ['inventory.view', 'inventory.adjust'],
-  reports: ['reports.view', 'reports.export'],
-  settings: ['settings.view', 'settings.edit'],
-  team: ['team.view', 'team.invite', 'team.manage'],
-};
+const PERMISSION_CATEGORIES = [
+  { name: 'Orders', permissions: [{ key: 'orders.view', label: 'View Orders' }, { key: 'orders.create', label: 'Create Orders' }, { key: 'orders.edit', label: 'Edit Orders' }, { key: 'orders.delete', label: 'Delete Orders' }] },
+  { name: 'Products', permissions: [{ key: 'products.view', label: 'View Products' }, { key: 'products.create', label: 'Create Products' }, { key: 'products.edit', label: 'Edit Products' }, { key: 'products.delete', label: 'Delete Products' }] },
+  { name: 'Customers', permissions: [{ key: 'customers.view', label: 'View Customers' }, { key: 'customers.create', label: 'Create Customers' }, { key: 'customers.edit', label: 'Edit Customers' }, { key: 'customers.delete', label: 'Delete Customers' }] },
+  { name: 'Inventory', permissions: [{ key: 'inventory.view', label: 'View Inventory' }, { key: 'inventory.adjust', label: 'Adjust Inventory' }] },
+  { name: 'Reports', permissions: [{ key: 'reports.view', label: 'View Reports' }, { key: 'reports.export', label: 'Export Reports' }] },
+  { name: 'Settings', permissions: [{ key: 'settings.view', label: 'View Settings' }, { key: 'settings.edit', label: 'Edit Settings' }] },
+  { name: 'Team', permissions: [{ key: 'team.view', label: 'View Team' }, { key: 'team.invite', label: 'Invite Members' }, { key: 'team.manage', label: 'Manage Team' }] },
+];
 
 // Get human-readable permission label
 function getPermissionLabel(permission: string): string {
@@ -117,14 +117,14 @@ export function RoleManagement() {
         // Fetch permissions for each role
         const rolesWithPermissions = await Promise.all(
           (rolesData || []).map(async (role) => {
-            const { data: permData } = await supabase
+            const { data: permData } = await (supabase as any)
               .from('tenant_role_permissions')
-              .select('permission_key')
+              .select('permission')
               .eq('role_id', role.id);
 
             return {
               ...role,
-              permissions: (permData || []).map((p) => p.permission_key),
+              permissions: (permData || []).map((p: any) => p.permission),
             };
           })
         );
@@ -167,12 +167,13 @@ export function RoleManagement() {
 
       // Add permissions
       if (data.permissions.length > 0) {
-        const { error: permError } = await supabase
+        const { error: permError } = await (supabase as any)
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
               role_id: roleData.id,
-              permission_key: perm,
+              permission: perm,
+              tenant_id: tenant?.id,
             }))
           );
 
@@ -242,12 +243,13 @@ export function RoleManagement() {
       await supabase.from('tenant_role_permissions').delete().eq('role_id', id);
 
       if (data.permissions.length > 0) {
-        const { error: permError } = await supabase
+        const { error: permError } = await (supabase as any)
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
               role_id: id,
-              permission_key: perm,
+              permission: perm,
+              tenant_id: tenant?.id,
             }))
           );
 
@@ -306,7 +308,7 @@ export function RoleManagement() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) });
+      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
       toast({ title: 'Role deleted', description: 'The role has been deleted successfully.' });
       setRoleToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -336,7 +338,7 @@ export function RoleManagement() {
     });
     // Expand categories that have selected permissions
     const categoriesWithSelections = PERMISSION_CATEGORIES.filter((cat) =>
-      cat.permissions.some((p) => role.permissions?.includes(p.key))
+      cat.permissions.some((p) => (role.permissions || []).includes(p.key))
     ).map((cat) => cat.name);
     setExpandedCategories(categoriesWithSelections);
     setIsDialogOpen(true);
@@ -514,7 +516,7 @@ export function RoleManagement() {
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <p className="text-muted-foreground">Failed to load roles. Please try again.</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.list(tenantId) })}>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['roles', tenantId] })}>
           Retry
         </Button>
       </div>
@@ -639,7 +641,7 @@ export function RoleManagement() {
                             <div className="flex flex-col items-start gap-0.5">
                               <span className="font-medium text-sm">{category.name}</span>
                               <span className="text-xs text-muted-foreground font-normal">
-                                {category.description}
+                                {category.permissions.length} permissions
                               </span>
                             </div>
                             <Badge variant="secondary" className="ml-auto mr-2 text-xs">
@@ -666,7 +668,7 @@ export function RoleManagement() {
                                       {permission.label}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                      {permission.description}
+                                      {permission.key}
                                     </span>
                                   </div>
                                 </label>

@@ -281,12 +281,12 @@ export default function CustomerMenuViewPage() {
       <SmartSearchOverlay
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        products={mappedProducts}
+        products={mappedProducts as any}
         onProductSelect={(id) => {
           // Find product and scroll to it or filter
           const product = mappedProducts.find((p: any) => p.id === id);
           if (product) {
-            setSearchTerm(product.name);
+            setSearchTerm((product as any).name);
           }
         }}
       />
@@ -388,7 +388,7 @@ export default function CustomerMenuViewPage() {
 
       <div className="container mx-auto p-4 md:p-6 space-y-6">
         <MenuProductGrid
-          products={mappedProducts.filter((p: any) => {
+          products={(mappedProducts as any).filter((p: any) => {
             if (!searchTerm) return true;
             const searchLower = searchTerm.toLowerCase();
             return p.name.toLowerCase().includes(searchLower) ||

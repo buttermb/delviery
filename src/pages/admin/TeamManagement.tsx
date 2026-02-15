@@ -121,12 +121,12 @@ export default function TeamManagement() {
         is_owner: true,
       };
 
-      const members = (tenantUsers || []).map((user): TeamMember => ({
+      const members = (tenantUsers || []).map((user: any): TeamMember => ({
         id: user.id,
         user_id: user.user_id,
         email: user.email,
         first_name: user.first_name,
-        last_name: user.last_name,
+        last_name: user.last_name || null,
         full_name: user.first_name && user.last_name
           ? `${user.first_name} ${user.last_name}`
           : user.first_name || user.last_name || null,
@@ -217,7 +217,7 @@ export default function TeamManagement() {
     },
     onSuccess: () => {
       toast.success('Role updated successfully');
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamManagement' });
@@ -240,7 +240,7 @@ export default function TeamManagement() {
     },
     onSuccess: (_, { newStatus }) => {
       toast.success(newStatus === 'suspended' ? 'Member suspended' : 'Member reactivated');
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to update status', error, { component: 'TeamManagement' });
@@ -265,7 +265,7 @@ export default function TeamManagement() {
       toast.success('Team member removed');
       setDeleteDialogOpen(false);
       setMemberToRemove(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamManagement' });
@@ -512,7 +512,7 @@ export default function TeamManagement() {
             Manage your team members, roles, and permissions
             {!isEnterprise && (
               <span className="ml-2 text-sm">
-                ({activeUserCount}/{userLimit} users)
+                ({String(activeUserCount)}/{String(userLimit)} users)
               </span>
             )}
           </p>
@@ -656,7 +656,7 @@ export default function TeamManagement() {
           invitations={pendingInvitations}
           tenantId={tenant?.id || ''}
           onInvitationsChange={() =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations.all() })
+            queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) })
           }
         />
       )}

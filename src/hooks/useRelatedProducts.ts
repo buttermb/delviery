@@ -268,7 +268,7 @@ export function useRelatedProducts({
       let totalCoOccurrences = 0;
 
       for (const [pid, count] of sortedProducts) {
-        const product = productMap.get(pid);
+         const product = productMap.get(pid) as ProductData | undefined;
         if (!product) continue;
 
         // Skip inactive products for display
@@ -285,7 +285,7 @@ export function useRelatedProducts({
           coOccurrenceCount: count,
           coOccurrenceScore: normalizeScore(count, maxCount),
           category: product.category,
-          isActive: product.is_active !== false,
+           isActive: Boolean(product.is_active),
           stockQuantity: product.available_quantity ?? product.stock_quantity ?? 0,
         });
 
@@ -499,7 +499,7 @@ export function useBulkRelatedProducts({
 
         for (let i = 0; i < sortedRelated.length && relatedProducts.length < limitPerProduct; i++) {
           const [relatedPid, count] = sortedRelated[i];
-          const product = productDetailsMap.get(relatedPid);
+          const product = productDetailsMap.get(relatedPid) as ProductData | undefined;
           if (!product || product.is_active === false) continue;
 
           relatedProducts.push({
@@ -511,7 +511,7 @@ export function useBulkRelatedProducts({
             coOccurrenceCount: count,
             coOccurrenceScore: normalizeScore(count, maxCount),
             category: product.category,
-            isActive: product.is_active !== false,
+             isActive: Boolean(product.is_active),
             stockQuantity: product.available_quantity ?? product.stock_quantity ?? 0,
           });
         }

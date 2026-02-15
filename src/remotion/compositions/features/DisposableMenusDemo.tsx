@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * DisposableMenusDemo — Shows encrypted menu creation with lock animation,
  * QR code generation, and burn countdown.

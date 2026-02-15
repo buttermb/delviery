@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';

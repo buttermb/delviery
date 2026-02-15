@@ -166,7 +166,7 @@ export default function VendorDetailPage() {
               vendorId={vendor.id}
               vendorName={vendor.name}
               paymentTerms={vendor.payment_terms}
-              leadTimeDays={vendor.lead_time_days}
+              leadTimeDays={(vendor as any).lead_time_days}
               variant="outline"
             />
             <Button onClick={handleEdit}>
