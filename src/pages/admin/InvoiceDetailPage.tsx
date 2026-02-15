@@ -162,7 +162,7 @@ export default function InvoiceDetailPage() {
                 {/* Header — hidden on print */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/invoices")}>
+                        <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/invoices")} aria-label="Back to invoices">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div>

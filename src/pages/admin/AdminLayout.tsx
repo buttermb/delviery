@@ -252,6 +252,7 @@ const AdminLayout = () => {
                     size="icon"
                     className="md:hidden h-10 w-10 min-h-[44px] min-w-[44px]"
                     onClick={() => setOpen(true)}
+                    aria-label="Search"
                   >
                     <Search className="h-4 w-4" />
                   </Button>
