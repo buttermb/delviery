@@ -165,22 +165,22 @@ export function CustomerMerge({
           .select('id', { count: 'exact', head: true })
           .eq('customer_id', secondaryCustomer.id)
           .eq('tenant_id', tenantId),
-        supabase
+        (supabase as any)
           .from('customer_payments')
           .select('id', { count: 'exact', head: true })
           .eq('customer_id', secondaryCustomer.id)
           .eq('tenant_id', tenantId),
-        supabase
+        (supabase as any)
           .from('customer_notes')
           .select('id', { count: 'exact', head: true })
           .eq('customer_id', secondaryCustomer.id)
           .eq('tenant_id', tenantId),
-        supabase
+        (supabase as any)
           .from('customer_tags')
           .select('id', { count: 'exact', head: true })
           .eq('customer_id', secondaryCustomer.id)
           .eq('tenant_id', tenantId),
-        supabase
+        (supabase as any)
           .from('customer_delivery_addresses')
           .select('id', { count: 'exact', head: true })
           .eq('customer_id', secondaryCustomer.id)
@@ -224,7 +224,7 @@ export function CustomerMerge({
       }
 
       // 2. Update customer_payments to point to primary customer
-      const { error: paymentsError } = await supabase
+      const { error: paymentsError } = await (supabase as any)
         .from('customer_payments')
         .update({ customer_id: primaryCustomer.id })
         .eq('customer_id', secondaryCustomer.id)
@@ -236,7 +236,7 @@ export function CustomerMerge({
       }
 
       // 3. Update customer_notes to point to primary customer
-      const { error: notesError } = await supabase
+      const { error: notesError } = await (supabase as any)
         .from('customer_notes')
         .update({ customer_id: primaryCustomer.id })
         .eq('customer_id', secondaryCustomer.id)
@@ -248,7 +248,7 @@ export function CustomerMerge({
       }
 
       // 4. Handle customer_tags - fetch existing tags for both customers
-      const { data: primaryTags } = await supabase
+      const { data: primaryTags } = await (supabase as any)
         .from('customer_tags')
         .select('tag_id')
         .eq('customer_id', primaryCustomer.id)
@@ -256,7 +256,7 @@ export function CustomerMerge({
 
       const primaryTagIds = new Set((primaryTags || []).map(t => t.tag_id));
 
-      const { data: secondaryTags } = await supabase
+      const { data: secondaryTags } = await (supabase as any)
         .from('customer_tags')
         .select('id, tag_id')
         .eq('customer_id', secondaryCustomer.id)
@@ -265,14 +265,14 @@ export function CustomerMerge({
       // Only transfer tags that primary doesn't already have
       for (const tag of (secondaryTags || [])) {
         if (!primaryTagIds.has(tag.tag_id)) {
-          await supabase
+          await (supabase as any)
             .from('customer_tags')
             .update({ customer_id: primaryCustomer.id })
             .eq('id', tag.id)
             .eq('tenant_id', tenantId);
         } else {
           // Delete duplicate tag
-          await supabase
+          await (supabase as any)
             .from('customer_tags')
             .delete()
             .eq('id', tag.id)
@@ -281,7 +281,7 @@ export function CustomerMerge({
       }
 
       // 5. Handle delivery addresses - deduplicate based on address string
-      const { data: primaryAddresses } = await supabase
+      const { data: primaryAddresses } = await (supabase as any)
         .from('customer_delivery_addresses')
         .select('address_line_1, city, state, postal_code')
         .eq('customer_id', primaryCustomer.id)
@@ -293,7 +293,7 @@ export function CustomerMerge({
         )
       );
 
-      const { data: secondaryAddresses } = await supabase
+      const { data: secondaryAddresses } = await (supabase as any)
         .from('customer_delivery_addresses')
         .select('id, address_line_1, city, state, postal_code')
         .eq('customer_id', secondaryCustomer.id)
@@ -302,14 +302,14 @@ export function CustomerMerge({
       for (const addr of (secondaryAddresses || [])) {
         const addrKey = `${addr.address_line_1?.toLowerCase()}-${addr.city?.toLowerCase()}-${addr.state?.toLowerCase()}-${addr.postal_code?.toLowerCase()}`;
         if (!existingAddresses.has(addrKey)) {
-          await supabase
+          await (supabase as any)
             .from('customer_delivery_addresses')
             .update({ customer_id: primaryCustomer.id })
             .eq('id', addr.id)
             .eq('tenant_id', tenantId);
         } else {
           // Delete duplicate address
-          await supabase
+          await (supabase as any)
             .from('customer_delivery_addresses')
             .delete()
             .eq('id', addr.id)

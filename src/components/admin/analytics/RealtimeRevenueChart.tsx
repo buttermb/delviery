@@ -170,7 +170,7 @@ export function RealtimeRevenueChart({ className }: RealtimeRevenueChartProps) {
             component: 'RealtimeRevenueChart',
           });
           queryClient.invalidateQueries({
-            queryKey: queryKeys.analytics.revenue({ tenantId, granularity }),
+            queryKey: queryKeys.analytics.revenue(tenantId, { granularity }),
           });
         }
       )
@@ -187,7 +187,7 @@ export function RealtimeRevenueChart({ className }: RealtimeRevenueChartProps) {
             component: 'RealtimeRevenueChart',
           });
           queryClient.invalidateQueries({
-            queryKey: queryKeys.analytics.revenue({ tenantId, granularity }),
+            queryKey: queryKeys.analytics.revenue(tenantId, { granularity }),
           });
         }
       )
@@ -214,7 +214,7 @@ export function RealtimeRevenueChart({ className }: RealtimeRevenueChartProps) {
     error,
     isFetching,
   } = useQuery({
-    queryKey: queryKeys.analytics.revenue({ tenantId, granularity }),
+    queryKey: queryKeys.analytics.revenue(tenantId, { granularity }),
     queryFn: async (): Promise<{
       data: RevenueDataPoint[];
       totalRevenue: number;

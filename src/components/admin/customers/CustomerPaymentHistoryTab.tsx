@@ -150,7 +150,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
         throw new Error('Tenant ID is required');
       }
 
-      const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await (supabase as any)
         .from('customer_payments')
         .select(`
           id,

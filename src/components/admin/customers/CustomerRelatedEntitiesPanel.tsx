@@ -170,7 +170,7 @@ function useRelatedDeliveries(customerId: string | undefined, tenantId: string |
 
       const orderIds = orders.map((o) => o.id);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('wholesale_deliveries')
         .select('id, status, scheduled_at, delivered_at, order_id')
         .in('order_id', orderIds)
@@ -231,7 +231,7 @@ function useRelatedSpecialPricing(customerId: string | undefined, tenantId: stri
   return useLazyQuery(
     [...queryKeys.customers.related(tenantId || '', customerId || ''), 'special-pricing'],
     async (): Promise<RelatedEntityItem[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_pricing')
         .select(`
           id,
@@ -294,7 +294,7 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
     [...queryKeys.customers.related(tenantId || '', customerId || ''), 'loyalty'],
     async (): Promise<LoyaltyInfo | null> => {
       // Get loyalty points
-      const { data: pointsData, error: pointsError } = await supabase
+      const { data: pointsData, error: pointsError } = await (supabase as any)
         .from('loyalty_points')
         .select('points, type')
         .eq('customer_id', customerId!)
@@ -306,7 +306,7 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
       }
 
       // Get loyalty config for tier thresholds
-      const { data: config, error: configError } = await supabase
+      const { data: config, error: configError } = await (supabase as any)
         .from('loyalty_config')
         .select('*')
         .eq('tenant_id', tenantId!)
@@ -387,7 +387,7 @@ function useRelatedCommunicationPrefs(customerId: string | undefined, tenantId: 
     [...queryKeys.customers.related(tenantId || '', customerId || ''), 'comm-prefs'],
     async (): Promise<CommunicationPrefs | null> => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('customer_communication_preferences')
           .select('email_marketing, sms_marketing, push_notifications, order_updates')
           .eq('customer_id', customerId!)
@@ -439,7 +439,7 @@ function useRelatedOrganization(customerId: string | undefined, tenantId: string
         const orgId = (customer as { organization_id?: string } | null)?.organization_id;
         if (!orgId) return null;
 
-        const { data: org, error: orgError } = await supabase
+        const { data: org, error: orgError } = await (supabase as any)
           .from('organizations')
           .select('id, name, type')
           .eq('id', orgId)
@@ -467,7 +467,7 @@ function useRelatedMenus(customerId: string | undefined, tenantId: string | unde
     [...queryKeys.customers.related(tenantId || '', customerId || ''), 'saved-menus'],
     async (): Promise<RelatedEntityItem[]> => {
       // Get menus that the customer has ordered from
-      const { data: orders, error: ordersError } = await supabase
+      const { data: orders, error: ordersError } = await (supabase as any)
         .from('menu_orders')
         .select(`
           menu_id,

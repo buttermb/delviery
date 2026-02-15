@@ -306,7 +306,7 @@ export function CustomerSearch({
 
       const searchTerm = `%${debouncedQuery}%`;
 
-      const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await (supabase as any)
         .from('customers')
         .select('id, first_name, last_name, email, phone, avatar_url, created_at')
         .eq('tenant_id', tenant.id)
@@ -401,7 +401,7 @@ export function CustomerSearch({
       if (!tenant?.id) return;
 
       // Fetch the customer data
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .from('customers')
         .select('id, first_name, last_name, email, phone, avatar_url, created_at')
         .eq('id', recentSearch.id)

@@ -280,7 +280,7 @@ function useCustomersWithEnrichedData(
       const customerIds = customers.map(c => c.id);
 
       // Fetch all completed orders for these customers
-      const { data: orders } = await supabase
+      const { data: orders } = await (supabase as any)
         .from('unified_orders')
         .select('id, customer_id, total_amount, amount_paid, created_at')
         .eq('tenant_id', tenantId)

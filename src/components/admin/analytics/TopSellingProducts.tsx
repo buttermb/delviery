@@ -19,7 +19,7 @@ interface ProductSales {
 
 export function TopSellingProducts({ storeId, dateRange, className }: TopSellingProductsProps) {
   const { data: products, isLoading, error } = useQuery({
-    queryKey: queryKeys.analytics.products({ storeId, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
+    queryKey: queryKeys.analytics.products(storeId, { from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
     queryFn: async (): Promise<ProductSales[]> => {
       let query = supabase
         .from('storefront_orders')
