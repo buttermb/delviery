@@ -230,7 +230,7 @@ const AdminLayout = () => {
                   >
                     <div className="flex items-center h-9 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm shadow-sm transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
                       <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Search...</span>
+                      <span className="text-muted-foreground">Type <kbd className="font-mono text-xs">/</kbd> to search...</span>
                       <kbd className="pointer-events-none absolute right-2 top-[50%] -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
                         <span className="text-xs">⌘</span>K
                       </kbd>

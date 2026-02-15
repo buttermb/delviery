@@ -152,11 +152,21 @@ export function TenantAdminCommandPalette() {
         e.preventDefault();
         toggle();
       }
+      // "/" opens search when not in an input/textarea
+      if (
+        e.key === '/' &&
+        !e.metaKey && !e.ctrlKey && !e.altKey &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName) &&
+        !(e.target as HTMLElement).isContentEditable
+      ) {
+        e.preventDefault();
+        setOpen(true);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [toggle]);
+  }, [toggle, setOpen]);
 
   // ─── Build Tenant URL ──────────────────────────────────────────────────────
 
