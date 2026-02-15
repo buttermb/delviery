@@ -339,7 +339,7 @@ const MANAGE: NavItem[] = [
     {
         id: 'wholesale-clients',
         name: 'B2B Clients',
-        path: '/admin/wholesale-clients',
+        path: '/admin/customer-hub?tab=contacts',
         icon: Building2,
         tier: 'PROFESSIONAL',
         keywords: ['wholesale', 'business', 'accounts'],

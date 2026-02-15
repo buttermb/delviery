@@ -65,7 +65,7 @@ export const ENTITY_ROUTES: Record<EntityType, string> = {
   CUSTOMER: '/admin/customers',
   VENDOR: '/admin/vendors',
   MENU: '/admin/disposable-menus',
-  DELIVERY: '/admin/delivery-hub',
+  DELIVERY: '/admin/fulfillment-hub',
   PAYMENT: '/admin/finance-hub?tab=payments&payment=',
   INVENTORY: '/admin/inventory-hub',
   STOREFRONT: '/admin/storefront',

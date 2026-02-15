@@ -138,7 +138,7 @@ export function QuickActionsHub() {
             id: 'view-deliveries',
             label: 'Deliveries',
             icon: MapPin,
-            action: () => navigate(`/${tenantSlug}/admin/delivery-hub`),
+            action: () => navigate(`/${tenantSlug}/admin/fulfillment-hub`),
             badge: counts?.todayDeliveries,
             description: "View today's routes"
         },

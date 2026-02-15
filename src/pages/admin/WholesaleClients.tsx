@@ -487,7 +487,7 @@ export default function WholesaleClients() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (tenant?.slug) {
-                                  navigate(`/${tenant.slug}/admin/new-wholesale-order?clientId=${client.id}`);
+                                  navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
                                 }
                               }}
                             >
@@ -646,7 +646,7 @@ export default function WholesaleClients() {
                           className="min-h-[48px] flex-1 min-w-[100px]"
                           onClick={() => {
                             if (tenant?.slug) {
-                              navigate(`/${tenant.slug}/admin/new-wholesale-order?clientId=${client.id}`);
+                              navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
                             }
                           }}
                         >

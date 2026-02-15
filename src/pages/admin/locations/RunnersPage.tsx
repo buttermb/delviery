@@ -131,7 +131,7 @@ export default function RunnersPage() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              tenant?.slug && navigate(`/${tenant.slug}/admin/delivery-hub?tab=fleet&runner=${original.id}`);
+              tenant?.slug && navigate(`/${tenant.slug}/admin/fulfillment-hub?tab=fleet&runner=${original.id}`);
             }}
           >
             <MapPin className="h-4 w-4 mr-1" />

@@ -472,7 +472,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Financial performance and revenue analysis',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/revenue-reports',
+    route: '/admin/finance-hub?tab=revenue',
   },
   'financial-center': {
     id: 'financial-center',
@@ -666,7 +666,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Coordinate deliveries and driver assignments',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub?tab=dashboard',
+    route: '/admin/fulfillment-hub?tab=dashboard',
   },
   'fleet-management': {
     id: 'fleet-management',
@@ -674,7 +674,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage delivery vehicles and fleet operations',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub?tab=fleet',
+    route: '/admin/fulfillment-hub?tab=fleet',
   },
   'couriers': {
     id: 'couriers',
@@ -682,7 +682,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage delivery drivers and couriers',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub?tab=couriers',
+    route: '/admin/fulfillment-hub?tab=couriers',
   },
   'route-optimization': {
     id: 'route-optimization',
@@ -690,7 +690,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'AI-powered delivery route planning',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub?tab=routes',
+    route: '/admin/fulfillment-hub?tab=routes',
   },
   'delivery-tracking': {
     id: 'delivery-tracking',
@@ -698,7 +698,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Track individual delivery status and ETAs',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub?tab=tracking',
+    route: '/admin/fulfillment-hub?tab=tracking',
   },
   'delivery-analytics': {
     id: 'delivery-analytics',
@@ -706,7 +706,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Delivery performance metrics and optimization',
     tier: 'enterprise',
     category: 'Delivery & Fleet',
-    route: '/admin/delivery-hub?tab=analytics',
+    route: '/admin/fulfillment-hub?tab=analytics',
   },
 
   // --- Point of Sale (Enterprise) ---

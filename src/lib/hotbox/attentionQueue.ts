@@ -240,7 +240,7 @@ export async function fetchAttentionItems(
       title: `${lateDeliveries.data.length} deliveries running late`,
       description: 'Customers waiting - check with drivers',
       actionLabel: 'Track',
-      actionRoute: '/admin/delivery-hub',
+      actionRoute: '/admin/fulfillment-hub',
       timestamp: new Date(),
     }));
   }
@@ -337,7 +337,7 @@ export async function fetchAttentionItems(
       title: `${activeDeliveries.data.length} deliveries in progress`,
       description: 'All on schedule',
       actionLabel: 'Track',
-      actionRoute: '/admin/delivery-hub',
+      actionRoute: '/admin/fulfillment-hub',
       timestamp: new Date(),
     }));
   }

@@ -209,7 +209,7 @@ export const navigation: NavItem[] = [
       },
       {
         name: 'Revenue Reports',
-        href: '/admin/revenue-reports',
+        href: '/admin/finance-hub?tab=revenue',
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -337,7 +337,7 @@ export const navigation: NavItem[] = [
       },
       {
         name: 'Delivery Analytics',
-        href: '/admin/delivery-hub?tab=analytics',
+        href: '/admin/fulfillment-hub?tab=analytics',
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -387,7 +387,7 @@ export const navigation: NavItem[] = [
       },
       {
         name: 'Revenue Reports',
-        href: '/admin/revenue-reports',
+        href: '/admin/finance-hub?tab=revenue',
         icon: DollarSign,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
@@ -480,7 +480,7 @@ export const navigation: NavItem[] = [
     children: [
       {
         name: 'Automation',
-        href: '/admin/automation',
+        href: '/admin/workflow-automation',
         icon: Zap,
         iconSize: 'h-4 w-4',
         roles: ['owner'],

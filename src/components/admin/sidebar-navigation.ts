@@ -693,7 +693,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Revenue Reports',
-        href: '/admin/revenue-reports',
+        href: '/admin/finance-hub?tab=revenue',
         icon: TrendingUp,
         tier: 'professional'
       },
