@@ -17,7 +17,6 @@ import {
     BarChart3,
     FileText,
     PieChart,
-    Headphones,
     Star,
     Plus,
 } from 'lucide-react';
@@ -37,7 +36,6 @@ const CustomerCRMPage = lazy(() => import('@/pages/admin/CustomerCRMPage'));
 const CustomerInsightsPage = lazy(() => import('@/pages/tenant-admin/CustomerInsightsPage'));
 const CustomerInvoices = lazy(() => import('@/pages/admin/CustomerInvoices'));
 const CustomerAnalyticsPage = lazy(() => import('@/pages/tenant-admin/CustomerAnalyticsPage'));
-const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
 
 const TabSkeleton = () => (
@@ -55,8 +53,7 @@ const tabs = [
     { id: 'wholesale', label: 'B2B', tooltip: 'Business-to-Business Clients', icon: Briefcase, group: 'Relationships' },
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
-    // Support & Loyalty
-    { id: 'support', label: 'Support', icon: Headphones, group: 'Engagement' },
+    // Engagement
     { id: 'loyalty', label: 'Loyalty', icon: Star, group: 'Engagement' },
     // Analytics
     { id: 'insights', label: 'Insights', icon: BarChart3, group: 'Analytics' },
@@ -166,14 +163,7 @@ export default function CustomerHubPage() {
                     </Suspense>
                 </TabsContent>
 
-                {/* Support Tab (new) */}
-                <TabsContent value="support" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <SupportTicketsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Loyalty Tab (new - dual access with Marketing) */}
+                {/* Loyalty Tab */}
                 <TabsContent value="loyalty" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <LoyaltyProgramPage />

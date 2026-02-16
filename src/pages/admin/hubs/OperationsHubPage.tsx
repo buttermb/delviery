@@ -9,7 +9,6 @@
  * - Activity: Activity logs
  * - Quality: Quality control
  * - Appointments: Scheduling
- * - Support: Support tickets
  * - Locations: Location management
  */
 
@@ -25,7 +24,6 @@ import {
     Shield,
     ClipboardCheck,
     Calendar,
-    Headphones,
     MapPin,
     Truck,
     Mail,
@@ -46,7 +44,6 @@ const InvitesPage = lazy(() => import('@/pages/admin/InvitesPage'));
 const ActivityLogsPage = lazy(() => import('@/pages/tenant-admin/ActivityLogsPage').then(m => ({ default: m.ActivityLogsPage })));
 const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
 const AppointmentSchedulerPage = lazy(() => import('@/pages/admin/AppointmentSchedulerPage'));
-const SupportTicketsPage = lazy(() => import('@/pages/admin/SupportTicketsPage'));
 const LocationsManagement = lazy(() => import('@/pages/admin/LocationsManagement'));
 const CompliancePage = lazy(() => import('@/pages/tenant-admin/CompliancePage'));
 const POReceivingPage = lazy(() => import('@/pages/admin/operations/POReceivingPage'));
@@ -75,7 +72,6 @@ const tabs = [
     // Facilities
     { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },
     { id: 'appointments', label: 'Calendar', icon: Calendar, group: 'Facilities' },
-    { id: 'support', label: 'Support', icon: Headphones, group: 'Facilities' },
 ] as const;
 
 // Remove vault tab (consolidate into compliance) - reduces from 13 to 12
@@ -214,13 +210,6 @@ export default function OperationsHubPage() {
                 <TabsContent value="appointments" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <AppointmentSchedulerPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Support Tab */}
-                <TabsContent value="support" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <SupportTicketsPage />
                     </Suspense>
                 </TabsContent>
 
