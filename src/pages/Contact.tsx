@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,30 +14,38 @@ import { useToast } from "@/hooks/use-toast";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 import { useFormPersistence } from "@/hooks/useFormPersistence";
 
+const INITIAL_FORM = {
+  name: "",
+  email: "",
+  company: "",
+  phone: "",
+  inquiryType: "general",
+  message: "",
+};
+
 export default function Contact() {
   const { toast } = useToast();
-  const [formData, setFormData, clearFormData] = useFormPersistence("contact_form", {
-    name: "",
-    email: "",
-    company: "",
-    phone: "",
-    inquiryType: "general",
-    message: "",
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM);
+  const { restoreForm, clearSavedForm } = useFormPersistence("contact_form", formData);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const saved = restoreForm();
+    if (saved) setFormData(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate form submission
     setTimeout(() => {
       toast({
         title: "Message sent!",
         description: "We'll get back to you within 1 hour during business hours.",
       });
-      clearFormData();
-      setLoading(false);
+      clearSavedForm();
+      setFormData(INITIAL_FORM);
       setLoading(false);
     }, 1000);
   };

@@ -32,7 +32,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { CartItemStockWarning } from '@/components/shop/CartStockWarning';
+import { CartItemStockWarning, CartStockSummary } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 
