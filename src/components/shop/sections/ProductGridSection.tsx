@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, ChevronRight, ChevronLeft } from "lucide-react";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
@@ -217,14 +217,6 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         });
     }
 
-    const scrollContainerRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
-    const scroll = (categoryKey: string, direction: 'left' | 'right') => {
-        const container = scrollContainerRef.current[categoryKey];
-        if (!container) return;
-        const scrollAmount = direction === 'left' ? -400 : 400;
-        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    };
 
     return (
         <section className="py-16 md:py-32 overflow-hidden" style={{ backgroundColor: background_color, color: text_color }}>
@@ -293,8 +285,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                 return (
                                     <div key={category.key} className="space-y-4 md:space-y-6">
                                         {/* Category Header */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accent_color}1a` }}>
                                                     <Icon className="w-5 h-5 md:w-6 md:h-6" style={{ color: accent_color }} />
                                                 </div>
@@ -302,25 +293,12 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                     <h3 className="text-2xl md:text-3xl font-bold">{category.label}</h3>
                                                     {category.desc && <p className="text-sm opacity-70">{category.desc}</p>}
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Button variant="outline" size="icon" onClick={() => scroll(category.key, 'left')} className="rounded-full hidden md:flex">
-                                                    <ChevronLeft className="w-4 h-4" />
-                                                </Button>
-                                                <Button variant="outline" size="icon" onClick={() => scroll(category.key, 'right')} className="rounded-full hidden md:flex">
-                                                    <ChevronRight className="w-4 h-4" />
-                                                </Button>
-                                            </div>
                                         </div>
 
-                                        {/* Horizontal Scrollable Row */}
-                                        <div className="relative group">
-                                        <div
-                                                ref={(el) => scrollContainerRef.current[category.key] = el}
-                                                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-4 md:px-0"
-                                            >
+                                        {/* Responsive Product Grid */}
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                                                 {products.map((product, index) => (
-                                                    <div key={product.id || index} className="w-[280px] md:w-[320px] flex-shrink-0">
+                                                    <div key={product.id || index}>
                                                         <StorefrontProductCard
                                                             product={{
                                                                 product_id: product.id || '',
@@ -353,7 +331,6 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                         />
                                                     </div>
                                                 ))}
-                                            </div>
                                         </div>
                                     </div>
                                 );
