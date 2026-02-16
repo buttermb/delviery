@@ -331,9 +331,9 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Operations',
     items: [
       createItem('team-members', 'Team', '/admin/operations-hub?tab=team', Users),
-      createItem('role-management', 'Roles', '/admin/operations-hub?tab=roles', UserCog),
-      createItem('suppliers', 'Vendors', '/admin/operations-hub?tab=suppliers', Building2),
-      createItem('purchase-orders', 'Purchase Orders', '/admin/operations-hub?tab=purchase-orders', FileText),
+      createItem('role-management', 'Roles', '/admin/operations-hub?tab=team&sub=roles', UserCog),
+      createItem('suppliers', 'Vendors', '/admin/operations-hub?tab=procurement&sub=vendors', Building2),
+      createItem('purchase-orders', 'Purchase Orders', '/admin/operations-hub?tab=procurement&sub=purchase-orders', FileText),
       createItem('locations', 'Locations', '/admin/operations-hub?tab=locations', MapPin),
       createItem('activity-logs', 'Activity Logs', '/admin/operations-hub?tab=activity', ScrollText),
     ],

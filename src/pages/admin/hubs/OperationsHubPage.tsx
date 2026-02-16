@@ -1,15 +1,14 @@
 /**
  * Operations Hub Page
- * Consolidated operations page with tabs:
- * - Suppliers: Supplier management
- * - Purchase Orders: PO management
+ * Consolidated operations page with 8 top-level tabs:
+ * - Team (sub-tabs: Members, Roles, Invites)
+ * - Procurement (sub-tabs: Vendors, POs, Receiving)
  * - Returns: Returns and refunds
- * - Team: Staff/team management
- * - Roles: Role management
- * - Activity: Activity logs
+ * - Compliance: Regulatory compliance
  * - Quality: Quality control
- * - Appointments: Scheduling
+ * - Logs: Activity logs
  * - Locations: Location management
+ * - Calendar: Scheduling
  */
 
 import { useSearchParams } from 'react-router-dom';
@@ -28,8 +27,9 @@ import {
     Truck,
     Mail,
     UserPlus,
+    Package,
 } from 'lucide-react';
-import { Fragment, lazy, Suspense, useCallback } from 'react';
+import { Fragment, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -58,36 +58,79 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    // People Management
     { id: 'team', label: 'Team', icon: Users, group: 'People' },
-    { id: 'roles', label: 'Roles', icon: UserCog, group: 'People' },
-    { id: 'invites', label: 'Invites', icon: Mail, group: 'People' },
-    // Supply Chain
-    { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
-    { id: 'purchase-orders', label: 'POs', tooltip: 'Purchase Orders', icon: FileText, group: 'Supply' },
-    { id: 'receiving', label: 'Receiving', icon: Truck, group: 'Supply' },
+    { id: 'procurement', label: 'Procurement', icon: Package, group: 'Supply' },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
-    // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
-    { id: 'quality', label: 'Quality Control', icon: ClipboardCheck, group: 'Compliance' },
+    { id: 'quality', label: 'Quality', tooltip: 'Quality Control', icon: ClipboardCheck, group: 'Compliance' },
     { id: 'activity', label: 'Logs', tooltip: 'Activity Logs', icon: ScrollText, group: 'Compliance' },
-    // Facilities
     { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },
     { id: 'appointments', label: 'Calendar', icon: Calendar, group: 'Facilities' },
 ] as const;
 
-// Remove vault tab (consolidate into compliance) - reduces from 13 to 12
-
 type TabId = typeof tabs[number]['id'];
+
+// Map legacy tab IDs to new grouped structure for backward compatibility
+const legacyTabMap: Record<string, { tab: TabId; sub?: string }> = {
+    roles: { tab: 'team', sub: 'roles' },
+    invites: { tab: 'team', sub: 'invites' },
+    suppliers: { tab: 'procurement', sub: 'vendors' },
+    'purchase-orders': { tab: 'procurement', sub: 'purchase-orders' },
+    receiving: { tab: 'procurement', sub: 'receiving' },
+};
+
+const teamSubTabs = [
+    { id: 'members', label: 'Members', icon: Users },
+    { id: 'roles', label: 'Roles', icon: UserCog },
+    { id: 'invites', label: 'Invites', icon: Mail },
+] as const;
+
+const procurementSubTabs = [
+    { id: 'vendors', label: 'Vendors', icon: Building2 },
+    { id: 'purchase-orders', label: 'Purchase Orders', icon: FileText },
+    { id: 'receiving', label: 'Receiving', icon: Truck },
+] as const;
 
 export default function OperationsHubPage() {
     usePageTitle('Operations');
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'team';
+    const rawTab = searchParams.get('tab') || 'team';
+    const rawSub = searchParams.get('sub') || '';
+
+    // Redirect legacy tab IDs to new structure
+    useEffect(() => {
+        const legacy = legacyTabMap[rawTab];
+        if (legacy) {
+            const params: Record<string, string> = { tab: legacy.tab };
+            if (legacy.sub) params.sub = legacy.sub;
+            setSearchParams(params, { replace: true });
+        }
+    }, [rawTab, setSearchParams]);
+
+    const activeTab = (legacyTabMap[rawTab]?.tab ?? rawTab) as TabId;
+    const activeSub = legacyTabMap[rawTab]?.sub ?? rawSub;
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
+
+    const handleSubTabChange = useCallback((tab: string, sub: string) => {
+        setSearchParams({ tab, sub }, { replace: true });
+    }, [setSearchParams]);
+
+    const activeTabLabel = (() => {
+        const topTab = tabs.find(t => t.id === activeTab);
+        if (!topTab) return undefined;
+        if (activeTab === 'team' && activeSub) {
+            const subTab = teamSubTabs.find(s => s.id === activeSub);
+            return subTab ? `${topTab.label} / ${subTab.label}` : topTab.label;
+        }
+        if (activeTab === 'procurement' && activeSub) {
+            const subTab = procurementSubTabs.find(s => s.id === activeSub);
+            return subTab ? `${topTab.label} / ${subTab.label}` : topTab.label;
+        }
+        return topTab.label;
+    })();
 
     return (
         <div className="space-y-0">
@@ -97,7 +140,7 @@ export default function OperationsHubPage() {
                     <HubBreadcrumbs
                         hubName="operations-hub"
                         hubHref="operations-hub"
-                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                        currentTab={activeTabLabel}
                     />
                     <div className="flex items-center justify-between mb-4">
                         <div>
@@ -108,7 +151,7 @@ export default function OperationsHubPage() {
                         </div>
                         <Button
                             size="sm"
-                            onClick={() => handleTabChange('invites')}
+                            onClick={() => handleSubTabChange('team', 'invites')}
                         >
                             <UserPlus className="h-4 w-4 mr-2" />
                             Invite Member
@@ -145,59 +188,88 @@ export default function OperationsHubPage() {
                     </div>
                 </div>
 
-                {/* Vendors Tab */}
-                <TabsContent value="suppliers" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <VendorOperationsPage />
-                    </Suspense>
+                {/* Team Tab (grouped: Members, Roles, Invites) */}
+                <TabsContent value="team" className="m-0">
+                    <Tabs
+                        value={activeSub || 'members'}
+                        onValueChange={(sub) => handleSubTabChange('team', sub)}
+                        className="w-full"
+                    >
+                        <div className="border-b px-6 pt-2">
+                            <TabsList className="h-9 bg-transparent gap-1">
+                                {teamSubTabs.map((sub) => (
+                                    <TabsTrigger
+                                        key={sub.id}
+                                        value={sub.id}
+                                        className="flex items-center gap-1.5 text-xs data-[state=active]:bg-muted"
+                                    >
+                                        <sub.icon className="h-3.5 w-3.5" />
+                                        {sub.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </div>
+                        <TabsContent value="members" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <TeamManagement />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="roles" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <RoleManagement />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="invites" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <InvitesPage />
+                            </Suspense>
+                        </TabsContent>
+                    </Tabs>
                 </TabsContent>
 
-                {/* Purchase Orders Tab */}
-                <TabsContent value="purchase-orders" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <PurchaseOrdersPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Receiving Tab */}
-                <TabsContent value="receiving" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <POReceivingPage />
-                    </Suspense>
+                {/* Procurement Tab (grouped: Vendors, POs, Receiving) */}
+                <TabsContent value="procurement" className="m-0">
+                    <Tabs
+                        value={activeSub || 'vendors'}
+                        onValueChange={(sub) => handleSubTabChange('procurement', sub)}
+                        className="w-full"
+                    >
+                        <div className="border-b px-6 pt-2">
+                            <TabsList className="h-9 bg-transparent gap-1">
+                                {procurementSubTabs.map((sub) => (
+                                    <TabsTrigger
+                                        key={sub.id}
+                                        value={sub.id}
+                                        className="flex items-center gap-1.5 text-xs data-[state=active]:bg-muted"
+                                    >
+                                        <sub.icon className="h-3.5 w-3.5" />
+                                        {sub.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </div>
+                        <TabsContent value="vendors" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <VendorOperationsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="purchase-orders" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <PurchaseOrdersPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="receiving" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <POReceivingPage />
+                            </Suspense>
+                        </TabsContent>
+                    </Tabs>
                 </TabsContent>
 
                 {/* Returns Tab */}
                 <TabsContent value="returns" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <ReturnsManagementPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Team Tab */}
-                <TabsContent value="team" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <TeamManagement />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Roles Tab */}
-                <TabsContent value="roles" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <RoleManagement />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Invites Tab */}
-                <TabsContent value="invites" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <InvitesPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Activity Tab */}
-                <TabsContent value="activity" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ActivityLogsPage />
                     </Suspense>
                 </TabsContent>
 
@@ -215,10 +287,10 @@ export default function OperationsHubPage() {
                     </Suspense>
                 </TabsContent>
 
-                {/* Appointments Tab */}
-                <TabsContent value="appointments" className="m-0">
+                {/* Activity/Logs Tab */}
+                <TabsContent value="activity" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <AppointmentSchedulerPage />
+                        <ActivityLogsPage />
                     </Suspense>
                 </TabsContent>
 
@@ -226,6 +298,13 @@ export default function OperationsHubPage() {
                 <TabsContent value="locations" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <LocationsManagement />
+                    </Suspense>
+                </TabsContent>
+
+                {/* Calendar/Appointments Tab */}
+                <TabsContent value="appointments" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <AppointmentSchedulerPage />
                     </Suspense>
                 </TabsContent>
             </Tabs>

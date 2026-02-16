@@ -356,7 +356,7 @@ const MANAGE: NavItem[] = [
     {
         id: 'suppliers',
         name: 'Suppliers',
-        path: '/admin/suppliers',
+        path: '/admin/operations-hub?tab=procurement&sub=vendors',
         icon: Building2,
         tier: 'STARTER',
         keywords: ['vendors', 'partners', 'procurement'],
@@ -372,7 +372,7 @@ const MANAGE: NavItem[] = [
     {
         id: 'invites',
         name: 'Invites',
-        path: '/admin/invites',
+        path: '/admin/operations-hub?tab=team&sub=invites',
         icon: UserPlus,
         tier: 'PROFESSIONAL',
         keywords: ['invite', 'add team', 'onboard'],
