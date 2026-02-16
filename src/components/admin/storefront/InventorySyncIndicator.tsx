@@ -6,12 +6,12 @@
  * Used in admin header near other status indicators.
  */
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 
-import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { logger } from '@/lib/logger';
 
 import { Badge } from '@/components/ui/badge';
@@ -167,38 +167,22 @@ export function InventorySyncIndicator({
   const queryClient = useQueryClient();
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('synced');
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
   const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
   const [syncCount, setSyncCount] = useState(0);
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lagCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tenantId = tenant?.id;
 
-  // Use refs for callbacks to avoid re-triggering the realtime subscription useEffect
-  const handleRealtimeChangeRef = useRef(() => {
-    logger.debug('[InventorySyncIndicator] Received inventory update');
-
-    setSyncStatus('syncing');
-
-    if (syncTimeoutRef.current) {
-      clearTimeout(syncTimeoutRef.current);
-    }
-
-    syncTimeoutRef.current = setTimeout(() => {
-      setSyncStatus('synced');
-      setLastSyncAt(new Date());
-      setSyncCount((prev) => prev + 1);
-    }, 500);
+  // Use the shared realtime sync hook instead of creating standalone channels.
+  // This piggybacks on the existing useRealtimeSync channels and avoids
+  // opening duplicate connections for 'products' and other inventory tables.
+  const { isActive: realtimeActive } = useRealtimeSync({
+    tenantId,
+    tables: INVENTORY_TABLES,
+    enabled: !!tenantId,
   });
-
-  const lastSyncAtRef = useRef(lastSyncAt);
-  const syncStatusRef = useRef(syncStatus);
-  lastSyncAtRef.current = lastSyncAt;
-  syncStatusRef.current = syncStatus;
 
   /**
    * Force manual sync of inventory queries
@@ -236,87 +220,29 @@ export function InventorySyncIndicator({
     }
   }, [tenantId, queryClient]);
 
-  /**
-   * Setup realtime subscription — only re-runs when tenantId changes.
-   * Callbacks are accessed via refs to avoid re-subscription storms.
-   */
-  useEffect(() => {
-    if (!tenantId) {
-      setConnectionStatus('disconnected');
-      return;
-    }
+  // Derive connection/sync status from the shared realtime hook
+  // instead of managing our own channel and re-fire-prone callbacks.
+  // This avoids the 50+ connection leak caused by useCallback deps in the effect.
+  // The useRealtimeSync hook already handles subscriptions, failure tracking, and cleanup.
+  // We just reflect its state here for the UI indicator.
+  // Update connection status based on realtimeActive
+  const connectionStatus: ConnectionStatus = !tenantId
+    ? 'disconnected'
+    : realtimeActive
+      ? 'connected'
+      : 'connecting';
 
-    setConnectionStatus('connecting');
-
-    const channelName = `inventory-sync-indicator-${tenantId}`;
-    const channel = supabase.channel(channelName);
-
-    // Subscribe to inventory-related tables
-    INVENTORY_TABLES.forEach((table) => {
-      channel.on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table,
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        () => handleRealtimeChangeRef.current()
-      );
-    });
-
-    // Subscribe to channel
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        logger.info('[InventorySyncIndicator] Realtime channel connected');
-        setConnectionStatus('connected');
-        setLastSyncAt(new Date());
+  // Mark as synced once connected
+  if (realtimeActive && !lastSyncAt) {
+    // Use a ref-guarded setter to avoid infinite render loops
+    if (!syncTimeoutRef.current) {
+      syncTimeoutRef.current = setTimeout(() => {
         setSyncStatus('synced');
-      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        logger.warn('[InventorySyncIndicator] Realtime channel error', { status });
-        setConnectionStatus('error');
-        setSyncStatus('error');
-      } else if (status === 'CLOSED') {
-        setConnectionStatus('disconnected');
-        setSyncStatus('disconnected');
-      }
-    });
-
-    channelRef.current = channel;
-
-    return () => {
-      supabase.removeChannel(channel);
-      channelRef.current = null;
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-    };
-  }, [tenantId]);
-
-  /**
-   * Lag check interval — separate from subscription to avoid re-subscription.
-   */
-  useEffect(() => {
-    lagCheckIntervalRef.current = setInterval(() => {
-      const lastSync = lastSyncAtRef.current;
-      const currentStatus = syncStatusRef.current;
-      if (!lastSync) return;
-
-      const timeSinceLastSync = Date.now() - lastSync.getTime();
-      if (timeSinceLastSync > LAG_THRESHOLD_MS && currentStatus === 'synced') {
-        logger.debug('[InventorySyncIndicator] Sync lag detected', {
-          timeSinceLastSync,
-          threshold: LAG_THRESHOLD_MS,
-        });
-      }
-    }, 10000);
-
-    return () => {
-      if (lagCheckIntervalRef.current) {
-        clearInterval(lagCheckIntervalRef.current);
-      }
-    };
-  }, []);
+        setLastSyncAt(new Date());
+        syncTimeoutRef.current = null;
+      }, 0);
+    }
+  }
 
   const statusConfig = useMemo(() => getSyncStatusConfig(syncStatus), [syncStatus]);
   const connectionConfig = useMemo(() => getConnectionConfig(connectionStatus), [connectionStatus]);

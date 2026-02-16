@@ -64,14 +64,16 @@ function SimplifiedDebugPanel() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<LogCategory | 'all'>('all');
 
+  // Only poll for logs when the panel is open to avoid wasting CPU cycles
   useEffect(() => {
+    if (!isOpen) return;
     const updateLogs = () => {
       setLogs([...debugLogger.getLogs()]);
     };
     updateLogs();
     const interval = setInterval(updateLogs, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isOpen]);
 
   const filteredLogs = filter === 'all'
     ? logs
@@ -205,14 +207,16 @@ function FullAdminDebugPanel() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<LogCategory | 'all'>('all');
 
+  // Only poll for logs when the panel is open to avoid wasting CPU cycles
   useEffect(() => {
+    if (!isOpen) return;
     const updateLogs = () => {
       setLogs([...debugLogger.getLogs()]);
     };
     updateLogs();
     const interval = setInterval(updateLogs, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isOpen]);
 
   const filteredLogs = filter === 'all'
     ? logs

@@ -350,31 +350,39 @@ export function useRealtimeSync({
     // Clear any existing channels first
     cleanup();
 
-    // Subscribe to each table
-    tables.forEach((table) => {
+    // Batch tables into a few channels instead of one per table.
+    // Supabase supports multiple .on() listeners per channel.
+    // This reduces connection count from N to ceil(N/BATCH_SIZE).
+    const BATCH_SIZE = 8;
+    const eligibleTables = tables.filter((table) => {
       const failureKey = `${table}-${tenantId}`;
-      const failures = connectionFailures.get(failureKey) ?? 0;
-
-      // Skip if too many failures
+      const failures = connectionFailures.get(failureKey) || 0;
       if (failures >= MAX_FAILURES) {
         logger.debug(`Skipping realtime for ${table} (too many failures)`, {
           failures,
           component: 'useRealtimeSync',
         });
-        return;
+        return false;
       }
+      return true;
+    });
 
-      const channelKey = `realtime-sync-${table}-${tenantId}`;
+    // Split eligible tables into batches
+    for (let batchIdx = 0; batchIdx < eligibleTables.length; batchIdx += BATCH_SIZE) {
+      const batch = eligibleTables.slice(batchIdx, batchIdx + BATCH_SIZE);
+      const channelKey = `realtime-sync-batch-${batchIdx}-${tenantId}`;
 
       try {
-        const channel = supabase
-          .channel(channelKey, {
-            config: {
-              broadcast: { self: false },
-              presence: { key: '' },
-            },
-          })
-          .on(
+        let channel = supabase.channel(channelKey, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: '' },
+          },
+        });
+
+        // Attach a listener for each table in this batch
+        batch.forEach((table) => {
+          channel = channel.on(
             'postgres_changes',
             {
               event: '*',
@@ -417,41 +425,43 @@ export function useRealtimeSync({
                 });
               }
             }
-          )
-          .subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-              connectionFailures.delete(failureKey);
-              logger.debug(`Realtime subscription active: ${table}`, {
-                tenantId,
-                component: 'useRealtimeSync',
-              });
-            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-              const currentFailures = connectionFailures.get(failureKey) ?? 0;
-              connectionFailures.set(failureKey, currentFailures + 1);
+          );
+        });
 
-              if (currentFailures < MAX_FAILURES) {
-                logger.warn(`Realtime subscription ${status.toLowerCase()}: ${table}`, {
-                  table,
-                  tenantId,
-                  failures: currentFailures + 1,
-                  component: 'useRealtimeSync',
-                });
-              }
-            }
-          });
+        channel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            batch.forEach((table) => {
+              connectionFailures.delete(`${table}-${tenantId}`);
+            });
+            logger.debug(`Realtime batch subscription active: [${batch.join(', ')}]`, {
+              tenantId,
+              component: 'useRealtimeSync',
+            });
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            batch.forEach((table) => {
+              const failureKey = `${table}-${tenantId}`;
+              const currentFailures = connectionFailures.get(failureKey) || 0;
+              connectionFailures.set(failureKey, currentFailures + 1);
+            });
+            logger.warn(`Realtime batch subscription ${status.toLowerCase()}: [${batch.join(', ')}]`, {
+              tenantId,
+              component: 'useRealtimeSync',
+            });
+          }
+        });
 
         channelsRef.current.push(channel);
       } catch (error) {
-        const currentFailures = connectionFailures.get(failureKey) ?? 0;
-        connectionFailures.set(failureKey, currentFailures + 1);
-
-        if (currentFailures < MAX_FAILURES) {
-          logger.warn(`Failed to create realtime channel for ${table}`, error, {
-            component: 'useRealtimeSync',
-          });
-        }
+        batch.forEach((table) => {
+          const failureKey = `${table}-${tenantId}`;
+          const currentFailures = connectionFailures.get(failureKey) || 0;
+          connectionFailures.set(failureKey, currentFailures + 1);
+        });
+        logger.warn(`Failed to create realtime batch channel for [${batch.join(', ')}]`, error, {
+          component: 'useRealtimeSync',
+        });
       }
-    });
+    }
 
     isConnectingRef.current = false;
 

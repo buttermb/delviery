@@ -69,6 +69,8 @@ export const createQueryClient = () => {
         refetchOnReconnect: true,
         // Structural sharing - only re-render when data actually changes
         structuralSharing: true,
+        // Don't poll when the browser tab is hidden/backgrounded
+        refetchIntervalInBackground: false,
         // Network mode - suspends queries when offline
         networkMode: 'offlineFirst',
       },
@@ -107,6 +109,7 @@ export const DASHBOARD_QUERY_CONFIG = {
   gcTime: 5 * 60 * 1000, // 5 minutes
   refetchOnWindowFocus: false,
   refetchInterval: 60000, // Auto-refresh every minute
+  refetchIntervalInBackground: false, // Don't poll when tab is hidden
 };
 
 /**

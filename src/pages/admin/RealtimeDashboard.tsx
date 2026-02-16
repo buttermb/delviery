@@ -63,7 +63,7 @@ export default function RealtimeDashboard() {
       }
     },
     enabled: !!tenantId,
-    refetchInterval: 5000, // Refresh every 5 seconds
+    // Rely on realtime subscription below for live updates instead of polling
   });
 
   useEffect(() => {
@@ -89,6 +89,8 @@ export default function RealtimeDashboard() {
               }
               return [newOrder, ...prev].slice(0, 10); // Add new to top
             });
+            // Invalidate stats query so it refetches on realtime changes (replaces polling)
+            queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
           }
         }
       )

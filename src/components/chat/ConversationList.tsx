@@ -95,7 +95,8 @@ export function ConversationList({
 
             return conversationsWithDetails;
         },
-        refetchInterval: 5000, // Refetch every 5 seconds
+        refetchInterval: 5000,
+        refetchIntervalInBackground: false, // Stop polling when tab is not visible
     });
 
     // Filter conversations by search
