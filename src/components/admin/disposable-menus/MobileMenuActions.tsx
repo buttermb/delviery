@@ -132,7 +132,7 @@ export function MobileMenuActions({ menu, trigger }: MobileMenuActionsProps) {
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
           {trigger || (
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Menu actions">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           )}

@@ -149,7 +149,7 @@ function SimplifiedDebugPanel() {
                 <Download className="h-3 w-3 mr-1" />
                 Export
               </Button>
-              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Close debug console">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -300,7 +300,7 @@ function FullAdminDebugPanel() {
                 <Download className="h-3 w-3 mr-1" />
                 Export
               </Button>
-              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Close debug console">
                 <X className="h-4 w-4" />
               </Button>
             </div>

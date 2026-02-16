@@ -1530,7 +1530,7 @@ function OrderSuccess({
           <div className="text-xs text-muted-foreground mb-1">Order Reference</div>
           <div className="flex items-center justify-center gap-2">
             <span className="font-mono text-xl font-bold">{orderId.slice(0, 8).toUpperCase()}</span>
-            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={copyOrderId}>
+            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={copyOrderId} aria-label="Copy order ID">
               {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>

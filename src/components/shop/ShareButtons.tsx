@@ -89,7 +89,7 @@ export function ShareButtons({
         return (
             <div className={`flex items-center gap-1 ${className}`}>
                 {hasNativeShare && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNativeShare} title="Share">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNativeShare} title="Share" aria-label="Share">
                         <Share2 className="h-4 w-4" />
                     </Button>
                 )}
@@ -99,6 +99,7 @@ export function ShareButtons({
                     className="h-8 w-8"
                     onClick={() => openInNewWindow(twitterUrl)}
                     title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -110,6 +111,7 @@ export function ShareButtons({
                     className="h-8 w-8"
                     onClick={() => openInNewWindow(facebookUrl)}
                     title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 7.834 7.834 0 0 0-.733-.009c-.707 0-1.259.096-1.675.345a1.783 1.783 0 0 0-.832.928c-.142.38-.213.862-.213 1.462v1.245h3.992l-.519 3.667H13.63v7.98z" />

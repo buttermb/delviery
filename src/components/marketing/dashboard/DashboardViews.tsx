@@ -770,7 +770,7 @@ function MenusView() {
                   >
                     {copied === i ? "Copied!" : "Copy Link"}
                   </Button>
-                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 bg-white text-slate-600 hover:bg-slate-50"><Settings className="w-3 h-3" /></Button>
+                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label="View settings"><Settings className="w-3 h-3" /></Button>
                 </div>
               </div>
             </div>

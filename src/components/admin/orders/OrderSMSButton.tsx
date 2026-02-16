@@ -171,6 +171,7 @@ export function OrderSMSButton({
               size="sm"
               className="h-6 w-6 p-0"
               onClick={() => setOpen(false)}
+              aria-label="Close SMS dialog"
             >
               <X className="h-4 w-4" />
             </Button>

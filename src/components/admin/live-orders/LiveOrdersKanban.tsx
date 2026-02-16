@@ -160,7 +160,7 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <Button variant="ghost" size="icon" className="h-6 w-6" aria-label="Order actions">
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
