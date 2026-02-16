@@ -435,7 +435,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Coupons',
-        href: '/admin/marketing-hub?tab=coupons',
+        href: '/admin/storefront-hub?tab=coupons',
         icon: Tags
       },
       {
@@ -452,7 +452,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Reviews',
-        href: '/admin/marketing-hub?tab=reviews',
+        href: '/admin/storefront-hub?tab=reviews',
         icon: TrendingUp
       }
     ]

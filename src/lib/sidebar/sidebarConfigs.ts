@@ -179,7 +179,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('customers', 'All Customers', '/admin/customer-hub', Users),
       createItem('marketing-automation', 'Marketing', '/admin/marketing-hub', Mail),
-      createItem('storefront', 'Reviews', '/admin/marketing-hub?tab=reviews', MessageSquare),
+      createItem('storefront', 'Reviews', '/admin/storefront-hub?tab=reviews', MessageSquare),
     ],
   },
   {
@@ -306,8 +306,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Marketing',
     items: [
       createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
-      createItem('storefront', 'Reviews', '/admin/marketing-hub?tab=reviews', Star),
-      createItem('coupons', 'Coupons', '/admin/marketing-hub?tab=coupons', Tag),
+      createItem('storefront', 'Reviews', '/admin/storefront-hub?tab=reviews', Star),
+      createItem('coupons', 'Coupons', '/admin/storefront-hub?tab=coupons', Tag),
       createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail),
       createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare),
     ],

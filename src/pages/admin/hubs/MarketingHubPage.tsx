@@ -1,19 +1,19 @@
 /**
  * Marketing Hub Page
- * Consolidated marketing page with tabs:
+ * Outreach & retention tools:
  * - Loyalty: Loyalty program management
- * - Coupons: Coupon management
  * - Campaigns: Marketing automation and campaigns
+ * - Chat: Live customer chat
+ *
+ * Note: Coupons and Reviews live in Storefront Hub under the Marketing group.
  */
 
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Star,
-    Tag,
     Mail,
     MessageSquare,
-    ThumbsUp,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,10 +22,8 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const LoyaltyProgramPage = lazy(() => import('@/pages/admin/LoyaltyProgramPage'));
-const CouponManagementPage = lazy(() => import('@/pages/admin/CouponManagementPage'));
 const MarketingAutomationPage = lazy(() => import('@/pages/admin/MarketingAutomationPage'));
 const AdminLiveChat = lazy(() => import('@/pages/admin/AdminLiveChat'));
-const ReviewsPage = lazy(() => import('@/pages/admin/ReviewsPage'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -37,8 +35,6 @@ const TabSkeleton = () => (
 const tabs = [
     // Customer Retention
     { id: 'loyalty', label: 'Loyalty', icon: Star, group: 'Retention' },
-    { id: 'coupons', label: 'Coupons', icon: Tag, group: 'Retention' },
-    { id: 'reviews', label: 'Reviews', icon: ThumbsUp, group: 'Retention' },
     // Outreach
     { id: 'campaigns', label: 'Campaigns', icon: Mail, group: 'Outreach' },
     { id: 'live-chat', label: 'Chat', icon: MessageSquare, group: 'Outreach' },
@@ -65,6 +61,12 @@ export default function MarketingHubPage() {
                         hubHref="marketing-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
+                    <div className="mb-4">
+                        <h1 className="text-2xl font-bold">Marketing</h1>
+                        <p className="text-muted-foreground text-sm">
+                            Loyalty programs, campaigns, and customer outreach. For coupons and reviews, see Storefront Hub.
+                        </p>
+                    </div>
                     <div className="overflow-x-auto">
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
@@ -95,20 +97,6 @@ export default function MarketingHubPage() {
                     <TabsContent value="loyalty" className="m-0 h-full">
                         <Suspense fallback={<TabSkeleton />}>
                             <LoyaltyProgramPage />
-                        </Suspense>
-                    </TabsContent>
-
-                    {/* Coupons Tab */}
-                    <TabsContent value="coupons" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}>
-                            <CouponManagementPage />
-                        </Suspense>
-                    </TabsContent>
-
-                    {/* Reviews Tab */}
-                    <TabsContent value="reviews" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}>
-                            <ReviewsPage />
                         </Suspense>
                     </TabsContent>
 

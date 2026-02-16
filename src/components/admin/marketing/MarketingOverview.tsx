@@ -122,7 +122,7 @@ export function MarketingOverview({ className, showViewAll = true }: MarketingOv
 
   const handleViewCoupons = () => {
     if (tenantSlug) {
-      navigate(`/${tenantSlug}/admin/marketing-hub?tab=coupons`);
+      navigate(`/${tenantSlug}/admin/storefront-hub?tab=coupons`);
     }
   };
 

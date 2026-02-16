@@ -173,7 +173,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'coupons',
     name: 'Coupons',
     icon: Tag,
-    path: '/admin/marketing-hub?tab=coupons',
+    path: '/admin/storefront-hub?tab=coupons',
     category: 'Sales & Orders',
     minTier: 'starter',
   },

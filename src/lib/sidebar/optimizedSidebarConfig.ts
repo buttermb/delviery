@@ -504,7 +504,7 @@ const GROW: NavItem[] = [
     {
         id: 'coupons',
         name: 'Coupons',
-        path: '/admin/marketing-hub?tab=coupons',
+        path: '/admin/storefront-hub?tab=coupons',
         icon: Tag,
         tier: 'PROFESSIONAL',
         keywords: ['discounts', 'codes', 'promotions'],
@@ -512,7 +512,7 @@ const GROW: NavItem[] = [
     {
         id: 'reviews',
         name: 'Reviews',
-        path: '/admin/marketing-hub?tab=reviews',
+        path: '/admin/storefront-hub?tab=reviews',
         icon: Star,
         tier: 'PROFESSIONAL',
         keywords: ['ratings', 'feedback', 'testimonials'],

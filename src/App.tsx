@@ -1013,7 +1013,7 @@ const App = () => {
                                         <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
                                         <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
-                                        <Route path="coupons" element={<Navigate to="marketing-hub?tab=coupons" replace />} />
+                                        <Route path="coupons" element={<Navigate to="storefront-hub?tab=coupons" replace />} />
                                         <Route path="quality-control" element={<Navigate to="operations-hub?tab=quality" replace />} />
                                         <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
                                         <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm"><ClientsPage /></FeatureProtectedRoute>} />
