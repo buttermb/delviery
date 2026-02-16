@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Building2, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Building2, Loader2, ArrowLeft, Eye, EyeOff, AlertTriangle, HelpCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
@@ -159,28 +159,49 @@ export default function TenantAdminLoginPage() {
 
   if (!tenant) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
-        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
+      <div className="min-h-dvh flex items-center justify-center bg-muted/30 dark:bg-background p-4">
+        <div className="w-full max-w-md bg-card rounded-xl shadow-lg border border-border p-6 sm:p-8">
           <div className="text-center mb-6">
-            <Building2 className="h-12 w-12 text-[hsl(var(--tenant-text-light))] mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-[hsl(var(--tenant-text))] mb-2">Business Not Found</h1>
-            <p className="text-[hsl(var(--tenant-text-light))] mb-2">
-              We couldn't find a business at <strong>"{tenantSlug}"</strong>.
-            </p>
-            <p className="text-sm text-[hsl(var(--tenant-text-light))]">
-              This may mean the URL is incorrect, or the business account has been deactivated. Please check the link you were given and try again.
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-7 w-7 text-destructive" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Business Not Found</h1>
+            <p className="text-muted-foreground mb-2">
+              We couldn't find a business matching <strong className="text-foreground">"{tenantSlug}"</strong>.
             </p>
           </div>
+
+          <div className="rounded-lg bg-muted/50 dark:bg-muted/20 border border-border p-4 mb-6 text-sm text-muted-foreground space-y-2">
+            <div className="flex items-start gap-2">
+              <HelpCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span className="font-medium text-foreground">Common reasons:</span>
+            </div>
+            <ul className="list-disc list-inside space-y-1 ml-6">
+              <li>The URL may have a typo — double-check the link</li>
+              <li>The business may have changed its URL</li>
+              <li>The account may have been deactivated</li>
+            </ul>
+          </div>
+
           <div className="space-y-3">
-            <Button asChild variant="outline" className="w-full">
+            <Button asChild variant="default" className="w-full">
               <Link to="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Go to FloraIQ Home
               </Link>
             </Button>
-            <Button asChild variant="ghost" className="w-full">
-              <Link to="/signup">Don't have an account? Sign up</Link>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/signup">Create a New Business Account</Link>
             </Button>
+            <p className="text-center text-xs text-muted-foreground pt-2">
+              Need help? Contact{" "}
+              <a
+                href="mailto:support@floraiq.com"
+                className="text-primary hover:underline font-medium"
+              >
+                support@floraiq.com
+              </a>
+            </p>
           </div>
         </div>
       </div>
