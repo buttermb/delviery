@@ -52,21 +52,38 @@ interface SheetContentProps
     VariantProps<typeof sheetVariants> {}
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(
-  ({ side = "right", className, children, style, ...props }, ref) => {
+  ({ side = "right", className, children, style, onOpenAutoFocus, onCloseAutoFocus, ...props }, ref) => {
+    const previousActiveElement = React.useRef<Element | null>(null);
     // Merge z-index: use provided style zIndex or default to modal layer (200)
     const mergedStyle = { zIndex: 200, ...style };
-    
+
+    const handleOpenAutoFocus = React.useCallback((event: Event) => {
+      previousActiveElement.current = document.activeElement;
+      onOpenAutoFocus?.(event);
+    }, [onOpenAutoFocus]);
+
+    const handleCloseAutoFocus = React.useCallback((event: Event) => {
+      if (onCloseAutoFocus) {
+        onCloseAutoFocus(event);
+      } else if (previousActiveElement.current instanceof HTMLElement) {
+        event.preventDefault();
+        previousActiveElement.current.focus();
+      }
+    }, [onCloseAutoFocus]);
+
     return (
     <SheetPortal>
       <SheetOverlay />
-      <SheetPrimitive.Content 
-        ref={ref} 
+      <SheetPrimitive.Content
+        ref={ref}
         className={cn(
-          sheetVariants({ side }), 
+          sheetVariants({ side }),
           "mobile-input-container",
           className
-        )} 
+        )}
         style={mergedStyle}
+        onOpenAutoFocus={handleOpenAutoFocus}
+        onCloseAutoFocus={handleCloseAutoFocus}
         {...props}
       >
         {children}
