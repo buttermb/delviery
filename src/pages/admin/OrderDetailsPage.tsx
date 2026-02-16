@@ -153,6 +153,11 @@ interface OrderDetails {
   }>;
 }
 
+import { Checkbox } from '@/components/ui/checkbox';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+
+
+
 export function OrderDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { tenant, tenantSlug } = useTenantAdminAuth();
@@ -163,6 +168,11 @@ export function OrderDetailsPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
+
+  // Refund State
+  const [showRefundDialog, setShowRefundDialog] = useState(false);
+  const [refundReason, setRefundReason] = useState('');
+  const [shouldRestock, setShouldRestock] = useState(true);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -261,24 +271,28 @@ export function OrderDetailsPage() {
 
   // Update order status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ newStatus, notes }: { newStatus: string; notes?: string }) => {
+
+    mutationFn: async ({ newStatus, notes, paymentStatus }: { newStatus?: string; notes?: string; paymentStatus?: string }) => {
       if (!tenant?.id || !orderId) throw new Error('Missing required data');
 
       const updateData: Record<string, unknown> = {
-        status: newStatus,
         updated_at: new Date().toISOString(),
       };
 
-      // Add timestamp based on status
-      if (newStatus === 'confirmed') {
-        updateData.confirmed_at = new Date().toISOString();
-      } else if (newStatus === 'in_transit' || newStatus === 'shipped') {
-        updateData.shipped_at = new Date().toISOString();
-      } else if (newStatus === 'delivered' || newStatus === 'completed') {
-        updateData.delivered_at = new Date().toISOString();
-      } else if (newStatus === 'cancelled') {
-        updateData.cancelled_at = new Date().toISOString();
-        updateData.cancellation_reason = notes;
+      if (newStatus) {
+        updateData.status = newStatus;
+        // Add timestamp based on status
+        if (newStatus === 'confirmed') updateData.confirmed_at = new Date().toISOString();
+        else if (newStatus === 'in_transit' || newStatus === 'shipped') updateData.shipped_at = new Date().toISOString();
+        else if (newStatus === 'delivered' || newStatus === 'completed') updateData.delivered_at = new Date().toISOString();
+        else if (newStatus === 'cancelled') {
+          updateData.cancelled_at = new Date().toISOString();
+          updateData.cancellation_reason = notes;
+        }
+      }
+
+      if (paymentStatus) {
+        updateData.payment_status = paymentStatus;
       }
 
       // Try unified_orders first
@@ -302,41 +316,84 @@ export function OrderDetailsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
-      toast.success('Order status updated');
+      toast.success('Order updated successfully');
       setShowStatusDialog(false);
       setShowCancelDialog(false);
+      setShowRefundDialog(false);
       setCancellationReason('');
+      setRefundReason('');
     },
     onError: (error) => {
-      logger.error('Failed to update order status', error, { component: 'OrderDetailsPage' });
-      toast.error('Failed to update order status');
+      logger.error('Failed to update order', error, { component: 'OrderDetailsPage' });
+      toast.error('Failed to update order');
     },
   });
 
-  // Cancel order handler
-  const handleCancelOrder = () => {
-    updateStatusMutation.mutate({
-      newStatus: 'cancelled',
-      notes: cancellationReason,
-    });
+  // Restore Inventory Helper
+  const restoreInventory = async () => {
+    if (!order?.order_items) return;
+
+    for (const item of order.order_items) {
+      if (!item.product_id) continue;
+
+      const { data: product } = await supabase
+        .from('products')
+        .select('available_quantity')
+        .eq('id', item.product_id)
+        .single();
+
+      if (product) {
+        const current = product.available_quantity || 0;
+        await supabase
+          .from('products')
+          .update({ available_quantity: current + item.quantity })
+          .eq('id', item.product_id);
+      }
+    }
   };
 
-  // Update status handler
+  // Cancel Order Action
+  const cancelOrderAction = useAsyncAction(async () => {
+    if (shouldRestock) {
+      await restoreInventory();
+    }
+
+    await updateStatusMutation.mutateAsync({
+      newStatus: 'cancelled',
+      notes: cancellationReason
+    });
+  }, {
+    successMessage: 'Order cancelled successfully'
+  });
+
+  // Refund Action
+  const refundAction = useAsyncAction(async () => {
+    if (shouldRestock) {
+      await restoreInventory();
+    }
+
+    await updateStatusMutation.mutateAsync({
+      newStatus: 'refunded', // Update status to refunded
+      paymentStatus: 'refunded', // And payment status
+      notes: refundReason
+    });
+  }, {
+    successMessage: 'Refund processed successfully'
+  });
+
+  // Copy Tracking
+  const copyTrackingUrlAction = useAsyncAction(async () => {
+    if (!order?.tracking_token) return;
+    const trackingUrl = `${window.location.origin}/shop/${tenantSlug}/track/${order.tracking_token}`;
+    await navigator.clipboard.writeText(trackingUrl);
+  }, {
+    successMessage: 'Tracking link copied!'
+  });
+
+  // Update status handler (Manual)
   const handleUpdateStatus = () => {
     if (!selectedStatus) return;
     updateStatusMutation.mutate({ newStatus: selectedStatus });
-  };
-
-  // Copy tracking URL
-  const handleCopyTrackingUrl = async () => {
-    if (!order?.tracking_token) return;
-    const trackingUrl = `${window.location.origin}/shop/${tenantSlug}/track/${order.tracking_token}`;
-    try {
-      await navigator.clipboard.writeText(trackingUrl);
-      toast.success('Tracking link copied!');
-    } catch {
-      toast.error('Failed to copy');
-    }
   };
 
   if (isLoading) {
@@ -419,57 +476,115 @@ export function OrderDetailsPage() {
 
           <div className="flex flex-wrap gap-2">
             {order.tracking_token && (
-              <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl}>
-                <Copy className="w-4 h-4 mr-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyTrackingUrlAction.execute()}
+                disabled={copyTrackingUrlAction.isLoading}
+              >
+                {copyTrackingUrlAction.isLoading ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <Copy className="w-4 h-4 mr-1" />
+                )}
                 Share Tracking
               </Button>
             )}
 
-            {!isCancelled && (
-              <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Edit className="w-4 h-4 mr-1" />
-                    Update Status
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Update Order Status</DialogTitle>
-                    <DialogDescription>
-                      Change the status of order #{order.order_number}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <Label>New Status</Label>
-                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_STEPS.map((step) => (
-                          <SelectItem key={step.status} value={step.status}>
-                            {step.label}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleUpdateStatus}
-                      disabled={!selectedStatus || updateStatusMutation.isPending}
-                    >
-                      {updateStatusMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+            {!isCancelled && order.status !== 'refunded' && (
+              <>
+                <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-4 h-4 mr-1" />
                       Update Status
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Update Order Status</DialogTitle>
+                      <DialogDescription>
+                        Change the status of order #{order.order_number}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <Label>New Status</Label>
+                      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUS_STEPS.map((step) => (
+                            <SelectItem key={step.status} value={step.status}>
+                              {step.label}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleUpdateStatus}
+                        disabled={!selectedStatus || updateStatusMutation.isPending}
+                      >
+                        {updateStatusMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                        Update Status
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-warning border-warning/50 hover:bg-warning/10">
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Refund
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Process Refund</DialogTitle>
+                      <DialogDescription>
+                        Mark this order as refunded. This controls payment status only.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-2 space-y-4">
+                      <div>
+                        <Label>Refund Reason</Label>
+                        <Textarea
+                          value={refundReason}
+                          onChange={(e) => setRefundReason(e.target.value)}
+                          placeholder="Reason for refund..."
+                          className="mt-2"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="restock"
+                          checked={shouldRestock}
+                          onCheckedChange={(c) => setShouldRestock(!!c)}
+                        />
+                        <Label htmlFor="restock">Restock items to inventory?</Label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowRefundDialog(false)}>Cancel</Button>
+                      <Button
+                        onClick={() => refundAction.execute()}
+                        disabled={refundAction.isLoading}
+                        className="bg-warning text-warning-foreground hover:bg-warning/90"
+                      >
+                        {refundAction.isLoading && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                        Process Refund
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {canCancel && (
@@ -496,15 +611,26 @@ export function OrderDetailsPage() {
                       rows={3}
                       className="mt-2"
                     />
+                    <div className="flex items-center space-x-2 mt-4">
+                      <Checkbox
+                        id="cancel-restock"
+                        checked={shouldRestock}
+                        onCheckedChange={(c) => setShouldRestock(!!c)}
+                      />
+                      <Label htmlFor="cancel-restock">Restock items to inventory?</Label>
+                    </div>
                   </div>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Keep Order</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleCancelOrder}
-                      disabled={updateStatusMutation.isPending}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    <Button
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        cancelOrderAction.execute();
+                      }}
+                      disabled={cancelOrderAction.isLoading}
                     >
-                      {updateStatusMutation.isPending ? (
+                      {cancelOrderAction.isLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                           Cancelling...
@@ -512,7 +638,7 @@ export function OrderDetailsPage() {
                       ) : (
                         'Cancel Order'
                       )}
-                    </AlertDialogAction>
+                    </Button>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -532,10 +658,14 @@ export function OrderDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {isCancelled ? (
+                {isCancelled || order.status === 'refunded' ? (
                   <div className="text-center py-6">
-                    <XCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
-                    <p className="text-lg font-semibold text-destructive capitalize">
+                    {order.status === 'refunded' ? (
+                      <RefreshCw className="w-12 h-12 mx-auto mb-3 text-warning" />
+                    ) : (
+                      <XCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
+                    )}
+                    <p className={`text-lg font-semibold capitalize ${order.status === 'refunded' ? 'text-warning' : 'text-destructive'}`}>
                       Order {order.status}
                     </p>
                     {order.cancellation_reason && (
@@ -572,9 +702,8 @@ export function OrderDetailsPage() {
 
                           {/* Icon */}
                           <div
-                            className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                              isCurrent ? 'ring-2 ring-offset-2 ring-primary' : ''
-                            } ${isComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                            className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'ring-2 ring-offset-2 ring-primary' : ''
+                              } ${isComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                           >
                             <Icon className="w-4 h-4" />
                           </div>
@@ -857,7 +986,7 @@ export function OrderDetailsPage() {
           </div>
         </div>
       </div>
-    </SwipeBackWrapper>
+    </SwipeBackWrapper >
   );
 }
 

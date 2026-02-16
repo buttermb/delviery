@@ -75,7 +75,13 @@ export function CreateOrderPage() {
                 reference_id: preOrder.id,
                 reference_type: "crm_pre_orders",
             });
-            navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
+
+            // Check if it's a standard order
+            if (data.order_type === 'standard') {
+                navigate(`/${tenantSlug}/admin/orders/${preOrder.id}`);
+            } else {
+                navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
+            }
         } else {
             const invoice = result.data as { id: string; invoice_number: string };
             logActivity.mutate({

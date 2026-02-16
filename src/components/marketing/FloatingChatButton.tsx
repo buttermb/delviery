@@ -9,7 +9,7 @@ export function FloatingChatButton() {
   return (
     <>
       <motion.button
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-16 h-16 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] text-white shadow-lg hover:shadow-xl z-50 flex items-center justify-center touch-target safe-area-bottom"
+        className="fixed bottom-28 right-4 md:bottom-6 md:right-6 w-16 h-16 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] text-white shadow-lg hover:shadow-xl z-50 flex items-center justify-center touch-target safe-area-bottom"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}

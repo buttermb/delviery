@@ -12,6 +12,7 @@ import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { queryKeys } from "@/lib/queryKeys";
+import { useAsyncAction } from "@/hooks/useAsyncAction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -196,7 +197,7 @@ export default function ProductManagement() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [labelDialogOpen, setLabelDialogOpen] = useState(false);
   const [labelProduct, setLabelProduct] = useState<Product | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  // const [isGenerating, setIsGenerating] = useState(false); // Replaced by useAsyncAction
   const [scannerOpen, setScannerOpen] = useState(false);
   const [batchScanMode, setBatchScanMode] = useState(false);
   const [batchProducts, setBatchProducts] = useState<Product[]>([]);
@@ -230,6 +231,26 @@ export default function ProductManagement() {
   });
 
   // Sync query data into optimistic list state
+  const fetchProducts = useCallback(async () => {
+    if (!tenant?.id) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (err) {
+      logger.error('Failed to fetch products', err);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  }, [tenant?.id, setProducts]);
+
   useEffect(() => {
     if (tenant?.id) {
       fetchProducts();
@@ -361,7 +382,7 @@ export default function ProductManagement() {
   };
 
   // Handlers
-  const handleProductSubmit = async (data: ProductFormData) => {
+  const handleProductSubmit = useAsyncAction(async (data: ProductFormData) => {
     // Validate tenant context first
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -375,107 +396,99 @@ export default function ProductManagement() {
       return;
     }
 
-    setIsGenerating(true);
-    try {
-      // Check SKU uniqueness (if SKU provided)
-      if (data.sku) {
-        const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
-        if (!isSkuUnique) {
-          toast.error('SKU already exists. Please use a unique SKU.');
-          setIsGenerating(false);
+    // Check SKU uniqueness (if SKU provided)
+    if (data.sku) {
+      const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
+      if (!isSkuUnique) {
+        toast.error('SKU already exists. Please use a unique SKU.');
+        return;
+      }
+    }
+
+    // Ensure all required fields for DB are present
+    const productData = {
+      tenant_id: tenant.id,
+      name: data.name,
+      sku: data.sku,
+      category: data.category,
+      vendor_name: data.vendor_name,
+      strain_name: data.strain_name,
+      strain_type: data.strain_type,
+      thc_percent: data.thc_percent ? parseFloat(data.thc_percent) : null,
+      cbd_percent: data.cbd_percent ? parseFloat(data.cbd_percent) : null,
+      batch_number: data.batch_number,
+      cost_per_unit: data.cost_per_unit ? parseFloat(data.cost_per_unit) : null,
+      wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,
+      retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
+      available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
+      description: data.description,
+      image_url: data.image_url,
+      low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
+      // Add missing required fields with defaults
+      price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
+      thca_percentage: null,
+      metrc_retail_id: data.metrc_retail_id || null,
+      exclude_from_discounts: data.exclude_from_discounts,
+      minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
+    };
+
+    if (editingProduct) {
+      if (!tenant?.id) throw new Error('No tenant context');
+
+      // Use optimistic locking to prevent concurrent edit conflicts
+      const expectedVersion = editingProduct.version || 1;
+      const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
+
+      if (!result.success) {
+        if (result.conflictDetected) {
+          toast.error("This product was modified by another user. Please refresh and try again.");
           return;
         }
+        throw new Error(result.error || 'Failed to update product');
       }
 
-      // Ensure all required fields for DB are present
-      const productData = {
-        tenant_id: tenant.id,
-        name: data.name,
-        sku: data.sku,
-        category: data.category,
-        vendor_name: data.vendor_name,
-        strain_name: data.strain_name,
-        strain_type: data.strain_type,
-        thc_percent: data.thc_percent ? parseFloat(data.thc_percent) : null,
-        cbd_percent: data.cbd_percent ? parseFloat(data.cbd_percent) : null,
-        batch_number: data.batch_number,
-        cost_per_unit: data.cost_per_unit ? parseFloat(data.cost_per_unit) : null,
-        wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,
-        retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
-        available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
-        description: data.description,
-        image_url: data.image_url,
-        low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
-        // Add missing required fields with defaults
-        price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
-        thca_percentage: null,
-        metrc_retail_id: data.metrc_retail_id || null,
-        exclude_from_discounts: data.exclude_from_discounts,
-        minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
-      };
+      toast.success("Product updated");
+      // Update state with new version
+      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
 
-      if (editingProduct) {
-        if (!tenant?.id) throw new Error('No tenant context');
+      // Invalidate all product caches so storefront reflects changes instantly
+      invalidateProductCaches({
+        tenantId: tenant.id,
+        storeId: store?.id || undefined,
+        productId: editingProduct.id,
+        category: productData.category || undefined,
+      });
+    } else {
+      const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
+      if (error) throw error;
+      toast.success("Product created");
+      // Manually update state
+      setProducts(prev => [newProduct, ...prev]);
 
-        // Use optimistic locking to prevent concurrent edit conflicts
-        const expectedVersion = editingProduct.version || 1;
-        const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
-
-        if (!result.success) {
-          if (result.conflictDetected) {
-            toast.error("This product was modified by another user. Please refresh and try again.");
-            return;
-          }
-          throw new Error(result.error || 'Failed to update product');
-        }
-
-        toast.success("Product updated");
-        // Update state with new version
-        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
-
-        // Invalidate all product caches so storefront reflects changes instantly
-        invalidateProductCaches({
-          tenantId: tenant.id,
-          storeId: store?.id || undefined,
-          productId: editingProduct.id,
-          category: productData.category || undefined,
+      // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
+      // this handles marketplace_products with additional fields like slug)
+      if (store?.id && newProduct) {
+        const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
+          p_product_id: newProduct.id,
+          p_store_id: store.id,
         });
-      } else {
-        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
-        if (error) throw error;
-        toast.success("Product created");
-        // Manually update state
-        setProducts(prev => [newProduct, ...prev]);
-
-        // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
-        // this handles marketplace_products with additional fields like slug)
-        if (store?.id && newProduct) {
-          const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
-            p_product_id: newProduct.id,
-            p_store_id: store.id,
-          });
-          if (syncError) {
-            // Don't block on sync error - product was created successfully
-            logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
-          }
+        if (syncError) {
+          // Don't block on sync error - product was created successfully
+          logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
         }
-
-        // Invalidate all product caches so storefront reflects changes instantly
-        invalidateProductCaches({
-          tenantId: tenant.id,
-          storeId: store?.id || undefined,
-          productId: newProduct.id,
-          category: productData.category || undefined,
-        });
       }
-      setIsDialogOpen(false);
-      setEditingProduct(null);
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setIsGenerating(false);
+
+      // Invalidate all product caches so storefront reflects changes instantly
+      invalidateProductCaches({
+        tenantId: tenant.id,
+        storeId: store?.id || undefined,
+        productId: newProduct.id,
+        category: productData.category || undefined,
+      });
     }
-  };
+    setIsDialogOpen(false);
+    setEditingProduct(null);
+  });
 
   const handleDelete = (id: string) => {
     const product = products.find(p => p.id === id);
@@ -1034,9 +1047,9 @@ export default function ProductManagement() {
               <div className="flex-1 overflow-y-auto px-1">
                 <ProductForm
                   initialData={editingProduct ? mapProductToForm(editingProduct) : undefined}
-                  onSubmit={handleProductSubmit}
+                  onSubmit={handleProductSubmit.execute}
                   onCancel={() => setIsDialogOpen(false)}
-                  isLoading={isGenerating}
+                  isLoading={handleProductSubmit.isLoading}
                   isEditMode={!!editingProduct}
                 />
               </div>

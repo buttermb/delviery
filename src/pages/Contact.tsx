@@ -12,10 +12,11 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
+import { useFormPersistence } from "@/hooks/useFormPersistence";
 
 export default function Contact() {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData, clearFormData] = useFormPersistence("contact_form", {
     name: "",
     email: "",
     company: "",
@@ -35,14 +36,8 @@ export default function Contact() {
         title: "Message sent!",
         description: "We'll get back to you within 1 hour during business hours.",
       });
-      setFormData({
-        name: "",
-        email: "",
-        company: "",
-        phone: "",
-        inquiryType: "general",
-        message: "",
-      });
+      clearFormData();
+      setLoading(false);
       setLoading(false);
     }, 1000);
   };
