@@ -184,7 +184,7 @@ export function OrderDetailsPage() {
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
-    queryKey: queryKeys.orders.detail(orderId || ''),
+    queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || ''),
     queryFn: async (): Promise<OrderDetails | null> => {
       if (!tenant?.id || !orderId) return null;
 
@@ -325,7 +325,7 @@ export function OrderDetailsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Order status updated');
       setShowStatusDialog(false);
@@ -425,7 +425,7 @@ export function OrderDetailsPage() {
         <div className="hidden print:block print-business-header border-b-2 border-black pb-4 mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold">{tenant?.name || 'FloraIQ'}</h1>
+              <h1 className="text-2xl font-bold">{tenant?.business_name || 'FloraIQ'}</h1>
               <p className="text-sm text-gray-600 mt-1">Order Confirmation</p>
             </div>
             <div className="text-right text-sm text-gray-600">
@@ -882,7 +882,7 @@ export function OrderDetailsPage() {
                 currentPaymentStatus={order.payment_status}
                 autoUpdateOrderStatus={true}
                 onPaymentStatusChange={() => {
-                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
                 }}
               />
             </div>
@@ -893,7 +893,7 @@ export function OrderDetailsPage() {
                 orderId={order.id}
                 autoUpdateOrderStatus={true}
                 onDeliveryStatusChange={() => {
-                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
                 }}
               />
             </div>
@@ -1032,7 +1032,7 @@ export function OrderDetailsPage() {
           open={showAssignRunnerDialog}
           onOpenChange={setShowAssignRunnerDialog}
           onAssigned={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
           }}
         />
       </div>
