@@ -24,9 +24,11 @@ import {
     Target,
     Presentation,
     Store,
+    Plus,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -99,6 +101,13 @@ export default function AnalyticsHubPage() {
                                 Business intelligence and performance metrics
                             </p>
                         </div>
+                        <Button
+                            size="sm"
+                            onClick={() => handleTabChange('custom')}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            New Report
+                        </Button>
                     </div>
                     <div className="overflow-x-auto">
                         <TabsList className="inline-flex min-w-max gap-0.5">

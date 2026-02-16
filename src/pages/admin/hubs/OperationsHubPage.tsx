@@ -27,9 +27,11 @@ import {
     MapPin,
     Truck,
     Mail,
+    UserPlus,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -104,6 +106,13 @@ export default function OperationsHubPage() {
                                 Manage suppliers, team, locations, and daily operations
                             </p>
                         </div>
+                        <Button
+                            size="sm"
+                            onClick={() => handleTabChange('invites')}
+                        >
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Invite Member
+                        </Button>
                     </div>
                     <div className="overflow-x-auto">
                         <TooltipProvider delayDuration={300}>
