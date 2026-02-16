@@ -1,4 +1,4 @@
-import React, { useMemo, memo } from "react";
+import React, { useMemo, memo, useCallback } from "react";
 import {
     Table,
     TableBody,
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnhancedEmptyState, EnhancedEmptyStateProps } from "@/components/shared/EnhancedEmptyState";
 import { VirtualizedTable } from "@/components/shared/VirtualizedTable";
+import { useTableKeyboardNav } from "@/hooks/useTableKeyboardNav";
 
 export interface ResponsiveColumn<T> {
     header: string | React.ReactNode;
@@ -41,6 +42,14 @@ interface ResponsiveTableProps<T> {
     virtualizeRowHeight?: number;
 }
 
+interface KeyboardRowProps {
+    tabIndex: number;
+    "aria-rowindex": number;
+    onKeyDown: (e: React.KeyboardEvent<HTMLTableRowElement>) => void;
+    onFocus: () => void;
+    ref: (el: HTMLTableRowElement | null) => void;
+}
+
 /** Memoized table row to prevent re-renders when parent updates */
 const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item,
@@ -48,18 +57,26 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     onRowClick,
     itemKey: _itemKey,
     rowClassName,
+    keyboardProps,
 }: {
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
     itemKey?: string;
     rowClassName?: string;
+    keyboardProps?: KeyboardRowProps;
 }) {
     return (
         <TableRow
+            ref={keyboardProps?.ref}
+            tabIndex={keyboardProps?.tabIndex}
+            aria-rowindex={keyboardProps?.["aria-rowindex"]}
+            onKeyDown={keyboardProps?.onKeyDown}
+            onFocus={keyboardProps?.onFocus}
             onClick={() => onRowClick && onRowClick(item)}
             className={cn(
                 onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                 rowClassName
             )}
         >
@@ -80,6 +97,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     onRowClick?: (item: T) => void;
     itemKey?: string;
     rowClassName?: string;
+    keyboardProps?: KeyboardRowProps;
 }) => React.ReactElement;
 
 export function ResponsiveTable<T>({
@@ -99,6 +117,21 @@ export function ResponsiveTable<T>({
 }: ResponsiveTableProps<T>) {
     // Determine if virtualization should be used (auto-enable for large datasets)
     const shouldVirtualize = virtualize ?? (data.length > virtualizeThreshold);
+
+    const handleActivate = useCallback(
+        (index: number) => {
+            if (onRowClick && data[index]) {
+                onRowClick(data[index]);
+            }
+        },
+        [onRowClick, data]
+    );
+
+    const { tableProps, getRowProps } = useTableKeyboardNav({
+        rowCount: data.length,
+        onActivate: onRowClick ? handleActivate : undefined,
+        enabled: !shouldVirtualize,
+    });
 
     // Convert ResponsiveColumn format to VirtualizedTable column format
     const virtualizedColumns = useMemo(() => {
@@ -171,7 +204,7 @@ export function ResponsiveTable<T>({
                     />
                 ) : (
                     <div className="rounded-md border dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-                        <Table containerClassName="max-h-[600px]">
+                        <Table containerClassName="max-h-[600px]" {...tableProps}>
                             <TableHeader>
                                 <TableRow>
                                     {columns.map((col, index) => (
@@ -182,7 +215,7 @@ export function ResponsiveTable<T>({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data.map((item) => (
+                                {data.map((item, index) => (
                                     <MemoizedTableRow
                                         key={keyExtractor(item)}
                                         item={item}
@@ -190,6 +223,7 @@ export function ResponsiveTable<T>({
                                         onRowClick={onRowClick}
                                         itemKey={keyExtractor(item)}
                                         rowClassName={rowClassName?.(item)}
+                                        keyboardProps={getRowProps(index)}
                                     />
                                 ))}
                             </TableBody>
