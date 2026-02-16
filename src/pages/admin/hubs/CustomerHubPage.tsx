@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { QuickCreateCustomerDialog } from '@/components/pos/QuickCreateCustomerDialog';
@@ -50,8 +51,8 @@ const tabs = [
     // Overview
     { id: 'contacts', label: 'All', icon: Users, group: 'Contacts' },
     // Relationships
-    { id: 'crm', label: 'CRM', icon: Heart, group: 'Relationships' },
-    { id: 'wholesale', label: 'B2B', icon: Briefcase, group: 'Relationships' },
+    { id: 'crm', label: 'CRM', tooltip: 'Customer Relationship Management', icon: Heart, group: 'Relationships' },
+    { id: 'wholesale', label: 'B2B', tooltip: 'Business-to-Business Clients', icon: Briefcase, group: 'Relationships' },
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
     // Support & Loyalty
@@ -100,23 +101,33 @@ export default function CustomerHubPage() {
                         )}
                     </div>
                     <div className="overflow-x-auto">
+                        <TooltipProvider delayDuration={300}>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
+                                const trigger = (
+                                    <TabsTrigger value={tab.id} className="flex items-center gap-2">
+                                        <tab.icon className="h-4 w-4" />
+                                        <span className="text-xs sm:text-sm truncate">{tab.label}</span>
+                                    </TabsTrigger>
+                                );
                                 return (
                                     <Fragment key={tab.id}>
                                         {showSeparator && (
                                             <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
-                                            <tab.icon className="h-4 w-4" />
-                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
-                                        </TabsTrigger>
+                                        {'tooltip' in tab && tab.tooltip ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+                                                <TooltipContent>{tab.tooltip}</TooltipContent>
+                                            </Tooltip>
+                                        ) : trigger}
                                     </Fragment>
                                 );
                             })}
                         </TabsList>
+                        </TooltipProvider>
                     </div>
                 </div>
 

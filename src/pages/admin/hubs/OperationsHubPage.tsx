@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -64,13 +65,13 @@ const tabs = [
     { id: 'invites', label: 'Invites', icon: Mail, group: 'People' },
     // Supply Chain
     { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
-    { id: 'purchase-orders', label: 'POs', icon: FileText, group: 'Supply' },
+    { id: 'purchase-orders', label: 'POs', tooltip: 'Purchase Orders', icon: FileText, group: 'Supply' },
     { id: 'receiving', label: 'Receiving', icon: Truck, group: 'Supply' },
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
     { id: 'quality', label: 'Quality Control', icon: ClipboardCheck, group: 'Compliance' },
-    { id: 'activity', label: 'Logs', icon: ScrollText, group: 'Compliance' },
+    { id: 'activity', label: 'Logs', tooltip: 'Activity Logs', icon: ScrollText, group: 'Compliance' },
     // Facilities
     { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },
     { id: 'appointments', label: 'Calendar', icon: Calendar, group: 'Facilities' },
@@ -109,23 +110,33 @@ export default function OperationsHubPage() {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
+                        <TooltipProvider delayDuration={300}>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
+                                const trigger = (
+                                    <TabsTrigger value={tab.id} className="flex items-center gap-2">
+                                        <tab.icon className="h-4 w-4" />
+                                        <span className="text-xs sm:text-sm truncate">{tab.label}</span>
+                                    </TabsTrigger>
+                                );
                                 return (
                                     <Fragment key={tab.id}>
                                         {showSeparator && (
                                             <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
-                                            <tab.icon className="h-4 w-4" />
-                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
-                                        </TabsTrigger>
+                                        {'tooltip' in tab && tab.tooltip ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+                                                <TooltipContent>{tab.tooltip}</TooltipContent>
+                                            </Tooltip>
+                                        ) : trigger}
                                     </Fragment>
                                 );
                             })}
                         </TabsList>
+                        </TooltipProvider>
                     </div>
                 </div>
 
