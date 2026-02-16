@@ -31,9 +31,6 @@ import { CreditProvider } from "./contexts/CreditContext";
 import { lazy, Suspense, useEffect } from "react";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-// AdminErrorBoundary and AuthErrorBoundary - available for future use
-// import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
-// import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { SkeletonAdminLayout } from "./components/loading/SkeletonAdminLayout";
@@ -53,8 +50,6 @@ import { toast } from "./hooks/use-toast";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
-// NotificationPreferences - available for future use
-// import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
