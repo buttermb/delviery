@@ -1,12 +1,11 @@
 /**
  * Analytics Hub Page
- * Consolidated analytics with tabs:
- * - Overview: Main analytics dashboard
- * - Orders: Order analytics
- * - Menu: Menu performance
- * - Delivery: Delivery analytics
- * - Storefront: Store metrics (revenue, orders, conversion, AOV)
- * - Forecasting: Predictive analytics
+ * Consolidated analytics with 5 top-level tabs:
+ * - Analytics (sub-tabs: Overview, Orders, Menu, Delivery)
+ * - Storefront: Store metrics
+ * - Insights (sub-tabs: Forecasting, Advanced, Strategy)
+ * - Reports (sub-tabs: Standard, Custom, Export)
+ * - Board Report: Board-level presentations
  */
 
 import { useSearchParams } from 'react-router-dom';
@@ -25,8 +24,9 @@ import {
     Presentation,
     Store,
     Plus,
+    Lightbulb,
 } from 'lucide-react';
-import { Fragment, lazy, Suspense, useCallback } from 'react';
+import { Fragment, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
@@ -54,35 +54,92 @@ const TabSkeleton = () => (
 );
 
 const tabs = [
-    // Overview
-    { id: 'overview', label: 'Overview', icon: BarChart3, group: 'Overview' },
-    // Business Metrics
-    { id: 'orders', label: 'Orders', icon: ShoppingCart, group: 'Metrics' },
-    { id: 'menu', label: 'Menu', icon: UtensilsCrossed, group: 'Metrics' },
-    { id: 'delivery', label: 'Delivery', icon: Truck, group: 'Metrics' },
-    { id: 'storefront', label: 'Storefront', icon: Store, group: 'Metrics' },
-    // Advanced Analysis
-    { id: 'forecasting', label: 'Forecasting', icon: TrendingUp, group: 'Analysis' },
-    { id: 'advanced', label: 'Advanced', icon: LineChart, group: 'Analysis' },
-    // Reports
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Core' },
+    { id: 'storefront', label: 'Storefront', icon: Store, group: 'Core' },
+    { id: 'insights', label: 'Insights', icon: Lightbulb, group: 'Advanced' },
     { id: 'reports', label: 'Reports', icon: FileText, group: 'Reports' },
-    { id: 'custom', label: 'Custom', icon: PieChart, group: 'Reports' },
-    { id: 'export', label: 'Export', icon: Download, group: 'Reports' },
-    // Strategy (Enterprise)
-    { id: 'strategy', label: 'Strategy', icon: Target, group: 'Strategy' },
-    { id: 'board', label: 'Board Report', icon: Presentation, group: 'Strategy' },
+    { id: 'board', label: 'Board Report', icon: Presentation, group: 'Enterprise' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
 
+// Map legacy tab IDs to new grouped structure for backward compatibility
+const legacyTabMap: Record<string, { tab: TabId; sub?: string }> = {
+    overview: { tab: 'analytics', sub: 'overview' },
+    orders: { tab: 'analytics', sub: 'orders' },
+    menu: { tab: 'analytics', sub: 'menu' },
+    delivery: { tab: 'analytics', sub: 'delivery' },
+    forecasting: { tab: 'insights', sub: 'forecasting' },
+    advanced: { tab: 'insights', sub: 'advanced' },
+    strategy: { tab: 'insights', sub: 'strategy' },
+    reports: { tab: 'reports', sub: 'standard' },
+    custom: { tab: 'reports', sub: 'custom' },
+    export: { tab: 'reports', sub: 'export' },
+};
+
+const analyticsSubTabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'orders', label: 'Orders', icon: ShoppingCart },
+    { id: 'menu', label: 'Menu', icon: UtensilsCrossed },
+    { id: 'delivery', label: 'Delivery', icon: Truck },
+] as const;
+
+const insightsSubTabs = [
+    { id: 'forecasting', label: 'Forecasting', icon: TrendingUp },
+    { id: 'advanced', label: 'Advanced', icon: LineChart },
+    { id: 'strategy', label: 'Strategy', icon: Target },
+] as const;
+
+const reportsSubTabs = [
+    { id: 'standard', label: 'Standard', icon: FileText },
+    { id: 'custom', label: 'Custom', icon: PieChart },
+    { id: 'export', label: 'Export', icon: Download },
+] as const;
+
 export default function AnalyticsHubPage() {
     usePageTitle('Analytics');
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = (searchParams.get('tab') as TabId) || 'overview';
+    const rawTab = searchParams.get('tab') || 'analytics';
+    const rawSub = searchParams.get('sub') || '';
+
+    // Redirect legacy tab IDs to new structure
+    useEffect(() => {
+        const legacy = legacyTabMap[rawTab];
+        if (legacy) {
+            const params: Record<string, string> = { tab: legacy.tab };
+            if (legacy.sub) params.sub = legacy.sub;
+            setSearchParams(params, { replace: true });
+        }
+    }, [rawTab, setSearchParams]);
+
+    const activeTab = (legacyTabMap[rawTab]?.tab ?? rawTab) as TabId;
+    const activeSub = legacyTabMap[rawTab]?.sub ?? rawSub;
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
+
+    const handleSubTabChange = useCallback((tab: string, sub: string) => {
+        setSearchParams({ tab, sub }, { replace: true });
+    }, [setSearchParams]);
+
+    const activeTabLabel = (() => {
+        const topTab = tabs.find(t => t.id === activeTab);
+        if (!topTab) return undefined;
+        if (activeTab === 'analytics' && activeSub) {
+            const subTab = analyticsSubTabs.find(s => s.id === activeSub);
+            return subTab ? `${topTab.label} / ${subTab.label}` : topTab.label;
+        }
+        if (activeTab === 'insights' && activeSub) {
+            const subTab = insightsSubTabs.find(s => s.id === activeSub);
+            return subTab ? `${topTab.label} / ${subTab.label}` : topTab.label;
+        }
+        if (activeTab === 'reports' && activeSub) {
+            const subTab = reportsSubTabs.find(s => s.id === activeSub);
+            return subTab ? `${topTab.label} / ${subTab.label}` : topTab.label;
+        }
+        return topTab.label;
+    })();
 
     return (
         <div className="space-y-0">
@@ -92,7 +149,7 @@ export default function AnalyticsHubPage() {
                     <HubBreadcrumbs
                         hubName="analytics-hub"
                         hubHref="analytics-hub"
-                        currentTab={tabs.find(t => t.id === activeTab)?.label}
+                        currentTab={activeTabLabel}
                     />
                     <div className="flex items-center justify-between mb-4">
                         <div>
@@ -103,7 +160,7 @@ export default function AnalyticsHubPage() {
                         </div>
                         <Button
                             size="sm"
-                            onClick={() => handleTabChange('custom')}
+                            onClick={() => handleSubTabChange('reports', 'custom')}
                         >
                             <Plus className="h-4 w-4 mr-2" />
                             New Report
@@ -130,32 +187,48 @@ export default function AnalyticsHubPage() {
                     </div>
                 </div>
 
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <AnalyticsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Orders Tab */}
-                <TabsContent value="orders" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <OrderAnalyticsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Menu Tab */}
-                <TabsContent value="menu" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <MenuAnalytics />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Delivery Tab */}
-                <TabsContent value="delivery" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DeliveryAnalyticsPage />
-                    </Suspense>
+                {/* Analytics Tab (grouped: Overview, Orders, Menu, Delivery) */}
+                <TabsContent value="analytics" className="m-0">
+                    <Tabs
+                        value={activeSub || 'overview'}
+                        onValueChange={(sub) => handleSubTabChange('analytics', sub)}
+                        className="w-full"
+                    >
+                        <div className="border-b px-6 pt-2">
+                            <TabsList className="h-9 bg-transparent gap-1">
+                                {analyticsSubTabs.map((sub) => (
+                                    <TabsTrigger
+                                        key={sub.id}
+                                        value={sub.id}
+                                        className="flex items-center gap-1.5 text-xs data-[state=active]:bg-muted"
+                                    >
+                                        <sub.icon className="h-3.5 w-3.5" />
+                                        {sub.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </div>
+                        <TabsContent value="overview" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <AnalyticsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="orders" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <OrderAnalyticsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="menu" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <MenuAnalytics />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="delivery" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <DeliveryAnalyticsPage />
+                            </Suspense>
+                        </TabsContent>
+                    </Tabs>
                 </TabsContent>
 
                 {/* Storefront Tab */}
@@ -165,49 +238,85 @@ export default function AnalyticsHubPage() {
                     </Suspense>
                 </TabsContent>
 
-                {/* Forecasting Tab */}
-                <TabsContent value="forecasting" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <PredictiveAnalyticsPage />
-                    </Suspense>
+                {/* Insights Tab (grouped: Forecasting, Advanced, Strategy) */}
+                <TabsContent value="insights" className="m-0">
+                    <Tabs
+                        value={activeSub || 'forecasting'}
+                        onValueChange={(sub) => handleSubTabChange('insights', sub)}
+                        className="w-full"
+                    >
+                        <div className="border-b px-6 pt-2">
+                            <TabsList className="h-9 bg-transparent gap-1">
+                                {insightsSubTabs.map((sub) => (
+                                    <TabsTrigger
+                                        key={sub.id}
+                                        value={sub.id}
+                                        className="flex items-center gap-1.5 text-xs data-[state=active]:bg-muted"
+                                    >
+                                        <sub.icon className="h-3.5 w-3.5" />
+                                        {sub.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </div>
+                        <TabsContent value="forecasting" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <PredictiveAnalyticsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="advanced" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <AdvancedAnalyticsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="strategy" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <StrategicDashboardPage />
+                            </Suspense>
+                        </TabsContent>
+                    </Tabs>
                 </TabsContent>
 
-                {/* Advanced Tab */}
-                <TabsContent value="advanced" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <AdvancedAnalyticsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Reports Tab */}
+                {/* Reports Tab (grouped: Standard, Custom, Export) */}
                 <TabsContent value="reports" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ReportsPage />
-                    </Suspense>
+                    <Tabs
+                        value={activeSub || 'standard'}
+                        onValueChange={(sub) => handleSubTabChange('reports', sub)}
+                        className="w-full"
+                    >
+                        <div className="border-b px-6 pt-2">
+                            <TabsList className="h-9 bg-transparent gap-1">
+                                {reportsSubTabs.map((sub) => (
+                                    <TabsTrigger
+                                        key={sub.id}
+                                        value={sub.id}
+                                        className="flex items-center gap-1.5 text-xs data-[state=active]:bg-muted"
+                                    >
+                                        <sub.icon className="h-3.5 w-3.5" />
+                                        {sub.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </div>
+                        <TabsContent value="standard" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <ReportsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="custom" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <CustomReportsPage />
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="export" className="m-0">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <DataExportPage />
+                            </Suspense>
+                        </TabsContent>
+                    </Tabs>
                 </TabsContent>
 
-                {/* Custom Tab */}
-                <TabsContent value="custom" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomReportsPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Export Tab */}
-                <TabsContent value="export" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DataExportPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Strategy Tab (Enterprise) */}
-                <TabsContent value="strategy" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <StrategicDashboardPage />
-                    </Suspense>
-                </TabsContent>
-
-                {/* Board Reports Tab (Enterprise) */}
+                {/* Board Report Tab (Enterprise) */}
                 <TabsContent value="board" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
                         <BoardReportPage />
