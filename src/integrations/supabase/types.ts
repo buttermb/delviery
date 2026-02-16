@@ -4226,6 +4226,44 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string | null
+          description: string
+          id: string
+          notes: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          notes?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          notes?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       failed_emails: {
         Row: {
           created_at: string
@@ -5195,6 +5233,140 @@ export type Database = {
           winning_entry_number?: number | null
         }
         Relationships: []
+      }
+      global_product_imports: {
+        Row: {
+          auto_sync_enabled: boolean | null
+          global_product_id: string
+          id: string
+          imported_at: string | null
+          last_synced_at: string | null
+          listing_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          auto_sync_enabled?: boolean | null
+          global_product_id: string
+          id?: string
+          imported_at?: string | null
+          last_synced_at?: string | null
+          listing_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          auto_sync_enabled?: boolean | null
+          global_product_id?: string
+          id?: string
+          imported_at?: string | null
+          last_synced_at?: string | null
+          listing_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_product_imports_global_product_id_fkey"
+            columns: ["global_product_id"]
+            isOneToOne: false
+            referencedRelation: "global_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "global_product_imports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_products: {
+        Row: {
+          brand: string | null
+          category: string
+          cbd_percent: number | null
+          created_at: string | null
+          description: string | null
+          effects: string[] | null
+          id: string
+          images: string[] | null
+          is_verified: boolean | null
+          metadata: Json | null
+          name: string
+          short_description: string | null
+          sku: string
+          status: string
+          strain_type: string | null
+          submission_notes: string | null
+          submitted_by_tenant_id: string | null
+          terpenes: Json | null
+          thc_percent: number | null
+          unit_type: string | null
+          updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+          weight_grams: number | null
+        }
+        Insert: {
+          brand?: string | null
+          category: string
+          cbd_percent?: number | null
+          created_at?: string | null
+          description?: string | null
+          effects?: string[] | null
+          id?: string
+          images?: string[] | null
+          is_verified?: boolean | null
+          metadata?: Json | null
+          name: string
+          short_description?: string | null
+          sku: string
+          status?: string
+          strain_type?: string | null
+          submission_notes?: string | null
+          submitted_by_tenant_id?: string | null
+          terpenes?: Json | null
+          thc_percent?: number | null
+          unit_type?: string | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          weight_grams?: number | null
+        }
+        Update: {
+          brand?: string | null
+          category?: string
+          cbd_percent?: number | null
+          created_at?: string | null
+          description?: string | null
+          effects?: string[] | null
+          id?: string
+          images?: string[] | null
+          is_verified?: boolean | null
+          metadata?: Json | null
+          name?: string
+          short_description?: string | null
+          sku?: string
+          status?: string
+          strain_type?: string | null
+          submission_notes?: string | null
+          submitted_by_tenant_id?: string | null
+          terpenes?: Json | null
+          thc_percent?: number | null
+          unit_type?: string | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          weight_grams?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_products_submitted_by_tenant_id_fkey"
+            columns: ["submitted_by_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gps_anomalies: {
         Row: {
@@ -10938,6 +11110,47 @@ export type Database = {
         }
         Relationships: []
       }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system: boolean
+          name: string
+          permissions: Json | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          permissions?: Json | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          permissions?: Json | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       runner_location_history: {
         Row: {
           accuracy: number | null
@@ -11992,6 +12205,45 @@ export type Database = {
             foreignKeyName: "tenant_payment_settings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission: string
+          role_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission: string
+          role_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission?: string
+          role_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_role_permissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -13503,6 +13755,7 @@ export type Database = {
           payment_method: string
           reference_number: string | null
           status: string
+          tenant_id: string | null
         }
         Insert: {
           amount: number
@@ -13514,6 +13767,7 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
+          tenant_id?: string | null
         }
         Update: {
           amount?: number
@@ -13525,6 +13779,7 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -13532,6 +13787,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -15594,6 +15856,29 @@ export type Database = {
       retry_from_dead_letter_queue: {
         Args: { p_dlq_id: string; p_user_id?: string }
         Returns: string
+      }
+      search_global_products: {
+        Args: {
+          p_brand?: string
+          p_category?: string
+          p_limit?: number
+          p_offset?: number
+          p_query?: string
+        }
+        Returns: {
+          brand: string
+          category: string
+          cbd_percent: number
+          description: string
+          effects: string[]
+          id: string
+          images: string[]
+          is_verified: boolean
+          name: string
+          sku: string
+          strain_type: string
+          thc_percent: number
+        }[]
       }
       snooze_inventory_alert: {
         Args: { p_alert_id: string; p_snooze_hours?: number }

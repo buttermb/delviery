@@ -4,34 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useEncryption } from "@/lib/hooks/useEncryption";
-import { decryptCustomerData } from "@/lib/utils/customerEncryption";
+import { decryptCustomerData } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import {
-  Search,
   Users,
   TrendingUp,
   DollarSign,
-  Calendar,
   Tag,
-  Filter,
-  Loader2,
-  Star,
-  AlertCircle,
+  Plus,
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -47,8 +31,7 @@ import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
-import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 
 interface Customer {
@@ -73,10 +56,10 @@ export default function CustomerCRMPage() {
   const [segmentFilter, setSegmentFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  const { data: dashboardMetrics, isLoading: isDashboardLoading } = useCRMDashboard();
+  const { data: dashboardMetrics } = useCRMDashboard();
 
   const { data: customers, isLoading } = useQuery({
-    queryKey: queryKeys.customers.list({ lifecycle: lifecycleFilter, segment: segmentFilter }),
+    queryKey: queryKeys.customers.list(tenant?.id, { lifecycle: lifecycleFilter, segment: segmentFilter }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -203,7 +186,7 @@ export default function CustomerCRMPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-3 sm:p-4">
+      <Card className="p-4 sm:p-6">
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           {/* Search */}
           <div className="flex-1">
@@ -322,7 +305,7 @@ export default function CustomerCRMPage() {
                 <CardDescription>Latest actions across your CRM</CardDescription>
               </CardHeader>
               <CardContent>
-                <ActivityTimeline activities={dashboardMetrics?.recentActivity || []} />
+                <ActivityTimeline activities={(dashboardMetrics?.recentActivity || []) as any} />
               </CardContent>
             </Card>
             <Card className="col-span-3">
@@ -416,9 +399,15 @@ export default function CustomerCRMPage() {
             data={filteredCustomers}
             isLoading={isLoading}
             emptyState={{
+              type: searchTerm ? undefined : "no_customers",
               icon: Users,
-              title: "No Customers Found",
-              description: "No customers match your current filters. Try adjusting your search or filter criteria.",
+              title: searchTerm ? "No Customers Found" : "No Customers Yet",
+              description: searchTerm
+                ? "No customers match your current filters. Try adjusting your search or filter criteria."
+                : "Customers will appear here once they start placing orders.",
+              primaryAction: searchTerm
+                ? { label: "Clear Search", onClick: () => setSearchTerm('') }
+                : { label: "Add Your First Customer", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
               compact: true
             }}
             mobileRenderer={(customer: any) => (

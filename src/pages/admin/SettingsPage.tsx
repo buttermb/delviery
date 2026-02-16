@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
+import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
 import { useToast } from "@/hooks/use-toast";
@@ -495,6 +496,7 @@ export default function SettingsPage() {
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Shield className="h-5 w-5" />
                 Security Settings
+                <FieldHelp tooltip={fieldHelpTexts.dataIsolation.tooltip} variant="info" size="md" />
               </h3>
               <form onSubmit={securityForm.handleSubmit(onSaveSecurity)} className="space-y-4">
                 <div className="flex items-center justify-between">

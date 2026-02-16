@@ -113,6 +113,21 @@ export const STORAGE_KEYS = {
 
   // Session preferences
   REMEMBER_ME: 'remember_me',
+
+  // Order Search
+  ORDER_SEARCH_RECENT: 'order_search_recent',
+
+  // Dashboard Tour
+  DASHBOARD_TOUR_COMPLETED: 'dashboard_tour_completed',
+
+  // Weather
+  WEATHER_LOCATION: 'weather_location',
+
+  // Sync Status
+  SYNC_LAST_SYNCED: 'sync_last_synced',
+
+  // Form Persistence prefix
+  FORM_PERSISTENCE_PREFIX: 'form_persistence_',
 } as const;
 
 /**
@@ -130,7 +145,7 @@ export const safeStorage = {
   getItem: (key: StorageKey): string | null => {
     try {
       return localStorage.getItem(key);
-    } catch (error) {
+    } catch {
       // localStorage unavailable (incognito mode, storage disabled)
       return null;
     }
@@ -140,7 +155,7 @@ export const safeStorage = {
     try {
       localStorage.setItem(key, value);
       return true;
-    } catch (error) {
+    } catch {
       // Storage quota exceeded or unavailable
       return false;
     }
@@ -150,7 +165,7 @@ export const safeStorage = {
     try {
       localStorage.removeItem(key);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -159,7 +174,7 @@ export const safeStorage = {
     try {
       localStorage.clear();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -203,7 +218,7 @@ export const safeJsonParse = <T>(json: string | null, defaultValue: T): T => {
 export const safeJsonStringify = (value: unknown): string | null => {
   try {
     return JSON.stringify(value);
-  } catch (error) {
+  } catch {
     // Circular reference or non-serializable value
     return null;
   }

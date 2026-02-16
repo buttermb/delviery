@@ -21,7 +21,7 @@ export const AnimatedNumber = memo(function AnimatedNumber({
   formatter,
 }: AnimatedNumberProps) {
   const [displayValue, setDisplayValue] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [_isAnimating, setIsAnimating] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const previousValueRef = useRef(0);

@@ -73,7 +73,7 @@ export function ImpersonationBanner() {
                 variant="secondary"
                 size="sm"
                 onClick={handleExitImpersonation}
-                className="bg-white text-amber-600 hover:bg-amber-50 border-none font-semibold h-8"
+                className="bg-white dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-50 border-none font-semibold h-8"
             >
                 <LogOut className="h-4 w-4 mr-2" />
                 Exit Impersonation

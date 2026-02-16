@@ -3,14 +3,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -51,7 +51,7 @@ interface Customer {
 }
 
 export default function PointOfSale() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
@@ -74,7 +74,7 @@ export default function PointOfSale() {
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
-  const [pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
+  const [_pendingLoadOrder, setPendingLoadOrder] = useState<PendingOrder | null>(null);
 
   // Handle image load error - fall back to placeholder
   const handleImageError = useCallback((productId: string) => {
@@ -212,7 +212,7 @@ export default function PointOfSale() {
     }));
   };
 
-  const removeFromCart = (productId: string) => {
+  const _removeFromCart = (productId: string) => {
     setCart(cart.filter(item => item.id !== productId));
   };
 
@@ -279,8 +279,7 @@ export default function PointOfSale() {
       }));
 
       // Try atomic RPC first
-      // @ts-ignore - RPC function create_pos_transaction_atomic not in auto-generated types
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic' as any, {
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: transactionItems,
         p_payment_method: paymentMethod,
@@ -382,9 +381,8 @@ export default function PointOfSale() {
 
       // Link pending order
       if (activeOrderId && tenantId) {
-        // @ts-ignore - disposable_menu_orders table not in auto-generated types
-        await supabase
-          .from('disposable_menu_orders' as any)
+        await (supabase as any)
+          .from('disposable_menu_orders')
           .update({
             status: 'completed',
             pos_transaction_id: transactionId,
@@ -455,7 +453,7 @@ export default function PointOfSale() {
         thc_percent: null
       }));
 
-      await orderFlowManager.transitionOrderStatus(order.id, 'in_pos');
+      await orderFlowManager.transitionOrderStatus(order.id, 'in_pos', tenantId!);
       setCart(cartItems as any);
       if (order.customer_id) {
         const customer = customers.find(c => c.id === order.customer_id);
@@ -482,7 +480,7 @@ export default function PointOfSale() {
       onConfirm: async () => {
         setDialogLoading(true);
         try {
-          await orderFlowManager.transitionOrderStatus(order.id, 'cancelled');
+          await orderFlowManager.transitionOrderStatus(order.id, 'cancelled', tenantId!);
           toast({ title: 'Order cancelled' });
         } catch (error) {
           logger.error('Error cancelling order', error);
@@ -505,7 +503,7 @@ export default function PointOfSale() {
   return (
     <div className={cn(
       "bg-background transition-all duration-300",
-      isFullScreen ? "fixed inset-0 z-[100] p-4 flex flex-col h-dvh overflow-hidden" : "p-6 min-h-dvh"
+      isFullScreen ? "fixed inset-0 z-modal p-4 flex flex-col h-dvh overflow-hidden" : "p-6 min-h-dvh"
     )}>
       <SEOHead title="Point of Sale | Admin" description="Process sales and manage transactions" />
 

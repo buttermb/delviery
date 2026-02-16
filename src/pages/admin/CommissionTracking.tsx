@@ -5,8 +5,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  DollarSign, TrendingUp, Calendar, Download, Loader2,
-  CheckCircle2, Clock, Percent, Users
+  DollarSign, Calendar, Download, Loader2,
+  CheckCircle2, Clock, Percent
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -22,7 +22,7 @@ export default function CommissionTracking() {
   const queryClient = useQueryClient();
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: commissions, isLoading, refetch } = useQuery({
+  const { data: commissions, isLoading } = useQuery({
     queryKey: ['commission-tracking', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];

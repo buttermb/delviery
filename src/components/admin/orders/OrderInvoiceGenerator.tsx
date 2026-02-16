@@ -1,18 +1,26 @@
 /**
  * OrderInvoiceGenerator Component
  * Generates professional PDF invoices from orders using jsPDF
+ * Saves invoice records to database with order and customer links
+ * Auto-generates invoice numbers from tenant sequence
  */
 
 import { useCallback, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/utils/formatters';
+import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
-import FileText from "lucide-react/dist/esm/icons/file-text";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import Printer from "lucide-react/dist/esm/icons/printer";
-import type { Order, OrderItem } from '@/types/order';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import Printer from 'lucide-react/dist/esm/icons/printer';
+import FilePlus from 'lucide-react/dist/esm/icons/file-plus';
+import type { OrderItem } from '@/types/order';
 
 /**
  * Extended order data for invoice generation
@@ -32,8 +40,11 @@ export interface OrderInvoiceData {
   delivery_address: string;
   /** Order items */
   order_items?: OrderItem[];
+  /** Customer ID for linking invoice to customer */
+  customer_id?: string;
   /** Customer information */
   customer?: {
+    id?: string;
     name?: string;
     email?: string;
     phone?: string;
@@ -701,4 +712,339 @@ export function OrderInvoicePrintButton({
       )}
     </Button>
   );
+}
+
+// ============================================================================
+// DATABASE-LINKED INVOICE GENERATION
+// ============================================================================
+
+/**
+ * Invoice line item for database storage
+ */
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+}
+
+/**
+ * Saved invoice record from database
+ */
+export interface SavedInvoice {
+  id: string;
+  tenant_id: string;
+  customer_id: string;
+  invoice_number: string;
+  order_id: string | null;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  status: 'unpaid' | 'paid' | 'overdue' | 'cancelled';
+  due_date: string | null;
+  paid_at: string | null;
+  payment_method: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+/**
+ * Input for creating an invoice from an order
+ */
+export interface CreateOrderInvoiceInput {
+  order: OrderInvoiceData;
+  customerId: string;
+  dueDate?: string;
+  notes?: string;
+  paymentTerms?: string;
+}
+
+// Helper to cast Supabase client to avoid deep type instantiation
+const db = supabase as any;
+
+/**
+ * Hook for generating and saving order invoices to database
+ * Includes auto-generation of invoice numbers from tenant sequence
+ */
+export function useOrderInvoiceSave() {
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
+
+  const createInvoiceMutation = useMutation({
+    mutationFn: async (input: CreateOrderInvoiceInput) => {
+      if (!tenant?.id) {
+        throw new Error('Tenant ID required');
+      }
+
+      const { order, customerId, dueDate, notes, paymentTerms } = input;
+
+      // Generate invoice number from tenant sequence using RPC
+      let invoiceNumber = `INV-${order.tracking_code}-${Date.now()}`;
+      try {
+        const genResult = await db.rpc('generate_invoice_number', { tenant_id: tenant.id });
+        if (!genResult.error && typeof genResult.data === 'string' && genResult.data.trim()) {
+          invoiceNumber = genResult.data;
+        }
+      } catch (rpcError) {
+        logger.warn('Failed to generate invoice number via RPC, using fallback', rpcError, {
+          component: 'useOrderInvoiceSave',
+          orderId: order.id,
+        });
+      }
+
+      // Calculate subtotal from order items
+      const subtotal = order.subtotal ?? calculateSubtotal(order.order_items);
+      const tax = order.tax ?? 0;
+      const discount = order.discount ?? 0;
+      const total = order.total_amount;
+
+      // Convert order items to invoice line items
+      const lineItems: InvoiceLineItem[] = (order.order_items || []).map((item) => ({
+        description: item.product_name || item.products?.name || 'Item',
+        quantity: item.quantity,
+        unit_price: item.price,
+        total: item.price * item.quantity,
+      }));
+
+      // Prepare combined notes
+      const combinedNotes = [
+        paymentTerms ? `Payment Terms: ${paymentTerms}` : null,
+        notes,
+        order.notes ? `Order Notes: ${order.notes}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+
+      // Insert invoice record into customer_invoices table
+      const result = await db.from('customer_invoices').insert({
+        tenant_id: tenant.id,
+        customer_id: customerId,
+        invoice_number: invoiceNumber,
+        order_id: order.id,
+        subtotal,
+        tax,
+        discount,
+        total,
+        status: 'unpaid',
+        due_date: dueDate || null,
+        notes: combinedNotes || null,
+        line_items: lineItems,
+      }).select('*').maybeSingle();
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      logger.info('Invoice created and linked to order', {
+        component: 'useOrderInvoiceSave',
+        invoiceNumber,
+        orderId: order.id,
+        customerId,
+        tenantId: tenant.id,
+      });
+
+      return result.data as unknown as SavedInvoice;
+    },
+    onSuccess: (data) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+
+      const invoice = data as SavedInvoice;
+      toast.success('Invoice created successfully', {
+        description: `Invoice ${invoice.invoice_number} has been created and linked to the order.`,
+      });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to create invoice from order', error, {
+        component: 'useOrderInvoiceSave',
+      });
+      toast.error('Failed to create invoice', {
+        description: error.message,
+      });
+    },
+  });
+
+  return {
+    createInvoice: createInvoiceMutation.mutateAsync,
+    isCreating: createInvoiceMutation.isPending,
+  };
+}
+
+/**
+ * Props for GenerateAndSaveInvoiceButton
+ */
+export interface GenerateAndSaveInvoiceButtonProps {
+  /** Order data to generate invoice from */
+  order: OrderInvoiceData;
+  /** Customer ID to link invoice to */
+  customerId?: string;
+  /** Due date for the invoice */
+  dueDate?: string;
+  /** Additional notes */
+  notes?: string;
+  /** Payment terms */
+  paymentTerms?: string;
+  /** Whether to also download PDF after saving */
+  downloadPdf?: boolean;
+  /** Button variant */
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive' | 'link';
+  /** Button size */
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  /** Custom class name */
+  className?: string;
+  /** Button label */
+  label?: string;
+  /** Callback when invoice is created */
+  onInvoiceCreated?: (invoice: SavedInvoice) => void;
+}
+
+/**
+ * Button component that generates invoice, saves to database, and optionally downloads PDF
+ * Uses tenant context for business info and auto-generates invoice number from sequence
+ */
+export function GenerateAndSaveInvoiceButton({
+  order,
+  customerId,
+  dueDate,
+  notes,
+  paymentTerms = 'Payment due upon receipt',
+  downloadPdf = true,
+  variant = 'default',
+  size = 'default',
+  className,
+  label = 'Generate Invoice',
+  onInvoiceCreated,
+}: GenerateAndSaveInvoiceButtonProps) {
+  const { tenant } = useTenantAdminAuth();
+  const { createInvoice, isCreating } = useOrderInvoiceSave();
+  const { download, isGenerating } = useOrderInvoiceGenerator();
+  const [isBusy, setIsBusy] = useState(false);
+
+  // Resolve customer ID from order data if not provided
+  const resolvedCustomerId = customerId || order.customer_id || order.customer?.id;
+
+  const handleGenerateInvoice = async () => {
+    if (!resolvedCustomerId) {
+      toast.error('Customer ID required', {
+        description: 'Cannot create invoice without a customer ID.',
+      });
+      return;
+    }
+
+    setIsBusy(true);
+    try {
+      // Step 1: Save invoice to database
+      const savedInvoice = await createInvoice({
+        order,
+        customerId: resolvedCustomerId,
+        dueDate,
+        notes,
+        paymentTerms,
+      });
+
+      // Step 2: Optionally download PDF with tenant business info
+      if (downloadPdf && savedInvoice) {
+        await download({
+          order,
+          companyName: tenant?.business_name || 'Business',
+          invoicePrefix: '', // Invoice number already generated from sequence
+          paymentInstructions: paymentTerms,
+        });
+      }
+
+      // Step 3: Callback
+      if (onInvoiceCreated && savedInvoice) {
+        onInvoiceCreated(savedInvoice);
+      }
+    } catch (error) {
+      logger.error('Failed to generate and save invoice', error, {
+        component: 'GenerateAndSaveInvoiceButton',
+        orderId: order.id,
+      });
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const isLoading = isBusy || isCreating || isGenerating;
+
+  return (
+    <Button
+      variant={variant}
+      size={size}
+      className={className}
+      onClick={handleGenerateInvoice}
+      disabled={isLoading || !resolvedCustomerId}
+    >
+      {isLoading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {isCreating ? 'Saving...' : 'Generating...'}
+        </>
+      ) : (
+        <>
+          <FilePlus className="mr-2 h-4 w-4" />
+          {label}
+        </>
+      )}
+    </Button>
+  );
+}
+
+/**
+ * Hook that combines PDF generation with database saving
+ * Provides full invoice workflow: save to DB + generate PDF
+ */
+export function useFullOrderInvoice() {
+  const { tenant } = useTenantAdminAuth();
+  const { createInvoice, isCreating } = useOrderInvoiceSave();
+  const { download, print, generatePDF, isGenerating } = useOrderInvoiceGenerator();
+
+  const generateAndSave = useCallback(
+    async (
+      input: CreateOrderInvoiceInput,
+      options?: { downloadPdf?: boolean; printPdf?: boolean }
+    ): Promise<SavedInvoice | null> => {
+      try {
+        // Save to database
+        const savedInvoice = await createInvoice(input);
+
+        // Generate PDF with tenant info
+        const pdfProps: OrderInvoiceGeneratorProps = {
+          order: input.order,
+          companyName: tenant?.business_name || 'Business',
+          paymentInstructions: input.paymentTerms,
+        };
+
+        if (options?.downloadPdf) {
+          await download(pdfProps);
+        }
+
+        if (options?.printPdf) {
+          await print(pdfProps);
+        }
+
+        return savedInvoice;
+      } catch (error) {
+        logger.error('Failed in generateAndSave workflow', error, {
+          component: 'useFullOrderInvoice',
+        });
+        return null;
+      }
+    },
+    [createInvoice, download, print, tenant]
+  );
+
+  return {
+    generateAndSave,
+    createInvoice,
+    download,
+    print,
+    generatePDF,
+    isCreating,
+    isGenerating,
+    isLoading: isCreating || isGenerating,
+  };
 }

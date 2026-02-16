@@ -3,14 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { 
-  Clock, 
-  CreditCard, 
-  Check, 
+import {
+  Clock,
+  CreditCard,
+  Check,
   TrendingUp,
   Shield,
   Zap,
-  Users,
 } from "lucide-react";
 
 const PLANS = [

@@ -35,7 +35,7 @@ interface CourierOrderCardProps {
 export const CourierOrderCard = memo(({
   order,
   onAccept,
-  onAction,
+  onAction: _onAction,
   isActive = false,
   showEarnings = true,
   commissionRate = 30

@@ -3,7 +3,7 @@
  * Implements multi-factor scoring system for business tiers
  */
 
-import { TenantMetrics, TierScore, TierThresholds } from '@/types/hotbox';
+import { TenantMetrics, TierScore } from '@/types/hotbox';
 import { BusinessTier } from '@/lib/presets/businessTiers';
 
 // Scoring Configuration

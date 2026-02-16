@@ -18,14 +18,14 @@ import {
   Coins,
   Crown,
   ArrowRight,
-  Calculator,
   Sparkles,
   Clock,
   X,
-  CheckCircle,
   Zap,
   Settings,
   ExternalLink,
+  CheckCircle,
+  Calculator,
 } from 'lucide-react';
 import {
   Dialog,
@@ -70,7 +70,7 @@ export function OutOfCreditsModal({
   onSetupAutoTopUp,
 }: OutOfCreditsModalProps) {
   const navigate = useNavigate();
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenantSlug } = useTenantAdminAuth();
   const { lifetimeSpent, balance } = useCredits();
 
   // Get action info if provided
@@ -88,7 +88,7 @@ export function OutOfCreditsModal({
 
   // Calculate cost to complete blocked action via credit pack
   const cheapestPack = CREDIT_PACKAGES[0];
-  const costPerCredit = cheapestPack.priceCents / cheapestPack.credits / 100;
+  const costPerCredit = cheapestPack.priceCents / 100 / cheapestPack.credits;
 
   const handleUpgrade = () => {
     onOpenChange(false);

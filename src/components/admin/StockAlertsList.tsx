@@ -29,6 +29,7 @@ import Package from "lucide-react/dist/esm/icons/package";
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LowStockProduct } from '@/hooks/useLowStockAlerts';
 import { cn } from '@/lib/utils';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 export interface StockAlertsListProps {
   /** Array of low stock products from useLowStockAlerts hook */
@@ -157,7 +158,7 @@ export function StockAlertsList({
             <AlertTriangle className={cn('h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0', iconColor)} />
           )}
           <div className="min-w-0 flex-1">
-            <div className="font-medium text-sm sm:text-base truncate">{product.name}</div>
+            <TruncatedText text={product.name} className="font-medium text-sm sm:text-base" as="div" />
             <div className="text-xs sm:text-sm text-muted-foreground">
               {product.category && (
                 <span className="mr-2">

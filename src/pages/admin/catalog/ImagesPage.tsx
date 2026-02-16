@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,8 +16,6 @@ import {
   Trash2,
   Download,
   Image as ImageIcon,
-  Tag,
-  Filter,
   ArrowLeft
 } from 'lucide-react';
 import {
@@ -83,7 +80,7 @@ export default function ImagesPage() {
 
   // Load products for assignment
   const { data: products = [] } = useQuery({
-    queryKey: queryKeys.products.list({ tenantId, forImages: true }),
+    queryKey: queryKeys.products.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase

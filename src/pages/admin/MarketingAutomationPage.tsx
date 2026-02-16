@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 import { useState } from "react";
+import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -49,7 +49,7 @@ export default function MarketingAutomationPage() {
   const [activeTab, setActiveTab] = useState("campaigns");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [editingCampaign, setEditingCampaign] = useState<MarketingCampaign | null>(null);
+  const [_editingCampaign, _setEditingCampaign] = useState<MarketingCampaign | null>(null);
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: queryKeys.marketing.campaigns(),
@@ -89,7 +89,7 @@ export default function MarketingAutomationPage() {
   });
 
   const handleEditCampaign = (campaign: MarketingCampaign) => {
-    setEditingCampaign(campaign);
+    _setEditingCampaign(campaign);
     setIsCreateOpen(true);
   };
 

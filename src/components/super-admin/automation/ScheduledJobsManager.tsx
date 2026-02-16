@@ -4,14 +4,13 @@
  * Inspired by Airflow and Temporal
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, Play, Pause, Trash2, Plus } from 'lucide-react';
+import { Clock, Play, Plus } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -35,7 +34,6 @@ interface ScheduledJob {
 
 export function ScheduledJobsManager() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Mock data - in production would come from database
   const { data: jobs } = useQuery({
@@ -78,14 +76,14 @@ export function ScheduledJobsManager() {
     },
   });
 
-  const toggleJob = async (jobId: string, enabled: boolean) => {
+  const toggleJob = async (_jobId: string, enabled: boolean) => {
     toast({
       title: enabled ? 'Job Enabled' : 'Job Disabled',
       description: `Scheduled job has been ${enabled ? 'enabled' : 'disabled'}`,
     });
   };
 
-  const runJobNow = async (jobId: string) => {
+  const runJobNow = async (_jobId: string) => {
     toast({
       title: 'Job Started',
       description: 'Running scheduled job now...',

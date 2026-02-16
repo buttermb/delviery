@@ -62,26 +62,11 @@ export function MobileNav() {
       setTimeout(() => {
         window.location.reload();
       }, 500);
-    } catch (error) {
+    } catch {
       toast.error('Failed to refresh');
       setIsRefreshing(false);
     }
   };
-
-  // Flatten sidebar config to get all items
-  const allSidebarItems = sidebarConfig.flatMap(section => 
-    section.items.map(item => ({
-      icon: item.icon,
-      label: item.label,
-      href: item.href
-    }))
-  );
-
-  // Filter items for "More" menu (exclude main nav items)
-  const moreItems = allSidebarItems.filter(item => {
-    const mainPaths = mainNavItems.map(i => i.href);
-    return !mainPaths.includes(item.href);
-  });
 
   return (
     <>

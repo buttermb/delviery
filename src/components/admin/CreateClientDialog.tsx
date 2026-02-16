@@ -141,7 +141,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="business_name">Business Name *</Label>
+              <Label htmlFor="business_name">Business Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input
                 id="business_name"
                 value={formData.business_name}
@@ -152,7 +152,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact_name">Contact Name *</Label>
+              <Label htmlFor="contact_name">Contact Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input
                 id="contact_name"
                 value={formData.contact_name}
@@ -165,7 +165,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone *</Label>
+              <Label htmlFor="phone">Phone <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input
                 id="phone"
                 type="tel"

@@ -346,7 +346,7 @@ export async function generatePlaceholder(
  * Generate a solid color placeholder from dominant color
  */
 export async function getDominantColor(src: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
@@ -484,7 +484,7 @@ export async function compressImage(
 // REACT HOOKS
 // ============================================================================
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Hook for lazy loading images

@@ -24,8 +24,6 @@ import {
   Truck,
   MapPin,
   CreditCard,
-  ClipboardList,
-  Calculator,
   Boxes,
   Receipt,
 } from 'lucide-react';

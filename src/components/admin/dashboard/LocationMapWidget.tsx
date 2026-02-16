@@ -41,7 +41,6 @@ export function LocationMapWidget() {
     }>;
   }
 
-  // @ts-ignore - Complex query return type causing deep instantiation
   const { data: locations } = useQuery<LocationData | null>({
     queryKey: ['location-map', account?.id],
     queryFn: async (): Promise<LocationData | null> => {
@@ -68,17 +67,8 @@ export function LocationMapWidget() {
         return acc;
       }, {});
 
-      interface RunnerRow {
-        id: string;
-        full_name: string;
-        status: string;
-        current_lat: number | null;
-        current_lng: number | null;
-      }
-
       // Get active runners with location data
-      // @ts-ignore - Deep instantiation error from Supabase types
-      const { data: runners } = await supabase
+      const { data: runners } = await (supabase as any)
         .from('wholesale_runners')
         .select('id, full_name, status, current_lat, current_lng')
         .eq('account_id', account.id)

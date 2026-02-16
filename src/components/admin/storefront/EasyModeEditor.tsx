@@ -27,7 +27,6 @@ import { PresetPackSelector, PresetPackStrip } from '@/components/admin/storefro
 import { FeatureTogglesPanel } from '@/components/admin/storefront/FeatureTogglesPanel';
 import { StorefrontBannerManager } from '@/components/admin/storefront/StorefrontBannerManager';
 import { type FeatureToggles, type SimpleContent } from '@/lib/storefrontPresets';
-import { type SectionConfig, type ExtendedThemeConfig } from '@/types/marketplace-extended';
 
 interface EasyModeEditorProps {
     storeId: string;
@@ -51,7 +50,7 @@ interface EasyModeEditorProps {
 
 export function EasyModeEditor({
     storeId,
-    storeSlug,
+    storeSlug: _storeSlug,
     selectedPresetId,
     onSelectPreset,
     featureToggles,

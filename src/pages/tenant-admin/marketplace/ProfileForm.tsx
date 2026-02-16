@@ -32,7 +32,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { compressImage, isCompressibleImage, COMPRESSION_PRESETS } from '@/lib/utils/image-compression';
 
 const US_STATES = [
@@ -76,7 +76,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState<string | null>(null);
   const [selectedShippingStates, setSelectedShippingStates] = useState<string[]>(initialData?.shipping_states || []);
@@ -295,7 +295,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
             name="business_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Name *</FormLabel>
+                <FormLabel required>Business Name</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Your Business Name" />
                 </FormControl>
@@ -335,7 +335,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
             name="license_number"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>License Number *</FormLabel>
+                <FormLabel required>License Number</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="C11-0001234-LIC" />
                 </FormControl>
@@ -350,7 +350,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
               name="license_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>License Type *</FormLabel>
+                  <FormLabel required>License Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -375,7 +375,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
               name="license_state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>License State *</FormLabel>
+                  <FormLabel required>License State</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

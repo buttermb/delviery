@@ -91,7 +91,7 @@ export function OrderAssignCourier({
 
   // Mutation for assigning courier
   const assignCourierMutation = useMutation({
-    mutationFn: async ({ courierId, autoAssign }: { courierId?: string; autoAssign?: boolean }) => {
+    mutationFn: async ({ courierId, autoAssign: _autoAssign }: { courierId?: string; autoAssign?: boolean }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 

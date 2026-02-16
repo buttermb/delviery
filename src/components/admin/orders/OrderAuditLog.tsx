@@ -23,7 +23,6 @@ import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
-import User from "lucide-react/dist/esm/icons/user";
 import Clock from "lucide-react/dist/esm/icons/clock";
 import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { formatRelativeTime, formatSmartDate } from '@/lib/utils/formatDate';

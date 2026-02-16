@@ -16,7 +16,6 @@ import { AlertTriangle, X, Coins, TrendingDown } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useCredits } from '@/hooks/useCredits';
-import { LOW_BALANCE_WARNING_LEVELS } from '@/lib/credits';
 
 export interface CreditAlertBannerProps {
   /** Callback when buy credits button is clicked */

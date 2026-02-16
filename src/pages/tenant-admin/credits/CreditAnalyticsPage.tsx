@@ -26,7 +26,6 @@ import {
 import {
   Coins,
   TrendingUp,
-  TrendingDown,
   Calendar,
   Activity,
   BarChart3,
@@ -122,8 +121,8 @@ export function CreditAnalyticsPage() {
     balance,
     isFreeTier,
     isLoading: creditsLoading,
-    lifetimeSpent,
-    lifetimeEarned,
+    lifetimeSpent: _lifetimeSpent,
+    lifetimeEarned: _lifetimeEarned,
     nextFreeGrantAt,
     refetch: refetchCredits,
   } = useCredits();

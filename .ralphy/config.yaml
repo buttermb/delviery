@@ -1,0 +1,22 @@
+project:
+  name: vite_react_shadcn_ts
+  language: TypeScript
+  framework: Express
+  description: ""
+commands:
+  test: bun test
+  lint: npm run lint
+  build: npm run build
+rules:
+  - Read CLAUDE.md for project rules
+  - Use logger from @/lib/logger never console.log
+  - Use @/ imports always
+  - Filter all queries by tenant_id
+  - Use useTenantAdminAuth() for tenant context
+  - Use .maybeSingle() not .single()
+  - "Commit with message: feat: [task title]"
+  - Read CLAUDE.md for project rules
+  - Never create files named nul, con, prn, aux - Windows reserved names
+  - Never run git add on dist/ or nul files
+boundaries:
+  never_touch: null

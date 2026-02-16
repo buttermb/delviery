@@ -5,7 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Ban, Package, Loader2 } from 'lucide-react';
+import { AlertTriangle, Ban, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -96,7 +96,7 @@ export function CartItemStockWarning({
         .from('products')
         .select('stock_quantity, available_quantity')
         .eq('id', productId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return product?.available_quantity ?? product?.stock_quantity ?? 0;

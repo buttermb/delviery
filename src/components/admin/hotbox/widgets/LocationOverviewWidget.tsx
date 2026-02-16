@@ -16,8 +16,7 @@ export function LocationOverviewWidget() {
             today.setHours(0, 0, 0, 0);
 
             // Try to fetch locations from locations table
-            // @ts-ignore - Deep type instantiation from Supabase query
-            const { data: locs } = await supabase
+            const { data: locs } = await (supabase as any)
                 .from('locations')
                 .select('id, name, address')
                 .eq('tenant_id', tenant.id)
@@ -46,21 +45,20 @@ export function LocationOverviewWidget() {
                     const margin = todayRevenue > 0 ? 25 : 0;
 
                     // Check for issues (out of stock products)
-                    // @ts-ignore - Deep type instantiation from Supabase query
-                    const { count: outOfStock } = await supabase
+                    const { count: outOfStock } = await (supabase as any)
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)
-                        .lte('available_quantity', 0)
+                        .lte('stock_quantity', 0)
                         .eq('status', 'active');
 
                     // Check for low stock
-                    const { count: lowStock } = await supabase
+                    const { count: lowStock } = await (supabase as any)
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)
-                        .gt('available_quantity', 0)
-                        .lt('available_quantity', 10)
+                        .gt('stock_quantity', 0)
+                        .lt('stock_quantity', 10)
                         .eq('status', 'active');
 
                     const issues = (outOfStock || 0) + Math.floor((lowStock || 0) / 5);

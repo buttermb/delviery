@@ -225,7 +225,9 @@ export function SuperAdminLayout() {
           'px-4 md:px-6'
         )}
       >
-        <Outlet />
+        <div className="max-w-7xl mx-auto w-full">
+          <Outlet />
+        </div>
       </main>
 
       {/* Command Palette */}
@@ -237,7 +239,7 @@ export function SuperAdminLayout() {
       {/* Notifications Panel */}
       {notificationsOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-end justify-end p-4"
+          className="fixed inset-0 bg-black/50 z-overlay flex items-end justify-end p-4"
           onClick={() => setNotificationsOpen(false)}
         >
           <NotificationsPanel

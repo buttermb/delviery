@@ -58,7 +58,7 @@ export function QuickReorderButton({
       
       // Reset success state after animation
       setTimeout(() => setIsSuccess(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to create reorder. Please try again.');
     } finally {
       setIsLoading(false);

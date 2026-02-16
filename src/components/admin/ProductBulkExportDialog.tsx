@@ -271,7 +271,7 @@ export function ProductBulkExportDialog({
 
       toast.success(`Exported ${products.length} products to ${exportFormat.toUpperCase()}`);
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to export products');
     } finally {
       setIsExporting(false);

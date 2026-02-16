@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
@@ -173,9 +173,8 @@ vi.mock('@/integrations/supabase/client', () => {
   };
 });
 
-// Import component and toast after mocks
+// Import component after mocks
 import Orders from '../Orders';
-import { toast } from 'sonner';
 
 // Test utilities
 function createQueryClient() {
@@ -426,7 +425,7 @@ describe('Optimistic Updates', () => {
   });
 
   it('should optimistically update order status before API response', async () => {
-    const { queryClient } = renderWithProviders(<Orders />);
+    const { queryClient: _queryClient } = renderWithProviders(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByText('Orders Management')).toBeInTheDocument();

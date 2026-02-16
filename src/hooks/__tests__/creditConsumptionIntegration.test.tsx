@@ -940,7 +940,7 @@ describe('Complete Flow: Feature -> Block -> Modal -> Purchase', () => {
     // First attempt - blocked
     mockCanPerformAction.mockResolvedValueOnce(false);
 
-    const { result, rerender } = renderHook(() => useCreditGatedAction(), {
+    const { result } = renderHook(() => useCreditGatedAction(), {
       wrapper: createWrapper(),
     });
 

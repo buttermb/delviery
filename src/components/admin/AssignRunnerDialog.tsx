@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAssignDelivery } from "@/hooks/useWholesaleData";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, AlertTriangle } from "lucide-react";
 
 interface AssignRunnerDialogProps {
   orderId: string;
@@ -19,7 +19,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
   const [selectedRunner, setSelectedRunner] = useState("");
   const assignDelivery = useAssignDelivery();
 
-  const { data: runners, isLoading } = useQuery({
+  const { data: runners, isLoading, isError } = useQuery({
     queryKey: ["available-runners"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -56,9 +56,9 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }} className="space-y-4">
           <div>
-            <Label htmlFor="runner">Select Runner *</Label>
+            <Label htmlFor="runner">Select Runner <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Select value={selectedRunner} onValueChange={setSelectedRunner}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose a runner..." />
@@ -66,6 +66,13 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
               <SelectContent>
                 {isLoading ? (
                   <SelectItem value="loading" disabled>Loading runners...</SelectItem>
+                ) : isError ? (
+                  <SelectItem value="error" disabled>
+                    <span className="flex items-center gap-1.5 text-destructive">
+                      <AlertTriangle className="h-3 w-3" />
+                      Failed to load runners
+                    </span>
+                  </SelectItem>
                 ) : runners?.length === 0 ? (
                   <SelectItem value="none" disabled>No available runners</SelectItem>
                 ) : (
@@ -124,7 +131,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
             secondaryLabel="Cancel"
             onSecondary={() => onOpenChange(false)}
           />
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

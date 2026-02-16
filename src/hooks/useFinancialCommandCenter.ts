@@ -332,9 +332,6 @@ export const useARCommand = () => {
   return useQuery({
     queryKey: ['financial-ar-command', tenant?.id],
     queryFn: async (): Promise<ARData> => {
-      const now = new Date();
-      const weekEnd = endOfWeek(now);
-      
       if (!tenant?.id) throw new Error('No tenant');
 
       const { data: clients, error } = await supabase
@@ -349,6 +346,7 @@ export const useARCommand = () => {
       const totalOutstanding = clients?.reduce((sum, c) => sum + Number(c.outstanding_balance || 0), 0) || 0;
       
       // Categorize clients by urgency
+      const now = new Date();
       const categorized = (clients || []).map(c => {
         const amount = Number(c.outstanding_balance || 0);
         const daysSincePayment = c.last_payment_date 

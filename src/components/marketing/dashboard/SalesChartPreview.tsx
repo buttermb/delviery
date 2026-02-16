@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { mockDashboardData } from '../mockDashboardData';
 import { useState } from 'react';

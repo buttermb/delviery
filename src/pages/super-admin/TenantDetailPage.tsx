@@ -9,27 +9,19 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import {
-  Building2,
-  DollarSign,
-  Users,
-  Package,
-  Settings,
   AlertTriangle,
   ArrowLeft,
   LogIn,
   Play,
   Pause,
-  Trash2
 } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { getStatusColor, getStatusVariant } from "@/lib/utils/statusColors";
-import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { showInfoToast } from "@/utils/toastHelpers";
 import { FeatureList } from "@/components/admin/FeatureList";
-import { TenantDataInspector } from "@/components/super-admin/TenantDataInspector";
 import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useState } from "react";
@@ -689,7 +681,7 @@ export default function TenantDetailPage() {
                           } else {
                             showInfoToast("Update Card", "Opening payment method update...");
                           }
-                        } catch (error) {
+                        } catch {
                           showInfoToast("Error", "Failed to update card");
                         }
                       }}
@@ -1009,7 +1001,7 @@ export default function TenantDetailPage() {
                           });
                           if (error) throw error;
                           showInfoToast("Refund Issued", `$${amount} refunded successfully`);
-                        } catch (e) {
+                        } catch {
                           showInfoToast("Refund Failed", "Unable to process refund");
                         }
                       }
@@ -1047,7 +1039,7 @@ export default function TenantDetailPage() {
                           });
                           if (error) throw error;
                           showInfoToast("Payment Retried", "Payment retry initiated");
-                        } catch (e) {
+                        } catch {
                           showInfoToast("Retry Failed", "Unable to retry payment");
                         }
                       }

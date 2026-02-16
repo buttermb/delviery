@@ -12,7 +12,7 @@ interface ProductFiltersProps {
   onFilterChange: (filters: ProductFilters) => void;
 }
 
-export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
+export function ProductFilters({ onFilterChange: _onFilterChange }: ProductFiltersProps) {
   return (
     <Card className="p-4 space-y-4">
       <div>

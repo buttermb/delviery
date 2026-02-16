@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
-import { getDashboardUrl } from "@/lib/utils/authHelpers";
 
 /**
  * Hook to automatically redirect authenticated users to their dashboard

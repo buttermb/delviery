@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import bugFinder, { BugReport, BugScanResult } from '@/utils/bugFinder';
 import { AlertTriangle, RefreshCw, Download, Trash2, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';

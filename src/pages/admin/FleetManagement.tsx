@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation, AlertCircle } from "lucide-react";
+import { Truck, MapPin, Phone, Star, Clock, DollarSign, AlertCircle } from "lucide-react";
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 import { AssignDeliveryToRunnerDialog } from "@/components/admin/AssignDeliveryToRunnerDialog";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
@@ -16,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { queryKeys } from "@/lib/queryKeys";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface Delivery {
   id: string;
@@ -302,10 +302,13 @@ export default function FleetManagement() {
               </Card>
             ))
           ) : (
-            <Card className="p-8 text-center">
-              <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No active deliveries</p>
-            </Card>
+            <EnhancedEmptyState
+              type="no_deliveries"
+              icon={Truck}
+              title="No Active Deliveries"
+              description="Deliveries will appear here once orders are dispatched to drivers."
+              compact
+            />
           )}
         </div>
       </div>
@@ -315,6 +318,17 @@ export default function FleetManagement() {
         <h2 className="text-lg font-semibold text-foreground mb-3">👥 RUNNER ROSTER</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(!runners || runners.length === 0) && (
+            <div className="col-span-full">
+              <EnhancedEmptyState
+                type="no_drivers"
+                icon={Truck}
+                title="No Drivers Yet"
+                description="Add your first driver using the button above to start managing deliveries."
+                compact
+              />
+            </div>
+          )}
           {runners?.map((runner) => (
             <Card key={runner.id} className="p-5">
               <div className="flex items-start justify-between mb-4">

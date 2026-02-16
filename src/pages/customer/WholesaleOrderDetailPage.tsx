@@ -12,15 +12,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ShoppingCart, 
+import {
+  ShoppingCart,
   ArrowLeft,
   Package,
   Truck,
   CheckCircle,
   Clock,
   Building2,
-  MapPin,
   DollarSign,
   FileText
 } from 'lucide-react';
@@ -35,8 +34,8 @@ type CustomerMode = 'retail' | 'wholesale';
 
 export default function WholesaleOrderDetailPage() {
   const { slug, orderId } = useParams<{ slug: string; orderId: string }>();
-  const { customer, tenant } = useCustomerAuth();
-  const { toast } = useToast();
+  const { tenant: _tenant } = useCustomerAuth();
+  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const [mode, setMode] = useReactState<CustomerMode>('wholesale');
 
@@ -47,7 +46,7 @@ export default function WholesaleOrderDetailPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);

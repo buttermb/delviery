@@ -100,7 +100,7 @@ export function useIntendedDestination() {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem(STORAGE_EXPIRY_KEY);
-    } catch (error) {
+    } catch {
       // Silently fail
     }
   }, []);

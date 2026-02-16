@@ -22,13 +22,18 @@ interface MenuImageAnalyticsProps {
   menuId: string;
 }
 
+interface FilterState {
+  category?: string;
+  performance?: string;
+  imageStatus?: string;
+}
+
 export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date(),
   });
-  const [filters, setFilters] = useState({});
-  
+  const [filters, setFilters] = useState<FilterState>({});
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 
@@ -70,8 +75,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
 
-        // @ts-ignore - Avoid deep type instantiation
-        const { count: views } = await supabase
+        const { count: views } = await (supabase as any)
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
@@ -79,8 +83,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           .gte('accessed_at', startOfDay.toISOString())
           .lte('accessed_at', endOfDay.toISOString());
 
-        // @ts-ignore - Avoid deep type instantiation
-        const { count: zooms } = await supabase
+        const { count: zooms } = await (supabase as any)
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
@@ -88,8 +91,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           .gte('accessed_at', startOfDay.toISOString())
           .lte('accessed_at', endOfDay.toISOString());
 
-        // @ts-ignore - Avoid deep type instantiation
-        const { count: conversions } = await supabase
+        const { count: conversions } = await (supabase as any)
           .from('menu_orders')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
@@ -123,11 +125,19 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
       }));
   }, [productAnalytics]);
 
+  // Calculate imageCompletionRate before using it in insights
+  const imageCompletionRate = useMemo(() => {
+    if (!analytics) return 0;
+    return analytics.products_with_images + analytics.products_without_images > 0
+      ? (analytics.products_with_images / (analytics.products_with_images + analytics.products_without_images)) * 100
+      : 0;
+  }, [analytics]);
+
   // Generate engagement insights
   const insights = useMemo(() => {
     if (!analytics) return [];
     const result = [];
-    
+
     if (analytics.conversion_rate > 5) {
       result.push({
         type: 'success' as const,
@@ -165,7 +175,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     }
 
     return result;
-  }, [analytics, productAnalytics]);
+  }, [analytics, imageCompletionRate, topProducts]);
 
   if (isLoading) {
     return (
@@ -183,10 +193,6 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
   }
 
   if (!analytics) return null;
-
-  const imageCompletionRate = analytics.products_with_images + analytics.products_without_images > 0
-    ? (analytics.products_with_images / (analytics.products_with_images + analytics.products_without_images)) * 100
-    : 0;
 
   return (
     <div className="space-y-4">

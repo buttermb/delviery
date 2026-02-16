@@ -32,15 +32,7 @@ export function StorefrontDesignPage() {
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore | null> => {
             try {
-                const { data, error } = await (supabase as unknown as {
-                    from: (table: string) => {
-                        select: (cols: string) => {
-                            eq: (col: string, val: string) => {
-                                maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
-                            };
-                        };
-                    };
-                })
+                const { data, error } = await (supabase as any)
                     .from('marketplace_stores')
                     .select('*')
                     .eq('tenant_id', tenant?.id || '')

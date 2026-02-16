@@ -33,15 +33,7 @@ export function useOrderStatusHistory({ orderId, enabled = true }: UseOrderStatu
     queryFn: async () => {
       if (!orderId) return [];
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              order: (column: string, options: { ascending: boolean }) => Promise<{ data: OrderStatusHistoryEntry[] | null; error: Error | null }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('order_status_history')
         .select('*')
         .eq('order_id', orderId)

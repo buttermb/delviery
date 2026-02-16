@@ -109,8 +109,8 @@ const HEADER_PATTERNS: Record<keyof ColumnMapping, RegExp[]> = {
  * Returns headers and rows in a consistent format
  */
 export function parseExcelFile(
-  buffer: ArrayBuffer, 
-  format: 'excel' | 'csv'
+  buffer: ArrayBuffer,
+  _format: 'excel' | 'csv'
 ): { headers: string[]; rows: Record<string, unknown>[] } {
   const workbook = XLSX.read(buffer, { 
     type: 'array',

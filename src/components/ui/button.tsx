@@ -20,11 +20,11 @@ const buttonVariants = cva(
         mobile: "w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg active:scale-95 md:w-auto md:shadow-none md:active:scale-100 dark:bg-primary dark:text-primary-foreground", // Mobile-optimized variant
       },
       size: {
-        default: "h-11 px-4 py-2 rounded-lg", // Use rounded-lg for button shape
-        sm: "h-10 px-3 rounded-lg",
-        lg: "h-12 px-8 rounded-lg",
-        icon: "h-11 w-11 rounded-lg", // Square buttons with rounded corners
-        mobile: "h-12 px-6 rounded-lg text-base", // Extra large for mobile
+        default: "h-10 px-4 py-2 rounded-lg", // 40px default height
+        sm: "h-9 px-3 rounded-lg", // 36px small height
+        lg: "h-11 px-8 rounded-lg", // 44px large height
+        icon: "h-10 w-10 rounded-lg", // 40px square icon buttons
+        mobile: "h-12 px-6 rounded-lg text-base", // 48px extra large for mobile touch targets
       },
     },
     defaultVariants: {

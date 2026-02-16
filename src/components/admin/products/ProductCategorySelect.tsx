@@ -15,7 +15,7 @@ import Search from "lucide-react/dist/esm/icons/search";
 import FolderTree from "lucide-react/dist/esm/icons/folder-tree";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { cn } from '@/lib/utils';
-import { useCategories, useCategoryTree, useFlattenedCategories, type Category, type CategoryTreeNode } from '@/hooks/useCategories';
+import { useCategoryTree, useFlattenedCategories, type CategoryTreeNode } from '@/hooks/useCategories';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 // Alias for backward compatibility
@@ -63,8 +63,7 @@ export function ProductCategorySelect({
   showPath = true,
   allowParentSelection = true,
 }: ProductCategorySelectProps) {
-  const { tenant } = useTenantAdminAuth();
-  const tenantId = tenant?.id;
+  const { tenant: _tenant } = useTenantAdminAuth();
 
   // Use the tree and flattened hooks
   const { data: tree = [], isLoading: treeLoading, isError } = useCategoryTree();

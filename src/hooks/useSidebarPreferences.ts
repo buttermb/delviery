@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
  * and the database (for cross-device sync).
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -191,7 +191,7 @@ export function useSidebarPreferences() {
         ...updates,
       };
 
-      const { data, error } = await (supabase as any)
+      const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
@@ -363,25 +363,17 @@ export function useSidebarPreferences() {
     updatePreferencesMutation.mutate({ lastAccessedFeatures: newLastAccessed });
   };
 
-  // Loading guard
-  if (!admin?.userId) {
-    return {
-      preferences: DEFAULT_PREFERENCES,
-      isLoading: true,
-      updatePreferences: async () => { },
-      toggleFavorite: () => { },
-      toggleCollapsedSection: () => { },
-      trackFeatureAccess: () => { },
-    };
-  }
+  // Always return - handle missing user in the return values
+  // This ensures hooks are called in the same order every render
+  const hasUser = !!admin?.userId;
 
   return {
     preferences: preferences || DEFAULT_PREFERENCES,
-    isLoading: isLoading || !admin?.userId,
-    updatePreferences,
-    toggleFavorite: toggleFavoriteMutation.mutate,
-    toggleCollapsedSection: toggleCollapsedSectionMutation.mutate,
-    trackFeatureAccess,
+    isLoading: isLoading || !hasUser,
+    updatePreferences: hasUser ? updatePreferences : async () => { },
+    toggleFavorite: hasUser ? toggleFavoriteMutation.mutate : () => { },
+    toggleCollapsedSection: hasUser ? toggleCollapsedSectionMutation.mutate : () => { },
+    trackFeatureAccess: hasUser ? trackFeatureAccess : () => { },
   };
 }
 

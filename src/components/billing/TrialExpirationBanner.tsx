@@ -14,7 +14,7 @@ interface TrialExpirationBannerProps {
 export function TrialExpirationBanner({
     daysRemaining,
     hasPaymentMethod,
-    trialEndsAt
+    trialEndsAt: _trialEndsAt
 }: TrialExpirationBannerProps) {
     const [dismissed, setDismissed] = useState(false);
     const navigate = useNavigate();

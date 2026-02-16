@@ -3,7 +3,6 @@
  * For all three authentication tiers
  */
 
-import { supabase } from "@/integrations/supabase/client";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { getErrorMessage } from "@/utils/errorHandling/typeGuards";
 

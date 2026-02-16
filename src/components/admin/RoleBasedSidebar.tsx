@@ -24,7 +24,7 @@ import { getNavigationForRole } from '@/lib/constants/navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import type { LucideIcon } from 'lucide-react';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
@@ -57,8 +57,13 @@ export function RoleBasedSidebar() {
     const currentSection = navigation.find(
       section => section.children?.some(child => child.href === location.pathname)
     );
-    if (currentSection && !expandedSections.includes(currentSection.name)) {
-      setExpandedSections([...expandedSections, currentSection.name]);
+    if (currentSection) {
+      setExpandedSections(prev => {
+        if (prev.includes(currentSection.name)) {
+          return prev;
+        }
+        return [...prev, currentSection.name];
+      });
     }
   }, [location.pathname, navigation]);
 

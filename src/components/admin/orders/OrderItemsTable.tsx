@@ -18,6 +18,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import Package from "lucide-react/dist/esm/icons/package";
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 /**
  * Order item data structure
@@ -116,9 +117,9 @@ export function OrderItemsTable({
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id}>
-              <TableCell className="font-medium">
-                <div className="flex flex-col">
-                  <span>{item.product_name}</span>
+              <TableCell className="font-medium max-w-[200px]">
+                <div className="flex flex-col min-w-0">
+                  <TruncatedText text={item.product_name} className="font-medium" />
                   {item.quantity_unit && item.quantity_unit !== 'unit' && (
                     <span className="text-xs text-muted-foreground">
                       per {item.quantity_unit}

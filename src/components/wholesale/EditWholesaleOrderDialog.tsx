@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -155,8 +156,7 @@ export function EditWholesaleOrderDialog({
       if (deleteError) throw deleteError;
 
       // Insert updated items
-      // @ts-ignore - quantity/subtotal fields mismatch with Supabase types
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from('wholesale_order_items')
         .insert(
           items.map((item) => ({
@@ -164,7 +164,7 @@ export function EditWholesaleOrderDialog({
             product_name: item.product_name,
             quantity_lbs: item.quantity_lbs,
             unit_price: item.unit_price,
-          })) as any
+          }))
         );
 
       if (insertError) throw insertError;
@@ -249,7 +249,7 @@ export function EditWholesaleOrderDialog({
               <Card key={item.id} className="p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{item.product_name}</p>
+                    <TruncatedText text={item.product_name} className="font-medium" as="p" />
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center gap-1">
                         <Button
@@ -336,12 +336,12 @@ export function EditWholesaleOrderDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Assign Courier</Label>
-              <Select value={runnerId} onValueChange={setRunnerId}>
+              <Select value={runnerId || '__none__'} onValueChange={(v) => setRunnerId(v === '__none__' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a courier..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="__none__">Unassigned</SelectItem>
                   {couriers.map((courier: any) => (
                     <SelectItem key={courier.id} value={courier.id}>
                       <div className="flex items-center gap-2">
@@ -350,7 +350,7 @@ export function EditWholesaleOrderDialog({
                           <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
                         )}
                         {courier.status && (
-                          <Badge 
+                          <Badge
                             variant={courier.status === 'available' ? 'default' : 'secondary'}
                             className="text-xs"
                           >

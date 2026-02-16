@@ -1,15 +1,14 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   ShoppingBag,
   Package,
   ArrowRight,
   Settings,
-  Sparkles,
-  TrendingUp,
   Building2,
   MessageSquare,
   Users,
@@ -21,7 +20,8 @@ import { MenuList } from "@/components/customer/MenuList";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { ModeSwitcher, ModeBanner } from "@/components/customer/ModeSwitcher";
-import { useState, useEffect } from "react";
+import { CustomerProfileCard } from "@/components/customer/CustomerProfileCard";
+import { CustomerPreferencesPanel } from "@/components/customer/CustomerPreferencesPanel";
 import { STORAGE_KEYS, safeStorage } from "@/constants/storageKeys";
 
 type CustomerMode = 'retail' | 'wholesale';
@@ -40,7 +40,7 @@ export default function CustomerDashboardPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, []);
@@ -150,59 +150,21 @@ export default function CustomerDashboardPage() {
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-screen-2xl mx-auto pb-20 lg:pb-6">
         {/* Mode Banner (Mobile) */}
         <div className="lg:hidden">
-          <ModeBanner 
-            currentMode={mode} 
+          <ModeBanner
+            currentMode={mode}
             onModeChange={setMode}
             isBusinessBuyer={isBusinessBuyer}
             isVerified={isVerified}
           />
         </div>
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          <Card className="bg-gradient-to-br from-[hsl(var(--customer-primary))]/10 to-[hsl(var(--customer-primary))]/5 border-[hsl(var(--customer-primary))]/20">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--customer-text))]">📦 Total Orders</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-[hsl(var(--customer-primary))]/20 flex items-center justify-center">
-                <ShoppingBag className="h-5 w-5 text-[hsl(var(--customer-primary))]" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--customer-text))]">{recentOrders?.length || 0}</div>
-              <p className="text-xs text-[hsl(var(--customer-text-light))] mt-1">All time</p>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-gradient-to-br from-[hsl(var(--customer-secondary))]/10 to-[hsl(var(--customer-secondary))]/5 border-[hsl(var(--customer-secondary))]/20">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--customer-text))]">💰 Total Spent</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-[hsl(var(--customer-secondary))]/20 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-[hsl(var(--customer-secondary))]" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--customer-text))]">
-                {formatCurrency(
-                  recentOrders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0
-                )}
-              </div>
-              <p className="text-xs text-[hsl(var(--customer-text-light))] mt-1">Lifetime value</p>
-            </CardContent>
-          </Card>
+        {/* Customer Profile and Preferences Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Unified Customer Profile Card */}
+          <CustomerProfileCard showSettings={true} />
 
-          <Card className="bg-gradient-to-br from-purple-100 to-purple-50 border-purple-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--customer-text))]">✨ Member Since</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-purple-200 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-purple-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--customer-text))]">
-                {customer ? new Date().getFullYear() - 2020 : "--"}
-              </div>
-              <p className="text-xs text-[hsl(var(--customer-text-light))] mt-1">Years with us</p>
-            </CardContent>
-          </Card>
+          {/* Customer Preferences Panel (Wishlist, History, Preferences) */}
+          <CustomerPreferencesPanel defaultTab="wishlist" />
         </div>
 
         {/* Wholesale Marketplace Quick Access */}

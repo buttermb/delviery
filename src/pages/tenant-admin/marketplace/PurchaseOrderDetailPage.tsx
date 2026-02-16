@@ -11,9 +11,7 @@ import {
     ArrowLeft,
     CheckCircle,
     Truck,
-    MapPin,
     Store,
-    FileText,
     Package,
     Clock,
     XCircle,
@@ -62,7 +60,7 @@ export default function PurchaseOrderDetailPage() {
         `)
                 .eq('id', orderId)
                 .eq('buyer_tenant_id', tenant?.id) // Security check
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data;

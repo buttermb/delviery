@@ -9,14 +9,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Plus, Shield, AlertTriangle, Flame, TrendingUp, 
-  Users, Eye, ShoppingCart, Clock, ExternalLink
+import {
+  Plus, Shield, AlertTriangle, Flame,
+  Eye, ShoppingCart, ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { MenuCard } from './MenuCard';
 import { CreateMenuDialog } from './CreateMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
@@ -109,11 +107,10 @@ export function EnhancedMenuDashboard() {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      // @ts-expect-error - Menu type mismatch with Supabase generated types
-      const burned = menus?.filter((m: Menu) => 
+      const burned = (menus as DisposableMenu[])?.filter((m: DisposableMenu) =>
         (m.status === 'soft_burned' || m.status === 'hard_burned') &&
-        m.burned_at &&
-        new Date(m.burned_at) >= thirtyDaysAgo
+        (m as any).burned_at &&
+        new Date((m as any).burned_at) >= thirtyDaysAgo
       ) || [];
 
       return burned.slice(0, 10);
@@ -121,8 +118,7 @@ export function EnhancedMenuDashboard() {
     enabled: !!menus,
   });
 
-  // @ts-expect-error - Menu type mismatch with Supabase generated types
-  const activeMenus = menus?.filter((m: Menu) => m.status === 'active') || [];
+  const activeMenus = (menus as DisposableMenu[])?.filter((m: DisposableMenu) => m.status === 'active') || [];
 
   return (
     <div className="space-y-6">
@@ -208,9 +204,9 @@ export function EnhancedMenuDashboard() {
         ) : (
           <div className="space-y-3">
             {activeMenus.map((menu) => {
-              const viewCount = menu.menu_access_logs?.length || 0;
-              const orderCount = menu.menu_orders?.length || 0;
-              const customerCount = menu.menu_access_whitelist?.length || 0;
+              const viewCount = (menu as any).menu_access_logs?.length || 0;
+              const orderCount = (menu as any).menu_orders?.length || 0;
+              const customerCount = (menu as any).menu_access_whitelist?.length || 0;
               const menuUrl = `/m/${menu.encrypted_url_token}`;
               const fullMenuUrl = `${window.location.protocol}//${window.location.host}${menuUrl}`;
 

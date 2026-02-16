@@ -21,7 +21,7 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       const csvContent = convertToCSV(data);
       downloadFile(csvContent, `${filename}.csv`, 'text/csv');
       toast.success('Analytics exported to CSV');
-    } catch (error) {
+    } catch {
       toast.error('Failed to export data');
     }
   };
@@ -31,7 +31,7 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       const jsonContent = JSON.stringify(data, null, 2);
       downloadFile(jsonContent, `${filename}.json`, 'application/json');
       toast.success('Analytics exported to JSON');
-    } catch (error) {
+    } catch {
       toast.error('Failed to export data');
     }
   };

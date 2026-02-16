@@ -1,5 +1,5 @@
-// @ts-nocheck - Supabase types not yet regenerated
 /**
+ * MenuPaymentSettingsDialog - Per-menu payment method overrides
  * MenuPaymentSettingsDialog - Per-menu payment method overrides
  * Allows overriding tenant-level payment settings for individual menus
  */
@@ -46,7 +46,6 @@ export function MenuPaymentSettingsDialog({
   const { data: tenantSettings, isLoading: isLoadingTenant } = useTenantPaymentSettings();
   
   // Parse existing overrides from menu
-  // @ts-ignore - payment_settings exists in database but not in generated types
   const existingOverrides: PaymentOverrides = ((menu as any).payment_settings as PaymentOverrides) || {};
   
   const [overrides, setOverrides] = useState<PaymentOverrides>(existingOverrides);
@@ -55,13 +54,11 @@ export function MenuPaymentSettingsDialog({
   // Reset state when dialog opens
   useEffect(() => {
     if (open) {
-      // @ts-ignore - payment_settings exists in database but not in generated types
       const menuOverrides = ((menu as any).payment_settings as PaymentOverrides) || {};
       setOverrides(menuOverrides);
       setHasChanges(false);
     }
-    // @ts-ignore - payment_settings exists in database but not in generated types
-  }, [open, (menu as any).payment_settings]);
+  }, [open, menu]);
 
   const updateOverride = <K extends keyof PaymentSettings>(
     key: K,
@@ -69,7 +66,7 @@ export function MenuPaymentSettingsDialog({
   ) => {
     setOverrides(prev => {
       const newOverrides = { ...prev };
-      if (value === undefined || value === tenantSettings?.[key]) {
+      if (value === undefined || value === (tenantSettings as any)?.[key]) {
         // Remove override if it matches tenant default
         delete newOverrides[key];
       } else {
@@ -88,9 +85,8 @@ export function MenuPaymentSettingsDialog({
   const saveOverrides = useMutation({
     mutationFn: async () => {
       const paymentSettings = Object.keys(overrides).length > 0 ? overrides : null;
-      
-      // @ts-ignore - payment_settings exists in database but not in generated types
-      const { error } = await supabase
+
+      const { error } = await (supabase as any)
         .from('disposable_menus')
         .update({ payment_settings: paymentSettings } as any)
         .eq('id', menu.id);
@@ -242,7 +238,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>Zelle Username/Email</Label>
                     <Input
-                      placeholder={tenantSettings?.zelle_username || 'Enter username...'}
+                      placeholder={(tenantSettings as any)?.zelle_username || 'Enter username...'}
                       value={overrides.zelle_username ?? ''}
                       onChange={(e) => updateOverride('zelle_username', e.target.value || undefined)}
                     />
@@ -250,7 +246,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>Zelle Phone</Label>
                     <Input
-                      placeholder={tenantSettings?.zelle_phone || 'Enter phone...'}
+                      placeholder={(tenantSettings as any)?.zelle_phone || 'Enter phone...'}
                       value={overrides.zelle_phone ?? ''}
                       onChange={(e) => updateOverride('zelle_phone', e.target.value || undefined)}
                     />
@@ -282,7 +278,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>CashApp Cashtag</Label>
                     <Input
-                      placeholder={tenantSettings?.cashapp_username || '$YourCashtag'}
+                      placeholder={(tenantSettings as any)?.cashapp_username || '$YourCashtag'}
                       value={overrides.cashapp_username ?? ''}
                       onChange={(e) => updateOverride('cashapp_username', e.target.value || undefined)}
                     />
@@ -316,7 +312,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>Bitcoin Address</Label>
                     <Input
-                      placeholder={tenantSettings?.bitcoin_address || 'bc1q...'}
+                      placeholder={(tenantSettings as any)?.bitcoin_address || 'bc1q...'}
                       value={overrides.bitcoin_address ?? ''}
                       onChange={(e) => updateOverride('bitcoin_address', e.target.value || undefined)}
                       className="font-mono text-sm"
@@ -349,7 +345,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>Lightning Address</Label>
                     <Input
-                      placeholder={tenantSettings?.lightning_address || 'user@domain.com'}
+                      placeholder={(tenantSettings as any)?.lightning_address || 'user@domain.com'}
                       value={overrides.lightning_address ?? ''}
                       onChange={(e) => updateOverride('lightning_address', e.target.value || undefined)}
                       className="font-mono text-sm"
@@ -382,7 +378,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>Ethereum Address</Label>
                     <Input
-                      placeholder={tenantSettings?.ethereum_address || '0x...'}
+                      placeholder={(tenantSettings as any)?.ethereum_address || '0x...'}
                       value={overrides.ethereum_address ?? ''}
                       onChange={(e) => updateOverride('ethereum_address', e.target.value || undefined)}
                       className="font-mono text-sm"
@@ -415,7 +411,7 @@ export function MenuPaymentSettingsDialog({
                   <div className="space-y-2">
                     <Label>USDT Address (ERC-20)</Label>
                     <Input
-                      placeholder={tenantSettings?.usdt_address || '0x...'}
+                      placeholder={(tenantSettings as any)?.usdt_address || '0x...'}
                       value={overrides.usdt_address ?? ''}
                       onChange={(e) => updateOverride('usdt_address', e.target.value || undefined)}
                       className="font-mono text-sm"
@@ -437,7 +433,7 @@ export function MenuPaymentSettingsDialog({
                 </CardHeader>
                 <CardContent className="pt-0">
                   <Textarea
-                    placeholder={tenantSettings?.crypto_instructions || 'Enter instructions for crypto payments...'}
+                    placeholder={(tenantSettings as any)?.crypto_instructions || 'Enter instructions for crypto payments...'}
                     value={overrides.crypto_instructions ?? ''}
                     onChange={(e) => updateOverride('crypto_instructions', e.target.value || undefined)}
                     className="min-h-[80px]"

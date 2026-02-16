@@ -2,20 +2,17 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Plus, RefreshCw, Eye, Check, AlertTriangle, Moon, Smile, Zap, Target, Lightbulb, Activity, Sun, Filter, X, ShoppingCart } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import ProductImage from '@/components/ProductImage';
-import { cleanProductName } from '@/utils/productName';
+import { cleanProductName as _cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { ProductQuickViewModal } from './ProductQuickViewModal';
-import { WishlistButton } from '../WishlistButton';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import { cn } from '@/lib/utils';
 import { StorefrontProductCard, type MarketplaceProduct } from '../StorefrontProductCard';
@@ -71,13 +68,13 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const {
     heading = "Menu",
     subheading = "Live Inventory",
-    show_search = true,
+    show_search: _show_search = true,
     max_products = 50
   } = content || {};
 
   const customAccent = styles?.accent_color || '#015358';
 
-  const { data: products = [], isLoading, error } = useQuery({
+  const { data: products = [], isLoading, error: _error } = useQuery({
     queryKey: ['luxury-products', storeId],
     queryFn: async () => {
       if (!storeId || storeId.length < 32) return [];
@@ -154,7 +151,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           return next;
         });
       }, 2000);
-    } catch (error) {
+    } catch {
       toast({
         title: "Failed to add",
         description: "Please try again",
@@ -166,7 +163,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const activeCategory = selectedCategory || "All";
 
   return (
-    <section className="min-h-dvh bg-[#F5F7F8] pb-32" id="products">
+    <section className="min-h-dvh bg-shop-bg pb-32" id="products">
 
       {/* Search Overlay (if active) */}
       <AnimatePresence>
@@ -312,7 +309,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         product={quickViewProduct}
         isOpen={!!quickViewProduct}
         onClose={() => setQuickViewProduct(null)}
-        onAddToCart={(p, a) => { }} // Pass actual handler if needed, currently reusing logic
+        onAddToCart={(_p, _a) => { }} // Pass actual handler if needed, currently reusing logic
         accentColor={customAccent}
       />
     </section>

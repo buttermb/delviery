@@ -10,21 +10,20 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  HelpCircle, 
-  Leaf, 
-  Package, 
-  DollarSign, 
+import {
+  HelpCircle,
+  Leaf,
+  Package,
+  DollarSign,
   Sparkles,
   ArrowRight,
   FlaskConical,
-  Store,
-  Truck,
   Calculator,
+  Truck,
+  Store,
 } from 'lucide-react';
 import type { QuickAnswers } from '@/lib/migration/text-parser';
 import type { CannabisCategory, QualityTier } from '@/types/migration';
@@ -101,7 +100,7 @@ export function QuickQuestionsStep({
     : null;
   
   // Example price conversion based on format
-  const priceExamples = answers.priceFormat === 'abbreviated' 
+  const _priceExamples = answers.priceFormat === 'abbreviated'
     ? { input: '32', output: '$3,200/lb' }
     : { input: '3200', output: '$3,200/lb' };
 

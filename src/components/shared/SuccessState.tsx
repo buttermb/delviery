@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Download, Eye, ShoppingBag } from "lucide-react";
+import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SuccessStateType = "order_placed" | "menu_created" | "payment_successful" | "generic";

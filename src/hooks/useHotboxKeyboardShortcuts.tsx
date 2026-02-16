@@ -54,7 +54,6 @@ export function useHotboxKeyboardShortcuts({
     onItemAction,
     onDismiss,
     onSnooze,
-    onBatchDismiss,
     onRefresh,
 }: UseHotboxKeyboardShortcutsOptions): UseHotboxKeyboardShortcutsReturn {
     const navigate = useNavigate();

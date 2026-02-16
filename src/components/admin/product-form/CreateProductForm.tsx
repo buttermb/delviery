@@ -178,6 +178,7 @@ export function CreateProductForm({
     ...initialData,
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStepErrors, setShowStepErrors] = useState<Record<string, boolean>>({});
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
   const progress = ((currentStepIndex + 1) / STEPS.length) * 100;
@@ -187,49 +188,47 @@ export function CreateProductForm({
   }, []);
 
   const validateStep = (stepId: StepId): boolean => {
+    let valid = true;
     switch (stepId) {
       case "basic":
-        if (!formData.name?.trim()) {
-          toast.error("Product name is required");
-          return false;
+        if (!formData.name?.trim() || !formData.category) {
+          valid = false;
         }
-        if (!formData.category) {
-          toast.error("Category is required");
-          return false;
-        }
-        return true;
+        break;
 
-      case "pricing":
+      case "pricing": {
         const price = typeof formData.price === 'string' ? parseFloat(formData.price) : formData.price;
         if (!price || price <= 0) {
-          toast.error("Regular price is required and must be greater than 0");
-          return false;
+          valid = false;
         }
-        return true;
+        const stock = formData.stock_quantity;
+        if (stock !== "" && stock !== undefined && stock !== null) {
+          const stockNum = typeof stock === 'string' ? parseFloat(stock as string) : (stock as number);
+          if (!Number.isInteger(stockNum) || stockNum < 0) {
+            valid = false;
+          }
+        }
+        break;
+      }
 
       case "variants":
-        // Variants are optional
-        return true;
-
       case "details":
-        // Details are optional but description is recommended
-        return true;
-
       case "compliance":
-        // COA is optional in the wizard but recommended
-        return true;
-
       case "images":
-        // Main image is recommended but not blocking
-        return true;
-
       case "review":
-        // Final validation before submit
-        return true;
+        break;
 
       default:
-        return true;
+        break;
     }
+
+    if (!valid) {
+      setShowStepErrors((prev) => ({ ...prev, [stepId]: true }));
+      toast.error("Please fix the highlighted errors before continuing");
+    } else {
+      setShowStepErrors((prev) => ({ ...prev, [stepId]: false }));
+    }
+    return valid;
   };
 
   const goToStep = (stepId: StepId) => {
@@ -321,6 +320,7 @@ export function CreateProductForm({
           <BasicInfoStep
             formData={formData}
             updateFormData={updateFormData}
+            showErrors={!!showStepErrors.basic}
           />
         );
 
@@ -329,6 +329,7 @@ export function CreateProductForm({
           <PricingStep
             formData={formData}
             updateFormData={updateFormData}
+            showErrors={!!showStepErrors.pricing}
           />
         );
 

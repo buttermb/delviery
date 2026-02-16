@@ -70,7 +70,7 @@ export const MenuWhitelistTab = ({
       });
       
       setNewCustomer({ name: '', phone: '', email: '', notes: '' });
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     } finally {
       setAddingCustomer(false);

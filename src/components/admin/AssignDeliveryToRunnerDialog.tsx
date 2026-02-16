@@ -109,6 +109,7 @@ export const AssignDeliveryToRunnerDialog = ({
           </DialogDescription>
         </DialogHeader>
 
+        <form onSubmit={(e) => { e.preventDefault(); handleAssign(); }}>
         <ScrollArea className="max-h-[500px] pr-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -175,6 +176,7 @@ export const AssignDeliveryToRunnerDialog = ({
 
         <div className="flex gap-3 pt-4 border-t">
           <Button
+            type="button"
             variant="outline"
             onClick={() => {
               onOpenChange(false);
@@ -186,7 +188,7 @@ export const AssignDeliveryToRunnerDialog = ({
             Cancel
           </Button>
           <Button
-            onClick={handleAssign}
+            type="submit"
             disabled={!selectedOrderId || assigning}
             className="flex-1 bg-emerald-500 hover:bg-emerald-600"
           >
@@ -200,6 +202,7 @@ export const AssignDeliveryToRunnerDialog = ({
             )}
           </Button>
         </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

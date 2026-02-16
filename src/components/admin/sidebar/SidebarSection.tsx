@@ -11,7 +11,7 @@ import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
 import { matchesSearchQuery } from './SidebarSearch';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
-import type { SidebarSection as SidebarSectionType, SidebarItem } from '@/types/sidebar';
+import type { SidebarSection as SidebarSectionType } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';

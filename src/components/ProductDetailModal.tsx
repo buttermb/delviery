@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Minus, Plus, ShoppingCart, Loader2, Package, FileText, Download, QrCode, Shield, Award, Leaf, Clock, Activity, Heart, Star, X, Check } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Loader2, Package, Download, Shield, Award, Leaf, Clock, Activity, Heart, Star, X, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,7 +171,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         setAdded(false);
         setQuantity(1);
       }, 2000);
-    } catch (error) {
+    } catch {
       haptics.error();
       toast({
         title: "Failed to add to cart",
@@ -266,7 +266,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         {/* Mobile-Optimized Close Button - Always visible with high contrast */}
         <button
           onClick={() => onOpenChange(false)}
-          className="fixed right-4 top-4 z-[9999] rounded-full bg-background/80 text-foreground hover:bg-background border border-border transition-all md:hidden touch-manipulation active:scale-95 backdrop-blur-sm"
+          className="fixed right-4 top-4 z-max rounded-full bg-background/80 text-foreground hover:bg-background border border-border transition-all md:hidden touch-manipulation active:scale-95 backdrop-blur-sm"
           aria-label="Close"
           style={{ 
             touchAction: 'manipulation',

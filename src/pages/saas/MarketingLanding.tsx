@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import FloraIQLogo from '@/components/FloraIQLogo';
 import {
-  Check, ArrowRight, Zap, Shield, BarChart, Users,
-  Globe, Lock, TrendingUp, Star, Menu, Activity, HelpCircle
+  Check, ArrowRight, Zap, Shield,
+  Globe, Lock, TrendingUp, Star, Activity, Users
 } from 'lucide-react';
 
 import {

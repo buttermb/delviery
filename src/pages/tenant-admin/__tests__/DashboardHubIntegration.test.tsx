@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -254,7 +254,7 @@ vi.mock('framer-motion', () => ({
 
 // Mock the UnifiedAnalyticsDashboard with real stat cards
 vi.mock('@/components/analytics/UnifiedAnalyticsDashboard', () => ({
-  UnifiedAnalyticsDashboard: ({ tenantId }: { tenantId: string }) => (
+  UnifiedAnalyticsDashboard: ({ tenantId: _tenantId }: { tenantId: string }) => (
     <div data-testid="unified-analytics">
       <h2>Unified Analytics</h2>
       <div data-testid="stat-card-revenue">

@@ -18,7 +18,7 @@ interface UseSavedFiltersOptions<T> {
   defaultFilters?: T;
 }
 
-export function useSavedFilters<T>({ storageKey, defaultFilters }: UseSavedFiltersOptions<T>) {
+export function useSavedFilters<T>({ storageKey }: UseSavedFiltersOptions<T>) {
   const [savedFilters, setSavedFilters] = useState<SavedFilter<T>[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 

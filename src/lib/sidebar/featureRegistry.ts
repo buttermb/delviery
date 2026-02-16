@@ -57,7 +57,7 @@ import {
   Building,
   PieChart,
 } from 'lucide-react';
-import { type FeatureId, type SubscriptionTier, FEATURES } from '@/lib/featureConfig';
+import { type FeatureId, type SubscriptionTier } from '@/lib/featureConfig';
 
 export type OperationSize = 'street' | 'small' | 'medium' | 'enterprise';
 
@@ -557,7 +557,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'revenue-reports',
     name: 'Revenue',
     icon: TrendingUp,
-    path: '/admin/revenue-reports',
+    path: '/admin/finance-hub?tab=revenue',
     category: 'Analytics & Finance',
     minTier: 'professional',
   },

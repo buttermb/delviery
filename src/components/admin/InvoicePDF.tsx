@@ -229,7 +229,7 @@ export function InvoiceDownloadButton({ invoice }: { invoice: InvoiceData }) {
       fileName={`invoice-${invoice.invoiceNumber}.pdf`}
       className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
     >
-      {({ blob, url, loading, error }) =>
+      {({ loading }) =>
         loading ? 'Generating PDF...' : 'Download Invoice PDF'
       }
     </PDFDownloadLink>

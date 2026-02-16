@@ -3,7 +3,7 @@
  * State management for Easy Mode storefront configuration
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { logger } from '@/lib/logger';
 import {
     type PresetPack,
@@ -14,7 +14,6 @@ import {
     getPresetById,
     getPresetTheme,
     generateSectionsFromPreset,
-    createDefaultEasyModeConfig,
     detectAdvancedCustomizations,
     DEFAULT_FEATURE_TOGGLES,
     DEFAULT_SIMPLE_CONTENT,

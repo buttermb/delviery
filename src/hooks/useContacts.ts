@@ -148,8 +148,7 @@ export function useContacts(options: UseContactsOptions = {}) {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - Table exists after unified architecture migration
-      let query = supabase
+      let query = (supabase as any)
         .from('contacts')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -240,8 +239,7 @@ export function useContact(contactId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !contactId) throw new Error('Missing tenant or contact ID');
 
-      // @ts-ignore - Table exists after unified architecture migration
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('contacts')
         .select('*')
         .eq('id', contactId)
@@ -270,8 +268,7 @@ export function useCreateContact() {
     mutationFn: async (input: CreateContactInput) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - Table exists after unified architecture migration
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('contacts')
         .insert({
           tenant_id: tenant.id,
@@ -389,8 +386,7 @@ export function useUpdateContact() {
         metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : undefined,
       };
 
-      // @ts-ignore - Table exists after unified architecture migration
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('contacts')
         .update(updateData as any)
         .eq('id', contactId)
@@ -470,8 +466,7 @@ export function useDeleteContact() {
     mutationFn: async (contactId: string) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - Table exists after unified architecture migration
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('contacts')
         .update({ status: 'inactive' })
         .eq('id', contactId)
@@ -540,8 +535,7 @@ export function useUpdateContactBalance() {
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - RPC exists after unified architecture migration
-      const { data: newBalance, error } = await supabase.rpc('update_contact_balance', {
+      const { data: newBalance, error } = await (supabase as any).rpc('update_contact_balance', {
         p_contact_id: contactId,
         p_amount: amount,
         p_operation: operation,
@@ -621,8 +615,7 @@ export function useAddContactType() {
     mutationFn: async ({ contactId, contactType }: { contactId: string; contactType: ContactType }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - RPC exists after unified architecture migration
-      const { error } = await supabase.rpc('add_contact_type', {
+      const { error } = await (supabase as any).rpc('add_contact_type', {
         p_contact_id: contactId,
         p_contact_type: contactType,
       });
@@ -694,8 +687,7 @@ export function useContactStats(contactType?: ContactType) {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // @ts-ignore - Table exists after unified architecture migration
-      let query = supabase
+      let query = (supabase as any)
         .from('contacts')
         .select('status, contact_type, outstanding_balance, lifetime_value')
         .eq('tenant_id', tenant.id);

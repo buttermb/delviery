@@ -24,7 +24,7 @@ interface InventoryCheckResult {
   allStatuses: StockStatus[];
 }
 
-export function useInventoryCheck() {
+export function useInventoryCheck(tenantId?: string) {
   const queryClient = useQueryClient();
 
   // Check single product stock
@@ -33,19 +33,26 @@ export function useInventoryCheck() {
     requestedQuantity: number = 1
   ): Promise<StockStatus | null> => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('id, name, stock_quantity, available_quantity')
-        .eq('id', productId)
-        .single();
+        .eq('id', productId);
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) {
         logger.warn('Failed to check stock for product', { productId, error });
         return null;
       }
 
+      if (!data) return null;
+
       const available = data.available_quantity ?? data.stock_quantity ?? 0;
-      
+
       return {
         productId: data.id,
         productName: data.name,
@@ -58,7 +65,7 @@ export function useInventoryCheck() {
       logger.error('Error checking product stock', err);
       return null;
     }
-  }, []);
+  }, [tenantId]);
 
   // Check multiple products stock (for cart/checkout)
   const checkCartStock = useCallback(async (
@@ -70,11 +77,17 @@ export function useInventoryCheck() {
 
     try {
       const productIds = items.map(item => item.productId);
-      
-      const { data, error } = await supabase
+
+      let query = supabase
         .from('products')
         .select('id, name, stock_quantity, available_quantity')
         .in('id', productIds);
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         logger.warn('Failed to check cart stock', error);
@@ -85,7 +98,7 @@ export function useInventoryCheck() {
       const statuses: StockStatus[] = items.map(item => {
         const product = data?.find(p => p.id === item.productId);
         const available = product?.available_quantity ?? product?.stock_quantity ?? 0;
-        
+
         return {
           productId: item.productId,
           productName: product?.name || item.name || 'Unknown Product',
@@ -109,7 +122,7 @@ export function useInventoryCheck() {
       logger.error('Error checking cart stock', err);
       return { isValid: true, outOfStock: [], lowStock: [], allStatuses: [] };
     }
-  }, []);
+  }, [tenantId]);
 
   // Invalidate stock cache for a product
   const invalidateStock = useCallback((productId: string) => {
@@ -124,22 +137,28 @@ export function useInventoryCheck() {
 }
 
 // Hook for getting real-time stock for a specific product
-export function useProductStock(productId: string | undefined) {
+export function useProductStock(productId: string | undefined, tenantId?: string) {
   return useQuery({
-    queryKey: ['product-stock', productId],
+    queryKey: ['product-stock', productId, tenantId],
     queryFn: async () => {
       if (!productId) return null;
-      
-      const { data, error } = await supabase
+
+      let query = supabase
         .from('products')
         .select('id, name, stock_quantity, available_quantity')
-        .eq('id', productId)
-        .single();
+        .eq('id', productId);
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
-      
+      if (!data) return null;
+
       const available = data.available_quantity ?? data.stock_quantity ?? 0;
-      
+
       return {
         productId: data.id,
         productName: data.name,

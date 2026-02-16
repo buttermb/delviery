@@ -78,8 +78,7 @@ export function CancelWholesaleOrderDialog({
       const clientId = order.client_id || order.client?.id;
       if (reverseCreditImpact && order.payment_status !== 'paid' && clientId) {
         // Use atomic RPC to prevent race conditions on balance update
-        // @ts-ignore - RPC function not in auto-generated types
-        const { error: clientError } = await supabase.rpc('adjust_client_balance' as any, {
+        const { error: clientError } = await (supabase as any).rpc('adjust_client_balance', {
           p_client_id: clientId,
           p_amount: order.total_amount,
           p_operation: 'subtract'

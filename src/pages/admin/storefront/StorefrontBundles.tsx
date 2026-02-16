@@ -5,10 +5,9 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,15 +42,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
-  ArrowLeft,
   Plus,
   Package,
   Percent,
   DollarSign,
   Trash2,
   Edit,
-  Eye,
-  EyeOff,
   Gift,
   X
 } from 'lucide-react';
@@ -80,8 +76,6 @@ interface Product {
 }
 
 export default function StorefrontBundles() {
-  const { tenantSlug } = useParams();
-  const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

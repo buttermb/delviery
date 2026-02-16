@@ -9,7 +9,6 @@ import {
   ShoppingBag,
   Package,
   Settings,
-  User,
   LogOut,
   ShoppingCart,
   Building2,

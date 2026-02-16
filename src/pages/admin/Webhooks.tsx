@@ -67,7 +67,7 @@ export default function Webhooks() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from(TABLE_WEBHOOKS)
           .select('*')
           .eq('tenant_id', tenantId)
@@ -88,7 +88,7 @@ export default function Webhooks() {
     mutationFn: async (webhook: Partial<WebhookConfig>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(TABLE_WEBHOOKS)
         .insert({
           tenant_id: tenantId,
@@ -127,7 +127,7 @@ export default function Webhooks() {
     mutationFn: async ({ id, ...webhook }: WebhookConfig) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(TABLE_WEBHOOKS)
         .update({
           name: webhook.name,
@@ -235,7 +235,7 @@ export default function Webhooks() {
 
       {webhooks && webhooks.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {webhooks.map((webhook: WebhookConfig) => (
+          {(webhooks as any[]).map((webhook: WebhookConfig) => (
             <Card
               key={webhook.id}
               className={`cursor-pointer transition-colors ${

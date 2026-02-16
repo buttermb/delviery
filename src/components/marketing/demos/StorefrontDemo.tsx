@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ShoppingBag, Star, Plus, ArrowRight, Sparkles, Search, Menu, Filter, Moon, Smile, Zap, Sun, Target, Lightbulb, Activity } from 'lucide-react';
+import { ShoppingBag, Star, Plus, ArrowRight, Search, Menu, Filter, Moon, Smile, Zap, Sun, Target, Lightbulb, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 

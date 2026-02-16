@@ -54,7 +54,7 @@ export default function LinkChecker() {
             checks[i].statusCode = response.status;
             checks[i].status = response.ok ? 'valid' : 'broken';
           }
-        } catch (error) {
+        } catch {
           checks[i].status = 'broken';
           checks[i].statusCode = 0;
         }

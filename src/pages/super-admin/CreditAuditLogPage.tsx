@@ -13,7 +13,6 @@ import {
   Filter,
   Download,
   RefreshCw,
-  TrendingUp,
   TrendingDown,
   Coins,
   Gift,
@@ -22,7 +21,7 @@ import {
   Settings,
   Calendar,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -45,7 +44,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { getAllTransactions, type CreditTransaction } from '@/lib/credits';
+import { getAllTransactions } from '@/lib/credits';
 
 type TransactionType = 'all' | 'usage' | 'purchase' | 'free_grant' | 'bonus' | 'adjustment' | 'refund';
 

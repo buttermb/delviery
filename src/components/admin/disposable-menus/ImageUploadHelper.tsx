@@ -12,7 +12,7 @@ interface ImageUploadHelperProps {
 }
 
 export const ImageUploadHelper = ({ productsWithoutImages = [] }: ImageUploadHelperProps) => {
-  const navigate = useNavigate();
+  useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const [expanded, setExpanded] = useState(false);
 

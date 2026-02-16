@@ -7,11 +7,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { 
-  getCreditCost, 
+import {
+  getCreditCost,
   getCreditCostInfo,
   FREE_TIER_MONTHLY_CREDITS,
-  type CreditCost,
 } from './creditCosts';
 
 // ============================================================================
@@ -66,7 +65,7 @@ export async function getCreditBalance(tenantId: string): Promise<CreditBalance 
   try {
     // PRIORITY: Check tenants table for subscription_status and plan first
     // This is the source of truth for whether user is on free tier
-    const { data: tenantData, error: tenantError } = await supabase
+    const { data: tenantData } = await supabase
       .from('tenants')
       .select('subscription_status, subscription_plan, credits_enabled')
       .eq('id', tenantId)

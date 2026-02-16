@@ -52,6 +52,13 @@ export const DeliveryZoneMapPreview = withSuspense(
   )
 );
 
-// Re-export types for convenience
-export type { LeafletMapWidgetProps } from '@/components/admin/dashboard/LeafletMapWidget';
-export type { DeliveryZoneMapPreviewProps } from '@/components/admin/storefront/DeliveryZoneMapPreview';
+// Type definitions for lazy-loaded components
+export interface LeafletMapWidgetProps {
+  className?: string;
+  height?: number;
+}
+
+export interface DeliveryZoneMapPreviewProps {
+  className?: string;
+  zones?: unknown[];
+}

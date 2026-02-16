@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
@@ -16,7 +15,6 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function WholesaleInventory() {
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
@@ -24,7 +22,7 @@ export default function WholesaleInventory() {
   // Fetch real data
   const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
   const { data: deliveries = [], isLoading: deliveriesLoading } = useWholesaleDeliveries();
-  const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
+  const { data: _orders = [], isLoading: ordersLoading } = useWholesaleOrders();
 
   const isLoading = inventoryLoading || deliveriesLoading || ordersLoading;
 

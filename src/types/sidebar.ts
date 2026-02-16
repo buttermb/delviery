@@ -4,7 +4,6 @@
  * TypeScript interfaces and types for the Smart Adaptive Sidebar system
  */
 
-import type { ReactNode } from 'react';
 import type { Permission } from '@/lib/permissions/rolePermissions';
 import type { SubscriptionTier } from '@/lib/featureConfig';
 

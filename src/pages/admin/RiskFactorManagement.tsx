@@ -1,10 +1,8 @@
-import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -15,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { MapPin, TrendingUp, AlertTriangle } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function RiskFactorManagement() {

@@ -96,7 +96,7 @@ export function CreditAdjustmentForm({
         toast.error(result.error || 'Failed to adjust credits');
       }
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast.error('Failed to adjust credits');
     },
   });

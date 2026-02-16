@@ -246,7 +246,7 @@ export async function getTenantCreditDetail(
       .from('tenants')
       .select('id, business_name, slug, is_free_tier, created_at')
       .eq('id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenant) {
       logger.error('Failed to get tenant', tenantError);
@@ -254,14 +254,14 @@ export async function getTenantCreditDetail(
     }
 
     // Get credit info
-    const { data: credits, error: creditsError } = await supabase
+    const { data: credits } = await supabase
       .from('tenant_credits')
       .select('*')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
     // Get recent transactions
-    const { data: transactions, error: txError } = await supabase
+    const { data: transactions } = await supabase
       .from('credit_transactions')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -269,7 +269,7 @@ export async function getTenantCreditDetail(
       .limit(50);
 
     // Get grants
-    const { data: grants, error: grantsError } = await supabase
+    const { data: grants } = await supabase
       .from('credit_grants')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -445,7 +445,7 @@ export async function refundTransaction(
       .from('credit_transactions')
       .select('*')
       .eq('id', transactionId)
-      .single();
+      .maybeSingle();
 
     if (txError || !originalTx) {
       return { success: false, error: 'Transaction not found' };

@@ -1,4 +1,4 @@
-import { useRef, MouseEvent, ReactNode, cloneElement, isValidElement } from 'react';
+import { useRef, MouseEvent, ReactNode } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { cn } from '@/lib/utils';
 

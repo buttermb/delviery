@@ -27,7 +27,7 @@ export default function PinUnlockModal({ open, onUnlock }: PinUnlockModalProps) 
         toast.error('Incorrect PIN');
         setPin('');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to unlock');
     } finally {
       setLoading(false);

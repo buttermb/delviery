@@ -9,43 +9,72 @@
 import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useProduct, useProductInventoryHistory, useProductFrontedInventory } from '@/hooks/useProduct';
-import { useProductMutations } from '@/hooks/useProductMutations';
+import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHistory';
+import { ProductInventoryChart } from '@/components/admin/products/ProductInventoryChart';
+import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard';
+import { ProductMenuAppearances } from '@/components/admin/products/ProductMenuAppearances';
+import { ProductComplianceStatus } from '@/components/admin/products/ProductComplianceStatus';
+import { ProductReorderCard } from '@/components/admin/products/ProductReorderCard';
+import { ProductImageGallery } from '@/components/admin/products/ProductImageGallery';
+import { ProductPriceHistoryChart } from '@/components/admin/products/ProductPriceHistoryChart';
+import { ProductPriceDisplay } from '@/components/admin/products/ProductPriceDisplay';
+import { ProductPerformanceCard } from '@/components/admin/products/ProductPerformanceCard';
+import { ProductStorefrontPreview } from '@/components/admin/products/ProductStorefrontPreview';
+import { ProductMarginAlert } from '@/components/admin/products/ProductMarginAlert';
+import { ProductSyncStatusIndicator } from '@/components/admin/products/ProductSyncStatusIndicator';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
+import { useProductArchive } from '@/hooks/useProductArchive';
+import { useStorefrontProductSync } from '@/hooks/useStorefrontProductSync';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import Package from "lucide-react/dist/esm/icons/package";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Boxes from "lucide-react/dist/esm/icons/boxes";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
-import ImageIcon from "lucide-react/dist/esm/icons/image";
 import Beaker from "lucide-react/dist/esm/icons/beaker";
 import Tag from "lucide-react/dist/esm/icons/tag";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
-import Clock from "lucide-react/dist/esm/icons/clock";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import BarChart3 from "lucide-react/dist/esm/icons/bar-chart-3";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import { useState } from 'react';
 
 export default function ProductDetailsPage() {
     const { productId } = useParams<{ productId: string }>();
-    const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+    const { navigateToAdmin } = useTenantNavigation();
     const { tenant } = useTenantAdminAuth();
     const [activeTab, setActiveTab] = useState('info');
+    const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
 
     const { data: product, isLoading, error } = useProduct({ productId });
     const { data: inventoryHistory = [], isLoading: historyLoading } = useProductInventoryHistory(productId);
     const { data: frontedInventory = [], isLoading: frontedLoading } = useProductFrontedInventory(productId);
+
+    // Set breadcrumb label to show product name
+    useBreadcrumbLabel(product ? product.name : null);
+
+    // Product sync status for real-time storefront updates
+    const {
+        connectionStatus,
+        getProductSyncStatus,
+        lastSyncAt,
+        syncCount,
+    } = useStorefrontProductSync({
+        tenantId: tenant?.id ?? null,
+        enableRealtime: true,
+    });
 
     // Loading state
     if (isLoading) {
@@ -106,7 +135,7 @@ export default function ProductDetailsPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('inventory-hub?tab=products')}>
+                        <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('inventory-hub?tab=products')} aria-label="Back to products">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div className="flex items-center gap-4">
@@ -124,6 +153,9 @@ export default function ProductDetailsPage() {
                             <div>
                                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3 flex-wrap">
                                     {product.name}
+                                    {(product as { archived_at?: string | null }).archived_at && (
+                                        <Badge variant="secondary">Archived</Badge>
+                                    )}
                                     {isOutOfStock && (
                                         <Badge variant="destructive">Out of Stock</Badge>
                                     )}
@@ -147,11 +179,25 @@ export default function ProductDetailsPage() {
                                             {product.strain_type}
                                         </Badge>
                                     )}
+                                    {/* Storefront sync status indicator */}
+                                    {productId && (
+                                        <ProductSyncStatusIndicator
+                                            syncStatus={getProductSyncStatus(productId)}
+                                            connectionStatus={connectionStatus}
+                                            lastSyncAt={lastSyncAt}
+                                            syncCount={syncCount}
+                                            productName={product.name}
+                                            size="sm"
+                                            showDetails={false}
+                                            showConnection={true}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="flex gap-2">
+                        <ProductStorefrontPreview product={product} />
                         <Button
                             variant="outline"
                             onClick={() => navigateToAdmin(`inventory-hub?tab=products&edit=${product.id}`)}
@@ -159,6 +205,25 @@ export default function ProductDetailsPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Product
                         </Button>
+                        {(product as { archived_at?: string | null }).archived_at ? (
+                            <Button
+                                variant="outline"
+                                onClick={() => unarchiveProduct(product.id)}
+                                disabled={isArchiveLoading}
+                            >
+                                <ArchiveRestore className="mr-2 h-4 w-4" />
+                                Restore
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                onClick={() => archiveProduct(product.id)}
+                                disabled={isArchiveLoading}
+                            >
+                                <Archive className="mr-2 h-4 w-4" />
+                                Archive
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -186,9 +251,13 @@ export default function ProductDetailsPage() {
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {product.wholesale_price ? formatCurrency(product.wholesale_price) : '-'}
-                            </div>
+                            <ProductPriceDisplay
+                                productId={productId}
+                                currentPrice={product.wholesale_price}
+                                priceType="wholesale"
+                                size="lg"
+                                showBadge={true}
+                            />
                             {wholesaleMargin && (
                                 <p className="text-xs text-muted-foreground">
                                     {wholesaleMargin}% margin
@@ -202,9 +271,13 @@ export default function ProductDetailsPage() {
                             <Tag className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {product.retail_price ? formatCurrency(product.retail_price) : '-'}
-                            </div>
+                            <ProductPriceDisplay
+                                productId={productId}
+                                currentPrice={product.retail_price}
+                                priceType="retail"
+                                size="lg"
+                                showBadge={true}
+                            />
                             {retailMargin && (
                                 <p className="text-xs text-muted-foreground">
                                     {retailMargin}% margin
@@ -228,12 +301,26 @@ export default function ProductDetailsPage() {
                     </Card>
                 </div>
 
+                {/* Margin Alert - Shows if margin is below threshold */}
+                <ProductMarginAlert
+                    costPrice={product.cost_per_unit}
+                    wholesalePrice={product.wholesale_price}
+                    retailPrice={product.retail_price}
+                    marginThreshold={20}
+                    productName={product.name}
+                    onAdjustPrice={() => navigateToAdmin(`inventory-hub?tab=products&edit=${product.id}`)}
+                />
+
                 {/* Main Content Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+                    <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
                         <TabsTrigger value="info">
                             <FileText className="h-4 w-4 mr-2 hidden sm:block" />
                             Info
+                        </TabsTrigger>
+                        <TabsTrigger value="orders">
+                            <ShoppingCart className="h-4 w-4 mr-2 hidden sm:block" />
+                            Orders
                         </TabsTrigger>
                         <TabsTrigger value="variants">
                             <DollarSign className="h-4 w-4 mr-2 hidden sm:block" />
@@ -247,6 +334,25 @@ export default function ProductDetailsPage() {
 
                     {/* Info Tab */}
                     <TabsContent value="info" className="space-y-4">
+                        {/* Image Gallery */}
+                        <ProductImageGallery
+                            product={{
+                                id: product.id,
+                                name: product.name,
+                                image_url: product.image_url,
+                                images: product.images as string[] | null,
+                                category: product.category,
+                                strain_type: product.strain_type,
+                                retail_price: product.retail_price,
+                                wholesale_price: product.wholesale_price,
+                                description: product.description,
+                                thc_percent: product.thc_percent,
+                                cbd_percent: product.cbd_percent,
+                            }}
+                            editable={true}
+                            showPreview={true}
+                        />
+
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Basic Info */}
                             <Card>
@@ -370,46 +476,8 @@ export default function ProductDetailsPage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Lab Results */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Lab Results & Compliance</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Lab Name</p>
-                                            <p className="font-medium">{product.lab_name || '-'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Test Date</p>
-                                            <p className="font-medium">
-                                                {product.test_date
-                                                    ? format(new Date(product.test_date), 'MMM d, yyyy')
-                                                    : '-'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {(product.coa_url || product.lab_results_url) && (
-                                        <div className="flex gap-2">
-                                            {product.coa_url && (
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <a href={product.coa_url} target="_blank" rel="noopener noreferrer">
-                                                        View COA
-                                                    </a>
-                                                </Button>
-                                            )}
-                                            {product.lab_results_url && (
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <a href={product.lab_results_url} target="_blank" rel="noopener noreferrer">
-                                                        Lab Results
-                                                    </a>
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                            {/* Compliance Status - Lab Results, Licensing, Regulatory */}
+                            <ProductComplianceStatus product={product} />
 
                             {/* Timestamps */}
                             <Card>
@@ -434,10 +502,36 @@ export default function ProductDetailsPage() {
                                 </CardContent>
                             </Card>
                         </div>
+
+                        {/* Vendor Information Card */}
+                        <ProductVendorCard
+                            productId={productId}
+                            vendorName={product.vendor_name}
+                        />
+
+                        {/* Menu & Store Appearances Card */}
+                        <ProductMenuAppearances
+                            productId={productId}
+                            basePrice={product.retail_price}
+                        />
+
+                        {/* Performance Analytics Card */}
+                        <ProductPerformanceCard
+                            productId={productId}
+                            productCategory={product.category}
+                        />
+                    </TabsContent>
+
+                    {/* Orders Tab */}
+                    <TabsContent value="orders" className="space-y-4">
+                        <ProductOrderHistory productId={productId} />
                     </TabsContent>
 
                     {/* Variants Tab (Pricing Tiers) */}
                     <TabsContent value="variants" className="space-y-4">
+                        {/* Price History Chart */}
+                        <ProductPriceHistoryChart productId={productId} />
+
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Pricing Info */}
                             <Card>
@@ -456,9 +550,12 @@ export default function ProductDetailsPage() {
                                         <div className="flex justify-between items-center py-2 border-b">
                                             <span className="text-muted-foreground">Wholesale Price</span>
                                             <div className="text-right">
-                                                <span className="font-medium">
-                                                    {product.wholesale_price ? formatCurrency(product.wholesale_price) : '-'}
-                                                </span>
+                                                <ProductPriceDisplay
+                                                    productId={productId}
+                                                    currentPrice={product.wholesale_price}
+                                                    priceType="wholesale"
+                                                    size="sm"
+                                                />
                                                 {wholesaleMargin && (
                                                     <p className="text-xs text-green-600">{wholesaleMargin}% margin</p>
                                                 )}
@@ -467,9 +564,12 @@ export default function ProductDetailsPage() {
                                         <div className="flex justify-between items-center py-2 border-b">
                                             <span className="text-muted-foreground">Retail Price</span>
                                             <div className="text-right">
-                                                <span className="font-medium">
-                                                    {product.retail_price ? formatCurrency(product.retail_price) : '-'}
-                                                </span>
+                                                <ProductPriceDisplay
+                                                    productId={productId}
+                                                    currentPrice={product.retail_price}
+                                                    priceType="retail"
+                                                    size="sm"
+                                                />
                                                 {retailMargin && (
                                                     <p className="text-xs text-green-600">{retailMargin}% margin</p>
                                                 )}
@@ -559,6 +659,12 @@ export default function ProductDetailsPage() {
 
                     {/* Inventory Tab */}
                     <TabsContent value="inventory" className="space-y-4">
+                        {/* Reorder Suggestion Card */}
+                        <ProductReorderCard productId={productId} />
+
+                        {/* Inventory History Chart */}
+                        <ProductInventoryChart productId={productId} />
+
                         <div className="grid gap-4 md:grid-cols-2">
                             {/* Stock Levels */}
                             <Card>

@@ -2,17 +2,16 @@ import { logger } from '@/lib/logger';
 import { useState, useMemo, Suspense, lazy, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Plus, Search, Settings, LayoutGrid, ShoppingBag, Eye, Users, DollarSign,
+  Plus, Settings, LayoutGrid, ShoppingBag, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
-  Zap, Target, AlertCircle, CheckCircle, BarChart3, Copy, ExternalLink,
+  Zap, Target, AlertCircle, CheckCircle, BarChart3,
   Download, Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +28,6 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { supabase } from '@/integrations/supabase/client';
 
 // ============================================
@@ -612,7 +610,7 @@ function SetupTab() {
   );
 }
 
-// Menu type for the SmartDashboard
+// Menu type for the SmartDashboard - uses index signature to accept any DB fields
 interface MenuData {
   id: string;
   name?: string | null;
@@ -626,7 +624,7 @@ interface MenuData {
 // SmartDashboard Component
 export function SmartDashboard() {
   const { tenant } = useTenantAdminAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('menus');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'burned'>('all');
 
@@ -916,7 +914,7 @@ export function SmartDashboard() {
               data={filteredMenus}
               isLoading={isLoading}
               keyExtractor={(menu: MenuData) => menu.id}
-              renderItem={(menu: MenuData) => <MenuCard menu={menu} />}
+              renderItem={(menu: MenuData) => <MenuCard menu={menu as unknown as Parameters<typeof MenuCard>[0]['menu']} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
                 icon: LayoutGrid,

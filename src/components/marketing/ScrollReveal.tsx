@@ -70,10 +70,10 @@ interface StaggerContainerProps {
 
 export function StaggerContainer({
   children,
-  staggerDelay = 0.1,
+  staggerDelay: _staggerDelay = 0.1,
   className = '',
 }: StaggerContainerProps) {
-  const { ref, inView } = useInView({
+  const { ref, inView: _inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });

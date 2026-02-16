@@ -28,7 +28,7 @@ vi.mock('@/components/ui/badge', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, className, size, variant, asChild, ...props }: any) => (
+  Button: ({ children, onClick, className, size, variant, asChild: _asChild, ...props }: any) => (
     <button
       onClick={onClick}
       className={className}
@@ -45,7 +45,7 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => (
     <div data-testid="dropdown-menu">{children}</div>
   ),
-  DropdownMenuTrigger: ({ children, asChild, ...props }: any) => (
+  DropdownMenuTrigger: ({ children, asChild: _asChild, ...props }: any) => (
     <div data-testid="dropdown-trigger" {...props}>
       {children}
     </div>

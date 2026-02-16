@@ -5,7 +5,6 @@
  * Shows current balance, usage breakdown, and top actions.
  */
 
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Coins,
@@ -68,16 +67,16 @@ export function CreditUsageStats({
   const {
     balance,
     isFreeTier,
-    isLoading: creditsLoading,
-    lifetimeSpent,
-    lifetimeEarned,
+    isLoading: _creditsLoading,
+    lifetimeSpent: _lifetimeSpent,
+    lifetimeEarned: _lifetimeEarned,
     nextFreeGrantAt,
   } = useCredits();
 
   const tenantId = tenant?.id;
 
   // Fetch usage data from credit_transactions
-  const { data: usageData, isLoading: usageLoading } = useQuery({
+  const { data: usageData, isLoading: _usageLoading } = useQuery({
     queryKey: ['credit-usage-stats', tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
@@ -250,10 +249,6 @@ export function CreditUsageStats({
     return null;
   }
 
-  const isLoading = creditsLoading || usageLoading;
-  const percentUsed = lifetimeEarned > 0
-    ? Math.round((lifetimeSpent / lifetimeEarned) * 100)
-    : 0;
   const percentRemaining = Math.round((balance / FREE_TIER_MONTHLY_CREDITS) * 100);
 
   // Compact version for sidebar/small spaces

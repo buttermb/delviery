@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, Plus, Search, Trash2, RefreshCw } from "lucide-react";
+import { Loader2, Mail, Plus, Search, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useInvites, useCreateInvite, useArchiveInvite } from "@/hooks/crm/useInvites";
 import { toast } from "sonner";
@@ -73,7 +73,7 @@ export default function InvitesPage() {
             toast.success(`Invite sent to ${values.email}`);
             setIsCreateDialogOpen(false);
             form.reset();
-        } catch (error) {
+        } catch {
             // Error handled by hook
         }
     };
@@ -142,7 +142,7 @@ export default function InvitesPage() {
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Name</FormLabel>
+                                            <FormLabel required>Name</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="John Doe" {...field} />
                                             </FormControl>
@@ -155,7 +155,7 @@ export default function InvitesPage() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Email Address</FormLabel>
+                                            <FormLabel required>Email Address</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="client@example.com" {...field} />
                                             </FormControl>

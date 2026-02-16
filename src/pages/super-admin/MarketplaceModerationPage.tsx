@@ -14,15 +14,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Shield, 
-  Search, 
+import {
+  Shield,
+  Search,
   Filter,
   CheckCircle,
   XCircle,
   Clock,
   Building2,
-  FileText,
   Eye,
   AlertTriangle
 } from 'lucide-react';
@@ -35,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 
 export default function MarketplaceModerationPage() {

@@ -12,6 +12,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -44,6 +45,7 @@ import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog
 import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
+import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 // Skeleton already imported above
 
 interface DeliveryZone {
@@ -153,7 +155,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: StoreSettings | null; error: { code?: string; message?: string } | null }> } } } })
+      const { data, error } = await (supabase as any)
         .from('marketplace_stores')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -185,7 +187,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       const ids = formData.featured_product_ids || [];
       if (ids.length === 0) return [];
-      const { data, error } = await (supabase as unknown as { from: (table: string) => { select: (cols: string) => { in: (col: string, vals: string[]) => Promise<{ data: Array<{ id: string; name: string; price: number; image_url: string | null; category: string | null }> | null; error: unknown }> } } })
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name, price, image_url, category')
         .in('id', ids);
@@ -263,7 +265,7 @@ export default function StorefrontSettings() {
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
 
-      const { error } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<{ error: unknown }> } } })
+      const { error } = await (supabase as any)
         .from('marketplace_stores')
         .update({
           store_name: formData.store_name,
@@ -555,7 +557,10 @@ export default function StorefrontSettings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="slug">Store URL Slug</Label>
+                    <Label htmlFor="slug" className="flex items-center gap-1.5">
+                      Store URL Slug
+                      <FieldHelp tooltip={fieldHelpTexts.tenantSlug.tooltip} example={fieldHelpTexts.tenantSlug.example} />
+                    </Label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">/shop/</span>
                       <Input
@@ -869,10 +874,8 @@ export default function StorefrontSettings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="default_delivery_fee">Default Delivery Fee ($)</Label>
-                    <Input
+                    <CurrencyInput
                       id="default_delivery_fee"
-                      type="number"
-                      step="0.01"
                       value={formData.default_delivery_fee || 5}
                       onChange={(e) => updateField('default_delivery_fee', parseFloat(e.target.value))}
                     />
@@ -880,10 +883,8 @@ export default function StorefrontSettings() {
 
                   <div className="space-y-2">
                     <Label htmlFor="free_delivery_threshold">Free Delivery Threshold ($)</Label>
-                    <Input
+                    <CurrencyInput
                       id="free_delivery_threshold"
-                      type="number"
-                      step="0.01"
                       value={formData.free_delivery_threshold || 100}
                       onChange={(e) => updateField('free_delivery_threshold', parseFloat(e.target.value))}
                     />
@@ -921,31 +922,27 @@ export default function StorefrontSettings() {
                         className="w-full sm:w-32"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Fee: $</span>
-                        <Input
-                          type="number"
-                          step="0.01"
+                        <span className="text-sm text-muted-foreground">Fee:</span>
+                        <CurrencyInput
                           value={zone.fee || 0}
                           onChange={(e) => {
                             const zones = [...(formData.delivery_zones || [])];
                             zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-full sm:w-24"
+                          className="w-full sm:w-28"
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Min: $</span>
-                        <Input
-                          type="number"
-                          step="0.01"
+                        <span className="text-sm text-muted-foreground">Min:</span>
+                        <CurrencyInput
                           value={zone.min_order || 0}
                           onChange={(e) => {
                             const zones = [...(formData.delivery_zones || [])];
                             zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
-                          className="w-full sm:w-24"
+                          className="w-full sm:w-28"
                         />
                       </div>
                       <Button

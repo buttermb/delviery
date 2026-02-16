@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useCreatePost } from '@/hooks/usePosts';
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
 import * as forumApi from '@/lib/api/forum';
 import * as marketplaceApi from '@/lib/api/marketplace';
 import { ArrowLeft, Loader2, Package, Search } from 'lucide-react';
@@ -26,7 +25,7 @@ import { toast } from 'sonner';
 export function CreatePostPage() {
   const navigate = useNavigate();
   const { data: categories } = useQuery({
-    queryKey: queryKeys.forum.categories.lists(),
+    queryKey: ['forum', 'categories'],
     queryFn: () => forumApi.getCategories(),
   });
   const { data: profile } = useForumProfile();
@@ -84,7 +83,7 @@ export function CreatePostPage() {
       });
 
       navigate(`/community/post/${post.id}`);
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

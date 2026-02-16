@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search, ShoppingCart, Menu } from 'lucide-react'
-import NYMLogo from '../NYMLogo'
 
 export default function LuxuryNav() {
   const [scrolled, setScrolled] = useState(false)

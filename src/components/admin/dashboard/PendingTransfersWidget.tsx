@@ -42,8 +42,7 @@ export function PendingTransfersWidget() {
         } | null;
       }
 
-      // @ts-expect-error - Complex Supabase query with joins exceeds TypeScript recursion depth limit
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('wholesale_deliveries')
         .select(`
           id,

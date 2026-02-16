@@ -48,7 +48,7 @@ export function calculatePromotionDiscount(
     promotion: Promotion,
     cartItems: CartItem[],
     subtotal: number,
-    customerId?: string
+    _customerId?: string
 ): PromotionResult {
     const result: PromotionResult = {
         promotionId: promotion.id,
@@ -205,7 +205,8 @@ export function validatePromotionCode(
     code: string,
     promotions: Promotion[]
 ): Promotion | null {
-    const now = new Date();
+    // Note: 'now' reserved for future date validation
+    // const now = new Date();
 
     const promotion = promotions.find(p =>
         p.code.toUpperCase() === code.toUpperCase()

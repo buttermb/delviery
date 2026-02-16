@@ -53,7 +53,7 @@ const categories = [
 ];
 
 export function FeaturedCategories() {
-  const scrollToCategory = (category: string) => {
+  const scrollToCategory = (_category: string) => {
     document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
     // Could trigger category filter here
   };

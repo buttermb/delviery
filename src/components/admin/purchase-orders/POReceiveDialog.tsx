@@ -61,7 +61,7 @@ export function POReceiveDialog({
       
       onOpenChange(false);
       onSuccess?.();
-    } catch (error) {
+    } catch {
       // Error handling is done in the hook
     }
   };

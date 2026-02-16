@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CreditCard, DollarSign, TrendingUp, AlertTriangle, Download, Plus, Users, Menu, Package, MapPin } from 'lucide-react';
+import { CreditCard, TrendingUp, Download, Plus, Users, Menu, Package, MapPin } from 'lucide-react';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';

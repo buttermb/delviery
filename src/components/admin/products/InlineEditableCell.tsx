@@ -48,7 +48,7 @@ export function InlineEditableCell({
         try {
             await onSave(editValue);
             setIsEditing(false);
-        } catch (error) {
+        } catch {
             // Keep editing mode open on error
         } finally {
             setIsSaving(false);

@@ -176,7 +176,7 @@ const AuthModal = ({ open, onOpenChange, mode, onModeChange }: AuthModalProps) =
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <Label htmlFor="email" className="text-sm font-medium">Email <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="email"
               type="email"
@@ -201,7 +201,7 @@ const AuthModal = ({ open, onOpenChange, mode, onModeChange }: AuthModalProps) =
           {mode === "signup" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                <Label htmlFor="fullName" className="text-sm font-medium">Full Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -248,7 +248,7 @@ const AuthModal = ({ open, onOpenChange, mode, onModeChange }: AuthModalProps) =
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium">Password <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <div className="relative">
               <Input
                 id="password"
@@ -286,7 +286,7 @@ const AuthModal = ({ open, onOpenChange, mode, onModeChange }: AuthModalProps) =
 
           {mode === "signup" && (
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}

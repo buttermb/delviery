@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput, IntegerInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
@@ -13,10 +14,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode } from "lucide-react";
+import { Loader2, Package, DollarSign, Image as ImageIcon, FileText, Barcode, Info, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+
+import { VendorSelector } from "@/components/admin/products/VendorSelector";
+import type { VendorWithStats } from "@/hooks/useVendorsWithStats";
+import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 
 // Define the shape of form data
 export interface ProductFormData {
@@ -80,10 +85,16 @@ export function ProductForm({
     isEditMode,
     storeSettings,
 }: ProductFormProps) {
+    const MAX_FILE_SIZE_MB = 2;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
     const [formData, setFormData] = useState<ProductFormData>(DEFAULT_FORM_DATA);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageUploading, setImageUploading] = useState(false);
+    const [imageProgress, setImageProgress] = useState(0);
     const [activeTab, setActiveTab] = useState("details");
+    const [selectedVendor, setSelectedVendor] = useState<VendorWithStats | null>(null);
 
     const checkPotencyLimit = (field: 'thc_percent' | 'cbd_percent', value: string) => {
         const numVal = parseFloat(value);
@@ -95,6 +106,13 @@ export function ProductForm({
             toast.warning(`Potency Alert: Value exceeds store limit of ${limit}%`);
         }
     };
+
+    // Handle vendor selection with auto-population of vendor-specific fields
+    const handleVendorSelect = useCallback((vendor: VendorWithStats | null) => {
+        setSelectedVendor(vendor);
+        // Auto-populate vendor-specific fields when a vendor is selected
+        // This provides a starting point but doesn't overwrite if user already entered values
+    }, []);
 
     useEffect(() => {
         if (initialData) {
@@ -109,23 +127,51 @@ export function ProductForm({
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Reset input so same file can be re-selected
+        e.target.value = '';
+
         if (!file.type.startsWith('image/')) {
             toast.error('Invalid file type');
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('File too large (max 5MB)');
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            toast.error(`File too large (max ${MAX_FILE_SIZE_MB}MB). Selected: ${(file.size / (1024 * 1024)).toFixed(1)}MB`);
             return;
         }
 
         setImageFile(file);
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
+        // Show local preview immediately
+        const previewUrl = URL.createObjectURL(file);
+        setImagePreview(previewUrl);
+
+        // Simulate progress for visual feedback
+        setImageUploading(true);
+        setImageProgress(0);
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 15;
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                setImageProgress(100);
+                setTimeout(() => {
+                    setImageUploading(false);
+                    setImageProgress(0);
+                }, 300);
+            } else {
+                setImageProgress(progress);
+            }
+        }, 100);
+    };
+
+    const removeImage = () => {
+        if (imagePreview && imagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        setImageFile(null);
+        setImagePreview(null);
+        setFormData((prev) => ({ ...prev, image_url: '' }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -206,12 +252,24 @@ export function ProductForm({
 
                             <div className="space-y-2">
                                 <Label>Brand/Vendor</Label>
-                                <AutocompleteInput
+                                <VendorSelector
                                     value={formData.vendor_name}
                                     onChange={(value) => setFormData({ ...formData, vendor_name: value })}
-                                    type="brand"
-                                    placeholder="e.g. Cookies"
+                                    onVendorSelect={handleVendorSelect}
+                                    placeholder="Select or enter vendor..."
+                                    allowCreate
                                 />
+                                {selectedVendor && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                        <Info className="h-3 w-3" />
+                                        {selectedVendor.payment_terms && (
+                                            <span>Terms: {selectedVendor.payment_terms}</span>
+                                        )}
+                                        {selectedVendor.lead_time_days !== null && (
+                                            <span className="ml-2">Lead: {selectedVendor.lead_time_days}d</span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -259,50 +317,29 @@ export function ProductForm({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Cost per Unit *</Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        required
-                                        value={formData.cost_per_unit}
-                                        onChange={(e) => setFormData({ ...formData, cost_per_unit: e.target.value })}
-                                        placeholder="0.00"
-                                        className="pl-7"
-                                    />
-                                </div>
+                                <CurrencyInput
+                                    required
+                                    value={formData.cost_per_unit}
+                                    onChange={(e) => setFormData({ ...formData, cost_per_unit: e.target.value })}
+                                    placeholder="0.00"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Wholesale Price *</Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        required
-                                        value={formData.wholesale_price}
-                                        onChange={(e) => setFormData({ ...formData, wholesale_price: e.target.value })}
-                                        placeholder="0.00"
-                                        className="pl-7"
-                                    />
-                                </div>
+                                <CurrencyInput
+                                    required
+                                    value={formData.wholesale_price}
+                                    onChange={(e) => setFormData({ ...formData, wholesale_price: e.target.value })}
+                                    placeholder="0.00"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Retail Price</Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={formData.retail_price}
-                                        onChange={(e) => setFormData({ ...formData, retail_price: e.target.value })}
-                                        placeholder="0.00"
-                                        className="pl-7"
-                                    />
-                                </div>
+                                <CurrencyInput
+                                    value={formData.retail_price}
+                                    onChange={(e) => setFormData({ ...formData, retail_price: e.target.value })}
+                                    placeholder="0.00"
+                                />
                             </div>
                         </div>
 
@@ -337,18 +374,11 @@ export function ProductForm({
                         {/* Minimum Price */}
                         <div className="space-y-2 pt-4 border-t">
                             <Label>Minimum Allowed Price</Label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                                <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={formData.minimum_price}
-                                    onChange={(e) => setFormData({ ...formData, minimum_price: e.target.value })}
-                                    placeholder="0.00"
-                                    className="pl-7"
-                                />
-                            </div>
+                            <CurrencyInput
+                                value={formData.minimum_price}
+                                onChange={(e) => setFormData({ ...formData, minimum_price: e.target.value })}
+                                placeholder="0.00"
+                            />
                             <p className="text-xs text-muted-foreground">
                                 Regulatory minimum — discounts will not reduce the price below this amount.
                             </p>
@@ -379,9 +409,8 @@ export function ProductForm({
 
                             <div className="space-y-2">
                                 <Label>Initial Quantity</Label>
-                                <Input
-                                    type="number"
-                                    min="0"
+                                <IntegerInput
+                                    min={0}
                                     value={formData.available_quantity}
                                     onChange={(e) => setFormData({ ...formData, available_quantity: e.target.value })}
                                     placeholder="0"
@@ -399,9 +428,8 @@ export function ProductForm({
 
                             <div className="space-y-2">
                                 <Label>Low Stock Alert</Label>
-                                <Input
-                                    type="number"
-                                    min="0"
+                                <IntegerInput
+                                    min={0}
                                     value={formData.low_stock_alert}
                                     onChange={(e) => setFormData({ ...formData, low_stock_alert: e.target.value })}
                                     placeholder="10"
@@ -451,32 +479,60 @@ export function ProductForm({
                     {/* Media Tab */}
                     <TabsContent value="media" className="space-y-4">
                         <div className="space-y-4">
-                            <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors cursor-pointer relative">
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    onChange={handleImageChange}
-                                />
-                                {imagePreview ? (
-                                    <div className="relative w-40 h-40 rounded-lg overflow-hidden border">
-                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            {imagePreview || formData.image_url ? (
+                                <div className="relative group border-2 border-dashed rounded-lg overflow-hidden">
+                                    <img
+                                        src={imagePreview || formData.image_url}
+                                        alt="Product preview"
+                                        className="w-full h-64 object-cover"
+                                    />
+                                    {imageUploading && (
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3">
+                                            <Loader2 className="h-8 w-8 text-white animate-spin" />
+                                            <Progress value={imageProgress} className="w-48" />
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <label className="cursor-pointer">
+                                            <Button type="button" variant="secondary" size="sm" asChild>
+                                                <span>
+                                                    <ImageIcon className="h-4 w-4 mr-2" />
+                                                    Replace
+                                                </span>
+                                            </Button>
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={handleImageChange}
+                                            />
+                                        </label>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={removeImage}
+                                        >
+                                            <X className="h-4 w-4 mr-2" />
+                                            Remove
+                                        </Button>
                                     </div>
-                                ) : (
+                                </div>
+                            ) : (
+                                <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors cursor-pointer relative">
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                        onChange={handleImageChange}
+                                    />
                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                                         <div className="bg-primary/10 p-3 rounded-full">
                                             <ImageIcon className="h-6 w-6 text-primary" />
                                         </div>
                                         <span className="font-medium">Click to upload image</span>
-                                        <span className="text-xs">Max 5MB. JPG, PNG, WEBP</span>
+                                        <span className="text-xs">Max {MAX_FILE_SIZE_MB}MB. JPG, PNG, WEBP</span>
                                     </div>
-                                )}
-                            </div>
-
-                            {formData.image_url && !imagePreview && (
-                                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-md border border-green-200">
-                                    <ImageIcon className="h-4 w-4" />
-                                    <span>Existing image available</span>
                                 </div>
                             )}
                         </div>

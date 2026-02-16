@@ -16,7 +16,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   Collapsible,
@@ -31,7 +30,6 @@ import {
   CREDIT_PACKAGES,
   FREE_TIER_MONTHLY_CREDITS,
   MIN_BALANCE_REQUIREMENTS,
-  type CreditCost,
 } from '@/lib/credits';
 
 export interface BulkCreditCalculatorProps {

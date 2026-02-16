@@ -17,8 +17,6 @@ import {
     Tag,
     Clock,
     Calendar,
-    ChevronRight,
-    Percent,
     Sparkles,
     ShoppingBag,
 } from 'lucide-react';
@@ -39,13 +37,13 @@ interface Deal {
 export default function DealsPage() {
     const { storeSlug } = useParams();
     const { store } = useShop();
-    const { isLuxuryTheme, cardBg, cardBorder, textPrimary, textMuted, accentColor } = useLuxuryTheme();
+    const { isLuxuryTheme, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
 
     const { data: deals = [], isLoading } = useQuery({
         queryKey: ['store-active-deals', store?.id],
         queryFn: async (): Promise<Deal[]> => {
             if (!store?.id) return [];
-            
+
             // Query marketplace_deals table directly
             const { data, error } = await supabase
                 .from('marketplace_deals')
@@ -57,7 +55,7 @@ export default function DealsPage() {
                 logger.warn('Deals not available', error);
                 return [];
             }
-            
+
             return (data || []) as unknown as Deal[];
         },
         enabled: !!store?.id,
@@ -146,10 +144,10 @@ export default function DealsPage() {
     );
 
     return (
-        <div className={`min-h-dvh pb-20 pt-24 ${isLuxuryTheme ? 'bg-neutral-950' : 'bg-gray-50'}`}>
+        <div className={`min-h-dvh pb-20 pt-24 ${isLuxuryTheme ? 'bg-neutral-950' : 'bg-gray-50 dark:bg-zinc-900'}`}>
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-12 space-y-4">
-                    <h1 className={`text-4xl md:text-5xl font-bold tracking-tight ${isLuxuryTheme ? 'text-white' : 'text-gray-900'}`}>
+                    <h1 className={`text-4xl md:text-5xl font-bold tracking-tight ${isLuxuryTheme ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                         Current Deals
                     </h1>
                     <p className={`text-lg max-w-2xl mx-auto ${isLuxuryTheme ? 'text-gray-400' : 'text-gray-600'}`}>

@@ -1,10 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * Vitest Test Setup
  * Global test configuration and mocks
  */
 
-import { expect, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { afterEach, beforeAll, afterAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 

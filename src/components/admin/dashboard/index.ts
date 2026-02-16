@@ -6,4 +6,5 @@
 export { RevenuePredictionWidget } from './RevenuePredictionWidget';
 export { LeafletMapWidget } from './LeafletMapWidget';
 export { TremorMetricsWidget, RevenueMetricsExample } from './TremorMetricsWidget';
+export { SLAComplianceWidget } from './SLAComplianceWidget';
 

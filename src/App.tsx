@@ -31,14 +31,17 @@ import { CreditProvider } from "./contexts/CreditContext";
 import { lazy, Suspense, useEffect } from "react";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
-import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
+// AdminErrorBoundary and AuthErrorBoundary - available for future use
+// import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
+// import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { SkeletonAdminLayout } from "./components/loading/SkeletonAdminLayout";
 import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
+import { SkeletonStorefront } from "./components/loading/SkeletonStorefront";
+import { SkeletonCourier } from "./components/loading/SkeletonCourier";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
-import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
+import { setupGlobalErrorHandlers } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
 import { PublicOnlyRoute } from "./components/auth/PublicOnlyRoute";
@@ -50,7 +53,8 @@ import { toast } from "./hooks/use-toast";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
-import { NotificationPreferences } from "./components/NotificationPreferences";
+// NotificationPreferences - available for future use
+// import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -77,9 +81,9 @@ if (prefersReducedMotion) {
 function SuspenseProgressFallback() {
   // Start progress when lazy content is loading; stop when it resolves
   useEffect(() => {
-    try { NProgress.start(); } catch { }
+    try { NProgress.start(); } catch { /* ignore NProgress errors */ }
     return () => {
-      try { NProgress.done(); } catch { }
+      try { NProgress.done(); } catch { /* ignore NProgress errors */ }
     };
   }, []);
   return <LoadingFallback />;
@@ -161,6 +165,7 @@ const VerifyEmailPage = lazyWithRetry(() => import("./pages/saas/VerifyEmailPage
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
+const SetupWizardPage = lazy(() => import("./pages/admin/SetupWizardPage"));
 const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage").then(m => ({ default: m.PasswordResetPage })));
 const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
@@ -206,7 +211,7 @@ const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventor
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
 const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
-const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
+// const PointOfSale = lazy(() => import("./pages/admin/PointOfSale")); // Available for future use
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
 
 // Hidden gems - pages that exist but aren't in config
@@ -215,17 +220,18 @@ const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications")
 // Tenant-admin versions (if they exist)
 const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
 const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
-const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage"));
+// const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage")); // Available for future use
 const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
 const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
-const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
+// const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal")); // Available for future use
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
-const SupplierManagementPage = lazy(() => import("./pages/admin/SupplierManagementPage"));
-const PurchaseOrdersPage = lazy(() => import("./pages/admin/PurchaseOrdersPage"));
-const ReturnsManagementPage = lazy(() => import("./pages/admin/ReturnsManagementPage"));
-const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage"));
-const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
-const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
+// Commented out - available for future use:
+// const SupplierManagementPage = lazy(() => import("./pages/admin/SupplierManagementPage"));
+// const PurchaseOrdersPage = lazy(() => import("./pages/admin/PurchaseOrdersPage"));
+// const ReturnsManagementPage = lazy(() => import("./pages/admin/ReturnsManagementPage"));
+// const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage"));
+// const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
+// const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
 const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
 const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage").then(m => ({ default: m.InvoicesPage })));
@@ -236,21 +242,25 @@ const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage")
 const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
 const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
 const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
-const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
-const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
-const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage"));
-const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
-const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
+const DeliveryTrackingPage = lazy(() => import("./pages/portal/DeliveryTrackingPage"));
+// Commented out - available for future use:
+// const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
+// const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
+// const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage"));
+// const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
+// const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
 const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
 const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
 const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
 const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage").then(m => ({ default: m.VendorOrderDetailPage })));
 const ProtectedVendorRoute = lazy(() => import("./components/vendor/ProtectedVendorRoute"));
-const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnalyticsPage"));
+// const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnalyticsPage")); // Available for future use
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement").then(m => ({ default: m.VendorManagement })));
+const VendorDashboard = lazy(() => import("./pages/admin/VendorDashboard"));
+const PurchaseOrders = lazy(() => import("./pages/admin/PurchaseOrders"));
 const ImagesPage = lazy(() => import("./pages/admin/catalog/ImagesPage"));
 const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
 const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
@@ -263,6 +273,7 @@ const PricingTiersPage = lazy(() => import("./pages/admin/wholesale/PricingTiers
 const DeveloperTools = lazy(() => import("./pages/admin/DeveloperTools"));
 const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
 const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
+const DeliveryZonesPage = lazy(() => import("./pages/admin/DeliveryZones"));
 
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
@@ -271,17 +282,17 @@ const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage
 const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
 const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomationPage"));
 
-// White-Label Storefront Pages (Admin)
-const StorefrontDashboard = lazy(() => import("./pages/admin/storefront/StorefrontDashboard"));
-const StorefrontSettings = lazy(() => import("@/pages/admin/storefront/StorefrontSettings"));
-const StorefrontBuilder = lazy(() => import("@/pages/admin/storefront/StorefrontBuilder").then(m => ({ default: m.StorefrontBuilder })));
-const StorefrontProducts = lazy(() => import("./pages/admin/storefront/StorefrontProducts"));
-const StorefrontOrders = lazy(() => import("./pages/admin/storefront/StorefrontOrders"));
-const StorefrontBundles = lazy(() => import("./pages/admin/storefront/StorefrontBundles"));
-const StorefrontLiveOrders = lazy(() => import("./pages/admin/storefront/StorefrontLiveOrders"));
-const StorefrontCustomers = lazy(() => import("./pages/admin/storefront/StorefrontCustomers"));
-const StorefrontCoupons = lazy(() => import("./pages/admin/storefront/StorefrontCoupons"));
-const StorefrontAnalytics = lazy(() => import("./pages/admin/storefront/StorefrontAnalytics"));
+// White-Label Storefront Pages (Admin) - commented out, available for future use
+// const StorefrontDashboard = lazy(() => import("./pages/admin/storefront/StorefrontDashboard"));
+// const StorefrontSettings = lazy(() => import("@/pages/admin/storefront/StorefrontSettings"));
+// const StorefrontBuilder = lazy(() => import("@/pages/admin/storefront/StorefrontBuilder").then(m => ({ default: m.StorefrontBuilder })));
+// const StorefrontProducts = lazy(() => import("./pages/admin/storefront/StorefrontProducts"));
+// const StorefrontOrders = lazy(() => import("./pages/admin/storefront/StorefrontOrders"));
+// const StorefrontBundles = lazy(() => import("./pages/admin/storefront/StorefrontBundles"));
+// const StorefrontLiveOrders = lazy(() => import("./pages/admin/storefront/StorefrontLiveOrders"));
+// const StorefrontCustomers = lazy(() => import("./pages/admin/storefront/StorefrontCustomers"));
+// const StorefrontCoupons = lazy(() => import("./pages/admin/storefront/StorefrontCoupons"));
+// const StorefrontAnalytics = lazy(() => import("./pages/admin/storefront/StorefrontAnalytics"));
 
 // Marketplace Admin (B2C)
 const MarketplaceDashboard = lazy(() => import("./pages/admin/marketplace/MarketplaceDashboard"));
@@ -304,6 +315,9 @@ const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"
 const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
+const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
+const StoreMenuPage = lazy(() => import("./pages/store/StoreMenuPage"));
+const StoreProductPage = lazy(() => import("./pages/store/StoreProductPage"));
 const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
@@ -318,7 +332,7 @@ const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"))
 const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
 const SettingsHubPage = lazy(() => import("./pages/admin/hubs/SettingsHubPage"));
 const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
-const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage"));
+// const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage")); // Available for future use
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
 const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
@@ -335,7 +349,7 @@ const BulkOperationsPage = lazy(() => import("./pages/tenant-admin/BulkOperation
 const APIAccessPage = lazy(() => import("./pages/tenant-admin/APIAccessPage"));
 const WebhooksPage = lazy(() => import("./pages/tenant-admin/WebhooksPage"));
 const CustomIntegrationsPage = lazy(() => import("./pages/tenant-admin/CustomIntegrationsPage"));
-const AutomationPage = lazy(() => import("./pages/tenant-admin/AutomationPage"));
+// const AutomationPage = lazy(() => import("./pages/tenant-admin/AutomationPage")); // Available for future use
 const DataExportPage = lazy(() => import("./pages/tenant-admin/DataExportPage"));
 const AuditTrailPage = lazy(() => import("./pages/tenant-admin/AuditTrailPage"));
 const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"));
@@ -348,6 +362,7 @@ const CreditAnalyticsPage = lazy(() => import("./pages/tenant-admin/credits/Cred
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
+const InventoryAuditPage = lazy(() => import("./pages/admin/InventoryAudit"));
 const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
 const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
@@ -408,7 +423,7 @@ const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"))
 const ShoppingCartPage = lazy(() => import("./pages/customer/ShoppingCartPage"));
 const CheckoutPage = lazy(() => import("./pages/customer/CheckoutPage"));
 const OrderTrackingPage = lazy(() => import("./pages/customer/OrderTrackingPage"));
-const OrdersListPage = lazy(() => import("./pages/customer/OrdersListPage"));
+// const OrdersListPage = lazy(() => import("./pages/customer/OrdersListPage")); // Available for future use
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess").then(m => ({ default: m.SecureMenuAccess })));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const WholesaleMarketplacePage = lazy(() => import("./pages/customer/WholesaleMarketplacePage"));
@@ -443,9 +458,9 @@ const AuthConfirmPage = lazy(() => import("./pages/auth/AuthConfirmPage"));
 const SecureAccountPage = lazy(() => import("./pages/auth/SecureAccountPage").then(m => ({ default: m.SecureAccountPage })));
 
 // Feature Pages (Marketing)
-import FeatureCompliancePage from "./pages/features/CompliancePage";
-import FeatureLogisticsPage from "./pages/features/LogisticsPage";
-import FeatureEcommercePage from "./pages/features/EcommercePage";
+const FeatureCompliancePage = lazy(() => import("./pages/features/CompliancePage"));
+const FeatureLogisticsPage = lazy(() => import("./pages/features/LogisticsPage"));
+const FeatureEcommercePage = lazy(() => import("./pages/features/EcommercePage"));
 
 // Use the singleton QueryClient from centralized config
 const queryClient = appQueryClient;
@@ -599,11 +614,16 @@ const App = () => {
                                       <Route path="/marketplace" element={<PublicMarketplacePage />} />
                                       <Route path="/marketplace/listings/:listingId" element={<PublicListingDetailPage />} />
 
+                                      {/* Public Store Landing Page */}
+                                      <Route path="/store/:slug" element={<Suspense fallback={<SkeletonStorefront />}><StoreLandingPage /></Suspense>} />
+                                      <Route path="/store/:slug/menu" element={<Suspense fallback={<SkeletonStorefront />}><StoreMenuPage /></Suspense>} />
+                                      <Route path="/store/:slug/product/:id" element={<Suspense fallback={<SkeletonStorefront />}><StoreProductPage /></Suspense>} />
+
                                       {/* Encrypted Store Link (Private Shareable) */}
-                                      <Route path="/s/:token" element={<EncryptedStorePage />} />
+                                      <Route path="/s/:token" element={<Suspense fallback={<SkeletonStorefront />}><EncryptedStorePage /></Suspense>} />
 
                                       {/* White-Label Shop (Customer Storefront) */}
-                                      <Route path="/shop/:storeSlug" element={<ShopLayout />}>
+                                      <Route path="/shop/:storeSlug" element={<Suspense fallback={<SkeletonStorefront />}><ShopLayout /></Suspense>}>
                                         <Route index element={<ShopStorefrontPage />} />
                                         <Route path="products" element={<ShopProductCatalogPage />} />
                                         <Route path="products/:productId" element={<ShopProductDetailPage />} />
@@ -655,9 +675,11 @@ const App = () => {
                                       <Route path="/super-admin/auth/callback" element={<SuperAdminAuthCallback />} />
                                       <Route path="/super-admin/auth/mfa-challenge" element={<MFAChallengePage portal="super-admin" />} />
                                       <Route path="/super-admin/*" element={
-                                        <SuperAdminProtectedRouteNew>
-                                          <SuperAdminLayout />
-                                        </SuperAdminProtectedRouteNew>
+                                        <Suspense fallback={<SkeletonAdminLayout />}>
+                                          <SuperAdminProtectedRouteNew>
+                                            <SuperAdminLayout />
+                                          </SuperAdminProtectedRouteNew>
+                                        </Suspense>
                                       }>
                                         <Route path="dashboard" element={<SuperAdminDashboardPage />} />
                                         <Route path="monitoring" element={<SuperAdminMonitoringPage />} />
@@ -709,6 +731,9 @@ const App = () => {
                                       <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
                                       <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />
+
+                                      {/* Setup Wizard (must be before AdminLayout) */}
+                                      <Route path="/:tenantSlug/admin/setup-wizard" element={<TenantAdminProtectedRoute><Suspense fallback={<LoadingFallback />}><SetupWizardPage /></Suspense></TenantAdminProtectedRoute>} />
 
                                       {/* Welcome Page (must be before AdminLayout) */}
                                       <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />
@@ -979,12 +1004,13 @@ const App = () => {
                                         <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
                                         <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
                                         <Route path="delivery-tracking" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                        <Route path="delivery-zones" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryZonesPage /></FeatureProtectedRoute>} />
                                         <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                         <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                         <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                                         <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
-                                        <Route path="purchase-orders" element={<Navigate to="operations-hub?tab=purchase-orders" replace />} />
+                                        <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
                                         <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
                                         <Route path="coupons" element={<Navigate to="marketing-hub?tab=coupons" replace />} />
@@ -1021,10 +1047,12 @@ const App = () => {
                                         <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                                         <Route path="system-settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
+                                        <Route path="vendor-dashboard" element={<FeatureProtectedRoute featureId="vendor-management"><VendorDashboard /></FeatureProtectedRoute>} />
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}
                                         <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfersPage /></FeatureProtectedRoute>} />
+                                        <Route path="inventory-audit" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><InventoryAuditPage /></RoleProtectedRoute>} />
                                         <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard"><RealtimeDashboardPage /></FeatureProtectedRoute>} />
@@ -1080,85 +1108,93 @@ const App = () => {
                                       <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
 
                                       {/* ==================== COURIER PORTAL ==================== */}
-                                      <Route path="/courier/login" element={<CourierLoginPage />} />
+                                      <Route path="/courier/login" element={<Suspense fallback={<SkeletonCourier />}><CourierLoginPage /></Suspense>} />
                                       <Route
                                         path="/courier/*"
                                         element={
-                                          <ErrorBoundary title="Courier Portal Unavailable" description="We encountered an error loading the courier portal. Please try refreshing the page.">
-                                            <CourierProvider>
-                                              <Routes>
-                                                <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
-                                                <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
-                                                <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
-                                                <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
-                                                <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
-                                                <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
-                                              </Routes>
-                                            </CourierProvider>
-                                          </ErrorBoundary>
+                                          <Suspense fallback={<SkeletonCourier />}>
+                                            <ErrorBoundary title="Courier Portal Unavailable" description="We encountered an error loading the courier portal. Please try refreshing the page.">
+                                              <CourierProvider>
+                                                <Routes>
+                                                  <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
+                                                  <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
+                                                  <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
+                                                  <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
+                                                  <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
+                                                  <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
+                                                </Routes>
+                                              </CourierProvider>
+                                            </ErrorBoundary>
+                                          </Suspense>
                                         }
                                       />
 
                                       {/* ==================== CUSTOMER LOGIN LANDING (No Tenant) ==================== */}
-                                      <Route path="/customer/login" element={<CustomerLoginLanding />} />
-                                      <Route path="/shop/login" element={<CustomerLoginLanding />} />
+                                      <Route path="/customer/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginLanding /></Suspense>} />
+                                      <Route path="/shop/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginLanding /></Suspense>} />
 
                                       {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
-                                      <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
-                                      <Route path="/:tenantSlug/customer/signup" element={<CustomerSignUpPage />} />
-                                      <Route path="/:tenantSlug/customer/verify-email" element={<CustomerVerifyEmailPage />} />
-                                      <Route path="/:tenantSlug/customer/forgot-password" element={<CustomerForgotPasswordPage />} />
-                                      <Route path="/:tenantSlug/customer/reset-password" element={<CustomerResetPasswordPage />} />
-                                      <Route path="/:tenantSlug/customer/auth/callback" element={<CustomerAuthCallback />} />
-                                      <Route path="/:tenantSlug/customer/auth/mfa-challenge" element={<MFAChallengePage portal="customer" />} />
-                                      <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
-                                      <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
+                                      <Route path="/:tenantSlug/customer/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/signup" element={<Suspense fallback={<SkeletonStorefront />}><CustomerSignUpPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/verify-email" element={<Suspense fallback={<SkeletonStorefront />}><CustomerVerifyEmailPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/forgot-password" element={<Suspense fallback={<SkeletonStorefront />}><CustomerForgotPasswordPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/reset-password" element={<Suspense fallback={<SkeletonStorefront />}><CustomerResetPasswordPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/auth/callback" element={<Suspense fallback={<SkeletonStorefront />}><CustomerAuthCallback /></Suspense>} />
+                                      <Route path="/:tenantSlug/customer/auth/mfa-challenge" element={<Suspense fallback={<SkeletonStorefront />}><MFAChallengePage portal="customer" /></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/login" element={<Suspense fallback={<SkeletonStorefront />}><CustomerLoginPage /></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/reset/:token" element={<Suspense fallback={<SkeletonStorefront />}><PasswordResetPage /></Suspense>} />
                                       {/* Public Routes */}
                                       <Route path="/portal/invoice/:token" element={<InvoicePublicPage />} />
+                                      <Route path="/track" element={<DeliveryTrackingPage />} />
+                                      <Route path="/track/:trackingCode" element={<DeliveryTrackingPage />} />
                                       <Route path="/:tenantSlug/shop" element={
-                                        <ErrorBoundary title="Shop Unavailable" description="We encountered an error loading the shop. Please try refreshing the page.">
-                                          <CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>
-                                        </ErrorBoundary>
+                                        <Suspense fallback={<SkeletonStorefront />}>
+                                          <ErrorBoundary title="Shop Unavailable" description="We encountered an error loading the shop. Please try refreshing the page.">
+                                            <CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>
+                                          </ErrorBoundary>
+                                        </Suspense>
                                       }>
                                         <Route index element={<Navigate to="dashboard" replace />} />
                                         <Route path="dashboard" element={<CustomerDashboardPage />} />
                                       </Route>
-                                      <Route path="/:tenantSlug/shop/cart" element={<CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/checkout" element={<CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/orders" element={<CustomerProtectedRoute><UnifiedOrdersPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/orders/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/orders/retail/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/cart" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/checkout" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/orders" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><UnifiedOrdersPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/orders/:orderId" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/orders/retail/:orderId" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/settings" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute></Suspense>} />
                                       {/* Retail Shopping Routes */}
-                                      <Route path="/:tenantSlug/shop/retail/businesses" element={<CustomerProtectedRoute><BusinessFinderPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/retail/businesses/:businessSlug/menu" element={<CustomerProtectedRoute><BusinessMenuPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/retail/businesses" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><BusinessFinderPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/retail/businesses/:businessSlug/menu" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><BusinessMenuPage /></CustomerProtectedRoute></Suspense>} />
                                       {/* Wholesale Marketplace Routes */}
-                                      <Route path="/:tenantSlug/shop/wholesale" element={<CustomerProtectedRoute><WholesaleMarketplacePage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/wholesale/cart" element={<CustomerProtectedRoute><WholesaleCartPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/wholesale/checkout" element={<CustomerProtectedRoute><WholesaleCheckoutPage /></CustomerProtectedRoute>} />
-                                      {/* @ts-ignore - Component renamed to avoid duplicate import */}
-                                      <Route path="/:tenantSlug/shop/wholesale/orders" element={<CustomerProtectedRoute><CustomerWholesaleOrdersPage /></CustomerProtectedRoute>} />
-                                      <Route path="/:tenantSlug/shop/wholesale/orders/:orderId" element={<CustomerProtectedRoute><WholesaleOrderDetailPage /></CustomerProtectedRoute>} />
+                                      <Route path="/:tenantSlug/shop/wholesale" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleMarketplacePage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/cart" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleCartPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/checkout" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleCheckoutPage /></CustomerProtectedRoute></Suspense>} />
+                                      {/* Component renamed to avoid duplicate import */}
+                                      <Route path="/:tenantSlug/shop/wholesale/orders" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><CustomerWholesaleOrdersPage /></CustomerProtectedRoute></Suspense>} />
+                                      <Route path="/:tenantSlug/shop/wholesale/orders/:orderId" element={<Suspense fallback={<SkeletonStorefront />}><CustomerProtectedRoute><WholesaleOrderDetailPage /></CustomerProtectedRoute></Suspense>} />
 
                                       {/* ==================== VENDOR PORTAL (External Access) ==================== */}
                                       <Route
                                         path="/vendor/*"
                                         element={
-                                          <ErrorBoundary title="Vendor Portal Unavailable" description="We encountered an error loading the vendor portal. Please try refreshing the page.">
-                                            <VendorAuthProvider>
-                                              <Routes>
-                                                <Route path="login" element={<VendorLoginPage />} />
-                                                <Route path="dashboard" element={<ProtectedVendorRoute><VendorDashboardPage /></ProtectedVendorRoute>} />
-                                                <Route path="order/:orderId" element={<ProtectedVendorRoute><VendorOrderDetailPage /></ProtectedVendorRoute>} />
-                                              </Routes>
-                                            </VendorAuthProvider>
-                                          </ErrorBoundary>
+                                          <Suspense fallback={<LoadingFallback />}>
+                                            <ErrorBoundary title="Vendor Portal Unavailable" description="We encountered an error loading the vendor portal. Please try refreshing the page.">
+                                              <VendorAuthProvider>
+                                                <Routes>
+                                                  <Route path="login" element={<VendorLoginPage />} />
+                                                  <Route path="dashboard" element={<ProtectedVendorRoute><VendorDashboardPage /></ProtectedVendorRoute>} />
+                                                  <Route path="order/:orderId" element={<ProtectedVendorRoute><VendorOrderDetailPage /></ProtectedVendorRoute>} />
+                                                </Routes>
+                                              </VendorAuthProvider>
+                                            </ErrorBoundary>
+                                          </Suspense>
                                         }
                                       />
 
                                       {/* ==================== COMMUNITY FORUM (Global) ==================== */}
-                                      <Route path="/community/auth" element={<CommunityAuthPage />} />
-                                      <Route path="/community" element={<CommunityProtectedRoute><CommunityLayout /></CommunityProtectedRoute>}>
+                                      <Route path="/community/auth" element={<Suspense fallback={<LoadingFallback />}><CommunityAuthPage /></Suspense>} />
+                                      <Route path="/community" element={<Suspense fallback={<LoadingFallback />}><CommunityProtectedRoute><CommunityLayout /></CommunityProtectedRoute></Suspense>}>
                                         <Route index element={<CommunityHomePage />} />
                                         <Route path="c/:categorySlug" element={<CategoryPage />} />
                                         <Route path="post/:postId" element={<PostDetailPage />} />

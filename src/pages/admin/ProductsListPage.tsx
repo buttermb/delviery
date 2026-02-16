@@ -4,12 +4,16 @@
  * Part of the Products Hub functionality.
  */
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import { triggerHaptic } from '@/lib/utils/mobile';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useTablePreferences } from '@/hooks/useTablePreferences';
+import { useProductArchive } from '@/hooks/useProductArchive';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -42,45 +46,113 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { InventoryStatusBadge } from '@/components/admin/InventoryStatusBadge';
 import { ProductCard } from '@/components/admin/ProductCard';
+import {
+  ProductAdvancedFilters,
+  type ProductFilters,
+  defaultProductFilters,
+} from '@/components/admin/products/ProductAdvancedFilters';
 
 // Icons
 import Package from "lucide-react/dist/esm/icons/package";
 import Plus from "lucide-react/dist/esm/icons/plus";
 import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
 import List from "lucide-react/dist/esm/icons/list";
-import Filter from "lucide-react/dist/esm/icons/filter";
 import MoreVertical from "lucide-react/dist/esm/icons/more-vertical";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import Store from "lucide-react/dist/esm/icons/store";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
+import Archive from "lucide-react/dist/esm/icons/archive";
+import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
+import GitCompare from "lucide-react/dist/esm/icons/git-compare";
 
 import type { Database } from '@/integrations/supabase/types';
 
-type Product = Database['public']['Tables']['products']['Row'];
+import { ProductComparison } from '@/components/admin/products/ProductComparison';
+
+type ProductRow = Database['public']['Tables']['products']['Row'];
+// Extended product type to include archived_at field (added via migration)
+type Product = ProductRow & { archived_at?: string | null };
 
 type ViewMode = 'grid' | 'table';
 type SortOption = 'name' | 'price' | 'stock' | 'category';
-type StockFilter = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 
 export function ProductsListPage() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const navigateTenant = useTenantNavigate();
   const queryClient = useQueryClient();
 
+  // Archive hook
+  const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
+
+  // Table preferences for filter persistence
+  const { preferences, savePreferences } = useTablePreferences('products-list', {
+    sortBy: 'name',
+    customFilters: {
+      advancedFilters: defaultProductFilters,
+    },
+  });
+
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  // Filter state
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [stockFilter, setStockFilter] = useState<StockFilter>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('name');
+  // Advanced filters state - initialized from persisted preferences
+  const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>(() => {
+    const saved = preferences.customFilters?.advancedFilters;
+    if (saved) {
+      // Parse dates back from strings
+      return {
+        ...defaultProductFilters,
+        ...saved,
+        createdAfter: saved.createdAfter ? new Date(saved.createdAfter) : null,
+        createdBefore: saved.createdBefore ? new Date(saved.createdBefore) : null,
+      };
+    }
+    return defaultProductFilters;
+  });
+
+  // Sort option - initialized from persisted preferences
+  const [sortBy, setSortBy] = useState<SortOption>(
+    (preferences.sortBy as SortOption) || 'name'
+  );
 
   // Selection state
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+  // Comparison dialog state
+  const [showComparison, setShowComparison] = useState(false);
+
+  // Persist filter changes
+  const prevFiltersRef = useRef({ advancedFilters, sortBy });
+  useEffect(() => {
+    const prev = prevFiltersRef.current;
+    const filtersChanged =
+      JSON.stringify(prev.advancedFilters) !== JSON.stringify(advancedFilters) ||
+      prev.sortBy !== sortBy;
+
+    if (filtersChanged) {
+      prevFiltersRef.current = { advancedFilters, sortBy };
+      savePreferences({
+        sortBy,
+        customFilters: {
+          advancedFilters: {
+            ...advancedFilters,
+            // Convert dates to ISO strings for storage
+            createdAfter: advancedFilters.createdAfter?.toISOString() ?? null,
+            createdBefore: advancedFilters.createdBefore?.toISOString() ?? null,
+          },
+        },
+      });
+    }
+  }, [advancedFilters, sortBy, savePreferences]);
+
+  // Handle advanced filter changes
+  const handleAdvancedFiltersChange = useCallback((newFilters: ProductFilters) => {
+    setAdvancedFilters(newFilters);
+  }, []);
 
   // Virtual scrolling ref for grid view
   const gridParentRef = useRef<HTMLDivElement>(null);
@@ -90,6 +162,7 @@ export function ProductsListPage() {
     data: products = [],
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: queryKeys.products.byTenant(tenant?.id || ''),
     queryFn: async () => {
@@ -142,34 +215,120 @@ export function ProductsListPage() {
     return Array.from(new Set(cats)).sort();
   }, [products]);
 
+  // Derived: unique vendors
+  const vendors = useMemo(() => {
+    const vends = products
+      .map((p) => p.vendor_name)
+      .filter((v): v is string => Boolean(v));
+    return Array.from(new Set(vends)).sort();
+  }, [products]);
+
+  // Derived: max price for filter slider
+  const maxPrice = useMemo(() => {
+    return Math.max(...products.map((p) => p.wholesale_price || 0), 100);
+  }, [products]);
+
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
     const searchLower = debouncedSearch.toLowerCase();
 
     return products
       .filter((product) => {
-        // Search filter
+        // Text search filter - across name, SKU, and description
         if (searchLower) {
           const matchesSearch =
             product.name?.toLowerCase().includes(searchLower) ||
             product.sku?.toLowerCase().includes(searchLower) ||
-            product.category?.toLowerCase().includes(searchLower);
+            product.description?.toLowerCase().includes(searchLower);
           if (!matchesSearch) return false;
         }
 
         // Category filter
-        if (categoryFilter !== 'all' && product.category !== categoryFilter) {
+        if (
+          advancedFilters.category !== 'all' &&
+          product.category !== advancedFilters.category
+        ) {
           return false;
         }
 
-        // Stock filter
+        // Vendor filter
+        if (
+          advancedFilters.vendor !== 'all' &&
+          product.vendor_name !== advancedFilters.vendor
+        ) {
+          return false;
+        }
+
+        // Stock status filter
         const qty = product.available_quantity || 0;
         const lowThreshold = product.low_stock_alert || 10;
 
-        if (stockFilter === 'in_stock' && qty <= 0) return false;
-        if (stockFilter === 'out_of_stock' && qty > 0) return false;
-        if (stockFilter === 'low_stock' && (qty <= 0 || qty > lowThreshold))
+        if (advancedFilters.stockStatus === 'in_stock' && qty <= 0) return false;
+        if (advancedFilters.stockStatus === 'out_of_stock' && qty > 0) return false;
+        if (
+          advancedFilters.stockStatus === 'low_stock' &&
+          (qty <= 0 || qty > lowThreshold)
+        )
           return false;
+
+        // Price range filter
+        const price = product.wholesale_price || 0;
+        if (advancedFilters.priceMin !== null && price < advancedFilters.priceMin) {
+          return false;
+        }
+        if (advancedFilters.priceMax !== null && price > advancedFilters.priceMax) {
+          return false;
+        }
+
+        // Compliance status filter (based on COA/lab results presence)
+        if (advancedFilters.complianceStatus !== 'all') {
+          const hasCoa = Boolean(product.coa_url || product.lab_results_url);
+          if (advancedFilters.complianceStatus === 'compliant' && !hasCoa) {
+            return false;
+          }
+          if (advancedFilters.complianceStatus === 'non_compliant' && hasCoa) {
+            return false;
+          }
+          // 'pending' is treated as products without COA that need review
+          if (advancedFilters.complianceStatus === 'pending' && hasCoa) {
+            return false;
+          }
+        }
+
+        // Menu status filter (listed/unlisted)
+        if (advancedFilters.menuStatus !== 'all') {
+          const isListed = product.menu_visibility === true;
+          if (advancedFilters.menuStatus === 'listed' && !isListed) {
+            return false;
+          }
+          if (advancedFilters.menuStatus === 'unlisted' && isListed) {
+            return false;
+          }
+        }
+
+        // Archive status filter
+        const isArchived = Boolean(product.archived_at);
+        if (advancedFilters.archiveStatus === 'active' && isArchived) {
+          return false;
+        }
+        if (advancedFilters.archiveStatus === 'archived' && !isArchived) {
+          return false;
+        }
+        // 'all' shows both active and archived products
+
+        // Created date range filter
+        if (advancedFilters.createdAfter && product.created_at) {
+          const createdDate = new Date(product.created_at);
+          if (createdDate < advancedFilters.createdAfter) {
+            return false;
+          }
+        }
+        if (advancedFilters.createdBefore && product.created_at) {
+          const createdDate = new Date(product.created_at);
+          if (createdDate > advancedFilters.createdBefore) {
+            return false;
+          }
+        }
 
         return true;
       })
@@ -187,7 +346,23 @@ export function ProductsListPage() {
             return 0;
         }
       });
-  }, [products, debouncedSearch, categoryFilter, stockFilter, sortBy]);
+  }, [products, debouncedSearch, advancedFilters, sortBy]);
+
+  // Check if any advanced filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      advancedFilters.category !== 'all' ||
+      advancedFilters.vendor !== 'all' ||
+      advancedFilters.stockStatus !== 'all' ||
+      advancedFilters.priceMin !== null ||
+      advancedFilters.priceMax !== null ||
+      advancedFilters.complianceStatus !== 'all' ||
+      advancedFilters.menuStatus !== 'all' ||
+      advancedFilters.archiveStatus !== 'active' ||
+      advancedFilters.createdAfter !== null ||
+      advancedFilters.createdBefore !== null
+    );
+  }, [advancedFilters]);
 
   // Stats
   const stats = useMemo(() => {
@@ -246,6 +421,11 @@ export function ProductsListPage() {
       setSelectedProducts(filteredProducts.map((p) => p.id));
     }
   }, [selectedProducts.length, filteredProducts]);
+
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+    triggerHaptic('light');
+  }, [refetch]);
 
   // Virtual scrolling for grid view
   // Calculate items per row dynamically based on viewport
@@ -307,7 +487,14 @@ export function ProductsListPage() {
       accessorKey: 'name',
       cell: (product) => (
         <div className="flex flex-col">
-          <span className="font-medium">{product.name}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{product.name}</span>
+            {product.archived_at && (
+              <Badge variant="secondary" className="text-xs">
+                Archived
+              </Badge>
+            )}
+          </div>
           {product.sku && (
             <span className="text-xs text-muted-foreground">
               SKU: {product.sku}
@@ -368,6 +555,21 @@ export function ProductsListPage() {
             <DropdownMenuItem>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
             </DropdownMenuItem>
+            {product.archived_at ? (
+              <DropdownMenuItem
+                onClick={() => unarchiveProduct(product.id)}
+                disabled={isArchiveLoading}
+              >
+                <ArchiveRestore className="mr-2 h-4 w-4" /> Restore
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => archiveProduct(product.id)}
+                disabled={isArchiveLoading}
+              >
+                <Archive className="mr-2 h-4 w-4" /> Archive
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => handleDelete(product.id)}
@@ -479,6 +681,7 @@ export function ProductsListPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -544,60 +747,26 @@ export function ProductsListPage() {
         </Card>
       </div>
 
-      {/* Filters and View Toggle */}
+      {/* Search and Filters */}
       <div className="flex flex-col gap-3">
+        {/* Search Bar */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          {/* Search */}
           <div className="w-full sm:flex-1">
             <SearchInput
-              placeholder="Search products, SKU, category..."
+              placeholder="Search by name, SKU, or description..."
               onSearch={setSearchTerm}
               defaultValue={searchTerm}
               className="w-full"
             />
           </div>
-        </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 justify-between">
-          <div className="flex gap-2 flex-wrap sm:flex-nowrap w-full">
-            {/* Category Filter */}
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Stock Filter */}
-            <Select
-              value={stockFilter}
-              onValueChange={(v) => setStockFilter(v as StockFilter)}
-            >
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Stock Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any Status</SelectItem>
-                <SelectItem value="in_stock">In Stock</SelectItem>
-                <SelectItem value="low_stock">Low Stock</SelectItem>
-                <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
+          {/* Sort Dropdown and View Toggle */}
+          <div className="flex items-center gap-2">
             <Select
               value={sortBy}
               onValueChange={(v) => setSortBy(v as SortOption)}
             >
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -607,28 +776,37 @@ export function ProductsListPage() {
                 <SelectItem value="category">Category</SelectItem>
               </SelectContent>
             </Select>
-          </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
-            <Toggle
-              pressed={viewMode === 'grid'}
-              onPressedChange={() => setViewMode('grid')}
-              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
-              aria-label="Grid view"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Toggle>
-            <Toggle
-              pressed={viewMode === 'table'}
-              onPressedChange={() => setViewMode('table')}
-              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
-              aria-label="Table view"
-            >
-              <List className="h-4 w-4" />
-            </Toggle>
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
+              <Toggle
+                pressed={viewMode === 'grid'}
+                onPressedChange={() => setViewMode('grid')}
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
+                aria-label="Grid view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={viewMode === 'table'}
+                onPressedChange={() => setViewMode('table')}
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
+                aria-label="Table view"
+              >
+                <List className="h-4 w-4" />
+              </Toggle>
+            </div>
           </div>
         </div>
+
+        {/* Advanced Filters */}
+        <ProductAdvancedFilters
+          filters={advancedFilters}
+          onFiltersChange={handleAdvancedFiltersChange}
+          categories={categories}
+          vendors={vendors}
+          maxPrice={maxPrice}
+        />
       </div>
 
       {/* Products Display */}
@@ -637,9 +815,21 @@ export function ProductsListPage() {
           <div className="flex items-center justify-between">
             <CardTitle>Products ({filteredProducts.length})</CardTitle>
             {selectedProducts.length > 0 && (
-              <Badge variant="secondary">
-                {selectedProducts.length} selected
-              </Badge>
+              <div className="flex items-center gap-2">
+                {selectedProducts.length >= 2 && selectedProducts.length <= 4 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowComparison(true)}
+                  >
+                    <GitCompare className="h-4 w-4 mr-2" />
+                    Compare ({selectedProducts.length})
+                  </Button>
+                )}
+                <Badge variant="secondary">
+                  {selectedProducts.length} selected
+                </Badge>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -721,17 +911,17 @@ export function ProductsListPage() {
             <EnhancedEmptyState
               type="no_products"
               title={
-                searchTerm || categoryFilter !== 'all' || stockFilter !== 'all'
+                searchTerm || hasActiveFilters
                   ? 'No products found'
                   : undefined
               }
               description={
-                searchTerm || categoryFilter !== 'all' || stockFilter !== 'all'
-                  ? 'Try adjusting your filters to find products'
+                searchTerm || hasActiveFilters
+                  ? 'Try adjusting your search or filters to find products'
                   : undefined
               }
               primaryAction={
-                !searchTerm && categoryFilter === 'all' && stockFilter === 'all'
+                !searchTerm && !hasActiveFilters
                   ? {
                       label: 'Add Product',
                       onClick: handleAddProduct,
@@ -744,7 +934,15 @@ export function ProductsListPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Product Comparison Dialog */}
+      <ProductComparison
+        productIds={selectedProducts}
+        open={showComparison}
+        onClose={() => setShowComparison(false)}
+      />
     </div>
+    </PullToRefresh>
   );
 }
 

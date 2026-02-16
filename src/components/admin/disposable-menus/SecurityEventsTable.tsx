@@ -58,7 +58,7 @@ export const SecurityEventsTable = ({ events, onRefresh }: SecurityEventsTablePr
 
       toast.success('Security event acknowledged');
       onRefresh?.();
-    } catch (error) {
+    } catch {
       toast.error('Failed to acknowledge event');
     }
   };

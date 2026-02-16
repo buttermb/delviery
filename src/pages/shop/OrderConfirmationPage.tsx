@@ -6,10 +6,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useShop } from './ShopLayout';
-import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -24,7 +23,6 @@ export function OrderConfirmationPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { store } = useShop();
-  const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [cartCleared, setCartCleared] = useState(false);

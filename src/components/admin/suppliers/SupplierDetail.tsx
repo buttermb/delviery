@@ -15,7 +15,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  DollarSign,
   Edit,
   X,
   Calendar,

@@ -115,7 +115,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
     }
   }, [returnAuth, open]);
 
-  const generateRANumber = () => {
+  const _generateRANumber = () => {
     const prefix = "RA";
     const timestamp = Date.now().toString().slice(-6);
     return `${prefix}-${timestamp}`;
@@ -141,7 +141,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
   };
 
   const createMutation = useMutation({
-    mutationFn: async (data: { order_id: string; reason: string; items: Array<{ product_id: string; quantity: number; reason?: string }> }) => {
+    mutationFn: async (_data: { order_id: string; reason: string; items: Array<{ product_id: string; quantity: number; reason?: string }> }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       // Use the edge function for return processing

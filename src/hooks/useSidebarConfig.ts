@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
  * - Applies user preferences
  */
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useOperationSize } from './useOperationSize';
 import { useSidebarPreferences } from './useSidebarPreferences';
 import { usePermissions } from './usePermissions';
@@ -24,8 +24,8 @@ import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
 import { generateHotItems, getBusinessContext } from '@/lib/sidebar/hotItemsLogic';
 import { getLayoutPreset } from '@/lib/sidebar/layoutPresets';
 import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
-import { ESSENTIAL_FEATURES, FEATURE_REGISTRY } from '@/lib/sidebar/featureRegistry';
-import type { SidebarSection, HotItem } from '@/types/sidebar';
+import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
+import type { HotItem } from '@/types/sidebar';
 
 /**
  * Main hook to get complete sidebar configuration

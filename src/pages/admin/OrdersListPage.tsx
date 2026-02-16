@@ -2,25 +2,29 @@
  * Orders List Page
  * Clean DataTable view of all orders with pagination, filtering, and bulk actions.
  * Uses the DataTable component for consistent table UX.
+ * Enhanced with cross-module filters for customer, product, payment status, delivery status,
+ * date range, order total range, and order source.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 import { DataTable } from '@/components/shared/DataTable';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { OrderFilters, useOrderFilters } from '@/components/admin/orders/OrderFilters';
+import type { ActiveFilters, DateRangeValue } from '@/components/admin/shared/FilterBar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,12 +59,15 @@ interface Order {
   user_id: string;
   courier_id?: string;
   order_source?: string;
+  payment_status?: string;
+  delivery_status?: string;
   tenant_id: string;
   user?: {
     full_name: string | null;
     email: string | null;
     phone: string | null;
   };
+  products?: string[];
 }
 
 // Status badge helper
@@ -101,15 +108,24 @@ export function OrdersListPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Fetch orders
+  // Use the order filters hook for state management with persistence
+  const {
+    filters: activeFilters,
+    setFilters: setActiveFilters,
+    clearFilters,
+    searchValue,
+    setSearchValue,
+  } = useOrderFilters('orders-list-filters');
+
+  // Fetch orders with cross-module data
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.orders.list({ tenantId: tenant?.id, status: statusFilter }),
+    queryKey: queryKeys.orders.list(tenant?.id, { filters: activeFilters }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = (supabase as any)
+      // Fetch orders with extended fields
+      const { data: ordersData, error } = await (supabase as any)
         .from('orders')
         .select(`
           id,
@@ -119,16 +135,11 @@ export function OrdersListPage() {
           total_amount,
           user_id,
           courier_id,
-          tenant_id
+          tenant_id,
+          payment_status
         `)
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data: ordersData, error } = await query;
 
       if (error) {
         logger.error('Failed to fetch orders', { error });
@@ -136,7 +147,8 @@ export function OrdersListPage() {
       }
 
       // Fetch user profiles for orders
-      const userIds = [...new Set((ordersData || []).map((o: Record<string, unknown>) => o.user_id as string).filter(Boolean))] as string[];
+      const ordersList = (ordersData || []) as any[];
+      const userIds = [...new Set(ordersList.map((o: any) => o.user_id).filter(Boolean))] as string[];
       let profilesMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
 
       if (userIds.length > 0) {
@@ -158,25 +170,160 @@ export function OrdersListPage() {
         }, {} as Record<string, { full_name: string | null; email: string | null; phone: string | null }>);
       }
 
-      // Merge orders with user data
-      return (ordersData || []).map((order: Record<string, unknown>) => ({
-        id: order.id as string,
-        order_number: order.order_number as string,
-        created_at: order.created_at as string,
-        status: order.status as string,
-        total_amount: order.total_amount as number,
-        user_id: order.user_id as string,
-        courier_id: order.courier_id as string | undefined,
-        tenant_id: order.tenant_id as string,
-        order_source: order.order_source as string | undefined,
-        delivery_method: undefined, // Column doesn't exist
-        user: order.user_id ? profilesMap[order.user_id as string] : undefined,
+      // Fetch order items for product filtering
+      const orderIds = ordersList.map((o: any) => o.id);
+      let orderProductsMap: Record<string, string[]> = {};
+
+      if (orderIds.length > 0) {
+        const { data: orderItemsData } = await supabase
+          .from('order_items')
+          .select('order_id, product_id, products:product_id(name)')
+          .in('order_id', orderIds);
+
+        if (orderItemsData) {
+          orderProductsMap = orderItemsData.reduce((acc, item) => {
+            const orderId = item.order_id;
+            const productName = (item.products as { name?: string } | null)?.name || '';
+            if (!acc[orderId]) acc[orderId] = [];
+            if (productName) acc[orderId].push(productName);
+            return acc;
+          }, {} as Record<string, string[]>);
+        }
+      }
+
+      // Fetch delivery statuses for orders
+      let deliveryStatusMap: Record<string, string> = {};
+      if (orderIds.length > 0) {
+        const { data: deliveriesData } = await (supabase as any)
+          .from('deliveries')
+          .select('order_id, status')
+          .in('order_id', orderIds);
+
+        if (deliveriesData) {
+          deliveryStatusMap = (deliveriesData as any[]).reduce((acc: Record<string, string>, d: any) => {
+            if (d.order_id) acc[d.order_id] = d.status || 'pending';
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      }
+
+      // Merge orders with related data
+      return ordersList.map((order: any) => ({
+        id: order.id,
+        order_number: order.order_number || '',
+        created_at: order.created_at || '',
+        status: order.status || 'pending',
+        total_amount: order.total_amount || 0,
+        user_id: order.user_id || '',
+        courier_id: order.courier_id || undefined,
+        tenant_id: order.tenant_id || '',
+        order_source: undefined,
+        payment_status: order.payment_status || undefined,
+        delivery_status: deliveryStatusMap[order.id] || undefined,
+        delivery_method: undefined,
+        user: order.user_id ? profilesMap[order.user_id] : undefined,
+        products: orderProductsMap[order.id] || [],
       })) as Order[];
     },
     enabled: !!tenant?.id,
     staleTime: 30000,
     gcTime: 120000,
   });
+
+  // Apply client-side filters with AND logic
+  const filteredOrders = useMemo(() => {
+    if (!orders.length) return [];
+
+    return orders.filter((order) => {
+      // Search filter (order number or customer name)
+      if (searchValue) {
+        const searchLower = searchValue.toLowerCase();
+        const matchesOrderNumber = order.order_number?.toLowerCase().includes(searchLower);
+        const matchesCustomer = order.user?.full_name?.toLowerCase().includes(searchLower);
+        if (!matchesOrderNumber && !matchesCustomer) return false;
+      }
+
+      // Status filter
+      if (activeFilters.status && order.status !== activeFilters.status) {
+        return false;
+      }
+
+      // Customer name filter
+      if (activeFilters.customerName) {
+        const customerName = order.user?.full_name?.toLowerCase() || '';
+        if (!customerName.includes((activeFilters.customerName as string).toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Product name filter
+      if (activeFilters.productName) {
+        const productFilter = (activeFilters.productName as string).toLowerCase();
+        const hasProduct = order.products?.some((p) =>
+          p.toLowerCase().includes(productFilter)
+        );
+        if (!hasProduct) return false;
+      }
+
+      // Payment status filter
+      if (activeFilters.paymentStatus && order.payment_status !== activeFilters.paymentStatus) {
+        return false;
+      }
+
+      // Delivery status filter
+      if (activeFilters.deliveryStatus && order.delivery_status !== activeFilters.deliveryStatus) {
+        return false;
+      }
+
+      // Order source filter
+      if (activeFilters.orderSource && order.order_source !== activeFilters.orderSource) {
+        return false;
+      }
+
+      // Date range filter
+      if (activeFilters.dateRange) {
+        const dateRange = activeFilters.dateRange as DateRangeValue;
+        if (dateRange.from || dateRange.to) {
+          const orderDate = order.created_at ? parseISO(order.created_at) : null;
+          if (!orderDate) return false;
+
+          if (dateRange.from && dateRange.to) {
+            const isInRange = isWithinInterval(orderDate, {
+              start: startOfDay(parseISO(dateRange.from)),
+              end: endOfDay(parseISO(dateRange.to)),
+            });
+            if (!isInRange) return false;
+          } else if (dateRange.from) {
+            if (orderDate < startOfDay(parseISO(dateRange.from))) return false;
+          } else if (dateRange.to) {
+            if (orderDate > endOfDay(parseISO(dateRange.to))) return false;
+          }
+        }
+      }
+
+      // Total amount range filter
+      const minTotal = activeFilters.minTotal ? parseFloat(activeFilters.minTotal as string) : null;
+      const maxTotal = activeFilters.maxTotal ? parseFloat(activeFilters.maxTotal as string) : null;
+
+      if (minTotal !== null && !isNaN(minTotal) && order.total_amount < minTotal) {
+        return false;
+      }
+
+      if (maxTotal !== null && !isNaN(maxTotal) && order.total_amount > maxTotal) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [orders, activeFilters, searchValue]);
+
+  // Handle filter changes
+  const handleFiltersChange = useCallback(
+    (newFilters: ActiveFilters) => {
+      setActiveFilters(newFilters);
+    },
+    [setActiveFilters]
+  );
 
   // Update status mutation
   const updateStatusMutation = useMutation({
@@ -220,14 +367,14 @@ export function OrdersListPage() {
     },
   });
 
-  // Calculate stats
+  // Calculate stats based on filtered orders
   const stats = useMemo(() => ({
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'pending').length,
-    inProgress: orders.filter(o => ['confirmed', 'preparing', 'in_transit'].includes(o.status)).length,
-    completed: orders.filter(o => ['delivered', 'completed'].includes(o.status)).length,
-    cancelled: orders.filter(o => o.status === 'cancelled').length,
-  }), [orders]);
+    total: filteredOrders.length,
+    pending: filteredOrders.filter(o => o.status === 'pending').length,
+    inProgress: filteredOrders.filter(o => ['confirmed', 'preparing', 'in_transit'].includes(o.status)).length,
+    completed: filteredOrders.filter(o => ['delivered', 'completed'].includes(o.status)).length,
+    cancelled: filteredOrders.filter(o => o.status === 'cancelled').length,
+  }), [filteredOrders]);
 
   // DataTable columns
   const columns = useMemo(() => [
@@ -363,12 +510,6 @@ export function OrdersListPage() {
     }
   };
 
-  // Bulk delete handler
-  const handleBulkDelete = (selectedOrders: Order[]) => {
-    if (selectedOrders.length === 0) return;
-    deleteMutation.mutate(selectedOrders.map(o => o.id));
-  };
-
   // Loading state
   if (isLoading) {
     return (
@@ -464,39 +605,31 @@ export function OrdersListPage() {
         </Card>
       </div>
 
-      {/* Filter */}
-      <div className="flex items-center gap-4">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="confirmed">Confirmed</SelectItem>
-            <SelectItem value="preparing">Preparing</SelectItem>
-            <SelectItem value="in_transit">In Transit</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Enhanced Filters with Cross-Module Data */}
+      <OrderFilters
+        filters={activeFilters}
+        onFiltersChange={handleFiltersChange}
+        onClear={clearFilters}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        storageKey="orders-list-filters"
+      />
 
       {/* DataTable */}
       <DataTable
         columns={columns}
-        data={orders}
-        searchable
-        searchPlaceholder="Search orders..."
-        searchColumn="order_number"
+        data={filteredOrders}
         pagination
         pageSize={25}
         loading={isLoading}
-        emptyMessage="No orders found"
+        emptyMessage={
+          Object.keys(activeFilters).length > 0 || searchValue
+            ? "No orders match your filters"
+            : "No orders found"
+        }
         enableSelection
         enableColumnVisibility
-        onSelectionChange={(selected) => {
+        onSelectionChange={(_selected) => {
           // Selection is handled internally, bulk actions shown in toolbar
         }}
         bulkActions={

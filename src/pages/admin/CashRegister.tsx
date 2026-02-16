@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
-import { usePOSSale } from '@/hooks/usePOSSale';
+import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
 interface Product {
   id: string;
@@ -160,13 +160,16 @@ function CashRegisterContent() {
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
 
   // Tax state
-  const [taxRate, setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
-  const [taxEnabled, setTaxEnabled] = useState<boolean>(true);
+  const [taxRate, _setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
+  const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
 
   // Customer state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+
+  // Customer credit balance (for showing available store credit)
+  const { balance: customerCreditBalance } = useCustomerCredit(selectedCustomer?.id);
 
   // Clear cart confirmation
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false);
@@ -220,7 +223,7 @@ function CashRegisterContent() {
 
   // Load customers for selection
   const { data: customers = [] } = useQuery({
-    queryKey: queryKeys.customers.list({ tenantId }),
+    queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       try {
@@ -256,20 +259,7 @@ function CashRegisterContent() {
 
       try {
         // pos_transactions table may not be in generated types yet
-        const client = supabase as unknown as {
-          from: (table: string) => {
-            select: (cols: string) => {
-              eq: (col: string, val: string) => {
-                order: (col: string, opts: { ascending: boolean }) => {
-                  limit: (n: number) => Promise<{
-                    data: POSTransaction[] | null;
-                    error: { code?: string; message?: string } | null;
-                  }>;
-                };
-              };
-            };
-          };
-        };
+        const client = supabase as any;
         const { data, error } = await client
           .from('pos_transactions')
           .select('*')
@@ -400,12 +390,7 @@ function CashRegisterContent() {
       }));
 
       // Use atomic RPC - prevents race conditions on inventory
-      const rpcClient = supabase as unknown as {
-        rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-          data: POSTransactionResult | null;
-          error: { code?: string; message?: string } | null;
-        }>;
-      };
+      const rpcClient = supabase as any;
       const { data: rpcResult, error: rpcError } = await rpcClient.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: items,
@@ -918,10 +903,18 @@ function CashRegisterContent() {
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
                 {selectedCustomer ? (
-                  <div>
-                    <span className="font-medium text-sm">{selectedCustomer.name}</span>
-                    {selectedCustomer.phone && (
-                      <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <span className="font-medium text-sm">{selectedCustomer.name}</span>
+                      {selectedCustomer.phone && (
+                        <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
+                      )}
+                    </div>
+                    {customerCreditBalance > 0 && (
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
+                        <Wallet className="h-3 w-3 mr-1" />
+                        ${customerCreditBalance.toFixed(2)} credit
+                      </Badge>
                     )}
                   </div>
                 ) : (

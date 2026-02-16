@@ -7,14 +7,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useShop } from './ShopLayout';
-import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useStorefrontOrders, type OrderStatusFilter, type OrderFilters } from '@/hooks/useStorefrontOrders';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -28,12 +27,8 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  ShoppingCart,
-  Plus,
-  Filter,
   Calendar,
   Truck,
-  ArrowLeft,
   User,
   Receipt
 } from 'lucide-react';
@@ -70,14 +65,13 @@ const STATUS_COLORS: Record<string, string> = {
   out_for_delivery: 'bg-orange-100 text-orange-800 border-orange-200',
   delivered: 'bg-green-100 text-green-800 border-green-200',
   cancelled: 'bg-red-100 text-red-800 border-red-200',
-  refunded: 'bg-gray-100 text-gray-800 border-gray-200',
+  refunded: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700',
 };
 
 export function OrdersHubPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
-  const { isLuxuryTheme } = useLuxuryTheme();
   const { toast } = useToast();
 
   const [customerId, setCustomerId] = useState<string | null>(null);
@@ -116,7 +110,7 @@ export function OrdersHubPage() {
   }, [orderSearchInput]);
 
   // Fetch orders
-  const { orders, isLoading, orderStats, refetch } = useStorefrontOrders({
+  const { orders, isLoading, orderStats } = useStorefrontOrders({
     storeId: store?.id,
     customerId,
     filters: orderFilters,
@@ -142,7 +136,7 @@ export function OrdersHubPage() {
 
   const getStatusBadge = (status: string) => {
     return (
-      <Badge variant="outline" className={STATUS_COLORS[status] || 'bg-gray-100 text-gray-800'}>
+      <Badge variant="outline" className={STATUS_COLORS[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}>
         {status.replace('_', ' ')}
       </Badge>
     );
@@ -190,7 +184,7 @@ export function OrdersHubPage() {
   if (!isLoggedIn) {
     return (
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[60vh]">
-        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white">
+        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-zinc-950">
           <CardHeader className="text-center pb-2 pt-8">
             <div
               className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center shadow-inner"
@@ -230,7 +224,7 @@ export function OrdersHubPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-dvh bg-[#F5F7F8]">
+    <div className="container mx-auto px-4 py-8 min-h-dvh bg-shop-bg">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -241,7 +235,7 @@ export function OrdersHubPage() {
           <span className="text-foreground font-medium">Orders</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-950 p-6 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
               <Receipt className="w-8 h-8" style={{ color: store.primary_color }} />
@@ -277,7 +271,7 @@ export function OrdersHubPage() {
 
       {/* Filters and Tabs */}
       <Tabs value={orderFilters.status} onValueChange={handleTabChange} className="space-y-6">
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
+        <div className="bg-white dark:bg-zinc-950 p-4 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
           {/* Tab navigation */}
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <TabsList className="flex-wrap bg-neutral-100/50">
@@ -285,7 +279,7 @@ export function OrdersHubPage() {
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="flex items-center gap-2 data-[state=active]:bg-white"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
                 >
                   <tab.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
@@ -416,10 +410,10 @@ function OrderCard({
   onReorder: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   return (
-    <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white">
+    <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-zinc-950">
       <CardContent className="p-0">
         {/* Order Header */}
         <div
@@ -434,7 +428,7 @@ function OrderCard({
               {getStatusIcon(order.status)}
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-neutral-900">#{order.order_number}</p>
+              <p className="font-bold text-neutral-900">{`#${order.order_number}`}</p>
               <p className="text-sm text-neutral-500">
                 {formatSmartDate(order.created_at)} &bull; {order.items?.length || 0} item
                 {(order.items?.length || 0) !== 1 ? 's' : ''}
@@ -463,7 +457,7 @@ function OrderCard({
               <div className="space-y-3 mb-4">
                 <p className="text-sm font-semibold text-neutral-600">Order Items</p>
                 {order.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-neutral-100">
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-950 border border-neutral-100 dark:border-neutral-800">
                     <div className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />

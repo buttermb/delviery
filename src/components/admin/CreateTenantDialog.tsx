@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeSlugInput } from '@/lib/utils/sanitize';
+import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput } from '@/lib/utils/sanitize';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -39,7 +38,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
 
 type TenantLimits = {
   customers: number;
@@ -265,7 +263,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               name="business_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Name *</FormLabel>
+                  <FormLabel required>Business Name</FormLabel>
                   <FormControl>
                     <Input placeholder="BigMike Wholesale" {...field} />
                   </FormControl>
@@ -280,7 +278,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="owner_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Owner Name *</FormLabel>
+                    <FormLabel required>Owner Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Mike Johnson" {...field} />
                     </FormControl>
@@ -294,7 +292,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="owner_email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Owner Email *</FormLabel>
+                    <FormLabel required>Owner Email</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="mike@bigmike.com" {...field} />
                     </FormControl>
@@ -340,7 +338,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="subscription_plan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subscription Plan *</FormLabel>
+                    <FormLabel required>Subscription Plan</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -363,7 +361,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 name="subscription_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status *</FormLabel>
+                    <FormLabel required>Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>

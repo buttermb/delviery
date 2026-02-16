@@ -13,15 +13,10 @@ import {
   getCreditCost,
   getCreditCostInfo,
   CREDIT_PACKAGES,
-  FREE_TIER_MONTHLY_CREDITS,
 } from '../creditCosts';
 import {
   consumeCredits,
   checkCredits,
-  getCreditBalance,
-  type ConsumeCreditsResult,
-  type CreditBalance,
-  type CheckCreditsResult,
 } from '../creditService';
 
 // ============================================================================
@@ -316,7 +311,6 @@ describe('Credit Consumption Flow', () => {
     });
 
     it('should decrement to exactly zero when cost equals balance', async () => {
-      const balance = 100;
       const cost = getCreditCost('menu_create'); // 100
 
       mockRpc.mockResolvedValue({

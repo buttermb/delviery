@@ -2,13 +2,12 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useGeofencing } from '@/hooks/useGeofencing';
 import { useScreenshotProtection } from '@/hooks/useScreenshotProtection';
 import { useDeviceTracking } from '@/hooks/useDeviceTracking';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle, CheckCircle2, MapPin, Clock, Shield } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle2, MapPin } from 'lucide-react';
 import { EnhancedMenuProductGrid } from '@/components/menu/EnhancedMenuProductGrid';
 import { MenuHeader } from '@/components/menu/MenuHeader';
 import { CartButton } from '@/components/menu/CartButton';
@@ -16,26 +15,8 @@ import { CartDrawer } from '@/components/menu/CartDrawer';
 import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 import { MenuCartProvider } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
-import type { GeofenceRule } from '@/utils/geofencing';
 
-interface MenuData {
-  id: string;
-  title: string;
-  description: string | null;
-  expires_at: string;
-  geofence_enabled: boolean;
-  geofence_rules: GeofenceRule[];
-  time_restriction_enabled: boolean;
-  time_restriction_start: string | null;
-  time_restriction_end: string | null;
-  time_restriction_timezone: string;
-  screenshot_protection_enabled: boolean;
-  watermark_text: string | null;
-  invite_only: boolean;
-  max_views_per_customer: number | null;
-  view_time_period_days: number | null;
-  products: any[];
-}
+
 
 interface AccessValidation {
   access_granted: boolean;

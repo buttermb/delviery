@@ -5,7 +5,6 @@
  * for a specific tenant.
  */
 
-import { useState } from 'react';
 import {
   Coins,
   TrendingUp,
@@ -14,9 +13,7 @@ import {
   Clock,
   Gift,
   Users,
-  Activity,
   Edit,
-  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,8 +43,8 @@ export function TenantCreditDetailPanel({
 
   // Calculate percentages
   const balancePercent = Math.min(100, (credits.balance / FREE_TIER_MONTHLY_CREDITS) * 100);
-  const usedPercent = credits.lifetimeEarned > 0 
-    ? Math.min(100, (credits.lifetimeSpent / credits.lifetimeEarned) * 100) 
+  const _usedPercent = credits.lifetimeEarned > 0
+    ? Math.min(100, (credits.lifetimeSpent / credits.lifetimeEarned) * 100)
     : 0;
 
   // Format date

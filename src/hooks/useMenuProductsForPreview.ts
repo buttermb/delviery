@@ -18,6 +18,12 @@ export interface MenuProductPreview {
     strain_type: string | null;
     thc_content: number | null;
     cbd_content: number | null;
+    // Compliance fields
+    lab_name?: string | null;
+    lab_results_url?: string | null;
+    test_date?: string | null;
+    coa_url?: string | null;
+    batch_number?: string | null;
   } | null;
 }
 
@@ -30,35 +36,7 @@ export const useMenuProductsForPreview = (menuId: string | undefined, enabled = 
       }
 
       // Fetch menu products with joined product details from wholesale_inventory
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              order: (column: string, options: { ascending: boolean }) => Promise<{
-                data: Array<{
-                  id: string;
-                  product_id: string;
-                  custom_price: number | null;
-                  display_order: number;
-                  display_availability: boolean;
-                  wholesale_inventory: {
-                    id: string;
-                    product_name: string;
-                    description: string | null;
-                    base_price: number;
-                    image_url: string | null;
-                    category: string | null;
-                    strain_type: string | null;
-                    thc_content: number | null;
-                    cbd_content: number | null;
-                  } | null;
-                }> | null;
-                error: { message: string } | null;
-              }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('disposable_menu_products')
         .select(`
           id,

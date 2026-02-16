@@ -117,7 +117,7 @@ export default function CouponManager() {
             queryClient.invalidateQueries({ queryKey: ['marketplace-coupons'] });
             toast.success("Coupon deleted");
         },
-        onError: (err) => toast.error("Failed to delete coupon")
+        onError: () => toast.error("Failed to delete coupon")
     });
     
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

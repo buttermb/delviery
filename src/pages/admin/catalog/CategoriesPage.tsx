@@ -1,25 +1,29 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Search,
   Tag,
   Edit,
   Trash2,
-  Folder,
-  FolderOpen,
   ChevronRight,
   ChevronDown,
   AlertTriangle,
-  ArrowLeft
+  ArrowLeft,
+  Package,
+  DollarSign,
+  TrendingUp,
+  Crown,
+  ExternalLink,
 } from 'lucide-react';
 import {
   Dialog,
@@ -41,9 +45,40 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { logger } from '@/lib/logger';
+
+// Types for category stats
+interface CategoryStats {
+  categoryId: string;
+  productCount: number;
+  totalStockValue: number;
+  totalRevenue: number;
+  bestSeller: {
+    id: string;
+    name: string;
+    totalSold: number;
+  } | null;
+}
+
+interface Category {
+  id: string;
+  tenant_id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  parent_id: string | null;
+  color: string | null;
+  icon: string | null;
+  children?: Category[];
+}
+
+interface CategoryWithStats extends Category {
+  stats?: CategoryStats;
+}
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -51,7 +86,7 @@ export default function CategoriesPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -68,7 +103,7 @@ export default function CategoriesPage() {
   const [tableMissing, setTableMissing] = useState(false);
 
   // Fetch categories
-  const { data: categories, isLoading } = useQuery({
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: queryKeys.categories.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -87,10 +122,9 @@ export default function CategoriesPage() {
         }
         if (error) throw error;
         setTableMissing(false);
-        return data || [];
-        return data || [];
+        return (data || []) as unknown as Category[];
       } catch (error) {
-        if ((error as any)?.code === '42P01') {
+        if ((error as { code?: string })?.code === '42P01') {
           setTableMissing(true);
           return [];
         }
@@ -101,28 +135,151 @@ export default function CategoriesPage() {
     enabled: !!tenantId,
   });
 
-  // Build category tree
-  const buildCategoryTree = (categories: any[]) => {
-    const categoryMap = new Map();
-    const rootCategories: any[] = [];
+  // Fetch category stats (products, stock value, revenue, best seller)
+  const { data: categoryStats, isLoading: statsLoading } = useQuery({
+    queryKey: [...queryKeys.categories.list(tenantId), 'stats'],
+    queryFn: async () => {
+      if (!tenantId || !categories || categories.length === 0) return new Map<string, CategoryStats>();
+
+      try {
+        // Fetch products with their category_id
+        const { data: products, error: productsError } = await supabase
+          .from('products')
+          .select('id, name, category_id, available_quantity, cost_per_unit, retail_price')
+          .eq('tenant_id', tenantId);
+
+        if (productsError && productsError.code !== '42P01') {
+          logger.warn('Failed to fetch products for category stats', { error: productsError });
+        }
+
+        // Fetch order items to calculate revenue and best sellers
+        const { data: orderItems, error: orderItemsError } = await supabase
+          .from('order_items')
+          .select(`
+            product_id,
+            quantity,
+            price
+          `);
+
+        if (orderItemsError && orderItemsError.code !== '42P01') {
+          logger.warn('Failed to fetch order items for category stats', { error: orderItemsError });
+        }
+
+        // Build stats map
+        const statsMap = new Map<string, CategoryStats>();
+
+        // Initialize stats for each category
+        categories.forEach(cat => {
+          statsMap.set(cat.id, {
+            categoryId: cat.id,
+            productCount: 0,
+            totalStockValue: 0,
+            totalRevenue: 0,
+            bestSeller: null,
+          });
+        });
+
+        // Build product-to-category mapping and calculate product stats
+        const productCategoryMap = new Map<string, string>();
+        const productSalesMap = new Map<string, { name: string; totalSold: number; categoryId: string }>();
+
+        (products || []).forEach(product => {
+          if (product.category_id) {
+            productCategoryMap.set(product.id, product.category_id);
+
+            const stats = statsMap.get(product.category_id);
+            if (stats) {
+              stats.productCount += 1;
+              const stockValue = (product.available_quantity || 0) * (product.cost_per_unit || product.retail_price || 0);
+              stats.totalStockValue += stockValue;
+            }
+
+            productSalesMap.set(product.id, {
+              name: product.name,
+              totalSold: 0,
+              categoryId: product.category_id,
+            });
+          }
+        });
+
+        // Calculate revenue and sales per product
+        (orderItems || []).forEach(item => {
+          const categoryId = productCategoryMap.get(item.product_id);
+          if (categoryId) {
+            const stats = statsMap.get(categoryId);
+            if (stats) {
+              stats.totalRevenue += item.price * item.quantity;
+            }
+
+            const productSales = productSalesMap.get(item.product_id);
+            if (productSales) {
+              productSales.totalSold += item.quantity;
+            }
+          }
+        });
+
+        // Find best seller for each category
+        categories.forEach(cat => {
+          const stats = statsMap.get(cat.id);
+          if (stats) {
+            let bestSeller: { id: string; name: string; totalSold: number } | null = null;
+
+            productSalesMap.forEach((sales, productId) => {
+              if (sales.categoryId === cat.id && sales.totalSold > 0) {
+                if (!bestSeller || sales.totalSold > bestSeller.totalSold) {
+                  bestSeller = {
+                    id: productId,
+                    name: sales.name,
+                    totalSold: sales.totalSold,
+                  };
+                }
+              }
+            });
+
+            stats.bestSeller = bestSeller;
+          }
+        });
+
+        return statsMap;
+      } catch (error) {
+        logger.error('Failed to calculate category stats', { error });
+        return new Map<string, CategoryStats>();
+      }
+    },
+    enabled: !!tenantId && !!categories && categories.length > 0,
+    staleTime: 30000,
+  });
+
+  // Build category tree with stats
+  const buildCategoryTree = useCallback((categoriesList: Category[]): CategoryWithStats[] => {
+    const categoryMap = new Map<string, CategoryWithStats>();
+    const rootCategories: CategoryWithStats[] = [];
 
     // First pass: create map of all categories
-    categories.forEach(cat => {
-      categoryMap.set(cat.id, { ...cat, children: [] });
+    categoriesList.forEach(cat => {
+      categoryMap.set(cat.id, {
+        ...cat,
+        children: [],
+        stats: categoryStats?.get(cat.id),
+      });
     });
 
     // Second pass: build tree structure
-    categories.forEach(cat => {
+    categoriesList.forEach(cat => {
       const category = categoryMap.get(cat.id);
-      if (cat.parent_id && categoryMap.has(cat.parent_id)) {
-        categoryMap.get(cat.parent_id).children.push(category);
-      } else {
+      if (category && cat.parent_id && categoryMap.has(cat.parent_id)) {
+        const parent = categoryMap.get(cat.parent_id);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(category);
+        }
+      } else if (category) {
         rootCategories.push(category);
       }
     });
 
     return rootCategories;
-  };
+  }, [categoryStats]);
 
   // Create category
   const createCategory = useMutation({
@@ -159,7 +316,7 @@ export default function CategoriesPage() {
 
   // Update category
   const updateCategory = useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
+    mutationFn: async ({ id, ...updates }: Category) => {
       if (!tenantId) throw new Error('Tenant ID missing');
       const { error } = await supabase
         .from('categories')
@@ -202,7 +359,7 @@ export default function CategoriesPage() {
     }
   });
 
-  const toggleCategory = (id: string) => {
+  const toggleCategory = useCallback((id: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -212,30 +369,68 @@ export default function CategoriesPage() {
       }
       return next;
     });
+  }, []);
+
+  const navigateToFilteredProducts = useCallback((categoryId: string) => {
+    const basePath = tenantSlug ? `/${tenantSlug}` : '';
+    navigate(`${basePath}/admin/products?category_id=${categoryId}`);
+  }, [navigate, tenantSlug]);
+
+  const filteredCategories = useMemo(() => {
+    return categories?.filter(cat =>
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cat.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+  }, [categories, searchQuery]);
+
+  const categoryTree = useMemo(() => buildCategoryTree(filteredCategories), [buildCategoryTree, filteredCategories]);
+
+  // Calculate aggregate stats
+  const aggregateStats = useMemo(() => {
+    if (!categoryStats) return { totalProducts: 0, totalStockValue: 0, totalRevenue: 0 };
+
+    let totalProducts = 0;
+    let totalStockValue = 0;
+    let totalRevenue = 0;
+
+    categoryStats.forEach(stats => {
+      totalProducts += stats.productCount;
+      totalStockValue += stats.totalStockValue;
+      totalRevenue += stats.totalRevenue;
+    });
+
+    return { totalProducts, totalStockValue, totalRevenue };
+  }, [categoryStats]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
-  const filteredCategories = categories?.filter(cat =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cat.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const isLoading = categoriesLoading || statsLoading;
 
-  const categoryTree = buildCategoryTree(filteredCategories || []);
-
-  const renderCategory = (category: any, level = 0) => {
+  const renderCategory = (category: CategoryWithStats, level = 0) => {
     const hasChildren = category.children && category.children.length > 0;
     const isExpanded = expandedCategories.has(category.id);
+    const stats = category.stats;
 
     return (
       <div key={category.id} className="mb-2">
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors ${level > 0 ? 'ml-6' : ''
-            }`}
+          className={`flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors ${
+            level > 0 ? 'ml-6' : ''
+          }`}
         >
-          {hasChildren && (
+          {/* Expand/Collapse */}
+          {hasChildren ? (
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="h-6 w-6 shrink-0"
               onClick={() => toggleCategory(category.id)}
             >
               {isExpanded ? (
@@ -244,17 +439,20 @@ export default function CategoriesPage() {
                 <ChevronRight className="h-4 w-4" />
               )}
             </Button>
+          ) : (
+            <div className="w-6 shrink-0" />
           )}
-          {!hasChildren && <div className="w-6" />}
 
+          {/* Color indicator */}
           <div
-            className="w-4 h-4 rounded-full"
+            className="w-4 h-4 rounded-full shrink-0"
             style={{ backgroundColor: category.color || '#3B82F6' }}
           />
 
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <p className="font-medium">{category.name}</p>
+          {/* Category info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-medium truncate">{category.name}</p>
               {category.slug && (
                 <Badge variant="outline" className="text-xs">
                   {category.slug}
@@ -262,14 +460,58 @@ export default function CategoriesPage() {
               )}
             </div>
             {category.description && (
-              <p className="text-sm text-muted-foreground">{category.description}</p>
+              <p className="text-sm text-muted-foreground truncate">{category.description}</p>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Stats */}
+          <div className="hidden md:flex items-center gap-4 shrink-0">
+            {/* Product Count */}
+            <div className="flex items-center gap-1.5 text-sm">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{stats?.productCount ?? 0}</span>
+              <span className="text-muted-foreground">products</span>
+            </div>
+
+            {/* Stock Value */}
+            <div className="flex items-center gap-1.5 text-sm">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{formatCurrency(stats?.totalStockValue ?? 0)}</span>
+              <span className="text-muted-foreground">stock</span>
+            </div>
+
+            {/* Revenue */}
+            <div className="flex items-center gap-1.5 text-sm">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span className="font-medium text-green-600">{formatCurrency(stats?.totalRevenue ?? 0)}</span>
+            </div>
+
+            {/* Best Seller */}
+            {stats?.bestSeller && (
+              <div className="flex items-center gap-1.5 text-sm max-w-[150px]">
+                <Crown className="h-4 w-4 text-yellow-500 shrink-0" />
+                <span className="truncate text-muted-foreground" title={stats.bestSeller.name}>
+                  {stats.bestSeller.name}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1 shrink-0">
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8"
+              onClick={() => navigateToFilteredProducts(category.id)}
+              title="View products"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setEditingCategory(category)}
             >
               <Edit className="h-4 w-4" />
@@ -277,6 +519,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8"
               onClick={() => {
                 setCategoryToDelete({ id: category.id, name: category.name });
                 setDeleteDialogOpen(true);
@@ -287,9 +530,27 @@ export default function CategoriesPage() {
           </div>
         </div>
 
+        {/* Mobile stats row */}
+        <div className="md:hidden ml-12 mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Package className="h-3 w-3" /> {stats?.productCount ?? 0} products
+          </span>
+          <span className="flex items-center gap-1">
+            <DollarSign className="h-3 w-3" /> {formatCurrency(stats?.totalStockValue ?? 0)} stock
+          </span>
+          <span className="flex items-center gap-1 text-green-600">
+            <TrendingUp className="h-3 w-3" /> {formatCurrency(stats?.totalRevenue ?? 0)} revenue
+          </span>
+          {stats?.bestSeller && (
+            <span className="flex items-center gap-1">
+              <Crown className="h-3 w-3 text-yellow-500" /> {stats.bestSeller.name}
+            </span>
+          )}
+        </div>
+
         {hasChildren && isExpanded && (
-          <div className="ml-6">
-            {category.children.map((child: any) => renderCategory(child, level + 1))}
+          <div className="ml-6 mt-2">
+            {category.children?.map((child) => renderCategory(child as CategoryWithStats, level + 1))}
           </div>
         )}
       </div>
@@ -321,28 +582,58 @@ export default function CategoriesPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{categories?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">Total Categories</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Tag className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{categories?.length || 0}</div>
+                <p className="text-xs text-muted-foreground">Total Categories</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
-              {categories?.filter(c => !c.parent_id).length || 0}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Package className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{aggregateStats.totalProducts}</div>
+                <p className="text-xs text-muted-foreground">Total Products</p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">Top-Level Categories</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
-              {categories?.filter(c => c.parent_id).length || 0}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-500/10 rounded-lg">
+                <DollarSign className="h-5 w-5 text-yellow-500" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{formatCurrency(aggregateStats.totalStockValue)}</div>
+                <p className="text-xs text-muted-foreground">Total Stock Value</p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">Sub-Categories</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-600">{formatCurrency(aggregateStats.totalRevenue)}</div>
+                <p className="text-xs text-muted-foreground">Total Revenue</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -364,7 +655,25 @@ export default function CategoriesPage() {
 
       {/* Categories Tree */}
       {isLoading ? (
-        <div className="text-center py-12">Loading categories...</div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+                  <Skeleton className="h-6 w-6 rounded-full" />
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-5 w-32 mb-1" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       ) : tableMissing ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -573,4 +882,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-

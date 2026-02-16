@@ -3,16 +3,16 @@
  * Premium demos with clean white/slate aesthetic matching website branding.
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft, ChevronRight, Play, Pause,
+  Play, Pause,
   LayoutDashboard, ShoppingCart, Package, QrCode, BarChart3, Truck,
-  Maximize2, Scan, Bell, Search, Menu, MoreVertical, Filter, Download,
-  Plus, Users, Settings, LogOut, Map, Grid, List, Smartphone,
-  ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertCircle,
-  DollarSign, TrendingUp, Calendar, Lock, Shield, Eye, ShieldCheck, Key,
-  MessageSquare, User, Zap, Navigation
+  Bell, Search, MoreVertical, Filter, Download,
+  Plus, Users, Settings, LogOut,
+  ArrowUpRight, ArrowDownRight, AlertCircle,
+  TrendingUp, Calendar, Lock, ShieldCheck,
+  MessageSquare, Zap, Navigation
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useShouldReduceAnimations } from "@/hooks/useReducedMotion";

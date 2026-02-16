@@ -3,6 +3,7 @@
  * Reusable card component for displaying key performance indicators
  */
 
+import { Link, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
@@ -15,9 +16,11 @@ export interface KPICardProps {
   description: string;
   variant?: 'default' | 'warning' | 'success' | 'destructive';
   trend?: { value: number; label: string };
+  href?: string;
 }
 
-export function KPICard({ title, value, icon, description, variant = 'default', trend }: KPICardProps) {
+export function KPICard({ title, value, icon, description, variant = 'default', trend, href }: KPICardProps) {
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const variantClasses = {
     default: 'text-primary',
     warning: 'text-orange-500',
@@ -25,8 +28,12 @@ export function KPICard({ title, value, icon, description, variant = 'default', 
     destructive: 'text-red-600',
   };
 
-  return (
-    <Card className="hover:shadow-md transition-shadow">
+  const fullPath = href && tenantSlug
+    ? `/${tenantSlug}${href}`
+    : href;
+
+  const card = (
+    <Card className={`hover:shadow-md transition-shadow${fullPath ? ' cursor-pointer hover:scale-[1.01] transition-all' : ''}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <div className={variantClasses[variant]}>
@@ -52,6 +59,12 @@ export function KPICard({ title, value, icon, description, variant = 'default', 
       </CardContent>
     </Card>
   );
+
+  if (fullPath) {
+    return <Link to={fullPath} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">{card}</Link>;
+  }
+
+  return card;
 }
 
 export function KPICardSkeleton() {

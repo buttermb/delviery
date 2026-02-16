@@ -11,8 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatPercentage } from '@/lib/utils/formatPercentage';
-import { formatSmartDate } from '@/lib/utils/formatDate';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 
 export function RevenueChartWidget() {
   const { account } = useAccount();
@@ -32,8 +31,7 @@ export function RevenueChartWidget() {
       }
 
       // Get orders from last 30 days
-      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
-      const { data: orders } = await supabase
+      const { data: orders } = await (supabase as any)
         .from('wholesale_orders')
         .select('total_amount, created_at, status')
         .eq('account_id', account.id)

@@ -21,7 +21,7 @@ export function PortalHeader({ client }: PortalHeaderProps) {
       setCopied(true);
       toast.success('Portal link copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy link');
     }
   }, [portalUrl]);

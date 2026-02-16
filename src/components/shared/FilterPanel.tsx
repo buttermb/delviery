@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { X, Filter } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export interface FilterOption {
   key: string;
@@ -122,13 +121,13 @@ export function FilterPanel({
                 {filter.type === 'select' && filter.options && (
                   <Select
                     value={(values[filter.key] as string) || ''}
-                    onValueChange={(value) => handleFilterChange(filter.key, value)}
+                    onValueChange={(value) => handleFilterChange(filter.key, value === '__all__' ? '' : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder={`All ${filter.label}`} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All {filter.label}</SelectItem>
+                      <SelectItem value="__all__">All {filter.label}</SelectItem>
                       {filter.options.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}

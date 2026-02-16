@@ -10,7 +10,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { AdaptiveSidebar } from '../AdaptiveSidebar';
 import * as useSidebarConfigModule from '@/hooks/useSidebarConfig';
-import { TenantAdminAuthProvider } from '@/contexts/TenantAdminAuthContext';
 
 // Mock hooks
 vi.mock('@/hooks/useSidebarConfig', () => ({

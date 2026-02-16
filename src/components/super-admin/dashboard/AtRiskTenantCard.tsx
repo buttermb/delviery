@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getHealthColor, getHealthTextColor } from '@/lib/utils/statusColors';
+import { getHealthTextColor } from '@/lib/utils/statusColors';
 import { cn } from '@/lib/utils';
 
 interface AtRiskTenant {

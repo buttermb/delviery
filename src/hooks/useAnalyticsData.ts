@@ -128,7 +128,7 @@ export function useAnalyticsData(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: queryKeys.analytics.all.concat(['unified', tenantId, startDate?.toISOString(), endDate?.toISOString(), orderType]),
+    queryKey: ['analytics', 'unified', tenantId, startDate?.toISOString(), endDate?.toISOString(), orderType],
     queryFn: async (): Promise<UnifiedAnalyticsData> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -315,9 +315,9 @@ async function fetchOrdersData(
 }
 
 async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalytics, 'recentMovements'>> {
-  const { data: products, error } = await supabase
+  const { data: products, error } = await (supabase as any)
     .from('products')
-    .select('id, name, sku, stock_quantity, low_stock_alert, price, category, is_active')
+    .select('id, name, sku, stock_quantity, low_stock_alert, price, category, in_stock')
     .eq('tenant_id', tenantId);
 
   if (error) {
@@ -325,10 +325,10 @@ async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalyt
     throw error;
   }
 
-  const productsList = products ?? [];
+  const productsList = (products ?? []) as any[];
 
   const totalProducts = productsList.length;
-  const activeProducts = productsList.filter(p => p.is_active !== false).length;
+  const activeProducts = productsList.filter(p => p.in_stock !== false).length;
   const lowStockProducts = productsList.filter(p => {
     const threshold = p.low_stock_alert ?? 10;
     const qty = p.stock_quantity ?? 0;
@@ -342,7 +342,7 @@ async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalyt
 
   // Top products by stock
   const topProducts = productsList
-    .filter(p => p.is_active !== false)
+    .filter(p => p.in_stock !== false)
     .sort((a, b) => (b.stock_quantity ?? 0) - (a.stock_quantity ?? 0))
     .slice(0, 10)
     .map(p => ({
@@ -499,17 +499,7 @@ async function fetchPaymentsData(
   weekStart: string
 ): Promise<{ collectionsToday: number; expectedThisWeek: number }> {
   // Today's collections from wholesale_payments
-  const { data: todayPayments, error: paymentsError } = await (supabase as unknown as {
-    from: (table: string) => {
-      select: (columns: string) => {
-        eq: (column: string, value: string) => {
-          gte: (column: string, value: string) => {
-            lte: (column: string, value: string) => Promise<{ data: Array<{ amount: number }> | null; error: unknown }>;
-          };
-        };
-      };
-    };
-  })
+  const { data: todayPayments, error: paymentsError } = await (supabase as any)
     .from('wholesale_payments')
     .select('amount')
     .eq('tenant_id', tenantId)
@@ -590,19 +580,7 @@ async function fetchInventoryHistory(
   startDate: string,
   endDate: string
 ): Promise<Array<{ change_type: string; created_at: string }>> {
-  const { data, error } = await (supabase as unknown as {
-    from: (table: string) => {
-      select: (columns: string) => {
-        eq: (column: string, value: string) => {
-          gte: (column: string, value: string) => {
-            lte: (column: string, value: string) => {
-              limit: (count: number) => Promise<{ data: Array<{ change_type: string; created_at: string }> | null; error: unknown }>;
-            };
-          };
-        };
-      };
-    };
-  })
+  const { data, error } = await (supabase as any)
     .from('inventory_history')
     .select('change_type, created_at')
     .eq('tenant_id', tenantId)
@@ -703,7 +681,7 @@ export function useOrderAnalytics(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: queryKeys.analytics.orders({ tenantId, startDate: startDate?.toISOString(), endDate: endDate?.toISOString(), orderType }),
+    queryKey: queryKeys.analytics.orders(tenantId, { startDate: startDate?.toISOString(), endDate: endDate?.toISOString(), orderType }),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       return fetchOrdersData(tenantId, startOfDay(startDate).toISOString(), endOfDay(endDate).toISOString(), orderType);
@@ -721,7 +699,7 @@ export function useInventoryAnalytics() {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.inventory.all.concat(['analytics', tenantId]),
+    queryKey: ['inventory', 'analytics', tenantId],
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       const products = await fetchProductsData(tenantId);
@@ -749,7 +727,7 @@ export function useCustomerAnalytics(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: queryKeys.analytics.customers({ tenantId, startDate: startDate?.toISOString(), endDate: endDate?.toISOString() }),
+    queryKey: queryKeys.analytics.customers(tenantId, { startDate: startDate?.toISOString(), endDate: endDate?.toISOString() }),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       return fetchCustomersData(tenantId, startOfDay(startDate).toISOString(), endOfDay(endDate).toISOString());

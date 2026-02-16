@@ -18,10 +18,8 @@ import {
     RefreshCcw,
     ArrowRightLeft,
     AlertCircle,
-    CheckCircle2,
     Clock,
-    Search,
-    Filter
+    Search
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { logger } from "@/lib/logger";
@@ -122,8 +120,7 @@ export default function ProductSyncPage() {
         mutationFn: async (productId: string) => {
             if (!store?.id) throw new Error("No marketplace store found");
 
-            // @ts-ignore - RPC may not be in generated types
-            const { data, error } = await supabase.rpc('sync_product_to_marketplace', {
+            const { data, error } = await (supabase as any).rpc('sync_product_to_marketplace', {
                 p_product_id: productId,
                 p_store_id: store.id
             });
@@ -180,7 +177,7 @@ export default function ProductSyncPage() {
             try {
                 await syncMutation.mutateAsync(p.id);
                 successCount++;
-            } catch (e) {
+            } catch {
                 failCount++;
             }
         }

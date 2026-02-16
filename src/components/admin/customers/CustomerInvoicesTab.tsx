@@ -45,7 +45,7 @@ function getStatusBadgeStyles(status: string | null): string {
     case 'void':
       return 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-900/30 dark:text-gray-500 dark:border-gray-800';
     default:
-      return 'bg-gray-100 text-gray-700 border-gray-200';
+      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800';
   }
 }
 
@@ -55,7 +55,8 @@ function getStatusLabel(status: string | null): string {
 }
 
 export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInvoicesTabProps) {
-  const { data: invoices, isLoading, isError } = useCustomerInvoices(customerId);
+  const invoiceHooks = useCustomerInvoices();
+  const { data: invoices, isLoading, isError } = invoiceHooks.useInvoicesQuery({ search: customerId });
   const { navigateToAdmin } = useTenantNavigation();
 
   if (isLoading) {
@@ -209,14 +210,11 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
                 </div>
 
                 {/* Invoice Details */}
-                {(invoice.subtotal !== invoice.total || invoice.tax || invoice.discount) && (
+                {(invoice.subtotal !== invoice.total || invoice.tax) && (
                   <div className="text-sm text-muted-foreground mb-3 flex gap-4">
                     <span>Subtotal: {formatCurrency(invoice.subtotal)}</span>
                     {invoice.tax !== null && invoice.tax > 0 && (
                       <span>Tax: {formatCurrency(invoice.tax)}</span>
-                    )}
-                    {invoice.discount !== null && invoice.discount > 0 && (
-                      <span>Discount: -{formatCurrency(invoice.discount)}</span>
                     )}
                   </div>
                 )}

@@ -38,7 +38,7 @@ export function useFeatureTracking() {
         setPatterns(parsed.patterns || null);
         setFeatureUsage(parsed.featureUsage || []);
       }
-    } catch (e) {
+    } catch {
       logger.warn('Failed to load feature patterns from localStorage', { component: 'useFeatureTracking' });
     }
   }, []);
@@ -50,7 +50,7 @@ export function useFeatureTracking() {
         patterns,
         featureUsage,
       }));
-    } catch (e) {
+    } catch {
       // Silent fail for incognito mode
     }
   }, [patterns, featureUsage]);

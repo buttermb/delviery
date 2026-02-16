@@ -4,7 +4,7 @@
  * Tests for the centralized logging utility
  */
 
-import { logger } from '@/lib/logger';
+import { logger, log } from '@/lib/logger';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 describe('Logger', () => {

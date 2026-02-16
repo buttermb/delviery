@@ -10,7 +10,7 @@ import { CohortAnalysis } from '@/components/super-admin/analytics/CohortAnalysi
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, TrendingUp, Calculator, Users } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 export default function AnalyticsPage() {
   return (

@@ -19,7 +19,7 @@ import { useMemo } from 'react';
 export function SidebarRecentlyUsed() {
     const { tenantSlug } = useParams();
     const location = useLocation();
-    const { preferences, trackFeatureClick, searchQuery } = useSidebar();
+    const { preferences, trackFeatureClick: _trackFeatureClick, searchQuery } = useSidebar();
     const { sidebarConfig } = useSidebarConfig();
     const { canAccess } = useFeatureAccess();
 
@@ -84,12 +84,12 @@ export function SidebarRecentlyUsed() {
         return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
     };
 
-    const handleItemClick = (itemId: string, featureId?: string) => {
+    const handleItemClick = (_itemId: string, _featureId?: string) => {
         // Tracking is handled by SidebarMenuItem context call
         // But we can add extra logic here if needed
     };
 
-    const handleLockedItemClick = (featureId: FeatureId) => {
+    const handleLockedItemClick = (_featureId: FeatureId) => {
         // Handled by parent usually, but we can just emit event or ignore
         // For now, we'll dispatch the upgrade modal event if we can, 
         // or just let the user know. 

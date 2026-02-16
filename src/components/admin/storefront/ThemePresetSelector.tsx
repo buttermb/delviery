@@ -135,7 +135,7 @@ export function ThemePresetSelector({
     trigger,
 }: ThemePresetSelectorProps) {
     const [open, setOpen] = useState(false);
-    const [previewTheme, setPreviewTheme] = useState<ThemePreset | null>(null);
+    const [previewTheme, _setPreviewTheme] = useState<ThemePreset | null>(null);
 
     const handleSelect = (theme: ThemePreset) => {
         logger.debug('Theme selected', { themeId: theme.id });
@@ -203,7 +203,7 @@ export function ThemePresetStrip({
     return (
         <div className="flex gap-2 overflow-x-auto pb-2">
             {THEME_PRESETS.map((theme) => {
-                const Icon = THEME_ICONS[theme.id] || Palette;
+                const _Icon = THEME_ICONS[theme.id] || Palette;
                 const isSelected = selectedThemeId === theme.id;
 
                 return (

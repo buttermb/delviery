@@ -10,6 +10,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { ChevronRight, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbContext } from '@/contexts/BreadcrumbContext';
 
 // Human-readable labels for URL segments
 const SEGMENT_LABELS: Record<string, string> = {
@@ -255,6 +256,7 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const { tenant } = useTenantAdminAuth();
+  const { entityLabel } = useBreadcrumbContext();
 
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
     const pathSegments = location.pathname
@@ -310,28 +312,35 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
       </Link>
 
       {/* Path segments */}
-      {breadcrumbs.map((crumb) => (
-        <Fragment key={crumb.path}>
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
-          {crumb.isCurrentPage ? (
-            <span
-              className="text-foreground font-medium whitespace-nowrap truncate max-w-[160px]"
-              aria-current="page"
-              title={crumb.label}
-            >
-              {crumb.label}
-            </span>
-          ) : (
-            <Link
-              to={crumb.path}
-              className="hover:text-foreground transition-colors whitespace-nowrap truncate max-w-[120px]"
-              title={crumb.label}
-            >
-              {crumb.label}
-            </Link>
-          )}
-        </Fragment>
-      ))}
+      {breadcrumbs.map((crumb) => {
+        // Use entity label from context for the last (current page) breadcrumb
+        const displayLabel = crumb.isCurrentPage && entityLabel
+          ? entityLabel
+          : crumb.label;
+
+        return (
+          <Fragment key={crumb.path}>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+            {crumb.isCurrentPage ? (
+              <span
+                className="text-foreground font-medium whitespace-nowrap truncate max-w-[200px]"
+                aria-current="page"
+                title={displayLabel}
+              >
+                {displayLabel}
+              </span>
+            ) : (
+              <Link
+                to={crumb.path}
+                className="hover:text-foreground transition-colors whitespace-nowrap truncate max-w-[120px]"
+                title={crumb.label}
+              >
+                {crumb.label}
+              </Link>
+            )}
+          </Fragment>
+        );
+      })}
     </nav>
   );
 }

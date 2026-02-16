@@ -1,11 +1,10 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import {
-  X,
   Check,
   FileSpreadsheet,
   Clock,
@@ -154,7 +153,7 @@ export function ProblemSolutionSection() {
               </div>
               <ul className="space-y-4">
                 {solutions.map((solution, index) => {
-                  const Icon = solution.icon;
+                  const _Icon = solution.icon;
                   return (
                     <motion.li
                       key={index}

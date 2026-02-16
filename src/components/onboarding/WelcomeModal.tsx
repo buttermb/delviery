@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
@@ -11,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Sparkles, ArrowRight, X, PlayCircle, Coins, Zap, Info } from 'lucide-react';
+import { CheckCircle2, Sparkles, ArrowRight, X, PlayCircle, Coins, Info } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTutorialContext } from '@/components/tutorial/TutorialProvider';
 import { useCredits } from '@/hooks/useCredits';
@@ -26,9 +25,9 @@ interface WelcomeModalProps {
 
 export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const _location = useLocation();
   const [searchParams] = useSearchParams();
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant, admin: _admin } = useTenantAdminAuth();
   const { startTutorial } = useTutorialContext();
   const { balance, isFreeTier } = useCredits();
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);

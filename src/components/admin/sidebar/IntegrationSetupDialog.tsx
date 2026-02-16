@@ -332,7 +332,7 @@ export function IntegrationSetupDialog({
           message: 'Integration is not configured yet.',
         });
       }
-    } catch (error) {
+    } catch {
       setTestResult({
         success: false,
         message: 'Failed to test connection. Please try again.',

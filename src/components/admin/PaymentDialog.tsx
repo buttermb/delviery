@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +26,16 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
   const [notes, setNotes] = useState("");
 
   const processPayment = useProcessPayment();
+
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      setAmount("");
+      setPaymentMethod("cash");
+      setReferenceNumber("");
+      setNotes("");
+    }
+  }, [open]);
 
   // Validation for payment amount
   const paymentValidation = useMemo(() => {
@@ -98,12 +109,8 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
 
           <div>
             <Label htmlFor="amount">Payment Amount *</Label>
-            <Input
+            <CurrencyInput
               id="amount"
-              type="number"
-              step="0.01"
-              min="0.01"
-              max={outstandingBalance}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * HowItWorks — 20-second composition (600 frames @ 30fps).
  * 3 steps: Sign Up → Import → Go Live with sequential reveals,

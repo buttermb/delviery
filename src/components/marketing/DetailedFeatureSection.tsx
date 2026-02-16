@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2, ShieldCheck, Truck, ShoppingCart } from 'lucide-react';
 import { ComplianceDemo } from './demos/ComplianceDemo';
-import { LiveMapDemo } from './demos/LiveMapDemo';
 import { LogisticsDemo } from './demos/LogisticsDemo';
 import { StorefrontDemo } from './demos/StorefrontDemo';
 import { Link } from 'react-router-dom';
@@ -66,7 +65,7 @@ export function DetailedFeatureSection() {
                 </div>
 
                 <div className="space-y-32">
-                    {features.map((feature, index) => (
+                    {features.map((feature, _index) => (
                         <motion.div
                             key={feature.id}
                             initial={{ opacity: 0, y: 40 }}

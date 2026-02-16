@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -88,6 +88,13 @@ export const AddCourierDialog = ({
     },
   });
 
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
   const onSubmit = async (data: CourierFormData) => {
     setIsSubmitting(true);
     try {
@@ -169,7 +176,7 @@ export const AddCourierDialog = ({
                 name="full_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name *</FormLabel>
+                    <FormLabel required>Full Name</FormLabel>
                     <FormControl>
                       <Input placeholder="John Doe" {...field} />
                     </FormControl>
@@ -183,7 +190,7 @@ export const AddCourierDialog = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email *</FormLabel>
+                    <FormLabel required>Email</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="john@example.com" {...field} />
                     </FormControl>
@@ -199,7 +206,7 @@ export const AddCourierDialog = ({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number *</FormLabel>
+                    <FormLabel required>Phone Number</FormLabel>
                     <FormControl>
                       <Input placeholder="+1 (555) 123-4567" {...field} />
                     </FormControl>
@@ -213,7 +220,7 @@ export const AddCourierDialog = ({
                 name="license_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Driver License Number *</FormLabel>
+                    <FormLabel required>Driver License Number</FormLabel>
                     <FormControl>
                       <Input placeholder="DL123456" {...field} />
                     </FormControl>
@@ -228,7 +235,7 @@ export const AddCourierDialog = ({
               name="vehicle_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vehicle Type *</FormLabel>
+                  <FormLabel required>Vehicle Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

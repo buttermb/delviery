@@ -85,7 +85,7 @@ export function CustomerInlineEdit({
     try {
       await onSave(trimmedValue);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       setError('Failed to save');
       setEditValue(value);
     } finally {

@@ -1,9 +1,9 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,6 @@ import { Loader2, Save } from "lucide-react";
 
 export function EarningRulesConfig() {
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
   const [rules, setRules] = useState({
     points_per_dollar: 1,
     bonus_points_enabled: false,

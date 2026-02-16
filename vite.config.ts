@@ -210,7 +210,7 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true,
     },
     rollupOptions: {
-      maxParallelFileOps: 1, // Further limit parallel operations to reduce memory usage
+      maxParallelFileOps: 20,
       output: {
         // Add hash to filenames for cache busting  
         entryFileNames: 'assets/entry-[hash].js',

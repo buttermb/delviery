@@ -20,7 +20,7 @@ const RequestSchema = z.object({
   description: z.string().max(1000).optional(),
 });
 
-type RequestBody = z.infer<typeof RequestSchema>;
+type _RequestBody = z.infer<typeof RequestSchema>;
 
 // 3. Wrap with withZenProtection
 serve(withZenProtection(async (req) => {

@@ -4,7 +4,7 @@
  * Automatically virtualizes when data exceeds threshold for optimal performance.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye } from 'lucide-react';
 import {
@@ -44,7 +44,7 @@ import {
 import { cn } from '@/lib/utils';
 import { VirtualizedTable } from './VirtualizedTable';
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData, _TValue = unknown> {
   columns: ColumnDef<TData>[];
   data: TData[];
   searchable?: boolean;
@@ -274,8 +274,8 @@ export function DataTable<TData, TValue>({
           getRowId={getRowId}
         />
       ) : (
-        <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-100">
-          <Table>
+        <div className="dark:bg-gray-800 dark:text-gray-100">
+          <Table containerClassName="max-h-[600px]">
           <TableHeader>
             <TableRow>
               {enableSelection && (

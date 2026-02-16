@@ -11,22 +11,19 @@ import {
   MoreVertical,
   Zap,
   X,
-  ImageIcon,
   FileText,
   Download,
   Check,
   CheckCheck,
   Loader2
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -41,14 +38,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -157,7 +146,7 @@ const DEFAULT_QUICK_RESPONSES: QuickResponse[] = [
 // Quick Response Categories
 const QUICK_RESPONSE_CATEGORIES = ['All', 'General', 'Orders', 'Delivery', 'Products'];
 
-const AdminLiveChat = () => {
+const AdminLiveChat = function AdminLiveChat() {
   const { tenant } = useTenantAdminAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
@@ -169,13 +158,13 @@ const AdminLiveChat = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [quickResponseCategory, setQuickResponseCategory] = useState('All');
   const [showQuickResponses, setShowQuickResponses] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const [_isTyping, setIsTyping] = useState(false);
   const [customerTyping, setCustomerTyping] = useState(false);
   const [attachmentPreview, setAttachmentPreview] = useState<{
     file: File;
     preview: string;
   } | null>(null);
-  const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
+  const [_showAttachmentDialog, setShowAttachmentDialog] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -205,7 +194,7 @@ const AdminLiveChat = () => {
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('chat_sessions')
         .select('*')
         .eq('status', 'active')
@@ -416,7 +405,7 @@ const AdminLiveChat = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
+      await (supabase as any)
         .from('chat_messages')
         .update({ read_at: new Date().toISOString() })
         .eq('session_id', sessionId)
@@ -1235,4 +1224,4 @@ function MessageBubble({ message, formatTime }: MessageBubbleProps) {
   );
 }
 
-export { AdminLiveChat };
+export default AdminLiveChat;

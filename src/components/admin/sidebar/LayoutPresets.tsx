@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
-import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
+import { getAllFeatures, ESSENTIAL_FEATURES as _ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import { Check, Download, Upload, RotateCcw, Eye, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useMemo } from 'react';
@@ -59,7 +59,7 @@ export function LayoutPresets() {
       await new Promise(resolve => setTimeout(resolve, 200));
 
       toast.success(`Applied ${presetName}`, { id: 'preset-apply' });
-    } catch (error) {
+    } catch {
       toast.error('Failed to apply preset', { id: 'preset-apply' });
     } finally {
       setApplyingPreset(null);
@@ -112,7 +112,7 @@ export function LayoutPresets() {
         } else {
           toast.error('Invalid configuration file');
         }
-      } catch (error) {
+      } catch {
         toast.error('Failed to import configuration');
       } finally {
         setImporting(false);

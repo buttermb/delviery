@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
@@ -25,12 +24,8 @@ import {
   Settings,
   ExternalLink,
   Plus,
-  BarChart3,
   Palette,
   Globe,
-  Percent,
-  Trash2,
-  LayoutGrid,
   FileText,
   ClipboardList,
   TrendingUp,
@@ -38,7 +33,6 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { StorePreviewButton } from '@/components/admin/storefront/StorePreviewButton';
 import { StorefrontFunnel } from '@/components/admin/storefront/StorefrontFunnel';
 import { DeleteStoreDialog } from '@/components/admin/storefront/DeleteStoreDialog';
 import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDialog';
@@ -196,7 +190,7 @@ export default function StorefrontDashboard() {
         .gte('created_at', startOfToday.toISOString())
         .not('status', 'eq', 'cancelled');
 
-      // Yesterday's revenue  
+      // Yesterday's revenue
       const { data: yesterdayOrders } = await supabase
         .from('storefront_orders')
         .select('total')
@@ -370,7 +364,7 @@ export default function StorefrontDashboard() {
       case 'out_for_delivery': return 'bg-orange-500';
       case 'delivered': return 'bg-green-500';
       case 'cancelled': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      default: return 'bg-gray-500 dark:bg-gray-600';
     }
   };
 

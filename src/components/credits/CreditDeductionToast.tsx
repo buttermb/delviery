@@ -5,7 +5,7 @@
  * Auto-dismisses after 2 seconds. Clicking opens purchase modal.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Coins, TrendingDown, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreditPurchaseModal } from './CreditPurchaseModal';
@@ -207,7 +207,7 @@ export function CreditToastContainer({ className }: CreditToastContainerProps) {
   if (toasts.length === 0) return null;
 
   return createPortal(
-    <div className={cn('fixed bottom-20 right-4 z-[100] space-y-2 pointer-events-none', className)}>
+    <div className={cn('fixed bottom-20 right-4 z-toast space-y-2 pointer-events-none', className)}>
       {toasts.map((toast, index) => (
         <div
           key={toast.id}

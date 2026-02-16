@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import { Upload, AlertCircle, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -64,7 +64,6 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             return;
         }
 
-        setFile(selectedFile);
         await parseFile(selectedFile);
     };
 
@@ -104,7 +103,6 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         } catch (error) {
             logger.error("Error parsing file", error);
             toast.error("Failed to parse file. Please check format.");
-            setFile(null);
         } finally {
             setLoading(false);
         }
@@ -297,7 +295,6 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
     };
 
     const resetState = () => {
-        setFile(null);
         setRawRecords([]);
         setFileHeaders([]);
         setMapping({});

@@ -7,10 +7,10 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Truck, MapPin, Clock, Navigation, CheckCircle2,
-  Package, Zap, Users
+  Truck, MapPin, Navigation, CheckCircle2,
+  Zap, Users
 } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
 
@@ -190,7 +190,7 @@ export function LiveMapDemo() {
       {/* MAP AREA - Main focus */}
       <div className="flex-1 rounded-xl overflow-hidden relative" style={{ minHeight: '200px' }}>
         {/* Map Background - Stylized city blocks */}
-        <div className="absolute inset-0 bg-[#e5e7eb]">
+        <div className="absolute inset-0 bg-gray-200">
           {/* Water/park area */}
           <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[hsl(var(--marketing-primary))]/10 rounded-bl-3xl" />
 

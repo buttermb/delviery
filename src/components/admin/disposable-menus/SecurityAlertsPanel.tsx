@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
 import { format } from 'date-fns';
-import { 
-  AlertTriangle, 
-  Shield, 
-  Info, 
-  X,
+import {
+  AlertTriangle,
+  Shield,
+  Info,
   MapPin,
   Clock,
   User,
@@ -135,7 +134,6 @@ export const SecurityAlertsPanel = () => {
             <div className="space-y-3">
               {filteredAlerts.map(alert => {
                 const config = severityConfig[alert.severity];
-                const SeverityIcon = config.icon;
                 const EventIcon = eventTypeIcons[alert.event_type] || AlertTriangle;
 
                 return (

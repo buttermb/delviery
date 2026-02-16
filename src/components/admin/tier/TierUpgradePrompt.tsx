@@ -9,7 +9,7 @@ import { X, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
-import { getTierPreset, type BusinessTier } from '@/lib/presets/businessTiers';
+import { getTierPreset } from '@/lib/presets/businessTiers';
 import { TierBadge } from './TierBadge';
 import { cn } from '@/lib/utils';
 
@@ -24,10 +24,10 @@ export function TierUpgradePrompt({
   onDismiss,
   className 
 }: TierUpgradePromptProps) {
-  const { 
-    tier, 
-    nextTier, 
-    nextTierRequirements, 
+  const {
+    tier,
+    nextTier,
+    nextTierRequirements: _nextTierRequirements,
     qualifiesForUpgrade,
     setTier,
     isSettingTier,

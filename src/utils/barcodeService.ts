@@ -5,7 +5,6 @@ import { logger } from '@/lib/logger';
  */
 
 import JsBarcode from 'jsbarcode';
-import { QRCodeSVG } from 'qrcode.react';
 
 // Barcode types
 export type BarcodeType = 'CODE128' | 'EAN13' | 'EAN8' | 'CODE39';
@@ -203,21 +202,22 @@ export async function generateBarcodeDataURL(
  */
 export async function generateQRCodeDataURL(
   data: QRCodeData,
-  options: {
+  _options: {
     size?: number;
     errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
   } = {}
 ): Promise<string> {
   // For browser rendering, use QRCodeSVG component from qrcode.react
   // This function can be used server-side if qrcode package is installed
-  const dataString = JSON.stringify(data);
-  
+  // data is used to build the QR code content - currently throws as browser rendering should use React component
+  void data;
+
   // Return data string - actual rendering should use QRCodeSVG component
   // To get actual data URL, you'd need to:
   // 1. Render QRCodeSVG to canvas
   // 2. Convert canvas to data URL
   // This is better done in the component itself
-  
+
   throw new Error('Use QRCodeSVG component from qrcode.react for QR code rendering in browser');
 }
 

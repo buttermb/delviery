@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Search, Loader2, X } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 interface SearchInputProps {
     placeholder?: string;
@@ -19,7 +18,7 @@ export function SearchInput({
     onSearch,
     className,
     defaultValue = "",
-    delay = 500,
+    delay = 300,
     isLoading = false,
 }: SearchInputProps) {
     const [value, setValue] = useState(defaultValue);

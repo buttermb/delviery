@@ -343,7 +343,7 @@ export function generateShelfLabelHTML(data: ShelfLabelData, options: LabelPrint
 // TRANSFER MANIFEST (Full Page)
 // ============================================================================
 
-export function generateTransferManifestHTML(data: TransferManifestData, options: LabelPrintOptions = {}): string {
+export function generateTransferManifestHTML(data: TransferManifestData, _options: LabelPrintOptions = {}): string {
   return `
     <div style="
       width: 8.5in;

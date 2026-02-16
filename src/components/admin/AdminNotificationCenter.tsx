@@ -9,7 +9,6 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Bell,
-  CheckCircle,
   AlertTriangle,
   Info,
   X,
@@ -70,7 +69,6 @@ interface AdminNotification {
 // ============================================================================
 
 const MAX_NOTIFICATIONS = 50;
-const STORAGE_KEY = 'floraiq_admin_notifications';
 const STORAGE_READ_KEY = 'floraiq_admin_notifications_read';
 
 const NOTIFICATION_TYPE_CONFIG: Record<NotificationEventType, {

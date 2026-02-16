@@ -22,7 +22,7 @@ import {
     FileText,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
+import { Fragment, lazy, Suspense, useMemo, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
@@ -30,6 +30,7 @@ import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const WholesaleOrdersPage = lazy(() => import('@/pages/admin/WholesaleOrdersPage'));
@@ -118,6 +119,7 @@ function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export')
 }
 
 export default function OrdersHubPage() {
+    usePageTitle('Orders');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'live';
     const { navigateToAdmin } = useTenantNavigation();
@@ -125,14 +127,14 @@ export default function OrdersHubPage() {
     const [isExporting, setIsExporting] = useState(false);
 
     // Fetch orders for export (all order types, higher limit for export)
-    const { data: orders, refetch: refetchOrders } = useUnifiedOrders({
+    const { data: _orders, refetch: refetchOrders } = useUnifiedOrders({
         orderType: 'all',
         limit: 1000,
         enabled: false, // Only fetch when export is triggered
     });
 
     const handleTabChange = (tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     };
 
     const handleExport = useCallback(async () => {
@@ -182,7 +184,7 @@ export default function OrdersHubPage() {
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="orders"
                         hubHref="orders-hub"
@@ -208,15 +210,15 @@ export default function OrdersHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

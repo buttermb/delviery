@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +24,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Ticket,
   Search,
-  Filter,
   Plus,
   Eye,
   Reply,
@@ -36,8 +34,6 @@ import {
   Clock,
   AlertCircle,
   User,
-  Calendar,
-  MessageSquare,
   ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,10 +66,10 @@ export default function SuperAdminSupport() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [ticketDialogOpen, setTicketDialogOpen] = useState(false);
-  const [newTicketOpen, setNewTicketOpen] = useState(false);
+  const [_newTicketOpen, setNewTicketOpen] = useState(false);
 
   // Fetch tickets
-  const { data: tickets, isLoading } = useQuery<SupportTicket[]>({
+  const { data: tickets } = useQuery<SupportTicket[]>({
     queryKey: ['support-tickets', statusFilter, priorityFilter, searchTerm],
     queryFn: async () => {
       let query = supabase

@@ -31,7 +31,7 @@ export function useAvailableRunners(options: UseAvailableRunnersOptions = {}) {
   const { enabled = true, onlyAvailable = true } = options;
 
   return useQuery({
-    queryKey: queryKeys.runners.available(tenant?.id),
+    queryKey: queryKeys.runners.available(),
     queryFn: async (): Promise<AvailableRunner[]> => {
       if (!tenant?.id) return [];
 

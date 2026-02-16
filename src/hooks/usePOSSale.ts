@@ -107,12 +107,7 @@ export function usePOSSale() {
 
       // Use atomic RPC - this handles order creation, order items,
       // inventory decrement, and payment record in a single transaction
-      const rpcClient = supabase as unknown as {
-        rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-          data: POSSaleResult | null;
-          error: { code?: string; message?: string } | null;
-        }>;
-      };
+      const rpcClient = supabase as any;
 
       const { data: rpcResult, error: rpcError } = await rpcClient.rpc(
         'create_pos_transaction_atomic',
@@ -185,10 +180,7 @@ export function usePOSSale() {
       // If customer was attached, also update their stats
       if (input.customer_id && tenantId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.stats(input.customer_id),
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(input.customer_id),
+          queryKey: queryKeys.customers.details(),
         });
       }
 

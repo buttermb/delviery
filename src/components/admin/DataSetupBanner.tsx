@@ -8,7 +8,7 @@ import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 
 export function DataSetupBanner() {
-  const navigate = useNavigate();
+  useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { data: clients = [], isLoading } = useWholesaleClients();
   const [showQuickStart, setShowQuickStart] = useState(false);

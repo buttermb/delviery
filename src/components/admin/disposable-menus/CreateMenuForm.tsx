@@ -197,7 +197,7 @@ export function CreateMenuForm({
         <h3 className="text-lg font-semibold">Basic Information</h3>
 
         <div className="space-y-2">
-          <Label htmlFor="menu-name">Menu Name *</Label>
+          <Label htmlFor="menu-name">Menu Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
           <Input
             id="menu-name"
             placeholder="VIP Wholesale Menu"

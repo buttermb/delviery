@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
     Users,
     ShieldAlert,
-    BarChart3,
     LogOut,
-    LayoutDashboard,
     Wallet
 } from 'lucide-react';
 

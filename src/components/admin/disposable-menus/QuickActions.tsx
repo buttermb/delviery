@@ -1,12 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Plus, 
-  FileDown, 
-  RefreshCw, 
+import {
+  Plus,
+  FileDown,
+  RefreshCw,
   Shield,
-  TrendingUp,
-  AlertTriangle
 } from 'lucide-react';
 
 interface QuickActionsProps {

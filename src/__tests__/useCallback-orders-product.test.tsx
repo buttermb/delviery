@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent } from '@testing-library/react';
 import React, { useCallback } from 'react';
 
 /**
@@ -31,7 +29,7 @@ const MockOrderRow = React.memo<{
   order,
   isSelected,
   onSelect,
-  onStatusChange,
+  _onStatusChange,
   onView,
   onPrint,
   onGenerateInvoice,
@@ -65,15 +63,8 @@ const MockOrderRow = React.memo<{
 MockOrderRow.displayName = 'MockOrderRow';
 
 describe('useCallback in Orders Component', () => {
-  let queryClient: QueryClient;
-
   beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
-      },
-    });
+    // Test setup
   });
 
   describe('Event handler stability', () => {
@@ -82,7 +73,7 @@ describe('useCallback in Orders Component', () => {
 
       const TestOrdersParent = () => {
         const [unrelatedState, setUnrelatedState] = React.useState(0);
-        const [selectedOrders, setSelectedOrders] = React.useState<string[]>([]);
+        const [_selectedOrders, setSelectedOrders] = React.useState<string[]>([]);
 
         // This simulates the useCallback implementation in Orders.tsx
         const handleSelectOrder = useCallback((orderId: string, checked: boolean) => {

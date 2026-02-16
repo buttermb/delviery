@@ -971,9 +971,9 @@ export function ProductBulkImportDialog({
                     <div className="text-2xl font-bold text-red-600">{importResults.failed}</div>
                     <div className="text-xs text-red-600">Failed</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-600">{importResults.skipped}</div>
-                    <div className="text-xs text-gray-600">Skipped</div>
+                  <div className="bg-gray-50 dark:bg-zinc-900 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">{importResults.skipped}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Skipped</div>
                   </div>
                 </div>
               </div>

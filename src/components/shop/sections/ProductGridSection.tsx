@@ -1,14 +1,14 @@
 import { useState, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, ChevronRight, ChevronLeft, AlertTriangle, LucideIcon } from "lucide-react";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, ChevronRight, ChevronLeft } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
-import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
+import { StorefrontProductCard } from "@/components/shop/StorefrontProductCard";
 
 // Local product type for data from RPC/queries that gets normalized
 interface LocalProduct {
@@ -53,7 +53,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
         show_search = true,
-        show_categories = true,
+        show_categories: _show_categories = true,
         initial_categories_shown = 2,
         show_premium_filter = true,
         // Feature toggles - default to true if not specified
@@ -69,9 +69,8 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         accent_color = "#10b981" // emerald-500
     } = styles || {};
 
-    const queryClient = useQueryClient();
     const [showAllCategories, setShowAllCategories] = useState(false);
-    const isMobile = useIsMobile();
+    const _isMobile = useIsMobile();
     const [searchQuery, setSearchQuery] = useState("");
     const [premiumFilter, setPremiumFilter] = useState(false);
     const { toast } = useToast();
@@ -178,7 +177,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     });
 
     const productIds = allProducts.map(p => p.id).filter((id): id is string => !!id);
-    const { data: inventoryMap = {} } = useInventoryBatch(productIds);
+    const { data: _inventoryMap = {} } = useInventoryBatch(productIds);
 
     // Dynamic Categories
     const uniqueCategories = Array.from(new Set(allProducts.map((p: any) => p.category))).filter((c): c is string => !!c);

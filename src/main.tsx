@@ -40,7 +40,6 @@ window.addEventListener('error', (event) => {
 
   if (isChunkError && chunkReloadCount < MAX_CHUNK_RELOADS) {
     chunkReloadCount++;
-    const timestamp = new Date().toISOString();
     logger.error('Chunk loading failed', new Error(errorMessage), { component: 'main' });
 
     // Show error message to user

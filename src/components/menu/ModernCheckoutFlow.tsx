@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,22 +12,24 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
+import {
   ShoppingCart, User, MapPin, CreditCard, Check, ArrowRight, ArrowLeft,
-  Loader2, Package, Minus, Plus, Trash2, Phone, Mail, Home, 
-  Truck, Store, Wallet, Banknote, Shield, Clock, ChevronRight,
-  Sparkles, AlertCircle, CheckCircle, Bitcoin, Zap, Coins, Copy,
+  Loader2, Package, Minus, Plus, Trash2, Phone, Mail, Home,
+  Truck, Store, Wallet, Banknote, Shield, Clock,
+  CheckCircle, Bitcoin, Zap, Coins, Copy,
   Navigation, Tag, ChevronDown, Edit2, Calendar, Share2, MessageCircle,
-  Gift, Locate, Building, Key
+  Locate, Building, KeyRound as Key
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { showErrorToast } from '@/utils/toastHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';
 import { formatWeight } from '@/utils/productHelpers';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { useMenuPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
+import { publish } from '@/lib/eventBus';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CheckoutFlowProps {
   open: boolean;
@@ -35,7 +38,7 @@ interface CheckoutFlowProps {
   accessToken?: string;
   minOrder?: number;
   maxOrder?: number;
-  onOrderComplete: () => void;
+  onOrderComplete: (orderId?: string, orderTotal?: number) => void;
   products?: Array<{ id: string; name: string; image_url?: string }>;
 }
 
@@ -717,7 +720,7 @@ function LocationStep({
     setIsLocating(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        async () => {
           // In production, use reverse geocoding API
           toast.success('Location detected! Please verify the address.');
           setIsLocating(false);
@@ -1614,9 +1617,9 @@ export function ModernCheckoutFlow({
   open,
   onOpenChange,
   menuId,
-  accessToken,
-  minOrder,
-  maxOrder,
+  accessToken: _accessToken,
+  minOrder: _minOrder,
+  maxOrder: _maxOrder,
   onOrderComplete,
   products
 }: CheckoutFlowProps) {
@@ -1641,6 +1644,7 @@ export function ModernCheckoutFlow({
     paymentMethod: 'cash',
   });
 
+  const queryClient = useQueryClient();
   const cartItems = useMenuCartStore((state) => state.items);
   const getTotal = useMenuCartStore((state) => state.getTotal);
   const getItemCount = useMenuCartStore((state) => state.getItemCount);
@@ -1654,7 +1658,7 @@ export function ModernCheckoutFlow({
     return buildPaymentMethods(paymentSettings);
   }, [paymentSettings]);
 
-  const totalItems = getItemCount();
+  const _totalItems = getItemCount();
   const totalAmount = getTotal();
   const serviceFee = totalAmount * 0.05;
   const finalTotal = totalAmount + serviceFee;
@@ -1755,7 +1759,40 @@ export function ModernCheckoutFlow({
       const newOrderId = data?.order_id || crypto.randomUUID();
       setOrderId(newOrderId);
       clearCart();
-      onOrderComplete();
+      onOrderComplete(newOrderId, finalTotal);
+
+      // Get tenant_id from menu for event publishing
+      const { data: menuData } = await supabase
+        .from('disposable_menus')
+        .select('tenant_id')
+        .eq('id', menuId)
+        .maybeSingle();
+
+      const tenantId = menuData?.tenant_id;
+
+      if (tenantId) {
+        // Publish order_created event for cross-module sync
+        // This notifies admin panel, notification system, dashboard stats
+        publish('order_created', {
+          orderId: newOrderId,
+          tenantId,
+        });
+
+        logger.info('Menu order event published', {
+          orderId: newOrderId,
+          tenantId,
+          component: 'ModernCheckoutFlow',
+        });
+
+        // Invalidate queries for immediate UI updates in admin panel
+        // Realtime subscription also triggers this, but explicit invalidation
+        // ensures UI updates even if realtime has latency
+        queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenantId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenantId) });
+        queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      }
       
     } catch (err: unknown) {
       logger.error('Order submission error', err, { component: 'ModernCheckoutFlow' });

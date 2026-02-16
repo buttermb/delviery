@@ -50,12 +50,10 @@ export default {
         'base': 'var(--z-base)',
         'dropdown': 'var(--z-dropdown)',
         'sticky': 'var(--z-sticky)',
-        'fixed': 'var(--z-fixed)',
-        'modal-backdrop': 'var(--z-modal-backdrop)',
+        'overlay': 'var(--z-overlay)',
         'modal': 'var(--z-modal)',
-        'popover': 'var(--z-popover)',
-        'tooltip': 'var(--z-tooltip)',
         'toast': 'var(--z-toast)',
+        'tooltip': 'var(--z-tooltip)',
         'max': 'var(--z-max)',
       },
       colors: {
@@ -91,6 +89,17 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        shop: {
+          primary: "hsl(var(--shop-primary))",
+          accent: "hsl(var(--shop-accent))",
+          "accent-hover": "hsl(var(--shop-accent-hover))",
+          bg: "hsl(var(--shop-bg))",
+        },
+        saas: {
+          primary: "hsl(var(--saas-primary))",
+          text: "hsl(var(--saas-text))",
+          bg: "hsl(var(--saas-bg))",
         },
       },
       backgroundImage: {

@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, X, Package, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchAutocompleteProps {
@@ -191,7 +190,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border z-50 max-h-[80vh] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-950 rounded-lg shadow-lg border z-50 max-h-[80vh] overflow-y-auto">
           {/* Loading */}
           {isLoading && debouncedQuery.length >= 2 && (
             <div className="p-4 text-center text-muted-foreground">
@@ -319,6 +318,5 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 }
 
 export default SearchAutocomplete;
-
 
 

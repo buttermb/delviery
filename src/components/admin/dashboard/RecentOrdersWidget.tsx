@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { OrderLink } from '@/components/admin/cross-links';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 export function RecentOrdersWidget() {
   const navigate = useNavigate();
@@ -41,8 +42,7 @@ export function RecentOrdersWidget() {
         wholesale_clients: { business_name: string } | null;
       }
 
-      // @ts-expect-error - Complex Supabase query with joins exceeds TypeScript recursion depth limit
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('wholesale_orders')
         .select(`
           id,
@@ -88,7 +88,7 @@ export function RecentOrdersWidget() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(getFullPath('/admin/wholesale-clients/new-order'))}
+          onClick={() => navigate(getFullPath('/admin/orders'))}
         >
           View All
           <ArrowRight className="h-4 w-4 ml-1" />
@@ -117,7 +117,7 @@ export function RecentOrdersWidget() {
             <div
               key={order.id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate(getFullPath(`/admin/wholesale-clients/new-order?order=${order.id}`))}
+              onClick={() => navigate(getFullPath(`/admin/orders`))}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />
@@ -128,9 +128,12 @@ export function RecentOrdersWidget() {
                       orderNumber={`#${order.order_number || order.id.slice(0, 8)}`}
                     />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {order.wholesale_clients?.business_name || 'Client'} • {format(new Date(order.created_at), 'MMM d, h:mm a')}
-                  </div>
+                  <TruncatedText
+                    text={`${order.wholesale_clients?.business_name || 'Client'} • ${format(new Date(order.created_at), 'MMM d, h:mm a')}`}
+                    className="text-sm text-muted-foreground"
+                    maxWidthClass="max-w-[220px]"
+                    as="div"
+                  />
                 </div>
               </div>
               <div className="flex items-center gap-3">

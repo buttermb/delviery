@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SEOHead } from '@/components/SEOHead';
@@ -46,9 +45,9 @@ function formatRouteDate(date: Date): string {
   return format(date, 'EEEE, MMM d');
 }
 
-export function RunnerLocationTracking() {
+export default function RunnerLocationTracking() {
   const navigate = useNavigate();
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const [selectedRunnerId, setSelectedRunnerId] = useState<string>('');
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('live');
@@ -93,7 +92,7 @@ export function RunnerLocationTracking() {
         .limit(20);
 
       if (error) throw error;
-      return (data || []) as DeliveryWithETA[];
+      return (data || []) as unknown as DeliveryWithETA[];
     },
     enabled: !!selectedRunnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -331,12 +330,12 @@ export function RunnerLocationTracking() {
               {selectedRunnerId && deliveries.length > 0 && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Delivery (Optional)</label>
-                  <Select value={selectedDeliveryId} onValueChange={setSelectedDeliveryId}>
+                  <Select value={selectedDeliveryId || '__all__'} onValueChange={(v) => setSelectedDeliveryId(v === '__all__' ? '' : v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All deliveries" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All deliveries</SelectItem>
+                      <SelectItem value="__all__">All deliveries</SelectItem>
                       {deliveries.map((delivery) => (
                         <SelectItem key={delivery.id} value={delivery.id}>
                           Order #{delivery.order?.order_number || 'N/A'} - {delivery.status}
@@ -482,7 +481,7 @@ export function RunnerLocationTracking() {
                                       <Badge
                                         variant={
                                           delivery.status === 'in_transit' ? 'default' :
-                                          delivery.status === 'picked_up' ? 'secondary' : 'outline'
+                                            delivery.status === 'picked_up' ? 'secondary' : 'outline'
                                         }
                                         className="text-xs"
                                       >
@@ -598,7 +597,7 @@ export function RunnerLocationTracking() {
                               </div>
                             </div>
                             <div className="ml-4 border-l-2 border-muted pl-6 mt-2 space-y-3">
-                              {dayLocations.slice(0, 20).map((location, idx) => (
+                              {dayLocations.slice(0, 20).map((location, _idx) => (
                                 <div
                                   key={location.id}
                                   className="relative flex items-start gap-3"
@@ -715,7 +714,7 @@ export function RunnerLocationTracking() {
                                 <Badge
                                   variant={
                                     delivery.status === 'delivered' ? 'default' :
-                                    delivery.status === 'in_transit' ? 'secondary' : 'outline'
+                                      delivery.status === 'in_transit' ? 'secondary' : 'outline'
                                   }
                                   className="text-xs"
                                 >

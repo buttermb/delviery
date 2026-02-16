@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { DollarSign, TrendingUp, Gift, Clock, Target } from 'lucide-react';
+import { DollarSign, TrendingUp, Gift, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface TodayEarningSummaryProps {

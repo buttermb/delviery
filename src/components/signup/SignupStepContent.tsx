@@ -10,8 +10,8 @@ interface SignupStepContentProps {
 
 export function SignupStepContent({ children, step, currentStep, className }: SignupStepContentProps) {
   const isActive = step === currentStep;
-  const isPast = step < currentStep;
-  const isFuture = step > currentStep;
+  const _isPast = step < currentStep;
+  const _isFuture = step > currentStep;
 
   if (!isActive) {
     return null;

@@ -164,7 +164,7 @@ export const useProductImageAnalytics = (menuId: string) => {
 export const trackImageView = async (
   menuId: string,
   productId: string,
-  accessToken?: string
+  _accessToken?: string
 ) => {
   try {
     await supabase.from('menu_access_logs').insert({
@@ -183,7 +183,7 @@ export const trackImageView = async (
 export const trackImageZoom = async (
   menuId: string,
   productId: string,
-  accessToken?: string
+  _accessToken?: string
 ) => {
   try {
     await supabase.from('menu_access_logs').insert({

@@ -1,19 +1,19 @@
 import { Link, useParams } from 'react-router-dom';
 import { useShop } from '@/pages/shop/ShopLayout';
-import { Facebook, Twitter, Instagram, Linkedin, Mail } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 interface LuxuryFooterProps {
   accentColor?: string;
 }
 
-export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
+export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
   const { storeSlug } = useParams();
   const { store, isPreviewMode } = useShop();
 
   const previewParam = isPreviewMode ? '?preview=true' : '';
 
   return (
-    <footer className="bg-[#015358] text-white pt-20 pb-12 border-t border-[#0EC7BA]/20">
+    <footer className="bg-shop-primary text-white pt-20 pb-12 border-t border-shop-accent/20">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
 
@@ -28,7 +28,7 @@ export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#0EC7BA] flex items-center justify-center text-[#015358] font-bold text-xl rounded-bl-sm">
+                  <div className="w-8 h-8 rounded-lg bg-shop-accent flex items-center justify-center text-shop-primary font-bold text-xl rounded-bl-sm">
                     {store?.store_name?.charAt(0) || 'Q'}
                   </div>
                   <span className="text-xl font-bold tracking-tight">
@@ -42,7 +42,7 @@ export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
             </p>
             <div className="flex gap-4">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#0EC7BA] hover:text-[#015358] transition-all">
+                <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-shop-accent hover:text-shop-primary transition-all">
                   <Icon className="w-5 h-5" />
                 </a>
               ))}
@@ -52,7 +52,7 @@ export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
           {/* Links Columns */}
           <div className="md:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h4 className="font-bold mb-6 text-[#0EC7BA]">Shop</h4>
+              <h4 className="font-bold mb-6 text-shop-accent">Shop</h4>
               <ul className="space-y-4">
                 <li><Link to={`/shop/${storeSlug}/products${previewParam}`} className="text-white/80 hover:text-white hover:underline">All Products</Link></li>
                 <li><Link to={`/shop/${storeSlug}/products${previewParam}`} className="text-white/80 hover:text-white hover:underline">Featured</Link></li>
@@ -60,7 +60,7 @@ export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6 text-[#0EC7BA]">Support</h4>
+              <h4 className="font-bold mb-6 text-shop-accent">Support</h4>
               <ul className="space-y-4">
                 <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Help Center</Link></li>
                 <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Contact Us</Link></li>
@@ -68,7 +68,7 @@ export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6 text-[#0EC7BA]">Legal</h4>
+              <h4 className="font-bold mb-6 text-shop-accent">Legal</h4>
               <ul className="space-y-4">
                 <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Privacy Policy</Link></li>
                 <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Terms of Service</Link></li>
@@ -76,7 +76,7 @@ export function LuxuryFooter({ accentColor = '#0EC7BA' }: LuxuryFooterProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6 text-[#0EC7BA]">Account</h4>
+              <h4 className="font-bold mb-6 text-shop-accent">Account</h4>
               <ul className="space-y-4">
                 {!isPreviewMode ? (
                   <>

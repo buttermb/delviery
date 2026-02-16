@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { BusinessTier } from '@/lib/presets/businessTiers';
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
 import {
   CreditCard,
@@ -27,7 +26,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
+import { TIER_NAMES, TIER_PRICES, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,22 +40,14 @@ import { useStripeRedirectHandler } from "@/hooks/useStripeRedirectHandler";
 import { IntegrationStatus } from "@/components/integrations/IntegrationStatus";
 import { useCredits } from "@/hooks/useCredits";
 import { CreditBalance } from "@/components/credits/CreditBalance";
-import { CreditUsageChart } from "@/components/credits/CreditUsageChart";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { FREE_TIER_MONTHLY_CREDITS, CREDIT_PACKAGES } from "@/lib/credits";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
-type InvoiceLineItem = {
-  description?: string;
-  name?: string;
-  quantity?: number;
-  amount?: number;
-  total?: number;
-};
 
 export default function TenantAdminBillingPage() {
-  const { tenant, admin } = useTenantAdminAuth();
-  const { currentTier, currentTierName } = useFeatureAccess();
+  const { tenant } = useTenantAdminAuth();
+  const { currentTier } = useFeatureAccess();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -148,7 +139,7 @@ export default function TenantAdminBillingPage() {
   });
 
   // Fetch subscription plans
-  const { data: subscriptionPlans = [], isLoading: plansLoading, error: plansError } = useQuery({
+  const { data: subscriptionPlans = [] } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
       logger.info('[BillingPage] Fetching subscription plans...', { component: 'BillingPage' });
@@ -264,7 +255,7 @@ export default function TenantAdminBillingPage() {
     }
   });
 
-  const handlePlanChange = async (targetPlan: SubscriptionTier, useStripe = false) => {
+  const handlePlanChange = async (targetPlan: SubscriptionTier, _useStripe = false) => {
     if (!tenantId) return;
 
     // Guard: Validate user is not already on this plan
@@ -326,9 +317,6 @@ export default function TenantAdminBillingPage() {
         return;
       }
     }
-
-    const isUpgrade = targetIndex > currentIndex;
-    const action = isUpgrade ? 'upgrade' : 'downgrade';
 
     // Show confirmation dialog
     setSelectedPlan(targetPlan);
@@ -419,9 +407,6 @@ export default function TenantAdminBillingPage() {
       setUpgradeLoading(false);
     }
   };
-
-  // Check if platform Stripe is in test mode
-  const isTestMode = import.meta.env.VITE_STRIPE_SECRET_KEY?.startsWith('sk_test_');
 
   // Calculate trial days remaining
   const trialDaysRemaining = tenant?.trial_ends_at

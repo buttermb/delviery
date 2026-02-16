@@ -18,6 +18,7 @@ import { useLowStockAlerts, LowStockProduct } from '@/hooks/useLowStockAlerts';
 import { usePurchaseOrders } from '@/hooks/usePurchaseOrders';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 export function LowStockWidget() {
   const navigate = useNavigate();
@@ -150,9 +151,7 @@ export function LowStockWidget() {
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Package className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">
-                    {product.name}
-                  </div>
+                  <TruncatedText text={product.name} className="text-sm font-medium" as="div" />
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="tabular-nums">
                       {product.availableQuantity} / {product.lowStockThreshold} units

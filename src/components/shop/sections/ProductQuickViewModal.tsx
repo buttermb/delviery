@@ -4,8 +4,8 @@
  * Luxury-styled modal for quick product preview without leaving the grid.
  */
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, ShoppingCart, Star, Leaf } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Plus, Minus, ShoppingCart, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';

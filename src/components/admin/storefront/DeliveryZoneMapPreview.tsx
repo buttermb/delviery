@@ -7,7 +7,6 @@
 import { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Info, AlertCircle } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -334,7 +333,7 @@ export function DeliveryZoneMapPreview({
   }, [updateMarkers]);
 
   const hasZones = zones.length > 0;
-  const hasMappableZones = zoneLocations.length > 0;
+  const _hasMappableZones = zoneLocations.length > 0;
 
   return (
     <Card className={className}>

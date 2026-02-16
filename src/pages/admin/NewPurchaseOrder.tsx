@@ -1,11 +1,10 @@
 // @ts-nocheck
 import { logger } from '@/lib/logger';
-import { useState, useMemo, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,14 +15,9 @@ import { toast } from 'sonner';
 import {
     ArrowLeft,
     ArrowRight,
-    CheckCircle2,
-    Package,
-    Plus,
     Trash2,
-    Calendar,
-    Building2,
-    DollarSign,
-    ShoppingCart
+    ShoppingCart,
+    Search
 } from 'lucide-react';
 import { SmartVendorPicker } from '@/components/wholesale/SmartVendorPicker';
 import { Vendor } from '@/hooks/useVendors';
@@ -35,6 +29,7 @@ interface OrderProduct {
     qty: number;
     unitCost: number;
     expectedCost: number; // For display
+    originalCost: number; // Original cost_per_unit from product for price change tracking
 }
 
 interface POData {
@@ -50,7 +45,7 @@ export default function NewPurchaseOrder() {
     const queryClient = useQueryClient();
 
     // Products for PO (All products, regardless of stock)
-    const { data: allProducts = [], isLoading: productsLoading } = useQuery({
+    const { data: allProducts = [] } = useQuery({
         queryKey: ['products-for-po', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return [];
@@ -106,7 +101,8 @@ export default function NewPurchaseOrder() {
                         name: product.name,
                         qty: 1,
                         unitCost: product.cost_per_unit,
-                        expectedCost: product.cost_per_unit
+                        expectedCost: product.cost_per_unit,
+                        originalCost: product.cost_per_unit
                     }
                 ]
             };
@@ -173,6 +169,30 @@ export default function NewPurchaseOrder() {
                 .insert(orderItems);
 
             if (itemsError) throw itemsError;
+
+            // 3. Log vendor price changes for items with different costs
+            for (const item of poData.items) {
+                if (item.unitCost !== item.originalCost) {
+                    // Call the RPC to log vendor price change
+                    await supabase.rpc('log_vendor_price_change', {
+                        p_product_id: item.id,
+                        p_tenant_id: tenant.id,
+                        p_vendor_id: poData.vendor.id,
+                        p_cost_old: item.originalCost,
+                        p_cost_new: item.unitCost,
+                        p_changed_by: null,
+                        p_reason: `Updated via PO ${poNumber}`,
+                        p_source: 'purchase_order'
+                    });
+
+                    // Also update the product's cost_per_unit to reflect the new vendor cost
+                    await supabase
+                        .from('products')
+                        .update({ cost_per_unit: item.unitCost })
+                        .eq('id', item.id)
+                        .eq('tenant_id', tenant.id);
+                }
+            }
 
             toast.success("Purchase Order created successfully");
             queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
@@ -274,7 +294,7 @@ export default function NewPurchaseOrder() {
                                             No items added yet. Search products above.
                                         </div>
                                     ) : (
-                                        poData.items.map((item, index) => (
+                                        poData.items.map((item) => (
                                             <div key={item.id} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center p-3 border rounded-lg bg-card">
                                                 <div className="flex-1 font-medium">
                                                     {item.name}

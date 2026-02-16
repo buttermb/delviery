@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
-import { Loader2, ChevronRight, ChevronLeft, Eye, CheckCircle2, Users, X } from 'lucide-react';
+import { Loader2, ChevronRight, ChevronLeft, Eye, CheckCircle2, Users } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -189,8 +189,6 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
     }
   };
 
-  const selectedProductsData = inventory?.filter(p => selectedProducts.includes(p.id)) || [];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -233,12 +231,19 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
         </div>
 
         {/* Step Content */}
-        <div className="space-y-6 min-h-[400px]">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStep < STEPS.length) {
+            handleNext();
+          } else {
+            handleCreate();
+          }
+        }} className="space-y-6 min-h-[400px]">
           {/* Step 1: Basic Info */}
           {currentStep === 1 && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="menu-name">Menu Name *</Label>
+                <Label htmlFor="menu-name">Menu Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="menu-name"
                   placeholder="VIP Wholesale Menu - November 2024"
@@ -410,52 +415,53 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
               )}
             </div>
           )}
-        </div>
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-6 border-t">
-          <Button
-            variant="outline"
-            onClick={currentStep === 1 ? () => onOpenChange(false) : handleBack}
-            disabled={createMenu.isPending}
-          >
-            {currentStep === 1 ? (
-              'Cancel'
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Back
-              </>
-            )}
-          </Button>
+          {/* Footer Actions */}
+          <div className="flex items-center justify-between pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={currentStep === 1 ? () => onOpenChange(false) : handleBack}
+              disabled={createMenu.isPending}
+            >
+              {currentStep === 1 ? (
+                'Cancel'
+              ) : (
+                <>
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Back
+                </>
+              )}
+            </Button>
 
-          <div className="flex gap-2">
-            {currentStep < STEPS.length ? (
-              <Button onClick={handleNext}>
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleCreate}
-                disabled={createMenu.isPending}
-                className="bg-gradient-to-r from-primary to-primary/80"
-              >
-                {createMenu.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    Create Menu & Send
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {currentStep < STEPS.length ? (
+                <Button type="submit">
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={createMenu.isPending}
+                  className="bg-gradient-to-r from-primary to-primary/80"
+                >
+                  {createMenu.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      Create Menu & Send
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

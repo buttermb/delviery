@@ -15,12 +15,6 @@ export function RecentSearches({ onSelect, maxItems = 5, className }: RecentSear
     []
   );
 
-  const addSearch = (search: string) => {
-    if (!search.trim()) return;
-    const updated = [search, ...recentSearches.filter(s => s !== search)].slice(0, maxItems);
-    setRecentSearches(updated);
-  };
-
   const removeSearch = (search: string) => {
     setRecentSearches(recentSearches.filter(s => s !== search));
   };

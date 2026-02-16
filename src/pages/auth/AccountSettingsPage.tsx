@@ -21,14 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { User, Shield, Mail, Key, MonitorSmartphone, Trash2 } from 'lucide-react';
-
-interface ProfileData {
-  full_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  phone: string | null;
-}
+import { User, Mail, Key, MonitorSmartphone, Trash2 } from 'lucide-react';
 
 interface SessionInfo {
   id: string;
@@ -306,7 +299,6 @@ function EmailTab({ currentEmail }: { currentEmail: string }) {
 // ─── Password Tab ────────────────────────────────────────────────────────────
 
 function PasswordTab() {
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -336,7 +328,7 @@ function PasswordTab() {
       if (error) throw error;
 
       toast.success('Password updated successfully');
-      setCurrentPassword('');
+      setNewPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {

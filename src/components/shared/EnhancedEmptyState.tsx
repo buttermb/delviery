@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/contexts/ThemeContext";
 import { LucideIcon } from "lucide-react";
 import { isValidElement } from "react";
 
@@ -11,6 +10,9 @@ export type EmptyStateType =
   | "no_menus"
   | "no_products"
   | "no_customers"
+  | "no_drivers"
+  | "no_deliveries"
+  | "no_analytics"
   | "no_data"
   | "generic";
 
@@ -75,6 +77,21 @@ const emptyStateConfig: Record<
     defaultTitle: "No Customers",
     defaultDescription: "Customers will appear here once they start ordering.",
   },
+  no_drivers: {
+    emoji: "🚗",
+    defaultTitle: "No Drivers Yet",
+    defaultDescription: "Add drivers to manage deliveries and track your fleet.",
+  },
+  no_deliveries: {
+    emoji: "🚚",
+    defaultTitle: "No Deliveries Yet",
+    defaultDescription: "Deliveries will appear here once orders are dispatched.",
+  },
+  no_analytics: {
+    emoji: "📊",
+    defaultTitle: "No Analytics Data Yet",
+    defaultDescription: "Analytics will populate once you start processing orders.",
+  },
   no_data: {
     emoji: "📊",
     defaultTitle: "No Data Available",
@@ -115,7 +132,6 @@ export function EnhancedEmptyState({
   designSystem = "tenant-admin",
   compact = false,
 }: EnhancedEmptyStateProps) {
-  const { theme } = useTheme();
   const config = emptyStateConfig[type];
   const finalTitle = title || config.defaultTitle;
   const finalDescription = description || config.defaultDescription;
@@ -142,26 +158,12 @@ export function EnhancedEmptyState({
 
   const finalIcon = renderIcon();
 
-  // Design system-specific styling using semantic tokens
-  const bgColor = {
-    marketing: "bg-card",
-    "super-admin": "bg-card/80 backdrop-blur-xl",
-    "tenant-admin": "bg-card",
-    customer: "bg-card",
-  }[designSystem];
-
-  const borderColor = "border-border";
-  const textColor = "text-card-foreground";
-  const textLightColor = "text-muted-foreground";
-
   const primaryButtonClass = {
     marketing: "bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] hover:opacity-90 text-white",
     "super-admin": "bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white",
     "tenant-admin": "bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:opacity-90 text-white",
     customer: "bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white",
   }[designSystem];
-
-  const secondaryButtonClass = "border-border text-foreground hover:bg-muted";
 
   // Render action icon (handles LucideIcon or ReactNode)
   const renderActionIcon = (actionIcon: React.ReactNode | LucideIcon | undefined) => {
@@ -189,10 +191,10 @@ export function EnhancedEmptyState({
       </div>
 
       <div className="space-y-2 text-center">
-        <h3 className={cn(compact ? "text-lg" : "text-2xl", "font-semibold", textColor)} id={`empty-state-title-${type}`}>
+        <h3 className={cn(compact ? "text-lg" : "text-2xl", "font-semibold text-foreground")} id={`empty-state-title-${type}`}>
           {finalTitle}
         </h3>
-        <p className={cn("text-sm max-w-sm", textLightColor)} id={`empty-state-desc-${type}`}>
+        <p className={cn("text-sm max-w-sm text-muted-foreground")} id={`empty-state-desc-${type}`}>
           {finalDescription}
         </p>
       </div>
@@ -233,7 +235,7 @@ export function EnhancedEmptyState({
 
   return (
     <Card
-      className={cn("p-12 text-center max-w-md mx-auto", bgColor, borderColor, className)}
+      className={cn("p-12 text-center max-w-md mx-auto", className)}
       role="status"
       aria-live="polite"
     >

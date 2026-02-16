@@ -460,9 +460,9 @@ function TagSelectorContent({
                   >
                     {tag.name}
                   </Badge>
-                  {tag.description && (
+                  {(tag as any).description && (
                     <span className="text-xs text-muted-foreground truncate ml-auto">
-                      {tag.description}
+                      {(tag as any).description}
                     </span>
                   )}
                 </button>

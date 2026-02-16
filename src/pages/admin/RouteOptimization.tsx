@@ -1,14 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Route, Clock, Package } from 'lucide-react';
+import { MapPin, Route, Clock } from 'lucide-react';
 import { useWholesaleDeliveries } from '@/hooks/useWholesaleData';
 
 export default function RouteOptimization() {
-  const { tenant } = useTenantAdminAuth();
   const { data: deliveries, isLoading } = useWholesaleDeliveries();
 
   // Group deliveries by runner to create "routes"

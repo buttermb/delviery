@@ -25,6 +25,7 @@ export interface OfflineOrderItem {
 export interface OfflineOrderData {
   id: string;
   tenantId: string;
+  customerId?: string;
   customerName: string;
   customerPhone?: string;
   customerEmail?: string;
@@ -148,6 +149,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
         .from('orders')
         .insert({
           tenant_id: order.tenantId,
+          customer_id: order.customerId || null,
           customer_name: order.customerName,
           customer_phone: order.customerPhone || null,
           delivery_address: order.deliveryAddress,

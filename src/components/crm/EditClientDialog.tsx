@@ -127,7 +127,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Name</FormLabel>
+                                    <FormLabel required>Name</FormLabel>
                                     <FormControl>
                                         <Input {...field} />
                                     </FormControl>

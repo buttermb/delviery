@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -217,7 +218,7 @@ export function StockAdjustmentDialog({
               className="flex-1"
               variant={adjustmentType === "subtract" ? "destructive" : "default"}
             >
-              {adjustmentMutation.isPending ? "Adjusting..." : "Adjust Stock"}
+              {adjustmentMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Adjusting...</> : "Adjust Stock"}
             </Button>
           </div>
         </form>

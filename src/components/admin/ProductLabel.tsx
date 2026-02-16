@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Preview and download printable product labels
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Download, Printer, Loader2, QrCode, Barcode as BarcodeIcon } from 'lucide-react';
-import { downloadProductLabel, generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
+import { Download, Printer, Loader2, Barcode as BarcodeIcon } from 'lucide-react';
+import { generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
@@ -32,10 +32,10 @@ import html2canvas from 'html2canvas';
 type Product = Database['public']['Tables']['products']['Row'];
 
 interface ProductLabelProps {
-  product: Pick<Product, 
-    'id' | 'name' | 'sku' | 'strain_name' | 'strain_type' | 
-    'barcode' | 'category' | 'batch_number' | 'thc_percent' | 
-    'cbd_percent' | 'vendor_name' | 'wholesale_price' | 
+  product: Pick<Product,
+    'id' | 'name' | 'sku' | 'strain_name' | 'strain_type' |
+    'barcode' | 'category' | 'batch_number' | 'thc_percent' |
+    'cbd_percent' | 'vendor_name' | 'wholesale_price' |
     'retail_price' | 'available_quantity'
   > & {
     barcode_image_url?: string | null;
@@ -51,11 +51,11 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string>('');
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
+  const pdfPreviewUrlRef = useRef<string>('');
 
-  // Prepare label data
-  const labelData: ProductLabelData | null = product.sku ? {
+  // Prepare label data - memoized to avoid triggering useEffect on every render
+  const labelData: ProductLabelData | null = useMemo(() => product.sku ? {
     productName: product.name || '',
     category: product.category || undefined,
     strainName: product.strain_name || undefined,
@@ -70,21 +70,36 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     sku: product.sku || '',
     barcodeImageUrl: product.barcode_image_url || undefined,
     barcodeValue: (product.barcode as string) || product.sku || '',
-  } : null;
+  } : null, [
+    product.sku,
+    product.name,
+    product.category,
+    product.strain_name,
+    product.strain_type,
+    product.vendor_name,
+    product.batch_number,
+    product.thc_percent,
+    product.cbd_percent,
+    product.wholesale_price,
+    product.retail_price,
+    product.available_quantity,
+    product.barcode_image_url,
+    product.barcode,
+  ]);
 
   // Generate barcode when dialog opens
   useEffect(() => {
     if (open && product.sku) {
       try {
         const barcodeValue = (product.barcode as string) || product.sku || '';
-        
+
         logger.info('Generating barcode preview', {
           component: 'ProductLabel',
           barcodeValue,
           productName: product.name,
           sku: product.sku,
         });
-        
+
         // Use exact same parameters as PDF generation for consistency
         const dataUrl = generateBarcodeSVG(barcodeValue, {
           width: 3,
@@ -92,12 +107,12 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           displayValue: true,
           format: 'CODE128',
         });
-        
+
         logger.info('Barcode preview generated successfully', {
           urlLength: dataUrl.length,
           startsWithDataImage: dataUrl.startsWith('data:image'),
         });
-        
+
         setBarcodeDataUrl(dataUrl);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -110,7 +125,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
         toast.error(`Barcode preview failed: ${errorMessage}`);
       }
     }
-  }, [open, product.sku, product.barcode]);
+  }, [open, product.sku, product.barcode, product.name]);
 
   // Generate PDF preview when size changes or PDF preview is enabled
   useEffect(() => {
@@ -118,13 +133,14 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
       const generatePreview = async () => {
         try {
           setGeneratingPdf(true);
-          // Clean up old URL
-          if (pdfPreviewUrl) {
-            URL.revokeObjectURL(pdfPreviewUrl);
+          // Clean up old URL using ref to avoid stale closure
+          if (pdfPreviewUrlRef.current) {
+            URL.revokeObjectURL(pdfPreviewUrlRef.current);
           }
-          
+
           const pdfBlob = await generateProductLabelPDF(labelData, labelSize);
           const url = URL.createObjectURL(pdfBlob);
+          pdfPreviewUrlRef.current = url;
           setPdfPreviewUrl(url);
         } catch (error) {
           logger.error('Failed to generate PDF preview', error, {
@@ -135,14 +151,14 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           setGeneratingPdf(false);
         }
       };
-      
+
       generatePreview();
     }
 
     // Cleanup on unmount
     return () => {
-      if (pdfPreviewUrl) {
-        URL.revokeObjectURL(pdfPreviewUrl);
+      if (pdfPreviewUrlRef.current) {
+        URL.revokeObjectURL(pdfPreviewUrlRef.current);
       }
     };
   }, [open, showPdfPreview, labelSize, labelData]);
@@ -188,7 +204,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
 
     try {
       setLoading(true);
-      
+
       logger.info('Capturing label as image', {
         component: 'ProductLabel',
         labelSize,
@@ -222,7 +238,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
 
         toast.success(`Label image downloaded successfully`);
       }, 'image/png');
-      
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to download label image', error, {
@@ -243,7 +259,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
 
     try {
       setLoading(true);
-      
+
       logger.info('Printing label', {
         component: 'ProductLabel',
         labelSize,
@@ -251,10 +267,10 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
         sku: labelData.sku,
         barcodeValue: labelData.barcodeValue,
       });
-      
+
       const pdfBlob = await generateProductLabelPDF(labelData, labelSize);
       const url = URL.createObjectURL(pdfBlob);
-      
+
       // Open in new window for printing
       const printWindow = window.open(url, '_blank');
       if (printWindow) {
@@ -262,7 +278,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           printWindow.print();
         };
       }
-      
+
       toast.success('Opening print dialog...');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -371,9 +387,9 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                 <iframe
                   src={pdfPreviewUrl}
                   className="w-full border-0"
-                  style={{ 
-                    height: labelSize === 'small' ? '200px' : 
-                            labelSize === 'standard' ? '400px' : 
+                  style={{
+                    height: labelSize === 'small' ? '200px' :
+                            labelSize === 'standard' ? '400px' :
                             labelSize === 'large' ? '500px' : '700px'
                   }}
                   title="PDF Preview"
@@ -460,11 +476,11 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
               <div className="flex flex-col items-center w-full">
                 <p className="text-xs text-muted-foreground mb-2">Barcode</p>
                 {barcodeDataUrl ? (
-                  <div 
-                    className="flex justify-center p-2 bg-white rounded w-full max-w-[300px]"
+                  <div
+                    className="flex justify-center p-2 bg-white dark:bg-zinc-950 rounded w-full max-w-[300px]"
                     style={{ overflow: 'hidden' }}
                   >
-                    <img 
+                    <img
                       src={barcodeDataUrl}
                       alt="Product Barcode"
                       className="max-w-full h-auto"
@@ -478,8 +494,8 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                     className="h-16 max-w-[300px] object-contain"
                   />
                 ) : (
-                  <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white max-w-[300px]">
-                    <p className="font-mono text-xs text-black truncate">{product.sku}</p>
+                  <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white dark:bg-zinc-950 max-w-[300px]">
+                    <p className="font-mono text-xs text-black dark:text-white truncate">{product.sku}</p>
                   </div>
                 )}
               </div>
@@ -488,7 +504,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
               {labelSize !== 'small' && (
                 <div className="flex flex-col items-center">
                   <p className="text-xs text-muted-foreground mb-2">Quick Scan</p>
-                  <div className="p-2 bg-white rounded inline-block">
+                  <div className="p-2 bg-white dark:bg-zinc-950 rounded inline-block">
                     <QRCodeSVG
                       value={productQRData}
                       size={64}
@@ -557,4 +573,3 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     </Dialog>
   );
 }
-

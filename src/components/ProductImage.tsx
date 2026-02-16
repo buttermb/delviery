@@ -15,20 +15,6 @@ export default function ProductImage({ src, alt, className = '' }: ProductImageP
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Premium gradient fallback - unique per product based on name
-  const fallbackGradients = [
-    'from-emerald-500/20 to-teal-500/20',
-    'from-purple-500/20 to-pink-500/20',
-    'from-blue-500/20 to-cyan-500/20',
-    'from-amber-500/20 to-orange-500/20',
-    'from-rose-500/20 to-pink-500/20',
-    'from-violet-500/20 to-purple-500/20',
-  ];
-
-  // Pick gradient based on product name (consistent per product)
-  const gradientIndex = alt.length % fallbackGradients.length;
-  const gradient = fallbackGradients[gradientIndex];
-
   const hasImage = src && !imageError;
 
   return (
@@ -37,7 +23,7 @@ export default function ProductImage({ src, alt, className = '' }: ProductImageP
       {/* Loading spinner */}
       {isLoading && hasImage && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-10">
-          <div className="w-12 h-12 border-2 border-[#0EC7BA]/30 border-t-[#0EC7BA] rounded-full animate-spin" />
+          <div className="w-12 h-12 border-2 border-shop-accent/30 border-t-shop-accent rounded-full animate-spin" />
         </div>
       )}
 

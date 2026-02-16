@@ -3,20 +3,18 @@ import { useState, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import type { 
-  InputFormat, 
-  ParsedProduct, 
+import type {
+  InputFormat,
+  ParsedProduct,
   ValidationResult,
   MigrationStep,
   ColumnMappingItem,
-  QualityTier,
 } from '@/types/migration';
-import { 
-  parseTextMenu, 
-  isInformalTextMenu, 
+import {
+  parseTextMenu,
+  isInformalTextMenu,
   analyzeTextForDefaults,
   type QuickAnswers,
-  DEFAULT_QUICK_ANSWERS,
 } from '@/lib/migration/text-parser';
 
 // Local interface for detected columns (different from the AI parsing types)

@@ -12,9 +12,6 @@ import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import Shield from "lucide-react/dist/esm/icons/shield";
 import Users from "lucide-react/dist/esm/icons/users";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
-import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Info from "lucide-react/dist/esm/icons/info";
 import CheckCheck from "lucide-react/dist/esm/icons/check-check";
 import X from "lucide-react/dist/esm/icons/x";
 import { Button } from '@/components/ui/button';
@@ -27,7 +24,6 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useDashboardAlerts } from '@/hooks/useDashboardAlerts';
-import type { AlertSeverity, AlertCategory } from '@/hooks/usePredictiveAlerts';
 
 interface DashboardNotificationBellProps {
   className?: string;
@@ -47,15 +43,7 @@ export function DashboardNotificationBell({ className }: DashboardNotificationBe
     markAsRead,
   } = useDashboardAlerts();
 
-  const getSeverityIcon = (severity: AlertSeverity) => {
-    switch (severity) {
-      case 'critical': return <AlertCircle className="h-4 w-4" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4" />;
-      case 'info': return <Info className="h-4 w-4" />;
-    }
-  };
-
-  const getSeverityColor = (severity: AlertSeverity) => {
+  const getSeverityColor = (severity: 'critical' | 'warning' | 'info') => {
     switch (severity) {
       case 'critical': return 'bg-red-500';
       case 'warning': return 'bg-amber-500';
@@ -63,7 +51,7 @@ export function DashboardNotificationBell({ className }: DashboardNotificationBe
     }
   };
 
-  const getSeverityBadge = (severity: AlertSeverity) => {
+  const getSeverityBadge = (severity: 'critical' | 'warning' | 'info') => {
     switch (severity) {
       case 'critical': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
       case 'warning': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
@@ -71,7 +59,7 @@ export function DashboardNotificationBell({ className }: DashboardNotificationBe
     }
   };
 
-  const getCategoryIcon = (category: AlertCategory) => {
+  const getCategoryIcon = (category: 'inventory' | 'orders' | 'payments' | 'customers' | 'compliance') => {
     switch (category) {
       case 'inventory': return Package;
       case 'orders': return ShoppingCart;

@@ -62,7 +62,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('webhooks')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -71,7 +71,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as WebhookConfig[];
+        return (data || []) as unknown as WebhookConfig[];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;

@@ -6,19 +6,15 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import {
   Package,
   Upload,
   Download,
-  Zap,
   RefreshCw,
   Tag,
   DollarSign,
   AlertTriangle,
-  CheckCircle,
-  XCircle
 } from 'lucide-react';
 import {
   Dialog,
@@ -36,7 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 

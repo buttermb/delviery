@@ -7,7 +7,7 @@ interface FAQRatingProps {
   faqId: string;
 }
 
-export function FAQRating({ faqId }: FAQRatingProps) {
+export function FAQRating({ faqId: _faqId }: FAQRatingProps) {
   const [voted, setVoted] = useState<'up' | 'down' | null>(null);
 
   const handleVote = (vote: 'up' | 'down') => {

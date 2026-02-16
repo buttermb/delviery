@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Check, Circle, ChevronRight, ChevronLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft } from "lucide-react";
 
 /**
  * Step status type
@@ -450,7 +450,7 @@ function StepperNavigation({
   const {
     goToNextStep,
     goToPreviousStep,
-    canGoNext,
+    canGoNext: _canGoNext,
     canGoPrevious,
     isLastStep,
     currentStep,

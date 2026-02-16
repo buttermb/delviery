@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ export function ClientSelector({ value, onChange, error }: ClientSelectorProps) 
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-    const { data: clients, isLoading } = useClients();
+    const { data: clients, isLoading, isError, refetch } = useClients();
 
     // Filter clients based on search query
     const filteredClients = clients?.filter((client) =>
@@ -80,9 +80,39 @@ export function ClientSelector({ value, onChange, error }: ClientSelectorProps) 
                             </CommandEmpty>
                             <CommandGroup>
                                 {isLoading ? (
-                                    <CommandItem disabled>Loading...</CommandItem>
+                                    <div className="flex items-center justify-center py-6">
+                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        <span className="ml-2 text-sm text-muted-foreground">Loading clients...</span>
+                                    </div>
+                                ) : isError ? (
+                                    <div className="flex flex-col items-center gap-2 py-6 px-4">
+                                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                                        <p className="text-sm text-destructive">Failed to load clients</p>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => refetch()}
+                                        >
+                                            <RefreshCw className="mr-2 h-3 w-3" />
+                                            Retry
+                                        </Button>
+                                    </div>
+                                ) : !filteredClients || filteredClients.length === 0 ? (
+                                    <div className="p-4 text-center">
+                                        <p className="text-sm text-muted-foreground mb-2">
+                                            {searchQuery ? "No clients match your search." : "No clients yet."}
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setIsCreateDialogOpen(true)}
+                                            className="w-full"
+                                        >
+                                            <Plus className="mr-2 h-4 w-4" /> Create New Client
+                                        </Button>
+                                    </div>
                                 ) : (
-                                    filteredClients?.map((client) => (
+                                    filteredClients.map((client) => (
                                         <CommandItem
                                             key={client.id}
                                             value={client.id}

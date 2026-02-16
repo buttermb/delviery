@@ -122,12 +122,7 @@ export function useProcessRefund() {
       if (returnToInventory && input.items.length > 0) {
         for (const item of input.items) {
           // Use increment_stock RPC if available
-          const rpcClient = supabase as unknown as {
-            rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-              data: unknown;
-              error: { message?: string } | null;
-            }>;
-          };
+          const rpcClient = supabase as any;
 
           const { error: stockError } = await rpcClient.rpc('increment_stock', {
             p_product_id: item.product_id,
@@ -175,7 +170,7 @@ export function useProcessRefund() {
         created_at: now,
       };
 
-      const { error: paymentError } = await supabase
+      const { error: paymentError } = await (supabase as any)
         .from('payments')
         .insert(refundRecord as Record<string, unknown>);
 
@@ -189,12 +184,7 @@ export function useProcessRefund() {
 
       // Step 4: Update customer balance/credit if customer is attached
       if (input.customer_id) {
-        const rpcClient = supabase as unknown as {
-          rpc: (fn: string, params: Record<string, unknown>) => Promise<{
-            data: unknown;
-            error: { message?: string } | null;
-          }>;
-        };
+        const rpcClient = supabase as any;
 
         // Add credit to customer if refund method is store credit
         if (input.payment_method === 'store_credit') {
@@ -216,8 +206,8 @@ export function useProcessRefund() {
 
       // Step 5: Update return authorization status if linked
       if (input.return_authorization_id) {
-        await supabase
-          .from('returns' as unknown as 'returns')
+        await (supabase as any)
+          .from('returns')
           .update({
             status: 'refunded',
             processed_at: now,
@@ -272,10 +262,7 @@ export function useProcessRefund() {
       // Customer-specific invalidation
       if (input.customer_id) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.detail(input.customer_id),
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.customers.stats(input.customer_id),
+          queryKey: queryKeys.customers.details(),
         });
       }
 

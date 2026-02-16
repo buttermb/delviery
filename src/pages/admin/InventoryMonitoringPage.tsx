@@ -1,13 +1,9 @@
 import { InventoryAlertsDashboard } from '@/components/admin/inventory/InventoryAlertsDashboard';
 import { QuickReceiving } from '@/components/admin/inventory/QuickReceiving';
-import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, PackageCheck, TrendingDown, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, PackageCheck } from 'lucide-react';
 
 export default function InventoryMonitoringPage() {
-  const navigate = useNavigate();
 
   return (
     <div className="container mx-auto p-6 space-y-6">

@@ -24,7 +24,18 @@ export { usePermissions } from './usePermissions';
 export { useAuthGuard } from './useAuthGuard';
 
 // Realtime Hooks
-export { useRealtimeSubscription } from './useRealtimeSubscription';
+export { useRealTimeSubscription as useRealtimeSubscription } from './useRealtimeSubscription';
+export { useMenuInventorySync } from './useMenuInventorySync';
+export type {
+  MenuProductStockStatus,
+  ProductStockChange,
+  UseMenuInventorySyncOptions,
+  UseMenuInventorySyncResult,
+} from './useMenuInventorySync';
+
+// Sync Status Hooks
+export { useSyncStatus } from './useSyncStatus';
+export type { SyncStatus, UseSyncStatusReturn } from './useSyncStatus';
 
 // Toast Hook
 export { useToast, toast } from './use-toast';

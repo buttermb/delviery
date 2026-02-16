@@ -6,8 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Building2, ArrowRight, Shield } from 'lucide-react';
+import { ShoppingBag, Building2, Shield } from 'lucide-react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { cn } from '@/lib/utils';
 import { useParams } from 'react-router-dom';
@@ -41,7 +40,7 @@ export function ModeSwitcher({
         setMode(savedMode);
         onModeChange?.(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [onModeChange]);
@@ -66,7 +65,7 @@ export function ModeSwitcher({
     // Save to localStorage
     try {
       safeStorage.setItem(STORAGE_KEYS.CUSTOMER_MODE as any, newMode);
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
 

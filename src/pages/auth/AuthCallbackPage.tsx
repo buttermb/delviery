@@ -41,7 +41,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
           return true;
         }
         return false;
-      } catch (e) {
+      } catch {
         return false;
       }
     };

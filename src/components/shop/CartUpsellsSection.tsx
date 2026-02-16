@@ -5,7 +5,7 @@
 
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
@@ -31,7 +31,7 @@ export function CartUpsellsSection({
     maxItems = 8
 }: CartUpsellsSectionProps) {
     const { storeSlug } = useParams();
-    const { store, setCartItemCount } = useShop();
+    const { setCartItemCount } = useShop();
     const { toast } = useToast();
     const scrollRef = useRef<HTMLDivElement>(null);
     const {
@@ -40,7 +40,7 @@ export function CartUpsellsSection({
         cardBg,
         cardBorder,
         textPrimary,
-        textMuted
+        textMuted: _textMuted
     } = useLuxuryTheme();
 
     const { addItem } = useShopCart({
@@ -118,21 +118,6 @@ export function CartUpsellsSection({
             imageUrl: product.image_url,
             minExpiryDays: product.min_expiry_days,
             variant: product.strain_type
-        });
-        toast({
-            title: 'Added to cart',
-            description: `${product.product_name} has been added to your cart.`
-        });
-    };
-
-    const handleAddToCart = async (product: MarketplaceProduct) => {
-        await addItem({
-            productId: product.product_id,
-            name: product.product_name,
-            price: product.price,
-            quantity: 1,
-            imageUrl: product.image_url || undefined,
-            minExpiryDays: product.min_expiry_days,
         });
         toast({
             title: 'Added to cart',

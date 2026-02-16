@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { Label } from '@/components/ui/label';
-import { Mail, Check, Loader2, AlertCircle, ArrowLeft, Leaf, Star, ShieldCheck, Wand2 } from 'lucide-react';
+import { Mail, Check, Loader2, AlertCircle, ArrowLeft, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { handleError } from '@/utils/errorHandling/handlers';

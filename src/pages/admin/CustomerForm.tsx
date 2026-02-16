@@ -1,8 +1,10 @@
-import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth, Tenant } from '@/contexts/TenantAdminAuthContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import { Database } from '@/integrations/supabase/types';
 
@@ -12,35 +14,73 @@ import { encryptCustomerData, decryptCustomerData, logPHIAccess, getPHIFields } 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Shield } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { logger } from '@/lib/logger';
+
+const customerFormSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  phone: z.string()
+    .optional()
+    .or(z.literal(''))
+    .transform(val => val || '')
+    .pipe(
+      z.string().refine(
+        (val) => val === '' || /^[\d\s\-+()]+$/.test(val),
+        'Phone must contain only digits, spaces, dashes, or parentheses'
+      ).refine(
+        (val) => val === '' || val.replace(/\D/g, '').length >= 10,
+        'Phone number must be at least 10 digits'
+      )
+    ),
+  date_of_birth: z.string().min(1, 'Date of birth is required'),
+  address: z.string().optional().or(z.literal('')),
+  customer_type: z.enum(['recreational', 'medical']),
+  medical_card_number: z.string().optional().or(z.literal('')),
+  medical_card_expiration: z.string().optional().or(z.literal('')),
+  status: z.enum(['active', 'inactive', 'suspended']),
+});
+
+type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 export default function CustomerForm() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { isReady: encryptionIsReady } = useEncryption();
   const isEdit = !!id;
 
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    date_of_birth: '',
-    address: '',
-    customer_type: 'recreational',
-    medical_card_number: '',
-    medical_card_expiration: '',
-    status: 'active'
+
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      date_of_birth: '',
+      address: '',
+      customer_type: 'recreational',
+      medical_card_number: '',
+      medical_card_expiration: '',
+      status: 'active',
+    },
+    mode: 'onBlur',
   });
 
   useEffect(() => {
@@ -63,25 +103,23 @@ export default function CustomerForm() {
       if (error) throw error;
 
       if (data) {
-        // Decrypt customer data if encrypted
         const customer = data.is_encrypted ? await decryptCustomerData(data) : data;
 
-        // Log PHI access for HIPAA compliance
         if (data.is_encrypted) {
           await logPHIAccess(id, 'view', getPHIFields(), 'Edit form load');
         }
 
-        setFormData({
+        form.reset({
           first_name: customer.first_name || '',
           last_name: customer.last_name || '',
           email: customer.email || '',
           phone: customer.phone || '',
           date_of_birth: customer.date_of_birth || '',
           address: customer.address || '',
-          customer_type: customer.customer_type || 'recreational',
+          customer_type: (customer.customer_type || 'recreational') as 'medical' | 'recreational',
           medical_card_number: customer.medical_card_number || '',
           medical_card_expiration: customer.medical_card_expiration || '',
-          status: customer.status || 'active'
+          status: (customer.status || 'active') as 'active' | 'inactive' | 'suspended',
         });
       }
     } catch (error) {
@@ -92,59 +130,44 @@ export default function CustomerForm() {
     }
   };
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (values: CustomerFormValues) => {
     if (!tenant) {
       toast.error('Tenant not found');
       return;
     }
 
-    // Validation
-    if (!formData.first_name || !formData.last_name || !formData.email) {
-      toast.error('Please fill in all required fields');
+    if (!encryptionIsReady) {
+      toast.error('Encryption not initialized. Please log in again.');
       return;
     }
 
     try {
-      setLoading(true);
+      setSaving(true);
 
-      if (!encryptionIsReady) {
-        toast.error('Encryption not initialized. Please log in again.');
-        return;
-      }
-
-      // Prepare customer data for encryption
       const customerData = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone: formData.phone || null,
-        address: formData.address || null,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        phone: values.phone || null,
+        address: values.address || null,
         city: null,
         state: null,
         zip_code: null,
         tenant_id: tenant.id,
-        account_id: tenant.id, // Using tenant as account
-        date_of_birth: formData.date_of_birth || null,
-        customer_type: formData.customer_type,
-        medical_card_number: formData.medical_card_number || null,
-        medical_card_expiration: formData.medical_card_expiration || null,
-        status: formData.status,
+        account_id: tenant.id,
+        date_of_birth: values.date_of_birth || null,
+        customer_type: values.customer_type,
+        medical_card_number: values.medical_card_number || null,
+        medical_card_expiration: values.medical_card_expiration || null,
+        status: values.status,
         total_spent: 0,
         loyalty_points: 0,
-        loyalty_tier: 'bronze'
+        loyalty_tier: 'bronze',
       };
 
-      // Encrypt customer data
       const encryptedData = await encryptCustomerData(customerData);
 
       if (isEdit && id) {
-        // Update existing customer
         const { error } = await supabase
           .from('customers')
           .update(encryptedData as unknown as CustomerUpdate)
@@ -152,12 +175,9 @@ export default function CustomerForm() {
 
         if (error) throw error;
 
-        // Log PHI update
         await logPHIAccess(id, 'update', getPHIFields(), 'Customer update');
-
         toast.success('Customer updated successfully');
       } else {
-        // Check tenant limits before creating
         const currentCustomers = tenant.usage?.customers || 0;
         const customerLimit = tenant.limits?.customers || 0;
 
@@ -168,7 +188,6 @@ export default function CustomerForm() {
           return;
         }
 
-        // Create new customer
         const { data: newCustomer, error } = await supabase
           .from('customers')
           .insert([encryptedData as unknown as CustomerInsert])
@@ -177,12 +196,10 @@ export default function CustomerForm() {
 
         if (error) throw error;
 
-        // Log PHI creation
         if (newCustomer) {
           await logPHIAccess(newCustomer.id, 'create', getPHIFields(), 'Customer creation');
         }
 
-        // Update usage count
         const currentUsage = tenant.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 };
         await supabase
           .from('tenants')
@@ -202,10 +219,10 @@ export default function CustomerForm() {
     } catch (error) {
       logger.error('Error saving customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to save customer', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred'
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -244,169 +261,215 @@ export default function CustomerForm() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name *</Label>
-                    <Input
-                      id="first_name"
-                      value={formData.first_name}
-                      onChange={(e) => handleChange('first_name', e.target.value)}
-                      required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Basic Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="first_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>First Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John" autoFocus {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="last_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Last Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name *</Label>
-                    <Input
-                      id="last_name"
-                      value={formData.last_name}
-                      onChange={(e) => handleChange('last_name', e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
-                      required
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="john@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone</FormLabel>
+                          <FormControl>
+                            <Input type="tel" placeholder="(555) 123-4567" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth *</Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                      required
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="date_of_birth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Date of Birth</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="inactive">Inactive</SelectItem>
+                              <SelectItem value="suspended">Suspended</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) => handleChange('status', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                        <SelectItem value="suspended">Suspended</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleChange('address', e.target.value)}
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address</FormLabel>
+                        <FormControl>
+                          <Input placeholder="123 Main St" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Customer Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Customer Type</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="customer_type">Type</Label>
-                  <Select
-                    value={formData.customer_type}
-                    onValueChange={(value) => handleChange('customer_type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="recreational">Recreational</SelectItem>
-                      <SelectItem value="medical">Medical</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Customer Type */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Customer Type</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="customer_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="recreational">Recreational</SelectItem>
+                            <SelectItem value="medical">Medical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {formData.customer_type === 'medical' && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <div className="space-y-2">
-                      <Label htmlFor="medical_card_number">Medical Card Number</Label>
-                      <Input
-                        id="medical_card_number"
-                        value={formData.medical_card_number}
-                        onChange={(e) => handleChange('medical_card_number', e.target.value)}
+                  {form.watch('customer_type') === 'medical' && (
+                    <div className="space-y-4 pt-4 border-t">
+                      <FormField
+                        control={form.control}
+                        name="medical_card_number"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Medical Card Number</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="medical_card_expiration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Card Expiration Date</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="medical_card_expiration">Card Expiration Date</Label>
-                      <Input
-                        id="medical_card_expiration"
-                        type="date"
-                        value={formData.medical_card_expiration}
-                        onChange={(e) => handleChange('medical_card_expiration', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Actions */}
-            <div className="flex gap-4 justify-end pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigateToAdmin('customer-management')}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
-              >
-                {loading ? (
-                  <>Saving...</>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    {isEdit ? 'Update Customer' : 'Create Customer'}
-                  </>
-                )}
-              </Button>
+              {/* Actions */}
+              <div className="flex gap-4 justify-end pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigateToAdmin('customer-management')}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                >
+                  {saving ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      {isEdit ? 'Update Customer' : 'Create Customer'}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </Form>
       </div>
     </div>
   );

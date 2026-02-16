@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useBanners, Banner } from '@/hooks/useBanners';
+import { useBanners } from '@/hooks/useBanners';
 import { cn } from '@/lib/utils';
 
 export interface PromotionsBannerSectionProps {

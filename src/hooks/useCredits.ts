@@ -21,7 +21,6 @@ import {
   CRITICAL_CREDIT_THRESHOLD,
   FREE_TIER_MONTHLY_CREDITS,
   LOW_BALANCE_WARNING_LEVELS,
-  CREDIT_WARNING_THRESHOLDS,
   type CreditBalance,
   type ConsumeCreditsResult,
 } from '@/lib/credits';
@@ -149,14 +148,12 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
-// Safe wrapper to get tenant without throwing
+// Safe wrapper to get tenant and session
+// Note: useTenantAdminAuth must be called unconditionally per React hooks rules
 function useTenantSafe() {
-  try {
-    const { tenant } = useTenantAdminAuth();
-    return tenant;
-  } catch {
-    return null;
-  }
+  const authContext = useTenantAdminAuth();
+  // Return tenant from context, or null if context is unavailable
+  return { tenant: authContext?.tenant ?? null, session: null };
 }
 
 // Fetch credits balance from edge function
@@ -174,7 +171,7 @@ async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResp
 }
 
 export function useCredits(): UseCreditsReturn {
-  const tenant = useTenantSafe();
+  const { tenant, session } = useTenantSafe();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
   // Track which warning thresholds have been shown to avoid duplicates
@@ -184,6 +181,8 @@ export function useCredits(): UseCreditsReturn {
   const [recentOperations, setRecentOperations] = useState<number[]>([]);
 
   const tenantId = tenant?.id;
+  // Only fetch credits when both tenant AND session exist (user is authenticated)
+  const isAuthenticated = !!session?.access_token;
 
   // Fetch credit balance from credits-balance edge function
   const {
@@ -194,7 +193,7 @@ export function useCredits(): UseCreditsReturn {
   } = useQuery({
     queryKey: queryKeys.credits.balance(tenantId),
     queryFn: () => fetchCreditsBalance(tenantId!),
-    enabled: !!tenantId,
+    enabled: !!tenantId && isAuthenticated,
     staleTime: STALE_TIME_MS,
     refetchInterval: REFETCH_INTERVAL_MS,
   });
@@ -517,7 +516,7 @@ export function useCreditGatedAction() {
 
       const result = await action();
       return result;
-    } catch (err) {
+    } catch {
       toast.error('Action Failed', {
         description: 'An unexpected error occurred. Please try again.',
       });

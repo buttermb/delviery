@@ -1073,7 +1073,7 @@ describe('Edge Functions Integration Tests', () => {
 
       mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
-      const response = await fetch(endpoint, {
+      await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

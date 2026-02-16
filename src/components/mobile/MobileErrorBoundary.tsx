@@ -57,7 +57,7 @@ export class MobileErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/95 backdrop-blur p-4">
+        <div className="fixed inset-0 z-modal flex items-center justify-center bg-background/95 backdrop-blur p-4">
           <div className="max-w-sm w-full bg-card border border-border rounded-lg p-6 shadow-lg">
             <div className="flex flex-col items-center text-center gap-4">
               <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">

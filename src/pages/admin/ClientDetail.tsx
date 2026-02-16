@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,12 +20,12 @@ import { showInfoToast, showSuccessToast, showErrorToast } from "@/utils/toastHe
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { formatCurrency } from '@/lib/formatters';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 export default function ClientDetail() {
-  const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();
+  const { id } = useParams<{ id: string; tenantSlug: string }>();
   const navigate = useTenantNavigate();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
@@ -102,7 +101,10 @@ export default function ClientDetail() {
 
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
-  const { data: payments = [] } = useClientPayments(id || "");
+  const { data: _payments = [] } = useClientPayments(id || "");
+
+  // Set breadcrumb label to show client business name
+  useBreadcrumbLabel(client?.business_name ?? null);
 
   if (clientLoading || ordersLoading) {
     return (
@@ -133,7 +135,7 @@ export default function ClientDetail() {
     ? orderData.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orderData.length
     : 0;
 
-  const unpaidOrders = orderData.filter(o =>
+  const _unpaidOrders = orderData.filter(o =>
     o.status === "pending" || o.status === "assigned" || o.status === "in_transit"
   );
 

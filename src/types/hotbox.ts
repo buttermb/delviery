@@ -3,7 +3,6 @@
  * Centralized types for the Hotbox Dashboard system
  */
 
-import { LucideIcon } from 'lucide-react';
 
 // ==========================================
 // Metric Types

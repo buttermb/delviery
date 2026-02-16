@@ -273,7 +273,7 @@ const HOOD_TIER: TierPreset = {
 
   quickActions: [
     { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/orders?tab=wholesale' },
-    { id: 'pnl', label: 'P&L Summary', icon: 'DollarSign', path: '/admin/financial-center' },
+    { id: 'pnl', label: 'P&L Summary', icon: 'DollarSign', path: '/admin/finance-hub' },
     { id: 'analytics', label: 'Analytics', icon: 'BarChart3', path: '/admin/analytics-hub' },
     { id: 'team', label: 'Team', icon: 'Users', path: '/admin/staff-management' },
   ],
@@ -343,7 +343,7 @@ const EMPIRE_TIER: TierPreset = {
     { id: 'realtime', label: 'Real-Time', icon: 'Activity', path: '/admin/realtime-dashboard' },
     { id: 'strategic', label: 'Strategic', icon: 'TrendingUp', path: '/admin/advanced-analytics' },
     { id: 'compliance', label: 'Compliance', icon: 'Shield', path: '/admin/compliance' },
-    { id: 'fleet', label: 'Fleet', icon: 'Truck', path: '/admin/delivery-hub?tab=fleet' },
+    { id: 'fleet', label: 'Fleet', icon: 'Truck', path: '/admin/fulfillment-hub?tab=fleet' },
   ],
 
   navSections: ['all'],

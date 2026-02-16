@@ -2,15 +2,14 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Upload, 
-  Loader2, 
-  Columns, 
-  Eye, 
-  Download, 
+import {
+  Upload,
+  Loader2,
+  Columns,
+  Eye,
+  Download,
   CheckCircle2,
   ArrowLeft,
-  ArrowRight,
   HelpCircle,
 } from 'lucide-react';
 import type { MigrationStep } from '@/types/migration';
@@ -81,8 +80,7 @@ export function MigrationWizard() {
             {STEPS.map((step, index) => {
               const isCurrent = step.id === migration.state.step;
               const isPast = index < currentStepIndex;
-              const isFuture = index > currentStepIndex;
-              
+
               return (
                 <div 
                   key={step.id}

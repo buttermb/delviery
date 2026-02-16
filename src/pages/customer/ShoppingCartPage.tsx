@@ -22,14 +22,14 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { toast } from "@/hooks/use-toast";
-import { validateRouteUUID } from "@/lib/utils/uuidValidation";
+import { validateRouteUUID as _validateRouteUUID } from "@/lib/utils/uuidValidation";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 
 export default function ShoppingCartPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { customer, tenant } = useCustomerAuth();
+  const { tenant } = useCustomerAuth();
   const { guestCart, updateGuestCartItem, removeFromGuestCart } = useGuestCart();
   const [orderNotes, setOrderNotes] = useState("");
   const [user, setUser] = useState<any>(null);

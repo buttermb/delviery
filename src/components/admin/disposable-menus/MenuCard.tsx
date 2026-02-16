@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
-  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store,
+  ArrowUpDown
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -28,17 +29,17 @@ import { QRCodeDialog } from './QRCodeDialog';
 import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { MenuPaymentSettingsDialog } from './MenuPaymentSettingsDialog';
+import { MenuProductOrderingDialog } from './MenuProductOrderingDialog';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
-import type { DisposableMenu } from '@/types/admin';
 import type { Json } from '@/integrations/supabase/types';
 
 // Extended Menu type with computed/joined fields from queries
 // Simplified interface that accepts what the database actually returns
-interface Menu {
+export interface Menu {
   id: string;
   tenant_id: string;
   name: string;
@@ -77,6 +78,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
+  const [productOrderingOpen, setProductOrderingOpen] = useState(false);
 
   const viewCount = menu.view_count || 0;
   const customerCount = menu.customer_count || 0;
@@ -305,6 +307,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     <CreditCard className="h-4 w-4 mr-2" />
                     Payment Settings
                   </DropdownMenuItem>
+                  {!isForumMenu && productCount > 0 && (
+                    <DropdownMenuItem onClick={() => setProductOrderingOpen(true)}>
+                      <ArrowUpDown className="h-4 w-4 mr-2" />
+                      Reorder Products
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setCloneDialogOpen(true)}>
                     <CopyPlus className="h-4 w-4 mr-2" />
@@ -412,6 +420,15 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         onOpenChange={setPaymentSettingsOpen}
         menu={menu as any}
       />
+
+      {!isForumMenu && (
+        <MenuProductOrderingDialog
+          open={productOrderingOpen}
+          onOpenChange={setProductOrderingOpen}
+          menuId={menu.id}
+          menuName={menu.name}
+        />
+      )}
     </>
   );
 };

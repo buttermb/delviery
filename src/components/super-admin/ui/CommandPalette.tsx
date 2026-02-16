@@ -8,13 +8,11 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Command, Search, ArrowRight } from 'lucide-react';
+import { Command, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
 interface CommandItem {
   id: string;
@@ -26,7 +24,6 @@ interface CommandItem {
 
 export function CommandPalette() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 

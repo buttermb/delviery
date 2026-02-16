@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,21 +12,18 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
-import { queryKeys } from "@/lib/queryKeys";
-import { useAsyncAction } from "@/hooks/useAsyncAction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { toast } from "sonner";
 import {
   Package,
   Plus,
-  Search,
   Edit,
   Trash2,
   Barcode,
+  Copy,
   DollarSign,
   LayoutGrid,
   List,
@@ -33,8 +31,6 @@ import {
   Loader2,
   Printer,
   MoreVertical,
-  Eye,
-  EyeOff,
   Store
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
@@ -62,8 +58,8 @@ import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
-import { Upload } from "lucide-react";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
+import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -74,6 +70,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
+import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBadge";
+import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
+import Columns from "lucide-react/dist/esm/icons/columns";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
@@ -82,7 +81,6 @@ type Product = Database['public']['Tables']['products']['Row'] & {
   minimum_price?: number;
   version?: number;
 };
-type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 const mapProductToForm = (product: Product): ProductFormData => ({
   name: product.name || "",
@@ -112,25 +110,32 @@ export default function ProductManagement() {
   const navigateTenant = useTenantNavigate();
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
+  useEncryption();
   const queryClient = useQueryClient();
   const { invalidateProductCaches } = useProductMutations();
 
+  // Product duplication hook with callback to open edit dialog
+  const { duplicateProduct } = useProductDuplicate({
+    onSuccess: (newProduct) => {
+      // Add to local state and open edit dialog
+      setProducts(prev => [newProduct, ...prev]);
+      setEditingProduct(newProduct);
+      setIsDialogOpen(true);
+    },
+  });
+
   // Read URL search params for filtering
   const urlSearch = searchParams.get('search') || '';
-  const highlightId = searchParams.get('highlight') || '';
+  const urlNewProduct = searchParams.get('new') === 'true';
 
   // Use optimistic list for products
   const {
     items: products,
     optimisticIds,
-    addOptimistic,
-    updateOptimistic,
-    deleteOptimistic,
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -151,8 +156,32 @@ export default function ProductManagement() {
   const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
+  // Column visibility - margin column hidden by default
+  const availableColumns = [
+    { id: "image", label: "Image" },
+    { id: "name", label: "Product Details" },
+    { id: "category", label: "Category" },
+    { id: "price", label: "Price" },
+    { id: "margin", label: "Margin" },
+    { id: "stock", label: "Stock" },
+  ];
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(
+    () => preferences.customFilters?.visibleColumns || ["image", "name", "category", "price", "stock"]
+  );
+
+  // Margin threshold for alerts (default 20%)
+  const marginThreshold = 20;
+
+  // Auto-open create dialog when ?new=true is in URL
+  useEffect(() => {
+    if (urlNewProduct) {
+      setEditingProduct(null);
+      setIsDialogOpen(true);
+    }
+  }, [urlNewProduct]);
+
   // Fetch store settings for potency alerts
-  const { data: storeSettings } = useQuery({
+  useQuery({
     queryKey: ['store-settings-potency'],
     queryFn: async () => {
       // Find the marketplace profile for this tenant
@@ -177,19 +206,30 @@ export default function ProductManagement() {
   });
 
   // Track previous filter values to avoid unnecessary saves
-  const prevFiltersRef = useRef({ sortBy, categoryFilter, stockStatusFilter });
+  const prevFiltersRef = useRef({ sortBy, categoryFilter, stockStatusFilter, visibleColumns });
+
+  // Toggle column visibility
+  const handleToggleColumn = (columnId: string) => {
+    setVisibleColumns(prev => {
+      const newColumns = prev.includes(columnId)
+        ? prev.filter(c => c !== columnId)
+        : [...prev, columnId];
+      return newColumns;
+    });
+  };
 
   // Persist filter changes - only when values actually change
   useEffect(() => {
     const prev = prevFiltersRef.current;
-    if (prev.sortBy !== sortBy || prev.categoryFilter !== categoryFilter || prev.stockStatusFilter !== stockStatusFilter) {
-      prevFiltersRef.current = { sortBy, categoryFilter, stockStatusFilter };
+    const columnsChanged = JSON.stringify(prev.visibleColumns) !== JSON.stringify(visibleColumns);
+    if (prev.sortBy !== sortBy || prev.categoryFilter !== categoryFilter || prev.stockStatusFilter !== stockStatusFilter || columnsChanged) {
+      prevFiltersRef.current = { sortBy, categoryFilter, stockStatusFilter, visibleColumns };
       savePreferences({
         sortBy,
-        customFilters: { category: categoryFilter, stockStatus: stockStatusFilter }
+        customFilters: { category: categoryFilter, stockStatus: stockStatusFilter, visibleColumns }
       });
     }
-  }, [sortBy, categoryFilter, stockStatusFilter, savePreferences]);
+  }, [sortBy, categoryFilter, stockStatusFilter, visibleColumns, savePreferences]);
 
   // Other state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -197,7 +237,7 @@ export default function ProductManagement() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [labelDialogOpen, setLabelDialogOpen] = useState(false);
   const [labelProduct, setLabelProduct] = useState<Product | null>(null);
-  // const [isGenerating, setIsGenerating] = useState(false); // Replaced by useAsyncAction
+  const [isGenerating, setIsGenerating] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [batchScanMode, setBatchScanMode] = useState(false);
   const [batchProducts, setBatchProducts] = useState<Product[]>([]);
@@ -206,8 +246,7 @@ export default function ProductManagement() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Optimistic locking for concurrent edit protection
-  const { updateWithLock, isUpdating: isLockUpdating } = useOptimisticLock('products');
-  const productVersionRef = useRef<number>(1);
+  const { updateWithLock } = useOptimisticLock('products', tenant?.id);
 
   // Batch delete confirmation dialog
   const { dialogState: batchDeleteDialogState, confirm: confirmBatchDelete, closeDialog: closeBatchDeleteDialog, setLoading: setBatchDeleteLoading } = useConfirmDialog();
@@ -230,35 +269,20 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
-  // Sync query data into optimistic list state
-  const fetchProducts = useCallback(async () => {
-    if (!tenant?.id) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
+  // Refetch products helper
+  const refetchProducts = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.products.list(tenant?.id) });
+  }, [queryClient, tenant?.id]);
 
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (err) {
-      logger.error('Failed to fetch products', err);
-      toast.error('Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  }, [tenant?.id, setProducts]);
-
+  // Sync query data when component mounts
   useEffect(() => {
     if (tenant?.id) {
-      fetchProducts();
+      refetchProducts();
     }
-  }, [tenant?.id, fetchProducts]);
+  }, [tenant?.id, refetchProducts]);
 
   // Alias for external usage
-  const loadProducts = fetchProducts;
+  const loadProducts = refetchProducts;
 
   // Derived state for categories
   const categories = useMemo(() => {
@@ -382,7 +406,7 @@ export default function ProductManagement() {
   };
 
   // Handlers
-  const handleProductSubmit = useAsyncAction(async (data: ProductFormData) => {
+  const handleProductSubmit = async (data: ProductFormData) => {
     // Validate tenant context first
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -396,99 +420,107 @@ export default function ProductManagement() {
       return;
     }
 
-    // Check SKU uniqueness (if SKU provided)
-    if (data.sku) {
-      const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
-      if (!isSkuUnique) {
-        toast.error('SKU already exists. Please use a unique SKU.');
-        return;
-      }
-    }
-
-    // Ensure all required fields for DB are present
-    const productData = {
-      tenant_id: tenant.id,
-      name: data.name,
-      sku: data.sku,
-      category: data.category,
-      vendor_name: data.vendor_name,
-      strain_name: data.strain_name,
-      strain_type: data.strain_type,
-      thc_percent: data.thc_percent ? parseFloat(data.thc_percent) : null,
-      cbd_percent: data.cbd_percent ? parseFloat(data.cbd_percent) : null,
-      batch_number: data.batch_number,
-      cost_per_unit: data.cost_per_unit ? parseFloat(data.cost_per_unit) : null,
-      wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,
-      retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
-      available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
-      description: data.description,
-      image_url: data.image_url,
-      low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
-      // Add missing required fields with defaults
-      price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
-      thca_percentage: null,
-      metrc_retail_id: data.metrc_retail_id || null,
-      exclude_from_discounts: data.exclude_from_discounts,
-      minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
-    };
-
-    if (editingProduct) {
-      if (!tenant?.id) throw new Error('No tenant context');
-
-      // Use optimistic locking to prevent concurrent edit conflicts
-      const expectedVersion = editingProduct.version || 1;
-      const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
-
-      if (!result.success) {
-        if (result.conflictDetected) {
-          toast.error("This product was modified by another user. Please refresh and try again.");
+    setIsGenerating(true);
+    try {
+      // Check SKU uniqueness (if SKU provided)
+      if (data.sku) {
+        const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
+        if (!isSkuUnique) {
+          toast.error('SKU already exists. Please use a unique SKU.');
+          setIsGenerating(false);
           return;
         }
-        throw new Error(result.error || 'Failed to update product');
       }
 
-      toast.success("Product updated");
-      // Update state with new version
-      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
+      // Ensure all required fields for DB are present
+      const productData = {
+        tenant_id: tenant.id,
+        name: data.name,
+        sku: data.sku,
+        category: data.category,
+        vendor_name: data.vendor_name,
+        strain_name: data.strain_name,
+        strain_type: data.strain_type,
+        thc_percent: data.thc_percent ? parseFloat(data.thc_percent) : null,
+        cbd_percent: data.cbd_percent ? parseFloat(data.cbd_percent) : null,
+        batch_number: data.batch_number,
+        cost_per_unit: data.cost_per_unit ? parseFloat(data.cost_per_unit) : null,
+        wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,
+        retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
+        available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
+        description: data.description,
+        image_url: data.image_url,
+        low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
+        // Add missing required fields with defaults
+        price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
+        thca_percentage: null,
+        metrc_retail_id: data.metrc_retail_id || null,
+        exclude_from_discounts: data.exclude_from_discounts,
+        minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
+      };
 
-      // Invalidate all product caches so storefront reflects changes instantly
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId: editingProduct.id,
-        category: productData.category || undefined,
-      });
-    } else {
-      const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
-      if (error) throw error;
-      toast.success("Product created");
-      // Manually update state
-      setProducts(prev => [newProduct, ...prev]);
+      if (editingProduct) {
+        if (!tenant?.id) throw new Error('No tenant context');
 
-      // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
-      // this handles marketplace_products with additional fields like slug)
-      if (store?.id && newProduct) {
-        const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
-          p_product_id: newProduct.id,
-          p_store_id: store.id,
-        });
-        if (syncError) {
-          // Don't block on sync error - product was created successfully
-          logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
+        // Use optimistic locking to prevent concurrent edit conflicts
+        const expectedVersion = editingProduct.version || 1;
+        const result = await updateWithLock(editingProduct.id, productData, expectedVersion);
+
+        if (!result.success) {
+          if (result.conflictDetected) {
+            toast.error("This product was modified by another user. Please refresh and try again.");
+            return;
+          }
+          throw new Error(result.error || 'Failed to update product');
         }
-      }
 
-      // Invalidate all product caches so storefront reflects changes instantly
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId: newProduct.id,
-        category: productData.category || undefined,
-      });
+        toast.success("Product updated");
+        // Update state with new version
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
+
+        // Invalidate all product caches so storefront reflects changes instantly
+        invalidateProductCaches({
+          tenantId: tenant.id,
+          storeId: store?.id || undefined,
+          productId: editingProduct.id,
+          category: productData.category || undefined,
+        });
+      } else {
+        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
+        if (error) throw error;
+        toast.success("Product created");
+        // Manually update state
+        setProducts(prev => [newProduct, ...prev]);
+
+        // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
+        // this handles marketplace_products with additional fields like slug)
+        if (store?.id && newProduct) {
+          const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
+            p_product_id: newProduct.id,
+            p_store_id: store.id,
+          });
+          if (syncError) {
+            // Don't block on sync error - product was created successfully
+            logger.warn('Product sync to marketplace failed', { error: syncError, productId: newProduct.id });
+          }
+        }
+
+        // Invalidate all product caches so storefront reflects changes instantly
+        invalidateProductCaches({
+          tenantId: tenant.id,
+          storeId: store?.id || undefined,
+          productId: newProduct.id,
+          category: productData.category || undefined,
+        });
+      }
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setIsGenerating(false);
     }
-    setIsDialogOpen(false);
-    setEditingProduct(null);
-  });
+  };
 
   const handleDelete = (id: string) => {
     const product = products.find(p => p.id === id);
@@ -665,7 +697,7 @@ export default function ProductManagement() {
     setBulkPriceEditorOpen(true);
   };
 
-  const handleBulkPriceUpdate = async (updates: unknown) => {
+  const handleBulkPriceUpdate = async (_updates: unknown) => {
     // Component handles the DB update; we refresh and invalidate caches
     await loadProducts();
     invalidateProductCaches({
@@ -790,7 +822,6 @@ export default function ProductManagement() {
     }
   };
 
-
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
     {
@@ -864,6 +895,20 @@ export default function ProductManagement() {
         />
       )
     },
+    // Margin column - hidden by default, visible via column toggle
+    ...(visibleColumns.includes("margin") ? [{
+      header: "Margin",
+      accessorKey: "cost_per_unit" as keyof Product,
+      className: "text-center",
+      cell: (product: Product) => (
+        <ProductMarginBadge
+          costPrice={product.cost_per_unit}
+          sellingPrice={product.wholesale_price}
+          marginThreshold={marginThreshold}
+          size="sm"
+        />
+      )
+    }] : []),
     {
       header: "Stock",
       accessorKey: "available_quantity",
@@ -896,6 +941,9 @@ export default function ProductManagement() {
             <DropdownMenuItem onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => duplicateProduct(product)}>
+              <Copy className="mr-2 h-4 w-4" /> Duplicate
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
@@ -919,6 +967,7 @@ export default function ProductManagement() {
       product={product}
       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
       onDelete={() => handleDelete(product.id)}
+      onDuplicate={() => duplicateProduct(product)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
       onPublish={() => handlePublish(product.id)}
     />
@@ -1003,13 +1052,20 @@ export default function ProductManagement() {
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <ExportButton
-            data={filteredProducts}
+            data={filteredProducts.map(p => ({
+              ...p,
+              margin_percent: p.wholesale_price && p.cost_per_unit
+                ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
+                : null,
+            }))}
             filename="products"
             columns={[
               { key: "name", label: "Name" },
               { key: "sku", label: "SKU" },
               { key: "category", label: "Category" },
+              { key: "cost_per_unit", label: "Cost" },
               { key: "wholesale_price", label: "Price" },
+              { key: "margin_percent", label: "Margin %" },
               { key: "available_quantity", label: "Stock" },
               { key: "strain_name", label: "Strain" },
               { key: "vendor_name", label: "Vendor" },
@@ -1047,9 +1103,9 @@ export default function ProductManagement() {
               <div className="flex-1 overflow-y-auto px-1">
                 <ProductForm
                   initialData={editingProduct ? mapProductToForm(editingProduct) : undefined}
-                  onSubmit={handleProductSubmit.execute}
+                  onSubmit={handleProductSubmit}
                   onCancel={() => setIsDialogOpen(false)}
-                  isLoading={handleProductSubmit.isLoading}
+                  isLoading={isGenerating}
                   isEditMode={!!editingProduct}
                 />
               </div>
@@ -1199,22 +1255,29 @@ export default function ProductManagement() {
             </Select>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
-            <Toggle
-              pressed={viewMode === "grid"}
-              onPressedChange={() => setViewMode("grid")}
-              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Toggle>
-            <Toggle
-              pressed={viewMode === "list"}
-              onPressedChange={() => setViewMode("list")}
-              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
-            >
-              <List className="h-4 w-4" />
-            </Toggle>
+          {/* Column Visibility & View Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <ColumnVisibilityControl
+              visibleColumns={visibleColumns}
+              onToggleColumn={handleToggleColumn}
+              availableColumns={availableColumns}
+            />
+            <div className="flex items-center gap-1 border rounded-md overflow-hidden bg-background">
+              <Toggle
+                pressed={viewMode === "grid"}
+                onPressedChange={() => setViewMode("grid")}
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none h-9 w-9 p-0"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={viewMode === "list"}
+                onPressedChange={() => setViewMode("list")}
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l h-9 w-9 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Toggle>
+            </div>
           </div>
         </div>
       </div>
@@ -1243,6 +1306,7 @@ export default function ProductManagement() {
                       product={product}
                       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
                       onDelete={() => handleDelete(product.id)}
+                      onDuplicate={() => duplicateProduct(product)}
                       onPrintLabel={() => {
                         setLabelProduct(product);
                         setLabelDialogOpen(true);

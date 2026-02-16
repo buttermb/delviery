@@ -12,17 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Truck, MapPin, Clock, CheckCircle2, XCircle,
-  Navigation, Phone, User, Package
+  Truck, Clock, CheckCircle2, XCircle,
+  User, Package
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
+import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
 
 interface Delivery {
   id: string;
@@ -47,7 +46,7 @@ interface Delivery {
 }
 
 export default function DeliveryManagement() {
-  const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+  const { navigateToAdmin } = useTenantNavigation();
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,7 +60,7 @@ export default function DeliveryManagement() {
 
   // Fetch Deliveries
   const { data: deliveries = [], isLoading: loadingDeliveries, refetch } = useQuery({
-    queryKey: queryKeys.deliveries.list({ tenantId: tenant?.id }),
+    queryKey: queryKeys.deliveries.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

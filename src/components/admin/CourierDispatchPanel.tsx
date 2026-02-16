@@ -1,12 +1,12 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Truck, MapPin, Clock, DollarSign } from 'lucide-react';
+import { Truck, MapPin } from 'lucide-react';
 import { calculateDistance } from '@/utils/geofenceHelper';
 
 interface Courier {
@@ -42,13 +42,7 @@ export const CourierDispatchPanel = ({
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (tenant?.id) {
-      fetchAvailableCouriers();
-    }
-  }, [tenant?.id]);
-
-  const fetchAvailableCouriers = async () => {
+  const fetchAvailableCouriers = useCallback(async () => {
     if (!tenant?.id) return;
 
     try {
@@ -75,7 +69,13 @@ export const CourierDispatchPanel = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenant?.id, pickupLat, pickupLng]);
+
+  useEffect(() => {
+    if (tenant?.id) {
+      fetchAvailableCouriers();
+    }
+  }, [tenant?.id, fetchAvailableCouriers]);
 
   const assignCourier = async (courierId: string) => {
     setAssigning(courierId);

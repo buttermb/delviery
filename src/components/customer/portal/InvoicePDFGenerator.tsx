@@ -32,20 +32,6 @@ export function generateInvoicePDF({
     const contentWidth = pageWidth - (margin * 2);
     let yPosition = margin;
 
-    // Helper function to add text with word wrap
-    const addText = (text: string, x: number, y: number, options: { fontSize?: number; fontStyle?: string; maxWidth?: number } = {}) => {
-      const fontSize = options.fontSize || 10;
-      const fontStyle = options.fontStyle || 'normal';
-      const maxWidth = options.maxWidth || contentWidth;
-
-      pdf.setFontSize(fontSize);
-      pdf.setFont('helvetica', fontStyle);
-      
-      const lines = pdf.splitTextToSize(text, maxWidth);
-      pdf.text(lines, x, y);
-      return lines.length * (fontSize * 0.4); // Return height used
-    };
-
     // Header
     pdf.setFontSize(24);
     pdf.setFont('helvetica', 'bold');
@@ -101,7 +87,6 @@ export function generateInvoicePDF({
     }
 
     // Line Items Table
-    const tableTop = yPosition;
     const colWidths = {
       item: contentWidth * 0.4,
       qty: contentWidth * 0.15,

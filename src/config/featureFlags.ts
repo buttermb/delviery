@@ -87,7 +87,7 @@ async function fetchRuntimeFlags(): Promise<Partial<FeatureFlags>> {
     const json = (await res.json()) as Partial<FeatureFlags>;
     // SECURITY: Sanitize dangerous flags in production
     return sanitizeRuntimeFlags(json);
-  } catch (_e) {
+  } catch {
     return {};
   }
 }
@@ -154,7 +154,7 @@ export function useFeatureFlags(): FeatureFlagsContextValue {
 }
 
 // Simple helper to construct default approval fields for mutations when enabled.
-export function buildAutoApproveDefaults(flags: FeatureFlags): Record<string, unknown> {
+export function buildAutoApproveDefaults(_flags: FeatureFlags): Record<string, unknown> {
   // Non-destructive: callers can pick the fields they need.
   return {
     status: 'approved',

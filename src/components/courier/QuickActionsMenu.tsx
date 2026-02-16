@@ -1,8 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Navigation, Phone, MessageSquare, MapPin, 
-  Clock, Fuel, Coffee, AlertCircle 
+import {
+  Navigation, Phone, Coffee, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

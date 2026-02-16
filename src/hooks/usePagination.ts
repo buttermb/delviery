@@ -96,22 +96,30 @@ export function usePagination<T>(
   };
 
   return {
-    // Data
+    // Data - Primary API (matches PRD spec)
+    page: currentPage,
+    pageSize,
+    offset: startIndex,
+    totalPages,
+
+    // Setters (matches PRD spec)
+    setPage: goToPage,
+    setPageSize: changePageSize,
+
+    // Data - Extended API
     paginatedItems,
     currentPage,
-    pageSize,
-    totalPages,
     totalItems: items.length,
     startIndex: startIndex + 1,
     endIndex: Math.min(endIndex, items.length),
     pageSizeOptions,
-    
+
     // Navigation
     goToPage,
     nextPage,
     previousPage,
     changePageSize,
-    
+
     // State
     hasNextPage: currentPage < totalPages,
     hasPreviousPage: currentPage > 1,

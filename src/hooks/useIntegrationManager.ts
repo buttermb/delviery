@@ -5,7 +5,7 @@
  */
 
 import { useSidebarPreferences } from './useSidebarPreferences';
-import { getAvailableIntegrations, getIntegration, checkIntegrationConnection } from '@/lib/sidebar/integrations';
+import { getAvailableIntegrations, checkIntegrationConnection } from '@/lib/sidebar/integrations';
 import { useState, useEffect } from 'react';
 
 export function useIntegrationManager() {

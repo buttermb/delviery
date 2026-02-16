@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type CustomerMode = 'retail' | 'wholesale';
 type OrderType = 'all' | 'retail' | 'wholesale';
@@ -46,7 +46,7 @@ type OrderType = 'all' | 'retail' | 'wholesale';
 export default function UnifiedOrdersPage() {
   const { slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
-  const { toast } = useToast();
+  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const tenantId = tenant?.id;
   const customerId = customer?.customer_id || customer?.id;
@@ -62,7 +62,7 @@ export default function UnifiedOrdersPage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);

@@ -10,14 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
+import {
   Search,
   Filter,
   Trash2,
   Download,
   AlertTriangle,
   CheckCircle,
-  Edit3,
   ArrowLeft,
 } from 'lucide-react';
 import type { ParsedProduct, QualityTier } from '@/types/migration';

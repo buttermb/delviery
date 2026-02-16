@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -25,7 +25,6 @@ import { useGuestCart } from "@/hooks/useGuestCart";
 import { SearchBar } from "./SearchBar";
 import { haptics } from "@/utils/haptics";
 import type { DbCartItem } from "@/types/cart";
-import type { Numeric } from "@/types/money";
 import { toNumber } from "@/utils/productTypeGuards";
 import { toast } from "sonner";
 
@@ -36,17 +35,7 @@ const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [showCart, setShowCart] = useState(false);
-  const [cartUpdateKey, setCartUpdateKey] = useState(0);
   const [isSigningOut, setIsSigningOut] = useState(false);
-
-  // Force re-render when cart updates
-  useEffect(() => {
-    const handleCartUpdate = () => {
-      setCartUpdateKey(prev => prev + 1);
-    };
-    window.addEventListener('cartUpdated', handleCartUpdate);
-    return () => window.removeEventListener('cartUpdated', handleCartUpdate);
-  }, []);
 
   const { data: cartItems = [] } = useQuery<DbCartItem[]>({
     queryKey: ["cart", user?.id],

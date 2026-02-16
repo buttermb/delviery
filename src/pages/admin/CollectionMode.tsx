@@ -23,23 +23,19 @@ import {
   ChevronUp,
   ArrowLeft,
   Calendar,
-  FileText,
   Plus,
   Send,
   History,
   StickyNote,
-  CreditCard,
-  CheckCircle2,
-  XCircle
+  CreditCard
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
@@ -48,13 +44,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -62,7 +51,6 @@ import { logger } from '@/lib/logger';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 // Types
 interface CollectionClient {
@@ -89,16 +77,6 @@ interface CollectionActivity {
   amount?: number;
   createdAt: Date;
   performedBy?: string;
-}
-
-interface PaymentPlan {
-  id: string;
-  clientId: string;
-  totalAmount: number;
-  installments: number;
-  frequency: 'weekly' | 'biweekly' | 'monthly';
-  startDate: Date;
-  status: 'active' | 'completed' | 'cancelled';
 }
 
 // Hook to fetch collection data
@@ -131,9 +109,8 @@ function useCollectionData() {
       if (error) throw error;
 
       // Fetch total payments per client
-      // @ts-ignore - Type instantiation too deep
-      const { data: payments } = await supabase
-        .from('wholesale_payments' as any)
+      const { data: payments } = await (supabase as any)
+        .from('wholesale_payments')
         .select('client_id, amount')
         .eq('tenant_id', tenant?.id);
 
@@ -993,7 +970,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
           data={filteredClients}
           isLoading={isLoading}
           keyExtractor={(client) => client.id}
-          onRowClick={(client) => {
+          onRowClick={(_client) => {
             // For desktop table, maybe toggle details or navigation?
             // Leaving empty to rely on specific action buttons
           }}

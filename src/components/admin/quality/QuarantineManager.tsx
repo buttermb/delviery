@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

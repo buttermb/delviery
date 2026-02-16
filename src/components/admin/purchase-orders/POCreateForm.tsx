@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -21,16 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2, FileText } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2, AlertTriangle } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
-type PurchaseOrderInsert = Database['public']['Tables']['purchase_orders']['Insert'];
-type PurchaseOrderItemInsert = Database['public']['Tables']['purchase_order_items']['Insert'];
 
 interface POItem {
   product_id: string;
@@ -50,7 +48,7 @@ interface POCreateFormProps {
 }
 
 export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: POCreateFormProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant: _tenant } = useTenantAdminAuth();
   const { createPurchaseOrder } = usePurchaseOrders();
   const [currentStep, setCurrentStep] = useState<Step>("supplier");
   const [formData, setFormData] = useState({
@@ -67,7 +65,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
   });
 
   // Fetch vendors
-  const { data: vendors } = useQuery({
+  const { data: vendors, isLoading: vendorsLoading, isError: vendorsError } = useQuery({
     queryKey: ["vendors"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -86,7 +84,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
   });
 
   // Fetch products for dropdown
-  const { data: products } = useQuery({
+  const { data: products, isLoading: productsLoading, isError: productsError } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -265,6 +263,18 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         </div>
 
         {/* Step Content */}
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStepIndex < steps.length - 1) {
+            if (currentStep === "supplier" && !formData.supplier_id) {
+              toast.error("Please select a supplier");
+              return;
+            }
+            setCurrentStep(steps[currentStepIndex + 1].key);
+          } else {
+            handleSubmit();
+          }
+        }}>
         <div className="space-y-4">
           {currentStep === "supplier" && (
             <div className="space-y-4">
@@ -282,11 +292,29 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                     <SelectValue placeholder="Select a supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {vendors?.map((vendor) => (
-                      <SelectItem key={vendor.id} value={vendor.id}>
-                        {vendor.name || vendor.contact_name}
+                    {vendorsLoading ? (
+                      <SelectItem value="loading" disabled>
+                        <span className="flex items-center gap-1.5">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Loading suppliers...
+                        </span>
                       </SelectItem>
-                    ))}
+                    ) : vendorsError ? (
+                      <SelectItem value="error" disabled>
+                        <span className="flex items-center gap-1.5 text-destructive">
+                          <AlertTriangle className="h-3 w-3" />
+                          Failed to load suppliers
+                        </span>
+                      </SelectItem>
+                    ) : !vendors || vendors.length === 0 ? (
+                      <SelectItem value="none" disabled>No suppliers available</SelectItem>
+                    ) : (
+                      vendors.map((vendor) => (
+                        <SelectItem key={vendor.id} value={vendor.id}>
+                          {vendor.name || vendor.contact_name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -340,11 +368,29 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                       <SelectValue placeholder="Select a product" />
                     </SelectTrigger>
                     <SelectContent>
-                      {products?.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name} ({product.sku})
+                      {productsLoading ? (
+                        <SelectItem value="loading" disabled>
+                          <span className="flex items-center gap-1.5">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Loading products...
+                          </span>
                         </SelectItem>
-                      ))}
+                      ) : productsError ? (
+                        <SelectItem value="error" disabled>
+                          <span className="flex items-center gap-1.5 text-destructive">
+                            <AlertTriangle className="h-3 w-3" />
+                            Failed to load products
+                          </span>
+                        </SelectItem>
+                      ) : !products || products.length === 0 ? (
+                        <SelectItem value="none" disabled>No products available</SelectItem>
+                      ) : (
+                        products.map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.name} ({product.sku})
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -364,11 +410,8 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="unit_cost">Cost per lb ($)</Label>
-                  <Input
+                  <CurrencyInput
                     id="unit_cost"
-                    type="number"
-                    min="0"
-                    step="0.01"
                     value={newItem.unit_cost}
                     onChange={(e) =>
                       setNewItem({ ...newItem, unit_cost: parseFloat(e.target.value) || 0 })
@@ -460,6 +503,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-4 border-t">
           <Button
+            type="button"
             variant="outline"
             onClick={() => {
               if (currentStepIndex > 0) {
@@ -477,13 +521,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
 
           {currentStepIndex < steps.length - 1 ? (
             <Button
-              onClick={() => {
-                if (currentStep === "supplier" && !formData.supplier_id) {
-                  toast.error("Please select a supplier");
-                  return;
-                }
-                setCurrentStep(steps[currentStepIndex + 1].key);
-              }}
+              type="submit"
               className="min-h-[44px] touch-manipulation"
             >
               Next
@@ -491,7 +529,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
             </Button>
           ) : (
             <Button
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="min-h-[44px] touch-manipulation"
             >
@@ -500,6 +538,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
             </Button>
           )}
         </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

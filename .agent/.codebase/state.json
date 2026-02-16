@@ -1,0 +1,12 @@
+{
+  "workspace_path": "/work/.agent",
+  "created_at": "2026-02-15T05:08:14.666024",
+  "updated_at": "2026-02-15T05:08:14.666024",
+  "qdrant_collection": "codebase",
+  "indexing_status": {
+    "state": "idle"
+  },
+  "active_repo_slug": ".agent",
+  "serving_repo_slug": ".agent",
+  "serving_collection": "codebase"
+}

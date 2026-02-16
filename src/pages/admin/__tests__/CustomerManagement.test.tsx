@@ -7,7 +7,7 @@
  * - Stats calculations
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // Test the looksLikeEncryptedData helper function logic
 describe('looksLikeEncryptedData helper function', () => {
@@ -195,7 +195,7 @@ describe('Soft Delete Logic Verification', () => {
   it('should use soft delete for customers without orders too', () => {
     // Current implementation uses soft delete for all cases for data integrity
     // This is verified in the implementation at lines 184-194
-    const hasOrders = false;
+    const _hasOrders = false;
     // Current implementation does soft delete for all cases
     const shouldSoftDelete = true; // Changed from hard delete to soft delete
     expect(shouldSoftDelete).toBe(true);

@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, AlertTriangle, Search, Filter } from 'lucide-react';
+import { Package, AlertTriangle, Search } from 'lucide-react';
 
 interface InventoryProduct {
     id: string;

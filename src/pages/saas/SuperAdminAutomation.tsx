@@ -14,13 +14,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
   Zap,
-  Clock,
-  Shield,
   AlertTriangle,
-  CheckCircle,
   Play,
-  Pause,
-  Settings,
   ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';

@@ -21,7 +21,7 @@ interface AOVDataPoint {
 export function AverageOrderValueChart({ storeId, className }: AverageOrderValueChartProps) {
     const [timeRange, setTimeRange] = useState<'7' | '30' | '90'>('30');
 
-    const { data: aovData, isLoading, error } = useQuery({
+    const { data: aovData, isLoading } = useQuery({
         queryKey: ['average-order-value', storeId, timeRange],
         queryFn: async (): Promise<{ data: AOVDataPoint[]; currentAOV: number; trend: number }> => {
             if (!storeId) return { data: [], currentAOV: 0, trend: 0 };
@@ -96,7 +96,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
         );
     }
 
-    if (error || !aovData?.data?.length) {
+    if (!aovData?.data?.length) {
         return (
             <Card className={className}>
                 <CardHeader>

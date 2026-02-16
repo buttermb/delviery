@@ -93,7 +93,7 @@ export function BuilderLeftPanel({
                             <div className="space-y-2">
                                 <Label>Add Section</Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
+                                    {Object.entries(SECTION_TYPES).map(([key, { label, icon: _Icon }]) => (
                                         <Button
                                             key={key}
                                             variant="outline"

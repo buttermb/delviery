@@ -12,7 +12,6 @@ import { logger } from '@/lib/logger';
 import {
   CREDIT_WARNING_THRESHOLDS,
   BEHAVIORAL_TRIGGERS,
-  FREE_TIER_MONTHLY_CREDITS,
   trackCreditEvent,
 } from '@/lib/credits';
 

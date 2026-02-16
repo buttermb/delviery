@@ -10,9 +10,9 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import { 
-  DollarSign, TrendingUp, ShoppingCart, Clock, Users, 
-  CreditCard, Package, Award, Activity 
+import {
+  DollarSign, TrendingUp, ShoppingCart, Clock,
+  CreditCard, Award, Activity
 } from 'lucide-react';
 
 interface POSTransaction {

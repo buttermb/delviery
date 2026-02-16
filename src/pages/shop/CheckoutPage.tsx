@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
-import { useShopCart, ShopCartItem } from '@/hooks/useShopCart';
+import { useShopCart } from '@/hooks/useShopCart';
 import { useDeals } from '@/hooks/useDeals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import {
@@ -42,7 +41,8 @@ import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock } from 'lucide-react';
+import { Clock, Ban } from 'lucide-react';
+import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -116,7 +116,7 @@ export function CheckoutPage() {
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
-  const [orderRetryCount, setOrderRetryCount] = useState(0);
+  const [, setOrderRetryCount] = useState(0);
 
   // Idempotency key to prevent double orders on retry
   const [idempotencyKey] = useState(() => `order_${crypto.randomUUID()}`);
@@ -169,14 +169,11 @@ export function CheckoutPage() {
     cartItems,
     cartCount,
     subtotal,
-    clearCart,
     isInitialized,
     applyCoupon,
-    removeCoupon,
     appliedCoupon,
     getCouponDiscount,
-    validateCart,
-    lastValidation
+    validateCart
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -184,12 +181,8 @@ export function CheckoutPage() {
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
-  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-  const [couponError, setCouponError] = useState<string | null>(null);
-
-  // Minimum order validation
-  const minimumOrderAmount = (store as any)?.minimum_order_amount || 0;
-  const isUnderMinimumOrder = minimumOrderAmount > 0 && subtotal < minimumOrderAmount;
+  const [, setIsApplyingCoupon] = useState(false);
+  const [, setCouponError] = useState<string | null>(null);
 
   // Redirect to cart if empty
   useEffect(() => {
@@ -207,10 +200,10 @@ export function CheckoutPage() {
   }, [isInitialized, cartItems.length, store?.id]);
 
   // Fetch and calculate active deals
-  const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
+  const { totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
 
   // Apply coupon handler
-  const handleApplyCoupon = async () => {
+  const _handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     setIsApplyingCoupon(true);
     setCouponError(null);
@@ -261,7 +254,7 @@ export function CheckoutPage() {
       } else {
         toast({ title: 'Invalid card', description: 'Card not found', variant: 'destructive' });
       }
-    } catch (err) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to validate card', variant: 'destructive' });
     } finally {
       setIsCheckingGiftCard(false);
@@ -285,7 +278,6 @@ export function CheckoutPage() {
   };
 
   // Calculate totals
-  const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
   const deliveryFee = getDeliveryFee();
   const couponDiscount = getCouponDiscount(subtotal);
   const freeShipping = appliedCoupon?.free_shipping === true;
@@ -389,10 +381,21 @@ export function CheckoutPage() {
   };
 
   // Place order mutation with retry logic
-  const MAX_ORDER_RETRIES = 3;
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
+
+      // Check if customer is blocked from ordering
+      if (formData.email && store.tenant_id) {
+        const blockStatus = await isCustomerBlockedByEmail(store.tenant_id, formData.email);
+        if (blockStatus.isBlocked) {
+          const reasonLabel = blockStatus.flagReason ? FLAG_REASON_LABELS[blockStatus.flagReason] : 'Account Issue';
+          throw new Error(
+            `Your account has been restricted from placing orders. Reason: ${reasonLabel}. ` +
+            `Please contact the store for assistance.`
+          );
+        }
+      }
 
       // Validate inventory before placing order
       const productIds = cartItems.map((item) => item.productId);
@@ -477,15 +480,6 @@ export function CheckoutPage() {
           }
         }
       }
-
-      // Prepare items for order
-      const orderItems = cartItems.map((item) => ({
-        product_id: item.productId,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        image_url: item.imageUrl,
-      }));
 
       // Calculate gift card usage for RPC
       // Attempt to place order with retries

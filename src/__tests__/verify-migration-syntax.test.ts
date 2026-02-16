@@ -14,7 +14,7 @@ describe('Migration SQL Syntax Verification', () => {
 
   try {
     migrationContent = readFileSync(migrationPath, 'utf-8');
-  } catch (error) {
+  } catch {
     migrationContent = '';
   }
 

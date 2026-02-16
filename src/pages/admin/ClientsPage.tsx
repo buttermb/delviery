@@ -11,11 +11,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, Mail, DollarSign, Users } from 'lucide-react';
+import { User, Phone, Mail, DollarSign, Users, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 interface Client {
     id: string;
@@ -27,7 +26,7 @@ interface Client {
 }
 
 export default function ClientsPage() {
-    const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+    const { navigateToAdmin } = useTenantNavigation();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'active' | 'archived'>('active');
 
@@ -184,13 +183,15 @@ export default function ClientsPage() {
                 onRowClick={(client) => navigateToAdmin(`crm/clients/${client.id}`)}
                 mobileRenderer={renderMobileCard}
                 emptyState={{
+                    type: searchTerm ? undefined : "no_customers",
                     icon: Users,
-                    title: "No clients found",
-                    description: "No clients match your search criteria.",
-                    primaryAction: {
-                        label: "Clear Search",
-                        onClick: () => setSearchTerm('')
-                    }
+                    title: searchTerm ? "No clients found" : "No Clients Yet",
+                    description: searchTerm
+                        ? "No clients match your search criteria."
+                        : "Add your first client to start managing relationships.",
+                    primaryAction: searchTerm
+                        ? { label: "Clear Search", onClick: () => setSearchTerm('') }
+                        : { label: "Add Your First Client", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
                 }}
             />
         </div>

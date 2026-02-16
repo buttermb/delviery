@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 export function BurningEffect() {
     // Simulate burning progress based on a timer or prop

@@ -10,11 +10,6 @@ import { Loader2, CreditCard, AlertCircle } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
-interface CheckoutItem {
-  price: string;
-  quantity: number;
-}
-
 export function TenantStripeCheckout() {
   const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(false);

@@ -21,6 +21,7 @@ import {
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
 const WebhooksPage = lazy(() => import('@/pages/tenant-admin/WebhooksPage'));
@@ -54,17 +55,18 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function IntegrationsHubPage() {
+    usePageTitle('Integrations');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'api';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="integrations-hub"
                         hubHref="integrations-hub"
@@ -83,7 +85,7 @@ export default function IntegrationsHubPage() {
                             {tabs.map((tab) => (
                                 <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                     <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
+                                    <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                 </TabsTrigger>
                             ))}
                         </TabsList>

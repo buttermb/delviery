@@ -10,7 +10,6 @@ import {
   Phone,
   Mail,
   Clock,
-  Search,
   HelpCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

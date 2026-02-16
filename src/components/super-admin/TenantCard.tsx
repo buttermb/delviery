@@ -1,26 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Eye, 
-  LogIn, 
-  DollarSign, 
-  Calendar,
-  TrendingUp,
+import {
+  Eye,
+  LogIn,
+  DollarSign,
   MoreVertical,
   Building2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { calculateHealthScore } from "@/lib/tenant";
-import { getStatusColor, getHealthTextColor, getHealthVariant, getStatusVariant } from "@/lib/utils/statusColors";
+import { getStatusColor, getHealthTextColor, getStatusVariant } from "@/lib/utils/statusColors";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "react-router-dom";
 import { memo } from "react";
 
 interface Tenant {
@@ -43,7 +40,6 @@ export const TenantCard = memo(function TenantCard({
   onLoginAs,
   onViewBilling 
 }: TenantCardProps) {
-  // @ts-ignore - tenant type mismatch will resolve when types regenerate
   const health = calculateHealthScore(tenant as any);
   const healthScore = health.score;
   const healthColor = getHealthTextColor(healthScore);

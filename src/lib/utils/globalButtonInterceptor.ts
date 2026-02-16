@@ -156,13 +156,13 @@ export function initializeGlobalButtonMonitoring() {
       const complete = buttonMonitor.trackClick(buttonId, component, action, startTime);
 
       // Monitor form submission
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener('submit', async (_e) => {
         try {
           // Wait a bit to see if form submission succeeds
           await new Promise(resolve => setTimeout(resolve, 1000));
           complete('success');
-        } catch (error) {
-          complete('error', error);
+        } catch (err) {
+          complete('error', err);
         }
       }, { once: true });
     }

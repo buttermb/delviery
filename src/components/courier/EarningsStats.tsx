@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Card } from '@/components/ui/card';
-import { DollarSign, TrendingUp, Clock, Package } from 'lucide-react';
+import { DollarSign, TrendingUp, Clock } from 'lucide-react';
 
 interface EarningsStatsProps {
   total: number;

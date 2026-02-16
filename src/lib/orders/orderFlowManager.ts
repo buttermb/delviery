@@ -22,19 +22,18 @@ export const orderFlowManager = {
     /**
      * Transition an order to a new status
      */
-    async transitionOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
+    async transitionOrderStatus(orderId: string, newStatus: OrderStatus, tenantId: string): Promise<void> {
         try {
             // Fetch current status
-            // @ts-ignore - Outdated Supabase types
-            const { data: order, error: fetchError } = await supabase
-                // @ts-ignore - Table not in types
+            const { data: order, error: fetchError } = await (supabase as any)
                 .from('disposable_menu_orders')
                 .select('status')
                 .eq('id', orderId)
-                .single();
+                .eq('tenant_id', tenantId)
+                .maybeSingle();
 
             if (fetchError) throw fetchError;
-            // @ts-ignore - Outdated types
+            if (!order) throw new Error('Order not found');
             const currentStatus = order.status as OrderStatus;
 
             if (!this.canTransition(currentStatus, newStatus)) {
@@ -42,15 +41,14 @@ export const orderFlowManager = {
             }
 
             // Update status
-            // @ts-ignore - Outdated Supabase types
-            const { error: updateError } = await supabase
-                // @ts-ignore - Table not in types
+            const { error: updateError } = await (supabase as any)
                 .from('disposable_menu_orders')
                 .update({
                     status: newStatus,
                     completed_at: newStatus === 'completed' ? new Date().toISOString() : null
                 })
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .eq('tenant_id', tenantId);
 
             if (updateError) throw updateError;
 

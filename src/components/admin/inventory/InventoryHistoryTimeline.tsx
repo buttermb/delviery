@@ -37,7 +37,7 @@ const CHANGE_TYPE_CONFIG: Record<string, { label: string; icon: typeof Package; 
   sale: { label: 'Sale', icon: ShoppingCart, colorClass: 'bg-purple-100 text-purple-600 border-purple-200' },
   return: { label: 'Return', icon: RotateCcw, colorClass: 'bg-orange-100 text-orange-600 border-orange-200' },
   receiving: { label: 'Receiving', icon: Truck, colorClass: 'bg-teal-100 text-teal-600 border-teal-200' },
-  disposal: { label: 'Disposal', icon: Trash2, colorClass: 'bg-gray-100 text-gray-600 border-gray-200' },
+  disposal: { label: 'Disposal', icon: Trash2, colorClass: 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' },
 };
 
 function getChangeTypeConfig(changeType: string) {

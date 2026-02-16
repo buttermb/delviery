@@ -5,9 +5,6 @@
 
 import { AdvancedWorkflowBuilder } from '@/components/admin/workflow/AdvancedWorkflowBuilder';
 import { SEOHead } from '@/components/SEOHead';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export default function WorkflowAutomationPage() {
   return (

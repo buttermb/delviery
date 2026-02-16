@@ -15,6 +15,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Users,
   UserCheck,
+  UserMinus,
   MapPin,
   Truck,
   Star,
@@ -92,7 +93,7 @@ function getStatusBadge(status: AvailabilityStatus) {
     case 'inactive':
       return (
         <Badge variant="destructive">
-          <UserX className="h-3 w-3 mr-1" />
+          <UserMinus className="h-3 w-3 mr-1" />
           Inactive
         </Badge>
       );

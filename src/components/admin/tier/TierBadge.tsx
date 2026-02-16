@@ -16,13 +16,13 @@ interface TierBadgeProps {
   className?: string;
 }
 
-export function TierBadge({ 
-  tier: propTier, 
-  size = 'md', 
-  showEmoji = true,
-  className 
+export function TierBadge({
+  tier: propTier,
+  size = 'md',
+  showEmoji: _showEmoji = true,
+  className
 }: TierBadgeProps) {
-  const { tier: hookTier, preset } = useBusinessTier();
+  const { tier: hookTier, preset: _preset } = useBusinessTier();
   const tier = propTier || hookTier;
   
   const tierConfig = {

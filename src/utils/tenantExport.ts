@@ -3,8 +3,6 @@
  * Functions to export tenant data to various formats
  */
 
-import type { Tenant } from '@/lib/tenant';
-
 export function exportTenantsToCSV(tenants: any[]) {
   const headers = ['Business Name', 'Owner Email', 'Plan', 'Status', 'MRR', 'Created At'];
   const rows = tenants.map(t => [

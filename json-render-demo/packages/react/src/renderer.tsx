@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type ComponentType, type ReactNode, useMemo } from "react";
+import React, { type ComponentType, type ReactNode } from "react";
 import type {
   UIElement,
   UITree,
@@ -10,7 +10,7 @@ import type {
 } from "@json-render/core";
 import { useIsVisible } from "./contexts/visibility";
 import { useActions } from "./contexts/actions";
-import { useData } from "./contexts/data";
+import { useData as _useData } from "./contexts/data";
 
 /**
  * Props passed to component renderers
@@ -171,7 +171,7 @@ import { ConfirmDialog } from "./contexts/actions";
  * Combined provider for all JSONUI contexts
  */
 export function JSONUIProvider({
-  registry,
+  registry: _registry,
   initialData,
   authState,
   actionHandlers,

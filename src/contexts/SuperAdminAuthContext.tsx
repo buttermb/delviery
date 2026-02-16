@@ -1,10 +1,8 @@
 import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
-import { useQueryClient } from '@tanstack/react-query';
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
-import { performLogoutCleanup } from "@/lib/auth/logoutCleanup";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,12 +40,11 @@ if (typeof window !== 'undefined') {
   initConnectionMonitoring();
 }
 export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) => {
-  const queryClient = useQueryClient();
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
+  const [, setConnectionStatus] = useState<ConnectionStatus>('unknown');
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
 
@@ -148,7 +145,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
             supabase.auth.setSession({
               access_token: session.access_token,
               refresh_token: session.refresh_token || '',
-            }).then(({ data, error }) => {
+            }).then(({ error }) => {
               if (error) {
                 logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
               } else {
@@ -163,7 +160,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
         // Verify token is still valid
         verifyToken(storedToken);
-      } catch (e) {
+      } catch {
         // Invalid stored data, clear it
         safeStorage.removeItem(TOKEN_KEY);
         safeStorage.removeItem(SUPER_ADMIN_KEY);

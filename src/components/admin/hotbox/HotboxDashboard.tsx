@@ -11,39 +11,15 @@
  * - Kanban view option for attention items
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAttentionQueue } from '@/hooks/useAttentionQueue';
 import {
   DollarSign,
-  TrendingUp,
   Package,
-  AlertCircle,
-  ChevronRight,
-  Users,
-  Store,
-  Menu,
-  Box,
-  MapPin,
-  BarChart3,
-  Shield,
-  Building,
-  CheckCircle,
-  Plus,
-  Clock,
-  Truck,
-  ArrowRightLeft,
-  FileText,
-  Globe,
   Sparkles,
-  CreditCard,
-  Wallet,
-  Calendar,
-  MessageSquare,
-  LayoutGrid,
-  List,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,9 +35,6 @@ import { generateGreeting } from '@/lib/presets/businessTiers';
 import {
   type QuickAction,
 } from '@/types/hotbox';
-import {
-  getCategoryColor,
-} from '@/lib/hotbox/attentionQueue';
 import { TierUpgradeCard } from './TierUpgradeCard';
 import { AttentionQueueKanban } from './AttentionQueueKanban';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -85,31 +58,6 @@ interface PulseMetric {
   subtext?: string;
 }
 
-// Helper to get time-appropriate greeting with workflow context
-function getGreeting(workflow?: string): { greeting: string; context: string } {
-  const hour = new Date().getHours();
-  let greeting = 'Hello';
-
-  if (hour < 12) greeting = 'Good morning';
-  else if (hour < 17) greeting = 'Good afternoon';
-  else if (hour < 21) greeting = 'Good evening';
-  else greeting = 'Working late';
-
-  // Context based on workflow
-  const contextMap: Record<string, string> = {
-    retail: 'Ready to serve customers?',
-    delivery: "Let's get those orders moving!",
-    wholesale: 'Time to close some deals!',
-    management: "Let's check the numbers.",
-    operations: 'Your team is counting on you!',
-    general: 'What would you like to do today?',
-  };
-
-  return {
-    greeting,
-    context: contextMap[workflow || 'general'] || contextMap.general,
-  };
-}
 
 // Get tier-specific motivational greeting - memoized to not change on re-render
 function useTierGreeting(userName: string, tier: string) {
@@ -121,8 +69,8 @@ function useTierGreeting(userName: string, tier: string) {
   }, [userName, tier, dateKey]);
 }
 
-// Priority icon component
-function PriorityIcon({ priority }: { priority: 'critical' | 'important' | 'info' }) {
+// Priority icon component - kept but prefixed as currently unused
+function _PriorityIcon({ priority }: { priority: 'critical' | 'important' | 'info' }) {
   const colors = {
     critical: 'bg-red-500',
     important: 'bg-yellow-500',

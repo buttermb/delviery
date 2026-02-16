@@ -58,7 +58,7 @@ export function useOrderRush() {
         rushedAt: isRush ? now : null,
       };
     },
-    onSuccess: ({ isRush, orderId }, { orderNumber }) => {
+    onSuccess: ({ isRush }, { orderNumber }) => {
       // Invalidate order queries to refresh the list
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
 

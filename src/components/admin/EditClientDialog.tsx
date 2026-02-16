@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { Loader2 } from "lucide-react";
+import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
 
 interface EditClientDialogProps {
   clientId: string;
@@ -45,13 +46,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
     notes: ""
   });
 
-  useEffect(() => {
-    if (open && clientId) {
-      fetchClient();
-    }
-  }, [open, clientId]);
-
-  const fetchClient = async () => {
+  const fetchClient = useCallback(async () => {
     try {
       setFetching(true);
       const { data, error } = await supabase
@@ -81,7 +76,13 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
     } finally {
       setFetching(false);
     }
-  };
+  }, [clientId]);
+
+  useEffect(() => {
+    if (open && clientId) {
+      fetchClient();
+    }
+  }, [open, clientId, fetchClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +139,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="business_name">Business Name *</Label>
+                <Label htmlFor="business_name">Business Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="business_name"
                   value={formData.business_name}
@@ -149,7 +150,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contact_name">Contact Name *</Label>
+                <Label htmlFor="contact_name">Contact Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="contact_name"
                   value={formData.contact_name}
@@ -162,7 +163,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
+                <Label htmlFor="phone">Phone <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -215,7 +216,10 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="credit_limit">Credit Limit ($)</Label>
+                <Label htmlFor="credit_limit" className="flex items-center gap-1.5">
+                  Credit Limit ($)
+                  <FieldHelp tooltip={fieldHelpTexts.creditLimit.tooltip} example={fieldHelpTexts.creditLimit.example} />
+                </Label>
                 <Input
                   id="credit_limit"
                   type="number"
@@ -227,7 +231,10 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="payment_terms">Payment Terms (days)</Label>
+                <Label htmlFor="payment_terms" className="flex items-center gap-1.5">
+                  Payment Terms (days)
+                  <FieldHelp tooltip={fieldHelpTexts.paymentTerms.tooltip} example={fieldHelpTexts.paymentTerms.example} />
+                </Label>
                 <Select
                   value={formData.payment_terms}
                   onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}

@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { InvoiceLink } from '@/components/admin/cross-links';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput, IntegerInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,9 +17,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X, Loader2 } from 'lucide-react';
+import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
@@ -29,7 +29,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const PAGE_SIZE = 25;
 
-interface LineItem {
+interface _LineItem {
   description: string;
   quantity: number;
   rate: number;
@@ -153,7 +153,7 @@ export default function CustomerInvoices() {
             setLoading(false);
             return;
           }
-        } catch (e) {
+        } catch {
           // Fall through to edge function
         }
 
@@ -279,7 +279,7 @@ export default function CustomerInvoices() {
         if (!genErr && typeof genNum === 'string' && genNum.trim()) {
           invoiceNumber = genNum;
         }
-      } catch (_e) {
+      } catch {
         // Fallback to timestamp-based number
       }
 
@@ -307,7 +307,7 @@ export default function CustomerInvoices() {
       };
 
       // Try using Edge Function first
-      const { data: edgeData, error: edgeError } = await callAdminFunction({
+      const { error: edgeError } = await callAdminFunction({
         functionName: 'invoice-management',
         body: { action: 'create', tenant_id: tenant.id, invoice_data: invoiceData },
         errorMessage: 'Failed to create invoice',
@@ -489,19 +489,16 @@ export default function CustomerInvoices() {
                         />
                       </div>
                       <div className="col-span-2">
-                        <Input
-                          type="number"
+                        <IntegerInput
                           placeholder="Qty"
-                          min="1"
+                          min={1}
                           value={item.quantity}
                           onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                           required
                         />
                       </div>
                       <div className="col-span-2">
-                        <Input
-                          type="number"
-                          step="0.01"
+                        <CurrencyInput
                           placeholder="Rate"
                           value={item.rate}
                           onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)}

@@ -17,6 +17,7 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
+import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
@@ -27,7 +28,7 @@ type Tenant = Database['public']['Tables']['tenants']['Row'];
 export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { login, mfaRequired, verifyMfa } = useTenantAdminAuth();
+  const { login, mfaRequired } = useTenantAdminAuth();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,7 +42,7 @@ export default function TenantAdminLoginPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
 
-  const { isOnline, hasQueuedAttempt, preventSubmit, queueLoginAttempt } = useAuthOffline(
+  const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
       await login(qEmail, qPassword, qSlug || '');
       toast({
@@ -162,14 +163,25 @@ export default function TenantAdminLoginPage() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <div className="text-center mb-6">
             <Building2 className="h-12 w-12 text-[hsl(var(--tenant-text-light))] mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-[hsl(var(--tenant-text))] mb-2">Tenant Not Found</h1>
-            <p className="text-[hsl(var(--tenant-text-light))]">
-              The tenant "{tenantSlug}" could not be found or is inactive.
+            <h1 className="text-2xl font-bold text-[hsl(var(--tenant-text))] mb-2">Business Not Found</h1>
+            <p className="text-[hsl(var(--tenant-text-light))] mb-2">
+              We couldn't find a business at <strong>"{tenantSlug}"</strong>.
+            </p>
+            <p className="text-sm text-[hsl(var(--tenant-text-light))]">
+              This may mean the URL is incorrect, or the business account has been deactivated. Please check the link you were given and try again.
             </p>
           </div>
-          <Button asChild variant="outline" className="w-full">
-            <Link to="/">Go to Home</Link>
-          </Button>
+          <div className="space-y-3">
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Go to FloraIQ Home
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full">
+              <Link to="/signup">Don't have an account? Sign up</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -409,6 +421,17 @@ export default function TenantAdminLoginPage() {
               >
                 <span className="text-xs sm:text-sm">Go to Customer Portal →</span>
               </Link>
+            </div>
+            <div className="pt-3 sm:pt-4 border-t border-border">
+              <p className="text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/signup"
+                  className="text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors"
+                >
+                  Sign up
+                </Link>
+              </p>
             </div>
           </div>
         </div>

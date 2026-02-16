@@ -10,29 +10,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Download, FileText, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Download } from 'lucide-react';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface QuickExportProps {
   onExportComplete?: () => void;
 }
 
-import { handleError } from '@/utils/errorHandling/handlers';
-
 export default function AdminQuickExport({ onExportComplete }: QuickExportProps) {
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
   const [exportType, setExportType] = useState<'orders' | 'users' | 'products'>('orders');
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('month');
-  const [customStartDate, setCustomStartDate] = useState<Date>();
-  const [customEndDate, setCustomEndDate] = useState<Date>();
+  const [customStartDate, _setCustomStartDate] = useState<Date>();
+  const [customEndDate, _setCustomEndDate] = useState<Date>();
   const { toast } = useToast();
 
   const { data: exportData, isLoading } = useQuery({
-    queryKey: ['quick-export', exportType, dateRange],
+    queryKey: ['quick-export', exportType, dateRange, tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       let startDate: Date | null = null;
       let endDate = new Date();
 
@@ -61,6 +60,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         let query = supabase
           .from('orders')
           .select('*, order_items(quantity, unit_price, product:products(name))') // Attempt deep join
+          .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
         if (startDate) query = query.gte('created_at', startDate.toISOString());
@@ -89,15 +89,16 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       }
 
       // Default fallback for other types
-      const baseQuery = supabase
+      let baseQuery = (supabase as any)
         .from(exportType as any)
         .select('*')
-        .order('created_at', { ascending: false }) as any;
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false });
 
       if (startDate) {
-        baseQuery.gte('created_at', startDate.toISOString());
+        baseQuery = baseQuery.gte('created_at', startDate.toISOString());
       }
-      baseQuery.lte('created_at', endDate.toISOString());
+      baseQuery = baseQuery.lte('created_at', endDate.toISOString());
 
       const { data, error } = await baseQuery.limit(10000);
       if (error) throw error;

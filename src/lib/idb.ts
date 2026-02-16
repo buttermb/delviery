@@ -44,7 +44,7 @@ let dbPromise: Promise<IDBPDatabase<FloraIQDB>>;
 export const initDB = () => {
     if (!dbPromise) {
         dbPromise = openDB<FloraIQDB>(DB_NAME, DB_VERSION, {
-            upgrade(db, oldVersion, newVersion, transaction) {
+            upgrade(db, _oldVersion, _newVersion, _transaction) {
                 // Products store
                 if (!db.objectStoreNames.contains('products')) {
                     const productStore = db.createObjectStore('products', { keyPath: 'id' });
@@ -154,7 +154,7 @@ export const db = {
                         createdAt: record.createdAt,
                         synced: record.synced
                     };
-                } catch (e) {
+                } catch {
                     logger.error('Failed to decrypt order', { id: record.id, component: 'idb' });
                     return null;
                 }

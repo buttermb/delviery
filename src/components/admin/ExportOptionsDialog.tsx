@@ -69,39 +69,42 @@ export function ExportOptionsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-2">
-          <MultiCheckbox
-            options={options}
-            value={selectedFields}
-            onChange={setSelectedFields}
-            label="Include Related Data"
-            showSelectAll
-            showCount
-            showRecommended
-            columns={1}
-          />
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleExport(); }}>
+          <div className="py-2">
+            <MultiCheckbox
+              options={options}
+              value={selectedFields}
+              onChange={setSelectedFields}
+              label="Include Related Data"
+              showSelectAll
+              showCount
+              showRecommended
+              columns={1}
+            />
+          </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isExporting}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleExport}
-            disabled={isExporting}
-          >
-            {isExporting ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4 mr-2" />
-            )}
-            Export CSV
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isExporting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              Export CSV
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

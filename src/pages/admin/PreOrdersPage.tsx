@@ -29,8 +29,7 @@ import {
     Filter,
     ArrowRight,
     Clock,
-    CheckCircle,
-    XCircle
+    CheckCircle
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";

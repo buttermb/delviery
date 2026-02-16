@@ -58,7 +58,7 @@ const joyrideStyles: Partial<Styles> = {
     backgroundColor: 'hsl(var(--background))',
     primaryColor: 'hsl(var(--primary))',
     textColor: 'hsl(var(--foreground))',
-    zIndex: 10000,
+    zIndex: 9999,
   },
   tooltip: {
     borderRadius: '0.75rem',
@@ -110,8 +110,6 @@ export function DashboardTour({
   const {
     isRunning,
     stepIndex,
-    hasCompletedTour,
-    startTour,
     handleJoyrideCallback,
   } = useDashboardTour({ autoStart, autoStartDelay });
 

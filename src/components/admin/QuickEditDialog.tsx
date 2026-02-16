@@ -101,7 +101,7 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
         <DialogHeader>
           <DialogTitle>Quick Edit: {product.name}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <form onSubmit={(e) => { e.preventDefault(); updateProduct.mutate(); }} className="space-y-4 py-4">
           <div>
             <Label htmlFor="quick-price">Price</Label>
             <div className="flex items-center mt-1.5">
@@ -141,17 +141,11 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            <Button 
-              onClick={() => {
-                try {
-                  updateProduct.mutate();
-                } catch (error) {
-                  logger.error('Button click error', error, { component: 'QuickEditDialog' });
-                }
-              }}
+            <Button
+              type="submit"
               disabled={updateProduct.isPending}
               className="flex-1"
             >
@@ -165,7 +159,7 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
               )}
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

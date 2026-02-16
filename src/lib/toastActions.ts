@@ -12,24 +12,11 @@ import { toast, ExternalToast } from 'sonner';
 import { logger } from '@/lib/logger';
 
 // Types
-interface UndoableAction {
-  id: string | number;
-  description: string;
-  undoFn: () => Promise<void> | void;
-  onExpire?: () => Promise<void> | void;
-  duration?: number;
-}
-
 interface ActionToastOptions {
   actionLabel?: string;
   onAction?: () => void;
   navigate?: string;
   duration?: number;
-}
-
-interface ProgressToastOptions {
-  message: string;
-  onComplete?: () => void;
 }
 
 // Track pending undo actions

@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Search,
   Plus,
@@ -21,9 +22,6 @@ import {
   TrendingUp,
   CheckCircle2,
   Building2,
-  Phone,
-  Mail,
-  DollarSign,
   RefreshCw,
 } from 'lucide-react';
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
@@ -74,7 +72,7 @@ export function SmartClientPicker({
 
   const { data: allClients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { recentClients, addRecentClient, isLoading: recentLoading } = useRecentClients();
-  const { suggestions, recurringClients, overdueClients, isLoading: suggestionsLoading } = useClientSuggestions();
+  const { suggestions, recurringClients: _recurringClients, overdueClients: _overdueClients, isLoading: suggestionsLoading } = useClientSuggestions();
   const { toggleFavorite } = useToggleClientFavorite();
 
   // Filter clients by search query
@@ -365,9 +363,9 @@ function RecentClientCard({
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={cn('w-2 h-2 rounded-full', health.bg)} />
-        <span className="font-medium text-sm truncate">{client.business_name}</span>
+        <TruncatedText text={client.business_name} className="font-medium text-sm" />
       </div>
-      <div className="text-xs text-muted-foreground truncate">{client.contact_name}</div>
+      <TruncatedText text={client.contact_name} className="text-xs text-muted-foreground" as="div" />
       {client.last_order_date && (
         <div className="text-xs text-muted-foreground mt-1">
           Last: {formatSmartDate(client.last_order_date)}
@@ -413,7 +411,7 @@ function SuggestionCard({
         <div className="p-2 rounded-lg bg-muted">{getIcon()}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium truncate">{suggestion.business_name}</span>
+            <TruncatedText text={suggestion.business_name} className="font-medium" />
             <div className={cn('w-2 h-2 rounded-full shrink-0', health.bg)} />
           </div>
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -448,7 +446,7 @@ function ClientCard({
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className={cn('w-3 h-3 rounded-full shrink-0', health.bg)} />
-          <span className="font-medium truncate">{client.business_name}</span>
+          <TruncatedText text={client.business_name} className="font-medium" />
         </div>
         <Button
           variant="ghost"

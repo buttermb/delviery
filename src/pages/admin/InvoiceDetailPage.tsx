@@ -44,6 +44,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
+import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 
 export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
@@ -58,6 +59,9 @@ export default function InvoiceDetailPage() {
     const voidInvoiceMutation = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
+
+    // Set breadcrumb label to show invoice number
+    useBreadcrumbLabel(invoice ? `Invoice #${invoice.invoice_number}` : null);
 
     if (isLoading) {
         return <div className="p-8 text-center">Loading invoice details...</div>;
@@ -154,11 +158,11 @@ export default function InvoiceDetailPage() {
 
     return (
         <SwipeBackWrapper onBack={() => navigateToAdmin("crm/invoices")}>
-            <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto print:p-0 print:max-w-none print:space-y-0">
+                {/* Header — hidden on print */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/invoices")}>
+                        <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/invoices")} aria-label="Back to invoices">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div>
@@ -267,12 +271,12 @@ export default function InvoiceDetailPage() {
                     </div>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-3 print:block">
                     {/* Main Content */}
-                    <div className="md:col-span-2 space-y-6">
+                    <div className="md:col-span-2 space-y-6 print:space-y-0">
                         {/* Invoice Document */}
-                        <Card className="overflow-hidden">
-                            <CardHeader className="bg-muted/30 border-b pb-8">
+                        <Card className="overflow-hidden invoice-print-document print:border-none print:shadow-none">
+                            <CardHeader className="bg-muted/30 border-b pb-8 print:bg-white print:border-b-2 print:border-b-gray-800 print:px-0">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
                                         <h1 className="text-xl font-bold">{tenant?.business_name}</h1>
@@ -319,7 +323,7 @@ export default function InvoiceDetailPage() {
                                     </div>
                                 </div>
                             </CardHeader>
-                            <CardContent className="p-0">
+                            <CardContent className="p-0 print:px-0">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -360,19 +364,36 @@ export default function InvoiceDetailPage() {
                                 </div>
 
                                 {invoice.notes && (
-                                    <div className="p-6 bg-muted/10 border-t">
+                                    <div className="p-6 bg-muted/10 border-t print:bg-white">
                                         <h3 className="font-semibold text-sm mb-2">Notes:</h3>
-                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap print:text-gray-700">
                                             {invoice.notes}
                                         </p>
                                     </div>
                                 )}
+
+                                {/* Print-only terms and footer */}
+                                <div className="hidden print:block p-6 border-t mt-8">
+                                    <h3 className="font-semibold text-sm mb-2">Terms & Conditions</h3>
+                                    <p className="text-xs text-gray-600 mb-4">
+                                        Payment is due within the terms stated above. Late payments may be subject to interest charges.
+                                        Please include the invoice number with your payment.
+                                    </p>
+                                    <div className="border-t pt-4 mt-4 text-center text-xs text-gray-500">
+                                        <p className="font-medium">{tenant?.business_name}</p>
+                                        {tenant?.address && <p>{tenant.address}</p>}
+                                        {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
+                                        {tenant?.phone && <p>Phone: {tenant.phone}</p>}
+                                        {tenant?.owner_email && <p>Email: {tenant.owner_email}</p>}
+                                        <p className="mt-2">Thank you for your business!</p>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
+                    {/* Sidebar — hidden on print */}
+                    <div className="space-y-6 print:hidden">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-sm font-medium">Client Details</CardTitle>

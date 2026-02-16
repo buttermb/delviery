@@ -6,7 +6,7 @@
  * - Z-Reports: End of day reports
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, Clock, FileText, BarChart3 } from 'lucide-react';
@@ -20,6 +20,7 @@ import ZReportContent from './panels/ZReportPanel';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const POSAnalyticsPage = lazy(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
 
@@ -43,18 +44,41 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function POSHubPage() {
+    usePageTitle('Point of Sale');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'register';
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
-    // Keyboard shortcuts for quick tab switching (1-4)
+    // Keyboard shortcuts for quick tab switching (1-4), scoped to POS hub only
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Don't trigger if user is typing in an input
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            const target = e.target as HTMLElement;
+
+            // Don't trigger if user is typing in an input or editable element
+            if (
+                target instanceof HTMLInputElement ||
+                target instanceof HTMLTextAreaElement ||
+                target instanceof HTMLSelectElement ||
+                target.isContentEditable
+            ) {
+                return;
+            }
+
+            // Don't trigger if a dialog, modal, or command palette is open
+            if (document.querySelector('[role="dialog"], [role="alertdialog"], [data-state="open"][role="dialog"]')) {
+                return;
+            }
+
+            // Don't trigger if focus is outside the POS hub container (unless on body)
+            if (
+                containerRef.current &&
+                target !== document.body &&
+                !containerRef.current.contains(target)
+            ) {
                 return;
             }
 
@@ -70,34 +94,37 @@ export default function POSHubPage() {
     }, [handleTabChange]);
 
     return (
-        <div className="space-y-0">
+        <div ref={containerRef} className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                {/* Tab Header - Only show when NOT on register (register is fullscreen) */}
-                {activeTab !== 'register' && (
-                    <div className="border-b bg-card px-4 py-3">
-                        <HubBreadcrumbs
-                            hubName="pos-system"
-                            hubHref="pos-system"
-                            currentTab={tabs.find(t => t.id === activeTab)?.label}
-                        />
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h1 className="text-2xl font-bold">Point of Sale</h1>
-                                <p className="text-muted-foreground text-sm">
-                                    Cash register, shifts, and end-of-day reports
-                                </p>
+                <div className="border-b bg-card px-6 py-3">
+                    {/* Hide breadcrumbs and title on register tab for fullscreen feel */}
+                    {activeTab !== 'register' && (
+                        <>
+                            <HubBreadcrumbs
+                                hubName="pos-system"
+                                hubHref="pos-system"
+                                currentTab={tabs.find(t => t.id === activeTab)?.label}
+                            />
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h1 className="text-2xl font-bold">Point of Sale</h1>
+                                    <p className="text-muted-foreground text-sm">
+                                        Cash register, shifts, and end-of-day reports
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                        <TabsList className="grid w-full max-w-lg grid-cols-4">
-                            {tabs.map((tab) => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-                                    <tab.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{tab.label}</span>
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-                    </div>
-                )}
+                        </>
+                    )}
+                    {/* Tab bar always visible so user can switch tabs */}
+                    <TabsList className="grid w-full max-w-lg grid-cols-4">
+                        {tabs.map((tab) => (
+                            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                <tab.icon className="h-4 w-4" />
+                                <span className="text-xs sm:text-sm truncate">{tab.label}</span>
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
 
                 {/* Register Tab - Full screen POS */}
                 <TabsContent value="register" className="m-0">

@@ -9,7 +9,7 @@ interface CursorSpotlightProps {
     containerRef: RefObject<HTMLElement>;
 }
 
-export function CursorSpotlight({ containerRef }: CursorSpotlightProps) {
+export function CursorSpotlight({ containerRef: _containerRef }: CursorSpotlightProps) {
   // Disabled for performance - cursor tracking causes scroll jank
   return null;
 }

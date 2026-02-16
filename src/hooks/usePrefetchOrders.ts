@@ -129,7 +129,7 @@ export function usePrefetchOrders({
           await Promise.allSettled([
             // 1. Recent orders (default list view)
             queryClient.prefetchQuery({
-              queryKey: queryKeys.orders.list({ tenantId, limit: 25 }),
+              queryKey: queryKeys.orders.list(tenantId, { limit: 25 }),
               queryFn: async () => {
                 const { data, error } = await supabase
                   .from('orders')
@@ -150,7 +150,7 @@ export function usePrefetchOrders({
 
             // 2. Pending orders count (for badges)
             queryClient.prefetchQuery({
-              queryKey: queryKeys.orders.list({ tenantId, status: 'pending' }),
+              queryKey: queryKeys.orders.list(tenantId, { status: 'pending' }),
               queryFn: async () => {
                 const { count, error } = await supabase
                   .from('orders')

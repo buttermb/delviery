@@ -8,13 +8,12 @@ import Clock from "lucide-react/dist/esm/icons/clock";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import User from "lucide-react/dist/esm/icons/user";
 import Bot from "lucide-react/dist/esm/icons/bot";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import History from "lucide-react/dist/esm/icons/history";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,7 +125,7 @@ function getActorConfig(actor: string) {
 
 function TimelineEntry({
   entry,
-  isFirst,
+  isFirst: _isFirst,
   isLast
 }: {
   entry: OrderStatusHistoryEntry;

@@ -5,7 +5,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, CheckCircle2, Package, DollarSign, User, Box } from 'lucide-react';
+import { Activity, CheckCircle2, Package, User, Box } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -85,8 +85,7 @@ export function ActivityFeedWidget() {
       });
 
       // Recent customers (simplified - basic fields only)
-      // @ts-ignore - Avoid type instantiation
-      const { data: customers } = await supabase
+      const { data: customers } = await (supabase as any)
         .from('customers')
         .select('id, email, created_at')
         .eq('tenant_id', tenant.id)

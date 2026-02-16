@@ -39,7 +39,6 @@ import {
     Send,
     Copy,
     Ban,
-    Printer,
     TrendingUp
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
@@ -491,7 +490,7 @@ export function InvoicesPage() {
         errorMessage: "Failed to duplicate invoice"
     });
 
-    const handlePrintInvoice = useCallback(async (invoice: CRMInvoice) => {
+    const _handlePrintInvoice = useCallback(async (invoice: CRMInvoice) => {
         if (isGeneratingPDF) return;
 
         setIsGeneratingPDF(true);
@@ -557,7 +556,7 @@ export function InvoicesPage() {
         }
     };
 
-    const getStatusIcon = (status: string) => {
+    const _getStatusIcon = (status: string) => {
         switch (status) {
             case "paid":
                 return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -581,7 +580,7 @@ export function InvoicesPage() {
         ?.filter((i) => i.status === "sent" || i.status === "overdue")
         .reduce((sum, i) => sum + i.total, 0) || 0;
 
-    const overdueAmount = invoices
+    const _overdueAmount = invoices
         ?.filter((i) => i.status === "overdue")
         .reduce((sum, i) => sum + i.total, 0) || 0;
 

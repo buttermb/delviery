@@ -21,7 +21,7 @@ interface StoreAgeSettings {
 export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
     const { storeSlug } = useParams();
     const [isVisible, setIsVisible] = useState(false);
-    const [isVerified, setIsVerified] = useState(false);
+    const [_isVerified, setIsVerified] = useState(false);
     // Use storeSlug-namespaced key to avoid cross-store contamination if hosting multiple
     const storageKey = `age_verified_${storeSlug || storeId || 'default'}`;
 
@@ -103,7 +103,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-max bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
             >
                 <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}

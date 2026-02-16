@@ -3,7 +3,7 @@
  * Tests for delivery zone validation, inventory check, and order placement
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // Mock store delivery zones configuration
 const mockStoreWithZones = {

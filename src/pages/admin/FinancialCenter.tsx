@@ -1,8 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, TrendingDown, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { DollarSign, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
 import { useState } from "react";
@@ -10,13 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function FinancialCenter() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const tenantId = tenant?.id;
 
   // Enable realtime sync for payments, earnings, and orders (for revenue updates)
@@ -56,7 +54,7 @@ export default function FinancialCenter() {
     setCollectionDialogOpen(true);
   };
 
-  const handleSchedulePayment = () => {
+  const _handleSchedulePayment = () => {
     setScheduleDialogOpen(true);
   };
 
@@ -215,7 +213,10 @@ export default function FinancialCenter() {
 
       {/* Credit Out (Who Owes You) */}
       <Card className="p-6 border-l-4 border-l-yellow-500">
-        <h2 className="text-lg font-semibold mb-4">🔴 Credit Out (Who Owes You)</h2>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          🔴 Credit Out (Who Owes You)
+          <FieldHelp tooltip={fieldHelpTexts.creditSystem.tooltip} size="md" />
+        </h2>
         
         <div className="mb-4">
           <div className="text-3xl font-bold font-mono mb-1">

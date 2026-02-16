@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
+import { safeStorage } from '@/constants/storageKeys';
 import { logger } from '@/lib/logger';
 
 interface RecentClient {
@@ -26,7 +26,6 @@ interface WholesaleClient {
   last_order_amount?: number;
 }
 
-const RECENT_CLIENTS_KEY = 'wholesale_recent_clients';
 const MAX_RECENT_CLIENTS = 5;
 
 /**
@@ -49,7 +48,7 @@ export function useRecentClients() {
         );
         setRecentClientIds(filtered.slice(0, MAX_RECENT_CLIENTS));
       }
-    } catch (error) {
+    } catch {
       logger.warn('Failed to load recent clients from storage', { component: 'useRecentClients' });
     }
   }, [tenant?.id]);
@@ -123,7 +122,7 @@ export function useRecentClients() {
       // Persist to localStorage
       try {
         safeStorage.setItem('wholesale_clients' as any, JSON.stringify(updated));
-      } catch (error) {
+      } catch {
         logger.warn('Failed to save recent clients to storage', { component: 'useRecentClients' });
       }
 
@@ -136,7 +135,7 @@ export function useRecentClients() {
     setRecentClientIds([]);
     try {
       safeStorage.removeItem('wholesale_clients' as any);
-    } catch (error) {
+    } catch {
       logger.warn('Failed to clear recent clients from storage', { component: 'useRecentClients' });
     }
   }, []);

@@ -4,8 +4,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Flame, AlertTriangle, Clock, Shield } from 'lucide-react';
+import { Flame, AlertTriangle, Shield } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 
 interface AutoBurnConfig {
   enabled: boolean;
@@ -66,6 +67,7 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
           <div className="flex items-center gap-2">
             <Flame className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">Auto-Burn System</h3>
+            <FieldHelp tooltip={fieldHelpTexts.autoBurnSystem.tooltip} size="md" />
           </div>
           <Switch
             checked={config.enabled}
@@ -87,7 +89,10 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
             <div className="space-y-6">
               {/* Burn Type */}
               <div>
-              <Label>Burn Type</Label>
+              <Label className="flex items-center gap-1.5">
+                Burn Type
+                <FieldHelp tooltip={fieldHelpTexts.burnType.tooltip} variant="warning" />
+              </Label>
                 <Select
                   value={config.burn_type}
                   onValueChange={(value) => updateConfig({ burn_type: value as 'soft' | 'hard' })}
@@ -95,7 +100,7 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
                   <SelectTrigger className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="z-[100]">
+                  <SelectContent>
                     <SelectItem value="soft">
                       Soft Burn (Can be regenerated)
                     </SelectItem>
@@ -110,7 +115,10 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
 
               {/* Triggers */}
               <div className="space-y-4">
-                <Label className="text-base font-semibold">Burn Triggers</Label>
+                <Label className="text-base font-semibold flex items-center gap-1.5">
+                  Burn Triggers
+                  <FieldHelp tooltip={fieldHelpTexts.burnTriggers.tooltip} />
+                </Label>
 
                 {/* View Limit Exceeded */}
                 <Card className="p-4">

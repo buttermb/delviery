@@ -21,7 +21,7 @@ Element.prototype.getAnimations = vi.fn().mockReturnValue([]);
 vi.mock('@/components/ui/command', () => {
   const React = require('react');
 
-  const CommandDialog = ({ children, open, onOpenChange }: { children: React.ReactNode; open: boolean; onOpenChange: (open: boolean) => void }) => {
+  const CommandDialog = ({ children, open, onOpenChange: _onOpenChange }: { children: React.ReactNode; open: boolean; onOpenChange: (open: boolean) => void }) => {
     if (!open) return null;
     return React.createElement('div', { 'data-testid': 'command-dialog', role: 'dialog' }, children);
   };

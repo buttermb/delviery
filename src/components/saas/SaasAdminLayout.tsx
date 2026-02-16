@@ -9,8 +9,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SaasAdminSidebar } from './SaasAdminSidebar';
 import { SuperAdminMobileBottomNav } from './SuperAdminMobileBottomNav';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { LogOut } from 'lucide-react';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,7 +67,9 @@ export function SaasAdminLayout() {
 
           {/* Main Content */}
           <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))] pb-20 lg:pb-4 min-h-0">
-            <Outlet />
+            <div className="max-w-7xl mx-auto w-full">
+              <Outlet />
+            </div>
           </main>
         </div>
 

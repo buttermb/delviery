@@ -15,7 +15,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +26,6 @@ import {
   Activity,
   Search,
   Eye,
-  MoreVertical,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +37,6 @@ import { useState } from 'react';
 import {
   isTrial,
   isCancelled,
-  isActiveSubscription,
   getSubscriptionStatusLabel,
   SUBSCRIPTION_STATUS
 } from '@/utils/subscriptionStatus';

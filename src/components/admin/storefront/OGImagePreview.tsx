@@ -81,7 +81,7 @@ export function OGImagePreview({
                 )}
               </div>
               {/* Content */}
-              <div className="p-3 bg-[#f0f2f5] border-t">
+              <div className="p-3 bg-gray-100 border-t">
                 <p className="text-[11px] text-gray-500 uppercase tracking-wide truncate">
                   {displayUrl.replace(/^https?:\/\//, '').split('/')[0]}
                 </p>

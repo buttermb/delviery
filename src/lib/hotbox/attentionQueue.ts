@@ -130,7 +130,7 @@ function createAttentionItem(params: Omit<Partial<AttentionItem>, 'timestamp'> &
  */
 export async function fetchAttentionItems(
   tenantId: string,
-  tier: BusinessTier
+  _tier: BusinessTier
 ): Promise<AttentionItem[]> {
   const items: AttentionItem[] = [];
   const now = new Date();
@@ -160,9 +160,8 @@ export async function fetchAttentionItems(
       .eq('tenant_id', tenantId)
       .eq('status', 'pending'),
 
-    // @ts-expect-error - Deep type instantiation from Supabase query
     // Late deliveries (ETA passed)
-    supabase
+    (supabase as any)
       .from('deliveries')
       .select('id, created_at, estimated_delivery_time')
       .eq('tenant_id', tenantId)
@@ -170,16 +169,15 @@ export async function fetchAttentionItems(
       .lt('estimated_delivery_time', now.toISOString()),
 
     // Active deliveries (on schedule)
-    supabase
+    (supabase as any)
       .from('deliveries')
       .select('id, created_at')
       .eq('tenant_id', tenantId)
       .eq('status', 'in_transit')
       .gte('estimated_delivery_time', now.toISOString()),
 
-    // @ts-expect-error - Deep type instantiation from Supabase query
     // Out of stock products
-    supabase
+    (supabase as any)
       .from('products')
       .select('id, name')
       .eq('tenant_id', tenantId)
@@ -187,7 +185,7 @@ export async function fetchAttentionItems(
       .eq('status', 'active'),
 
     // Low stock products
-    supabase
+    (supabase as any)
       .from('products')
       .select('id, name, stock_quantity')
       .eq('tenant_id', tenantId)
@@ -242,7 +240,7 @@ export async function fetchAttentionItems(
       title: `${lateDeliveries.data.length} deliveries running late`,
       description: 'Customers waiting - check with drivers',
       actionLabel: 'Track',
-      actionRoute: '/admin/delivery-hub',
+      actionRoute: '/admin/fulfillment-hub',
       timestamp: new Date(),
     }));
   }
@@ -339,7 +337,7 @@ export async function fetchAttentionItems(
       title: `${activeDeliveries.data.length} deliveries in progress`,
       description: 'All on schedule',
       actionLabel: 'Track',
-      actionRoute: '/admin/delivery-hub',
+      actionRoute: '/admin/fulfillment-hub',
       timestamp: new Date(),
     }));
   }
@@ -376,14 +374,12 @@ export async function buildAttentionQueue(
   const allItems = await fetchAttentionItems(tenantId, tier);
   const sortedItems = sortAttentionQueue(allItems);
 
-  // Split by priority
-  const critical = sortedItems.filter(i => i.priority === 'critical');
-  const important = sortedItems.filter(i => i.priority === 'important');
-  const info = sortedItems.filter(i => i.priority === 'info');
+  // Count critical items
+  const criticalCount = sortedItems.filter(i => i.priority === 'critical').length;
 
   return {
     items: sortedItems,
-    criticalCount: critical.length,
+    criticalCount,
     totalCount: allItems.length,
     lastUpdated: new Date().toISOString(),
   };

@@ -7,7 +7,7 @@ interface OrderCountdownTimerProps {
   onExpire?: () => void;
 }
 
-export default function OrderCountdownTimer({ orderNumber, acceptedAt, onExpire }: OrderCountdownTimerProps) {
+export default function OrderCountdownTimer({ orderNumber: _orderNumber, acceptedAt, onExpire }: OrderCountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState('');
   const [isWarning, setIsWarning] = useState(false);
   const [isExpired, setIsExpired] = useState(false);

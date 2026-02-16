@@ -5,7 +5,7 @@
 
 export function checkEdgeFunctionError<T = unknown>(
   data: T | null,
-  functionName?: string
+  _functionName?: string
 ): Error | null {
   if (!data || typeof data !== 'object') {
     return null;

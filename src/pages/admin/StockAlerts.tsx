@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -5,8 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, TrendingDown, CheckCircle, PackagePlus, X, RefreshCw, CheckCheck } from 'lucide-react';
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { Checkbox } from '@/components/ui/checkbox';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import PackagePlus from 'lucide-react/dist/esm/icons/package-plus';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
+import CheckCheck from 'lucide-react/dist/esm/icons/check-check';
+import ShoppingCart from 'lucide-react/dist/esm/icons/shopping-cart';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { LowStockToPODialog } from '@/components/admin/inventory/LowStockToPODialog';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
@@ -28,13 +37,17 @@ export function StockAlerts() {
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
 
+  // State for Create PO dialog
+  const [showPODialog, setShowPODialog] = useState(false);
+  const [selectedAlertIds, setSelectedAlertIds] = useState<Set<string>>(new Set());
+
   const { data: alerts, isLoading, refetch } = useQuery({
     queryKey: queryKeys.stockAlerts.active(tenantId),
     queryFn: async (): Promise<StockAlert[]> => {
       if (!tenantId) return [];
 
       // Query the stock_alerts table for active alerts
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('stock_alerts')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -57,7 +70,7 @@ export function StockAlerts() {
 
   // Fallback function to calculate alerts from products table
   async function fetchAlertsFromProducts(tid: string): Promise<StockAlert[]> {
-    const { data: products, error: prodError } = await supabase
+    const { data: products, error: prodError } = await (supabase as any)
       .from('products')
       .select('id, name, stock_quantity, available_quantity, low_stock_alert, updated_at, created_at')
       .eq('tenant_id', tid);
@@ -97,14 +110,16 @@ export function StockAlerts() {
   // Mutation to acknowledge an alert
   const acknowledgeMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      const { data, error } = await supabase.rpc('acknowledge_stock_alert', {
+      const rpcClient = supabase as any;
+
+      const { data, error } = await rpcClient.rpc('acknowledge_stock_alert', {
         p_alert_id: alertId,
       });
 
       if (error) {
         // Fallback: try direct update if RPC doesn't exist
         if (error.code === '42883') {
-          const { error: updateError } = await supabase
+          const { error: updateError } = await (supabase as any)
             .from('stock_alerts')
             .update({
               status: 'acknowledged',
@@ -189,6 +204,36 @@ export function StockAlerts() {
   const criticalAlerts = visibleAlerts.filter(a => a.severity === 'critical').length;
   const warningAlerts = visibleAlerts.filter(a => a.severity === 'warning').length;
 
+  // Selection handlers for creating POs
+  const toggleAlertSelection = (alertId: string, productId: string) => {
+    setSelectedAlertIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedAlertIds.size === visibleAlerts.length) {
+      setSelectedAlertIds(new Set());
+    } else {
+      setSelectedAlertIds(new Set(visibleAlerts.map((a) => a.product_id)));
+    }
+  };
+
+  const handleOpenPODialog = () => {
+    setShowPODialog(true);
+  };
+
+  const handlePODialogSuccess = () => {
+    setSelectedAlertIds(new Set());
+    refetch();
+  };
+
   // Loading Skeleton
   if (isLoading) {
     return (
@@ -210,15 +255,28 @@ export function StockAlerts() {
 
   return (
     <div className="p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Stock Alerts</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Monitor low stock levels and inventory warnings</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {visibleAlerts.length > 0 && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleOpenPODialog}
+              className="gap-2"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Create Purchase Orders
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2" data-tutorial="low-stock-alerts">
@@ -245,8 +303,24 @@ export function StockAlerts() {
 
       <Card className="p-3 sm:p-4 md:p-6">
         <CardHeader className="p-0 mb-3 sm:mb-4">
-          <CardTitle className="text-base sm:text-lg md:text-xl">Active Alerts</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Products requiring immediate attention</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base sm:text-lg md:text-xl">Active Alerts</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Products requiring immediate attention</CardDescription>
+            </div>
+            {visibleAlerts.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedAlertIds.size === visibleAlerts.length && visibleAlerts.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all alerts"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {selectedAlertIds.size > 0 ? `${selectedAlertIds.size} selected` : 'Select all'}
+                </span>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {visibleAlerts.length > 0 ? (
@@ -260,6 +334,11 @@ export function StockAlerts() {
                     }`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <Checkbox
+                      checked={selectedAlertIds.has(alert.product_id)}
+                      onCheckedChange={() => toggleAlertSelection(alert.id, alert.product_id)}
+                      aria-label={`Select ${alert.product_name}`}
+                    />
                     <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'
                       }`} />
                     <div className="min-w-0 flex-1">
@@ -314,6 +393,14 @@ export function StockAlerts() {
           )}
         </CardContent>
       </Card>
+
+      {/* Low Stock to PO Dialog */}
+      <LowStockToPODialog
+        open={showPODialog}
+        onOpenChange={setShowPODialog}
+        preSelectedProductIds={Array.from(selectedAlertIds)}
+        onSuccess={handlePODialogSuccess}
+      />
     </div>
   );
 }

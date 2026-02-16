@@ -18,8 +18,8 @@ import { logger } from '@/lib/logger';
  */
 export const obfuscateRequestTiming = async <T>(
   request: () => Promise<T>,
-  minDelay: number = 50,
-  maxDelay: number = 200
+  _minDelay: number = 50,
+  _maxDelay: number = 200
 ): Promise<T> => {
   // Disabled for performance - just pass through
   return request();

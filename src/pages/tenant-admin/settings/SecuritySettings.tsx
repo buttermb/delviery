@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  Shield,
   Key,
   Smartphone,
   Monitor,
@@ -90,7 +89,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 }
 
 export default function SecuritySettings() {
-  const { admin, tenant } = useTenantAdminAuth();
+  const { admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -101,7 +100,7 @@ export default function SecuritySettings() {
     newPassword: '',
     confirmPassword: '',
   });
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorEnabled] = useState(false);
 
   // Password breach checking
   const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(passwordData.newPassword);

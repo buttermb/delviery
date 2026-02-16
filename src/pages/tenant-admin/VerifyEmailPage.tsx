@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 export default function VerifyEmailPage() {
   const { tenantSlug } = useParams();
   const navigate = useNavigate();
-  const { admin, tenant } = useTenantAdminAuth();
+  const { admin } = useTenantAdminAuth();
   const [resending, setResending] = useState(false);
 
   // Check current verification status
@@ -30,7 +30,7 @@ export default function VerifyEmailPage() {
         .from('tenant_users')
         .select('email_verified, email')
         .eq('id', admin.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;

@@ -4,15 +4,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  X, 
-  Trash2, 
-  CheckCircle, 
-  XCircle, 
-  Download,
+import {
+  X,
+  Trash2,
+  CheckCircle,
+  XCircle,
   MoreHorizontal,
   Loader2
 } from "lucide-react";
@@ -129,7 +127,7 @@ export function BulkActionsBar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {overflowActions.map((action, index) => (
+            {overflowActions.map((action) => (
               <DropdownMenuItem
                 key={action.id}
                 onClick={() => handleAction(action)}

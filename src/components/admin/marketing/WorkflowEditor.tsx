@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Zap, Mail, MessageSquare, Clock, Loader2 } from "lucide-react";
+import { Plus, Zap } from "lucide-react";
 
 interface Workflow {
   id: string;

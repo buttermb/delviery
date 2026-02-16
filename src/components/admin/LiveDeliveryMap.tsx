@@ -6,14 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
-import { 
-  Navigation, Clock, Package, AlertCircle, Phone, 
-  Truck, MapPin, Zap, ChevronRight, RefreshCw,
-  Timer, Route, User
+import {
+  Navigation, Package, AlertCircle,
+  Truck, MapPin, ChevronRight, RefreshCw,
+  Timer, User
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
-import { themeColors } from "@/lib/utils/colorConversion";
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { showErrorToast } from "@/utils/toastHelpers";
 import { cn } from "@/lib/utils";
@@ -224,11 +223,9 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       activeDeliveries.forEach((delivery, deliveryIndex) => {
         // Get runner location - use mock data if not available
         let runnerLocation = delivery.current_location as { lat: number; lng: number } | undefined;
-        let isEstimatedLocation = false;
 
         // If no location, use deterministic fallback based on delivery index (no random values)
         if (!runnerLocation || typeof runnerLocation.lat !== 'number') {
-          isEstimatedLocation = true;
           // Deterministic offset based on delivery index for consistent positioning
           const baseOffset = 0.01 * (deliveryIndex + 1);
           runnerLocation = {
@@ -238,7 +235,6 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         }
 
         const runnerName = delivery.runner?.full_name || 'Runner';
-        // @ts-ignore - delivery_address may exist on order or be accessed differently
         const clientName = (delivery as any).delivery_address?.split(',')[0] || (delivery.order as any)?.delivery_address?.split(',')[0] || 'Client';
         const orderNumber = delivery.order?.order_number || 'N/A';
 
@@ -270,15 +266,12 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           `;
 
           // Calculate ETA for this delivery
-          let etaResult: { formatted: string; eta: Date } | null = null;
-
           if (runnerLocation && typeof runnerLocation.lat === 'number') {
             calculateETA(
               [runnerLocation.lng, runnerLocation.lat],
               [destLng, destLat]
             ).then(result => {
               if (result) {
-                etaResult = result;
                 etasRef.current.set(delivery.id, result);
                 // Update popup with real ETA
                 const updatedPopup = new mapboxgl.Popup({ 

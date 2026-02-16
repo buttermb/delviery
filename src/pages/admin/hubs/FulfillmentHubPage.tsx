@@ -22,10 +22,11 @@ import {
     Package,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { lazy, Suspense, useCallback } from 'react';
+import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const DeliveryManagement = lazy(() => import('@/pages/admin/DeliveryManagement'));
@@ -61,19 +62,20 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function FulfillmentHubPage() {
+    usePageTitle('Fulfillment');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
     const { navigateToAdmin } = useTenantNavigation();
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="fulfillment-hub"
                         hubHref="fulfillment-hub"
@@ -98,15 +100,15 @@ export default function FulfillmentHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>
@@ -123,14 +125,14 @@ export default function FulfillmentHubPage() {
                 {/* Pending Shipments Tab */}
                 <TabsContent value="pending" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders />
+                        <LiveOrders statusFilter="pending" />
                     </Suspense>
                 </TabsContent>
 
                 {/* In Transit Tab */}
                 <TabsContent value="in-transit" className="m-0">
                     <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders />
+                        <LiveOrders statusFilter="in_transit" />
                     </Suspense>
                 </TabsContent>
 

@@ -1,6 +1,6 @@
 // Dashboard Page - TypeScript enabled
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,11 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  DollarSign,
   Package,
   ShoppingCart,
   AlertTriangle,
-  TrendingUp,
   ArrowRight,
   Settings,
   Users,
@@ -58,11 +56,6 @@ import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist
 import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget';
 import { DashboardQuickActionsPanel } from '@/components/dashboard/DashboardQuickActionsPanel';
 
-interface DashboardOrderRow {
-  total_amount: number | null;
-  status: string;
-}
-
 interface DashboardInventoryRow {
   id: string;
   name: string | null;
@@ -81,7 +74,6 @@ export default function TenantAdminDashboardPage() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [isEmptyAccount, setIsEmptyAccount] = useState(false);
-  const hasAnyData = !isEmptyAccount;
 
   // Calculate trial expiration info
   const trialEndsAt = tenant?.trial_ends_at;
@@ -157,7 +149,7 @@ export default function TenantAdminDashboardPage() {
   }, [logout, navigate, tenant?.slug]);
 
   // Fetch today's metrics (MOVED BEFORE EARLY RETURN)
-  const { data: todayMetrics, isLoading: metricsLoading } = useQuery({
+  const { data: todayMetrics } = useQuery({
     queryKey: ["tenant-dashboard-today", tenantId],
     queryFn: async () => {
       if (!tenantId) return { sales: 0, orderCount: 0, lowStock: [] };
@@ -376,7 +368,7 @@ export default function TenantAdminDashboardPage() {
   });
 
   // Calculate revenue and commission from actual transaction data (MOVED BEFORE EARLY RETURN)
-  const { data: revenueData } = useQuery({
+  useQuery({
     queryKey: ["revenue-stats", tenantId],
     queryFn: async () => {
       if (!tenantId) return { total: 0, commission: 0 };
@@ -563,9 +555,8 @@ export default function TenantAdminDashboardPage() {
     return { trialDaysRemaining, trialEndingSoon };
   }, [(tenant as any)?.trial_ends_at]);
 
-  // Memoize usage and limits
+  // Memoize usage
   const tenantUsage = useMemo(() => (tenant as any)?.usage || {}, [tenant]);
-  const tenantLimits = useMemo(() => (tenant as any)?.limits || {}, [tenant]);
 
   // Memoize onboarding progress
   const onboardingSteps = useMemo(() => [

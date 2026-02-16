@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Download, MoreHorizontal, Printer, FileText, X, Calendar, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { Skeleton, SkeletonTable } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
@@ -21,10 +20,10 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
+import { BulkAssignRunnerDialog } from "@/components/admin/orders/BulkAssignRunnerDialog";
 import { BulkOperationProgress } from "@/components/ui/bulk-operation-progress";
 import { useOrderBulkStatusUpdate } from "@/hooks/useOrderBulkStatusUpdate";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,11 +31,14 @@ import CopyButton from "@/components/CopyButton";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { useExport } from "@/hooks/useExport";
-import { ExportOptionsDialog, type ExportField } from "@/components/admin/ExportOptionsDialog";
+import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
+import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
+import { invalidateOnEvent } from "@/lib/invalidation";
+import { useDeliveryETA } from "@/hooks/useDeliveryETA";
+import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
@@ -47,7 +49,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
+import type { OrderWithSLATimestamps } from "@/types/sla";
+
+interface OrderItem {
+  id: string;
+  product_id: string;
+  product_name?: string;
+  quantity: number;
+  price: number;
+}
 
 interface Order {
   id: string;
@@ -59,20 +69,23 @@ interface Order {
   user_id: string;
   courier_id?: string;
   order_source?: string;
+  accepted_at?: string | null;
+  courier_assigned_at?: string | null;
+  courier_accepted_at?: string | null;
+  delivered_at?: string | null;
   user?: {
     full_name: string | null;
     email: string | null;
     phone: string | null;
   };
-  order_items?: unknown[];
+  order_items?: OrderItem[];
 }
 
 export default function Orders() {
   const navigate = useTenantNavigate();
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useAdminKeyboardShortcuts({
     onSearch: () => {
@@ -85,8 +98,6 @@ export default function Orders() {
       navigate('orders?tab=wholesale');
     }
   });
-
-  const { exportCSV } = useExport();
 
   // Real-time subscription for new orders (storefront + regular)
   const { newOrderIds } = useAdminOrdersRealtime({
@@ -118,11 +129,13 @@ export default function Orders() {
     open: boolean;
     targetStatus: string;
   }>({ open: false, targetStatus: '' });
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
 
-  // Bulk status update hook
+  // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
     tenantId: tenant?.id,
+    userId: admin?.id,
     onSuccess: () => {
       setSelectedOrders([]);
     },
@@ -148,7 +161,7 @@ export default function Orders() {
       // Fetch regular orders
       let regularQuery = supabase
         .from('orders')
-        .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, order_items(id, product_id, quantity, price)')
+        .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, accepted_at, courier_assigned_at, courier_accepted_at, delivered_at, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -234,10 +247,14 @@ export default function Orders() {
         }, {} as Record<string, { user_id: string; full_name: string | null; email: string | null; phone: string | null }>);
       }
 
-      // Merge regular orders with user info
+      // Merge regular orders with user info (including SLA timestamp fields)
       const regularOrdersWithUsers = (ordersData || []).map(order => ({
         ...order,
-        delivery_method: order.delivery_method || '',
+        delivery_method: (order as any).delivery_method || '',
+        accepted_at: order.accepted_at || null,
+        courier_assigned_at: order.courier_assigned_at || null,
+        courier_accepted_at: order.courier_accepted_at || null,
+        delivered_at: order.delivered_at || null,
         user: order.user_id ? profilesMap[order.user_id] : undefined
       })) as Order[];
 
@@ -253,6 +270,15 @@ export default function Orders() {
     gcTime: 120_000,
   });
 
+  // Delivery ETA tracking for in-transit orders
+  const inTransitOrderIds = useMemo(
+    () => orders
+      .filter((o) => ['in_transit', 'out_for_delivery'].includes(o.status))
+      .map((o) => o.id),
+    [orders]
+  );
+  const { etaMap } = useDeliveryETA(inTransitOrderIds);
+
   // Mutations
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: string }) => {
@@ -262,9 +288,14 @@ export default function Orders() {
     },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
+      // Optimistic local update for immediate UI feedback
       queryClient.setQueryData(['orders', tenant?.id, statusFilter], (old: Order[] = []) =>
         old.map(o => o.id === data.id ? { ...o, status: data.status } : o)
       );
+      // Cross-panel invalidation for dashboard, analytics, badges, fulfillment
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, { orderId: data.id });
+      }
     },
     onError: (error) => {
       logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
@@ -387,10 +418,11 @@ export default function Orders() {
       if (error) throw error;
 
       toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
-      // Invalidate related queries for consistency
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      // Cross-panel invalidation for dashboard, analytics, badges, fulfillment, inventory
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id);
+        invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id);
+      }
       setSelectedOrders([]);
     } catch (error) {
       // Rollback on error
@@ -407,7 +439,11 @@ export default function Orders() {
     setBulkStatusConfirm({ open: false, targetStatus: '' });
 
     // Execute the bulk status update
-    await bulkStatusUpdate.execute(selectedOrders, bulkStatusConfirm.targetStatus);
+    const ordersToUpdate = selectedOrders.map(id => {
+      const order = orders?.find(o => o.id === id);
+      return { id, status: bulkStatusConfirm.targetStatus, order_number: order?.order_number || '' };
+    });
+    await bulkStatusUpdate.executeBulkUpdate(ordersToUpdate, bulkStatusConfirm.targetStatus);
   };
 
   const handleClearFilters = () => {
@@ -433,69 +469,6 @@ export default function Orders() {
       deleteMutation.mutate(selectedOrders);
     }
     setDeleteConfirmation({ ...deleteConfirmation, open: false });
-  };
-
-  const orderExportFields: ExportField[] = [
-    {
-      value: 'customer_name',
-      label: 'Customer Name',
-      description: 'Include the customer full name for each order',
-      recommended: true,
-    },
-    {
-      value: 'customer_email',
-      label: 'Customer Email',
-      description: 'Include the customer email address',
-      recommended: true,
-    },
-    {
-      value: 'line_items',
-      label: 'Line Items',
-      description: 'Include product names, quantities, and prices for each order item',
-    },
-  ];
-
-  const handleExportWithOptions = (selectedFields: string[]) => {
-    const includeCustomerName = selectedFields.includes('customer_name');
-    const includeCustomerEmail = selectedFields.includes('customer_email');
-    const includeLineItems = selectedFields.includes('line_items');
-
-    if (includeLineItems) {
-      // Flatten: one row per line item
-      const flatRows = filteredOrders.flatMap(order => {
-        const items = order.order_items && order.order_items.length > 0
-          ? order.order_items
-          : [{ product_name: '', quantity: 0, price: 0, id: '', product_id: '' }];
-
-        return items.map(item => ({
-          order_number: order.order_number || order.id.slice(0, 8),
-          status: order.status,
-          total_amount: order.total_amount,
-          delivery_method: order.delivery_method || '',
-          created_at: order.created_at,
-          ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
-          ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-          item_product_name: (item as any).product_name || '',
-          item_quantity: (item as any).quantity || 0,
-          item_price: (item as any).price || 0,
-        }));
-      });
-      exportCSV(flatRows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
-    } else {
-      // Standard: one row per order
-      const rows = filteredOrders.map(order => ({
-        order_number: order.order_number || order.id.slice(0, 8),
-        status: order.status,
-        total_amount: order.total_amount,
-        delivery_method: order.delivery_method || '',
-        created_at: order.created_at,
-        ...(includeCustomerName && { customer_name: order.user?.full_name || '' }),
-        ...(includeCustomerEmail && { customer_email: order.user?.email || '' }),
-      }));
-      exportCSV(rows, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
-    }
-
-    setExportDialogOpen(false);
   };
 
   const handlePrintOrder = (order: Order) => {
@@ -547,7 +520,9 @@ export default function Orders() {
       if (error) throw error;
 
       toast.success(`Order #${order.order_number || order.id.slice(0, 8)} cancelled`);
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, { orderId: order.id });
+      }
       triggerHaptic('medium');
     } catch (error) {
       logger.error('Error cancelling order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
@@ -635,13 +610,13 @@ export default function Orders() {
     {
       header: "Customer",
       cell: (order) => (
-        <div className="flex flex-col">
-          <span className="font-medium">
-            <CustomerLink
-              customerId={order.user_id}
-              customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
-            />
-          </span>
+        <div className="flex flex-col gap-1">
+          <CustomerLink
+            customerId={order.user_id}
+            customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+            customerEmail={order.user?.email}
+            className="font-medium"
+          />
           {order.user?.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               {order.user.email}
@@ -659,25 +634,50 @@ export default function Orders() {
     },
     {
       header: "Status",
-      cell: (order) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
-            <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
-              <SelectValue>{getStatusBadge(order.status)}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="preparing">Preparing</SelectItem>
-              <SelectItem value="in_transit">In Transit</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )
+      cell: (order) => {
+        // Convert to SLA-compatible format
+        const slaOrder: OrderWithSLATimestamps = {
+          id: order.id,
+          status: order.status as OrderWithSLATimestamps['status'],
+          created_at: order.created_at,
+          accepted_at: order.accepted_at,
+          courier_assigned_at: order.courier_assigned_at,
+          courier_accepted_at: order.courier_accepted_at,
+          delivered_at: order.delivered_at,
+          status_changed_at: order.accepted_at || null,
+        };
+
+        return (
+          <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+            <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
+              <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                <SelectValue>{getStatusBadge(order.status)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="preparing">Preparing</SelectItem>
+                <SelectItem value="in_transit">In Transit</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <OrderSLAIndicator order={slaOrder} compact />
+          </div>
+        );
+      }
     },
     { header: "Method", accessorKey: "delivery_method", className: "capitalize" },
+    {
+      header: "ETA",
+      className: "w-[130px]",
+      cell: (order) => (
+        <DeliveryETACell
+          eta={etaMap[order.id]}
+          orderStatus={order.status}
+        />
+      ),
+    },
     {
       header: "Total",
       cell: (order) => <span className="font-mono font-medium">${order.total_amount?.toFixed(2)}</span>
@@ -713,18 +713,18 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePrintOrderFunc(order)}>
+              <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Print Order
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleGenerateInvoiceFunc(order)}>
+              <DropdownMenuItem onClick={() => handleGenerateInvoice(order)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
-                  onClick={() => handleCancelOrderFunc(order)}
+                  onClick={() => handleCancelOrder(order)}
                   className="text-destructive focus:text-destructive"
                 >
                   <XCircle className="mr-2 h-4 w-4" />
@@ -769,30 +769,28 @@ export default function Orders() {
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex gap-2">
+              <OrderExportButton
+                orders={filteredOrders}
+                filenamePrefix="orders-export"
+                variant="outline"
+                className="min-h-[48px] touch-manipulation"
+                disabled={filteredOrders.length === 0}
+              />
               <Button
                 variant="outline"
                 className="min-h-[48px] touch-manipulation"
-                onClick={() => setExportDialogOpen(true)}
-                disabled={filteredOrders.length === 0}
+                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
               >
-                <Download className="mr-2 h-4 w-4" />
-                Export
+                <WifiOff className="mr-2 h-4 w-4" />
+                Offline Order
               </Button>
-                <Button
-                  variant="outline"
-                  className="min-h-[48px] touch-manipulation"
-                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
-                >
-                  <WifiOff className="mr-2 h-4 w-4" />
-                  Offline Order
-                </Button>
-                <Button
-                  variant="default"
-                  className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
-                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
-                >
-                  + New Order
-                </Button>
+              <Button
+                variant="default"
+                className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
+                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
+              >
+                + New Order
+              </Button>
               <TakeTourButton
                 tutorialId={ordersTutorial.id}
                 steps={ordersTutorial.steps}
@@ -927,7 +925,8 @@ export default function Orders() {
                       <p className="text-sm font-medium">
                         <CustomerLink
                           customerId={order.user_id}
-                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown Customer'}
+                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+                          customerEmail={order.user?.email}
                         />
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -974,6 +973,18 @@ export default function Orders() {
             label: 'In Transit',
             icon: <Truck className="h-4 w-4" />,
             onClick: async () => { handleBulkStatusChange('in_transit'); },
+          },
+          {
+            id: 'assign-runner',
+            label: 'Assign Runner',
+            icon: <UserPlus className="h-4 w-4" />,
+            onClick: async () => { setAssignRunnerDialogOpen(true); },
+          },
+          {
+            id: 'merge-orders',
+            label: 'Merge',
+            icon: <Merge className="h-4 w-4" />,
+            onClick: async () => { setMergeDialogOpen(true); },
           },
           {
             id: 'mark-cancelled',
@@ -1026,14 +1037,27 @@ export default function Orders() {
         description="This action cannot be undone."
       />
 
-      <ExportOptionsDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        onExport={handleExportWithOptions}
-        fields={orderExportFields}
-        title="Export Orders"
-        description="Choose which related data to include in the CSV export."
-        itemCount={filteredOrders.length}
+      <BulkAssignRunnerDialog
+        open={assignRunnerDialogOpen}
+        onOpenChange={setAssignRunnerDialogOpen}
+        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id)).map(o => ({
+          id: o.id,
+          order_number: o.order_number,
+        }))}
+        onSuccess={() => {
+          setSelectedOrders([]);
+          refetch();
+        }}
+      />
+
+      <OrderMergeDialog
+        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id))}
+        open={mergeDialogOpen}
+        onOpenChange={setMergeDialogOpen}
+        onSuccess={() => {
+          setSelectedOrders([]);
+          refetch();
+        }}
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -1072,7 +1096,8 @@ export default function Orders() {
                 <p className="text-sm">
                   <CustomerLink
                     customerId={selectedOrder.user_id}
-                    customerName={selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || 'Unknown'}
+                    customerName={selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || ''}
+                    customerEmail={selectedOrder.user?.email}
                   />
                 </p>
                 {selectedOrder.user?.phone && (
@@ -1094,7 +1119,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePrintOrderFunc(selectedOrder)}
+                    onClick={() => handlePrintOrder(selectedOrder)}
                   >
                     <Printer className="mr-2 h-4 w-4" />
                     Print
@@ -1102,7 +1127,7 @@ export default function Orders() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleGenerateInvoiceFunc(selectedOrder)}
+                    onClick={() => handleGenerateInvoice(selectedOrder)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Invoice

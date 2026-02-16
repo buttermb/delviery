@@ -216,7 +216,7 @@ describe('RouteErrorBoundary', () => {
         return <WorkingComponent />;
       };
 
-      const { rerender } = render(
+      render(
         <RouteErrorBoundary>
           <ConditionalError />
         </RouteErrorBoundary>

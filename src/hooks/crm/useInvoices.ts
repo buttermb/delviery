@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import type { CRMInvoice, InvoiceFormValues, LineItem } from '@/types/crm';
 import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { crmClientKeys } from './useClients';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';

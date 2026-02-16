@@ -19,7 +19,6 @@ import {
   Zap,
   Play,
   Pause,
-  Trash2,
   Plus,
   Settings,
   ArrowRight,

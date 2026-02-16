@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
-import { ArrowLeft, Trash2, DollarSign, Calendar, AlertTriangle, Clock } from 'lucide-react';
+import { Trash2, DollarSign, Calendar, AlertTriangle, Clock } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
 import { calculateExpectedProfit } from '@/utils/barcodeHelpers';
@@ -56,7 +56,6 @@ const PAYMENT_DUE_PRESETS = [
 ] as const;
 
 export default function DispatchInventory() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
@@ -107,8 +106,7 @@ export default function DispatchInventory() {
   const handleBarcodeScan = async (barcode: string) => {
     if (!tenant) return;
     try {
-      // @ts-ignore - Avoid deep Supabase type inference
-      const result = await supabase
+      const result = await (supabase as any)
         .from('products')
         .select('id, name, cost_per_unit, wholesale_price')
         .eq('barcode', barcode)
@@ -258,8 +256,7 @@ export default function DispatchInventory() {
         }));
 
         // Try atomic RPC first (preferred method - prevents race conditions)
-        // @ts-ignore - RPC function not in auto-generated types
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic' as any, {
+        const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_fronted_inventory_atomic', {
           p_tenant_id: tenant.id,
           p_client_id: selectedClient.id,
           p_items: items,
@@ -385,8 +382,7 @@ export default function DispatchInventory() {
     await Promise.all(promises);
 
     // Update client's outstanding balance using atomic RPC if available, else direct update
-    // @ts-ignore - RPC function not in auto-generated types
-    const { error: balanceError } = await supabase.rpc('adjust_client_balance' as any, {
+    const { error: balanceError } = await (supabase as any).rpc('adjust_client_balance', {
       p_client_id: selectedClient.id,
       p_amount: totalExpectedRevenue,
       p_operation: 'add'

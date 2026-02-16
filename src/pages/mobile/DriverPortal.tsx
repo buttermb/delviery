@@ -13,7 +13,6 @@ import {
   Scan,
   ArrowLeft,
   CheckCircle,
-  AlertCircle,
   TrendingUp,
   Calendar,
 } from "lucide-react";
@@ -21,7 +20,7 @@ import { format } from "date-fns";
 
 export default function DriverPortal() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [myFronts, setMyFronts] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalUnits: 0,

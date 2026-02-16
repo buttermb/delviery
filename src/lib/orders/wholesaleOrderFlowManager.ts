@@ -72,20 +72,26 @@ export const wholesaleOrderFlowManager = {
    * Transition an order to a new status with validation
    */
   async transitionOrderStatus(
-    orderId: string, 
+    orderId: string,
     newStatus: WholesaleOrderStatus,
     options?: {
       skipInventoryUpdate?: boolean;
       notes?: string;
+      tenantId?: string;
     }
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // Fetch current status
-      const { data: order, error: fetchError } = await supabase
+      let query = supabase
         .from('wholesale_orders')
         .select('status, client_id, total_amount')
-        .eq('id', orderId)
-        .single();
+        .eq('id', orderId);
+
+      if (options?.tenantId) {
+        query = query.eq('tenant_id', options.tenantId);
+      }
+
+      const { data: order, error: fetchError } = await query.maybeSingle();
 
       if (fetchError) {
         logger.error('Failed to fetch order for status transition', fetchError);
@@ -131,10 +137,16 @@ export const wholesaleOrderFlowManager = {
       }
 
       // Update status
-      const { error: updateError } = await supabase
+      let updateQuery = supabase
         .from('wholesale_orders')
         .update(updateData)
         .eq('id', orderId);
+
+      if (options?.tenantId) {
+        updateQuery = updateQuery.eq('tenant_id', options.tenantId);
+      }
+
+      const { error: updateError } = await updateQuery;
 
       if (updateError) {
         logger.error('Failed to update order status', updateError);

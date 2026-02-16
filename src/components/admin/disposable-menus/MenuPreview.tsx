@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import { useMenuProductsForPreview } from '@/hooks/useMenuProductsForPreview';
+import { MenuComplianceBadge } from '@/components/admin/disposable-menus/MenuComplianceBadge';
 import type { Json } from '@/integrations/supabase/types';
 
 interface MenuProduct {
@@ -111,6 +112,12 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
       cbd_content: productData.cbd_content,
       display_order: mp.display_order || 0,
       display_availability: mp.display_availability ?? true,
+      // Compliance fields
+      lab_name: productData.lab_name,
+      lab_results_url: productData.lab_results_url,
+      test_date: productData.test_date,
+      coa_url: productData.coa_url,
+      batch_number: productData.batch_number,
     };
   }).filter(Boolean).sort((a, b) => (a?.display_order ?? 0) - (b?.display_order ?? 0)) as Array<{
     id: string;
@@ -124,6 +131,11 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
     cbd_content: number | null | undefined;
     display_order: number;
     display_availability: boolean;
+    lab_name: string | null | undefined;
+    lab_results_url: string | null | undefined;
+    test_date: string | null | undefined;
+    coa_url: string | null | undefined;
+    batch_number: string | null | undefined;
   }>;
 
   // Get unique categories
@@ -412,21 +424,24 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                               </p>
                             )}
 
-                            {/* THC/CBD Info */}
-                            {(product.thc_content || product.cbd_content) && (
-                              <div className="flex gap-2 mt-2">
-                                {product.thc_content && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    THC {product.thc_content.toFixed(1)}%
-                                  </Badge>
-                                )}
-                                {product.cbd_content && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    CBD {product.cbd_content.toFixed(1)}%
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
+                            {/* Compliance Badges */}
+                            <div className="mt-2">
+                              <MenuComplianceBadge
+                                product={{
+                                  id: product.id,
+                                  name: product.name,
+                                  thc_content: product.thc_content,
+                                  cbd_content: product.cbd_content,
+                                  lab_name: product.lab_name,
+                                  lab_results_url: product.lab_results_url,
+                                  test_date: product.test_date,
+                                  coa_url: product.coa_url,
+                                  batch_number: product.batch_number,
+                                }}
+                                size="sm"
+                                showDetails={false}
+                              />
+                            </div>
                           </div>
 
                           {/* Price */}

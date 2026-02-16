@@ -64,7 +64,6 @@ function FunnelStage({
   percentage: number;
   index: number;
 }) {
-  const colors = ['bg-primary', 'bg-blue-500', 'bg-amber-500', 'bg-green-500'];
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">

@@ -50,7 +50,7 @@ export class PerformanceMonitor {
       });
       observer.observe({ entryTypes: ['paint'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('FCP observation not supported');
     }
   }
@@ -65,7 +65,7 @@ export class PerformanceMonitor {
       });
       observer.observe({ entryTypes: ['largest-contentful-paint'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('LCP observation not supported');
     }
   }
@@ -80,7 +80,7 @@ export class PerformanceMonitor {
       });
       observer.observe({ entryTypes: ['first-input'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('FID observation not supported');
     }
   }
@@ -98,7 +98,7 @@ export class PerformanceMonitor {
       });
       observer.observe({ entryTypes: ['layout-shift'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('CLS observation not supported');
     }
   }
@@ -114,7 +114,7 @@ export class PerformanceMonitor {
       });
       observer.observe({ entryTypes: ['navigation'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('Navigation timing not supported');
     }
   }
@@ -155,7 +155,7 @@ export class PerformanceMonitor {
         const measure = performance.getEntriesByName(name)[0];
         this.logMetric(name, measure.duration);
         return measure.duration;
-      } catch (e) {
+      } catch {
         logger.warn(`Could not measure ${name}`);
       }
     }

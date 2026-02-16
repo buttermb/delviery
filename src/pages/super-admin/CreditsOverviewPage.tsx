@@ -11,7 +11,6 @@ import {
   Coins,
   Users,
   TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -29,7 +28,6 @@ import { Progress } from '@/components/ui/progress';
 import {
   getPlatformCreditStats,
   getTenantsWithCredits,
-  type PlatformCreditStats,
   type TenantCreditInfo,
   FREE_TIER_MONTHLY_CREDITS,
 } from '@/lib/credits';

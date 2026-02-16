@@ -52,7 +52,7 @@ export function ApprovalPage() {
       await requestApprovalMutation.mutateAsync({
         request_message: requestMessage || undefined,
       });
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

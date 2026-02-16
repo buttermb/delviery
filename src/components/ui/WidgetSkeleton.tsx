@@ -271,7 +271,7 @@ export function WidgetSkeleton({
   variant = 'card',
   height = 'auto',
   itemCount = 3,
-  showHeader = true,
+  showHeader: _showHeader = true,
   className,
   ariaLabel = 'Loading widget...',
 }: WidgetSkeletonProps) {

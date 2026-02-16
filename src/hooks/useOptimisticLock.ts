@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 export interface OptimisticLockResult {
   success: boolean;
@@ -11,7 +12,7 @@ export interface OptimisticLockResult {
 
 type TableName = "products" | "orders" | "wholesale_orders" | "unified_orders" | "customers" | "wholesale_clients";
 
-export const useOptimisticLock = (tableName: TableName) => {
+export const useOptimisticLock = (tableName: TableName, tenantId?: string) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const updateWithLock = useCallback(async (
@@ -19,40 +20,47 @@ export const useOptimisticLock = (tableName: TableName) => {
     updates: Record<string, unknown>,
     expectedVersion: number
   ): Promise<OptimisticLockResult> => {
+    if (!tenantId) {
+      return { success: false, error: "Tenant context required" };
+    }
     setIsUpdating(true);
     try {
-      const { data: current } = await supabase
+      // Single atomic conditional update - avoids TOCTOU race condition
+      const { data: updated, error } = await (supabase as any)
         .from(tableName)
-        .select("version")
+        .update({ ...updates, version: expectedVersion + 1, updated_at: new Date().toISOString() })
         .eq("id", id)
-        .single();
+        .eq("tenant_id", tenantId)
+        .eq("version", expectedVersion)
+        .select()
+        .maybeSingle();
 
-      const currentVersion = (current as { version?: number })?.version || 1;
+      if (error) {
+        logger.error("Optimistic lock update failed", error);
+        return { success: false, error: error.message };
+      }
 
-      if (currentVersion !== expectedVersion) {
+      if (!updated) {
         toast.error("Record modified by another user. Please refresh.");
         return { success: false, error: "Version conflict", conflictDetected: true };
       }
 
-      const { data: updated, error } = await supabase
-        .from(tableName)
-        .update({ ...updates, version: currentVersion + 1, updated_at: new Date().toISOString() })
-        .eq("id", id)
-        .eq("version", expectedVersion)
-        .select()
-        .single();
-
-      if (error) return { success: false, error: error.message };
       return { success: true, data: updated as Record<string, unknown> };
     } finally {
       setIsUpdating(false);
     }
-  }, [tableName]);
+  }, [tableName, tenantId]);
 
   const fetchWithVersion = useCallback(async (id: string) => {
-    const { data } = await supabase.from(tableName).select("*").eq("id", id).single();
+    if (!tenantId) return null;
+    const { data } = await (supabase as any)
+      .from(tableName)
+      .select("*")
+      .eq("id", id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
     return data as Record<string, unknown> | null;
-  }, [tableName]);
+  }, [tableName, tenantId]);
 
   return { updateWithLock, fetchWithVersion, isUpdating };
 };

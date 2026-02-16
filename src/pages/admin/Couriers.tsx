@@ -172,7 +172,7 @@ export default function Couriers() {
               </Badge>
             )}
             {hasLocation && (
-              <MapPin className="h-3 w-3 text-green-600" title="GPS location available" />
+              <span title="GPS location available"><MapPin className="h-3 w-3 text-green-600" /></span>
             )}
           </div>
         );
@@ -271,7 +271,7 @@ export default function Couriers() {
 
           <CourierLoginInfo />
 
-          <Card className="p-3 sm:p-4">
+          <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
               <div className="relative flex-1">
                 <SearchInput
@@ -364,7 +364,7 @@ export default function Couriers() {
                                 </Badge>
                               )}
                               {hasLocation && (
-                                <MapPin className="h-3 w-3 text-green-600" title="GPS location available" />
+                                <span title="GPS location available"><MapPin className="h-3 w-3 text-green-600" /></span>
                               )}
                             </>
                           );

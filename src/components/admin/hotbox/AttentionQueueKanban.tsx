@@ -87,7 +87,7 @@ const columns: KanbanColumn[] = [
 
 import { useSwipeable } from 'react-swipeable';
 import { useCallback } from 'react';
-import { Check, Clock as ClockIcon, ArrowRight, Loader2, CheckCheck, Clock as SnoozeIcon } from 'lucide-react';
+import { Check, Clock as ClockIcon, ArrowRight, Loader2, CheckCheck } from 'lucide-react';
 
 interface KanbanCardProps {
     item: AttentionItem;

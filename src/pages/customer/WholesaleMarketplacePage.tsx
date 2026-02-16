@@ -14,16 +14,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Package, 
-  Search, 
+import {
+  Package,
+  Search,
   Filter,
   ShoppingCart,
   Star,
   Building2,
-  Lock,
-  Plus,
-  Minus
+  Lock
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
@@ -40,10 +38,10 @@ import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 type CustomerMode = 'retail' | 'wholesale';
 
 export default function WholesaleMarketplacePage() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug: _slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const buyerTenantId = tenantId; // For B2B, the customer's tenant is the buyer
@@ -59,7 +57,7 @@ export default function WholesaleMarketplacePage() {
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
-    } catch (error) {
+    } catch {
       // Ignore storage errors
     }
   }, [setMode]);

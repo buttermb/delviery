@@ -9,15 +9,11 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Activity,
     AlertCircle,
     CheckCircle,
-    CreditCard,
-    Ticket,
-    TrendingUp
 } from 'lucide-react';
 
 interface HealthReason {

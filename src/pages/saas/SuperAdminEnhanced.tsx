@@ -25,7 +25,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   DollarSign,
@@ -40,15 +39,8 @@ import {
   BarChart3,
   Settings,
   Search,
-  Filter,
   Download,
-  Plus,
-  Eye,
   LogIn,
-  MoreVertical,
-  Mail,
-  Bell,
-  Shield,
   Zap,
   LogOut,
 } from 'lucide-react';
@@ -67,8 +59,6 @@ import { TenantFilters, FilterType } from '@/components/admin/TenantFilters';
 import { HealthScoreTooltip } from '@/components/admin/HealthScoreTooltip';
 import { OnboardingTracker } from '@/components/admin/OnboardingTracker';
 import { TenantHoverCard } from '@/components/admin/TenantHoverCard';
-import { TenantSupportTickets } from '@/components/admin/TenantSupportTickets';
-import { TenantActivityTimeline } from '@/components/admin/TenantActivityTimeline';
 import { BulkActionsBar } from '@/components/admin/BulkActionsBar';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -100,7 +90,6 @@ interface TenantSummary {
 import {
   isTrial,
   isCancelled,
-  isActiveSubscription,
   getSubscriptionStatusLabel,
   SUBSCRIPTION_STATUS
 } from '@/utils/subscriptionStatus';
@@ -1100,7 +1089,7 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
 // Billing Management Component
 function BillingManagement({ tenant }: { tenant: any }) {
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<string>(tenant?.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
+  const [_selectedPlan, setSelectedPlan] = useState<string>(tenant?.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
 
   const plans = [
     { id: 'starter', name: 'Starter', price: 99 },

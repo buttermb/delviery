@@ -210,7 +210,7 @@ export const MenuOrderForm = ({
             <h2 className="font-semibold mb-4">Contact Information</h2>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="name"
                   value={formData.contact_name}
@@ -220,7 +220,7 @@ export const MenuOrderForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label htmlFor="phone">Phone Number <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                 <Input
                   id="phone"
                   type="tel"

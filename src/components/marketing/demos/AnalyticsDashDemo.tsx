@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, ArrowUp } from 'lucide-react';
+import { BarChart3, TrendingUp, DollarSign, Users, ShoppingCart } from 'lucide-react';
 
 const MOCK_HOURLY_DATA = [35, 45, 60, 80, 95, 110, 90, 100, 120, 85, 70, 55];
 

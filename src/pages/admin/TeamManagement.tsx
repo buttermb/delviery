@@ -77,7 +77,7 @@ const initialFormData: InviteFormData = {
   role: 'member',
 };
 
-export function TeamManagement() {
+export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -92,7 +92,7 @@ export function TeamManagement() {
     isLoading: loadingMembers,
     error: membersError,
   } = useQuery({
-    queryKey: queryKeys.team.members.list(tenant?.id),
+    queryKey: ['team', 'members', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
@@ -121,12 +121,12 @@ export function TeamManagement() {
         is_owner: true,
       };
 
-      const members = (tenantUsers || []).map((user): TeamMember => ({
+      const members = (tenantUsers || []).map((user: any): TeamMember => ({
         id: user.id,
         user_id: user.user_id,
         email: user.email,
         first_name: user.first_name,
-        last_name: user.last_name,
+        last_name: user.last_name || null,
         full_name: user.first_name && user.last_name
           ? `${user.first_name} ${user.last_name}`
           : user.first_name || user.last_name || null,
@@ -148,7 +148,7 @@ export function TeamManagement() {
     data: pendingInvitations = [],
     isLoading: loadingInvitations,
   } = useQuery({
-    queryKey: queryKeys.team.invitations.pending(tenant?.id),
+    queryKey: ['team', 'invitations', 'pending', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -193,8 +193,8 @@ export function TeamManagement() {
       setIsDialogOpen(false);
       setFormData(initialFormData);
       setFormErrors({});
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations.all() });
+      queryClient.invalidateQueries({ queryKey: ['team', 'members'] });
+      queryClient.invalidateQueries({ queryKey: ['team', 'invitations'] });
     },
     onError: (error: Error) => {
       logger.error('Failed to send invitation', error, { component: 'TeamManagement' });
@@ -217,7 +217,7 @@ export function TeamManagement() {
     },
     onSuccess: () => {
       toast.success('Role updated successfully');
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamManagement' });
@@ -240,7 +240,7 @@ export function TeamManagement() {
     },
     onSuccess: (_, { newStatus }) => {
       toast.success(newStatus === 'suspended' ? 'Member suspended' : 'Member reactivated');
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to update status', error, { component: 'TeamManagement' });
@@ -265,7 +265,7 @@ export function TeamManagement() {
       toast.success('Team member removed');
       setDeleteDialogOpen(false);
       setMemberToRemove(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.team.members.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamManagement' });
@@ -307,18 +307,6 @@ export function TeamManagement() {
     }
   };
 
-  const getRoleBadgeVariant = (role: string): 'default' | 'secondary' | 'outline' => {
-    switch (role) {
-      case 'owner':
-      case 'admin':
-        return 'default';
-      case 'member':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'owner':
@@ -328,9 +316,9 @@ export function TeamManagement() {
       case 'member':
         return 'bg-green-500/10 text-green-600 border-green-500/20';
       case 'viewer':
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30';
       default:
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30';
     }
   };
 
@@ -352,7 +340,7 @@ export function TeamManagement() {
         );
       default:
         return (
-          <Badge variant="outline" className="bg-gray-500/10 text-gray-600 border-gray-500/20">
+          <Badge variant="outline" className="bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30">
             {status}
           </Badge>
         );
@@ -524,7 +512,7 @@ export function TeamManagement() {
             Manage your team members, roles, and permissions
             {!isEnterprise && (
               <span className="ml-2 text-sm">
-                ({activeUserCount}/{userLimit} users)
+                ({String(activeUserCount)}/{String(userLimit)} users)
               </span>
             )}
           </p>
@@ -668,7 +656,7 @@ export function TeamManagement() {
           invitations={pendingInvitations}
           tenantId={tenant?.id || ''}
           onInvitationsChange={() =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations.all() })
+            queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) })
           }
         />
       )}

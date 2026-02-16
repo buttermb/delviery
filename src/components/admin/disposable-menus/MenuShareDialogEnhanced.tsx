@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,14 +14,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, ExternalLink, MessageCircle, Mail, QrCode, Download, Loader2, CheckCircle2, Users, DollarSign, MessageSquare } from 'lucide-react';
+import { Copy, ExternalLink, MessageCircle, Mail, Download, Loader2, CheckCircle2, Users, DollarSign, MessageSquare } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { formatMenuUrl } from '@/utils/menuHelpers';
 import { generateQRCodeDataURL, downloadQRCodePNG } from '@/lib/utils/qrCode';
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
 import { cn } from '@/lib/utils';
-import { jsonToString, jsonToStringOrNumber, safeJsonAccess } from '@/utils/menuTypeHelpers';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MenuSecuritySettings {
@@ -143,7 +143,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
     try {
       await downloadQRCodePNG(menuUrl, `menu-qr-${menu?.id || 'code'}.png`, { size: 512 });
       showSuccessToast('QR Code Downloaded', 'QR code saved to your downloads');
-    } catch (error) {
+    } catch {
       showErrorToast('Download Failed', 'Failed to download QR code');
     }
   };

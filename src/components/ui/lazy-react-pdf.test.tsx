@@ -16,7 +16,7 @@ vi.mock('@react-pdf/renderer', () => ({
   Link: ({ children, src }: { children: React.ReactNode; src: string }) => (
     <a data-testid="pdf-link" href={src}>{children}</a>
   ),
-  PDFDownloadLink: ({ children, document }: { children: React.ReactNode | ((props: any) => React.ReactNode); document: any }) => (
+  PDFDownloadLink: ({ children, document: _document }: { children: React.ReactNode | ((props: any) => React.ReactNode); document: any }) => (
     <div data-testid="pdf-download-link">
       {typeof children === 'function' ? children({ loading: false, url: '', blob: null, error: null }) : children}
     </div>

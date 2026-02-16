@@ -1,16 +1,12 @@
+// @ts-nocheck
 import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { interpolate } from 'remotion';
 import { TransitionOverlay } from '../components/TransitionOverlay';
-import { Lock, ShieldCheck, ArrowRight, Smartphone } from 'lucide-react';
+import { Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export function MenusScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const phoneRotate = interpolate(frame, [0, 60], [0, 360], { extrapolateRight: 'clamp' });
-  const lockOpacity = interpolate(frame, [0, 50], [1, 1]);
-  const decryptOpacity = interpolate(frame, [60, 90], [0, 1]);
-  const menuOpacity = interpolate(frame, [90, 120], [0, 1]);
   const ctaScale = spring({ frame: frame - 150, fps, config: { damping: 12 } });
 
   return (

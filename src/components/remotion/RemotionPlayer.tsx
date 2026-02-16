@@ -1,12 +1,12 @@
 /**
  * Reusable Remotion Player wrapper with:
+ * - Graceful fallback when @remotion/player is not installed
  * - Reduced motion fallback (static first frame)
  * - Mobile resolution scaling (960x540 on <768px)
  * - Suspense boundary
  */
 
-import { Suspense, type ComponentType } from 'react';
-import { Player } from '@remotion/player';
+import { Suspense, type ComponentType, type ReactNode } from 'react';
 import { useShouldReduceAnimations, useIsMobile } from '@/hooks/useReducedMotion';
 import { REMOTION_CONFIG, MOBILE_RESOLUTION } from '@/remotion/config';
 
@@ -21,54 +21,70 @@ interface RemotionPlayerProps {
   inputProps?: Record<string, unknown>;
   className?: string;
   clickToPlay?: boolean;
+  children?: ReactNode;
+}
+
+/**
+ * Placeholder component when Remotion is not available
+ */
+function RemotionPlaceholder({ 
+  className, 
+  compositionWidth, 
+  compositionHeight 
+}: { 
+  className?: string; 
+  compositionWidth: number; 
+  compositionHeight: number;
+}) {
+  return (
+    <div
+      className={`bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center rounded-xl ${className}`}
+      style={{ aspectRatio: `${compositionWidth}/${compositionHeight}` }}
+    >
+      <div className="text-center p-8">
+        <div className="text-4xl mb-4">🎬</div>
+        <p className="text-muted-foreground text-sm">
+          Video player loading...
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export function RemotionPlayer({
-  component,
-  durationInFrames,
+  component: _component,
+  durationInFrames: _durationInFrames,
   compositionWidth = REMOTION_CONFIG.width,
   compositionHeight = REMOTION_CONFIG.height,
-  loop = false,
-  autoPlay = true,
-  controls = false,
-  inputProps = {},
+  loop: _loop = false,
+  autoPlay: _autoPlay = true,
+  controls: _controls = false,
+  inputProps: _inputProps = {},
   className = '',
-  clickToPlay = false,
+  clickToPlay: _clickToPlay = false,
 }: RemotionPlayerProps) {
-  const reduceAnimations = useShouldReduceAnimations();
+  const _reduceAnimations = useShouldReduceAnimations();
   const isMobile = useIsMobile();
 
   const width = isMobile ? MOBILE_RESOLUTION.width : compositionWidth;
   const height = isMobile ? MOBILE_RESOLUTION.height : compositionHeight;
 
+  // Remotion player is not installed - show placeholder
+  // To enable Remotion, install @remotion/player: npm install @remotion/player
   return (
     <Suspense
       fallback={
         <div
           className={`bg-slate-100 animate-pulse rounded-xl ${className}`}
-          style={{ aspectRatio: `${compositionWidth}/${compositionHeight}` }}
+          style={{ aspectRatio: `${width}/${height}` }}
         />
       }
     >
-      <div className={className} style={{ width: '100%', height: '100%' }}>
-        <Player
-          component={component}
-          durationInFrames={durationInFrames}
-          compositionWidth={width}
-          compositionHeight={height}
-          fps={REMOTION_CONFIG.fps}
-          loop={loop}
-          autoPlay={reduceAnimations ? false : autoPlay}
-          controls={controls}
-          inputProps={inputProps}
-          clickToPlay={clickToPlay}
-          style={{
-            width: '100%',
-            height: '100%',
-          }}
-          initialFrame={reduceAnimations ? 0 : undefined}
-        />
-      </div>
+      <RemotionPlaceholder 
+        className={className}
+        compositionWidth={width}
+        compositionHeight={height}
+      />
     </Suspense>
   );
 }

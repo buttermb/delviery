@@ -66,7 +66,7 @@ export function DuplicateProductButton({
       });
       
       setTimeout(() => setIsSuccess(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to duplicate product. Please try again.');
     } finally {
       setIsLoading(false);

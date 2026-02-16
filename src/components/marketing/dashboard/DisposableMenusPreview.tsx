@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Eye, QrCode, Clock, TrendingUp, Lock, Copy, AlertCircle } from 'lucide-react';
+import { Shield, Eye, QrCode, Clock, TrendingUp, Lock, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 

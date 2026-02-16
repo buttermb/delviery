@@ -22,7 +22,6 @@ import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
@@ -86,7 +85,7 @@ export function MobileBottomNav() {
     if (open) {
       setOpen(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, open]);
 
   const handleLogout = async () => {
     await logout();
@@ -101,7 +100,7 @@ export function MobileBottomNav() {
           className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg"
           style={{
             pointerEvents: 'auto',
-            zIndex: 50,
+            zIndex: 100,
             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           }}
           role="navigation"
@@ -143,12 +142,6 @@ export function MobileBottomNav() {
                 >
                   <div className="relative">
                     <Icon className="h-5 w-5 mb-1" aria-hidden="true" />
-                    {/* Badge logic */}
-                    {link.badge && link.badge > 0 && (
-                      <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-in zoom-in duration-300">
-                        {link.badge}
-                      </span>
-                    )}
                   </div>
                   <span className="truncate max-w-full px-1 text-[10px] font-medium leading-tight">{link.title}</span>
                 </Link>

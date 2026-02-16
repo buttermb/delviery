@@ -73,7 +73,7 @@ export function CreditCostBadge({
     return 'bg-muted text-muted-foreground border-border';
   };
 
-  const content = (
+  const _content = (
     <span
       className={cn(
         'inline-flex items-center gap-1 transiton-all duration-300',
@@ -219,7 +219,7 @@ export function CreditCostIndicator({
 }: CreditCostIndicatorProps) {
   const { balance, isFreeTier } = useCredits();
   const cost = getCreditCost(actionKey);
-  const costInfo = getCreditCostInfo(actionKey);
+  const _costInfo = getCreditCostInfo(actionKey);
 
   if (!isFreeTier || cost === 0) {
     return null;

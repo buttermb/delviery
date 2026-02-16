@@ -27,14 +27,14 @@ export default function CustomerResetPasswordPage() {
   const tokenFromUrl = searchParams.get('token');
   const emailFromUrl = searchParams.get('email');
 
-  const [token, setToken] = useState(tokenFromUrl || '');
+  const [token, _setToken] = useState(tokenFromUrl || '');
   const [email, setEmail] = useState(emailFromUrl || '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reset, setReset] = useState(false);
-  const [tenant, setTenant] = useState<any>(null);
+  const [_tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
   const [resetError, setResetError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();

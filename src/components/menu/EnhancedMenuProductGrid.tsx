@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useMenuCart } from '@/contexts/MenuCartContext';
+import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from '@/hooks/use-toast';
 import { ShoppingCart, Search, ZoomIn, Plus, Check, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -38,7 +38,8 @@ interface EnhancedMenuProductGridProps {
 }
 
 export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMenuProductGridProps) {
-  const { items, addItem } = useMenuCart();
+  const items = useMenuCartStore((state) => state.items);
+  const addItemToStore = useMenuCartStore((state) => state.addItem);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price'>('name');
@@ -64,7 +65,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
 
   const getCartQuantity = (productId: string, weight?: string) => {
     return items.find(item =>
-      item.productId === productId && item.selectedWeight === weight
+      item.productId === productId && item.weight === weight
     )?.quantity || 0;
   };
 
@@ -78,12 +79,11 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
 
     const price = prices[selectedWeight] || product.price;
 
-    addItem({
-      id: product.id,
-      name: product.name,
+    addItemToStore({
+      productId: product.id,
+      productName: product.name,
       price: price,
-      image_url: getProductImage(product),
-      selectedWeight: selectedWeight,
+      weight: selectedWeight || '',
     });
 
     // Trigger confetti effect

@@ -10,7 +10,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   DollarSign, 
@@ -75,7 +75,7 @@ export default function TaxManagementPage() {
         .from('account_settings')
         .select('tax_rate')
         .eq('account_id', tenantId)
-        .single();
+        .maybeSingle();
 
       const taxRate = settings?.tax_rate || 8.875;
       const totalSales = (orders || []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { MapPin, Radio, Clock, Package, TrendingUp, Navigation } from 'lucide-react';
+import { MapPin, Radio, Clock, TrendingUp, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 

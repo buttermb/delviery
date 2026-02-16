@@ -1,20 +1,16 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import {
   BarChart3,
   Plus,
-  Loader2,
   Calendar,
   FileText,
   LayoutDashboard,
-  Settings,
 } from "lucide-react";
 import { ReportBuilder } from "@/components/admin/reporting/ReportBuilder";
 import { ReportList } from "@/components/admin/reporting/ReportList";

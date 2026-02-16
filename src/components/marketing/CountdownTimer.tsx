@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export function CountdownTimer() {
     const [timeLeft, setTimeLeft] = useState(59 * 60 + 59); // 59 minutes 59 seconds

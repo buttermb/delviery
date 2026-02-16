@@ -1,6 +1,5 @@
-import { logger } from '@/lib/logger';
 import { Outlet, useLocation, useParams } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
 import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
@@ -11,11 +10,13 @@ import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { Search, Keyboard } from "lucide-react";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
+import { BreadcrumbProvider } from "@/contexts/BreadcrumbContext";
 import { InstallPWA } from "@/components/InstallPWA";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
 import { useEventNotifications } from "@/hooks/useEventNotifications";
 import { useEventToasts } from "@/hooks/useEventToasts";
+import { STORAGE_KEYS, safeStorage } from "@/constants/storageKeys";
 
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
 import { initBrowserNotifications } from "@/utils/browserNotifications";
@@ -43,8 +44,40 @@ import { useCredits } from "@/contexts/CreditContext";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { CreditBalance } from '@/components/credits/CreditBalance';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatus';
+import { InventorySyncIndicator } from '@/components/admin/storefront/InventorySyncIndicator';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useMenuOrderNotifications } from '@/hooks/useMenuOrderNotifications';
+import { useQueryClient } from '@tanstack/react-query';
+import { initEventBusInvalidationBridge } from '@/lib/eventBusInvalidationBridge';
+/** Closes the mobile sidebar on route change */
+function MobileSidebarCloser() {
+  const location = useLocation();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [location.pathname, isMobile, setOpenMobile]);
+
+  return null;
+}
+
+/** Scrolls the admin main content area to top on route change */
+function ScrollMainToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const mainEl = document.getElementById('admin-main-content');
+    if (mainEl) {
+      mainEl.scrollTo(0, 0);
+    }
+  }, [pathname]);
+
+  return null;
+}
+
 /**
  * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
@@ -63,6 +96,7 @@ const AdminLayout = () => {
 
   // Get tenant context for realtime sync
   const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
 
   // Enable real-time cross-panel data synchronization
   useRealtimeSync({
@@ -70,11 +104,24 @@ const AdminLayout = () => {
     enabled: !!tenant?.id,
   });
 
+  // Bridge eventBus events to query invalidation system
+  useEffect(() => {
+    if (!tenant?.id) return;
+    return initEventBusInvalidationBridge(queryClient, tenant.id);
+  }, [queryClient, tenant?.id]);
+
   // Enable keyboard shortcuts
   const { shortcutsVisible, setShortcutsVisible } = useAdminKeyboardShortcuts();
 
   // Sidebar mode toggle (Classic vs Optimized)
   const { isOptimized } = useSidebarMode();
+
+  // Read persisted sidebar collapse state from localStorage (only once on mount)
+  const sidebarDefaultOpen = useMemo(() => {
+    const stored = safeStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    // stored === 'true' means collapsed, so defaultOpen is the inverse
+    return stored === 'true' ? false : true;
+  }, []);
 
   // Enable real-time event notifications for orders and stock alerts
   useEventNotifications({
@@ -86,13 +133,13 @@ const AdminLayout = () => {
   // Enable cross-panel toast notifications (separate from above)
   useEventToasts({ enabled: !!tenant?.id });
 
+  // Enable menu order notifications to admin (sound + push)
+  useMenuOrderNotifications({ enabled: !!tenant?.id });
+
   // Initialize browser push notifications on first admin load
   useEffect(() => {
     initBrowserNotifications();
   }, []);
-
-  // Force module refresh
-  const moduleVersion = "2.2.0";
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
@@ -143,22 +190,25 @@ const AdminLayout = () => {
         <TenantAdminCommandPalette />
 
         {/* Unified Layout with Sidebar (Optimized or Classic) */}
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={sidebarDefaultOpen}>
+          <MobileSidebarCloser />
+          <ScrollMainToTop />
           <div className="min-h-dvh flex w-full premium-gradient-mesh">
             <SidebarErrorBoundary>
               <LiveBadgeProvider>
                 {isOptimized ? (
                   <OptimizedSidebar userTier="PROFESSIONAL" />
                 ) : (
-                  <AdaptiveSidebar />
+                  <AdaptiveSidebar collapsible="icon" />
                 )}
               </LiveBadgeProvider>
             </SidebarErrorBoundary>
+            <BreadcrumbProvider>
             <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-hidden">
               <AccountSwitcher />
-              <header className="glass-floating h-14 sm:h-14 flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
+              <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
                 {/* Sidebar trigger - 48px minimum touch target */}
-                <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-50 -ml-1 sm:ml-0 flex items-center justify-center" />
+                <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-dropdown -ml-1 sm:ml-0 flex items-center justify-center" />
 
                 {/* Breadcrumbs - hidden on mobile */}
                 <div className="hidden md:flex overflow-x-auto scrollbar-hide mr-4">
@@ -180,7 +230,7 @@ const AdminLayout = () => {
                   >
                     <div className="flex items-center h-9 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm shadow-sm transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
                       <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Search...</span>
+                      <span className="text-muted-foreground">Type <kbd className="font-mono text-xs">/</kbd> to search...</span>
                       <kbd className="pointer-events-none absolute right-2 top-[50%] -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
                         <span className="text-xs">⌘</span>K
                       </kbd>
@@ -202,6 +252,7 @@ const AdminLayout = () => {
                     size="icon"
                     className="md:hidden h-10 w-10 min-h-[44px] min-w-[44px]"
                     onClick={() => setOpen(true)}
+                    aria-label="Search"
                   >
                     <Search className="h-4 w-4" />
                   </Button>
@@ -245,6 +296,11 @@ const AdminLayout = () => {
                   {/* Theme Toggle */}
                   <ThemeToggle />
 
+                  {/* Inventory Sync Indicator */}
+                  <div className="hidden sm:block">
+                    <InventorySyncIndicator size="sm" showDetails={true} />
+                  </div>
+
                   {/* Offline Status Indicator */}
                   <div className="hidden sm:block">
                     <OfflineStatusIndicator />
@@ -252,19 +308,23 @@ const AdminLayout = () => {
                 </div>
               </header>
               <main
-                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 pb-24 lg:pb-6"
+                id="admin-main-content"
+                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 lg:pb-6"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   minHeight: 0,
                 }}
               >
-                <AdminErrorBoundary>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Outlet />
-                  </Suspense>
-                </AdminErrorBoundary>
+                <div className="max-w-7xl mx-auto w-full">
+                  <AdminErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Outlet />
+                    </Suspense>
+                  </AdminErrorBoundary>
+                </div>
               </main>
             </div>
+            </BreadcrumbProvider>
           </div>
         </SidebarProvider>
 

@@ -11,7 +11,7 @@ import { useOperationSize } from '@/hooks/useOperationSize';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
-import type { OperationSize, SidebarPreferences, HotItem } from '@/types/sidebar';
+import type { OperationSize, SidebarPreferences } from '@/types/sidebar';
 
 /**
  * Get collapsed sections from localStorage

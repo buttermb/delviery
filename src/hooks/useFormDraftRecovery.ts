@@ -149,7 +149,7 @@ export function useFormDraftRecovery<T extends Record<string, any>>(
 
   // Warn before leaving page with unsaved changes
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = (_e: BeforeUnloadEvent) => {
       if (lastDataRef.current) {
         // Save draft before leaving
         saveDraft(lastDataRef.current);

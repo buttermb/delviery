@@ -172,7 +172,7 @@ export default function BillingSettings() {
   }, [searchParams, setSearchParams, queryClient, toast]);
 
   // Check Stripe configuration health
-  const { data: stripeHealth, isLoading: stripeLoading } = useQuery({
+  const { data: stripeHealth } = useQuery({
     queryKey: ['stripe-health'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('check-stripe-config');

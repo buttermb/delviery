@@ -23,14 +23,17 @@ import {
     UserCog,
     ScrollText,
     Shield,
+    ClipboardCheck,
     Calendar,
     Headphones,
     MapPin,
     Truck,
+    Mail,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const VendorOperationsPage = lazy(() => import('@/pages/admin/operations/VendorOperationsPage'));
@@ -58,7 +61,7 @@ const tabs = [
     // People Management
     { id: 'team', label: 'Team', icon: Users, group: 'People' },
     { id: 'roles', label: 'Roles', icon: UserCog, group: 'People' },
-    { id: 'invites', label: 'Invites', icon: Users, group: 'People' },
+    { id: 'invites', label: 'Invites', icon: Mail, group: 'People' },
     // Supply Chain
     { id: 'suppliers', label: 'Vendors', icon: Building2, group: 'Supply' },
     { id: 'purchase-orders', label: 'POs', icon: FileText, group: 'Supply' },
@@ -66,7 +69,7 @@ const tabs = [
     { id: 'returns', label: 'Returns', icon: ArrowLeftRight, group: 'Supply' },
     // Compliance & Quality
     { id: 'compliance', label: 'Compliance', icon: Shield, group: 'Compliance' },
-    { id: 'quality', label: 'QC', icon: Shield, group: 'Compliance' },
+    { id: 'quality', label: 'Quality Control', icon: ClipboardCheck, group: 'Compliance' },
     { id: 'activity', label: 'Logs', icon: ScrollText, group: 'Compliance' },
     // Facilities
     { id: 'locations', label: 'Locations', icon: MapPin, group: 'Facilities' },
@@ -79,18 +82,19 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function OperationsHubPage() {
+    usePageTitle('Operations');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'team';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="operations-hub"
                         hubHref="operations-hub"
@@ -110,15 +114,15 @@ export default function OperationsHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

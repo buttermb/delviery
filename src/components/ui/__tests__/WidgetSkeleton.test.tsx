@@ -4,8 +4,8 @@
  * Created: 2026-02-02
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { Suspense, lazy } from 'react';
 import {
   WidgetSkeleton,
@@ -148,7 +148,7 @@ describe('WidgetSkeleton Component', () => {
     });
 
     it('should render correct number of stat cards', () => {
-      const { container } = render(
+      render(
         <WidgetSkeleton variant="stats" itemCount={4} />
       );
       const skeleton = screen.getByRole('status');
@@ -213,7 +213,7 @@ describe('WidgetSkeleton Component', () => {
     });
 
     it('should use muted background colors', () => {
-      const { container } = render(<WidgetSkeleton variant="minimal" />);
+      render(<WidgetSkeleton variant="minimal" />);
       const skeleton = screen.getByRole('status');
       expect(skeleton).toBeInTheDocument();
     });
@@ -418,7 +418,7 @@ describe('WidgetSkeleton Component', () => {
     });
 
     it('should be mobile-friendly with appropriate spacing', () => {
-      const { container } = render(<WidgetSkeleton variant="card" />);
+      render(<WidgetSkeleton variant="card" />);
       const skeleton = screen.getByRole('status');
       expect(skeleton).toBeInTheDocument();
     });

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 interface TopSellingProductsProps {
   storeId: string;
@@ -19,7 +20,7 @@ interface ProductSales {
 
 export function TopSellingProducts({ storeId, dateRange, className }: TopSellingProductsProps) {
   const { data: products, isLoading, error } = useQuery({
-    queryKey: queryKeys.analytics.products({ storeId, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
+    queryKey: queryKeys.analytics.products(storeId, { from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
     queryFn: async (): Promise<ProductSales[]> => {
       let query = supabase
         .from('storefront_orders')
@@ -113,7 +114,7 @@ export function TopSellingProducts({ storeId, dateRange, className }: TopSelling
               <span className="text-sm font-medium text-muted-foreground w-5">{index + 1}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium truncate">{product.name}</span>
+                  <TruncatedText text={product.name} className="text-sm font-medium" />
                   <span className="text-sm text-muted-foreground ml-2">${product.revenue.toLocaleString()}</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">

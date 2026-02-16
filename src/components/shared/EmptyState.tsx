@@ -23,7 +23,7 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
-  actionVariant = "default",
+  actionVariant: _actionVariant = "default",
 }: EmptyStateProps) {
   return (
     <EnhancedEmptyState

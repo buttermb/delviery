@@ -46,13 +46,13 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item,
     columns,
     onRowClick,
-    itemKey,
+    itemKey: _itemKey,
     rowClassName,
 }: {
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
-    itemKey: string;
+    itemKey?: string;
     rowClassName?: string;
 }) {
     return (
@@ -78,7 +78,7 @@ const MemoizedTableRow = memo(function MemoizedTableRow<T>({
     item: T;
     columns: ResponsiveColumn<T>[];
     onRowClick?: (item: T) => void;
-    itemKey: string;
+    itemKey?: string;
     rowClassName?: string;
 }) => React.ReactElement;
 
@@ -167,11 +167,11 @@ export function ResponsiveTable<T>({
                         height={virtualizeHeight}
                         rowHeight={virtualizeRowHeight}
                         onRowClick={handleVirtualRowClick ? (row: T) => handleVirtualRowClick(row) : undefined}
-                        getRowId={(row: T, index: number) => keyExtractor(row)}
+                        getRowId={(row: T, _index: number) => keyExtractor(row)}
                     />
                 ) : (
                     <div className="rounded-md border dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-                        <Table>
+                        <Table containerClassName="max-h-[600px]">
                             <TableHeader>
                                 <TableRow>
                                     {columns.map((col, index) => (

@@ -53,7 +53,7 @@ export function AccountSwitcher() {
         title: 'Account switched',
         description: 'Viewing data for selected account'
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to switch account',

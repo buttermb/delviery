@@ -20,9 +20,10 @@ import {
     Building2,
     Banknote,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const FinancialCenter = lazy(() => import('@/pages/admin/FinancialCenterReal'));
 const InvoicesPage = lazy(() => import('@/pages/admin/InvoicesPage').then(m => ({ default: m.InvoicesPage })));
@@ -32,7 +33,7 @@ const PayoutsPage = lazy(() => import('@/pages/admin/PayoutsPage'));
 const AdvancedInvoicePage = lazy(() => import('@/pages/admin/AdvancedInvoicePage'));
 const CollectionMode = lazy(() => import('@/pages/admin/CollectionMode'));
 const TaxManagementPage = lazy(() => import('@/pages/admin/TaxManagementPage'));
-const FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
+const _FrontedInventory = lazy(() => import('@/pages/admin/FrontedInventory'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -50,7 +51,7 @@ const tabs = [
     { id: 'tax', label: 'Tax', icon: Building2, group: 'Core' },
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
-    { id: 'collections', label: 'Collect', icon: Wallet, group: 'Transactions' },
+    { id: 'collections', label: 'Collections', icon: Wallet, group: 'Transactions' },
     { id: 'payouts', label: 'Payouts', icon: Banknote, group: 'Transactions' },
     // Utilities
     { id: 'builder', label: 'Builder', icon: FileEdit, group: 'Tools' },
@@ -59,17 +60,18 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 
 export default function FinanceHubPage() {
+    usePageTitle('Finance');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'overview';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="finance-hub"
                         hubHref="finance-hub"
@@ -89,15 +91,15 @@ export default function FinanceHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

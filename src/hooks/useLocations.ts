@@ -67,11 +67,11 @@ export const useLocations = (filters?: { status?: string }) => {
 
   // Fetch all locations for the tenant
   const locationsQuery = useQuery({
-    queryKey: queryKeys.locations.list(tenant?.id, filters),
+    queryKey: queryKeys.locations.list(tenant?.id, filters as Record<string, unknown>),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('locations')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -99,12 +99,12 @@ export const useLocations = (filters?: { status?: string }) => {
 
       // Try to use the RPC function if available, otherwise compute manually
       try {
-        const { data, error } = await supabase.rpc('get_location_operations_summary', {
+        const { data, error } = await (supabase as any).rpc('get_location_operations_summary', {
           p_tenant_id: tenant.id,
         });
 
         if (!error && data) {
-          return data as LocationOperationsSummary[];
+          return data as unknown as LocationOperationsSummary[];
         }
       } catch {
         // RPC not available, fall back to manual computation
@@ -119,13 +119,13 @@ export const useLocations = (filters?: { status?: string }) => {
 
       for (const location of locations) {
         // Get receiving records count for this location
-        const { count: totalReceiving } = await supabase
+        const { count: totalReceiving } = await (supabase as any)
           .from('receiving_records')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('location_id', location.id);
 
-        const { count: pendingReceiving } = await supabase
+        const { count: pendingReceiving } = await (supabase as any)
           .from('receiving_records')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
@@ -133,13 +133,13 @@ export const useLocations = (filters?: { status?: string }) => {
           .eq('status', 'in_progress');
 
         // Get runners count for this location
-        const { count: totalRunners } = await supabase
+        const { count: totalRunners } = await (supabase as any)
           .from('wholesale_runners')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('home_location_id', location.id);
 
-        const { count: activeRunners } = await supabase
+        const { count: activeRunners } = await (supabase as any)
           .from('wholesale_runners')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
@@ -147,12 +147,12 @@ export const useLocations = (filters?: { status?: string }) => {
           .eq('status', 'active');
 
         // Get inventory stats for this location
-        const { data: inventoryData } = await supabase
+        const { data: inventoryData } = await (supabase as any)
           .from('location_inventory')
           .select('quantity, reserved_quantity, reorder_point')
           .eq('location_id', location.id);
 
-        const inventory = inventoryData || [];
+        const inventory = (inventoryData || []) as Array<{ quantity: number; reserved_quantity: number; reorder_point: number }>;
         const totalProducts = inventory.length;
         const totalQuantity = inventory.reduce((sum, i) => sum + (i.quantity || 0), 0);
         const lowStockProducts = inventory.filter(
@@ -187,13 +187,15 @@ export const useLocations = (filters?: { status?: string }) => {
     mutationFn: async (input: CreateLocationInput) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('locations')
-        .insert({
+        .insert([{
           ...input,
           tenant_id: tenant.id,
+          coordinates: input.coordinates ? JSON.stringify(input.coordinates) : null,
+          operating_hours: input.operating_hours ? JSON.stringify(input.operating_hours) : null,
           status: input.status || 'active',
-        })
+        }])
         .select()
         .single();
 
@@ -218,9 +220,15 @@ export const useLocations = (filters?: { status?: string }) => {
     mutationFn: async ({ id, ...input }: UpdateLocationInput) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const updatePayload = {
+        ...input,
+        coordinates: input.coordinates ? JSON.stringify(input.coordinates) : undefined,
+        operating_hours: input.operating_hours ? JSON.stringify(input.operating_hours) : undefined,
+      };
+
+      const { data, error } = await (supabase as any)
         .from('locations')
-        .update(input)
+        .update(updatePayload)
         .eq('id', id)
         .eq('tenant_id', tenant.id)
         .select()

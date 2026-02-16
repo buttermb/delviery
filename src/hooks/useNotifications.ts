@@ -1,8 +1,301 @@
-import { logger } from '@/lib/logger';
-import { useMutation } from '@tanstack/react-query';
+/**
+ * useNotifications Hook
+ * Fetches unread notifications for the current user and tenant.
+ * Provides real-time updates via Supabase subscription.
+ */
+
+import { useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import type { RealtimePayload } from '@/hooks/useRealtimeSubscription';
+import { useRealTimeSubscription } from '@/hooks/useRealtimeSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+
+/**
+ * Notification type matching the database schema
+ */
+export interface Notification {
+  id: string;
+  tenant_id: string;
+  user_id: string | null;
+  title: string;
+  message: string | null;
+  type: 'info' | 'warning' | 'error' | 'success';
+  entity_type: string | null;
+  entity_id: string | null;
+  read: boolean;
+  created_at: string;
+}
+
+/**
+ * Return type for the useNotifications hook
+ */
+export interface UseNotificationsResult {
+  /** Array of notifications */
+  notifications: Notification[];
+  /** Count of unread notifications */
+  unreadCount: number;
+  /** Loading state */
+  isLoading: boolean;
+  /** Error state */
+  error: Error | null;
+  /** Mark a single notification as read */
+  markAsRead: (id: string) => Promise<void>;
+  /** Mark all notifications as read */
+  markAllAsRead: () => Promise<void>;
+  /** Delete a notification */
+  deleteNotification: (id: string) => Promise<void>;
+  /** Manually refetch notifications */
+  refetch: () => void;
+}
+
+/**
+ * Hook for managing notifications with real-time updates
+ *
+ * @example
+ * ```tsx
+ * const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+ *
+ * return (
+ *   <div>
+ *     <Badge count={unreadCount} />
+ *     {notifications.map(n => (
+ *       <NotificationItem key={n.id} notification={n} onRead={() => markAsRead(n.id)} />
+ *     ))}
+ *   </div>
+ * );
+ * ```
+ */
+export function useNotifications(): UseNotificationsResult {
+  const { tenant, admin } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
+  const userId = admin?.userId;
+  const queryClient = useQueryClient();
+
+  // Query key for notifications
+  const notificationsQueryKey = tenantId
+    ? queryKeys.notifications.unread(tenantId)
+    : queryKeys.notifications.all;
+
+  // Fetch notifications
+  const {
+    data: notifications = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: notificationsQueryKey,
+    queryFn: async (): Promise<Notification[]> => {
+      if (!tenantId) return [];
+
+      try {
+        // Build query - fetch notifications for this tenant
+        // Either targeted at current user or broadcast (user_id is null)
+        let query = (supabase as any)
+          .from('notifications')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+
+        // If we have a userId, filter to user-specific or broadcast notifications
+        if (userId) {
+          query = query.or(`user_id.eq.${userId},user_id.is.null`);
+        }
+
+        const { data, error: queryError } = await query;
+
+        if (queryError) {
+          // Table might not exist yet
+          if (queryError.code === '42P01') {
+            logger.warn('Notifications table does not exist yet', {
+              component: 'useNotifications',
+              tenantId,
+            });
+            return [];
+          }
+          throw queryError;
+        }
+
+        return (data || []) as Notification[];
+      } catch (err) {
+        // Handle case where table doesn't exist
+        if ((err as { code?: string })?.code === '42P01') {
+          return [];
+        }
+        logger.error('Failed to fetch notifications', err as Error, {
+          component: 'useNotifications',
+          tenantId,
+        });
+        throw err;
+      }
+    },
+    enabled: !!tenantId,
+    refetchInterval: 15000, // 15 second refetch interval as per requirements
+    staleTime: 10000, // Consider data stale after 10 seconds
+  });
+
+  // Calculate unread count
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Handle realtime changes callback
+  const handleRealtimeChange = useCallback(
+    (payload: RealtimePayload<Notification>) => {
+      logger.debug('Notification realtime update received', {
+        component: 'useNotifications',
+        eventType: payload.eventType,
+        notificationId: payload.new?.id || payload.old?.id,
+      });
+
+      // Invalidate the query to refetch data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+    },
+    [queryClient]
+  );
+
+  // Subscribe to realtime changes on notifications table
+  useRealTimeSubscription<Notification>({
+    table: 'notifications',
+    tenantId: tenantId ?? null,
+    callback: handleRealtimeChange,
+    event: '*',
+    enabled: !!tenantId,
+    publishToEvent: 'notification_sent',
+  });
+
+  // Mark a single notification as read
+  const markAsReadMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      if (!tenantId) throw new Error('No tenant context');
+
+      const { error: updateError } = await (supabase as any)
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId)
+        .eq('tenant_id', tenantId);
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+    },
+    onError: (err) => {
+      logger.error('Failed to mark notification as read', err as Error, {
+        component: 'useNotifications',
+      });
+      toast.error('Failed to mark notification as read');
+    },
+  });
+
+  // Mark all notifications as read
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      if (!tenantId) throw new Error('No tenant context');
+
+      // Build the update query
+      let query = (supabase as any)
+        .from('notifications')
+        .update({ read: true })
+        .eq('tenant_id', tenantId)
+        .eq('read', false);
+
+      // If we have a userId, only mark notifications for this user or broadcast ones
+      if (userId) {
+        query = query.or(`user_id.eq.${userId},user_id.is.null`);
+      }
+
+      const { error: updateError } = await query;
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+      toast.success('All notifications marked as read');
+    },
+    onError: (err) => {
+      logger.error('Failed to mark all notifications as read', err as Error, {
+        component: 'useNotifications',
+      });
+      toast.error('Failed to mark notifications as read');
+    },
+  });
+
+  // Delete a notification
+  const deleteNotificationMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      if (!tenantId) throw new Error('No tenant context');
+
+      const { error: deleteError } = await (supabase as any)
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+        .eq('tenant_id', tenantId);
+
+      if (deleteError) throw deleteError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+    },
+    onError: (err) => {
+      logger.error('Failed to delete notification', err as Error, {
+        component: 'useNotifications',
+      });
+      toast.error('Failed to delete notification');
+    },
+  });
+
+  // Wrapper functions for mutations
+  const markAsRead = useCallback(
+    async (id: string) => {
+      await markAsReadMutation.mutateAsync(id);
+    },
+    [markAsReadMutation]
+  );
+
+  const markAllAsRead = useCallback(async () => {
+    await markAllAsReadMutation.mutateAsync();
+  }, [markAllAsReadMutation]);
+
+  const deleteNotification = useCallback(
+    async (id: string) => {
+      await deleteNotificationMutation.mutateAsync(id);
+    },
+    [deleteNotificationMutation]
+  );
+
+  // Log when hook mounts with valid tenant
+  useEffect(() => {
+    if (tenantId) {
+      logger.debug('useNotifications mounted', {
+        component: 'useNotifications',
+        tenantId,
+        userId,
+      });
+    }
+  }, [tenantId, userId]);
+
+  return {
+    notifications,
+    unreadCount,
+    isLoading,
+    error: error as Error | null,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    refetch,
+  };
+}
 
 interface SendNotificationParams {
   orderId: string;
@@ -219,3 +512,5 @@ export const useSendBulkNotification = () => {
     }
   });
 };
+
+export default useNotifications;

@@ -11,10 +11,12 @@
  * Uses TanStack Query with 30s auto-refresh for real-time data.
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import PackageX from "lucide-react/dist/esm/icons/package-x";
 import Package from "lucide-react/dist/esm/icons/package";
@@ -24,17 +26,20 @@ import Activity from "lucide-react/dist/esm/icons/activity";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import { useDashboardStats } from '@/hooks/useDashboardStats';
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
+import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load RevenueWidget for better performance
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
 
 // Lazy load ActivityWidget for better performance
-const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityWidget })));
+const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityFeedWidget })));
 
 // Lazy load AlertsWidget for better performance
 const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidget').then(module => ({ default: module.AlertsWidget })));
@@ -42,7 +47,7 @@ const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidge
 // Fallback component for RevenueWidget while loading
 function RevenueWidgetFallback() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <Skeleton className="h-7 w-32" />
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -105,9 +110,23 @@ function AlertsWidgetFallback() {
   );
 }
 
+const PERIOD_LABELS: Record<DashboardPeriod, string> = {
+  '7d': '7D',
+  '30d': '30D',
+  '90d': '90D',
+  'mtd': 'MTD',
+  'ytd': 'YTD',
+};
+
 export function DashboardPage() {
+  usePageTitle('Dashboard');
   const { tenant } = useTenantAdminAuth();
-  const { data: stats, isLoading, error, dataUpdatedAt } = useDashboardStats();
+  const [period, setPeriod] = useState<DashboardPeriod>('30d');
+  const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useDashboardStats(period);
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   if (!tenant) {
     return (
@@ -133,18 +152,43 @@ export function DashboardPage() {
         hubHref="dashboard"
       />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Real-time overview of your operations
           </p>
         </div>
-        {lastUpdated && (
-          <Badge variant="secondary" className="text-xs">
-            Updated {lastUpdated}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <ToggleGroup
+            type="single"
+            value={period}
+            onValueChange={(val) => { if (val) setPeriod(val as DashboardPeriod); }}
+            size="sm"
+            variant="outline"
+          >
+            {(Object.keys(PERIOD_LABELS) as DashboardPeriod[]).map((key) => (
+              <ToggleGroupItem key={key} value={key} aria-label={`Show ${PERIOD_LABELS[key]} data`}>
+                {PERIOD_LABELS[key]}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          {lastUpdated && (
+            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+              Updated {lastUpdated}
+            </Badge>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isFetching}
+            aria-label="Refresh dashboard"
+            className="h-8 w-8"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -157,13 +201,16 @@ export function DashboardPage() {
         </Card>
       )}
 
+      {/* Setup Completion Checklist */}
+      <SetupCompletionWidget />
+
       {/* Revenue Section - Lazy Loaded */}
       <Suspense fallback={<RevenueWidgetFallback />}>
-        <RevenueWidget />
+        <RevenueWidget period={period} />
       </Suspense>
 
       {/* Orders Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <ShoppingCart className="h-5 w-5 text-blue-600" />
           Orders
@@ -179,6 +226,7 @@ export function DashboardPage() {
                 icon={<AlertTriangle className="h-5 w-5" />}
                 description="Awaiting processing"
                 variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
+                href="/admin/orders?status=pending"
               />
               <KPICard
                 title="Today's Orders"
@@ -186,6 +234,7 @@ export function DashboardPage() {
                 icon={<ShoppingCart className="h-5 w-5" />}
                 description="Orders placed today"
                 variant="default"
+                href="/admin/orders"
               />
               <KPICard
                 title="Completed Today"
@@ -193,13 +242,15 @@ export function DashboardPage() {
                 icon={<CheckCircle2 className="h-5 w-5" />}
                 description="Successfully delivered"
                 variant="success"
+                href="/admin/orders?status=completed"
               />
               <KPICard
-                title="Orders (MTD)"
+                title={`Orders (${PERIOD_LABELS[period]})`}
                 value={stats?.totalOrdersMTD ?? 0}
                 icon={<ShoppingCart className="h-5 w-5" />}
-                description="Total this month"
+                description={`Total in selected period`}
                 variant="default"
+                href="/admin/orders"
               />
             </>
           )}
@@ -207,7 +258,7 @@ export function DashboardPage() {
       </div>
 
       {/* Customers Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5 text-indigo-600" />
           Customers
@@ -223,13 +274,15 @@ export function DashboardPage() {
                 icon={<Users className="h-5 w-5" />}
                 description="All registered customers"
                 variant="default"
+                href="/admin/customer-hub"
               />
               <KPICard
                 title="New Customers"
                 value={stats?.newCustomers ?? 0}
                 icon={<UserPlus className="h-5 w-5" />}
-                description="Joined in the last 30 days"
+                description={`Joined in the last ${PERIOD_LABELS[period]}`}
                 variant="success"
+                href="/admin/customer-hub"
               />
               <KPICard
                 title="Active Sessions"
@@ -237,6 +290,7 @@ export function DashboardPage() {
                 icon={<Activity className="h-5 w-5" />}
                 description="Online in last 15 minutes"
                 variant="default"
+                href="/admin/analytics-hub"
               />
             </>
           )}
@@ -244,7 +298,7 @@ export function DashboardPage() {
       </div>
 
       {/* Inventory Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Package className="h-5 w-5 text-purple-600" />
           Inventory
@@ -260,6 +314,7 @@ export function DashboardPage() {
                 icon={<Package className="h-5 w-5" />}
                 description="In catalog"
                 variant="default"
+                href="/admin/inventory-hub"
               />
               <KPICard
                 title="Low Stock"
@@ -267,6 +322,7 @@ export function DashboardPage() {
                 icon={<PackageX className="h-5 w-5" />}
                 description="Below reorder threshold"
                 variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
+                href="/admin/inventory-hub?tab=alerts"
               />
               <KPICard
                 title="Out of Stock"
@@ -274,6 +330,7 @@ export function DashboardPage() {
                 icon={<AlertTriangle className="h-5 w-5" />}
                 description="Needs restocking"
                 variant={stats?.outOfStockItems && stats.outOfStockItems > 0 ? 'destructive' : 'default'}
+                href="/admin/inventory-hub?tab=alerts"
               />
               <KPICard
                 title="Inventory Value"
@@ -281,6 +338,7 @@ export function DashboardPage() {
                 icon={<Warehouse className="h-5 w-5" />}
                 description="Total stock value"
                 variant="default"
+                href="/admin/finance-hub"
               />
             </>
           )}

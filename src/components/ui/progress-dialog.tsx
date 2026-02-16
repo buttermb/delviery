@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export interface ProgressDialogProps {
   open: boolean;

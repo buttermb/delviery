@@ -17,7 +17,6 @@ import type {
   ForumNotification,
   CreatePostRequest,
   CreateCommentRequest,
-  VoteRequest,
   CreateForumProfileRequest,
   RequestForumApprovalRequest,
   GetPostsOptions,

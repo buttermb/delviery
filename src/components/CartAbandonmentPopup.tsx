@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, ShoppingCart, Percent } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface CartItem {
@@ -21,7 +20,6 @@ interface CartAbandonmentPopupProps {
 
 const CartAbandonmentPopup = ({ cartItems, onCheckout }: CartAbandonmentPopupProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Premium approach: Only trigger after 60 seconds of inactivity on cart page

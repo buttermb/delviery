@@ -4,14 +4,12 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
-import { useProductStock } from '@/hooks/useInventoryCheck';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -28,20 +26,13 @@ import {
   Share2,
   Minus,
   Plus,
-  Check,
   Star,
   Truck,
   Shield,
   RotateCcw,
   Package,
-  ChevronLeft,
   ChevronRight,
-  ZoomIn,
   X,
-  Copy,
-  Facebook,
-  Twitter,
-  MessageCircle,
   Loader2,
   Moon,
   Smile,
@@ -49,17 +40,10 @@ import {
   Target,
   Lightbulb,
   Activity,
-  Sun,
-  Sparkles
+  Sun
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -67,16 +51,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ReviewForm } from '@/components/shop/ReviewForm';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { StockWarning } from '@/components/shop/StockWarning';
 import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
@@ -180,13 +157,12 @@ interface ProductReview {
 
 export function ProductDetailPage() {
   const { storeSlug, productId, productSlug } = useParams();
-  const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
 
   // Determine if using slug-based or UUID-based URL
   const isSlugBased = !!productSlug && !productId;
   const identifier = productSlug || productId;
-  const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
+  const { isLuxuryTheme, accentColor } = useLuxuryTheme();
   const { toast } = useToast();
 
   // Use unified cart hook
@@ -201,7 +177,6 @@ export function ProductDetailPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [showAddedAnimation, setShowAddedAnimation] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<{
     name: string;
     price: number;
@@ -440,11 +415,6 @@ export function ProductDetailPage() {
   }, [product, store, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
 
 
-  // Handle quantity change
-  const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(99, prev + delta)));
-  };
-
   // Toggle wishlist with error handling
   const toggleWishlist = () => {
     if (!store?.id || !productId) return;
@@ -493,9 +463,6 @@ export function ProductDetailPage() {
       minExpiryDays: product.min_expiry_days,
     });
 
-    // Show animation
-    setShowAddedAnimation(true);
-
     // Show premium cart popup
     setLastAddedItem({
       name: product.name,
@@ -505,56 +472,8 @@ export function ProductDetailPage() {
     });
 
     setTimeout(() => {
-      setShowAddedAnimation(false);
       setIsAddingToCart(false);
     }, 1500);
-  };
-
-  // Share product
-  const handleShare = async (platform?: string) => {
-    const url = window.location.href;
-    const text = `Check out ${product?.name} at ${store?.store_name}`;
-
-    if (platform === 'copy') {
-      try {
-        await navigator.clipboard.writeText(url);
-        toast({ title: 'Link copied!' });
-      } catch {
-        // Fallback for older browsers
-        const textarea = document.createElement('textarea');
-        textarea.value = url;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        toast({ title: 'Link copied!' });
-      }
-      return;
-    }
-
-    if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-      return;
-    }
-
-    if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-      return;
-    }
-
-    if (platform === 'whatsapp') {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
-      return;
-    }
-
-    // Native share
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: product?.name, text, url });
-      } catch {
-        // User cancelled
-      }
-    }
   };
 
   // Render stars
@@ -580,7 +499,7 @@ export function ProductDetailPage() {
 
   if (productLoading) {
     return (
-      <div className="min-h-dvh bg-[#0a0a0a] pt-24 pb-12">
+      <div className="min-h-dvh bg-neutral-950 pt-24 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <Skeleton className="h-[600px] w-full rounded-3xl bg-white/5" />
@@ -618,7 +537,7 @@ export function ProductDetailPage() {
     : 0;
 
   return (
-    <div className={`min-h-dvh ${isLuxuryTheme ? 'bg-[#050505] text-white selection:bg-white/20' : 'bg-background'}`}>
+    <div className={`min-h-dvh ${isLuxuryTheme ? 'bg-zinc-950 text-white selection:bg-white/20' : 'bg-background'}`}>
       {/* Ambient Background Effects */}
       {isLuxuryTheme && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">

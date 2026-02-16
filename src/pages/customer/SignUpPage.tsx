@@ -36,9 +36,9 @@ export default function CustomerSignUpPage() {
     businessName: "",
     businessLicenseNumber: "",
   });
-  const [phoneValidating, setPhoneValidating] = useState(false);
-  const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [ageError, setAgeError] = useState<string | null>(null);
+  const [_phoneValidating, _setPhoneValidating] = useState(false);
+  const [_phoneError, _setPhoneError] = useState<string | null>(null);
+  const [_ageError, _setAgeError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);

@@ -7,7 +7,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
-import { useLuxuryTheme } from '@/components/shop/luxury';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,8 +19,6 @@ import {
   CheckCircle,
   Clock,
   MapPin,
-  Phone,
-  Mail,
   XCircle,
   ArrowLeft,
   RefreshCw
@@ -29,6 +26,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { DeliveryRatingForm } from '@/components/shop/DeliveryRatingForm';
 
 interface OrderDetails {
   order_id: string;
@@ -61,7 +59,6 @@ const STATUS_STEPS = [
 export default function OrderTrackingPage() {
   const { storeSlug, trackingToken } = useParams();
   const { store } = useShop();
-  const { isLuxuryTheme, accentColor, cardBg, cardBorder } = useLuxuryTheme();
 
   // Fetch order details with retry and auto-refresh
   const { data: order, isLoading, error, refetch, isFetching } = useQuery({
@@ -283,6 +280,18 @@ export default function OrderTrackingPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delivery Rating — shown when order is delivered */}
+      {order.status === 'delivered' && store?.tenant_id && trackingToken && (
+        <div className="mb-6">
+          <DeliveryRatingForm
+            tenantId={store.tenant_id}
+            orderId={order.order_id}
+            trackingToken={trackingToken}
+            primaryColor={store.primary_color}
+          />
+        </div>
+      )}
 
       {/* Order Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

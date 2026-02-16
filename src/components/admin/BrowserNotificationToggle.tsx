@@ -9,7 +9,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Bell, BellOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   isBrowserNotificationSupported,
   isBrowserNotificationEnabled,

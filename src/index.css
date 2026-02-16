@@ -444,6 +444,24 @@ body.keyboard-open [data-radix-dialog-content] {
     --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Storefront Brand Colors — NYM Design Teal */
+    --shop-primary: 184 78% 17%;
+    /* #015358 - Dark Teal */
+    --shop-accent: 174 87% 42%;
+    /* #0EC7BA - Bright Teal */
+    --shop-accent-hover: 174 87% 37%;
+    /* #0AB0A5 - Teal hover */
+    --shop-bg: 200 20% 97%;
+    /* #F5F7F8 - Light off-white */
+
+    /* SaaS Brand Colors — Warm Forest Green */
+    --saas-primary: 150 48% 15%;
+    /* #1B4332 - Forest Green */
+    --saas-text: 214 20% 23%;
+    /* #2D3748 - Warm Gray */
+    --saas-bg: 30 30% 96%;
+    /* #F8F5F0 - Warm Linen */
+
     /* Marketing Site Colors - Flowhub Bespoke Style */
     --marketing-primary: 254 70% 28%;
     /* #2E1679 - Deep Indigo */
@@ -530,12 +548,10 @@ body.keyboard-open [data-radix-dialog-content] {
     --z-base: 0;
     --z-dropdown: 50;
     --z-sticky: 100;
-    --z-fixed: 200;
-    --z-modal-backdrop: 400;
-    --z-modal: 500;
-    --z-popover: 600;
-    --z-tooltip: 700;
-    --z-toast: 800;
+    --z-overlay: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
     --z-max: 9999;
 
     /* Unified Design System - Border Radius */
@@ -687,6 +703,15 @@ body.keyboard-open [data-radix-dialog-content] {
     --ring: 160 84% 39%;
     /* emerald-500 */
 
+    /* Storefront Brand Colors — Dark Mode */
+    --shop-primary: 174 87% 42%;
+    /* Swap: accent becomes primary in dark */
+    --shop-accent: 184 78% 30%;
+    /* Lighter teal */
+    --shop-accent-hover: 184 78% 25%;
+    --shop-bg: 222 47% 11%;
+    /* Dark background */
+
     /* Marketing Site Colors - Dark Theme (Forced Light Mode for consistency) */
     --marketing-primary: 254 70% 28%;
     /* #2E1679 - Deep Indigo (Flowhub Primary) */
@@ -742,12 +767,10 @@ body.keyboard-open [data-radix-dialog-content] {
     --z-base: 0;
     --z-dropdown: 50;
     --z-sticky: 100;
-    --z-fixed: 200;
-    --z-modal-backdrop: 400;
-    --z-modal: 500;
-    --z-popover: 600;
-    --z-tooltip: 700;
-    --z-toast: 800;
+    --z-overlay: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
     --z-max: 9999;
 
     /* Unified Design System - Border Radius (same for dark) */
@@ -1221,7 +1244,22 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Focus visible for better keyboard navigation */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary;
+    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
+  }
+
+  /* Interactive non-button elements (clickable cards, rows, list items) */
+  [role="button"]:not(button):focus-visible,
+  [tabindex="0"]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary rounded-md;
+  }
+
+  /* Ensure links have visible hover and focus states */
+  a:hover {
+    opacity: 0.85;
+  }
+
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
   }
 
   /* Fade in up animation for lists */
@@ -1636,7 +1674,7 @@ body.keyboard-open [data-radix-dialog-content] {
       padding: 1rem;
       background: hsl(var(--marketing-bg));
       border-top: 1px solid hsl(var(--marketing-border));
-      z-index: 40;
+      z-index: 100;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
     }
 
@@ -1659,41 +1697,35 @@ body.keyboard-open [data-radix-dialog-content] {
       transition: max-height 0.5s ease-in;
     }
 
-    /* Mobile input focus fixes - prevent z-index issues */
+    /* Mobile input focus fixes */
     input:focus,
     textarea:focus,
     select:focus {
       position: relative;
-      z-index: 9999 !important;
       transform: none !important;
     }
 
-    /* Fix chat widget and bottom nav z-index hierarchy */
+    /* Fix chat widget z-index — modal level (200) */
     [data-chat-widget] {
-      z-index: 60 !important;
+      z-index: 200 !important;
     }
 
-    /* Ensure bottom navigation doesn't overlap inputs */
-    /* Note: Bottom nav z-index is set inline in component (z-index: 100) */
-    /* This rule only applies to navs without explicit z-index */
+    /* Bottom navigation — sticky level (100) */
     nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
-      z-index: 50 !important;
+      z-index: 100 !important;
     }
 
-    /* Input containers should be above bottom nav */
-    /* Note: SheetContent uses explicit z-index: 120, so this doesn't apply */
+    /* Input containers in modals/sheets — relative positioning only */
     .chat-input-container,
     .mobile-input-container:not([style*="z-index"]) {
-      z-index: 70 !important;
       position: relative;
     }
 
-    /* Dialog and Sheet inputs should be on top */
+    /* Dialog and Sheet inputs should be above siblings */
     [role="dialog"] input:focus,
     [role="dialog"] textarea:focus,
     [data-radix-dialog-content] input:focus,
     [data-radix-dialog-content] textarea:focus {
-      z-index: 9999 !important;
       position: relative;
     }
 
@@ -1759,52 +1791,40 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Mobile input focus fixes - prevent z-index issues */
+  /* Mobile z-index and input fixes */
   @media (max-width: 768px) {
 
-    /* Ensure inputs are always on top when focused */
+    /* Mobile input focus */
     input:focus,
     textarea:focus,
     select:focus {
       position: relative;
-      z-index: 9999 !important;
       transform: none !important;
     }
 
-    /* Fix chat widget and bottom nav z-index hierarchy */
+    /* Chat widget — modal level (200) */
     [data-chat-widget] {
-      z-index: 60 !important;
+      z-index: 200 !important;
     }
 
-    /* Ensure bottom navigation doesn't overlap inputs */
-    /* Note: Bottom nav z-index is set inline in component (z-index: 100) */
-    /* This rule only applies to navs without explicit z-index */
+    /* Bottom navigation — sticky level (100) */
     nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
-      z-index: 50 !important;
+      z-index: 100 !important;
     }
 
-    /* Input containers should be above bottom nav */
-    /* Note: SheetContent uses explicit z-index: 120, so this doesn't apply */
+    /* Input containers in modals/sheets */
     .chat-input-container,
     .mobile-input-container:not([style*="z-index"]) {
-      z-index: 70 !important;
       position: relative;
     }
 
-    /* Dialog and Sheet inputs should be on top */
+    /* Dialog and Sheet inputs */
     [role="dialog"] input:focus,
     [role="dialog"] textarea:focus,
     [data-radix-dialog-content] input:focus,
     [data-radix-dialog-content] textarea:focus {
-      z-index: 9999 !important;
       position: relative;
     }
-
-    /* REMOVED: body.keyboard-open scroll lock - was causing admin layout to be stuck
-     * The position: fixed and overflow: hidden on body was preventing scrolling.
-     * Main content containers handle their own scrolling.
-     * Keyboard handling is managed by JavaScript in useKeyboardDetection hook.
-     */
 
     /* Smooth scroll for inputs into view */
     input:focus,
@@ -2249,7 +2269,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Gradient text for headlines */
   .text-gradient-blue {
-    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, theme(colors.blue.500), theme(colors.indigo.500), theme(colors.violet.500));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -2313,4 +2333,167 @@ body.keyboard-open [data-radix-dialog-content] {
 .animate-new-order-highlight {
   animation: new-order-highlight 2s ease-out;
   transition: background-color 0.5s ease-out, border-color 0.5s ease-out;
+}
+
+/* ========================================
+   PRINT STYLES — Orders & Invoices
+   Hides sidebar/nav, formats A4 with business header
+   ======================================== */
+
+@media print {
+  /* Force color printing */
+  * {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* A4 page setup */
+  @page {
+    size: A4;
+    margin: 1.5cm 2cm;
+  }
+
+  /* Hide all navigation and chrome */
+  [data-sidebar],
+  .glass-floating,
+  .mobile-bottom-nav,
+  nav,
+  aside,
+  .no-print,
+  .print\\:hidden,
+  [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+
+  /* Reset layout — full width, no overflow hiding */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .min-h-dvh,
+  .h-dvh {
+    min-height: auto !important;
+    height: auto !important;
+  }
+
+  .overflow-hidden,
+  .overflow-y-auto,
+  .overflow-x-hidden {
+    overflow: visible !important;
+  }
+
+  /* Make main content full width, remove padding adjustments */
+  .flex-1.flex.flex-col {
+    width: 100% !important;
+  }
+
+  .max-w-5xl,
+  .max-w-7xl {
+    max-width: 100% !important;
+  }
+
+  /* Remove backgrounds and shadows */
+  .premium-gradient-mesh {
+    background-image: none !important;
+    background: white !important;
+  }
+
+  .glass-card,
+  .glass-panel {
+    background: white !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Card styling for print */
+  [data-slot="card"] {
+    border: 1px solid theme(colors.gray.300) !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Tables should not break across pages */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Print business header */
+  .print-business-header {
+    display: block !important;
+  }
+
+  /* Badge styling for print */
+  [data-slot="badge"] {
+    border: 1px solid currentColor !important;
+  }
+
+  /* Remove animations and transitions */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure links show URL in print if useful */
+  a[href^="http"]::after {
+    content: none; /* Don't clutter with URLs */
+  }
+
+  /* ---- Invoice Print Styles ---- */
+  .invoice-print-document {
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .invoice-print-document [data-slot="card-header"] {
+    background: white !important;
+    border-bottom: 2px solid theme(colors.gray.800) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .invoice-print-document [data-slot="card-content"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .invoice-print-document table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .invoice-print-document th {
+    background-color: theme(colors.gray.100) !important;
+    border-bottom: 2px solid theme(colors.gray.300) !important;
+    padding: 8px 12px !important;
+    font-weight: 600 !important;
+    color: theme(colors.gray.900) !important;
+  }
+
+  .invoice-print-document td {
+    border-bottom: 1px solid theme(colors.gray.200) !important;
+    padding: 8px 12px !important;
+    color: theme(colors.gray.700) !important;
+  }
+
+  /* Totals section prints clearly */
+  .invoice-print-document .text-muted-foreground {
+    color: theme(colors.gray.600) !important;
+  }
+
+  .invoice-print-document .font-bold {
+    color: theme(colors.gray.900) !important;
+  }
 }

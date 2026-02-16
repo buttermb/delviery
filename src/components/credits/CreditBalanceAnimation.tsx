@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useSpring, useMotionValue, useTransform, motion } from 'framer-motion';
+import { useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface CreditBalanceAnimationProps {

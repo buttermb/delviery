@@ -11,7 +11,7 @@ interface LuxuryNavProps {
   accentColor?: string;
 }
 
-export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7BA' }: LuxuryNavProps) {
+export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accentColor }: LuxuryNavProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { storeSlug } = useParams();
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
     <>
       <div className="sticky top-0 left-0 right-0 z-50 shadow-md transition-all duration-300">
         {/* Main nav: Dark Teal Background like Flowhub */}
-        <nav className={`bg-[#015358] text-white transition-all duration-500 ease-in-out ${scrolled ? 'h-16 shadow-xl py-0' : 'h-20 py-2'}`}>
+        <nav className={`bg-shop-primary text-white transition-all duration-500 ease-in-out ${scrolled ? 'h-16 shadow-xl py-0' : 'h-20 py-2'}`}>
           <div className="container mx-auto px-4 md:px-8 h-full">
             <div className="flex items-center justify-between h-full">
               {/* Logo Area */}
@@ -63,7 +63,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                   />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <div className={`rounded-lg bg-[#0EC7BA] flex items-center justify-center text-[#015358] font-bold rounded-bl-sm transition-all duration-300 ${scrolled ? 'w-8 h-8 text-lg' : 'w-9 h-9 text-xl'}`}>
+                    <div className={`rounded-lg bg-shop-accent flex items-center justify-center text-shop-primary font-bold rounded-bl-sm transition-all duration-300 ${scrolled ? 'w-8 h-8 text-lg' : 'w-9 h-9 text-xl'}`}>
                       {store?.store_name?.charAt(0) || 'Q'}
                     </div>
                     <div className="flex flex-col -space-y-1">
@@ -84,13 +84,13 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
               <div className="hidden md:flex items-center gap-8">
                 <Link
                   to={`/shop/${storeSlug}/products${previewParam}`}
-                  className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
+                  className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-shop-accent underline-offset-4 transition-all"
                 >
                   Shop
                 </Link>
                 <Link
                   to={`/shop/${storeSlug}/deals${previewParam}`}
-                  className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
+                  className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-shop-accent underline-offset-4 transition-all"
                 >
                   Deals
                 </Link>
@@ -98,13 +98,13 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                   <>
                     <Link
                       to={`/shop/${storeSlug}/orders`}
-                      className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
+                      className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-shop-accent underline-offset-4 transition-all"
                     >
                       Orders
                     </Link>
                     <Link
                       to={`/shop/${storeSlug}/about`}
-                      className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-[#0EC7BA] underline-offset-4 transition-all"
+                      className="text-sm font-bold text-white/90 hover:text-white hover:underline decoration-shop-accent underline-offset-4 transition-all"
                     >
                       Details
                     </Link>
@@ -138,13 +138,13 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                 {!isPreviewMode && (
                   <button
                     onClick={onCartClick || (() => navigate(`/shop/${storeSlug}/cart`))}
-                    className="relative flex items-center gap-2 bg-[#0EC7BA] hover:bg-[#0AB0A5] text-[#015358] px-5 py-2.5 rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                    className="relative flex items-center gap-2 bg-shop-accent hover:bg-shop-accent-hover text-shop-primary px-5 py-2.5 rounded-full font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
                     aria-label="Shopping cart"
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span className="hidden md:inline text-sm">Cart</span>
                     {cartItemCount > 0 && (
-                      <span className="bg-[#015358] text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center ml-1">
+                      <span className="bg-shop-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center ml-1">
                         {cartItemCount}
                       </span>
                     )}
@@ -195,7 +195,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
               className={cn(
-                "fixed left-0 right-0 z-50 bg-[#015358] border-t border-white/10 shadow-xl md:hidden",
+                "fixed left-0 right-0 z-50 bg-shop-primary border-t border-white/10 shadow-xl md:hidden",
                 scrolled ? "top-16" : "top-20"
               )}
               style={{ maxHeight: 'calc(100dvh - 5rem)' }}
@@ -217,7 +217,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Shop Collection
-                <span className="bg-[#0EC7BA] w-2 h-2 rounded-full"></span>
+                <span className="bg-shop-accent w-2 h-2 rounded-full"></span>
               </Link>
 
               <Link
@@ -226,7 +226,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor = '#0EC7
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Deals & Promos
-                <span className="bg-[#0EC7BA] w-2 h-2 rounded-full animate-pulse"></span>
+                <span className="bg-shop-accent w-2 h-2 rounded-full animate-pulse"></span>
               </Link>
 
               {!isPreviewMode && (

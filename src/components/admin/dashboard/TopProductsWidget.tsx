@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { formatWeight } from '@/lib/utils/formatWeight';
 import { useNavigate, useParams } from 'react-router-dom';
-import { format, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 import { ProductLink } from '@/components/admin/cross-links';
 
 interface TopProduct {
@@ -43,8 +43,7 @@ export function TopProductsWidget() {
       const last30Days = subDays(new Date(), 30);
 
       // Get order items from completed orders
-      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
-      const { data: orders } = await supabase
+      const { data: orders } = await (supabase as any)
         .from('wholesale_orders')
         .select('id, created_at, status')
         .eq('account_id', account.id)

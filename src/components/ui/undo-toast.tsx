@@ -3,7 +3,7 @@
  * Shows a toast with undo functionality and countdown timer
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Undo2, X, Check } from 'lucide-react';
@@ -53,7 +53,7 @@ export function UndoToast({
     return (
         <div
             className={cn(
-                'fixed bottom-20 left-1/2 -translate-x-1/2 z-50',
+                'fixed bottom-20 left-1/2 -translate-x-1/2 z-toast',
                 'bg-zinc-900 text-white rounded-lg shadow-lg overflow-hidden',
                 'min-w-[300px] max-w-[400px]',
                 'animate-in slide-in-from-bottom-5 fade-in duration-300',

@@ -10,6 +10,7 @@ import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tool
 import { Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatCurrencyForReport } from '@/lib/utils/analyticsExport';
 import { toast } from 'sonner';
 
@@ -219,7 +220,12 @@ export default function AdvancedAnalytics() {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">No revenue data available</div>
+                <EnhancedEmptyState
+                  type="no_analytics"
+                  title="No Revenue Data Yet"
+                  description="Revenue trends will appear here once you start processing orders."
+                  compact
+                />
               )}
             </CardContent>
           </Card>
@@ -253,7 +259,12 @@ export default function AdvancedAnalytics() {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">No customer data available</div>
+                <EnhancedEmptyState
+                  type="no_customers"
+                  title="No Customer Data Yet"
+                  description="Customer segments will populate once customers start placing orders."
+                  compact
+                />
               )}
             </CardContent>
           </Card>
@@ -266,9 +277,12 @@ export default function AdvancedAnalytics() {
               <CardDescription>Product sales and popularity</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Product analytics will appear here once product sales data is available.
-              </div>
+              <EnhancedEmptyState
+                type="no_analytics"
+                title="No Product Data Yet"
+                description="Product analytics will appear here once product sales data is available."
+                compact
+              />
             </CardContent>
           </Card>
         </TabsContent>

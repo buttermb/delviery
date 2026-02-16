@@ -1,11 +1,9 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useEncryption } from '@/lib/hooks/useEncryption';
-import { OrderLink, ProductLink } from '@/components/admin/cross-links';
-import { decryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,8 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, User, Mail, Phone, MapPin, Calendar,
-  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare, Shield
+  ArrowLeft, User, Mail, Phone, Calendar,
+  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -23,12 +21,21 @@ import { Label } from '@/components/ui/label';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { CustomerInvoicesTab } from '@/components/admin/customers/CustomerInvoicesTab';
+import { CustomerOrderHistoryTab } from '@/components/admin/customers/CustomerOrderHistoryTab';
+import { CustomerPaymentHistoryTab } from '@/components/admin/customers/CustomerPaymentHistoryTab';
+import { CustomerDeliveryAddressesTab } from '@/components/admin/customers/CustomerDeliveryAddressesTab';
+import { CustomerDeliveryMap } from '@/components/admin/customers/CustomerDeliveryMap';
+import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
+import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/CustomerRelatedEntitiesPanel';
+import { CustomerComplianceVerification } from '@/components/admin/customers/CustomerComplianceVerification';
+import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 
 interface Customer {
   id: string;
@@ -53,23 +60,34 @@ interface Customer {
 
 export default function CustomerDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
-  const { isReady: encryptionIsReady } = useEncryption();
+  const { isReady: _encryptionIsReady } = useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [notes, setNotes] = useState<any[]>([]);
+  const [orders, setOrders] = useState<unknown[]>([]);
+  const [payments, setPayments] = useState<Array<{ id: string; amount: number; created_at: string; payment_method: string; payment_status: string }>>([]);
+  const [notes, setNotes] = useState<Array<{ id: string; created_at: string; note: string; profiles?: { full_name: string } }>>([]);
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
-  const [storeCredit, setStoreCredit] = useState(0);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
   const [storeCreditDialogOpen, setStoreCreditDialogOpen] = useState(false);
   const [storeCreditAmount, setStoreCreditAmount] = useState('');
 
   // Get tenant_id from tenant context or customer data
   const tenantId = tenant?.id || customer?.tenant_id;
+
+  // Set breadcrumb label to show customer name
+  useBreadcrumbLabel(
+    customer ? `${customer.first_name} ${customer.last_name}` : null
+  );
+
+  // Use the customer credit hook for credit balance management
+  const {
+    balance: storeCredit,
+    addCredit,
+    isAddingCredit,
+    refetch: refetchCredit,
+  } = useCustomerCredit(id);
 
   useEffect(() => {
     if (id) {
@@ -121,36 +139,18 @@ export default function CustomerDetails() {
       setPayments(paymentsData || []);
 
       // Load notes
-      const { data: notesData, error: notesError } = await supabase
+      const { data: notesData, error: notesError } = await (supabase as any)
         .from('customer_notes')
-        .select(`
-          *,
-          profiles:created_by(full_name)
-        `)
+        .select('id, created_at, note, note_type')
         .eq('customer_id', id)
         .order('created_at', { ascending: false });
 
       if (notesError) throw notesError;
-      setNotes(notesData || []);
-
-      // Load store credit balance
-      const { data: creditData } = await supabase
-        .from('customer_credits')
-        .select('amount, transaction_type')
-        .eq('customer_id', id)
-        .eq('tenant_id', tenantId);
-
-      if (creditData) {
-        const totalCredit = creditData.reduce((sum, credit) => {
-          if (credit.transaction_type === 'issued' || credit.transaction_type === 'refund') {
-            return sum + (credit.amount || 0);
-          } else if (credit.transaction_type === 'used') {
-            return sum - (credit.amount || 0);
-          }
-          return sum;
-        }, 0);
-        setStoreCredit(Math.max(0, totalCredit));
-      }
+      setNotes((notesData || []).map((n: any) => ({
+        id: n.id,
+        created_at: n.created_at,
+        note: n.note,
+      })));
 
       // Calculate outstanding balance (total orders - total payments)
       const ordersTotal = (ordersData || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
@@ -206,7 +206,7 @@ export default function CustomerDetails() {
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
-      <div className="min-h-dvh bg-gray-50 p-6">
+      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
         <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
 
         <div className="max-w-7xl mx-auto space-y-6">
@@ -219,18 +219,18 @@ export default function CustomerDetails() {
 
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                   <User className="w-10 h-10 text-emerald-600" />
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                       {customer.first_name} {customer.last_name}
                     </h1>
                     <Badge
                       className={customer.customer_type === 'medical'
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/30'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-800'
                       }
                     >
                       {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
@@ -273,7 +273,7 @@ export default function CustomerDetails() {
                       ${customer.total_spent?.toFixed(2) || '0.00'}
                     </p>
                   </div>
-                  <div className="p-3 bg-emerald-100 rounded-lg">
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                     <DollarSign className="w-6 h-6 text-emerald-600" />
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function CustomerDetails() {
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{orders.length}</p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-lg">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <ShoppingBag className="w-6 h-6 text-blue-600" />
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export default function CustomerDetails() {
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Loyalty Points</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{customer.loyalty_points || 0}</p>
                   </div>
-                  <div className="p-3 bg-emerald-100 rounded-lg">
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                     <Gift className="w-6 h-6 text-emerald-600" />
                   </div>
                 </div>
@@ -317,7 +317,7 @@ export default function CustomerDetails() {
                       ${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-lg">
+                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                     <Star className="w-6 h-6 text-purple-600" />
                   </div>
                 </div>
@@ -327,9 +327,13 @@ export default function CustomerDetails() {
 
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))]">
+            <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))] flex-wrap">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="compliance">Compliance</TabsTrigger>
+              <TabsTrigger value="addresses">Addresses</TabsTrigger>
               <TabsTrigger value="orders">Purchase History</TabsTrigger>
+              <TabsTrigger value="favorites">Favorites</TabsTrigger>
+              <TabsTrigger value="payments">Payment History</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="communications">Communications</TabsTrigger>
               <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
@@ -339,32 +343,49 @@ export default function CustomerDetails() {
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
-              {/* Contact Card and Activity Timeline */}
+              {/* Contact Card, Activity Timeline, and Related Entities */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {tenantId && customer && (
-                  <ContactCard
-                    customer={customer}
-                    customerId={customer.id}
-                    tenantId={tenantId}
-                    onCall={() => {
-                      if (customer.phone) {
-                        window.location.href = `tel:${customer.phone}`;
-                      }
-                    }}
-                    onEmail={() => {
-                      if (customer.email) {
-                        window.location.href = `mailto:${customer.email}`;
-                      }
-                    }}
-                    onMessage={() => {
-                      // Scroll to communication history or open dialog
-                      const commTab = document.querySelector('[value="communications"]');
-                      if (commTab) {
-                        (commTab as HTMLElement).click();
-                      }
-                    }}
-                  />
-                )}
+                {/* Left column: Contact Card + Related Entities */}
+                <div className="space-y-6">
+                  {tenantId && customer && (
+                    <ContactCard
+                      customer={customer}
+                      customerId={customer.id}
+                      tenantId={tenantId}
+                      onCall={() => {
+                        if (customer.phone) {
+                          window.location.href = `tel:${customer.phone}`;
+                        }
+                      }}
+                      onEmail={() => {
+                        if (customer.email) {
+                          window.location.href = `mailto:${customer.email}`;
+                        }
+                      }}
+                      onMessage={() => {
+                        // Scroll to communication history or open dialog
+                        const commTab = document.querySelector('[value="communications"]');
+                        if (commTab) {
+                          (commTab as HTMLElement).click();
+                        }
+                      }}
+                    />
+                  )}
+                  {/* Related Entities Panel */}
+                  {customer && (
+                    <CustomerRelatedEntitiesPanel customerId={customer.id} />
+                  )}
+                  {/* Compliance Verification */}
+                  {customer && (
+                    <CustomerComplianceVerification
+                      customerId={customer.id}
+                      customerName={`${customer.first_name} ${customer.last_name}`}
+                      compact
+                      showBlockWarning
+                    />
+                  )}
+                </div>
+                {/* Right column: Activity Timeline */}
                 {tenantId && customer && (
                   <div className="lg:col-span-2">
                     <ActivityTimeline clientId={customer.id} />
@@ -379,6 +400,15 @@ export default function CustomerDetails() {
                   tenantId={tenantId}
                   customerEmail={customer.email}
                   customerPhone={customer.phone}
+                />
+              )}
+
+              {/* Preferred Products (compact view) */}
+              {customer && (
+                <CustomerPreferredProducts
+                  customerId={customer.id}
+                  compact
+                  limit={5}
                 />
               )}
 
@@ -424,10 +454,10 @@ export default function CustomerDetails() {
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
                       <Badge className={
-                        (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800' :
-                          (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800' :
-                            (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
+                        (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
+                          (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                            (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                              'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                       }>
                         {(customer.loyalty_points || 0) >= 1000 ? '⭐ VIP' :
                           (customer.loyalty_points || 0) >= 500 ? '🥇 Gold' :
@@ -440,81 +470,41 @@ export default function CustomerDetails() {
               </div>
             </TabsContent>
 
+            {/* Compliance Tab */}
+            {customer && (
+              <TabsContent value="compliance" className="space-y-6">
+                <CustomerComplianceVerification
+                  customerId={customer.id}
+                  customerName={`${customer.first_name} ${customer.last_name}`}
+                  showBlockWarning
+                />
+              </TabsContent>
+            )}
+
+            {/* Addresses Tab */}
+            {customer && (
+              <TabsContent value="addresses" className="space-y-6">
+                <CustomerDeliveryMap
+                  customerId={customer.id}
+                  customerName={`${customer.first_name} ${customer.last_name}`}
+                />
+                <CustomerDeliveryAddressesTab customerId={customer.id} />
+              </TabsContent>
+            )}
+
             {/* Orders Tab */}
-            <TabsContent value="orders">
-              <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Purchase History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {orders.length === 0 ? (
-                      <EnhancedEmptyState
-                        icon={ShoppingBag}
-                        title="No Orders Yet"
-                        description="This customer hasn't placed any orders yet."
-                        compact
-                      />
-                    ) : (
-                      orders.map(order => (
-                        <div key={order.id} className="border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <p className="font-medium">
-                                <OrderLink orderId={order.id} orderNumber={`Order #${order.id.slice(0, 8)}`} />
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold">${order.total_amount?.toFixed(2)}</p>
-                              <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
-                                {order.status}
-                              </Badge>
-                            </div>
-                          </div>
-                          <Separator className="my-3" />
-                          <div className="space-y-2">
-                            {order.order_items?.map((item: Record<string, unknown>) => (
-                              <div key={item.id as string} className="flex justify-between text-sm">
-                                <span>
-                                  <ProductLink
-                                    productId={(item.product_id as string) || (item.products as Record<string, unknown>)?.id as string}
-                                    productName={((item.products as Record<string, unknown>)?.name as string) || 'Unknown Product'}
-                                  />
-                                  {' '}x{item.quantity as number}
-                                </span>
-                                <span>${(item.subtotal as number)?.toFixed(2)}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigateToAdmin(`customers/${id}/invoices`)}
-                            >
-                              View Invoice
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                toast.success("Items added to cart");
-                                navigateToAdmin(`pos?customer=${id}&reorder=${order.id}`);
-                              }}
-                            >
-                              Reorder
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            {customer && (
+              <TabsContent value="orders">
+                <CustomerOrderHistoryTab customerId={customer.id} />
+              </TabsContent>
+            )}
+
+            {/* Favorites/Preferred Products Tab */}
+            {customer && (
+              <TabsContent value="favorites">
+                <CustomerPreferredProducts customerId={customer.id} />
+              </TabsContent>
+            )}
 
             {/* Invoices Tab */}
             {customer && (
@@ -523,6 +513,13 @@ export default function CustomerDetails() {
                   customerId={customer.id}
                   onCreateInvoice={() => navigateToAdmin(`customers/${id}/invoices`)}
                 />
+              </TabsContent>
+            )}
+
+            {/* Payments Tab */}
+            {customer && (
+              <TabsContent value="payments">
+                <CustomerPaymentHistoryTab customerId={customer.id} />
               </TabsContent>
             )}
 
@@ -745,29 +742,26 @@ export default function CustomerDetails() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount))) {
-                    try {
-                      const { error } = await supabase.from('customer_credits').insert({
-                        tenant_id: tenant?.id,
-                        customer_id: id,
-                        amount: parseFloat(storeCreditAmount),
-                        transaction_type: 'issued',
-                        reason: 'Manual credit issued by admin'
-                      });
-                      if (error) throw error;
+                  if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
+                    const result = await addCredit({
+                      customerId: id,
+                      amount: parseFloat(storeCreditAmount),
+                      reason: 'Manual credit issued by admin',
+                      transactionType: 'issued',
+                    });
+                    if (result) {
                       toast.success(`$${storeCreditAmount} store credit added`);
                       setStoreCreditDialogOpen(false);
                       setStoreCreditAmount('');
-                      loadCustomerData();
-                    } catch (error) {
-                      logger.error('Failed to add store credit', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
+                      refetchCredit();
+                    } else {
                       toast.error('Failed to add store credit');
                     }
                   }
                 }}
-                disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount))}
+                disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
               >
-                Add Credit
+                {isAddingCredit ? 'Adding...' : 'Add Credit'}
               </Button>
             </div>
           </div>

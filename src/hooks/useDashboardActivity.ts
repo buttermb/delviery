@@ -1,6 +1,6 @@
 /**
  * useDashboardActivity Hook
- * Pulls the last 20 actions across orders, products, customers, payments,
+ * Pulls the last 20 actions across orders, customers,
  * and disposable menus -- merged and sorted by created_at DESC.
  * Each item carries type, title, description, timestamp, and deep-link.
  */
@@ -34,34 +34,26 @@ export function useDashboardActivity() {
 
       const items: ActivityItem[] = [];
 
-      // Run all queries in parallel
-      const [ordersResult, customersResult, paymentsResult, menusResult, deliveriesResult] = await Promise.allSettled([
-        // Recent orders (last 20)
-        supabase
+      // Run queries in parallel using typed any to avoid deep instantiation
+      const [ordersResult, customersResult, menusResult, deliveriesResult] = await Promise.allSettled([
+        // Recent orders (last 10)
+        (supabase as any)
           .from('orders')
           .select('id, status, total_amount, created_at, customer_name')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(10),
 
-        // Recent customers (last 10)
-        supabase
+        // Recent customers (last 5) - use first_name, last_name instead of name
+        (supabase as any)
           .from('customers')
-          .select('id, name, email, created_at')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false })
-          .limit(5),
-
-        // Recent payments (last 10)
-        supabase
-          .from('payments')
-          .select('id, amount, payment_method, status, created_at')
+          .select('id, first_name, last_name, email, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(5),
 
         // Recent menus (last 5)
-        supabase
+        (supabase as any)
           .from('disposable_menus')
           .select('id, name, status, created_at, burned_at')
           .eq('tenant_id', tenantId)
@@ -69,7 +61,7 @@ export function useDashboardActivity() {
           .limit(5),
 
         // Recent deliveries (last 5)
-        supabase
+        (supabase as any)
           .from('wholesale_deliveries')
           .select('id, status, created_at, order_id')
           .eq('tenant_id', tenantId)
@@ -79,7 +71,14 @@ export function useDashboardActivity() {
 
       // Process orders
       if (ordersResult.status === 'fulfilled' && !ordersResult.value.error) {
-        (ordersResult.value.data ?? []).forEach((order) => {
+        const ordersData = (ordersResult.value.data ?? []) as Array<{
+          id: string;
+          status?: string;
+          total_amount?: number;
+          created_at: string;
+          customer_name?: string;
+        }>;
+        ordersData.forEach((order) => {
           const customerLabel = order.customer_name ?? 'Customer';
           items.push({
             id: `order-${order.id}`,
@@ -96,35 +95,36 @@ export function useDashboardActivity() {
 
       // Process customers
       if (customersResult.status === 'fulfilled' && !customersResult.value.error) {
-        (customersResult.value.data ?? []).forEach((cust) => {
+        const customersData = (customersResult.value.data ?? []) as Array<{
+          id: string;
+          first_name?: string;
+          last_name?: string;
+          email?: string;
+          created_at: string;
+        }>;
+        customersData.forEach((cust) => {
+          const displayName = [cust.first_name, cust.last_name].filter(Boolean).join(' ') || cust.email || 'Unknown';
           items.push({
             id: `customer-${cust.id}`,
             type: 'customer',
             title: 'New Customer',
-            description: cust.name || cust.email || 'Unknown',
+            description: displayName,
             createdAt: cust.created_at,
             linkPath: `customer-hub`,
           });
         });
       }
 
-      // Process payments
-      if (paymentsResult.status === 'fulfilled' && !paymentsResult.value.error) {
-        (paymentsResult.value.data ?? []).forEach((pmt) => {
-          items.push({
-            id: `payment-${pmt.id}`,
-            type: 'payment',
-            title: `Payment ${formatStatus(String(pmt.status ?? 'completed'))}`,
-            description: `$${Number(pmt.amount ?? 0).toFixed(2)} via ${pmt.payment_method ?? 'unknown'}`,
-            createdAt: pmt.created_at,
-            linkPath: `finance-hub`,
-          });
-        });
-      }
-
       // Process menus
       if (menusResult.status === 'fulfilled' && !menusResult.value.error) {
-        (menusResult.value.data ?? []).forEach((menu) => {
+        const menusData = (menusResult.value.data ?? []) as Array<{
+          id: string;
+          name: string;
+          status?: string;
+          created_at: string;
+          burned_at?: string | null;
+        }>;
+        menusData.forEach((menu) => {
           const isBurned = !!menu.burned_at;
           items.push({
             id: `menu-${menu.id}`,
@@ -139,7 +139,13 @@ export function useDashboardActivity() {
 
       // Process deliveries
       if (deliveriesResult.status === 'fulfilled' && !deliveriesResult.value.error) {
-        (deliveriesResult.value.data ?? []).forEach((del) => {
+        const deliveriesData = (deliveriesResult.value.data ?? []) as Array<{
+          id: string;
+          status?: string;
+          created_at: string;
+          order_id?: string;
+        }>;
+        deliveriesData.forEach((del) => {
           items.push({
             id: `delivery-${del.id}`,
             type: 'delivery',

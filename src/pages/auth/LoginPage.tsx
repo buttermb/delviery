@@ -18,8 +18,6 @@ import {
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { logger } from '@/lib/logger';
-import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { safeStorage } from '@/utils/safeStorage';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
@@ -147,7 +145,7 @@ export function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel required>Email</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -167,7 +165,7 @@ export function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel required>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input

@@ -6,7 +6,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/utils/test-utils';
-import { fireEvent } from '@testing-library/react';
 
 // Mock supabase
 vi.mock('@/integrations/supabase/client', () => ({

@@ -1,345 +1,311 @@
 /**
  * Global Search Hook
  *
- * Provides a unified search interface across all modules:
- * - Customers (profiles)
- * - Orders
- * - Products
- * - Wholesale clients
- * - Wholesale orders
- * - Suppliers
- * - Couriers
+ * Searches across orders, products, customers, and vendors simultaneously.
+ * Returns categorized results with relevance scoring.
  *
- * Returns categorized results with proper typing and navigation URLs.
+ * Features:
+ * - Debounced search (300ms)
+ * - Minimum 2 characters required
+ * - Tenant-filtered results
+ * - Relevance scoring for result ordering
  */
 
-import { useCallback, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useDebounce } from '@/hooks/useDebounce';
 import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 
-export type SearchResultType =
-  | 'customer'
-  | 'order'
-  | 'product'
-  | 'invoice'
-  | 'supplier'
-  | 'courier'
-  | 'wholesale_client'
-  | 'wholesale_order'
-  | 'menu';
+// Relevance scoring weights
+const EXACT_MATCH_SCORE = 100;
+const STARTS_WITH_SCORE = 75;
+const CONTAINS_SCORE = 50;
 
-export interface GlobalSearchResult {
+export interface SearchResultItem {
   id: string;
-  type: SearchResultType;
-  label: string;
-  sublabel?: string;
-  url: string;
+  name: string;
+  subtitle?: string;
+  status?: string;
+  relevanceScore: number;
   metadata?: Record<string, unknown>;
 }
 
-interface GlobalSearchOptions {
-  /** Minimum characters before search triggers */
+export interface GlobalSearchResults {
+  orders: SearchResultItem[];
+  products: SearchResultItem[];
+  customers: SearchResultItem[];
+  vendors: SearchResultItem[];
+}
+
+interface UseGlobalSearchOptions {
+  /** Minimum characters before search triggers (default: 2) */
   minChars?: number;
-  /** Maximum results per category */
+  /** Debounce delay in milliseconds (default: 300) */
+  debounceMs?: number;
+  /** Maximum results per category (default: 10) */
   limitPerCategory?: number;
-  /** Categories to search (defaults to all) */
-  categories?: SearchResultType[];
   /** Enable/disable search */
   enabled?: boolean;
 }
 
 interface UseGlobalSearchReturn {
-  /** Search results grouped by type */
-  results: GlobalSearchResult[];
-  /** Results grouped by type */
-  groupedResults: Record<SearchResultType, GlobalSearchResult[]>;
+  /** Categorized search results */
+  results: GlobalSearchResults;
   /** Whether search is in progress */
   isSearching: boolean;
   /** Error if any */
   error: Error | null;
-  /** Total result count */
+  /** Total result count across all categories */
   totalCount: number;
-  /** Trigger search manually */
-  search: (query: string) => void;
-  /** Clear results */
-  clearResults: () => void;
+  /** Set search query */
+  setQuery: (query: string) => void;
+  /** Clear results and query */
+  clear: () => void;
   /** Current search query */
   query: string;
+  /** Debounced query being searched */
+  debouncedQuery: string;
 }
 
-const DEFAULT_OPTIONS: Required<GlobalSearchOptions> = {
-  minChars: 2,
-  limitPerCategory: 5,
-  categories: ['customer', 'order', 'product', 'wholesale_client', 'wholesale_order', 'supplier', 'courier', 'menu'],
-  enabled: true,
+const EMPTY_RESULTS: GlobalSearchResults = {
+  orders: [],
+  products: [],
+  customers: [],
+  vendors: [],
 };
 
-export function useGlobalSearch(options: GlobalSearchOptions = {}): UseGlobalSearchReturn {
+/**
+ * Calculate relevance score based on how the search term matches
+ */
+function calculateRelevanceScore(searchTerm: string, value: string): number {
+  const lowerSearch = searchTerm.toLowerCase();
+  const lowerValue = value.toLowerCase();
+
+  if (lowerValue === lowerSearch) {
+    return EXACT_MATCH_SCORE;
+  }
+  if (lowerValue.startsWith(lowerSearch)) {
+    return STARTS_WITH_SCORE;
+  }
+  if (lowerValue.includes(lowerSearch)) {
+    return CONTAINS_SCORE;
+  }
+  return 0;
+}
+
+/**
+ * Get the best relevance score from multiple fields
+ */
+function getBestRelevanceScore(searchTerm: string, fields: (string | null | undefined)[]): number {
+  return Math.max(
+    ...fields
+      .filter((f): f is string => typeof f === 'string' && f.length > 0)
+      .map((f) => calculateRelevanceScore(searchTerm, f)),
+    0
+  );
+}
+
+export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobalSearchReturn {
   const { tenant } = useTenantAdminAuth();
   const [query, setQuery] = useState('');
 
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const {
+    minChars = 2,
+    debounceMs = 300,
+    limitPerCategory = 10,
+    enabled = true,
+  } = options;
+
+  // Debounce the search query
+  const debouncedQuery = useDebounce(query, debounceMs);
+
+  const shouldSearch = useMemo(() => {
+    return (
+      enabled &&
+      !!tenant?.id &&
+      debouncedQuery.length >= minChars
+    );
+  }, [enabled, tenant?.id, debouncedQuery, minChars]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['global-search', query, tenant?.id, opts.categories],
-    queryFn: async (): Promise<GlobalSearchResult[]> => {
-      if (!query || query.length < opts.minChars || !tenant?.id) {
-        return [];
+    queryKey: ['global-search', debouncedQuery, tenant?.id],
+    queryFn: async (): Promise<GlobalSearchResults> => {
+      if (!tenant?.id || debouncedQuery.length < minChars) {
+        return EMPTY_RESULTS;
       }
 
-      const searchLower = query.toLowerCase();
-      const results: GlobalSearchResult[] = [];
-      const limit = opts.limitPerCategory;
-      const categories = opts.categories;
+      const searchTerm = debouncedQuery.toLowerCase();
+      const results: GlobalSearchResults = {
+        orders: [],
+        products: [],
+        customers: [],
+        vendors: [],
+      };
 
       try {
-        const promises: Promise<void>[] = [];
+        // Run all searches in parallel
+        const [ordersResult, productsResult, customersResult, vendorsResult] = await Promise.all([
+          // Search orders
+          supabase
+            .from('orders')
+            .select('id, order_number, status, total_amount, customer_name')
+            .eq('tenant_id', tenant.id)
+            .or(`order_number.ilike.%${searchTerm}%,customer_name.ilike.%${searchTerm}%`)
+            .limit(limitPerCategory),
 
-        // Search customers (cast to any to bypass deep type issues)
-        if (categories.includes('customer')) {
-          promises.push(
-            (supabase as any)
-              .from('profiles')
-              .select('id, user_id, full_name, phone')
-              .eq('account_id', tenant.id)
-              .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: customers }: any) => {
-                if (customers) {
-                  for (const c of customers as any[]) {
-                    results.push({
-                      id: c.user_id || c.id,
-                      type: 'customer',
-                      label: c.full_name || 'Unknown Customer',
-                      sublabel: c.phone || undefined,
-                      url: `/admin/customers/${c.user_id || c.id}`,
-                    });
-                  }
-                }
-              })
-          );
+          // Search products
+          (supabase as any)
+            .from('products')
+            .select('id, name, sku, category, is_active')
+            .eq('tenant_id', tenant.id)
+            .or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`)
+            .limit(limitPerCategory),
+
+          // Search customers (profiles)
+          (supabase as any)
+            .from('profiles')
+            .select('id, user_id, full_name, phone, email')
+            .eq('account_id', tenant.id)
+            .or(`full_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
+            .limit(limitPerCategory),
+
+          // Search vendors
+          supabase
+            .from('vendors')
+            .select('id, name, contact_name, contact_email, status')
+            .eq('account_id', tenant.id)
+            .or(`name.ilike.%${searchTerm}%,contact_name.ilike.%${searchTerm}%`)
+            .limit(limitPerCategory),
+        ]);
+
+        // Process orders with relevance scoring
+        if (ordersResult.data) {
+          results.orders = ordersResult.data
+            .map((order) => ({
+              id: order.id,
+              name: `Order #${order.order_number || order.id.slice(0, 8)}`,
+              subtitle: order.customer_name || undefined,
+              status: order.status || undefined,
+              relevanceScore: getBestRelevanceScore(searchTerm, [
+                order.order_number,
+                order.customer_name,
+              ]),
+              metadata: {
+                totalAmount: order.total_amount,
+                orderNumber: order.order_number,
+              },
+            }))
+            .sort((a, b) => b.relevanceScore - a.relevanceScore);
         }
 
-        // Search orders
-        if (categories.includes('order')) {
-          promises.push(
-            (supabase as any)
-              .from('orders')
-              .select('id, order_number, status, total_amount, customer_name')
-              .eq('tenant_id', tenant.id)
-              .or(`order_number.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: orders }: any) => {
-                if (orders) {
-                  for (const o of orders as any[]) {
-                    results.push({
-                      id: o.id,
-                      type: 'order',
-                      label: `Order #${o.order_number || o.id.slice(0, 8)}`,
-                      sublabel: o.customer_name || o.status || undefined,
-                      url: `/admin/orders/${o.id}`,
-                      metadata: { status: o.status, total: o.total_amount },
-                    });
-                  }
-                }
-              })
-          );
+        // Process products with relevance scoring
+        if (productsResult.data) {
+          results.products = productsResult.data
+            .map((product) => ({
+              id: product.id,
+              name: product.name,
+              subtitle: product.sku ? `SKU: ${product.sku}` : product.category || undefined,
+              status: product.is_active ? 'active' : 'inactive',
+              relevanceScore: getBestRelevanceScore(searchTerm, [
+                product.name,
+                product.sku,
+              ]),
+              metadata: {
+                sku: product.sku,
+                category: product.category,
+              },
+            }))
+            .sort((a, b) => b.relevanceScore - a.relevanceScore);
         }
 
-        // Search products
-        if (categories.includes('product')) {
-          promises.push(
-            (supabase as any)
-              .from('products')
-              .select('id, name, sku, category')
-              .eq('tenant_id', tenant.id)
-              .or(`name.ilike.%${searchLower}%,sku.ilike.%${searchLower}%`)
-              .limit(limit)
-              .then(({ data: products }: any) => {
-                if (products) {
-                  for (const p of products as any[]) {
-                    results.push({
-                      id: p.id,
-                      type: 'product',
-                      label: p.name,
-                      sublabel: p.sku ? `SKU: ${p.sku}` : p.category || undefined,
-                      url: `/admin/products/${p.id}`,
-                    });
-                  }
-                }
-              })
-          );
+        // Process customers with relevance scoring
+        if (customersResult.data) {
+          results.customers = customersResult.data
+            .map((customer) => ({
+              id: customer.user_id || customer.id,
+              name: customer.full_name || 'Unknown Customer',
+              subtitle: customer.email || customer.phone || undefined,
+              relevanceScore: getBestRelevanceScore(searchTerm, [
+                customer.full_name,
+                customer.phone,
+                customer.email,
+              ]),
+              metadata: {
+                phone: customer.phone,
+                email: customer.email,
+              },
+            }))
+            .sort((a, b) => b.relevanceScore - a.relevanceScore);
         }
 
-        // Search wholesale clients
-        if (categories.includes('wholesale_client')) {
-          promises.push(
-            (async () => {
-              const { data: clients } = await supabase
-                .from('wholesale_clients')
-                .select('id, business_name, contact_name, email')
-                .eq('tenant_id', tenant.id)
-                .or(`business_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%`)
-                .limit(limit);
-              if (clients) {
-                for (const wc of clients) {
-                  results.push({
-                    id: wc.id,
-                    type: 'wholesale_client',
-                    label: wc.business_name || 'Unnamed Client',
-                    sublabel: wc.contact_name || wc.email || undefined,
-                    url: `/admin/clients/${wc.id}`,
-                  });
-                }
-              }
-            })()
-          );
+        // Process vendors with relevance scoring
+        if (vendorsResult.data) {
+          results.vendors = vendorsResult.data
+            .map((vendor) => ({
+              id: vendor.id,
+              name: vendor.name,
+              subtitle: vendor.contact_name || vendor.contact_email || undefined,
+              status: vendor.status || undefined,
+              relevanceScore: getBestRelevanceScore(searchTerm, [
+                vendor.name,
+                vendor.contact_name,
+              ]),
+              metadata: {
+                contactName: vendor.contact_name,
+                contactEmail: vendor.contact_email,
+              },
+            }))
+            .sort((a, b) => b.relevanceScore - a.relevanceScore);
         }
 
-        // Search wholesale orders
-        if (categories.includes('wholesale_order')) {
-          promises.push(
-            (async () => {
-              const { data: orders } = await supabase
-                .from('wholesale_orders')
-                .select('id, status, total_amount, wholesale_clients(business_name)')
-                .eq('tenant_id', tenant.id)
-                .ilike('id', `%${searchLower}%`)
-                .limit(limit);
-              if (orders) {
-                for (const wo of orders) {
-                  const clientName = (wo.wholesale_clients as { business_name: string | null } | null)?.business_name;
-                  results.push({
-                    id: wo.id,
-                    type: 'wholesale_order',
-                    label: `Wholesale #${wo.id.slice(0, 8)}`,
-                    sublabel: clientName || wo.status || undefined,
-                    url: `/admin/wholesale-orders/${wo.id}`,
-                  });
-                }
-              }
-            })()
-          );
+        // Log any errors from individual queries
+        if (ordersResult.error) {
+          logger.warn('Order search failed', { error: ordersResult.error });
+        }
+        if (productsResult.error) {
+          logger.warn('Product search failed', { error: productsResult.error });
+        }
+        if (customersResult.error) {
+          logger.warn('Customer search failed', { error: customersResult.error });
+        }
+        if (vendorsResult.error) {
+          logger.warn('Vendor search failed', { error: vendorsResult.error });
         }
 
-        // Search suppliers
-        if (categories.includes('supplier')) {
-          promises.push(
-            (async () => {
-              const { data: suppliers } = await (supabase as any)
-                .from('suppliers')
-                .select('id, company_name, contact_name, email')
-                .eq('tenant_id', tenant.id)
-                .or(`company_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%`)
-                .limit(limit);
-              if (suppliers) {
-                for (const s of suppliers as any[]) {
-                  results.push({
-                    id: s.id,
-                    type: 'supplier',
-                    label: s.company_name || 'Unnamed Supplier',
-                    sublabel: s.contact_name || s.email || undefined,
-                    url: `/admin/suppliers/${s.id}`,
-                  });
-                }
-              }
-            })()
-          );
-        }
-
-        // Search couriers
-        if (categories.includes('courier')) {
-          promises.push(
-            (async () => {
-              const { data: couriers } = await (supabase as any)
-                .from('couriers')
-                .select('id, full_name, phone, vehicle_type')
-                .eq('tenant_id', tenant.id)
-                .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
-                .limit(limit);
-              if (couriers) {
-                for (const c of couriers as any[]) {
-                  results.push({
-                    id: c.id,
-                    type: 'courier',
-                    label: c.full_name || 'Unnamed Courier',
-                    sublabel: c.phone || c.vehicle_type || undefined,
-                    url: `/admin/couriers/${c.id}`,
-                  });
-                }
-              }
-            })()
-          );
-        }
-
-        // Search disposable menus
-        if (categories.includes('menu')) {
-          promises.push(
-            (async () => {
-              const { data: menus } = await (supabase as any)
-                .from('disposable_menus')
-                .select('id, title, customer_name, status')
-                .eq('tenant_id', tenant.id)
-                .or(`title.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
-                .limit(limit);
-              if (menus) {
-                for (const m of menus as any[]) {
-                  results.push({
-                    id: m.id,
-                    type: 'menu',
-                    label: m.title || `Menu for ${m.customer_name || 'Unknown'}`,
-                    sublabel: m.customer_name || m.status || undefined,
-                    url: `/admin/menus/${m.id}`,
-                  });
-                }
-              }
-            })()
-          );
-        }
-
-        await Promise.all(promises);
+        return results;
       } catch (err) {
-        logger.error('Global search error', { error: err });
+        logger.error('Global search error', err);
         throw err;
       }
-
-      return results;
     },
-    enabled: query.length >= opts.minChars && !!tenant?.id && opts.enabled,
+    enabled: shouldSearch,
     staleTime: 30000,
   });
 
-  const search = useCallback((newQuery: string) => {
-    setQuery(newQuery);
-  }, []);
-
-  const clearResults = useCallback(() => {
+  const clear = useCallback(() => {
     setQuery('');
   }, []);
 
-  // Group results by type
-  const groupedResults = (data ?? []).reduce<Record<SearchResultType, GlobalSearchResult[]>>(
-    (acc, result) => {
-      if (!acc[result.type]) {
-        acc[result.type] = [];
-      }
-      acc[result.type].push(result);
-      return acc;
-    },
-    {} as Record<SearchResultType, GlobalSearchResult[]>
-  );
+  const totalCount = useMemo(() => {
+    if (!data) return 0;
+    return (
+      data.orders.length +
+      data.products.length +
+      data.customers.length +
+      data.vendors.length
+    );
+  }, [data]);
 
   return {
-    results: data ?? [],
-    groupedResults,
+    results: data ?? EMPTY_RESULTS,
     isSearching: isLoading,
     error: error as Error | null,
-    totalCount: data?.length ?? 0,
-    search,
-    clearResults,
+    totalCount,
+    setQuery,
+    clear,
     query,
+    debouncedQuery,
   };
 }

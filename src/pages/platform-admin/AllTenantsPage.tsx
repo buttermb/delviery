@@ -37,7 +37,7 @@ export default function AllTenantsPage() {
     });
 
     const { toast } = useToast();
-    const queryClient = useQueryClient();
+    const _queryClient = useQueryClient();
 
     const accessMutation = useMutation({
         mutationFn: async (tenantId: string) => {

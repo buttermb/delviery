@@ -21,7 +21,7 @@ export function useCustomerStats(customerId: string | undefined) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: queryKeys.customers.stats(customerId ?? ''),
+    queryKey: queryKeys.customers.stats(tenant?.id ?? '', customerId ?? ''),
     queryFn: async (): Promise<CustomerStats> => {
       if (!tenant?.id || !customerId) {
         throw new Error('Missing tenant or customer ID');

@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { LoadingFallback } from "@/components/LoadingFallback";
-import { toast } from "sonner";
 import {
   ArrowLeft,
   DollarSign,
@@ -18,7 +17,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  MapPin,
   FileText,
 } from "lucide-react";
 import { format } from "date-fns";

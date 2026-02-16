@@ -33,7 +33,6 @@ import {
     Sparkles,
     Filter
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface GlobalProduct {
     id: string;
@@ -58,7 +57,7 @@ export function GlobalProductCatalog() {
     const queryClient = useQueryClient();
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState<string>('');
+    const [categoryFilter, setCategoryFilter] = useState<string>('__all__');
     const [brandFilter, setBrandFilter] = useState('');
 
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -72,7 +71,7 @@ export function GlobalProductCatalog() {
         queryFn: async () => {
             const { data, error } = await (supabase.rpc as any)('search_global_products', {
                 p_query: searchQuery || null,
-                p_category: categoryFilter || null,
+                p_category: categoryFilter === '__all__' ? null : categoryFilter || null,
                 p_brand: brandFilter || null,
                 p_limit: 50,
                 p_offset: 0
@@ -174,7 +173,7 @@ export function GlobalProductCatalog() {
                                 <SelectValue placeholder="Category" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Categories</SelectItem>
+                                <SelectItem value="all">All Categories</SelectItem>
                                 {CATEGORIES.map(cat => (
                                     <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>
                                 ))}

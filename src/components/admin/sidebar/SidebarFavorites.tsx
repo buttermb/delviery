@@ -25,7 +25,10 @@ export function SidebarFavorites() {
   const { canAccess } = useFeatureAccess();
   const { searchQuery } = useSidebar();
 
-  // Get toggleFavorite mutation from SidebarContext
+  // Simple search query matching function
+  const matchesSearchQuery = (name: string, query: string): boolean => {
+    return name.toLowerCase().includes(query.toLowerCase());
+  };
   // This provides database sync with optimistic updates via useMutation
   const { toggleFavorite, trackFeatureAccess } = useSidebar();
 
@@ -78,7 +81,7 @@ export function SidebarFavorites() {
   }, []);
 
   // Handle removing a favorite - uses database mutation with optimistic updates
-  const handleRemoveFavorite = useCallback((itemId: string) => {
+  const _handleRemoveFavorite = useCallback((itemId: string) => {
     // toggleFavorite is backed by useMutation in useSidebarPreferences
     // It performs optimistic updates and syncs to database
     toggleFavorite(itemId);

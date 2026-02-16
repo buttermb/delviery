@@ -422,7 +422,7 @@ describe('ProductManagement', () => {
 
   describe('View Mode Toggle', () => {
     it('should toggle between grid and list view', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
 
       const mockProducts = [
         { id: '1', name: 'Product 1', available_quantity: 10, wholesale_price: 20, tenant_id: 'tenant-123', category: 'flower' },

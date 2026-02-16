@@ -51,8 +51,7 @@ describe('View Transitions Fallback', () => {
 
     it('should return false in non-browser environment', () => {
       const originalDoc = global.document;
-      // @ts-expect-error - Testing undefined document
-      global.document = undefined;
+      (global as any).document = undefined;
 
       expect(supportsViewTransitions()).toBe(false);
 

@@ -85,7 +85,7 @@ function parseMapboxAddress(suggestion: AddressSuggestion): ParsedAddress {
 export function CheckoutAddressAutocomplete({
   onAddressSelect,
   savedAddresses = [],
-  onSaveAddress,
+  onSaveAddress: _onSaveAddress,
   defaultValue = '',
   className,
   placeholder = 'Start typing your address...',

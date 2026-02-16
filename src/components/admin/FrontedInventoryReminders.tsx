@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Bell, Send, Calendar, AlertTriangle } from "lucide-react";
-import { format, differenceInDays } from "date-fns";
+import { differenceInDays } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -33,11 +33,7 @@ export default function FrontedInventoryReminders() {
   const [autoRemindersEnabled, setAutoRemindersEnabled] = useState(true);
   const [reminderDays, setReminderDays] = useState("3");
 
-  useEffect(() => {
-    loadOverdueFronts();
-  }, []);
-
-  const loadOverdueFronts = async () => {
+  const loadOverdueFronts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("fronted_inventory")
@@ -54,10 +50,10 @@ export default function FrontedInventoryReminders() {
       const now = new Date();
       const frontsNeedingReminder = data?.filter((front) => {
         if (!front.payment_due_date) return false;
-        
+
         const dueDate = new Date(front.payment_due_date);
         const amountOwed = parseFloat(String(front.expected_revenue || 0)) - parseFloat(String(front.payment_received || 0));
-        
+
         // Include if overdue or due within reminder days
         const daysUntilDue = differenceInDays(dueDate, now);
         return amountOwed > 0 && daysUntilDue <= parseInt(reminderDays);
@@ -68,7 +64,11 @@ export default function FrontedInventoryReminders() {
       logger.error("Failed to load reminders", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders' });
       toast.error("Failed to load reminders: " + (error instanceof Error ? error.message : "Unknown error"));
     }
-  };
+  }, [reminderDays]);
+
+  useEffect(() => {
+    loadOverdueFronts();
+  }, [loadOverdueFronts]);
 
   const sendReminder = async (front: FrontedInventoryItem) => {
     try {

@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock, AlertCircle } from 'lucide-react';
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import { getEncryptionStatus } from '@/lib/utils/encryptionHelpers';
-import type { ReactNode } from 'react';
 
 interface EncryptionStatusBadgeProps {
   record: Record<string, unknown>;

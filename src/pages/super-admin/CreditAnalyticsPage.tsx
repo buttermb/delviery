@@ -8,14 +8,11 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
-  Users,
   Activity,
   BarChart3,
   Calendar,
   RefreshCw,
-  Coins,
   ArrowUpRight,
   ArrowDownRight,
 } from 'lucide-react';
@@ -224,7 +221,7 @@ export default function CreditAnalyticsPage() {
               <div className="space-y-2">
                 {/* Simple bar chart representation */}
                 <div className="flex items-end h-40 gap-1">
-                  {analytics?.consumptionTrend.slice(-14).map((day, i) => {
+                  {analytics?.consumptionTrend.slice(-14).map((day, _i) => {
                     const max = Math.max(...(analytics?.consumptionTrend.slice(-14).map(d => d.credits) || [1]));
                     const height = (day.credits / max) * 100;
                     return (

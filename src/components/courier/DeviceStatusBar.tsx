@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Battery, BatteryCharging, BatteryLow, Wifi, WifiOff, Signal } from 'lucide-react';
+import { Battery, BatteryCharging, BatteryLow, Wifi, WifiOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function DeviceStatusBar() {

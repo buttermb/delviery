@@ -55,7 +55,7 @@ export function ExportButton({
       const exportFilename = generateExportFilename(filename, 'csv');
       exportToCSV(data, exportColumns, exportFilename);
       toast.success(`Exported ${data.length} rows to CSV`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to export CSV");
     } finally {
       setIsExporting(false);
@@ -68,7 +68,7 @@ export function ExportButton({
       const exportFilename = generateExportFilename(filename, 'json');
       exportToJSON(data, exportFilename);
       toast.success(`Exported ${data.length} rows to JSON`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to export JSON");
     } finally {
       setIsExporting(false);
@@ -102,7 +102,7 @@ export function ExportButton({
       XLSX.writeFile(wb, generateExportFilename(filename, 'xlsx'));
       
       toast.success(`Exported ${data.length} rows to Excel`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to export Excel");
     } finally {
       setIsExporting(false);

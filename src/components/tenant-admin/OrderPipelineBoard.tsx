@@ -4,7 +4,7 @@
  * Enhanced with URL-based filters, last updated indicator, and copy buttons
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,13 +37,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 
 type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'delivered' | 'cancelled';
@@ -236,8 +229,7 @@ export function OrderPipelineBoard() {
         queryFn: async () => {
             if (!tenantId) return [];
 
-            // @ts-ignore - Outdated Supabase types
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('wholesale_orders')
                 .select(`
                     id, 
@@ -286,7 +278,8 @@ export function OrderPipelineBoard() {
             // Use flow manager for proper inventory handling and validation
             const result = await wholesaleOrderFlowManager.transitionOrderStatus(
                 id,
-                status as WholesaleOrderStatus
+                status as WholesaleOrderStatus,
+                { tenantId }
             );
             if (!result.success) {
                 throw new Error(result.error || 'Failed to update status');

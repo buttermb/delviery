@@ -23,8 +23,8 @@ export const useProducts = () => {
 
             // Break chain to avoid deep type instantiation
             const query = supabase.from("products");
-            const selectQuery = query.select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert") as unknown as { eq: (col: string, val: string) => unknown };
-            const accountQuery = (selectQuery as any).eq("account_id", accountId);
+            const selectQuery = (query as any).select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert");
+            const accountQuery = selectQuery.eq("account_id", accountId);
             const statusQuery = accountQuery.eq("status", "active");
             const result = await statusQuery.order("name");
 

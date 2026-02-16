@@ -11,18 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Building2,
     User,
     Phone,
     Mail,
-    Calendar,
-    DollarSign,
     MessageSquare,
     Package
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface CustomerQuickViewCardProps {
     children: React.ReactNode;
@@ -41,6 +38,7 @@ interface CustomerQuickViewCardProps {
 
 export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewCardProps) {
     const navigate = useNavigate();
+    const { tenantSlug } = useParams();
 
     const initials = customer.business_name
         .split(' ')
@@ -113,7 +111,7 @@ export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewC
                             className="flex-1 h-8 text-xs"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/admin/new-wholesale-order?clientId=${customer.id}`);
+                                navigate(`/${tenantSlug}/admin/wholesale-orders/new?clientId=${customer.id}`);
                             }}
                         >
                             <Package className="h-3 w-3 mr-1" />

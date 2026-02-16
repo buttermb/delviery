@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
 import FloraIQLogo from '@/components/FloraIQLogo';
 
 interface ModernPageProps {
@@ -25,7 +25,7 @@ export function ModernPage({
   description,
   children,
   backButton = false,
-  backButtonText = "Back",
+  backButtonText: _backButtonText = "Back",
   showLogo = false,
   className = ""
 }: ModernPageProps) {

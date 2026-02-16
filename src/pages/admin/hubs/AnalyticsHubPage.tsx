@@ -25,9 +25,10 @@ import {
     Presentation,
     Store,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback } from 'react';
+import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
 const AnalyticsPage = lazy(() => import('@/pages/admin/AnalyticsPage'));
@@ -67,24 +68,25 @@ const tabs = [
     { id: 'export', label: 'Export', icon: Download, group: 'Reports' },
     // Strategy (Enterprise)
     { id: 'strategy', label: 'Strategy', icon: Target, group: 'Strategy' },
-    { id: 'board', label: 'Board', icon: Presentation, group: 'Strategy' },
+    { id: 'board', label: 'Board Report', icon: Presentation, group: 'Strategy' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];
 
 export default function AnalyticsHubPage() {
+    usePageTitle('Analytics');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'overview';
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     return (
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="analytics-hub"
                         hubHref="analytics-hub"
@@ -104,15 +106,15 @@ export default function AnalyticsHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

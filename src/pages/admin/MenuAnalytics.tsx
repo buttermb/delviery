@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Eye, Users, ShoppingCart, DollarSign, MapPin, Clock,
-  Shield, AlertTriangle, TrendingUp
+  Shield, AlertTriangle
 } from 'lucide-react';
 import { useMenuAccessLogs, useMenuOrders, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';

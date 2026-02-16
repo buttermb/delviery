@@ -7,10 +7,10 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +22,6 @@ import { logger } from '@/lib/logger';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
-  ArrowLeft,
   Plus,
   Tag,
   Percent,
@@ -31,8 +30,7 @@ import {
   Copy,
   Trash2,
   Edit,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -97,7 +95,6 @@ export default function StorefrontCoupons() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
@@ -281,7 +278,7 @@ export default function StorefrontCoupons() {
             <p className="text-muted-foreground">Please create a store first.</p>
             <Button
               className="mt-4"
-              onClick={() => navigate(`/${tenantSlug}/admin/storefront`)}
+              onClick={() => window.location.href = `/${tenantSlug}/admin/storefront`}
             >
               Go to Dashboard
             </Button>
@@ -569,7 +566,7 @@ export default function StorefrontCoupons() {
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-gray-500/10 text-gray-700">
+                          <Badge variant="outline" className="bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
                             Inactive
                           </Badge>
                         )}

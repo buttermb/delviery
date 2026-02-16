@@ -5,7 +5,7 @@
  * Uses localStorage for persistence.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export type SidebarMode = 'classic' | 'optimized';
 

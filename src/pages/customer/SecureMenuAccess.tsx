@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Shield, Lock, MapPin, CheckCircle, XCircle, Loader2,
-  Sparkles, Eye, Clock, Fingerprint, ShoppingCart, Plus,
-  Minus, Search, ArrowLeft, Package, AlertTriangle, X, Leaf
+  Shield, Lock, MapPin, CheckCircle, Loader2,
+  Clock, Fingerprint, ShoppingCart, Plus,
+  Minus, Search, ArrowLeft, Package, X, Leaf
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -492,7 +492,7 @@ function CartSummary({
 function OrderConfirmation({
   cart,
   menuData,
-  token,
+  token: _token,
   onBack,
   onComplete,
 }: {
@@ -528,7 +528,7 @@ function OrderConfirmation({
         notes,
       };
 
-      const { error } = await supabase.from('menu_orders').insert({
+      const { error } = await (supabase as any).from('menu_orders').insert({
         menu_id: menuData.menu_id,
         access_whitelist_id: menuData.whitelist_id || null,
         contact_phone: contactPhone,

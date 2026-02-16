@@ -104,7 +104,7 @@ export function performLogoutCleanup({ queryClient, tier }: LogoutCleanupOptions
     safeStorage.removeItem(key);
     try {
       sessionStorage.removeItem(key);
-    } catch (e) {
+    } catch {
       // sessionStorage may not be available
     }
   }

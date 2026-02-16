@@ -18,7 +18,6 @@ import { SidebarRecentlyUsed } from '../SidebarRecentlyUsed';
 import { SidebarProvider as ContextProvider } from '../SidebarContext';
 import type { SidebarItem, SidebarSection as SidebarSectionType } from '@/types/sidebar';
 import Home from "lucide-react/dist/esm/icons/home";
-import Settings from "lucide-react/dist/esm/icons/settings";
 
 // Mock Supabase client first (before any imports that use it)
 vi.mock('@/integrations/supabase/client', () => ({
@@ -266,7 +265,7 @@ describe('SidebarFavorites memo', () => {
     render(<SidebarFavorites />, { wrapper: createWrapper() });
 
     // Should render favorites label
-    const favoritesLabel = screen.queryByText(/favorites/i);
+    const _favoritesLabel = screen.queryByText(/favorites/i);
     // May or may not be visible depending on mock data, so we just check it doesn't crash
     expect(true).toBe(true);
   });
@@ -291,7 +290,7 @@ describe('SidebarHotItems memo', () => {
     render(<SidebarHotItems />, { wrapper: createWrapper() });
 
     // Should render hot items label
-    const hotItemsLabel = screen.queryByText(/quick access/i);
+    const _hotItemsLabel = screen.queryByText(/quick access/i);
     // May or may not be visible depending on mock data, so we just check it doesn't crash
     expect(true).toBe(true);
   });
@@ -316,7 +315,7 @@ describe('SidebarRecentlyUsed memo', () => {
     render(<SidebarRecentlyUsed />, { wrapper: createWrapper() });
 
     // Should render recently used label
-    const recentLabel = screen.queryByText(/recently used/i);
+    const _recentLabel = screen.queryByText(/recently used/i);
     // May or may not be visible depending on mock data, so we just check it doesn't crash
     expect(true).toBe(true);
   });

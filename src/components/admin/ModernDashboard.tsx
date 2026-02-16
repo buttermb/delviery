@@ -40,7 +40,7 @@ export function ModernDashboard() {
   const navigateTenant = useTenantNavigate();
 
   // Fetch dashboard data with proper error handling
-  const { data: dashboardData, isLoading, error } = useQuery<DashboardData | null>({
+  const { data: dashboardData, isLoading } = useQuery<DashboardData | null>({
     queryKey: ['modern-dashboard', tenantId],
     queryFn: async () => {
       if (!tenantId) return null;

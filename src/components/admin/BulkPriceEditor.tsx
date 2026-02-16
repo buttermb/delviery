@@ -3,8 +3,7 @@
  * Edit prices for multiple products at once
  */
 
-import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';

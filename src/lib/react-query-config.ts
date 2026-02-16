@@ -89,11 +89,11 @@ export const appQueryClient = createQueryClient();
 
 /**
  * Product-specific query configuration
- * Products change less frequently, so longer cache time
+ * Products change infrequently — 5-minute stale window
  */
 export const PRODUCT_QUERY_CONFIG = {
-  staleTime: 15 * 60 * 1000, // 15 minutes
-  gcTime: 30 * 60 * 1000, // 30 minutes
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  gcTime: 15 * 60 * 1000, // 15 minutes
   refetchOnWindowFocus: false,
   refetchOnMount: false,
 };
@@ -121,8 +121,39 @@ export const REALTIME_QUERY_CONFIG = {
 };
 
 /**
+ * Orders query configuration
+ * Orders need near-real-time freshness
+ */
+export const ORDERS_QUERY_CONFIG = {
+  staleTime: 30 * 1000, // 30 seconds
+  gcTime: 2 * 60 * 1000, // 2 minutes
+  refetchOnWindowFocus: true,
+};
+
+/**
+ * Settings query configuration
+ * Settings change rarely, 15-minute stale window
+ */
+export const SETTINGS_QUERY_CONFIG = {
+  staleTime: 15 * 60 * 1000, // 15 minutes
+  gcTime: 30 * 60 * 1000, // 30 minutes
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+};
+
+/**
+ * Analytics query configuration
+ * Analytics data 2-minute stale window
+ */
+export const ANALYTICS_QUERY_CONFIG = {
+  staleTime: 2 * 60 * 1000, // 2 minutes
+  gcTime: 10 * 60 * 1000, // 10 minutes
+  refetchOnWindowFocus: false,
+};
+
+/**
  * Static data configuration
- * For data that rarely changes (categories, settings, etc.)
+ * For data that rarely changes (categories, enums, etc.)
  */
 export const STATIC_QUERY_CONFIG = {
   staleTime: 60 * 60 * 1000, // 1 hour
@@ -140,6 +171,17 @@ export const LIST_QUERY_CONFIG = {
   staleTime: 60 * 1000, // 1 minute
   gcTime: 5 * 60 * 1000, // 5 minutes
   keepPreviousData: true, // Keep old data while fetching new
+};
+
+/**
+ * Admin panel query configuration
+ * Balanced between freshness and performance
+ */
+export const ADMIN_PANEL_QUERY_CONFIG = {
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  gcTime: 20 * 60 * 1000, // 20 minutes
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
 };
 
 /**

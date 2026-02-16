@@ -109,7 +109,6 @@ export function useClientSuggestions() {
 
   // Generate smart suggestions
   const suggestions = useMemo((): ClientSuggestion[] => {
-    const now = Date.now();
     const suggestions: ClientSuggestion[] = [];
 
     clientsWithHistory.forEach((client: any) => {
@@ -208,10 +207,9 @@ export function useToggleClientFavorite() {
   const toggleFavorite = async (clientId: string, isFavorite: boolean) => {
     if (!tenant?.id) return false;
     try {
-      // @ts-ignore - is_favorite field mismatch with Supabase types
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('wholesale_clients')
-        .update({ is_favorite: isFavorite } as any)
+        .update({ is_favorite: isFavorite })
         .eq('id', clientId)
         .eq('tenant_id', tenant.id);
 

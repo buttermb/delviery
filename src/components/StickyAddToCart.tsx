@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -35,7 +34,7 @@ const StickyAddToCart = ({
       "safe-area-bottom",
       className
     )}
-    style={{ zIndex: 40 }}
+    style={{ zIndex: 100 }}
     >
       <div className="container px-4 py-3">
         <div className="flex items-center justify-between gap-3">

@@ -10,7 +10,6 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   Flame,
   LayoutDashboard,
-  Package,
   DollarSign,
   MoreHorizontal,
   Store,

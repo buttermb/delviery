@@ -31,9 +31,7 @@ import {
   Search,
   Plus,
   FileSearch,
-  User,
   Bell,
-  Zap,
 } from 'lucide-react';
 
 interface CommandPaletteProps {

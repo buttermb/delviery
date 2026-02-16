@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
  * Accessible via debug mode or admin panel
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export function ButtonHealthPanel() {
   const [healthReport, setHealthReport] = useState(buttonMonitor.getHealthReport());
   const [recentErrors, setRecentErrors] = useState(buttonMonitor.getRecentErrors(20));
   const [brokenButtons, setBrokenButtons] = useState(buttonMonitor.getBrokenButtons(0.3));
-  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [_autoRefresh, _setAutoRefresh] = useState(false);
 
   const refresh = () => {
     setStats(buttonMonitor.getStats());
@@ -303,9 +303,6 @@ export function ButtonHealthPanel() {
                 {stats
                   .sort((a, b) => b.totalClicks - a.totalClicks)
                   .map((stat) => {
-                    const errorRate = stat.totalClicks > 0
-                      ? stat.errorCount / stat.totalClicks
-                      : 0;
                     return (
                       <div
                         key={`${stat.component}-${stat.action}`}

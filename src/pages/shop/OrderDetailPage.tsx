@@ -67,7 +67,7 @@ const STATUS_COLORS: Record<string, string> = {
   out_for_delivery: 'bg-orange-100 text-orange-800',
   delivered: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800',
-  refunded: 'bg-gray-100 text-gray-800',
+  refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
 };
 
 export function OrderDetailPage() {
@@ -99,8 +99,7 @@ export function OrderDetailPage() {
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!store?.id || !orderId || !customerId) return null;
 
-      // @ts-expect-error - marketplace_orders view types
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .from('marketplace_orders')
         .select('*')
         .eq('id', orderId)
@@ -130,7 +129,7 @@ export function OrderDetailPage() {
 
     setIsCancelling(true);
     try {
-      const { error: cancelError } = await supabase
+      const { error: cancelError } = await (supabase as any)
         .from('marketplace_orders')
         .update({
           status: 'cancelled',

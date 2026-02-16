@@ -7,7 +7,6 @@ import { QuickMessageButton } from '@/components/admin/QuickMessageButton';
 import { OrderRowContextMenu, useOrderContextActions } from '@/components/admin/OrderRowContextMenu';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate, useParams } from 'react-router-dom';
 import { logger } from '@/lib/logger';
 
 interface Order {
@@ -30,8 +29,6 @@ interface MenuOrdersTabProps {
 }
 
 export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTabProps) => {
-  const navigate = useNavigate();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const updates: Record<string, unknown> = {

@@ -1,5 +1,3 @@
-
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -7,17 +5,13 @@ import { useCredits } from "@/contexts/CreditContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
 import {
     ShoppingBag,
     DollarSign,
     Users,
-    TrendingUp,
     ExternalLink,
     Settings,
-    Store,
-    Copy,
     Package,
     Tag,
     Coins,
@@ -41,7 +35,6 @@ export default function MarketplaceDashboard() {
     const { tenant } = useTenantAdminAuth();
     const { credits } = useCredits();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState("overview");
 
     // Fetch store profile
     const { data: profile } = useQuery({
@@ -64,7 +57,7 @@ export default function MarketplaceDashboard() {
     });
 
     // Fetch analytics
-    const { data: analytics, isLoading } = useQuery({
+    const { data: analytics } = useQuery({
         queryKey: ['marketplace-analytics', profile?.id],
         queryFn: async () => {
             if (!profile?.id) return null;
@@ -86,10 +79,6 @@ export default function MarketplaceDashboard() {
         navigator.clipboard.writeText(url);
         toast.success("Store URL copied to clipboard");
     };
-
-    // Calculate growth (mock for now as RPC returns snapshot)
-    const revenueGrowth = 0;
-    const ordersGrowth = 0;
 
     return (
         <div className="space-y-6 p-6">

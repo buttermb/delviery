@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { Component, ReactNode } from 'react';
+import { Component } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';

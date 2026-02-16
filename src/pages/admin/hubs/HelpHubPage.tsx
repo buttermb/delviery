@@ -23,7 +23,7 @@ import {
     Lightbulb,
     ExternalLink,
 } from 'lucide-react';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,8 +34,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
-const TabSkeleton = () => (
+const _TabSkeleton = () => (
     <div className="p-6 space-y-4">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-64 w-full" />
@@ -116,6 +117,7 @@ const faqs = [
 ];
 
 export default function HelpHubPage() {
+    usePageTitle('Help Center');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'getting-started';
     const { toast } = useToast();
@@ -125,7 +127,7 @@ export default function HelpHubPage() {
     const [ticketMessage, setTicketMessage] = useState('');
 
     const handleTabChange = useCallback((tab: string) => {
-        setSearchParams({ tab });
+        setSearchParams({ tab }, { replace: true });
     }, [setSearchParams]);
 
     const completedSteps = onboardingSteps.filter(s => s.completed).length;
@@ -186,7 +188,7 @@ export default function HelpHubPage() {
         <div className="space-y-0">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Header */}
-                <div className="border-b bg-card px-4 py-4">
+                <div className="border-b bg-card px-6 py-4">
                     <HubBreadcrumbs
                         hubName="help-hub"
                         hubHref="help-hub"
@@ -206,15 +208,15 @@ export default function HelpHubPage() {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
                                 const showSeparator = prevTab && prevTab.group !== tab.group;
                                 return (
-                                    <>
+                                    <Fragment key={tab.id}>
                                         {showSeparator && (
-                                            <div key={`sep-${index}`} className="w-px h-6 bg-border mx-1" />
+                                            <div className="w-px h-6 bg-border mx-1" />
                                         )}
-                                        <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
                                             <tab.icon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
                                         </TabsTrigger>
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </TabsList>

@@ -9,12 +9,16 @@
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from './KPICard';
 
-export function RevenueWidget() {
-  const { data: stats, isLoading } = useDashboardStats();
+interface RevenueWidgetProps {
+  period?: DashboardPeriod;
+}
+
+export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
+  const { data: stats, isLoading } = useDashboardStats(period);
 
   return (
     <div className="space-y-3">

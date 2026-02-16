@@ -5,7 +5,6 @@
 
 import { AlertTriangle, ExternalLink, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ImpersonationBannerProps {

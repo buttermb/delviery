@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Check, AlertCircle, Clock, User, Building2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-import { getTokenExpiration, verifyJWT } from '@/lib/auth/jwt';
+import { getTokenExpiration } from '@/lib/auth/jwt';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface DecodedToken {
@@ -54,7 +54,7 @@ export function JWTDecoder() {
       }
       
       setCurrentTokens(tokens);
-    } catch (error) {
+    } catch {
       // localStorage might not be available (SSR, private browsing, etc.)
       setCurrentTokens([]);
     }
@@ -96,7 +96,7 @@ export function JWTDecoder() {
         expiration,
         isExpired,
       };
-    } catch (error) {
+    } catch {
       return {
         header: {},
         payload: {},
@@ -114,7 +114,7 @@ export function JWTDecoder() {
       setCopied(label);
       toast.success(`${label} copied to clipboard`);
       setTimeout(() => setCopied(null), 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy to clipboard');
     }
   };

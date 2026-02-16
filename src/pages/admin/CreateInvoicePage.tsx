@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -176,7 +175,7 @@ export default function CreateInvoicePage() {
                                     name="client_id"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Client</FormLabel>
+                                            <FormLabel required>Client</FormLabel>
                                             <FormControl>
                                                 <ClientSelector
                                                     value={field.value}
@@ -195,7 +194,7 @@ export default function CreateInvoicePage() {
                                         name="issue_date"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col">
-                                                <FormLabel>Issue Date</FormLabel>
+                                                <FormLabel required>Issue Date</FormLabel>
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <FormControl>
@@ -237,7 +236,7 @@ export default function CreateInvoicePage() {
                                         name="due_date"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col">
-                                                <FormLabel>Due Date</FormLabel>
+                                                <FormLabel required>Due Date</FormLabel>
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <FormControl>
@@ -277,7 +276,7 @@ export default function CreateInvoicePage() {
                                     name="status"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Status</FormLabel>
+                                            <FormLabel required>Status</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}

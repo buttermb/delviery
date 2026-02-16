@@ -7,7 +7,7 @@ import {
   SettingsRow,
   SaveStatusIndicator,
 } from '@/components/settings/SettingsSection';
-import { useAutoSave, SaveStatus } from '@/hooks/useAutoSave';
+import { useAutoSave } from '@/hooks/useAutoSave';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

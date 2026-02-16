@@ -4,6 +4,7 @@ import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
 import { invalidateOnEvent } from "@/lib/invalidation";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Fetch active wholesale clients (excludes soft-deleted)
@@ -49,7 +50,7 @@ export const useWholesaleOrders = () => {
       const { data, error } = await (supabase as any)
         .from("wholesale_orders")
         .select(`
-          id, tenant_id, client_id, runner_id, order_number, status, total_amount, created_at, updated_at,
+          id, tenant_id, client_id, runner_id, order_number, status, total_amount, created_at,
           client:wholesale_clients(business_name, contact_name),
           runner:wholesale_runners(full_name, phone)
         `)
@@ -87,13 +88,13 @@ export const useCreateWholesaleOrder = () => {
       return data;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-orders"] });
-      const previousOrders = queryClient.getQueryData(["wholesale-orders"]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      const previousOrders = queryClient.getQueryData(queryKeys.wholesaleOrders.all);
       return { previousOrders };
     },
     onError: (error, _variables, context) => {
       if (context?.previousOrders) {
-        queryClient.setQueryData(["wholesale-orders"], context.previousOrders);
+        queryClient.setQueryData(queryKeys.wholesaleOrders.all, context.previousOrders);
       }
       const message = error instanceof Error ? error.message : "Failed to create order";
       logger.error('Failed to create wholesale order', error, { component: 'useCreateWholesaleOrder' });
@@ -107,8 +108,8 @@ export const useCreateWholesaleOrder = () => {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
     },
   });
 };
@@ -134,18 +135,18 @@ export const useProcessPayment = () => {
       return data;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-clients"] });
-      await queryClient.cancelQueries({ queryKey: ["wholesale-payments"] });
-      const previousClients = queryClient.getQueryData(["wholesale-clients"]);
-      const previousPayments = queryClient.getQueryData(["wholesale-payments"]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.wholesaleClients.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.wholesalePayments.all });
+      const previousClients = queryClient.getQueryData(queryKeys.wholesaleClients.all);
+      const previousPayments = queryClient.getQueryData(queryKeys.wholesalePayments.all);
       return { previousClients, previousPayments };
     },
     onError: (error, _variables, context) => {
       if (context?.previousClients) {
-        queryClient.setQueryData(["wholesale-clients"], context.previousClients);
+        queryClient.setQueryData(queryKeys.wholesaleClients.all, context.previousClients);
       }
       if (context?.previousPayments) {
-        queryClient.setQueryData(["wholesale-payments"], context.previousPayments);
+        queryClient.setQueryData(queryKeys.wholesalePayments.all, context.previousPayments);
       }
       const message = error instanceof Error ? error.message : "Failed to process payment";
       logger.error('Failed to process payment', error, { component: 'useProcessPayment' });
@@ -161,8 +162,8 @@ export const useProcessPayment = () => {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-clients"] });
-      queryClient.invalidateQueries({ queryKey: ["wholesale-payments"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesalePayments.all });
     },
   });
 };
@@ -188,18 +189,18 @@ export const useAssignDelivery = () => {
       return result;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-orders"] });
-      await queryClient.cancelQueries({ queryKey: ["wholesale-deliveries"] });
-      const previousOrders = queryClient.getQueryData(["wholesale-orders"]);
-      const previousDeliveries = queryClient.getQueryData(["wholesale-deliveries"]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      const previousOrders = queryClient.getQueryData(queryKeys.wholesaleOrders.all);
+      const previousDeliveries = queryClient.getQueryData(queryKeys.wholesaleDeliveries.all);
       return { previousOrders, previousDeliveries };
     },
     onError: (error, _variables, context) => {
       if (context?.previousOrders) {
-        queryClient.setQueryData(["wholesale-orders"], context.previousOrders);
+        queryClient.setQueryData(queryKeys.wholesaleOrders.all, context.previousOrders);
       }
       if (context?.previousDeliveries) {
-        queryClient.setQueryData(["wholesale-deliveries"], context.previousDeliveries);
+        queryClient.setQueryData(queryKeys.wholesaleDeliveries.all, context.previousDeliveries);
       }
       const message = error instanceof Error ? error.message : "Failed to assign delivery";
       logger.error('Failed to assign delivery', error, { component: 'useAssignDelivery' });
@@ -215,9 +216,9 @@ export const useAssignDelivery = () => {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
-      queryClient.invalidateQueries({ queryKey: ["runners"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runners.all });
     },
   });
 };
@@ -243,18 +244,18 @@ export const useUpdateDeliveryStatus = () => {
       return result;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["wholesale-deliveries"] });
-      await queryClient.cancelQueries({ queryKey: ["active-deliveries"] });
-      const previousDeliveries = queryClient.getQueryData(["wholesale-deliveries"]);
-      const previousActiveDeliveries = queryClient.getQueryData(["active-deliveries"]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.deliveries.all });
+      const previousDeliveries = queryClient.getQueryData(queryKeys.wholesaleDeliveries.all);
+      const previousActiveDeliveries = queryClient.getQueryData(queryKeys.deliveries.all);
       return { previousDeliveries, previousActiveDeliveries };
     },
     onError: (error, _variables, context) => {
       if (context?.previousDeliveries) {
-        queryClient.setQueryData(["wholesale-deliveries"], context.previousDeliveries);
+        queryClient.setQueryData(queryKeys.wholesaleDeliveries.all, context.previousDeliveries);
       }
       if (context?.previousActiveDeliveries) {
-        queryClient.setQueryData(["active-deliveries"], context.previousActiveDeliveries);
+        queryClient.setQueryData(queryKeys.deliveries.all, context.previousActiveDeliveries);
       }
       const message = error instanceof Error ? error.message : "Failed to update status";
       logger.error('Failed to update delivery status', error, { component: 'useUpdateDeliveryStatus' });
@@ -268,8 +269,8 @@ export const useUpdateDeliveryStatus = () => {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["wholesale-deliveries"] });
-      queryClient.invalidateQueries({ queryKey: ["active-deliveries"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
     },
   });
 };
@@ -421,8 +422,7 @@ export const useWholesalePayments = () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
       // Use JOIN to fetch client data in a single query (eliminates N+1 pattern)
-      // @ts-expect-error - Supabase type instantiation depth issue
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("wholesale_payments")
         .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at, client:wholesale_clients(business_name)")
         .eq("tenant_id", tenant.id)
@@ -449,7 +449,7 @@ export const useWholesaleDeliveries = () => {
       const { data, error } = await (supabase as any)
         .from("wholesale_deliveries")
         .select(`
-          id, tenant_id, order_id, runner_id, status, current_location, notes, created_at, updated_at,
+          id, tenant_id, order_id, runner_id, status, current_location, notes, created_at,
           order:wholesale_orders(order_number, total_amount, delivery_address),
           runner:wholesale_runners(full_name, phone, vehicle_type)
         `)

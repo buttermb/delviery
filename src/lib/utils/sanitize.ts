@@ -3,19 +3,20 @@
  * Strips potentially dangerous HTML tags and attributes to prevent XSS
  */
 
-const ALLOWED_TAGS = new Set([
+// Configuration constants for future use / documentation
+const _ALLOWED_TAGS = new Set([
   'p', 'br', 'b', 'i', 'em', 'strong', 'u', 'a', 'ul', 'ol', 'li',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'blockquote',
   'pre', 'code', 'hr', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
   'sup', 'sub', 'small', 'del', 'ins', 'mark',
 ]);
 
-const ALLOWED_ATTRS = new Set([
+const _ALLOWED_ATTRS = new Set([
   'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id',
   'width', 'height', 'style',
 ]);
 
-const DANGEROUS_PATTERNS = [
+const _DANGEROUS_PATTERNS = [
   /javascript\s*:/gi,
   /on\w+\s*=/gi,
   /data\s*:/gi,

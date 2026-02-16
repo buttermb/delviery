@@ -9,7 +9,6 @@ import {
     HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { CalendarDays, CreditCard, Activity, Ticket } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

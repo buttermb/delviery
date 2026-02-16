@@ -70,7 +70,7 @@ export function PostDetailPage() {
         depth: 0,
       });
       setCommentContent('');
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };
@@ -81,7 +81,7 @@ export function PostDetailPage() {
     try {
       await deletePostMutation.mutateAsync(postId);
       navigate('/community');
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

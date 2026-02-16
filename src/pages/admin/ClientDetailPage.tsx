@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClient } from '@/hooks/crm/useClients';
 import { useClientInvoices } from '@/hooks/crm/useInvoices';
@@ -19,7 +19,6 @@ import {
     ArrowLeft,
     Mail,
     Phone,
-    ExternalLink,
     Copy,
     FileText,
     Receipt,
@@ -29,17 +28,20 @@ import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
-    const navigate = useNavigate();
-    const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
+    const { navigateToAdmin } = useTenantNavigation();
     const { data: client, isLoading } = useClient(clientId);
     const { data: invoices } = useClientInvoices(clientId);
     const { data: preOrders } = useClientPreOrders(clientId);
 
     const relatedInvoices = useRelatedClientInvoices(clientId);
     const relatedPreOrders = useRelatedClientPreOrders(clientId);
+
+    // Set breadcrumb label to show client name
+    useBreadcrumbLabel(client?.name ?? null);
 
     if (isLoading) {
         return (

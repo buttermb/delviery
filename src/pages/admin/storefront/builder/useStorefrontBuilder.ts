@@ -17,7 +17,6 @@ import {
     type SectionConfig,
     type ThemeConfig,
     type TemplateKey,
-    SECTION_TYPES,
     TEMPLATES,
     sectionDefaults,
     DEFAULT_THEME,

@@ -13,7 +13,7 @@ import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useBulkGenerateImages } from '@/hooks/useProductImages';
 import {
   Loader2, ChevronRight, ChevronLeft, Eye, Shield, Bell, Palette,
-  CheckCircle2, Sparkles, Search, DollarSign, Clock, Users, MapPin,
+  CheckCircle2, Sparkles, Search, DollarSign, Clock, Users,
   Mail, Phone, Image, X
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';

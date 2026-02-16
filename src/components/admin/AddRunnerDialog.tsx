@@ -4,7 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -72,10 +72,17 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
     },
   });
 
+  // Reset form when dialog closes without submit
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
   const onSubmit = async (data: RunnerFormData) => {
     setIsSubmitting(true);
     try {
-      const { data: runner, error } = await supabase
+      const { error } = await supabase
         .from('wholesale_runners')
         .insert({
           full_name: data.full_name,
@@ -142,7 +149,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name *</FormLabel>
+                  <FormLabel required>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="John Doe" {...field} />
                   </FormControl>
@@ -155,7 +162,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number *</FormLabel>
+                  <FormLabel required>Phone Number</FormLabel>
                   <FormControl>
                     <Input placeholder="555-123-4567" {...field} />
                   </FormControl>
@@ -181,7 +188,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
               name="vehicle_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vehicle Type *</FormLabel>
+                  <FormLabel required>Vehicle Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

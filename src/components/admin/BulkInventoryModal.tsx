@@ -126,8 +126,7 @@ export function BulkInventoryModal({
           if (updateError) throw updateError;
 
           // Record inventory movement history entry
-          // @ts-ignore - tenant_id column added via migration after types were generated
-          const { error: historyError } = await (supabase as any)
+           const { error: historyError } = await (supabase as any)
             .from("wholesale_inventory_movements")
             .insert({
               tenant_id: tenant.id,
@@ -228,7 +227,7 @@ export function BulkInventoryModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Adjustment Type Selector */}
           <div className="space-y-2">
-            <Label htmlFor="adjustment-type">Adjustment Type *</Label>
+            <Label htmlFor="adjustment-type">Adjustment Type <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Select
               value={adjustmentType}
               onValueChange={(v) => setAdjustmentType(v as AdjustmentType)}
@@ -278,7 +277,7 @@ export function BulkInventoryModal({
 
           {/* Reason Selector */}
           <div className="space-y-2">
-            <Label htmlFor="bulk-reason">Reason *</Label>
+            <Label htmlFor="bulk-reason">Reason <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Select value={reason} onValueChange={setReason} required>
               <SelectTrigger id="bulk-reason">
                 <SelectValue placeholder="Select reason..." />

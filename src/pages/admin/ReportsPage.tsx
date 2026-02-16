@@ -13,7 +13,6 @@ import {
   TrendingUp, Loader2, ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, startOfMonth, endOfMonth, subMonths, subWeeks } from 'date-fns';
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
@@ -26,7 +25,6 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function ReportsPage() {
   const navigate = useNavigate();
-  const { account } = useAccount();
   const { tenant } = useTenantAdminAuth();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');
@@ -103,8 +101,9 @@ export default function ReportsPage() {
           client: o.client?.business_name || 'N/A',
           amount: Number(o.total_amount),
           status: o.status
-        })),
-        { filename: `business-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
+        })) as any,
+        [] as any,
+        `business-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
       );
     } else if (reportType === 'financial') {
       exportCSV(
@@ -113,8 +112,9 @@ export default function ReportsPage() {
           client: p.client?.business_name || 'N/A',
           amount: Number(p.amount),
           method: p.payment_method
-        })),
-        { filename: `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
+        })) as any,
+        [] as any,
+        `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
       );
     } else if (reportType === 'inventory') {
       exportCSV(
@@ -125,8 +125,9 @@ export default function ReportsPage() {
           category: i.category || 'N/A',
           warehouse: (i as any).warehouse_location || 'N/A',
           updated: (i as any).updated_at ? format(new Date((i as any).updated_at), 'yyyy-MM-dd') : 'N/A'
-        })),
-        { filename: `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
+        })) as any,
+        [] as any,
+        `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
       );
     }
   };

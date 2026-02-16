@@ -70,8 +70,7 @@ export default function BatchesPage() {
       if (!tenantId) return [];
 
       try {
-        // @ts-ignore - Types will regenerate after migration adds notes column
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('inventory_batches')
           .select(`
             *,
@@ -101,7 +100,7 @@ export default function BatchesPage() {
 
   // Fetch products for dropdown
   const { data: products } = useQuery({
-    queryKey: queryKeys.products.list({ tenantId }),
+    queryKey: queryKeys.products.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

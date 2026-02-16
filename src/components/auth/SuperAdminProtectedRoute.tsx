@@ -1,9 +1,8 @@
 import { logger } from '@/lib/logger';
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { Loader2 } from "lucide-react";
-import { apiFetch } from "@/lib/utils/apiClient";
 
 // Prevent redirect loops - don't redirect more than once per 3 seconds
 const REDIRECT_THROTTLE_MS = 3000;
@@ -15,7 +14,7 @@ interface SuperAdminProtectedRouteProps {
 }
 
 export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteProps) {
-  const { superAdmin, token, loading, refreshToken } = useSuperAdminAuth();
+  const { superAdmin, token, loading, refreshToken: _refreshToken } = useSuperAdminAuth();
   const navigate = useNavigate();
   const lastRedirectTime = useRef<number>(0);
   const redirectCount = useRef<number>(0);

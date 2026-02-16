@@ -7,15 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Send, 
-  Users, 
-  MessageSquare, 
+import {
+  Send,
+  Users,
+  MessageSquare,
   Mail,
   Phone,
-  Filter,
   Loader2,
-  CheckCircle
 } from 'lucide-react';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { toast } from '@/hooks/use-toast';

@@ -69,7 +69,7 @@ export function calculateCashCountTotal(count: CashCount): number {
  * Provides queries for drawer state and mutations for drawer events
  */
 export function useCashDrawer(shiftId: string | undefined) {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -143,8 +143,8 @@ export function useCashDrawer(shiftId: string | undefined) {
           event_type: eventType,
           amount,
           reason: reason || null,
-          performed_by: user?.id || null,
-          performed_by_name: user?.email?.split('@')[0] || 'Unknown',
+          performed_by: admin?.id || null,
+          performed_by_name: admin?.email?.split('@')[0] || 'Unknown',
         })
         .select()
         .maybeSingle();

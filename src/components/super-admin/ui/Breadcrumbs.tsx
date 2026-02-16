@@ -5,7 +5,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface BreadcrumbItem {
   label: string;
@@ -52,7 +51,7 @@ export function Breadcrumbs() {
       >
         <Home className="h-4 w-4" />
       </Link>
-      {breadcrumbs.slice(1).map((crumb, index) => (
+      {breadcrumbs.slice(1).map((crumb) => (
         <div key={crumb.href || crumb.label} className="flex items-center gap-2">
           <ChevronRight className="h-4 w-4" />
           {crumb.href ? (

@@ -126,12 +126,12 @@ export default function POReceivingPage() {
     queryFn: async () => {
       if (!tenant?.id) return {};
 
-      const { data: vendorData } = await supabase
+      const { data: vendorData } = await (supabase as any)
         .from('vendors')
         .select('id, name')
         .eq('tenant_id', tenant.id);
 
-      const { data: supplierData } = await supabase
+      const { data: supplierData } = await (supabase as any)
         .from('wholesale_suppliers')
         .select('id, supplier_name')
         .eq('tenant_id', tenant.id);
@@ -226,7 +226,7 @@ export default function POReceivingPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-3 sm:p-4">
+      <Card className="p-4 sm:p-6">
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           <div className="flex-1">
             <div className="relative">

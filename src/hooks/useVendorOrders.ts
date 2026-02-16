@@ -11,7 +11,7 @@ export interface VendorWithStats {
     contact_email: string | null;
     contact_phone: string | null;
     address: string | null;
-    website: string | null;
+    website?: string | null;
     license_number: string | null;
     notes: string | null;
     status: string | null;
@@ -38,7 +38,7 @@ export function useVendorsWithStats() {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendors.list({ tenantId: tenant?.id, withStats: true }),
+        queryKey: ['vendors', 'list', tenant?.id, { withStats: true }],
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -60,19 +60,7 @@ export function useVendorsWithStats() {
 
             // Get purchase order stats per vendor
             const vendorIds = vendors.map(v => v.id);
-            const { data: purchaseOrders, error: poError } = await (supabase as unknown as {
-                from: (table: string) => {
-                    select: (columns: string) => {
-                        eq: (column: string, value: string) => {
-                            in: (column: string, values: string[]) => Promise<{ data: Array<{
-                                vendor_id: string;
-                                total: number | null;
-                                created_at: string | null;
-                            }> | null; error: unknown }>;
-                        };
-                    };
-                };
-            })
+            const { data: purchaseOrders, error: poError } = await (supabase as any)
                 .from('purchase_orders')
                 .select('vendor_id, total, created_at')
                 .eq('tenant_id', tenant.id)
@@ -106,7 +94,7 @@ export function useVendorsWithStats() {
                     total_orders: stats.totalOrders,
                     total_spent: stats.totalSpent,
                     last_order_date: stats.lastOrderDate,
-                } as VendorWithStats;
+                } as unknown as VendorWithStats;
             });
         },
         enabled: !!tenant?.id,
@@ -117,24 +105,11 @@ export function useVendorOrders(vendorId: string | null) {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendors.orders(vendorId || ''),
+        queryKey: queryKeys.vendors.orders(tenant?.id || '', vendorId || ''),
         queryFn: async () => {
             if (!tenant?.id || !vendorId) return [];
 
-            const { data, error } = await (supabase as unknown as {
-                from: (table: string) => {
-                    select: (columns: string) => {
-                        eq: (column: string, value: string) => {
-                            eq: (column: string, value: string) => {
-                                order: (column: string, options: { ascending: boolean }) => Promise<{
-                                    data: VendorOrder[] | null;
-                                    error: unknown
-                                }>;
-                            };
-                        };
-                    };
-                };
-            })
+            const { data, error } = await (supabase as any)
                 .from('purchase_orders')
                 .select('id, po_number, status, total, expected_delivery_date, created_at, notes')
                 .eq('tenant_id', tenant.id)

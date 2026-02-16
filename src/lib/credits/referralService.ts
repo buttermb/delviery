@@ -79,7 +79,7 @@ export const REFERRAL_REWARDS = {
 export async function getOrCreateReferralCode(tenantId: string): Promise<ReferralCode | null> {
   try {
     // Check for existing code
-    const { data: existing, error: fetchError } = await supabase
+    const { data: existing } = await supabase
       .from('referral_codes')
       .select('*')
       .eq('tenant_id', tenantId)

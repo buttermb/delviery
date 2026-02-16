@@ -14,9 +14,6 @@ import {
   Building2,
   Phone,
   Mail,
-  MapPin,
-  DollarSign,
-  TrendingUp,
   Edit,
   Trash2,
   Loader2,
@@ -86,9 +83,9 @@ export default function SupplierManagementPage() {
     mutationFn: async ({ id, supplierName }: { id: string; supplierName: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
-      const deleteQuery = supabase
+      const deleteQuery = (supabase as any)
         .from("wholesale_suppliers")
-        .delete() as unknown as { eq: (col: string, val: string) => { eq: (col: string, val: string) => Promise<{ error: Error | null }> } };
+        .delete();
 
       const { error } = await deleteQuery
         .eq("id", id)
@@ -188,7 +185,7 @@ export default function SupplierManagementPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-3 sm:p-4">
+      <Card className="p-4 sm:p-6">
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           {/* Search */}
           <div className="flex-1">

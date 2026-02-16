@@ -48,6 +48,15 @@ export default function CreatePreOrderPage() {
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
+    // useForm must be called before any early returns to satisfy React hooks rules
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            expected_date: addDays(new Date(), 7),
+            notes: "",
+        },
+    });
+
     const tenantSlug = tenant?.slug;
     const isContextReady = !tenantLoading && !!tenant?.id && !!tenantSlug;
     const contextError = !tenantLoading && (!tenant?.id || !tenantSlug)
@@ -77,14 +86,6 @@ export default function CreatePreOrderPage() {
             </div>
         );
     }
-
-    const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            expected_date: addDays(new Date(), 7),
-            notes: "",
-        },
-    });
 
     // Calculate total
     const total = lineItems.reduce((sum, item) => sum + item.line_total, 0);
@@ -117,7 +118,7 @@ export default function CreatePreOrderPage() {
             toast.success("Pre-order created successfully");
             // Use validated tenantSlug (guaranteed to exist at this point)
             navigate(`/${tenantSlug}/admin/crm/pre-orders/${preOrder.id}`);
-        } catch (error) {
+        } catch {
             // Error handled by hook
         }
     };
@@ -150,7 +151,7 @@ export default function CreatePreOrderPage() {
                                     name="client_id"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Client</FormLabel>
+                                            <FormLabel required>Client</FormLabel>
                                             <FormControl>
                                                 <ClientSelector
                                                     value={field.value}

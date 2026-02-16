@@ -36,19 +36,11 @@ export interface MenuScheduleHistoryEntry {
  */
 export const useMenuSchedule = (menuId?: string) => {
   return useQuery({
-    queryKey: [...queryKeys.menus.detail(menuId || ''), 'schedule'],
+    queryKey: ['menu-schedule', menuId],
     queryFn: async () => {
       if (!menuId) return null;
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              maybeSingle: () => Promise<{ data: Record<string, unknown> | null; error: unknown }>;
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .select(`
           id,
@@ -91,21 +83,11 @@ export const useMenuSchedule = (menuId?: string) => {
  */
 export const useMenuScheduleHistory = (menuId?: string) => {
   return useQuery({
-    queryKey: [...queryKeys.menus.detail(menuId || ''), 'schedule-history'],
+    queryKey: ['menu-schedule-history', menuId],
     queryFn: async () => {
       if (!menuId) return [];
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              order: (column: string, options: { ascending: boolean }) => {
-                limit: (n: number) => Promise<{ data: Record<string, unknown>[] | null; error: unknown }>;
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('menu_schedule_history')
         .select('*')
         .eq('menu_id', menuId)
@@ -158,17 +140,7 @@ export const useUpdateMenuSchedule = () => {
       const { menuId, tenantId, activationTime, deactivationTime, isScheduled, timezone, recurrencePattern, recurrenceConfig } = scheduleData;
 
       // Update menu schedule
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          update: (values: Record<string, unknown>) => {
-            eq: (column: string, value: string) => {
-              select: () => {
-                single: () => Promise<{ data: Record<string, unknown> | null; error: unknown }>;
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .update({
           scheduled_activation_time: activationTime,
@@ -187,11 +159,7 @@ export const useUpdateMenuSchedule = () => {
       }
 
       // Log the schedule update
-      await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (values: Record<string, unknown>) => Promise<{ error: unknown }>;
-        };
-      })
+      await (supabase as any)
         .from('menu_schedule_history')
         .insert({
           menu_id: menuId,
@@ -207,7 +175,7 @@ export const useUpdateMenuSchedule = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.menus.detail(variables.menuId) });
+      queryClient.invalidateQueries({ queryKey: ['menu-schedule', variables.menuId] });
 
       if (variables.isScheduled) {
         showSuccessToast(
@@ -236,17 +204,7 @@ export const useCancelMenuSchedule = () => {
 
   return useMutation({
     mutationFn: async ({ menuId, tenantId }: { menuId: string; tenantId: string }) => {
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          update: (values: Record<string, unknown>) => {
-            eq: (column: string, value: string) => {
-              select: () => {
-                single: () => Promise<{ data: Record<string, unknown> | null; error: unknown }>;
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .update({
           is_scheduled: false,
@@ -264,11 +222,7 @@ export const useCancelMenuSchedule = () => {
       }
 
       // Log the cancellation
-      await (supabase as unknown as {
-        from: (table: string) => {
-          insert: (values: Record<string, unknown>) => Promise<{ error: unknown }>;
-        };
-      })
+      await (supabase as any)
         .from('menu_schedule_history')
         .insert({
           menu_id: menuId,
@@ -281,7 +235,7 @@ export const useCancelMenuSchedule = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.menus.detail(variables.menuId) });
+      queryClient.invalidateQueries({ queryKey: ['menu-schedule', variables.menuId] });
       showSuccessToast('Schedule Cancelled', 'Menu scheduling has been disabled');
     },
     onError: (error: unknown) => {
@@ -301,17 +255,7 @@ export const useScheduledMenus = (tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as unknown as {
-        from: (table: string) => {
-          select: (columns: string) => {
-            eq: (column: string, value: string) => {
-              eq: (column: string, value: boolean) => {
-                order: (column: string, options: { ascending: boolean }) => Promise<{ data: Record<string, unknown>[] | null; error: unknown }>;
-              };
-            };
-          };
-        };
-      })
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .select(`
           id,

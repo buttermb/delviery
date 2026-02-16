@@ -14,14 +14,20 @@ export const availabilityService = {
      */
     async checkProductAvailability(
         productId: string,
-        requestedQty: number
+        requestedQty: number,
+        tenantId?: string
     ): Promise<InventoryCheckResult> {
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('products')
                 .select('stock_quantity')
-                .eq('id', productId)
-                .single();
+                .eq('id', productId);
+
+            if (tenantId) {
+                query = query.eq('tenant_id', tenantId);
+            }
+
+            const { data, error } = await query.maybeSingle();
 
             if (error) throw error;
 
@@ -45,15 +51,12 @@ export const availabilityService = {
      */
     async reserveInventory(
         orderId: string,
-        items: Array<{ product_id: string; quantity: number }>
+        items: Array<{ product_id: string; quantity: number }>,
+        tenantId?: string
     ): Promise<void> {
         try {
-            // We'll use a stored procedure or a series of updates
-            // For now, we'll iterate and update (optimistic locking would be better in a real high-concurrency scenario)
-
             for (const item of items) {
-                // @ts-ignore - RPC function not in types
-                const { error } = await supabase.rpc('decrement_stock', {
+                const { error } = await (supabase as any).rpc('decrement_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity
                 });
@@ -61,14 +64,15 @@ export const availabilityService = {
                 if (error) throw error;
 
                 // Log the sync
-                // @ts-ignore - Table not in types
-                await supabase.from('inventory_sync_log').insert({
+                const insertData: Record<string, unknown> = {
                     product_id: item.product_id,
                     change_amount: -item.quantity,
                     change_source: 'disposable_order',
-                    // tenant_id will be handled by RLS or trigger if possible, but better to pass it if we have context
-                    // For now assuming the RPC or trigger handles it or we add it if we have context
-                });
+                };
+                if (tenantId) {
+                    insertData.tenant_id = tenantId;
+                }
+                await (supabase as any).from('inventory_sync_log').insert(insertData);
             }
         } catch (error) {
             logger.error('Error reserving inventory', error);
@@ -81,24 +85,27 @@ export const availabilityService = {
      */
     async releaseInventory(
         orderId: string,
-        items: Array<{ product_id: string; quantity: number }>
+        items: Array<{ product_id: string; quantity: number }>,
+        tenantId?: string
     ): Promise<void> {
         try {
             for (const item of items) {
-                // @ts-ignore - RPC function not in types
-                const { error } = await supabase.rpc('increment_stock', {
+                const { error } = await (supabase as any).rpc('increment_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity
                 });
 
                 if (error) throw error;
 
-                // @ts-ignore - Table not in types
-                await supabase.from('inventory_sync_log').insert({
+                const insertData: Record<string, unknown> = {
                     product_id: item.product_id,
                     change_amount: item.quantity,
-                    change_source: 'system_sync', // or 'cancellation'
-                });
+                    change_source: 'system_sync',
+                };
+                if (tenantId) {
+                    insertData.tenant_id = tenantId;
+                }
+                await (supabase as any).from('inventory_sync_log').insert(insertData);
             }
         } catch (error) {
             logger.error('Error releasing inventory', error);

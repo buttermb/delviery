@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
+import { OrderRelatedEntitiesPanel } from '@/components/admin/orders/OrderRelatedEntitiesPanel';
+import { OrderPaymentStatusSync } from '@/components/admin/orders/OrderPaymentStatusSync';
+import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDeliveryStatusSync';
+import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
+import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
+import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
+import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
+import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
+import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
+import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
+import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,7 +71,6 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Clock from "lucide-react/dist/esm/icons/clock";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import User from "lucide-react/dist/esm/icons/user";
 import Phone from "lucide-react/dist/esm/icons/phone";
@@ -69,13 +80,11 @@ import Receipt from "lucide-react/dist/esm/icons/receipt";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Edit from "lucide-react/dist/esm/icons/edit";
 import Ban from "lucide-react/dist/esm/icons/ban";
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Copy from "lucide-react/dist/esm/icons/copy";
-import ExternalLink from "lucide-react/dist/esm/icons/external-link";
-import MessageSquare from "lucide-react/dist/esm/icons/message-square";
 import Calendar from "lucide-react/dist/esm/icons/calendar";
-import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import FileText from "lucide-react/dist/esm/icons/file-text";
+import UserPlus from "lucide-react/dist/esm/icons/user-plus";
+import Printer from "lucide-react/dist/esm/icons/printer";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -110,6 +119,8 @@ interface OrderDetails {
   delivery_notes: string | null;
   delivery_fee: number;
   order_source: string;
+  source_menu_id: string | null;
+  source_session_id: string | null;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
@@ -153,11 +164,6 @@ interface OrderDetails {
   }>;
 }
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { useAsyncAction } from '@/hooks/useAsyncAction';
-
-
-
 export function OrderDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { tenant, tenantSlug } = useTenantAdminAuth();
@@ -169,19 +175,21 @@ export function OrderDetailsPage() {
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
 
-  // Refund State
-  const [showRefundDialog, setShowRefundDialog] = useState(false);
-  const [refundReason, setRefundReason] = useState('');
-  const [shouldRestock, setShouldRestock] = useState(true);
+  // Product quick view state
+  const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
+  const [quickViewProductName, setQuickViewProductName] = useState<string>('');
+
+  // Runner assignment dialog state
+  const [showAssignRunnerDialog, setShowAssignRunnerDialog] = useState(false);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
-    queryKey: queryKeys.orders.detail(orderId || ''),
+    queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || ''),
     queryFn: async (): Promise<OrderDetails | null> => {
       if (!tenant?.id || !orderId) return null;
 
       // First try unified_orders
-      const { data: unifiedOrder, error: unifiedError } = await supabase
+      const { data: unifiedOrder } = await supabase
         .from('unified_orders')
         .select(`
           *,
@@ -209,6 +217,8 @@ export function OrderDetailsPage() {
           delivery_notes: unifiedOrder.delivery_notes,
           delivery_fee: 0,
           order_source: unifiedOrder.source || 'admin',
+          source_menu_id: (unifiedOrder as Record<string, unknown>).source_menu_id as string | null,
+          source_session_id: (unifiedOrder as Record<string, unknown>).source_session_id as string | null,
           created_at: unifiedOrder.created_at,
           updated_at: unifiedOrder.updated_at,
           confirmed_at: (unifiedOrder as Record<string, unknown>).confirmed_at as string | null,
@@ -261,6 +271,8 @@ export function OrderDetailsPage() {
         ...data,
         delivery_method: (data as Record<string, unknown>).delivery_method as string | null ?? null,
         order_source: (data as Record<string, unknown>).order_source as string | null ?? 'admin',
+        source_menu_id: (data as Record<string, unknown>).source_menu_id as string | null ?? null,
+        source_session_id: (data as Record<string, unknown>).source_session_id as string | null ?? null,
         tax_amount: (data as Record<string, unknown>).tax_amount as number ?? 0,
         updated_at: (data as Record<string, unknown>).updated_at as string ?? data.created_at,
         order_items: data.order_items || [],
@@ -269,30 +281,29 @@ export function OrderDetailsPage() {
     enabled: !!tenant?.id && !!orderId,
   });
 
+  // Set breadcrumb label to show order number
+  useBreadcrumbLabel(order ? `Order #${order.order_number}` : null);
+
   // Update order status mutation
   const updateStatusMutation = useMutation({
-
-    mutationFn: async ({ newStatus, notes, paymentStatus }: { newStatus?: string; notes?: string; paymentStatus?: string }) => {
+    mutationFn: async ({ newStatus, notes }: { newStatus: string; notes?: string }) => {
       if (!tenant?.id || !orderId) throw new Error('Missing required data');
 
       const updateData: Record<string, unknown> = {
+        status: newStatus,
         updated_at: new Date().toISOString(),
       };
 
-      if (newStatus) {
-        updateData.status = newStatus;
-        // Add timestamp based on status
-        if (newStatus === 'confirmed') updateData.confirmed_at = new Date().toISOString();
-        else if (newStatus === 'in_transit' || newStatus === 'shipped') updateData.shipped_at = new Date().toISOString();
-        else if (newStatus === 'delivered' || newStatus === 'completed') updateData.delivered_at = new Date().toISOString();
-        else if (newStatus === 'cancelled') {
-          updateData.cancelled_at = new Date().toISOString();
-          updateData.cancellation_reason = notes;
-        }
-      }
-
-      if (paymentStatus) {
-        updateData.payment_status = paymentStatus;
+      // Add timestamp based on status
+      if (newStatus === 'confirmed') {
+        updateData.confirmed_at = new Date().toISOString();
+      } else if (newStatus === 'in_transit' || newStatus === 'shipped') {
+        updateData.shipped_at = new Date().toISOString();
+      } else if (newStatus === 'delivered' || newStatus === 'completed') {
+        updateData.delivered_at = new Date().toISOString();
+      } else if (newStatus === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+        updateData.cancellation_reason = notes;
       }
 
       // Try unified_orders first
@@ -314,86 +325,43 @@ export function OrderDetailsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(orderId || '') });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
-      toast.success('Order updated successfully');
+      toast.success('Order status updated');
       setShowStatusDialog(false);
       setShowCancelDialog(false);
-      setShowRefundDialog(false);
       setCancellationReason('');
-      setRefundReason('');
     },
     onError: (error) => {
-      logger.error('Failed to update order', error, { component: 'OrderDetailsPage' });
-      toast.error('Failed to update order');
+      logger.error('Failed to update order status', error, { component: 'OrderDetailsPage' });
+      toast.error('Failed to update order status');
     },
   });
 
-  // Restore Inventory Helper
-  const restoreInventory = async () => {
-    if (!order?.order_items) return;
-
-    for (const item of order.order_items) {
-      if (!item.product_id) continue;
-
-      const { data: product } = await supabase
-        .from('products')
-        .select('available_quantity')
-        .eq('id', item.product_id)
-        .single();
-
-      if (product) {
-        const current = product.available_quantity || 0;
-        await supabase
-          .from('products')
-          .update({ available_quantity: current + item.quantity })
-          .eq('id', item.product_id);
-      }
-    }
+  // Cancel order handler
+  const handleCancelOrder = () => {
+    updateStatusMutation.mutate({
+      newStatus: 'cancelled',
+      notes: cancellationReason,
+    });
   };
 
-  // Cancel Order Action
-  const cancelOrderAction = useAsyncAction(async () => {
-    if (shouldRestock) {
-      await restoreInventory();
-    }
-
-    await updateStatusMutation.mutateAsync({
-      newStatus: 'cancelled',
-      notes: cancellationReason
-    });
-  }, {
-    successMessage: 'Order cancelled successfully'
-  });
-
-  // Refund Action
-  const refundAction = useAsyncAction(async () => {
-    if (shouldRestock) {
-      await restoreInventory();
-    }
-
-    await updateStatusMutation.mutateAsync({
-      newStatus: 'refunded', // Update status to refunded
-      paymentStatus: 'refunded', // And payment status
-      notes: refundReason
-    });
-  }, {
-    successMessage: 'Refund processed successfully'
-  });
-
-  // Copy Tracking
-  const copyTrackingUrlAction = useAsyncAction(async () => {
-    if (!order?.tracking_token) return;
-    const trackingUrl = `${window.location.origin}/shop/${tenantSlug}/track/${order.tracking_token}`;
-    await navigator.clipboard.writeText(trackingUrl);
-  }, {
-    successMessage: 'Tracking link copied!'
-  });
-
-  // Update status handler (Manual)
+  // Update status handler
   const handleUpdateStatus = () => {
     if (!selectedStatus) return;
     updateStatusMutation.mutate({ newStatus: selectedStatus });
+  };
+
+  // Copy tracking URL
+  const handleCopyTrackingUrl = async () => {
+    if (!order?.tracking_token) return;
+    const trackingUrl = `${window.location.origin}/shop/${tenantSlug}/track/${order.tracking_token}`;
+    try {
+      await navigator.clipboard.writeText(trackingUrl);
+      toast.success('Tracking link copied!');
+    } catch {
+      toast.error('Failed to copy');
+    }
   };
 
   if (isLoading) {
@@ -453,10 +421,25 @@ export function OrderDetailsPage() {
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('orders')}>
       <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+        {/* Print-only business header — hidden on screen, shown on print */}
+        <div className="hidden print:block print-business-header border-b-2 border-black pb-4 mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold">{tenant?.business_name || 'FloraIQ'}</h1>
+              <p className="text-sm text-gray-600 mt-1">Order Confirmation</p>
+            </div>
+            <div className="text-right text-sm text-gray-600">
+              <p>Order #{order.order_number}</p>
+              <p>{format(new Date(order.created_at), 'PPP')}</p>
+              <p className="capitalize">Status: {order.status.replace('_', ' ')}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('orders')}>
+            <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('orders')} aria-label="Back to orders">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
@@ -474,117 +457,94 @@ export function OrderDetailsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 mr-1" />
+              Print
+            </Button>
+
             {order.tracking_token && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyTrackingUrlAction.execute()}
-                disabled={copyTrackingUrlAction.isLoading}
-              >
-                {copyTrackingUrlAction.isLoading ? (
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                ) : (
-                  <Copy className="w-4 h-4 mr-1" />
-                )}
+              <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl}>
+                <Copy className="w-4 h-4 mr-1" />
                 Share Tracking
               </Button>
             )}
 
-            {!isCancelled && order.status !== 'refunded' && (
-              <>
-                <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4 mr-1" />
+            {/* Duplicate Order Button */}
+            <DuplicateOrderButton
+              orderId={order.id}
+              orderNumber={order.order_number}
+              customerId={order.customer_id}
+              wholesaleClientId={order.wholesale_client_id}
+              deliveryAddress={order.delivery_address}
+              deliveryNotes={order.delivery_notes}
+              orderItems={(order.order_items || []).map(item => ({
+                id: item.id,
+                product_id: item.product_id,
+                product_name: item.product_name,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                total_price: item.total_price,
+              }))}
+            />
+
+            {/* Assign Runner Button - show when order is ready for delivery */}
+            {!isCancelled && !order.courier_id && ['confirmed', 'processing', 'ready', 'pending'].includes(order.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAssignRunnerDialog(true)}
+              >
+                <UserPlus className="w-4 h-4 mr-1" />
+                Assign Runner
+              </Button>
+            )}
+
+            {!isCancelled && (
+              <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Edit className="w-4 h-4 mr-1" />
+                    Update Status
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Update Order Status</DialogTitle>
+                    <DialogDescription>
+                      Change the status of order #{order.order_number}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Label>New Status</Label>
+                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATUS_STEPS.map((step) => (
+                          <SelectItem key={step.status} value={step.status}>
+                            {step.label}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUpdateStatus}
+                      disabled={!selectedStatus || updateStatusMutation.isPending}
+                    >
+                      {updateStatusMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
                       Update Status
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Update Order Status</DialogTitle>
-                      <DialogDescription>
-                        Change the status of order #{order.order_number}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <Label>New Status</Label>
-                      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_STEPS.map((step) => (
-                            <SelectItem key={step.status} value={step.status}>
-                              {step.label}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleUpdateStatus}
-                        disabled={!selectedStatus || updateStatusMutation.isPending}
-                      >
-                        {updateStatusMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
-                        Update Status
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={showRefundDialog} onOpenChange={setShowRefundDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-warning border-warning/50 hover:bg-warning/10">
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      Refund
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Process Refund</DialogTitle>
-                      <DialogDescription>
-                        Mark this order as refunded. This controls payment status only.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-2 space-y-4">
-                      <div>
-                        <Label>Refund Reason</Label>
-                        <Textarea
-                          value={refundReason}
-                          onChange={(e) => setRefundReason(e.target.value)}
-                          placeholder="Reason for refund..."
-                          className="mt-2"
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="restock"
-                          checked={shouldRestock}
-                          onCheckedChange={(c) => setShouldRestock(!!c)}
-                        />
-                        <Label htmlFor="restock">Restock items to inventory?</Label>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowRefundDialog(false)}>Cancel</Button>
-                      <Button
-                        onClick={() => refundAction.execute()}
-                        disabled={refundAction.isLoading}
-                        className="bg-warning text-warning-foreground hover:bg-warning/90"
-                      >
-                        {refundAction.isLoading && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
-                        Process Refund
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             )}
 
             {canCancel && (
@@ -611,26 +571,15 @@ export function OrderDetailsPage() {
                       rows={3}
                       className="mt-2"
                     />
-                    <div className="flex items-center space-x-2 mt-4">
-                      <Checkbox
-                        id="cancel-restock"
-                        checked={shouldRestock}
-                        onCheckedChange={(c) => setShouldRestock(!!c)}
-                      />
-                      <Label htmlFor="cancel-restock">Restock items to inventory?</Label>
-                    </div>
                   </div>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Keep Order</AlertDialogCancel>
-                    <Button
-                      variant="destructive"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        cancelOrderAction.execute();
-                      }}
-                      disabled={cancelOrderAction.isLoading}
+                    <AlertDialogAction
+                      onClick={handleCancelOrder}
+                      disabled={updateStatusMutation.isPending}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      {cancelOrderAction.isLoading ? (
+                      {updateStatusMutation.isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                           Cancelling...
@@ -638,7 +587,7 @@ export function OrderDetailsPage() {
                       ) : (
                         'Cancel Order'
                       )}
-                    </Button>
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -658,14 +607,10 @@ export function OrderDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {isCancelled || order.status === 'refunded' ? (
+                {isCancelled ? (
                   <div className="text-center py-6">
-                    {order.status === 'refunded' ? (
-                      <RefreshCw className="w-12 h-12 mx-auto mb-3 text-warning" />
-                    ) : (
-                      <XCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
-                    )}
-                    <p className={`text-lg font-semibold capitalize ${order.status === 'refunded' ? 'text-warning' : 'text-destructive'}`}>
+                    <XCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
+                    <p className="text-lg font-semibold text-destructive capitalize">
                       Order {order.status}
                     </p>
                     {order.cancellation_reason && (
@@ -702,8 +647,9 @@ export function OrderDetailsPage() {
 
                           {/* Icon */}
                           <div
-                            className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'ring-2 ring-offset-2 ring-primary' : ''
-                              } ${isComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                            className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              isCurrent ? 'ring-2 ring-offset-2 ring-primary' : ''
+                            } ${isComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                           >
                             <Icon className="w-4 h-4" />
                           </div>
@@ -753,7 +699,16 @@ export function OrderDetailsPage() {
                       </TableRow>
                     ) : (
                       (order.order_items || []).map((item) => (
-                        <TableRow key={item.id}>
+                        <TableRow
+                          key={item.id}
+                          className={item.product_id ? 'cursor-pointer hover:bg-muted/50 transition-colors' : ''}
+                          onClick={() => {
+                            if (item.product_id) {
+                              setQuickViewProductId(item.product_id);
+                              setQuickViewProductName(item.product_name);
+                            }
+                          }}
+                        >
                           <TableCell className="pl-6">
                             <div className="flex items-center gap-3">
                               {item.image_url ? (
@@ -771,6 +726,9 @@ export function OrderDetailsPage() {
                                 <p className="font-medium">{item.product_name}</p>
                                 {item.variant && (
                                   <p className="text-xs text-muted-foreground">{item.variant}</p>
+                                )}
+                                {item.product_id && (
+                                  <p className="text-xs text-primary print:hidden">Click to view details</p>
                                 )}
                               </div>
                             </div>
@@ -883,26 +841,78 @@ export function OrderDetailsPage() {
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Date Placed</p>
                   <p className="text-sm">{format(new Date(order.created_at), 'PPP p')}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Source</p>
-                  <Badge variant="outline" className="capitalize">
-                    {order.order_source || 'Manual'}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Payment Status</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <CreditCard className="w-4 h-4 text-muted-foreground" />
-                    <Badge
-                      variant={order.payment_status === 'paid' ? 'default' : 'secondary'}
-                      className={order.payment_status === 'paid' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}
-                    >
-                      {order.payment_status || 'pending'}
-                    </Badge>
-                  </div>
-                </div>
               </CardContent>
             </Card>
+
+            {/* Order Source with Traceability — hide on print */}
+            <div className="print:hidden">
+              <OrderSourceInfo
+                source={order.order_source}
+                sourceMenuId={order.source_menu_id}
+                sourceSessionId={order.source_session_id}
+              />
+            </div>
+
+            {/* Storefront Session Link - Customer Journey Details — hide on print */}
+            {order.source_session_id && (
+              <div className="print:hidden">
+                <StorefrontSessionLink
+                  sessionId={order.source_session_id}
+                  menuId={order.source_menu_id}
+                />
+              </div>
+            )}
+
+            {/* Order Analytics Insights — hide on print */}
+            <div className="print:hidden">
+              <OrderAnalyticsInsights
+                orderId={order.id}
+                customerId={order.customer_id}
+                orderTotal={order.total_amount}
+                orderCreatedAt={order.created_at}
+                orderItems={order.order_items}
+              />
+            </div>
+
+            {/* Payment Status with Real-time Sync — hide on print */}
+            <div className="print:hidden">
+              <OrderPaymentStatusSync
+                orderId={order.id}
+                orderAmount={order.total_amount}
+                currentPaymentStatus={order.payment_status}
+                autoUpdateOrderStatus={true}
+                onPaymentStatusChange={() => {
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+                }}
+              />
+            </div>
+
+            {/* Delivery Status with Real-time Sync — hide on print */}
+            <div className="print:hidden">
+              <OrderDeliveryStatusSync
+                orderId={order.id}
+                autoUpdateOrderStatus={true}
+                onDeliveryStatusChange={() => {
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+                }}
+              />
+            </div>
+
+            {/* Delivery P&L — hide on print */}
+            {(order.delivery_fee > 0 || order.delivery_address) && (
+              <div className="print:hidden">
+                <DeliveryPLCard
+                  orderId={order.id}
+                  deliveryFee={order.delivery_fee || 0}
+                  tipAmount={((order as unknown as Record<string, unknown>).tip_amount as number) || 0}
+                  courierId={order.courier_id}
+                  distanceMiles={((order as unknown as Record<string, unknown>).distance_miles as number) || null}
+                  deliveryTimeMinutes={((order as unknown as Record<string, unknown>).eta_minutes as number) || null}
+                  deliveryZone={((order as unknown as Record<string, unknown>).delivery_zone as string) || null}
+                  deliveryBorough={((order as unknown as Record<string, unknown>).delivery_borough as string) || null}
+                />
+              </div>
+            )}
 
             {/* Customer Info */}
             <Card>
@@ -933,7 +943,7 @@ export function OrderDetailsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full mt-2"
+                    className="w-full mt-2 print:hidden"
                     onClick={() => navigateToAdmin(`customers/${order.customer_id}`)}
                   >
                     View Customer Profile
@@ -983,10 +993,50 @@ export function OrderDetailsPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Internal Threaded Notes with @mentions — hide on print */}
+            <div className="print:hidden">
+              <OrderThreadedNotes
+                orderId={order.id}
+                orderNumber={order.order_number}
+              />
+            </div>
+
+            {/* Related Entities Panel — hide on print */}
+            <div className="print:hidden">
+              <OrderRelatedEntitiesPanel orderId={order.id} />
+            </div>
           </div>
         </div>
       </div>
-    </SwipeBackWrapper >
+
+      {/* Product Quick View Panel — hidden on print */}
+      <div className="print:hidden">
+        <OrderProductQuickView
+          isOpen={!!quickViewProductId}
+          onClose={() => {
+            setQuickViewProductId(null);
+            setQuickViewProductName('');
+          }}
+          productId={quickViewProductId}
+          productName={quickViewProductName}
+        />
+      </div>
+
+      {/* Assign Delivery Runner Dialog — hidden on print */}
+      <div className="print:hidden">
+        <AssignDeliveryRunnerDialog
+          orderId={order.id}
+          orderNumber={order.order_number}
+          deliveryAddress={order.delivery_address}
+          open={showAssignRunnerDialog}
+          onOpenChange={setShowAssignRunnerDialog}
+          onAssigned={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+          }}
+        />
+      </div>
+    </SwipeBackWrapper>
   );
 }
 
