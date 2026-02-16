@@ -107,6 +107,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
         <DialogContent className="p-0 max-w-2xl">
           <Command className="rounded-lg border shadow-md">
             <div className="flex items-center border-b px-3">
+              <label htmlFor="product-search-input" className="sr-only">Search products</label>
               <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
               <input
                 id="product-search-input"

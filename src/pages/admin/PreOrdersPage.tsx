@@ -156,6 +156,7 @@ export default function PreOrdersPage() {
                         <div className="relative flex-1">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
+                                aria-label="Search pre-orders"
                                 placeholder="Search pre-orders..."
                                 className="pl-8"
                                 value={searchQuery}

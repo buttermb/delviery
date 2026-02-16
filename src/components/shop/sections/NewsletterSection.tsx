@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Send, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
@@ -91,7 +92,9 @@ export function NewsletterSection({ content, styles }: NewsletterSectionProps) {
 
                     {!submitted ? (
                         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                            <Label htmlFor="newsletter-email" className="sr-only">Email address</Label>
                             <Input
+                                id="newsletter-email"
                                 type="email"
                                 placeholder={placeholder_text}
                                 value={email}

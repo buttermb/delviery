@@ -238,7 +238,9 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                 {show_search && (
                     <div className="max-w-2xl mx-auto mb-12">
+                        <label htmlFor="product-grid-search" className="sr-only">Search products</label>
                         <input
+                            id="product-grid-search"
                             type="text"
                             placeholder="Search products..."
                             value={searchQuery}

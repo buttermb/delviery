@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import { Search, User, Package, ShoppingCart, MapPin, Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatStatus } from "@/utils/stringHelpers";
@@ -142,8 +143,10 @@ const GlobalSearch = () => {
       <Card>
         <CardHeader>
           <div className="relative">
+            <Label htmlFor="global-search-input" className="sr-only">Search by name, email, order number, product, or address</Label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
+              id="global-search-input"
               placeholder="Search by name, email, order number, product, address..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

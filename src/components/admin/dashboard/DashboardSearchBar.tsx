@@ -414,8 +414,10 @@ export function DashboardSearchBar({
       >
         <Command shouldFilter={false}>
           <div className="flex items-center border-b px-3">
+            <label htmlFor="dashboard-search-input" className="sr-only">Search across all modules</label>
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <input
+              id="dashboard-search-input"
               ref={inputRef}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

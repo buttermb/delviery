@@ -148,6 +148,7 @@ export function MenusListPage() {
                         <div className="relative flex-1">
                             <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground md:top-2.5" />
                             <Input
+                                aria-label="Search menus"
                                 placeholder="Search menus..."
                                 className="pl-8 h-11 md:h-10 text-base md:text-sm"
                                 value={searchQuery}

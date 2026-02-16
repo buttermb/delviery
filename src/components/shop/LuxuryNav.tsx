@@ -117,8 +117,10 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accent
 
                 {/* Search Bar (Desktop) */}
                 <div className="hidden md:flex items-center bg-white/10 rounded-full px-4 py-2 border border-white/20 hover:bg-white/20 transition-colors w-64 group focus-within:bg-white focus-within:text-neutral-900 focus-within:border-white">
+                  <label htmlFor="nav-desktop-search" className="sr-only">Search products</label>
                   <Search className="w-4 h-4 text-white/70 group-focus-within:text-neutral-500 mr-2 transition-colors" />
                   <input
+                    id="nav-desktop-search"
                     type="text"
                     placeholder="Search products..."
                     className="bg-transparent border-none outline-none text-sm text-white placeholder:text-white/50 w-full group-focus-within:text-neutral-900 group-focus-within:placeholder:text-neutral-400"
@@ -202,8 +204,10 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accent
             >
             <nav className="flex flex-col p-6 gap-4">
               <div className="flex items-center bg-white/10 rounded-full px-4 py-3 border border-white/20 mb-4">
+                <label htmlFor="nav-mobile-search" className="sr-only">Search products</label>
                 <Search className="w-5 h-5 text-white/70 mr-3" />
                 <input
+                  id="nav-mobile-search"
                   type="text"
                   placeholder="Search..."
                   className="bg-transparent border-none outline-none text-base text-white placeholder:text-white/50 w-full"

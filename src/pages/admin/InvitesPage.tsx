@@ -183,6 +183,7 @@ export default function InvitesPage() {
                         <div className="relative w-64">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
+                                aria-label="Search by email"
                                 placeholder="Search by email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}

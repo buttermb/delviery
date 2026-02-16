@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2, X } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -21,6 +21,7 @@ export function SearchInput({
     delay = 300,
     isLoading = false,
 }: SearchInputProps) {
+    const inputId = useId();
     const [value, setValue] = useState(defaultValue);
     const debouncedValue = useDebounce(value, delay);
 
@@ -39,8 +40,10 @@ export function SearchInput({
 
     return (
         <div className={cn("relative", className)}>
+            <label htmlFor={inputId} className="sr-only">{placeholder}</label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+                id={inputId}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 className="pl-9 pr-9"

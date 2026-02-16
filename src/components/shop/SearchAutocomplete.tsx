@@ -9,6 +9,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, X, Package, TrendingUp, Clock, ArrowRight } from 'lucide-react';
@@ -161,8 +162,10 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
     <div ref={containerRef} className="relative w-full max-w-md">
       <form onSubmit={handleSubmit}>
         <div className="relative">
+          <Label htmlFor="shop-search" className="sr-only">Search products</Label>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
+            id="shop-search"
             ref={inputRef}
             type="search"
             placeholder="Search products..."

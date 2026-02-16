@@ -69,6 +69,7 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <Input
                             ref={inputRef}
+                            aria-label="Search for products and categories"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search for products, categories..."

@@ -262,6 +262,7 @@ export default function ProductSyncPage() {
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="search"
+                                aria-label="Search products"
                                 placeholder="Search products..."
                                 className="pl-8"
                                 value={searchQuery}

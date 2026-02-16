@@ -1159,6 +1159,7 @@ function CashRegisterContent() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   ref={searchInputRef}
+                  aria-label="Search by name, SKU, or barcode"
                   placeholder="Search by name, SKU, or barcode..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -1245,6 +1246,7 @@ function CashRegisterContent() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                aria-label="Search by name, email, or phone"
                 placeholder="Search by name, email, or phone..."
                 value={customerSearchQuery}
                 onChange={(e) => setCustomerSearchQuery(e.target.value)}

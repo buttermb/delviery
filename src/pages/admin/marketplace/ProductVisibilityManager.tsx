@@ -127,6 +127,7 @@ export default function ProductVisibilityManager() {
                         <div className="relative w-full sm:w-72">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
+                                aria-label="Search products"
                                 placeholder="Search products..."
                                 className="pl-9"
                                 value={searchTerm}
