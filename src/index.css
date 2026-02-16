@@ -1791,65 +1791,6 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Mobile z-index and input fixes */
-  @media (max-width: 768px) {
-
-    /* Mobile input focus */
-    input:focus,
-    textarea:focus,
-    select:focus {
-      position: relative;
-      transform: none !important;
-    }
-
-    /* Chat widget — modal level (200) */
-    [data-chat-widget] {
-      z-index: 200 !important;
-    }
-
-    /* Bottom navigation — sticky level (100) */
-    nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
-      z-index: 100 !important;
-    }
-
-    /* Input containers in modals/sheets */
-    .chat-input-container,
-    .mobile-input-container:not([style*="z-index"]) {
-      position: relative;
-    }
-
-    /* Dialog and Sheet inputs */
-    [role="dialog"] input:focus,
-    [role="dialog"] textarea:focus,
-    [data-radix-dialog-content] input:focus,
-    [data-radix-dialog-content] textarea:focus {
-      position: relative;
-    }
-
-    /* Smooth scroll for inputs into view */
-    input:focus,
-    textarea:focus {
-      scroll-margin-bottom: 100px;
-    }
-
-    /* Fix for iOS Safari - ensure inputs are clickable */
-    input,
-    textarea {
-      -webkit-appearance: none;
-      appearance: none;
-      touch-action: manipulation;
-    }
-
-    /* Ensure inputs in fixed bottom elements are clickable */
-    [class*="fixed"][class*="bottom"] input,
-    [class*="fixed"][class*="bottom"] textarea,
-    [class*="fixed"][class*="bottom"] button {
-      pointer-events: auto;
-      position: relative;
-      z-index: 1;
-    }
-  }
-
   /* Safe area insets for notched devices (consolidated) */
   @supports (padding: max(0px)) {
     .safe-area-bottom {
