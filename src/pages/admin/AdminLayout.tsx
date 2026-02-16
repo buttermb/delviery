@@ -69,7 +69,7 @@ function ScrollMainToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    const mainEl = document.getElementById('admin-main-content');
+    const mainEl = document.getElementById('main-content');
     if (mainEl) {
       mainEl.scrollTo(0, 0);
     }
@@ -308,8 +308,9 @@ const AdminLayout = () => {
                 </div>
               </header>
               <main
-                id="admin-main-content"
-                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 lg:pb-6"
+                id="main-content"
+                tabIndex={-1}
+                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 lg:pb-6 focus:outline-none"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   minHeight: 0,

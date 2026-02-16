@@ -219,10 +219,13 @@ export function SuperAdminLayout() {
 
       {/* Main Content Area */}
       <main
+        id="main-content"
+        tabIndex={-1}
         className={cn(
           isImpersonating ? 'pt-28' : 'pt-16', // Extra offset if impersonation banner is shown
           'min-h-[calc(100vh-4rem)]',
-          'px-4 md:px-6'
+          'px-4 md:px-6',
+          'focus:outline-none'
         )}
       >
         <div className="max-w-7xl mx-auto w-full">

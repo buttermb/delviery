@@ -26,7 +26,7 @@ export default function PlatformAdminLayout() {
                 <PlatformSidebar />
                 {/* Main content offset matching sidebar width */}
                 <div className="pl-64 flex-1 flex flex-col min-h-dvh">
-                    <main className="flex-1 overflow-visible">
+                    <main id="main-content" tabIndex={-1} className="flex-1 overflow-visible focus:outline-none">
                         <div className="p-8">
                             <div className="max-w-7xl mx-auto w-full">
                                 <Outlet />
