@@ -177,7 +177,7 @@ export default function VendorPayoutsPage() {
             </Tabs>
 
             <div className="text-center text-sm text-muted-foreground pt-4">
-                Payouts are processed weekly. Need help? <a href="#" className="underline">Contact Support</a>.
+                Payouts are processed weekly. Need help? <span className="underline cursor-default">Contact Support</span>.
             </div>
         </div>
     );

@@ -486,7 +486,7 @@ export default function PayoutsPage() {
       {/* Footer info */}
       <div className="text-center text-sm text-muted-foreground pt-4 border-t">
         Payouts are processed weekly. Need help?{' '}
-        <a href="#" className="underline hover:text-foreground">Contact Support</a>
+        <span className="underline hover:text-foreground cursor-default">Contact Support</span>
       </div>
     </div>
   );

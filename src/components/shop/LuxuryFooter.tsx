@@ -42,9 +42,9 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
             </p>
             <div className="flex gap-4">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-shop-accent hover:text-shop-primary transition-all">
+                <button key={i} type="button" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-shop-accent hover:text-shop-primary transition-all" aria-label={['Facebook', 'Twitter', 'Instagram', 'LinkedIn'][i]}>
                   <Icon className="w-5 h-5" />
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -62,17 +62,17 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
             <div>
               <h4 className="font-bold mb-6 text-shop-accent">Support</h4>
               <ul className="space-y-4">
-                <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Help Center</Link></li>
-                <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Contact Us</Link></li>
-                <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Returns</Link></li>
+                <li><span className="text-white/80 cursor-default">Help Center</span></li>
+                <li><span className="text-white/80 cursor-default">Contact Us</span></li>
+                <li><span className="text-white/80 cursor-default">Returns</span></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-6 text-shop-accent">Legal</h4>
               <ul className="space-y-4">
-                <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Privacy Policy</Link></li>
-                <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Terms of Service</Link></li>
-                <li><Link to="#" className="text-white/80 hover:text-white hover:underline">Licenses</Link></li>
+                <li><span className="text-white/80 cursor-default">Privacy Policy</span></li>
+                <li><span className="text-white/80 cursor-default">Terms of Service</span></li>
+                <li><span className="text-white/80 cursor-default">Licenses</span></li>
               </ul>
             </div>
             <div>

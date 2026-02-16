@@ -122,7 +122,7 @@ export default function BillingDashboard() {
         )}
         {!limitCheck.allowed && (
           <p className="text-sm text-destructive mt-2">
-            Limit reached. <a href="#" className="underline" onClick={(e) => { e.preventDefault(); setUpgradeDialogOpen(true); }}>Upgrade plan</a>
+            Limit reached. <button type="button" className="underline" onClick={() => setUpgradeDialogOpen(true)}>Upgrade plan</button>
           </p>
         )}
       </Card>

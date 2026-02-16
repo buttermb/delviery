@@ -183,11 +183,8 @@
       const theme = localStorage.getItem('theme') ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.classList.add(theme);
-      console.log('[PreLoad] Theme applied:', theme);
     } catch (e) {
-      // Fallback to light mode if error
       document.documentElement.classList.add('light');
-      console.error('[PreLoad] Theme error, defaulting to light:', e);
     }
   </script>
   <div id="root"></div>
