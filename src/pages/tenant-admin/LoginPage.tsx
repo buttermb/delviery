@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Building2, Loader2, ArrowLeft, Eye, EyeOff, AlertTriangle, HelpCircle } from "lucide-react";
+import { Building2, Loader2, ArrowLeft, Eye, EyeOff, AlertTriangle, HelpCircle, Info } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
@@ -20,6 +20,7 @@ import { AccountLockedScreen } from "@/components/auth/AccountLockedScreen";
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
 import { Database } from "@/integrations/supabase/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 
 
@@ -390,10 +391,19 @@ export default function TenantAdminLoginPage() {
               <Label
                 htmlFor="remember-me"
                 className="text-sm font-normal text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                title="Stay signed in for 30 days instead of 7 days"
               >
                 Remember me
               </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-help transition-colors" aria-label="Remember me information" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-center">
+                    <p className="text-xs">Stay signed in for 30 days. Without this, your session expires after 7 days.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             <Button
