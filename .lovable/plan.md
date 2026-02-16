@@ -1,34 +1,45 @@
 
-# Fix Build Error in CreateMenuSimpleDialog
+# Fix 4 Build Errors
 
-## Problem
-The app is currently broken due to a **TypeScript/JSX build error** in `src/components/admin/disposable-menus/CreateMenuSimpleDialog.tsx`. There's a stray `</div>` closing tag on line 418 that breaks the JSX tree structure, causing the `<form>`, `<DialogContent>`, and `<Dialog>` closing tags to be mismatched.
+## Error 1 & 2: `useFormPersistence` destructuring mismatch (Contact.tsx, DemoRequest.tsx)
 
-This build error is preventing the entire app from loading -- hence the blank page you're seeing.
+Both files destructure the hook as an array: `const [formData, setFormData, clearFormData] = useFormPersistence(...)`. But the hook returns an **object** (`{ restoreForm, clearSavedForm, hasSavedForm, lastSavedAt }`), not an array.
 
-## Fix
-Remove the extra `</div>` on line 418. The correct structure should flow from the step 3 content (ending around line 417) directly into the footer actions, all within the `<form>` element.
+**Fix**: Replace the array destructuring with object destructuring and adapt the usage. Since the hook doesn't provide `formData` or `setFormData` (it auto-persists values passed to it), we need to use local `useState` for the form data and wire `useFormPersistence` as a side-effect:
 
-### Technical Detail
-```text
-Current (broken):
-  <form ...>
-    {step content...}
-    </div>    <-- line 417 (closes step 3 conditional)
-  </div>      <-- line 418 (EXTRA - breaks structure)
-    {footer}
-  </form>
-  </DialogContent>
-  </Dialog>
+```typescript
+// Before (broken):
+const [formData, setFormData, clearFormData] = useFormPersistence("contact_form", { ... });
 
-Fixed:
-  <form ...>
-    {step content...}
-    </div>    <-- line 417 (closes step 3 conditional)
-    {footer}
-  </form>
-  </DialogContent>
-  </Dialog>
+// After (fixed):
+const [formData, setFormData] = useState({ name: "", email: "", ... });
+const { restoreForm, clearSavedForm } = useFormPersistence("contact_form", formData);
 ```
 
-This is a one-line fix that will restore the app to working state.
+Add a `useEffect` to restore form data on mount, and replace `clearFormData()` calls with `clearSavedForm()`.
+
+## Error 3: Missing `@/hooks/useAsyncAction` module (InvoicesPage.tsx)
+
+The hook doesn't exist. It's used to wrap async mutation calls with loading/error state. 
+
+**Fix**: Create `src/hooks/useAsyncAction.ts` -- a simple wrapper that returns an async function with `isPending` and `error` state. This will satisfy the 5 usages in InvoicesPage.
+
+## Error 4: Missing `CartStockSummary` import (CartPage.tsx)
+
+The component exists in `src/components/shop/CartStockWarning.tsx` as a named export, but CartPage.tsx never imports it.
+
+**Fix**: Add the missing import to CartPage.tsx:
+```typescript
+import { CartStockSummary } from '@/components/shop/CartStockWarning';
+```
+
+---
+
+## Technical Summary
+
+| File | Change |
+|------|--------|
+| `src/pages/Contact.tsx` | Switch from array to object destructuring of `useFormPersistence`, add `useState` for form data, add `useEffect` for restore |
+| `src/pages/DemoRequest.tsx` | Same pattern as Contact.tsx |
+| `src/hooks/useAsyncAction.ts` | **New file** -- simple hook wrapping async functions with loading/error state |
+| `src/pages/shop/CartPage.tsx` | Add missing import for `CartStockSummary` from `CartStockWarning` |
