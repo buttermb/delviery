@@ -58,6 +58,7 @@ import "nprogress/nprogress.css";
 import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { RouteProgressManager } from "./components/RouteProgressManager";
 import { InstallPWA } from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
@@ -575,6 +576,7 @@ const App = () => {
                                   <Sonner />
                                   <Suspense fallback={<SuspenseProgressFallback />}>
                                     <UrlEncodingFixer />
+                                    <RouteProgressManager />
                                     <ScrollToTop />
                                     <Routes>
                                       {/* Marketing & Public Routes */}
