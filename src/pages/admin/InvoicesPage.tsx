@@ -418,6 +418,8 @@ async function generateEnhancedInvoicePDF({ invoice, settings }: GenerateInvoice
     doc.save(`Invoice_${invoice.invoice_number}.pdf`);
 }
 
+import { useAsyncAction } from "@/hooks/useAsyncAction";
+
 export function InvoicesPage() {
     const navigate = useNavigate();
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
@@ -459,58 +461,34 @@ export function InvoicesPage() {
         urlKey: 'invoices',
     });
 
-    const handleMarkAsPaid = (id: string) => {
-        markAsPaid.mutate(id, {
-            onSuccess: () => {
-                toast.success("Invoice marked as paid");
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to update invoice";
-                toast.error("Update failed", { description: message });
-                logger.error('Failed to mark invoice as paid', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
+    const handleMarkAsPaid = useAsyncAction(async (id: string) => {
+        await markAsPaid.mutateAsync(id);
+    }, {
+        successMessage: "Invoice marked as paid",
+        errorMessage: "Failed to update invoice"
+    });
 
-    const handleMarkAsSent = (id: string) => {
-        markAsSent.mutate(id, {
-            onSuccess: () => {
-                toast.success("Invoice marked as sent");
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to update invoice";
-                toast.error("Update failed", { description: message });
-                logger.error('Failed to mark invoice as sent', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
+    const handleMarkAsSent = useAsyncAction(async (id: string) => {
+        await markAsSent.mutateAsync(id);
+    }, {
+        successMessage: "Invoice marked as sent",
+        errorMessage: "Failed to update invoice"
+    });
 
-    const handleVoidInvoice = (id: string) => {
-        voidInvoice.mutate(id, {
-            onSuccess: () => {
-                toast.success("Invoice voided");
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to void invoice";
-                toast.error("Void failed", { description: message });
-                logger.error('Failed to void invoice', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
+    const handleVoidInvoice = useAsyncAction(async (id: string) => {
+        await voidInvoice.mutateAsync(id);
+    }, {
+        successMessage: "Invoice voided",
+        errorMessage: "Failed to void invoice"
+    });
 
-    const handleDuplicateInvoice = (id: string) => {
-        duplicateInvoice.mutate(id, {
-            onSuccess: (newInvoice) => {
-                toast.success("Invoice duplicated");
-                navigate(`/${tenantSlug}/admin/crm/invoices/${newInvoice.id}`);
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to duplicate invoice";
-                toast.error("Duplicate failed", { description: message });
-                logger.error('Failed to duplicate invoice', error, { component: 'InvoicesPage', invoiceId: id });
-            },
-        });
-    };
+    const handleDuplicateInvoice = useAsyncAction(async (id: string) => {
+        const newInvoice = await duplicateInvoice.mutateAsync(id);
+        navigate(`/${tenantSlug}/admin/crm/invoices/${newInvoice.id}`);
+    }, {
+        successMessage: "Invoice duplicated",
+        errorMessage: "Failed to duplicate invoice"
+    });
 
     const _handlePrintInvoice = useCallback(async (invoice: CRMInvoice) => {
         if (isGeneratingPDF) return;
@@ -833,7 +811,7 @@ export function InvoicesPage() {
                                                     {invoice.status === "draft" && (
                                                         <DropdownMenuItem className="py-3" onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleMarkAsSent(invoice.id);
+                                                            handleMarkAsSent.execute(invoice.id);
                                                         }}>
                                                             <Send className="mr-2 h-4 w-4" />
                                                             Mark as Sent
@@ -842,7 +820,7 @@ export function InvoicesPage() {
                                                     {invoice.status !== "paid" && invoice.status !== "cancelled" && (
                                                         <DropdownMenuItem className="py-3" onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleMarkAsPaid(invoice.id);
+                                                            handleMarkAsPaid.execute(invoice.id);
                                                         }}>
                                                             <CheckCircle className="mr-2 h-4 w-4" />
                                                             Mark as Paid
@@ -858,7 +836,7 @@ export function InvoicesPage() {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="py-3" onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDuplicateInvoice(invoice.id);
+                                                        handleDuplicateInvoice.execute(invoice.id);
                                                     }}>
                                                         <Copy className="mr-2 h-4 w-4" />
                                                         Duplicate
@@ -870,7 +848,7 @@ export function InvoicesPage() {
                                                                 className="py-3 text-destructive focus:text-destructive"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    handleVoidInvoice(invoice.id);
+                                                                    handleVoidInvoice.execute(invoice.id);
                                                                 }}
                                                             >
                                                                 <Ban className="mr-2 h-4 w-4" />
@@ -986,7 +964,7 @@ export function InvoicesPage() {
                                                     {invoice.status === "draft" && (
                                                         <DropdownMenuItem onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleMarkAsSent(invoice.id);
+                                                            handleMarkAsSent.execute(invoice.id);
                                                         }}>
                                                             <Send className="mr-2 h-4 w-4" />
                                                             Mark as Sent
@@ -995,7 +973,7 @@ export function InvoicesPage() {
                                                     {invoice.status !== "paid" && invoice.status !== "cancelled" && (
                                                         <DropdownMenuItem onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleMarkAsPaid(invoice.id);
+                                                            handleMarkAsPaid.execute(invoice.id);
                                                         }}>
                                                             <CheckCircle className="mr-2 h-4 w-4" />
                                                             Mark as Paid
@@ -1011,7 +989,7 @@ export function InvoicesPage() {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDuplicateInvoice(invoice.id);
+                                                        handleDuplicateInvoice.execute(invoice.id);
                                                     }}>
                                                         <Copy className="mr-2 h-4 w-4" />
                                                         Duplicate
@@ -1023,7 +1001,7 @@ export function InvoicesPage() {
                                                                 className="text-destructive focus:text-destructive"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    handleVoidInvoice(invoice.id);
+                                                                    handleVoidInvoice.execute(invoice.id);
                                                                 }}
                                                             >
                                                                 <Ban className="mr-2 h-4 w-4" />

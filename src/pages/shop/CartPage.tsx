@@ -67,7 +67,8 @@ export default function CartPage() {
     subtotal,
     updateQuantity,
     removeItem,
-    clearCart
+    clearCart,
+    checkInventoryAvailability
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -79,6 +80,34 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [isCheckingStock, setIsCheckingStock] = useState(false);
+
+  const handleCheckout = async () => {
+    setIsCheckingStock(true);
+    try {
+      const { valid, outOfStock } = await checkInventoryAvailability();
+
+      if (!valid && outOfStock.length > 0) {
+        toast({
+          title: "Some items are out of stock",
+          description: `Please remove ${outOfStock.length} out of stock item(s) before proceeding.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      navigate(`/shop/${storeSlug}/checkout`);
+    } catch (error) {
+      logger.error('Checkout check failed', error);
+      toast({
+        title: "Error checking stock",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCheckingStock(false);
+    }
+  };
 
   // Handle quantity update
   const handleUpdateQuantity = (productId: string, delta: number, variant?: string) => {
@@ -244,6 +273,9 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
+            {/* Stock Summary */}
+            <CartStockSummary cartItems={cartItems} className="mb-4" />
+
             {/* Free Delivery Progress */}
             {deliveryFee > 0 && (
               <Card className={isLuxuryTheme ? 'bg-white/[0.02] border-white/[0.05]' : 'bg-primary/5'}>
@@ -508,10 +540,17 @@ export default function CartPage() {
                   className="w-full"
                   size="lg"
                   style={{ backgroundColor: themeColor }}
-                  onClick={() => navigate(`/shop/${storeSlug}/checkout`)}
+                  onClick={handleCheckout}
+                  disabled={isCheckingStock}
                 >
-                  Proceed to Checkout
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {isCheckingStock ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <>
+                      Proceed to Checkout
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
                 </Button>
 
                 {/* Express Checkout Link */}
@@ -554,10 +593,17 @@ export default function CartPage() {
                 size="lg"
                 className="px-8"
                 style={{ backgroundColor: themeColor }}
-                onClick={() => navigate(`/shop/${storeSlug}/checkout`)}
+                onClick={handleCheckout}
+                disabled={isCheckingStock}
               >
-                Checkout
-                <ArrowRight className="w-4 h-4 ml-2" />
+                {isCheckingStock ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Checkout
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
               </Button>
             </div>
           </div>

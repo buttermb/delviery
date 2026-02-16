@@ -11,12 +11,13 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useFormPersistence } from "@/hooks/useFormPersistence";
 
 export default function DemoRequest() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData, clearFormData] = useFormPersistence("demo_request_form", {
     firstName: "",
     lastName: "",
     email: "",
@@ -39,6 +40,7 @@ export default function DemoRequest() {
         title: "Demo scheduled!",
         description: "We've sent a confirmation email.",
       });
+      clearFormData();
       navigate("/demo/confirm", { state: formData });
     }, 1000);
   };
