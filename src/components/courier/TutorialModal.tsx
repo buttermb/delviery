@@ -67,7 +67,7 @@ export default function TutorialModal({ open, onComplete }: TutorialModalProps) 
 
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-lg bg-slate-900 border-slate-700" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent data-dark-panel className="sm:max-w-lg bg-slate-900 border-slate-700" onInteractOutside={(e) => e.preventDefault()}>
         <DialogTitle className="sr-only">Courier App Tutorial - Step {step}</DialogTitle>
         <DialogDescription className="sr-only">{currentStep.description}</DialogDescription>
         <div className="p-6 text-center">

@@ -828,7 +828,7 @@ export default function LiveMap() {
             <AddCourierDialog onSuccess={loadCourierLocations} />
           </div>
 
-          <Card className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
+          <Card data-dark-panel className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
                 <MapPin className="h-8 w-8 text-red-400" />

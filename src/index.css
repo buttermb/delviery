@@ -2281,6 +2281,57 @@ body.keyboard-open [data-radix-dialog-content] {
   }
 }
 
+/* ========================================
+   WCAG AA COLOR CONTRAST FIXES
+   Boost low-contrast gray text utilities
+   to meet 4.5:1 minimum contrast ratio
+   on light backgrounds.
+
+   gray-400 (#9CA3AF) → gray-500 (#6B7280) ≈ 4.6:1
+   gray-300 (#D1D5DB) → gray-500 (#6B7280) ≈ 4.6:1
+   slate-400 (#94A3B8) → slate-500 (#64748B) ≈ 4.6:1
+   slate-300 (#CBD5E1) → slate-500 (#64748B) ≈ 4.6:1
+
+   Dark mode (.dark) is excluded — gray-300/400
+   are fine on dark backgrounds.
+
+   Dark-background panels in light mode use
+   [data-dark-panel] to preserve original values.
+   ======================================== */
+
+:root:not(.dark) .text-gray-400 {
+  color: #6B7280;
+}
+
+:root:not(.dark) .text-gray-300 {
+  color: #6B7280;
+}
+
+:root:not(.dark) .text-slate-400 {
+  color: #64748B;
+}
+
+:root:not(.dark) .text-slate-300 {
+  color: #64748B;
+}
+
+/* Restore original low-contrast colors inside
+   dark-background panels that are dark in light mode
+   (e.g., debug console, courier modals, map overlays) */
+[data-dark-panel] .text-gray-400,
+[data-dark-panel] .text-gray-300,
+[data-dark-panel].text-gray-400,
+[data-dark-panel].text-gray-300 {
+  color: #9CA3AF;
+}
+
+[data-dark-panel] .text-slate-400,
+[data-dark-panel] .text-slate-300,
+[data-dark-panel].text-slate-400,
+[data-dark-panel].text-slate-300 {
+  color: #94A3B8;
+}
+
 @layer utilities {
   .glass-panel {
     @apply bg-background/80 backdrop-blur-md border-r border-border/50;

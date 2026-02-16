@@ -114,7 +114,7 @@ export default function InvoicePublicPage() {
 
                 {/* Main Invoice Card */}
                 <Card className="overflow-hidden shadow-xl border-0 print:shadow-none">
-                    <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-8">
+                    <CardHeader data-dark-panel className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-8">
                         <div className="flex justify-between items-start">
                             <div>
                                 <h2 className="text-3xl font-bold tracking-tight">INVOICE</h2>

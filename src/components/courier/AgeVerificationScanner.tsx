@@ -97,7 +97,7 @@ export default function AgeVerificationScanner({ open, onClose, onVerified }: Ag
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
+      <DialogContent data-dark-panel className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
             <AlertCircle className="h-6 w-6 text-yellow-500" />

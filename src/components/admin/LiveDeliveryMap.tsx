@@ -443,7 +443,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
 
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {
     return (
-      <Card className="overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
+      <Card data-dark-panel className="overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
         <CardContent className="p-8">
           <div className="flex items-center gap-4 text-amber-400">
             <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">

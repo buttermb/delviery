@@ -14,7 +14,7 @@ export default function LocationPermissionModal({ open, onRequestPermission }: L
   return (
     <Dialog open={open}>
       <DialogContent 
-        className="sm:max-w-md bg-slate-900 border-slate-700 text-white" 
+        data-dark-panel className="sm:max-w-md bg-slate-900 border-slate-700 text-white"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >

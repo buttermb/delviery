@@ -40,7 +40,7 @@ interface MiniSidebarPreviewProps {
 
 export function MiniSidebarPreview({ activeView, onViewChange }: MiniSidebarPreviewProps) {
   return (
-    <div id="sidebar" className="w-10 sm:w-12 bg-slate-900 border-r border-slate-800 py-2 flex flex-col gap-0.5">
+    <div id="sidebar" data-dark-panel className="w-10 sm:w-12 bg-slate-900 border-r border-slate-800 py-2 flex flex-col gap-0.5">
       <TooltipProvider>
         {navItems.map((item, index) => {
           const Icon = item.icon;

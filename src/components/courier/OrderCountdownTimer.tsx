@@ -39,7 +39,7 @@ export default function OrderCountdownTimer({ orderNumber: _orderNumber, accepte
   }, [acceptedAt, onExpire]);
 
   return (
-    <div className={`flex items-center space-x-2 px-3 py-2 rounded border ${
+    <div data-dark-panel className={`flex items-center space-x-2 px-3 py-2 rounded border ${
       isExpired ? 'bg-red-500/20 border-red-500 text-red-400' :
       isWarning ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400 animate-pulse' :
       'bg-slate-800 border-slate-700 text-slate-300'

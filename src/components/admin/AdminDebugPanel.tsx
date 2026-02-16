@@ -122,7 +122,7 @@ function SimplifiedDebugPanel() {
       </Button>
 
       {isOpen && (
-        <div className="absolute bottom-12 right-0 w-[650px] h-[450px] bg-gray-950 text-white rounded-lg shadow-2xl flex flex-col border border-gray-800 overflow-hidden">
+        <div data-dark-panel className="absolute bottom-12 right-0 w-[650px] h-[450px] bg-gray-950 text-white rounded-lg shadow-2xl flex flex-col border border-gray-800 overflow-hidden">
           <div className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-900">
             <h3 className="font-bold text-sm flex items-center gap-2">
               <Bug className="h-4 w-4" />
@@ -268,7 +268,7 @@ function FullAdminDebugPanel() {
       </Button>
 
       {isOpen && (
-        <div className="absolute bottom-12 right-0 w-[650px] h-[550px] bg-gray-950 text-white rounded-lg shadow-2xl flex flex-col border border-gray-800 overflow-hidden">
+        <div data-dark-panel className="absolute bottom-12 right-0 w-[650px] h-[550px] bg-gray-950 text-white rounded-lg shadow-2xl flex flex-col border border-gray-800 overflow-hidden">
           <div className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-900">
             <h3 className="font-bold text-sm flex items-center gap-2">
               <Bug className="h-4 w-4" />
