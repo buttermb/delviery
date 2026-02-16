@@ -99,10 +99,10 @@ export function ProgressDialog({
           )}
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
+        <div className="py-4 space-y-4" aria-live="polite" aria-atomic="true">
           {/* Progress bar */}
           {isProcessing && (
-            <div className="space-y-2">
+            <div className="space-y-2" role="status">
               {progress !== undefined ? (
                 <Progress value={progress} className="h-2" />
               ) : (
@@ -128,7 +128,7 @@ export function ProgressDialog({
 
           {/* Complete message */}
           {isComplete && (
-            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-lg text-green-700 dark:text-green-400">
+            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-lg text-green-700 dark:text-green-400" role="status">
               <CheckCircle className="h-5 w-5 flex-shrink-0" />
               <span>{message || 'Operation completed successfully'}</span>
             </div>
@@ -136,7 +136,7 @@ export function ProgressDialog({
 
           {/* Error message */}
           {isError && (
-            <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg text-destructive">
+            <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg text-destructive" role="alert">
               <XCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="font-medium">Operation failed</p>
@@ -147,7 +147,7 @@ export function ProgressDialog({
 
           {/* Cancelled message */}
           {isCancelled && (
-            <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-amber-700 dark:text-amber-400">
+            <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-amber-700 dark:text-amber-400" role="status">
               <AlertTriangle className="h-5 w-5 flex-shrink-0" />
               <span>
                 {message ||
