@@ -31,6 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 const StorefrontDashboard = lazy(() => import('@/pages/admin/storefront/StorefrontDashboard'));
@@ -113,7 +114,7 @@ export default function StorefrontHubPage() {
                             </Button>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TooltipProvider delayDuration={300}>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
@@ -141,7 +142,7 @@ export default function StorefrontHubPage() {
                             })}
                         </TabsList>
                         </TooltipProvider>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Constrain tab content height so embedded tools (like Builder) don't get clipped */}

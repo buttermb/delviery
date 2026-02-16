@@ -18,6 +18,7 @@ import {
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
@@ -67,7 +68,7 @@ export default function MarketingHubPage() {
                             Loyalty programs, campaigns, and customer outreach. For coupons and reviews, see Storefront Hub.
                         </p>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
@@ -88,7 +89,7 @@ export default function MarketingHubPage() {
                                 );
                             })}
                         </TabsList>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Tab Content - Scrollable */}

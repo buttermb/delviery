@@ -20,6 +20,7 @@ import {
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
@@ -74,7 +75,7 @@ export default function SettingsHubPage() {
                             </p>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
@@ -92,7 +93,7 @@ export default function SettingsHubPage() {
                                 );
                             })}
                         </TabsList>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 <TabsContent value="general" className="m-0">

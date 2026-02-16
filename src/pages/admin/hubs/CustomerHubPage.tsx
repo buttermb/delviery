@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { QuickCreateCustomerDialog } from '@/components/pos/QuickCreateCustomerDialog';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -97,7 +98,7 @@ export default function CustomerHubPage() {
                             </Button>
                         )}
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TooltipProvider delayDuration={300}>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
@@ -125,7 +126,7 @@ export default function CustomerHubPage() {
                             })}
                         </TabsList>
                         </TooltipProvider>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Contacts Tab */}

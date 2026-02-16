@@ -27,6 +27,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Fragment, lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
@@ -99,7 +100,8 @@ export default function InventoryHubPage() {
                             </Button>
                         )}
                     </div>
-                    <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 overflow-x-auto w-full max-w-full gap-0.5">
+                    <ScrollableTabsList>
+                    <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 w-full max-w-full gap-0.5">
                         {tabs.map((tab, index) => {
                             const prevTab = index > 0 ? tabs[index - 1] : null;
                             const showSeparator = prevTab && prevTab.group !== tab.group;
@@ -116,6 +118,7 @@ export default function InventoryHubPage() {
                             );
                         })}
                     </TabsList>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Products Tab */}

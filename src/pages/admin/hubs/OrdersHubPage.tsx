@@ -29,6 +29,7 @@ import { QuickActions } from '@/components/admin/ui/QuickActions';
 import { AlertBadge } from '@/components/admin/ui/AlertBadge';
 import { useAdminBadgeCounts } from '@/hooks/useAdminBadgeCounts';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -205,7 +206,7 @@ export default function OrdersHubPage() {
                         </div>
                         <QuickActions actions={quickActions} />
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TooltipProvider delayDuration={300}>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
@@ -233,7 +234,7 @@ export default function OrdersHubPage() {
                             })}
                         </TabsList>
                         </TooltipProvider>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
 

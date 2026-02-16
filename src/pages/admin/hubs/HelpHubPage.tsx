@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 const _TabSkeleton = () => (
@@ -202,7 +203,7 @@ export default function HelpHubPage() {
                             </p>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
@@ -220,7 +221,7 @@ export default function HelpHubPage() {
                                 );
                             })}
                         </TabsList>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Getting Started Tab */}

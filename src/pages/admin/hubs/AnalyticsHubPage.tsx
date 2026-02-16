@@ -30,6 +30,7 @@ import { Fragment, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
@@ -166,7 +167,7 @@ export default function AnalyticsHubPage() {
                             New Report
                         </Button>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
@@ -184,7 +185,7 @@ export default function AnalyticsHubPage() {
                                 );
                             })}
                         </TabsList>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Analytics Tab (grouped: Overview, Orders, Menu, Delivery) */}

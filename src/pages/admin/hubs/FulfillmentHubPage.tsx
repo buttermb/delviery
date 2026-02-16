@@ -26,6 +26,7 @@ import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
@@ -94,7 +95,7 @@ export default function FulfillmentHubPage() {
                             </Button>
                         )}
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
                                 const prevTab = index > 0 ? tabs[index - 1] : null;
@@ -112,7 +113,7 @@ export default function FulfillmentHubPage() {
                                 );
                             })}
                         </TabsList>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Dashboard Tab */}

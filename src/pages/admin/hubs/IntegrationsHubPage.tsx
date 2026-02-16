@@ -21,6 +21,7 @@ import {
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
@@ -80,7 +81,7 @@ export default function IntegrationsHubPage() {
                             </p>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab) => (
                                 <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
@@ -89,7 +90,7 @@ export default function IntegrationsHubPage() {
                                 </TabsTrigger>
                             ))}
                         </TabsList>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 <TabsContent value="overview" className="m-0">

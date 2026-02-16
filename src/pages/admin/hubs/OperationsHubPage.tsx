@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
@@ -157,7 +158,7 @@ export default function OperationsHubPage() {
                             Invite Member
                         </Button>
                     </div>
-                    <div className="overflow-x-auto">
+                    <ScrollableTabsList>
                         <TooltipProvider delayDuration={300}>
                         <TabsList className="inline-flex min-w-max gap-0.5">
                             {tabs.map((tab, index) => {
@@ -185,7 +186,7 @@ export default function OperationsHubPage() {
                             })}
                         </TabsList>
                         </TooltipProvider>
-                    </div>
+                    </ScrollableTabsList>
                 </div>
 
                 {/* Team Tab (grouped: Members, Roles, Invites) */}
