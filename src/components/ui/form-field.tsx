@@ -168,7 +168,7 @@ export function ErrorSummary({
           <li key={field}>
             <button
               type="button"
-              className="underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-1 rounded"
+              className="underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-1 rounded"
               onClick={() => scrollToField(field)}
             >
               {message}

@@ -313,7 +313,7 @@ export function ReadyForPickupWidget() {
               return (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   onClick={() => handleOrderClick(order.id, order.source)}
                   role="button"
                   tabIndex={0}

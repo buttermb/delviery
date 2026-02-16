@@ -201,7 +201,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
                             <div className="grid gap-4">
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     role="button"
                                     tabIndex={0}
                                     onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
@@ -216,7 +216,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     <p className="text-sm text-muted-foreground">Add your logo, address, and contact info.</p>
                                 </div>
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     role="button"
                                     tabIndex={0}
                                     onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
@@ -248,7 +248,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
                             <div className="grid gap-4">
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     role="button"
                                     tabIndex={0}
                                     onClick={() => handleShortcut(`/${tenant?.slug}/admin/settings`)}
@@ -263,7 +263,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                                     <p className="text-sm text-muted-foreground">Draw your delivery areas on the map.</p>
                                 </div>
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     role="button"
                                     tabIndex={0}
                                     onClick={() => handleShortcut(`/${tenant?.slug}/admin/team`)}

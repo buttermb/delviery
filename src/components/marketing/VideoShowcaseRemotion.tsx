@@ -130,7 +130,7 @@ export function VideoShowcaseRemotion() {
         {/* Video container */}
         <div className="max-w-5xl mx-auto">
           <div
-            className="relative rounded-2xl overflow-hidden shadow-2xl border border-[hsl(var(--marketing-border))] bg-slate-900 group cursor-pointer"
+            className="relative rounded-2xl overflow-hidden shadow-2xl border border-[hsl(var(--marketing-border))] bg-slate-900 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={togglePlayback}
             role="button"
             tabIndex={0}

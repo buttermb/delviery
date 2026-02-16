@@ -587,7 +587,7 @@ function EntityRow({
     <div
       className={cn(
         'flex items-center justify-between p-3 border rounded-lg',
-        onNavigate && 'hover:bg-muted/50 cursor-pointer transition-colors'
+        onNavigate && 'hover:bg-muted/50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
       onClick={() => onNavigate?.(item.id)}
       role={onNavigate ? 'button' : undefined}
@@ -760,7 +760,7 @@ function OrganizationSection({
 
   return (
     <div
-      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       onClick={() => onNavigate(data.id)}
       role="button"
       tabIndex={0}

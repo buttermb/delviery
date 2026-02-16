@@ -177,6 +177,7 @@ export function CreditTransactionRow({
           className={cn(
             'flex items-center gap-3 py-3 px-3 rounded-lg cursor-pointer transition-colors',
             'hover:bg-muted/50',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             isExpanded && 'bg-muted/30',
             className
           )}

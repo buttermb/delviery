@@ -216,6 +216,7 @@ function KanbanCard({
                 className={cn(
                     'bg-white dark:bg-card rounded-lg border p-3 shadow-sm relative',
                     'hover:shadow-md transition-all cursor-pointer',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     'min-h-[44px] touch-manipulation',
                     item.priority === 'critical' && 'border-red-200 dark:border-red-800',
                     item.priority === 'important' && 'border-yellow-200 dark:border-yellow-800',

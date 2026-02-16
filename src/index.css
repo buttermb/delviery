@@ -1242,15 +1242,15 @@ body.keyboard-open [data-radix-dialog-content] {
     scroll-behavior: smooth;
   }
 
-  /* Focus visible for better keyboard navigation */
+  /* Focus visible for better keyboard navigation — ring-2 consistent with shadcn/ui */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-sm;
   }
 
   /* Interactive non-button elements (clickable cards, rows, list items) */
   [role="button"]:not(button):focus-visible,
   [tabindex="0"]:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary rounded-md;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-md;
   }
 
   /* Ensure links have visible hover and focus states */
@@ -1259,7 +1259,7 @@ body.keyboard-open [data-radix-dialog-content] {
   }
 
   a:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-sm;
   }
 
   /* Fade in up animation for lists */

@@ -104,7 +104,7 @@ function CustomerSection({
 
   return (
     <div
-      className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+      className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       onClick={() => onNavigate(customer.id)}
       role="button"
       tabIndex={0}
@@ -162,7 +162,7 @@ function ProductsSection({
         {products.map((product) => (
           <div
             key={product.id}
-            className="flex-shrink-0 w-20 p-2 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors text-center"
+            className="flex-shrink-0 w-20 p-2 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={() => onNavigate(product.id)}
             role="button"
             tabIndex={0}

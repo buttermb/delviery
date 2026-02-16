@@ -534,6 +534,7 @@ export const AdminNotificationCenter = () => {
                           key={notification.id}
                           className={cn(
                             'p-3 hover:bg-muted/50 transition-colors cursor-pointer group',
+                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                             !isRead && 'bg-primary/5 border-l-2 border-l-primary'
                           )}
                           onClick={() => handleNotificationClick(notification)}
