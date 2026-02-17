@@ -1337,11 +1337,12 @@ export default function ProductManagement() {
           ) : (
             <EnhancedEmptyState
               type="no_products"
-              title={searchTerm || categoryFilter !== "all" ? "No products found" : undefined}
+              icon={Package}
+              title={searchTerm || categoryFilter !== "all" ? "No products found" : "No products yet"}
               description={
                 searchTerm || categoryFilter !== "all"
                   ? "Try adjusting your filters to find products"
-                  : undefined
+                  : "Add your first product to start selling"
               }
               primaryAction={
                 !searchTerm && categoryFilter === "all"
