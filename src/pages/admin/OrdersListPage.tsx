@@ -396,12 +396,12 @@ export function OrdersListPage() {
       accessorKey: 'user',
       header: 'Customer',
       cell: ({ original }: { original: Order }) => (
-        <div className="flex flex-col">
-          <span className="font-medium">
+        <div className="flex flex-col max-w-[180px]">
+          <span className="font-medium truncate">
             {original.user?.full_name || original.user?.phone || 'Unknown'}
           </span>
           {original.user?.phone && original.user.full_name && (
-            <span className="text-xs text-muted-foreground">{original.user.phone}</span>
+            <span className="text-xs text-muted-foreground truncate">{original.user.phone}</span>
           )}
         </div>
       ),

@@ -361,11 +361,11 @@ export default function WholesaleClients() {
                         <TableCell className="text-xs sm:text-sm">
                           <div>
                             <div className="text-xs sm:text-sm text-foreground truncate">{client.contact_name}</div>
-                            <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
                               {client.email && (
                                 <>
-                                  {client.email}
-                                  <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  <span className="truncate">{client.email}</span>
+                                  <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </>
                               )}
                             </div>

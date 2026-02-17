@@ -949,11 +949,13 @@ export function InvoicesPage() {
                                         <TableCell className="font-medium">
                                             {invoice.invoice_number}
                                         </TableCell>
-                                        <TableCell>
-                                            <CustomerLink
-                                                customerId={invoice.client_id}
-                                                customerName={invoice.client?.name || "Unknown Client"}
-                                            />
+                                        <TableCell className="max-w-[200px]">
+                                            <div className="truncate">
+                                                <CustomerLink
+                                                    customerId={invoice.client_id}
+                                                    customerName={invoice.client?.name || "Unknown Client"}
+                                                />
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             {format(new Date(invoice.invoice_date), "MMM d, yyyy")}
