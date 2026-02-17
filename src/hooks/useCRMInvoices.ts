@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { toast } from 'sonner';
 
 export interface CustomerInvoice {
@@ -136,9 +137,15 @@ export function useCRMInvoices(): UseCRMInvoicesReturn {
         if (error) throw error;
         return data as CustomerInvoice;
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['crm-invoices'] });
         toast.success('Invoice created');
+        // Cross-panel invalidation — finance hub, dashboard, collections
+        if (tenant?.id) {
+          invalidateOnEvent(queryClient, 'INVOICE_CREATED', tenant.id, {
+            invoiceId: data?.id,
+          });
+        }
       },
       onError: (error: Error) => {
         logger.error('Failed to create invoice', error, { component: 'useCRMInvoices' });

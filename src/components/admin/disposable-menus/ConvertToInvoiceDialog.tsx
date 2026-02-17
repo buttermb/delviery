@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 export interface ConvertToInvoiceDialogProps {
@@ -158,7 +159,15 @@ export function ConvertToInvoiceDialog({
 
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+
+      // Cross-panel invalidation — finance hub, dashboard, collections
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'INVOICE_CREATED', tenant.id, {
+          invoiceId: data.invoice_id,
+          customerId: selectedClientId,
+        });
+      }
 
       onSuccess?.();
       onOpenChange(false);
