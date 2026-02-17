@@ -784,12 +784,24 @@ export function InvoicesPage() {
                                         <div className="text-xs text-muted-foreground space-y-0.5">
                                             <p>Due: {format(new Date(invoice.due_date), "MMM d, yyyy")}</p>
                                             <p>{format(new Date(invoice.invoice_date), "MMM d")}</p>
+                                            {(invoice.amount_paid ?? 0) > 0 && (
+                                                <p className="text-yellow-600">Paid: {formatCurrency(invoice.amount_paid ?? 0)}</p>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <span className="font-bold text-base">
-                                                {formatCurrency(invoice.total)}
-                                            </span>
+                                            <div className="text-right">
+                                                <span className={`font-bold text-base ${
+                                                    invoice.status === 'paid' ? 'text-green-600' :
+                                                    (invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status)) ? 'text-red-600' :
+                                                    invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
+                                                }`}>
+                                                    {formatCurrency(invoice.total - (invoice.amount_paid ?? 0))}
+                                                </span>
+                                                {invoice.status === 'partially_paid' && (
+                                                    <p className="text-xs text-muted-foreground">of {formatCurrency(invoice.total)}</p>
+                                                )}
+                                            </div>
 
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -880,7 +892,9 @@ export function InvoicesPage() {
                                 <TableHead>Client</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Due Date</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead className="text-right">Amount Due</TableHead>
+                                <TableHead className="text-right">Amount Paid</TableHead>
+                                <TableHead className="text-right">Balance</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -895,13 +909,15 @@ export function InvoicesPage() {
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                                         <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
                                     </TableRow>
                                 ))
                             ) : filteredInvoices?.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-64">
+                                    <TableCell colSpan={9} className="h-64">
                                         <EnhancedEmptyState
                                             icon={FileText}
                                             title={searchQuery || statusFilter ? "No Invoices Found" : "No Invoices Yet"}
@@ -939,6 +955,19 @@ export function InvoicesPage() {
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(invoice.total)}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-medium ${
+                                            invoice.status === 'paid' ? 'text-green-600' :
+                                            invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
+                                        }`}>
+                                            {formatCurrency(invoice.amount_paid ?? 0)}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-medium ${
+                                            invoice.status === 'paid' ? 'text-green-600' :
+                                            (invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status)) ? 'text-red-600' :
+                                            invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
+                                        }`}>
+                                            {formatCurrency(invoice.total - (invoice.amount_paid ?? 0))}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5">
