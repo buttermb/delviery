@@ -200,6 +200,16 @@ export function InviteDriverStep({ onComplete }: InviteDriverStepProps) {
           </form>
         </Form>
       )}
+
+      {!invitedDriver && (
+        <button
+          type="button"
+          onClick={onComplete}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
+        >
+          Skip for now
+        </button>
+      )}
     </div>
   );
 }

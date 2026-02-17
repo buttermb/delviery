@@ -241,10 +241,18 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
         </form>
       </Form>
 
-      {addedZones.length > 0 && (
+      {addedZones.length > 0 ? (
         <Button onClick={onComplete} className="w-full">
           Continue to Next Step
         </Button>
+      ) : (
+        <button
+          type="button"
+          onClick={onComplete}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
+        >
+          Skip for now
+        </button>
       )}
     </div>
   );
