@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -18,7 +18,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Search,
   Plus,
   Phone,
   MessageSquare,
@@ -54,6 +53,7 @@ import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { SearchInput } from "@/components/shared/SearchInput";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -86,6 +86,9 @@ export default function WholesaleClients() {
   });
 
   const [searchTerm, setSearchTerm] = useState("");
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
   const [filter, setFilter] = useState<string>(preferences.customFilters?.filter || "all");
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: WholesaleClient }>({ open: false });
 
@@ -260,16 +263,13 @@ export default function WholesaleClients() {
           <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
             {/* Search */}
             <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  aria-label="Search clients"
-                  placeholder="Search clients..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 min-h-[44px] text-sm sm:text-base"
-                />
-              </div>
+              <SearchInput
+                placeholder="Search clients..."
+                onSearch={handleSearch}
+                className="min-h-[44px]"
+                delay={300}
+                isLoading={isLoading}
+              />
             </div>
 
             {/* Filter Buttons */}
