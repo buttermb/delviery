@@ -68,6 +68,8 @@ import { useTablePreferences } from "@/hooks/useTablePreferences";
 import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
+import { usePagination } from "@/hooks/usePagination";
+import { StandardPagination } from "@/components/shared/StandardPagination";
 
 export default function WholesaleClients() {
   const navigate = useTenantNavigate();
@@ -137,9 +139,27 @@ export default function WholesaleClients() {
   const filteredClients = clients?.filter(client =>
     client.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.contact_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) || [];
 
+  const {
+    paginatedItems: paginatedClients,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredClients, {
+    defaultPageSize: 25,
+    persistInUrl: true,
+    urlKey: 'clients',
+  });
 
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    goToPage(1);
+  }, [searchTerm, filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getClientTypeLabel = (type: string) => {
     const types: Record<string, string> = {
@@ -316,8 +336,8 @@ export default function WholesaleClients() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ) : filteredClients && filteredClients.length > 0 ? (
-                    filteredClients.map((client) => (
+                  ) : paginatedClients.length > 0 ? (
+                    paginatedClients.map((client) => (
                       <TableRow
                         key={client.id}
                         className="cursor-pointer hover:bg-muted/50 touch-manipulation"
@@ -531,6 +551,19 @@ export default function WholesaleClients() {
               </Table>
             </div>
           </div>
+
+          {/* Desktop Pagination */}
+          {totalItems > pageSize && (
+            <StandardPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+              pageSizeOptions={pageSizeOptions}
+            />
+          )}
         </Card>
 
         {/* Mobile Card View */}
@@ -555,8 +588,8 @@ export default function WholesaleClients() {
                   </Card>
                 ))}
               </div>
-            ) : filteredClients && filteredClients.length > 0 ? (
-              filteredClients.map((client) => (
+            ) : paginatedClients.length > 0 ? (
+              paginatedClients.map((client) => (
                 <Card
                   key={client.id}
                   className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
@@ -689,6 +722,20 @@ export default function WholesaleClients() {
               </div>
             )}
           </div>
+
+          {/* Mobile Pagination */}
+          {totalItems > pageSize && (
+            <StandardPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+              pageSizeOptions={pageSizeOptions}
+              showPageSizeSelector={false}
+            />
+          )}
         </Card>
 
         {/* Payment Dialog */}
