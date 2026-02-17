@@ -32,7 +32,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { CartItemStockWarning } from '@/components/shop/CartStockWarning';
+import { CartItemStockWarning, CartStockSummary } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 
@@ -170,7 +170,7 @@ export default function CartPage() {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const isNetworkError = error instanceof Error &&
         (error.message.toLowerCase().includes('network') ||
           error.message.toLowerCase().includes('fetch') ||
