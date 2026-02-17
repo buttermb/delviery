@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
 import { useState, useEffect, useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -112,6 +113,7 @@ export default function Orders() {
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
@@ -326,9 +328,9 @@ export default function Orders() {
   const filteredOrders = useMemo(() => {
     let result = orders;
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Search filter (debounced)
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase();
       result = result.filter(order =>
         order.order_number?.toLowerCase().includes(query) ||
         order.user?.full_name?.toLowerCase().includes(query) ||
@@ -360,7 +362,7 @@ export default function Orders() {
     }
 
     return result;
-  }, [orders, searchQuery, dateRange]);
+  }, [orders, debouncedSearchQuery, dateRange]);
 
   // Handlers
   const handleRefresh = async () => {
