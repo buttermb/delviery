@@ -769,7 +769,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'billing',
     name: 'Billing',
     icon: CreditCard,
-    path: '/admin/settings?section=billing',
+    path: '/admin/settings?tab=payments',
     category: 'Settings',
     minTier: 'starter',
   },

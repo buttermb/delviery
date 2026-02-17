@@ -292,7 +292,7 @@ describe('CreditAnalyticsPage', () => {
       renderPage();
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/settings?section=billing');
+        expect(mockNavigate).toHaveBeenCalledWith('/test-tenant/admin/settings?tab=payments');
       });
     });
   });

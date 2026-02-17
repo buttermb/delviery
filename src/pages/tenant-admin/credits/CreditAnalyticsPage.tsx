@@ -297,7 +297,7 @@ export function CreditAnalyticsPage() {
 
   // If not on free tier, redirect to billing
   if (!isFreeTier && !creditsLoading) {
-    navigate(`/${tenantSlug}/admin/settings?section=billing`);
+    navigate(`/${tenantSlug}/admin/settings?tab=payments`);
     return null;
   }
 
@@ -747,7 +747,7 @@ export function CreditAnalyticsPage() {
           {/* Auto Top-Up Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
             <AutoTopUpSettings
-              onPaymentMethodSetup={() => navigate(`/${tenantSlug}/admin/settings?section=billing`)}
+              onPaymentMethodSetup={() => navigate(`/${tenantSlug}/admin/settings?tab=payments`)}
             />
 
             {/* Upgrade Suggestion */}

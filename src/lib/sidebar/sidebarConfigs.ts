@@ -138,7 +138,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
-      createItem('billing', 'Billing', '/admin/settings?section=billing', CreditCard),
+      createItem('billing', 'Billing', '/admin/settings?tab=payments', CreditCard),
       createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },
@@ -210,7 +210,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     collapsed: true,
     items: [
       createItem('settings', 'Settings', '/admin/settings', Settings),
-      createItem('billing', 'Billing', '/admin/settings?section=billing', CreditCard),
+      createItem('billing', 'Billing', '/admin/settings?tab=payments', CreditCard),
       createItem('help', 'Help', '/admin/help-hub', HelpCircle),
     ],
   },

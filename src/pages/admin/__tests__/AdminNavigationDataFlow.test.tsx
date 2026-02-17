@@ -149,7 +149,7 @@ const VALID_ADMIN_ROUTES = [
 
 // Known redirect routes
 const REDIRECT_ROUTES = [
-  'billing',  // → settings?section=billing
+  'billing',  // → settings?tab=payments
   'wholesale-orders',  // → orders?tab=wholesale
   'inventory-dashboard', // → inventory-hub?tab=stock
   'inventory-monitoring', // → inventory-hub?tab=monitoring
