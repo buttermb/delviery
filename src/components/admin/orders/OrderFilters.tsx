@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import {
   FilterBar,
   useFilterBar,
@@ -326,7 +327,7 @@ export async function applyOrderFilters(
       .from('products')
       .select('id')
       .eq('account_id', tenantId)
-      .ilike('name', `%${filters.productName}%`)
+      .ilike('name', `%${escapePostgresLike(filters.productName)}%`)
       .limit(50);
 
     if (productData && productData.length > 0) {
