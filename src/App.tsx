@@ -848,7 +848,7 @@ const App = () => {
 
                                         <Route path="wholesale-orders" element={<Navigate to="orders?tab=wholesale" replace />} />
                                         <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
-                                        <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
+                                        <Route path="wholesale-orders/new-po" element={<FeatureProtectedRoute featureId="wholesale-orders" feature="purchase_orders"><NewPurchaseOrder /></FeatureProtectedRoute>} />
                                         <Route path="orders/offline-create" element={<OfflineOrderCreate />} />
 
                                         <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
@@ -934,7 +934,7 @@ const App = () => {
                                         <Route path="fronted-inventory/:id" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventoryDetails /></FeatureProtectedRoute>} />
                                         <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="customer-invoices" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
-                                        <Route path="fleet-management" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
+                                        <Route path="fleet-management" element={<FeatureProtectedRoute feature="fleet_management"><Navigate to="fulfillment-hub?tab=fleet" replace /></FeatureProtectedRoute>} />
                                         <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
@@ -955,7 +955,7 @@ const App = () => {
                                         <Route path="sales/pricing" element={<FeatureProtectedRoute featureId="sales"><AdminPricingPage /></FeatureProtectedRoute>} />
 
                                         {/* 13 Hidden gem pages */}
-                                        <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat"><AdminLiveChat /></FeatureProtectedRoute>} />
+                                        <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat" feature="live_chat"><AdminLiveChat /></FeatureProtectedRoute>} />
                                         <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
                                         <Route path="couriers" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                         <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
@@ -967,11 +967,11 @@ const App = () => {
                                         <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics" feature="analytics_advanced"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                                         <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
-                                        <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers"><PurchaseOrders /></FeatureProtectedRoute>} />
+                                        <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers" feature="purchase_orders"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
                                         <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
                                         <Route path="coupons" element={<Navigate to="storefront-hub?tab=coupons" replace />} />
-                                        <Route path="quality-control" element={<Navigate to="operations-hub?tab=quality" replace />} />
+                                        <Route path="quality-control" element={<FeatureProtectedRoute feature="quality_control"><Navigate to="operations-hub?tab=quality" replace /></FeatureProtectedRoute>} />
                                         <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
                                         <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><ClientsPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/clients/:clientId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><ClientDetailPage /></FeatureProtectedRoute>} />
@@ -1003,8 +1003,8 @@ const App = () => {
                                         {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
                                         <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                                         <Route path="system-settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
-                                        <Route path="vendor-dashboard" element={<FeatureProtectedRoute featureId="vendor-management"><VendorDashboard /></FeatureProtectedRoute>} />
+                                        <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management" feature="vendor_management"><VendorManagement /></FeatureProtectedRoute>} />
+                                        <Route path="vendor-dashboard" element={<FeatureProtectedRoute featureId="vendor-management" feature="vendor_management"><VendorDashboard /></FeatureProtectedRoute>} />
 
                                         {/* Coming Soon Pages - Professional & Enterprise Features */}
                                         <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />
