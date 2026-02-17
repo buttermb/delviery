@@ -104,6 +104,17 @@ interface POSTransactionResult {
   insufficient_items?: InsufficientStockItem[];
 }
 
+interface ReceiptData {
+  items: Array<{ name: string; quantity: number; price: number; subtotal: number }>;
+  subtotal: number;
+  discountAmount: number;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  taxAmount: number;
+  taxRate: number;
+  customerName: string | null;
+}
+
 // Default tax rate (can be configured per tenant)
 const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
@@ -178,6 +189,7 @@ function CashRegisterContent() {
   // Receipt state
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<POSTransactionResult | null>(null);
+  const [lastReceiptData, setLastReceiptData] = useState<ReceiptData | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
   // Keyboard shortcuts help
@@ -445,11 +457,26 @@ function CashRegisterContent() {
         return;
       }
 
-      // Store transaction for receipt
+      // Store transaction and cart details for receipt
       setLastTransaction({
         ...result,
         total,
         items_count: cart.length,
+      });
+      setLastReceiptData({
+        items: cart.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal,
+        })),
+        subtotal,
+        discountAmount,
+        discountType,
+        discountValue,
+        taxAmount,
+        taxRate,
+        customerName: selectedCustomer?.name ?? null,
       });
 
       toast({
@@ -574,39 +601,115 @@ function CashRegisterContent() {
 
     setIsPrinting(true);
     try {
-      // Create printable content
       const printWindow = window.open('', '_blank');
       if (printWindow) {
-        const receiptHtml = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Receipt - ${lastTransaction.transaction_number}</title>
-            <style>
-              body { font-family: monospace; padding: 20px; max-width: 300px; margin: auto; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .line { border-top: 1px dashed #000; margin: 10px 0; }
-              .total { font-weight: bold; font-size: 1.2em; }
-              .footer { text-align: center; margin-top: 20px; font-size: 0.9em; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h2>${tenant?.business_name || 'Store'}</h2>
-              <p>Transaction: ${lastTransaction.transaction_number}</p>
-              <p>${new Date(lastTransaction.created_at || '').toLocaleString()}</p>
-            </div>
-            <div class="line"></div>
-            <p>Items: ${lastTransaction.items_count}</p>
-            <p>Payment: ${lastTransaction.payment_method}</p>
-            <div class="line"></div>
-            <p class="total">Total: $${(lastTransaction.total || 0).toFixed(2)}</p>
-            <div class="footer">
-              <p>Thank you for your purchase!</p>
-            </div>
-          </body>
-          </html>
-        `;
+        const businessName = tenant?.business_name || 'Store';
+        const txDate = new Date(lastTransaction.created_at || '');
+        const dateStr = txDate.toLocaleDateString();
+        const timeStr = txDate.toLocaleTimeString();
+        const receipt = lastReceiptData;
+
+        const itemRows = receipt?.items.map(item =>
+          `<tr>
+            <td class="item-name" colspan="3">${item.name}</td>
+          </tr>
+          <tr>
+            <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+            <td></td>
+            <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+          </tr>`
+        ).join('') || `<tr><td colspan="3">${lastTransaction.items_count} item(s)</td></tr>`;
+
+        const discountRow = receipt && receipt.discountAmount > 0
+          ? `<tr>
+              <td colspan="2">Discount${receipt.discountType === 'percentage' ? ` (${receipt.discountValue}%)` : ''}</td>
+              <td class="item-amount">-$${receipt.discountAmount.toFixed(2)}</td>
+            </tr>`
+          : '';
+
+        const taxRow = receipt && receipt.taxAmount > 0
+          ? `<tr>
+              <td colspan="2">Tax (${(receipt.taxRate * 100).toFixed(2)}%)</td>
+              <td class="item-amount">$${receipt.taxAmount.toFixed(2)}</td>
+            </tr>`
+          : '';
+
+        const customerRow = receipt?.customerName
+          ? `<p class="customer">Customer: ${receipt.customerName}</p>`
+          : '';
+
+        const receiptHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Receipt - ${lastTransaction.transaction_number}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      max-width: 300px;
+      margin: 0 auto;
+      padding: 10px;
+      color: #000;
+    }
+    .header { text-align: center; margin-bottom: 8px; }
+    .header h2 { font-size: 16px; margin-bottom: 4px; text-transform: uppercase; }
+    .header p { font-size: 11px; line-height: 1.4; }
+    .sep { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+    .receipt-label { text-align: center; font-size: 14px; font-weight: bold; letter-spacing: 2px; margin: 4px 0; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 1px 0; vertical-align: top; }
+    .item-name { font-weight: bold; font-size: 11px; padding-top: 4px; }
+    .item-detail { font-size: 11px; color: #333; padding-left: 8px; }
+    .item-amount { text-align: right; white-space: nowrap; }
+    .totals td { padding: 2px 0; }
+    .total-row td { font-weight: bold; font-size: 14px; padding-top: 4px; }
+    .info-row { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
+    .info-row span:last-child { text-align: right; }
+    .customer { font-size: 11px; margin: 4px 0; }
+    .footer { text-align: center; margin-top: 12px; font-size: 11px; }
+    .footer p { margin: 2px 0; }
+    .receipt-no { font-size: 10px; text-align: center; margin-top: 8px; color: #666; }
+    @media print {
+      body { padding: 0; margin: 0; }
+      @page { margin: 0; size: 80mm auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>${businessName}</h2>
+  </div>
+  <hr class="sep" />
+  <div class="receipt-label">RECEIPT</div>
+  <hr class="sep" />
+  <div class="info-row"><span>Date:</span><span>${dateStr}</span></div>
+  <div class="info-row"><span>Time:</span><span>${timeStr}</span></div>
+  <div class="info-row"><span>Receipt #:</span><span>${lastTransaction.transaction_number}</span></div>
+  ${customerRow}
+  <hr class="sep" />
+  <table>${itemRows}</table>
+  <hr class="sep" />
+  <table class="totals">
+    <tr>
+      <td colspan="2">Subtotal</td>
+      <td class="item-amount">$${(receipt?.subtotal ?? lastTransaction.total ?? 0).toFixed(2)}</td>
+    </tr>
+    ${discountRow}
+    ${taxRow}
+    <tr class="total-row">
+      <td colspan="2">TOTAL</td>
+      <td class="item-amount">$${(lastTransaction.total || 0).toFixed(2)}</td>
+    </tr>
+  </table>
+  <hr class="sep" />
+  <div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction.payment_method}</span></div>
+  <div class="footer">
+    <p>Thank you for your purchase!</p>
+  </div>
+  <p class="receipt-no">${lastTransaction.transaction_id || ''}</p>
+</body>
+</html>`;
         printWindow.document.write(receiptHtml);
         printWindow.document.close();
         printWindow.print();
@@ -617,7 +720,7 @@ function CashRegisterContent() {
     } finally {
       setIsPrinting(false);
     }
-  }, [lastTransaction, tenant, toast]);
+  }, [lastTransaction, lastReceiptData, tenant, toast]);
 
   // Keyboard shortcuts
   useEffect(() => {
