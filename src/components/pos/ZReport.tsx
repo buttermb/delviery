@@ -21,34 +21,38 @@ export function ZReport({ shiftId }: ZReportProps) {
   useRealtimeTransactions(tenantId, shiftId);
 
   const { data: shift, isLoading } = useQuery({
-    queryKey: ['shift-details', shiftId],
+    queryKey: ['shift-details', shiftId, tenantId],
     queryFn: async () => {
+      if (!tenantId) return null;
       const { data, error } = await supabase
         .from('pos_shifts')
         .select('*')
         .eq('id', shiftId)
+        .eq('tenant_id', tenantId)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!shiftId,
+    enabled: !!shiftId && !!tenantId,
     refetchInterval: 30000, // Backup polling
   });
 
   const { data: transactions } = useQuery({
-    queryKey: ['shift-transactions', shiftId],
+    queryKey: ['shift-transactions', shiftId, tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from('pos_transactions')
         .select('*')
+        .eq('tenant_id', tenantId)
         .eq('shift_id', shiftId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!shiftId,
+    enabled: !!shiftId && !!tenantId,
     refetchInterval: 30000, // Backup polling
   });
 
@@ -95,9 +99,9 @@ Ended: ${shift.ended_at ? new Date(shift.ended_at).toLocaleString() : 'In Progre
 
 Total Transactions: ${shift.total_transactions}
 Total Sales: $${shift.total_sales.toFixed(2)}
-Refunds: $${(shift.refunds_amount || 0).toFixed(2)}
+Refunds (${refundCount}): -$${totalRefunds.toFixed(2)}
 
-Net Sales: $${(shift.total_sales - (shift.refunds_amount || 0)).toFixed(2)}
+Net Sales: $${netSales.toFixed(2)}
 
 ========================================
         PAYMENT METHOD BREAKDOWN
@@ -106,6 +110,15 @@ Net Sales: $${(shift.total_sales - (shift.refunds_amount || 0)).toFixed(2)}
 Cash Sales: $${shift.cash_sales.toFixed(2)}
 Card Sales: $${shift.card_sales.toFixed(2)}
 Other: $${shift.other_sales.toFixed(2)}
+${refundCount > 0 ? `
+========================================
+          REFUND BREAKDOWN
+========================================
+
+Refund Count: ${refundCount}
+Total Refunds: -$${totalRefunds.toFixed(2)}
+${cashRefunds > 0 ? `  Cash Refunds: -$${cashRefunds.toFixed(2)}\n` : ''}${cardRefunds > 0 ? `  Card Refunds: -$${cardRefunds.toFixed(2)}\n` : ''}${otherRefunds > 0 ? `  Other Refunds: -$${otherRefunds.toFixed(2)}\n` : ''}
+Net Sales: $${netSales.toFixed(2)}` : ''}
 
 ========================================
          CASH DRAWER BALANCE
@@ -113,7 +126,7 @@ Other: $${shift.other_sales.toFixed(2)}
 
 Opening Cash: $${shift.opening_cash.toFixed(2)}
 + Cash Sales: $${shift.cash_sales.toFixed(2)}
-Expected Cash: $${(shift.expected_cash || 0).toFixed(2)}
+${cashRefunds > 0 ? `- Cash Refunds: -$${cashRefunds.toFixed(2)}\n` : ''}Expected Cash: $${(shift.expected_cash || 0).toFixed(2)}
 
 Closing Cash: $${(shift.closing_cash || 0).toFixed(2)}
 Difference: $${(shift.cash_difference || 0).toFixed(2)}
@@ -145,6 +158,22 @@ ${i + 1}. ${t.transaction_number}
   }
 
   const netSales = shift.total_sales - (shift.refunds_amount || 0);
+
+  // Compute refund stats from transactions
+  const refundTransactions = transactions?.filter(
+    (t) => t.payment_status === 'refunded' || t.total_amount < 0
+  ) || [];
+  const refundCount = refundTransactions.length;
+  const totalRefunds = shift.refunds_amount || 0;
+  const cashRefunds = refundTransactions
+    .filter((t) => t.payment_method === 'cash')
+    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+  const cardRefunds = refundTransactions
+    .filter((t) => t.payment_method === 'card')
+    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+  const otherRefunds = refundTransactions
+    .filter((t) => t.payment_method !== 'cash' && t.payment_method !== 'card')
+    .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
 
   return (
     <div className="space-y-6 print:p-8">
@@ -213,8 +242,8 @@ ${i + 1}. ${t.transaction_number}
                 <span className="font-semibold">${shift.total_sales.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-red-600">
-                <span>Refunds</span>
-                <span className="font-semibold">-${(shift.refunds_amount || 0).toFixed(2)}</span>
+                <span>Refunds ({refundCount})</span>
+                <span className="font-semibold">-${totalRefunds.toFixed(2)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-bold">
@@ -247,6 +276,49 @@ ${i + 1}. ${t.transaction_number}
 
           <Separator />
 
+          {/* Refund Breakdown */}
+          {refundCount > 0 && (
+            <>
+              <div>
+                <h3 className="font-semibold mb-4">Refund Breakdown</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Refund Count</span>
+                    <span className="font-semibold">{refundCount}</span>
+                  </div>
+                  <div className="flex justify-between text-red-600">
+                    <span>Total Refunds</span>
+                    <span className="font-semibold">-${totalRefunds.toFixed(2)}</span>
+                  </div>
+                  {cashRefunds > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span className="pl-4">Cash Refunds</span>
+                      <span>-${cashRefunds.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {cardRefunds > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span className="pl-4">Card Refunds</span>
+                      <span>-${cardRefunds.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {otherRefunds > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span className="pl-4">Other Refunds</span>
+                      <span>-${otherRefunds.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Net Sales</span>
+                    <span>${netSales.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
           {/* Cash Drawer */}
           <div>
             <h3 className="font-semibold mb-4">Cash Drawer Balance</h3>
@@ -259,6 +331,12 @@ ${i + 1}. ${t.transaction_number}
                 <span>+ Cash Sales</span>
                 <span className="font-semibold">${shift.cash_sales.toFixed(2)}</span>
               </div>
+              {cashRefunds > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>- Cash Refunds</span>
+                  <span className="font-semibold">-${cashRefunds.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-muted-foreground">
                 <span>Expected Cash</span>
                 <span className="font-semibold">${(shift.expected_cash || 0).toFixed(2)}</span>
