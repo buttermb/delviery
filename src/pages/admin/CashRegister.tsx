@@ -1045,6 +1045,7 @@ function CashRegisterContent() {
                   variant="ghost"
                   size="sm"
                   onClick={handleClearCart}
+                  disabled={processPayment.isPending}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
@@ -1186,6 +1187,7 @@ function CashRegisterContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setDiscountDialogOpen(true)}
+                disabled={processPayment.isPending}
                 className="w-full"
               >
                 <Percent className="h-4 w-4 mr-2" />
