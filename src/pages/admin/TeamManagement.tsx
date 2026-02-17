@@ -216,6 +216,8 @@ export default function TeamManagement() {
     onSuccess: () => {
       toast.success('Role updated successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      // Invalidate user-role queries so sidebar reflects new permissions without reload
+      queryClient.invalidateQueries({ queryKey: ['user-role'] });
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamManagement' });
@@ -239,6 +241,8 @@ export default function TeamManagement() {
     onSuccess: (_, { newStatus }) => {
       toast.success(newStatus === 'suspended' ? 'Member suspended' : 'Member reactivated');
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      // Invalidate user-role queries so sidebar reflects updated access
+      queryClient.invalidateQueries({ queryKey: ['user-role'] });
     },
     onError: (error: Error) => {
       logger.error('Failed to update status', error, { component: 'TeamManagement' });
@@ -264,6 +268,8 @@ export default function TeamManagement() {
       setDeleteDialogOpen(false);
       setMemberToRemove(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      // Invalidate user-role queries so sidebar reflects removed access
+      queryClient.invalidateQueries({ queryKey: ['user-role'] });
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamManagement' });
