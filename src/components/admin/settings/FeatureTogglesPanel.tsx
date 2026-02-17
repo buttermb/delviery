@@ -1,0 +1,221 @@
+/**
+ * FeatureTogglesPanel
+ *
+ * Grid of feature cards grouped by category. Each card shows a lucide icon,
+ * feature name, one-line description, and a Switch toggle.
+ * Toggle calls useTenantFeatureToggles().toggleFeature().
+ */
+
+import { useState } from 'react';
+
+import { toast } from 'sonner';
+import ShoppingCart from 'lucide-react/dist/esm/icons/shopping-cart';
+import Truck from 'lucide-react/dist/esm/icons/truck';
+import Map from 'lucide-react/dist/esm/icons/map';
+import ClipboardList from 'lucide-react/dist/esm/icons/clipboard-list';
+import ShieldCheck from 'lucide-react/dist/esm/icons/shield-check';
+import Store from 'lucide-react/dist/esm/icons/store';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Megaphone from 'lucide-react/dist/esm/icons/megaphone';
+import MessageCircle from 'lucide-react/dist/esm/icons/message-circle';
+import Navigation from 'lucide-react/dist/esm/icons/navigation';
+import type { LucideIcon } from 'lucide-react';
+
+import { type FeatureToggleKey } from '@/lib/featureFlags';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
+import { logger } from '@/lib/logger';
+
+interface FeatureItem {
+  key: FeatureToggleKey;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+}
+
+interface FeatureCategory {
+  name: string;
+  features: FeatureItem[];
+}
+
+const FEATURE_CATEGORIES: FeatureCategory[] = [
+  {
+    name: 'Sales',
+    features: [
+      {
+        key: 'pos',
+        label: 'Point of Sale',
+        description: 'Ring up in-store sales with shift management and Z-reports',
+        icon: ShoppingCart,
+      },
+    ],
+  },
+  {
+    name: 'Operations',
+    features: [
+      {
+        key: 'delivery_tracking',
+        label: 'Delivery Tracking',
+        description: 'Assign couriers and track deliveries live',
+        icon: Truck,
+      },
+      {
+        key: 'fleet_management',
+        label: 'Fleet Management',
+        description: 'Manage delivery fleet and drivers',
+        icon: Navigation,
+      },
+      {
+        key: 'purchase_orders',
+        label: 'Purchase Orders',
+        description: 'Track supplier orders and receiving',
+        icon: ClipboardList,
+      },
+      {
+        key: 'quality_control',
+        label: 'Quality Control',
+        description: 'Quality checks and compliance',
+        icon: ShieldCheck,
+      },
+      {
+        key: 'vendor_management',
+        label: 'Vendor Management',
+        description: 'Manage vendor relationships',
+        icon: Store,
+      },
+    ],
+  },
+  {
+    name: 'Marketing',
+    features: [
+      {
+        key: 'marketing_hub',
+        label: 'Marketing Hub',
+        description: 'Coupons, campaigns, engagement tools',
+        icon: Megaphone,
+      },
+    ],
+  },
+  {
+    name: 'Communication',
+    features: [
+      {
+        key: 'live_chat',
+        label: 'Live Chat',
+        description: 'Real-time messaging',
+        icon: MessageCircle,
+      },
+      {
+        key: 'courier_portal',
+        label: 'Courier Portal',
+        description: 'Dedicated portal for courier operations',
+        icon: Map,
+      },
+    ],
+  },
+  {
+    name: 'Analytics',
+    features: [
+      {
+        key: 'analytics_advanced',
+        label: 'Advanced Analytics',
+        description: 'Sales reports and business insights',
+        icon: BarChart3,
+      },
+      {
+        key: 'crm_advanced',
+        label: 'Advanced CRM',
+        description: 'Customer scoring, activity logs, segmentation',
+        icon: Users,
+      },
+    ],
+  },
+];
+
+export function FeatureTogglesPanel() {
+  const { isEnabled, toggleFeature, isLoading } = useTenantFeatureToggles();
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
+
+  const handleToggle = async (key: FeatureToggleKey, enabled: boolean) => {
+    setTogglingKey(key);
+    try {
+      await toggleFeature(key, enabled);
+      toast.success(`${enabled ? 'Enabled' : 'Disabled'} feature`);
+    } catch (err) {
+      logger.error('[FeatureTogglesPanel] Toggle failed', err instanceof Error ? err : new Error(String(err)));
+      toast.error('Failed to update feature toggle');
+    } finally {
+      setTogglingKey(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="h-5 w-32" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {FEATURE_CATEGORIES.map((category) => (
+        <div key={category.name} className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            {category.name}
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {category.features.map((feature) => {
+              const Icon = feature.icon;
+              const enabled = isEnabled(feature.key);
+              const isToggling = togglingKey === feature.key;
+
+              return (
+                <Card key={feature.key} className="relative">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium">
+                          {feature.label}
+                        </CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`toggle-${feature.key}`} className="sr-only">
+                          Toggle {feature.label}
+                        </Label>
+                        <Switch
+                          id={`toggle-${feature.key}`}
+                          checked={enabled}
+                          disabled={isToggling}
+                          onCheckedChange={(checked) => handleToggle(feature.key, checked)}
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <CardDescription className="text-xs">
+                      {feature.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
