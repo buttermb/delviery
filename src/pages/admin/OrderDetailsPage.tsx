@@ -29,6 +29,7 @@ import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
 import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
 import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
+import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -181,6 +182,9 @@ export function OrderDetailsPage() {
 
   // Runner assignment dialog state
   const [showAssignRunnerDialog, setShowAssignRunnerDialog] = useState(false);
+
+  // Edit order modal state
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -467,6 +471,14 @@ export function OrderDetailsPage() {
               <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl}>
                 <Copy className="w-4 h-4 mr-1" />
                 Share Tracking
+              </Button>
+            )}
+
+            {/* Edit Order Button — only for pending/confirmed */}
+            {['pending', 'confirmed'].includes(order.status) && (
+              <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
+                <Edit className="w-4 h-4 mr-1" />
+                Edit Order
               </Button>
             )}
 
@@ -1020,6 +1032,35 @@ export function OrderDetailsPage() {
           }}
           productId={quickViewProductId}
           productName={quickViewProductName}
+        />
+      </div>
+
+      {/* Order Edit Modal — hidden on print */}
+      <div className="print:hidden">
+        <OrderEditModal
+          order={order ? {
+            id: order.id,
+            status: order.status,
+            tracking_code: order.tracking_token || undefined,
+            total_amount: order.total_amount,
+            delivery_address: order.delivery_address || undefined,
+            delivery_notes: order.delivery_notes || undefined,
+            customer_notes: order.notes || undefined,
+            created_at: order.created_at,
+            order_items: (order.order_items || []).map(item => ({
+              id: item.id,
+              product_name: item.product_name,
+              quantity: item.quantity,
+              price: item.unit_price,
+            })),
+          } : null}
+          open={showEditModal}
+          onOpenChange={setShowEditModal}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+            toast.success('Order updated');
+          }}
         />
       </div>
 
