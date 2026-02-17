@@ -20,10 +20,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import type { Database } from '@/integrations/supabase/types';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+
+type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
 const productSchema = z.object({
   name: z.string().min(2, 'Product name is required'),
@@ -62,14 +65,15 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
     setIsSubmitting(true);
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('products')
         .insert({
           tenant_id: tenant.id,
           name: data.name,
           sku: data.sku || null,
           price: Number(data.price),
-          category: data.category || null,
+          category: data.category || 'Flower',
+          thca_percentage: 0,
           status: 'active',
         });
 
@@ -131,7 +135,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
 
       let success = 0;
       let failed = 0;
-      const products: Array<Record<string, unknown>> = [];
+      const products: ProductInsert[] = [];
 
       for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
@@ -146,7 +150,8 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
           name,
           price: priceIdx !== -1 && cols[priceIdx] ? Number(cols[priceIdx]) || 0 : 0,
           sku: skuIdx !== -1 ? cols[skuIdx] || null : null,
-          category: categoryIdx !== -1 ? cols[categoryIdx] || null : null,
+          category: (categoryIdx !== -1 && cols[categoryIdx]) ? cols[categoryIdx] : 'Flower',
+          thca_percentage: 0,
           status: 'active',
         });
       }
@@ -155,7 +160,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
         // Insert in batches of 50
         for (let i = 0; i < products.length; i += 50) {
           const batch = products.slice(i, i + 50);
-          const { error } = await (supabase as any).from('products').insert(batch);
+          const { error } = await supabase.from('products').insert(batch);
 
           if (error) {
             logger.error('Batch insert failed', error, { component: 'AddProductsStep', batchIndex: i });
