@@ -25,11 +25,11 @@ export const useProductsForMenu = (tenantId?: string) => {
         .from("wholesale_inventory")
         .select("id, product_name, base_price, sku, description, image_url, category, quantity_units")
         .eq("tenant_id", tenantId)
-        .order("product_name") as any;
+        .order("product_name");
 
       if (error) throw error;
       // Map wholesale_inventory fields to ProductForMenu interface
-      return (data || []).map((item: any) => ({
+      return (data || []).map((item) => ({
         id: item.id,
         name: item.product_name,
         price: item.base_price || 0,
