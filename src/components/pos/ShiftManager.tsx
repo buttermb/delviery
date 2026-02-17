@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt } from 'lucide-react';
+import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt, RotateCcw } from 'lucide-react';
 import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { queryKeys } from '@/lib/queryKeys';
 import { ZReport } from './ZReport';
@@ -159,6 +159,8 @@ export function ShiftManager() {
         cashTransactions: 0,
         cardTransactions: 0,
         avgTransactionValue: 0,
+        refundCount: 0,
+        refundTotal: 0,
       };
     }
 
@@ -166,11 +168,18 @@ export function ShiftManager() {
     const cardTxns = shiftTransactions.filter(t => t.payment_method === 'card');
     const totalValue = shiftTransactions.reduce((sum, t) => sum + t.total_amount, 0);
 
+    const refundTxns = shiftTransactions.filter(
+      t => t.payment_status === 'refunded' || t.total_amount < 0
+    );
+    const refundTotal = refundTxns.reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+
     return {
       transactionCount: shiftTransactions.length,
       cashTransactions: cashTxns.length,
       cardTransactions: cardTxns.length,
       avgTransactionValue: shiftTransactions.length > 0 ? totalValue / shiftTransactions.length : 0,
+      refundCount: refundTxns.length,
+      refundTotal,
     };
   }, [shiftTransactions]);
 
@@ -240,7 +249,11 @@ export function ShiftManager() {
         throw new Error('Closing cash amount must be greater than or equal to 0');
       }
 
-      const expectedCash = activeShift.opening_cash + activeShift.cash_sales;
+      // Account for cash refunds when calculating expected cash
+      const cashRefunds = (shiftTransactions ?? [])
+        .filter(t => (t.payment_status === 'refunded' || t.total_amount < 0) && t.payment_method === 'cash')
+        .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
+      const expectedCash = activeShift.opening_cash + activeShift.cash_sales - cashRefunds;
       const difference = closingAmount - expectedCash;
 
       const { data, error } = await supabase
@@ -251,6 +264,7 @@ export function ShiftManager() {
           closing_cash: closingAmount,
           expected_cash: expectedCash,
           cash_difference: difference,
+          refunds_amount: shiftSummary.refundTotal,
         })
         .eq('id', activeShift.id)
         .eq('tenant_id', tenantId)
@@ -363,6 +377,36 @@ export function ShiftManager() {
               </Card>
             </div>
 
+            {/* Refund Summary */}
+            {shiftSummary.refundCount > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <Card className="border-red-200">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Refunds ({shiftSummary.refundCount})</p>
+                        <p className="text-2xl font-bold text-red-600">-${shiftSummary.refundTotal.toFixed(2)}</p>
+                      </div>
+                      <RotateCcw className="h-8 w-8 text-red-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-green-200">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Net Sales</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ${(activeShift.total_sales - shiftSummary.refundTotal).toFixed(2)}
+                        </p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-green-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Expected Cash Calculation */}
             <div className="mt-4 pt-4 border-t">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -474,6 +518,11 @@ export function ShiftManager() {
                     <div className="text-right mr-4">
                       <p className="font-semibold">${shift.total_sales.toFixed(2)}</p>
                       <p className="text-sm text-muted-foreground">{shift.total_transactions} transactions</p>
+                      {(shift.refunds_amount ?? 0) > 0 && (
+                        <p className="text-sm text-red-600">
+                          Refunds: -${(shift.refunds_amount ?? 0).toFixed(2)}
+                        </p>
+                      )}
                     </div>
                     <Button
                       variant="outline"
@@ -585,6 +634,18 @@ export function ShiftManager() {
                   <p className="text-muted-foreground">+ Cash Sales</p>
                   <p className="font-medium">${activeShift.cash_sales.toFixed(2)}</p>
                 </div>
+                {shiftSummary.refundCount > 0 && (
+                  <>
+                    <div>
+                      <p className="text-muted-foreground">Refunds ({shiftSummary.refundCount})</p>
+                      <p className="font-medium text-red-600">-${shiftSummary.refundTotal.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Net Sales</p>
+                      <p className="font-medium">${(activeShift.total_sales - shiftSummary.refundTotal).toFixed(2)}</p>
+                    </div>
+                  </>
+                )}
               </div>
               <div>
                 <Label htmlFor="closing-cash">Actual Cash Count</Label>
