@@ -824,8 +824,8 @@ const App = () => {
                                         <Route path="pos" element={<Navigate to="pos-system" replace />} />
                                         <Route path="vendors" element={<Navigate to="vendor-management" replace />} />
 
-                                        <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsHubPage /></FeatureProtectedRoute>} />
-                                        <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="analytics-hub" element={<FeatureProtectedRoute featureId="analytics" feature="analytics_advanced"><AnalyticsHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics" feature="analytics_advanced"><AnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                                         <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                         <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
@@ -964,7 +964,7 @@ const App = () => {
                                         <Route path="delivery-zones" element={<FeatureProtectedRoute feature="delivery_tracking"><DeliveryZonesPage /></FeatureProtectedRoute>} />
                                         <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                         <Route path="financial-center" element={<Navigate to="command-center" replace />} />
-                                        <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics" feature="analytics_advanced"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                                         <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
                                         <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers"><PurchaseOrders /></FeatureProtectedRoute>} />
@@ -989,14 +989,14 @@ const App = () => {
                                         <Route path="batch-recall" element={<Navigate to="compliance-hub?tab=batch-recall" replace />} />
                                         <Route path="compliance-vault" element={<Navigate to="compliance-hub?tab=vault" replace />} />
                                         <Route path="compliance" element={<Navigate to="compliance-hub" replace />} />
-                                        <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting"><AdvancedReportingPage /></FeatureProtectedRoute>} />
+                                        <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting" feature="analytics_advanced"><AdvancedReportingPage /></FeatureProtectedRoute>} />
                                         <Route path="predictive-analytics" element={<Navigate to="analytics-hub?tab=forecasting" replace />} />
                                         <Route path="board-report" element={<BoardReportPage />} />
                                         <Route path="strategic-dashboard" element={<StrategicDashboardPage />} />
                                         <Route path="expansion" element={<ExpansionAnalysisPage />} />
 
                                         {/* Professional Tier - Analytics */}
-                                        <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics" feature="analytics_advanced"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
                                         <Route path="customer-insights" element={<Navigate to="customer-hub?tab=insights" replace />} />
 
@@ -1010,12 +1010,12 @@ const App = () => {
                                         <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfersPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-audit" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><InventoryAuditPage /></RoleProtectedRoute>} />
-                                        <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalyticsPage /></FeatureProtectedRoute>} />
-                                        <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalyticsPage /></FeatureProtectedRoute>} />
-                                        <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard"><RealtimeDashboardPage /></FeatureProtectedRoute>} />
-                                        <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReportsPage /></FeatureProtectedRoute>} />
-                                        <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTrackingPage /></FeatureProtectedRoute>} />
-                                        <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReportsPage /></FeatureProtectedRoute>} />
+                                        <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics" feature="analytics_advanced"><CustomerAnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics" feature="analytics_advanced"><AdvancedAnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard" feature="analytics_advanced"><RealtimeDashboardPage /></FeatureProtectedRoute>} />
+                                        <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports" feature="analytics_advanced"><CustomReportsPage /></FeatureProtectedRoute>} />
+                                        <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking" feature="analytics_advanced"><CommissionTrackingPage /></FeatureProtectedRoute>} />
+                                        <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports" feature="analytics_advanced"><RevenueReportsPage /></FeatureProtectedRoute>} />
                                         <Route path="delivery-analytics" element={<FeatureProtectedRoute feature="delivery_tracking"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="cash-register" element={<FeatureProtectedRoute feature="pos"><CashRegisterPage /></FeatureProtectedRoute>} />
                                         <Route path="pos-analytics" element={<FeatureProtectedRoute feature="pos"><POSAnalyticsPage /></FeatureProtectedRoute>} />
@@ -1025,13 +1025,13 @@ const App = () => {
                                         <Route path="activity-logs" element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager']}><FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
 
                                         {/* GitHub Repos Integration Routes */}
-                                        <Route path="analytics-dashboard" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="analytics-dashboard" element={<FeatureProtectedRoute featureId="analytics" feature="analytics_advanced"><AnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="route-optimizer" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimizationPage /></FeatureProtectedRoute>} />
                                         <Route path="wholesale-pricing-tiers" element={<PricingTiersPage />} />
                                         <Route path="advanced-invoice" element={<FeatureProtectedRoute featureId="invoice-management"><AdvancedInvoicePage /></FeatureProtectedRoute>} />
                                         <Route path="local-ai" element={<FeatureProtectedRoute featureId="ai"><LocalAIPage /></FeatureProtectedRoute>} />
                                         <Route path="workflow-automation" element={<FeatureProtectedRoute featureId="automation"><WorkflowAutomationPage /></FeatureProtectedRoute>} />
-                                        <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics"><LocationAnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics" feature="analytics_advanced"><LocationAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="user-management" element={<Navigate to="team-members" replace />} />
                                         <Route path="permissions" element={<Navigate to="role-management" replace />} />
                                         <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperationsPage /></FeatureProtectedRoute>} />
