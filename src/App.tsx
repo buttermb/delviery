@@ -943,8 +943,8 @@ const App = () => {
                                         <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                         <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="compliance-hub" element={<Navigate to="operations-hub?tab=compliance" replace />} />
-                                        <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program"><MarketingHubPage /></FeatureProtectedRoute>} />
-                                        <Route path="marketing/reviews" element={<FeatureProtectedRoute featureId="storefront"><ReviewsPage /></FeatureProtectedRoute>} />
+                                        <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program" feature="marketing_hub"><MarketingHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="marketing/reviews" element={<FeatureProtectedRoute featureId="storefront" feature="marketing_hub"><ReviewsPage /></FeatureProtectedRoute>} />
                                         <Route path="delivery-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                         <Route path="live-map" element={<FeatureProtectedRoute feature="delivery_tracking"><LiveMap /></FeatureProtectedRoute>} />
                                         <Route path="gps-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><RunnerLocationTracking /></FeatureProtectedRoute>} />
