@@ -549,6 +549,8 @@ export function InvoicesPage() {
                 return <Badge className="bg-blue-500 hover:bg-blue-600">Sent</Badge>;
             case "draft":
                 return <Badge variant="secondary">Draft</Badge>;
+            case "partially_paid":
+                return <Badge className="bg-yellow-500 hover:bg-yellow-600">Partially Paid</Badge>;
             case "cancelled":
                 return <Badge variant="outline" className="text-muted-foreground">Cancelled</Badge>;
             default:
