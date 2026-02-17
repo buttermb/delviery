@@ -656,15 +656,15 @@ export function OrderDetailsPage() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel Order #{order.order_number}?</AlertDialogTitle>
+                    <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. The order will be marked as cancelled.
+                      This action cannot be undone. Inventory will be restored for all items in this order.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <div className="py-2">
-                    <Label>Reason for cancellation</Label>
+                    <Label>Reason for cancellation <span className="text-destructive">*</span></Label>
                     <Textarea
-                      placeholder="Enter reason (optional)"
+                      placeholder="Enter cancellation reason (required)"
                       value={cancellationReason}
                       onChange={(e) => setCancellationReason(e.target.value)}
                       rows={3}
@@ -675,7 +675,7 @@ export function OrderDetailsPage() {
                     <AlertDialogCancel>Keep Order</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleCancelOrder}
-                      disabled={updateStatusMutation.isPending}
+                      disabled={updateStatusMutation.isPending || !cancellationReason.trim()}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       {updateStatusMutation.isPending ? (
@@ -684,7 +684,7 @@ export function OrderDetailsPage() {
                           Cancelling...
                         </>
                       ) : (
-                        'Cancel Order'
+                        'Confirm Cancellation'
                       )}
                     </AlertDialogAction>
                   </AlertDialogFooter>
