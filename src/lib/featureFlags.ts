@@ -1,6 +1,34 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
+// Feature toggle defaults for tenant feature management
+// Core features are ALWAYS ON; advanced features default OFF for new tenants
+export const FEATURE_TOGGLE_DEFAULTS = {
+  // Core — always on
+  orders: true,
+  products: true,
+  menus: true,
+  invoices: true,
+  customers: true,
+  storefront: true,
+  // Advanced — default off
+  pos: false,
+  crm_advanced: false,
+  delivery_tracking: false,
+  live_map: false,
+  courier_portal: false,
+  analytics_advanced: false,
+  marketing_hub: false,
+  purchase_orders: false,
+  quality_control: false,
+  credits_system: false,
+  live_chat: false,
+  fleet_management: false,
+  vendor_management: false,
+} as const;
+
+export type FeatureToggleKey = keyof typeof FEATURE_TOGGLE_DEFAULTS;
+
 // Default flags as fallback when database is unavailable
 const defaultFlags: Record<string, boolean> = {
   'multi_tenant': true,
@@ -9,6 +37,8 @@ const defaultFlags: Record<string, boolean> = {
   'USE_HTTP_ONLY_COOKIES': true,
   'ENABLE_RATE_LIMITING': true,
   'ENABLE_CAPTCHA': true,
+  // Merge feature toggle defaults into the global defaults
+  ...FEATURE_TOGGLE_DEFAULTS,
 };
 
 // Cache for feature flags to avoid repeated DB calls
