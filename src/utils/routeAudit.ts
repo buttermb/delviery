@@ -77,13 +77,11 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/finance-hub',
   '/admin/billing',
   '/admin/commission-tracking',
-  '/admin/finance-hub?tab=revenue',
   '/admin/advanced-invoice',
 
   // Fulfillment & Delivery
   '/admin/fulfillment-hub',
   '/admin/delivery-management',
-  '/admin/fulfillment-hub?tab=dashboard',
   '/admin/delivery-zones',
   '/admin/route-optimizer',
   '/admin/delivery-analytics',
@@ -96,7 +94,6 @@ const VALID_ADMIN_ROUTES = new Set([
 
   // Operations
   '/admin/operations-hub',
-  '/admin/staff-management',
   '/admin/team-members',
   '/admin/team-management',
   '/admin/role-management',
