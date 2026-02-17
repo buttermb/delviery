@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +86,7 @@ export function CustomerManagement() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
@@ -284,7 +286,7 @@ export function CustomerManagement() {
 
   const filteredCustomers = customers.filter((customer) => {
     const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
-    const search = searchTerm.toLowerCase();
+    const search = debouncedSearchTerm.toLowerCase();
     const matchesSearch =
       fullName.includes(search) ||
       customer.email?.toLowerCase().includes(search) ||
@@ -666,9 +668,9 @@ export function CustomerManagement() {
             {filteredCustomers.length === 0 && (
               <EnhancedEmptyState
                 icon={Users}
-                title={searchTerm ? "No Customers Found" : "No Customers Yet"}
-                description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
-                primaryAction={!searchTerm ? {
+                title={debouncedSearchTerm ? "No Customers Found" : "No Customers Yet"}
+                description={debouncedSearchTerm ? "No customers match your search." : "Add your first customer to get started."}
+                primaryAction={!debouncedSearchTerm ? {
                   label: "Add Your First Customer",
                   onClick: () => navigateToAdmin('customers/new'),
                   icon: Plus
@@ -684,9 +686,9 @@ export function CustomerManagement() {
         {filteredCustomers.length === 0 ? (
           <EnhancedEmptyState
             icon={Users}
-            title={searchTerm ? "No Customers Found" : "No Customers Yet"}
-            description={searchTerm ? "No customers match your search." : "Add your first customer to get started."}
-            primaryAction={!searchTerm ? {
+            title={debouncedSearchTerm ? "No Customers Found" : "No Customers Yet"}
+            description={debouncedSearchTerm ? "No customers match your search." : "Add your first customer to get started."}
+            primaryAction={!debouncedSearchTerm ? {
               label: "Add Your First Customer",
               onClick: () => navigateToAdmin('customers/new'),
               icon: Plus
