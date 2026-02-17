@@ -20,6 +20,7 @@ import {
     History,
     Workflow,
     FileText,
+    Link,
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Fragment, lazy, Suspense, useMemo, useCallback, useState } from 'react';
@@ -41,6 +42,7 @@ const PreOrdersPage = lazy(() => import('@/pages/admin/PreOrdersPage'));
 const LiveOrders = lazy(() => import('@/pages/admin/LiveOrders'));
 const OrderPipelinePage = lazy(() => import('@/pages/tenant-admin/OrderPipelinePage'));
 const Orders = lazy(() => import('@/pages/admin/Orders'));
+const DisposableMenuOrders = lazy(() => import('@/pages/admin/DisposableMenuOrders'));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -54,6 +56,7 @@ const tabs = [
     { id: 'live', label: 'Pending', icon: Radio, group: 'Live' },
     { id: 'history', label: 'All', icon: History, group: 'Live' },
     // Order Sources
+    { id: 'menu', label: 'Menu', tooltip: 'Disposable Menu Orders', icon: Link, group: 'Sources' },
     { id: 'wholesale', label: 'B2B', tooltip: 'Business-to-Business Orders', icon: Package, group: 'Sources' },
     { id: 'storefront', label: 'Store', icon: Store, group: 'Sources' },
     { id: 'preorders', label: 'Pre-Orders', icon: Clock, group: 'Sources' },
@@ -237,6 +240,13 @@ export default function OrdersHubPage() {
                     </ScrollableTabsList>
                 </div>
 
+
+                {/* Menu Orders Tab */}
+                <TabsContent value="menu" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <DisposableMenuOrders />
+                    </Suspense>
+                </TabsContent>
 
                 {/* Wholesale Orders Tab */}
                 <TabsContent value="wholesale" className="m-0">

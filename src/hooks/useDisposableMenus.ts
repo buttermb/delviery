@@ -264,12 +264,13 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = (supabase as any)
+      let query = supabase
         .from('menu_orders')
         .select(`
           id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at, updated_at,
           menu:disposable_menus(name)
         `)
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(100);
 
