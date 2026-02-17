@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import {
     Table,
@@ -47,6 +47,32 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
+
+interface PaymentHistoryEntry {
+    amount: number;
+    method: string;
+    date: string;
+    reference: string | null;
+    notes: string | null;
+    recorded_at: string;
+}
+
+function isPaymentHistoryEntry(entry: unknown): entry is PaymentHistoryEntry {
+    if (typeof entry !== 'object' || entry === null) return false;
+    const obj = entry as Record<string, unknown>;
+    return typeof obj.amount === 'number' && typeof obj.method === 'string' && typeof obj.date === 'string';
+}
+
+function formatPaymentMethod(method: string): string {
+    const map: Record<string, string> = {
+        cash: 'Cash',
+        check: 'Check',
+        bank_transfer: 'Bank Transfer',
+        card: 'Card',
+        other: 'Other',
+    };
+    return map[method] || method;
+}
 
 export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
@@ -352,7 +378,69 @@ export default function InvoiceDetailPage() {
                                         <span>Total:</span>
                                         <span>{formatCurrency(invoice.total)}</span>
                                     </div>
+                                    {(invoice.amount_paid ?? 0) > 0 && (
+                                        <>
+                                            <Separator className="my-2 w-48" />
+                                            <div className="flex justify-between w-48 text-green-600">
+                                                <span>Paid:</span>
+                                                <span>{formatCurrency(invoice.amount_paid || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between w-48 font-bold">
+                                                <span>Balance:</span>
+                                                <span className={invoice.total - (invoice.amount_paid || 0) > 0 ? 'text-red-600' : 'text-green-600'}>
+                                                    {formatCurrency(Math.max(0, invoice.total - (invoice.amount_paid || 0)))}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
+
+                                {/* Payment History */}
+                                {(() => {
+                                    const payments = Array.isArray(invoice.payment_history)
+                                        ? invoice.payment_history.filter(isPaymentHistoryEntry)
+                                        : [];
+                                    if (payments.length === 0) return null;
+                                    let runningBalance = invoice.total;
+                                    return (
+                                        <div className="p-6 border-t">
+                                            <h3 className="font-semibold text-sm mb-3">Payments</h3>
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead className="pl-0">Date</TableHead>
+                                                        <TableHead>Method</TableHead>
+                                                        <TableHead>Reference</TableHead>
+                                                        <TableHead className="text-right">Amount</TableHead>
+                                                        <TableHead className="text-right pr-0">Balance</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {payments.map((payment, idx) => {
+                                                        runningBalance -= payment.amount;
+                                                        return (
+                                                            <TableRow key={idx}>
+                                                                <TableCell className="pl-0">
+                                                                    {format(parseISO(payment.date), "MMM d, yyyy")}
+                                                                </TableCell>
+                                                                <TableCell>{formatPaymentMethod(payment.method)}</TableCell>
+                                                                <TableCell className="text-muted-foreground">
+                                                                    {payment.reference || '—'}
+                                                                </TableCell>
+                                                                <TableCell className="text-right text-green-600">
+                                                                    {formatCurrency(payment.amount)}
+                                                                </TableCell>
+                                                                <TableCell className="text-right pr-0">
+                                                                    {formatCurrency(Math.max(0, runningBalance))}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    );
+                                })()}
 
                                 {invoice.notes && (
                                     <div className="p-6 bg-muted/10 border-t print:bg-white">
