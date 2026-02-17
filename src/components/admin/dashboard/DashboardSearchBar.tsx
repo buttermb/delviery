@@ -20,6 +20,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -169,6 +170,7 @@ export function DashboardSearchBar({
       }
 
       const searchLower = debouncedTerm.toLowerCase();
+      const escapedSearch = escapePostgresLike(searchLower);
       const results: GlobalSearchResult[] = [];
 
       try {
@@ -186,7 +188,7 @@ export function DashboardSearchBar({
             .from('profiles')
             .select('id, user_id, full_name, phone')
             .eq('account_id', tenant.id)
-            .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+            .or(`full_name.ilike.%${escapedSearch}%,phone.ilike.%${escapedSearch}%`)
             .limit(5),
 
           // Search orders
@@ -194,7 +196,7 @@ export function DashboardSearchBar({
             .from('orders')
             .select('id, order_number, status, total_amount, customer_name')
             .eq('tenant_id', tenant.id)
-            .or(`order_number.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
+            .or(`order_number.ilike.%${escapedSearch}%,customer_name.ilike.%${escapedSearch}%`)
             .limit(5),
 
           // Search products
@@ -202,7 +204,7 @@ export function DashboardSearchBar({
             .from('products')
             .select('id, name, sku, category')
             .eq('tenant_id', tenant.id)
-            .or(`name.ilike.%${searchLower}%,sku.ilike.%${searchLower}%`)
+            .or(`name.ilike.%${escapedSearch}%,sku.ilike.%${escapedSearch}%`)
             .limit(5),
 
           // Search wholesale clients
@@ -210,7 +212,7 @@ export function DashboardSearchBar({
             .from('wholesale_clients')
             .select('id, business_name, contact_name, email')
             .eq('tenant_id', tenant.id)
-            .or(`business_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%`)
+            .or(`business_name.ilike.%${escapedSearch}%,contact_name.ilike.%${escapedSearch}%,email.ilike.%${escapedSearch}%`)
             .limit(5),
 
           // Search wholesale orders
@@ -218,7 +220,7 @@ export function DashboardSearchBar({
             .from('wholesale_orders')
             .select('id, status, total_amount, wholesale_clients(business_name)')
             .eq('tenant_id', tenant.id)
-            .ilike('id', `%${searchLower}%`)
+            .ilike('id', `%${escapedSearch}%`)
             .limit(5),
 
           // Search couriers
@@ -226,7 +228,7 @@ export function DashboardSearchBar({
             .from('couriers')
             .select('id, full_name, phone, vehicle_type')
             .eq('tenant_id', tenant.id)
-            .or(`full_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+            .or(`full_name.ilike.%${escapedSearch}%,phone.ilike.%${escapedSearch}%`)
             .limit(5),
         ]);
 
