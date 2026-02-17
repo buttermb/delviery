@@ -204,9 +204,10 @@ export function EnhancedMenuDashboard() {
         ) : (
           <div className="space-y-3">
             {activeMenus.map((menu) => {
-              const viewCount = (menu as any).menu_access_logs?.length || 0;
-              const orderCount = (menu as any).menu_orders?.length || 0;
-              const customerCount = (menu as any).menu_access_whitelist?.length || 0;
+              const menuRecord = menu as unknown as Record<string, unknown>;
+              const viewCount = Array.isArray(menuRecord.menu_access_logs) ? menuRecord.menu_access_logs.length : 0;
+              const orderCount = Array.isArray(menuRecord.menu_orders) ? menuRecord.menu_orders.length : 0;
+              const customerCount = Array.isArray(menuRecord.menu_access_whitelist) ? menuRecord.menu_access_whitelist.length : 0;
               const menuUrl = `/m/${menu.encrypted_url_token}`;
               const fullMenuUrl = `${window.location.protocol}//${window.location.host}${menuUrl}`;
 
@@ -284,8 +285,13 @@ export function EnhancedMenuDashboard() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
-                    <Button variant="outline" size="sm">
-                      📋 View Menu
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`/m/${menu.encrypted_url_token}`, '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Preview Menu
                     </Button>
                     <Button variant="outline" size="sm">
                       👥 Manage Access
