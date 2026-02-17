@@ -167,6 +167,25 @@ interface OrderDetails {
     variant: string | null;
     image_url: string | null;
   }>;
+  metadata?: {
+    refund?: {
+      type: string;
+      amount: number;
+      reason: string;
+      method: string;
+      notes?: string | null;
+      restoreInventory?: boolean;
+      processedAt: string;
+      processedBy?: string | null;
+      inventoryRestored?: boolean;
+      lineItems?: Array<{
+        product_id: string;
+        product_name: string;
+        quantity: number;
+        unit_price: number;
+      }> | null;
+    };
+  } | null;
 }
 
 export function OrderDetailsPage() {
@@ -246,6 +265,7 @@ export function OrderDetailsPage() {
           user_id: null,
           customer_id: unifiedOrder.customer_id,
           wholesale_client_id: unifiedOrder.wholesale_client_id,
+          metadata: (unifiedOrder as Record<string, unknown>).metadata as OrderDetails['metadata'] ?? null,
           customer: unifiedOrder.customer,
           courier: unifiedOrder.courier,
           order_items: (unifiedOrder.items || []).map((item: Record<string, unknown>) => ({
@@ -289,6 +309,7 @@ export function OrderDetailsPage() {
         source_session_id: (data as Record<string, unknown>).source_session_id as string | null ?? null,
         tax_amount: (data as Record<string, unknown>).tax_amount as number ?? 0,
         updated_at: (data as Record<string, unknown>).updated_at as string ?? data.created_at,
+        metadata: (data as Record<string, unknown>).metadata as OrderDetails['metadata'] ?? null,
         order_items: data.order_items || [],
       } as unknown as OrderDetails;
     },
@@ -987,6 +1008,70 @@ export function OrderDetailsPage() {
                 }}
               />
             </div>
+
+            {/* Refund History — only render if refund data exists */}
+            {order.metadata?.refund && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <RotateCcw className="w-5 h-5" />
+                    Refund History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={order.metadata.refund.type === 'full' ? 'destructive' : 'secondary'}>
+                      {order.metadata.refund.type === 'full' ? 'Full Refund' : 'Partial Refund'}
+                    </Badge>
+                    {order.metadata.refund.inventoryRestored && (
+                      <Badge variant="outline" className="text-xs">Inventory Restored</Badge>
+                    )}
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Amount</span>
+                      <span className="font-medium text-destructive">{formatCurrency(order.metadata.refund.amount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Method</span>
+                      <span className="capitalize">{order.metadata.refund.method.replace('_', ' ')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Date</span>
+                      <span>{format(new Date(order.metadata.refund.processedAt), 'MMM d, yyyy h:mm a')}</span>
+                    </div>
+                    {order.metadata.refund.reason && (
+                      <div>
+                        <span className="text-muted-foreground">Reason</span>
+                        <p className="mt-0.5">{order.metadata.refund.reason}</p>
+                      </div>
+                    )}
+                    {order.metadata.refund.notes && (
+                      <div>
+                        <span className="text-muted-foreground">Notes</span>
+                        <p className="mt-0.5">{order.metadata.refund.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                  {order.metadata.refund.lineItems && order.metadata.refund.lineItems.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Refunded Items</p>
+                        <div className="space-y-1">
+                          {order.metadata.refund.lineItems.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-sm">
+                              <span>{item.product_name} x{item.quantity}</span>
+                              <span>{formatCurrency(item.unit_price * item.quantity)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Delivery Status with Real-time Sync — hide on print */}
             <div className="print:hidden">
