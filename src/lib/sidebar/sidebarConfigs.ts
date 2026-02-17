@@ -186,7 +186,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Operations',
     items: [
       createItem('suppliers', 'Suppliers', '/admin/operations-hub', Building2),
-      createItem('team-members', 'Team', '/admin/staff-management', Users),
+      createItem('team-members', 'Team', '/admin/team-members', Users),
     ],
   },
   {
