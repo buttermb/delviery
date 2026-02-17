@@ -7,6 +7,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { ParsedProduct, ImportResult, ImportProgress } from '@/types/migration';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 const BATCH_SIZE = 50;
 
@@ -158,7 +159,7 @@ async function importSingleProduct(
       .from('products')
       .select('id, name')
       .eq('tenant_id', tenantId)
-      .ilike('name', product.name)
+      .ilike('name', escapePostgresLike(product.name))
       .maybeSingle();
 
     if (existing) {
