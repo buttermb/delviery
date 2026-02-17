@@ -851,9 +851,10 @@ function CashRegisterContent() {
       lastKeyTimeRef.current = currentTime;
 
       if (e.key === 'Enter' && barcodeBufferRef.current.length > 3) {
-        // Look up product by barcode
+        // Look up product by barcode, fall back to SKU
         const barcode = barcodeBufferRef.current;
-        const product = products.find(p => p.barcode === barcode);
+        const product = products.find(p => p.barcode === barcode)
+          || products.find(p => p.sku === barcode);
 
         if (product) {
           addToCart(product);
