@@ -205,9 +205,6 @@ export function validatePromotionCode(
     code: string,
     promotions: Promotion[]
 ): Promotion | null {
-    // Note: 'now' reserved for future date validation
-    // const now = new Date();
-
     const promotion = promotions.find(p =>
         p.code.toUpperCase() === code.toUpperCase()
     );

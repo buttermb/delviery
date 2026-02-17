@@ -64,9 +64,6 @@ export function SLAComplianceWidget({ className }: SLAComplianceWidgetProps) {
         status_changed_at: order.accepted_at || null,
       }));
 
-      // TODO: In the future, get SLA targets from tenant settings
-      // const tenantSLATargets = tenant.features?.sla_targets || DEFAULT_SLA_TARGETS;
-
       return calculateSLAComplianceSummary(orders, DEFAULT_SLA_TARGETS);
     },
     enabled: !!tenant?.id,

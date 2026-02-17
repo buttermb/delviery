@@ -63,7 +63,6 @@ import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
 import { PerformanceMonitor } from "./utils/performance";
 import { runRouteAudit } from "./utils/routeAudit";
 import { STARTER_SIDEBAR, PROFESSIONAL_SIDEBAR, ENTERPRISE_SIDEBAR } from "./lib/sidebar/sidebarConfigs";
-// Clerk removed - using Supabase Auth only
 
 import { initCapacitor } from '@/lib/capacitor';
 
@@ -176,8 +175,6 @@ const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/Dashboa
 const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
 const FinancialCommandCenterPage = lazy(() => import("./pages/admin/FinancialCommandCenter"));
 const CollectionModePage = lazy(() => import("./pages/admin/CollectionMode"));
-// Billing is now handled in Settings - redirect below
-// const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
 const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
@@ -189,7 +186,6 @@ const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
-// const ProductManagement = lazy(() => import("./pages/admin/ProductManagement")); // Moved to InventoryHub
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
@@ -200,34 +196,21 @@ const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
 const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
 const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysisPage"));
 
-// Built pages missing routes (currently locked in sidebar)
 const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
 const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
 const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
-// const PointOfSale = lazy(() => import("./pages/admin/PointOfSale")); // Available for future use
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
 
-// Hidden gems - pages that exist but aren't in config
 const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
-// Tenant-admin versions (if they exist)
 const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
 const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
-// const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage")); // Available for future use
 const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
 const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
-// const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal")); // Available for future use
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
-// Commented out - available for future use:
-// const SupplierManagementPage = lazy(() => import("./pages/admin/SupplierManagementPage"));
-// const PurchaseOrdersPage = lazy(() => import("./pages/admin/PurchaseOrdersPage"));
-// const ReturnsManagementPage = lazy(() => import("./pages/admin/ReturnsManagementPage"));
-// const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage"));
-// const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
-// const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
 const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
 const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage").then(m => ({ default: m.InvoicesPage })));
@@ -239,18 +222,11 @@ const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
 const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
 const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
 const DeliveryTrackingPage = lazy(() => import("./pages/portal/DeliveryTrackingPage"));
-// Commented out - available for future use:
-// const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
-// const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
-// const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage"));
-// const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
-// const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
 const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
 const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
 const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
 const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage").then(m => ({ default: m.VendorOrderDetailPage })));
 const ProtectedVendorRoute = lazy(() => import("./components/vendor/ProtectedVendorRoute"));
-// const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnalyticsPage")); // Available for future use
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
@@ -265,7 +241,6 @@ const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage
 const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
 const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
 const PricingTiersPage = lazy(() => import("./pages/admin/wholesale/PricingTiersPage"));
-// const InventoryMonitoringPage = lazy(() => import("./pages/admin/InventoryMonitoringPage")); // Moved to InventoryHub
 const DeveloperTools = lazy(() => import("./pages/admin/DeveloperTools"));
 const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
 const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
@@ -277,18 +252,6 @@ const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
 const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage"));
 const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
 const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomationPage"));
-
-// White-Label Storefront Pages (Admin) - commented out, available for future use
-// const StorefrontDashboard = lazy(() => import("./pages/admin/storefront/StorefrontDashboard"));
-// const StorefrontSettings = lazy(() => import("@/pages/admin/storefront/StorefrontSettings"));
-// const StorefrontBuilder = lazy(() => import("@/pages/admin/storefront/StorefrontBuilder").then(m => ({ default: m.StorefrontBuilder })));
-// const StorefrontProducts = lazy(() => import("./pages/admin/storefront/StorefrontProducts"));
-// const StorefrontOrders = lazy(() => import("./pages/admin/storefront/StorefrontOrders"));
-// const StorefrontBundles = lazy(() => import("./pages/admin/storefront/StorefrontBundles"));
-// const StorefrontLiveOrders = lazy(() => import("./pages/admin/storefront/StorefrontLiveOrders"));
-// const StorefrontCustomers = lazy(() => import("./pages/admin/storefront/StorefrontCustomers"));
-// const StorefrontCoupons = lazy(() => import("./pages/admin/storefront/StorefrontCoupons"));
-// const StorefrontAnalytics = lazy(() => import("./pages/admin/storefront/StorefrontAnalytics"));
 
 // Marketplace Admin (B2C)
 const MarketplaceDashboard = lazy(() => import("./pages/admin/marketplace/MarketplaceDashboard"));
@@ -328,7 +291,6 @@ const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"))
 const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
 const SettingsHubPage = lazy(() => import("./pages/admin/hubs/SettingsHubPage"));
 const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
-// const IntegrationsHubPage = lazy(() => import("./pages/admin/hubs/IntegrationsHubPage")); // Available for future use
 const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
 const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
 const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
@@ -345,7 +307,6 @@ const BulkOperationsPage = lazy(() => import("./pages/tenant-admin/BulkOperation
 const APIAccessPage = lazy(() => import("./pages/tenant-admin/APIAccessPage"));
 const WebhooksPage = lazy(() => import("./pages/tenant-admin/WebhooksPage"));
 const CustomIntegrationsPage = lazy(() => import("./pages/tenant-admin/CustomIntegrationsPage"));
-// const AutomationPage = lazy(() => import("./pages/tenant-admin/AutomationPage")); // Available for future use
 const DataExportPage = lazy(() => import("./pages/tenant-admin/DataExportPage"));
 const AuditTrailPage = lazy(() => import("./pages/tenant-admin/AuditTrailPage"));
 const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"));
@@ -383,7 +344,6 @@ const MessagesPage = lazy(() => import("./pages/tenant-admin/marketplace/Message
 // Platform Admin Routes
 const PlatformAdminLayout = lazy(() => import('@/layouts/PlatformAdminLayout'));
 const AllTenantsPage = lazy(() => import('@/pages/platform-admin/AllTenantsPage'));
-// const CommissionTrackingPage = lazy(() => import('@/pages/platform-admin/CommissionTrackingPage'));
 const DesignSystemPage = lazy(() => import('@/pages/platform-admin/DesignSystemPage'));
 
 // Courier Pages
