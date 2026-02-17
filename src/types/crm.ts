@@ -325,6 +325,9 @@ export interface InvoiceFormValues {
     due_date: string;
     line_items: LineItem[];
     tax_rate?: number;
+    subtotal?: number;
+    tax_amount?: number;
+    total?: number;
     status?: 'draft' | 'sent' | 'paid' | 'overdue';
     notes?: string;
 }

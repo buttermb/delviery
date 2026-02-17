@@ -109,10 +109,11 @@ export default function CreateInvoicePage() {
                     status: values.status,
                     line_items: lineItems,
                     tax_rate: taxRate,
+                    subtotal,
                     tax_amount: taxAmount,
                     total,
                     notes: values.notes,
-                } as any);
+                });
 
                 // Log activity
                 logActivity.mutate({

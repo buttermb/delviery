@@ -760,8 +760,8 @@ export interface CreateOrderInvoiceInput {
   paymentTerms?: string;
 }
 
-// Helper to cast Supabase client to avoid deep type instantiation
-const db = supabase as any;
+// Helper for untyped RPC calls not in generated types
+const rpcClient = supabase as unknown as { rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> };
 
 /**
  * Hook for generating and saving order invoices to database
@@ -782,7 +782,7 @@ export function useOrderInvoiceSave() {
       // Generate invoice number from tenant sequence using RPC
       let invoiceNumber = `INV-${order.tracking_code}-${Date.now()}`;
       try {
-        const genResult = await db.rpc('generate_invoice_number', { tenant_id: tenant.id });
+        const genResult = await rpcClient.rpc('generate_invoice_number', { tenant_id: tenant.id });
         if (!genResult.error && typeof genResult.data === 'string' && genResult.data.trim()) {
           invoiceNumber = genResult.data;
         }
@@ -817,7 +817,7 @@ export function useOrderInvoiceSave() {
         .join('\n\n');
 
       // Insert invoice record into customer_invoices table
-      const result = await db.from('customer_invoices').insert({
+      const result = await supabase.from('customer_invoices').insert({
         tenant_id: tenant.id,
         customer_id: customerId,
         invoice_number: invoiceNumber,

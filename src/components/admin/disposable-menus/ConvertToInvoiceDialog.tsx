@@ -87,7 +87,7 @@ export function ConvertToInvoiceDialog({
   // Calculate order totals
   const orderItems = useMemo(() => {
     const items = order.order_data?.items || [];
-    return items.map((item: any) => ({
+    return items.map((item) => ({
       product_name: item.name || item.product_name || 'Unknown Product',
       quantity: Number(item.quantity || 1),
       price: Number(item.price || item.unit_price || 0),
