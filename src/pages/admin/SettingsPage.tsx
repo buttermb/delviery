@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload
+  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload, ToggleRight
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +23,7 @@ import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer'
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
+import { FeatureTogglesPanel } from '@/components/admin/settings/FeatureTogglesPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -421,6 +422,10 @@ export default function SettingsPage() {
             <CreditCard className="h-4 w-4 mr-2" />
             Payments
           </TabsTrigger>
+          <TabsTrigger value="features" className="justify-start lg:justify-center w-full lg:w-auto">
+            <ToggleRight className="h-4 w-4 mr-2" />
+            Features
+          </TabsTrigger>
         </TabsList>
 
         {/* General Settings */}
@@ -703,6 +708,20 @@ export default function SettingsPage() {
           ) : (
             <PaymentSettingsForm onSave={async () => { }} />
           )}
+        </TabsContent>
+
+        {/* Feature Toggles */}
+        <TabsContent value="features">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <ToggleRight className="h-5 w-5" />
+              Feature Toggles
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Enable or disable optional features for your account. Core features like Orders, Products, and Invoices are always available.
+            </p>
+            <FeatureTogglesPanel />
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
