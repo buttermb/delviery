@@ -948,7 +948,7 @@ const App = () => {
                                         <Route path="delivery-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
                                         <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                                         <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
-                                        <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><POSHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="pos-system" element={<FeatureProtectedRoute feature="pos"><POSHubPage /></FeatureProtectedRoute>} />
                                         <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
                                         <Route path="locations/warehouses" element={<FeatureProtectedRoute featureId="locations"><WarehousesPage /></FeatureProtectedRoute>} />
                                         <Route path="locations/runners" element={<FeatureProtectedRoute featureId="locations"><RunnersPage /></FeatureProtectedRoute>} />
@@ -1017,10 +1017,10 @@ const App = () => {
                                         <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTrackingPage /></FeatureProtectedRoute>} />
                                         <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReportsPage /></FeatureProtectedRoute>} />
                                         <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
-                                        <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegisterPage /></FeatureProtectedRoute>} />
-                                        <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><POSAnalyticsPage /></FeatureProtectedRoute>} />
-                                        <Route path="pos-shifts" element={<FeatureProtectedRoute featureId="pos-shifts"><POSShiftsPage /></FeatureProtectedRoute>} />
-                                        <Route path="z-reports" element={<FeatureProtectedRoute featureId="z-reports"><ZReportPage /></FeatureProtectedRoute>} />
+                                        <Route path="cash-register" element={<FeatureProtectedRoute feature="pos"><CashRegisterPage /></FeatureProtectedRoute>} />
+                                        <Route path="pos-analytics" element={<FeatureProtectedRoute feature="pos"><POSAnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="pos-shifts" element={<FeatureProtectedRoute feature="pos"><POSShiftsPage /></FeatureProtectedRoute>} />
+                                        <Route path="z-reports" element={<FeatureProtectedRoute feature="pos"><ZReportPage /></FeatureProtectedRoute>} />
                                         <Route path="role-management" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="activity-logs" element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager']}><FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
 
