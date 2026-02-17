@@ -80,7 +80,7 @@ export default function InvoiceDetailPage() {
     const { tenant } = useTenant();
     const { useInvoiceQuery, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice, useDeleteInvoice } = useInvoices();
 
-    const { data: invoice, isLoading } = useInvoiceQuery(invoiceId || '');
+    const { data: invoice, isLoading, error } = useInvoiceQuery(invoiceId || '');
     const relatedPreOrders = useRelatedInvoicePreOrders(invoice?.client_id, invoiceId);
     const markAsSent = useMarkInvoiceSent();
     const voidInvoiceMutation = useVoidInvoice();
@@ -95,8 +95,24 @@ export default function InvoiceDetailPage() {
         return <div className="p-8 text-center">Loading invoice details...</div>;
     }
 
-    if (!invoice) {
-        return <div className="p-8 text-center">Invoice not found</div>;
+    if (error || !invoice) {
+        return (
+            <div className="space-y-6 p-6 max-w-5xl mx-auto">
+                <Card>
+                    <CardContent className="py-16 text-center">
+                        <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                        <h2 className="text-xl font-semibold mb-2">Invoice Not Found</h2>
+                        <p className="text-muted-foreground mb-6">
+                            The invoice you're looking for doesn't exist or has been removed.
+                        </p>
+                        <Button variant="outline" onClick={() => navigateToAdmin("crm/invoices")}>
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Invoices
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
 
     const handleMarkAsSent = () => {
