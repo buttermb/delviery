@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Shield, Lock, MapPin, CheckCircle, Loader2,
   Clock, Fingerprint, ShoppingCart, Plus,
-  Minus, Search, ArrowLeft, Package, X, Leaf
+  Minus, Search, ArrowLeft, Package, X, Leaf,
+  CalendarX2, Ban
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -833,6 +834,75 @@ function MenuBrowseView({
 }
 
 // ============================================
+// Menu Unavailable Page (Expired / Burned)
+// ============================================
+
+function MenuUnavailablePage({
+  reason,
+}: {
+  reason: 'expired' | 'burned' | 'unavailable';
+}) {
+  const isExpired = reason === 'expired';
+  const Icon = isExpired ? CalendarX2 : Ban;
+  const title = isExpired ? 'This Menu Has Expired' : 'This Menu Is No Longer Available';
+  const description = isExpired
+    ? 'The link you followed has expired. Menus are time-limited for security.'
+    : 'This menu has been deactivated by the business.';
+
+  return (
+    <div className="min-h-dvh relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+
+      {/* Content */}
+      <div className="relative z-10 min-h-dvh flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8 text-center">
+          {/* Icon */}
+          <div className="relative inline-block mx-auto">
+            <div className={cn(
+              'absolute inset-0 rounded-full blur-xl animate-pulse',
+              isExpired ? 'bg-amber-500/20' : 'bg-red-500/20'
+            )} />
+            <div className={cn(
+              'relative w-24 h-24 mx-auto rounded-full flex items-center justify-center',
+              isExpired
+                ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+                : 'bg-gradient-to-br from-red-500 to-rose-600'
+            )}>
+              <Icon className="h-12 w-12 text-white" />
+            </div>
+          </div>
+
+          {/* Message */}
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold text-white">{title}</h1>
+            <p className="text-white/60 text-lg leading-relaxed">{description}</p>
+          </div>
+
+          {/* Contact CTA */}
+          <Card className="p-6 bg-white/5 backdrop-blur-xl border-white/10">
+            <p className="text-white/70 text-sm">
+              Please contact the business for an updated link.
+            </p>
+          </Card>
+
+          {/* Security badge */}
+          <div className="flex justify-center">
+            <Badge
+              variant="outline"
+              className="gap-1.5 border-white/20 text-white/50"
+            >
+              <Shield className="h-3 w-3" />
+              Secured by FloraIQ
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // Main SecureMenuAccess Component
 // ============================================
 
@@ -851,6 +921,7 @@ export const SecureMenuAccess = () => {
   const [error, setError] = useState('');
   const [shakeError, setShakeError] = useState(false);
   const [menuData, setMenuData] = useState<MenuDataResponse | null>(null);
+  const [menuUnavailableReason, setMenuUnavailableReason] = useState<'expired' | 'burned' | 'unavailable' | null>(null);
 
   const steps = [
     { id: 'location', label: 'Location', icon: MapPin },
@@ -957,7 +1028,17 @@ export const SecureMenuAccess = () => {
           setMenuData(data.menu_data as MenuDataResponse);
           return;
         } else if (data.violations) {
-          throw new Error(data.violations.join(', '));
+          const violations = data.violations as string[];
+          const violationText = violations.join(', ').toLowerCase();
+          if (violationText.includes('expired')) {
+            setMenuUnavailableReason('expired');
+            return;
+          }
+          if (violationText.includes('no longer available')) {
+            setMenuUnavailableReason('burned');
+            return;
+          }
+          throw new Error(violations.join(', '));
         } else if (data.error) {
           throw new Error(data.error);
         }
@@ -981,6 +1062,11 @@ export const SecureMenuAccess = () => {
     setLocationStatus('skipped');
     setCurrentStep('code');
   };
+
+  // Show branded error page for expired/burned menus
+  if (menuUnavailableReason) {
+    return <MenuUnavailablePage reason={menuUnavailableReason} />;
+  }
 
   // Show inline menu browse when access granted
   if (menuData) {
