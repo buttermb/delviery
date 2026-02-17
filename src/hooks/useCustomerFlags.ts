@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 // ============================================================================
 // Types
@@ -479,7 +480,7 @@ export async function isCustomerBlockedByEmail(
       .from('customers')
       .select('id')
       .eq('tenant_id', tenantId)
-      .ilike('email', email.toLowerCase().trim())
+      .ilike('email', escapePostgresLike(email.toLowerCase().trim()))
       .maybeSingle();
 
     if (customerError) {
