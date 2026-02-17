@@ -772,7 +772,12 @@ export function InvoicesPage() {
                                                 />
                                             </p>
                                         </div>
-                                        {getStatusBadge(invoice.status)}
+                                        <div className="flex items-center gap-1.5">
+                                            {getStatusBadge(invoice.status)}
+                                            {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
+                                                <Badge variant="destructive">Overdue</Badge>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="flex justify-between items-end">
@@ -936,7 +941,12 @@ export function InvoicesPage() {
                                             {formatCurrency(invoice.total)}
                                         </TableCell>
                                         <TableCell>
-                                            {getStatusBadge(invoice.status)}
+                                            <div className="flex items-center gap-1.5">
+                                                {getStatusBadge(invoice.status)}
+                                                {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
+                                                    <Badge variant="destructive">Overdue</Badge>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
