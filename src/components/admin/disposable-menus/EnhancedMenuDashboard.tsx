@@ -14,7 +14,7 @@ import {
   Eye, ShoppingCart, ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { CreateMenuDialog } from './CreateMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
@@ -210,15 +210,25 @@ export function EnhancedMenuDashboard() {
               const menuUrl = `/m/${menu.encrypted_url_token}`;
               const fullMenuUrl = `${window.location.protocol}//${window.location.host}${menuUrl}`;
 
+              const menuIsExpired = !menu.never_expires && menu.expiration_date
+                ? isPast(new Date(menu.expiration_date))
+                : false;
+
               return (
                 <Card key={menu.id} className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold">{menu.name}</h3>
-                        <Badge variant="outline" className="bg-green-50 text-green-700">
-                          ACTIVE
-                        </Badge>
+                        {menuIsExpired ? (
+                          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
+                            Expired
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-green-50 text-green-700">
+                            Active
+                          </Badge>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground mb-3">
                         <div>
@@ -255,12 +265,14 @@ export function EnhancedMenuDashboard() {
                         </div>
                         {menu.expiration_date && !menu.never_expires && (
                           <div>
-                            <span className="font-medium">Expires:</span>{' '}
+                            <span className="font-medium">{menuIsExpired ? 'Expired:' : 'Expires:'}</span>{' '}
                             {format(new Date(menu.expiration_date), 'MMM d, yyyy')}
                             {' '}
-                            <Badge variant="outline" className="text-xs">
-                              {Math.ceil((new Date(menu.expiration_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days left
-                            </Badge>
+                            {!menuIsExpired && (
+                              <Badge variant="outline" className="text-xs">
+                                {formatDistanceToNow(new Date(menu.expiration_date), { addSuffix: false })} left
+                              </Badge>
+                            )}
                           </div>
                         )}
                         {menu.never_expires && (

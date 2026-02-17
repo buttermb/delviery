@@ -31,7 +31,7 @@ import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { MenuPaymentSettingsDialog } from './MenuPaymentSettingsDialog';
 import { MenuProductOrderingDialog } from './MenuProductOrderingDialog';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -88,16 +88,21 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const totalRevenue = menu.total_revenue || 0;
   const productCount = menu.disposable_menu_products?.length || 0;
 
-  const isActive = menu.status === 'active';
   const isBurned = menu.status === 'soft_burned' || menu.status === 'hard_burned';
+  const isExpired = !isBurned && !menu.never_expires && menu.expiration_date
+    ? isPast(new Date(menu.expiration_date))
+    : false;
+  const isActive = menu.status === 'active' && !isExpired;
   const isForumMenu = extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum';
 
   const statusConfig = {
     active: { label: 'Active', color: 'bg-success text-success-foreground' },
+    expired: { label: 'Expired', color: 'bg-warning text-warning-foreground' },
     soft_burned: { label: 'Soft Burned', color: 'bg-warning text-warning-foreground' },
     hard_burned: { label: 'Burned', color: 'bg-destructive text-destructive-foreground' },
   };
-  const status = statusConfig[menu.status as keyof typeof statusConfig] || statusConfig.active;
+  const effectiveStatus = isExpired ? 'expired' : menu.status;
+  const status = statusConfig[effectiveStatus as keyof typeof statusConfig] || statusConfig.active;
 
   const menuUrl = `${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`;
 
@@ -361,9 +366,14 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
           {!compact && (
             <div className="text-xs text-muted-foreground flex items-center justify-between">
               <span>Created {format(new Date(menu.created_at), 'MMM d, yyyy')}</span>
-              {menu.expiration_date && !menu.never_expires && (
+              {menu.expiration_date && !menu.never_expires && isExpired && (
                 <span className="text-warning">
-                  Expires {format(new Date(menu.expiration_date), 'MMM d')}
+                  Expired {format(new Date(menu.expiration_date), 'MMM d')}
+                </span>
+              )}
+              {menu.expiration_date && !menu.never_expires && isActive && (
+                <span className="text-success">
+                  {formatDistanceToNow(new Date(menu.expiration_date), { addSuffix: false })} left
                 </span>
               )}
               {menu.never_expires && (
