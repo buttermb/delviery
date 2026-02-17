@@ -23,7 +23,13 @@ type ColumnDef<T> = {
   id?: string;
   enableHiding?: boolean;
   visible?: boolean;
+  sortable?: boolean;
 };
+
+export type SortState = {
+  column: string;
+  ascending: boolean;
+} | null;
 
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -40,6 +46,9 @@ import {
   Search,
   Download,
   Filter,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VirtualizedTable } from './VirtualizedTable';
@@ -65,6 +74,8 @@ interface DataTableProps<TData, _TValue = unknown> {
   virtualizedThreshold?: number;
   virtualizedHeight?: number;
   virtualizedRowHeight?: number;
+  sort?: SortState;
+  onSortChange?: (sort: SortState) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -88,6 +99,8 @@ export function DataTable<TData, TValue>({
   virtualizedThreshold = 100,
   virtualizedHeight = 600,
   virtualizedRowHeight = 50,
+  sort,
+  onSortChange,
 }: DataTableProps<TData, TValue>) {
   const [searchValue, setSearchValue] = useState('');
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
@@ -295,11 +308,37 @@ export function DataTable<TData, TValue>({
                   />
                 </TableHead>
               )}
-              {visibleColumnsList.map((column, index) => (
-                <TableHead key={column.id || column.accessorKey?.toString() || index}>
-                  {column.header}
-                </TableHead>
-              ))}
+              {visibleColumnsList.map((column, index) => {
+                const colKey = column.id || column.accessorKey?.toString() || '';
+                const isSortable = column.sortable && onSortChange;
+                const isSorted = sort?.column === colKey;
+                return (
+                  <TableHead key={colKey || index}>
+                    {isSortable ? (
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 hover:text-foreground transition-colors -ml-2 px-2 py-1 rounded-md hover:bg-muted/50"
+                        onClick={() => {
+                          if (isSorted) {
+                            onSortChange(sort.ascending ? { column: colKey, ascending: false } : null);
+                          } else {
+                            onSortChange({ column: colKey, ascending: true });
+                          }
+                        }}
+                      >
+                        {column.header}
+                        {isSorted ? (
+                          sort.ascending ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />
+                        ) : (
+                          <ArrowUpDown className="h-3.5 w-3.5 opacity-40" />
+                        )}
+                      </button>
+                    ) : (
+                      column.header
+                    )}
+                  </TableHead>
+                );
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -17,7 +17,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable, type SortState } from '@/components/shared/DataTable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -118,9 +118,20 @@ export function OrdersListPage() {
     setSearchValue,
   } = useOrderFilters('orders-list-filters');
 
+  // Sort state — default: newest first
+  const [sort, setSort] = useState<SortState>({ column: 'created_at', ascending: false });
+
+  // Map sortable column keys to Supabase column names
+  const sortColumnMap: Record<string, string> = {
+    created_at: 'created_at',
+    total_amount: 'total_amount',
+    status: 'status',
+    order_number: 'order_number',
+  };
+
   // Fetch orders with cross-module data
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.orders.list(tenant?.id, { filters: activeFilters }),
+    queryKey: queryKeys.orders.list(tenant?.id, { filters: activeFilters, sort }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -139,7 +150,7 @@ export function OrdersListPage() {
           payment_status
         `)
         .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
+        .order(sort?.column && sortColumnMap[sort.column] ? sortColumnMap[sort.column] : 'created_at', { ascending: sort?.ascending ?? false });
 
       if (error) {
         logger.error('Failed to fetch orders', { error });
@@ -381,6 +392,7 @@ export function OrdersListPage() {
     {
       accessorKey: 'order_number',
       header: 'Order #',
+      sortable: true,
       cell: ({ original }: { original: Order }) => (
         <span className="font-mono font-medium">
           {original.order_number || original.id.slice(0, 8)}
@@ -409,6 +421,7 @@ export function OrdersListPage() {
     {
       accessorKey: 'status',
       header: 'Status',
+      sortable: true,
       cell: ({ original }: { original: Order }) => getStatusBadge(original.status),
     },
     {
@@ -421,6 +434,7 @@ export function OrdersListPage() {
     {
       accessorKey: 'total_amount',
       header: 'Total',
+      sortable: true,
       cell: ({ original }: { original: Order }) => (
         <span className="font-mono font-medium">${original.total_amount?.toFixed(2)}</span>
       ),
@@ -428,6 +442,7 @@ export function OrdersListPage() {
     {
       accessorKey: 'created_at',
       header: 'Date',
+      sortable: true,
       cell: ({ original }: { original: Order }) => (
         <span className="text-muted-foreground">
           {original.created_at ? format(new Date(original.created_at), 'MMM d, yyyy h:mm a') : 'N/A'}
@@ -622,6 +637,8 @@ export function OrdersListPage() {
         pagination
         pageSize={25}
         loading={isLoading}
+        sort={sort}
+        onSortChange={setSort}
         emptyMessage={
           Object.keys(activeFilters).length > 0 || searchValue
             ? "No orders match your filters"
