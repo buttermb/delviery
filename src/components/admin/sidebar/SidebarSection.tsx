@@ -11,8 +11,10 @@ import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
 import { matchesSearchQuery } from './SidebarSearch';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import type { SidebarSection as SidebarSectionType } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
+import type { FeatureToggleKey } from '@/lib/featureFlags';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -31,13 +33,18 @@ export function SidebarSection({
 }: SidebarSectionProps) {
   const { toggleCollapsedSection, preferences, searchQuery } = useSidebar();
   const { canAccess } = useFeatureAccess();
+  const { isEnabled: isFeatureFlagEnabled } = useTenantFeatureToggles();
   const [isOpen, setIsOpen] = useState(!section.collapsed && (section.defaultExpanded || section.pinned));
 
-  // Filter items based on search query
+  // Filter items based on feature flags and search query
   const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return section.items;
-    return section.items.filter((item) => matchesSearchQuery(item.name, searchQuery));
-  }, [section.items, searchQuery]);
+    const flagFiltered = section.items.filter((item) => {
+      if (!item.featureFlag) return true;
+      return isFeatureFlagEnabled(item.featureFlag as FeatureToggleKey);
+    });
+    if (!searchQuery.trim()) return flagFiltered;
+    return flagFiltered.filter((item) => matchesSearchQuery(item.name, searchQuery));
+  }, [section.items, searchQuery, isFeatureFlagEnabled]);
 
   // Check if any item in this section is active
   const hasActiveItem = useMemo(() => {
