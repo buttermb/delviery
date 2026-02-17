@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
@@ -455,7 +456,7 @@ export function useSearchProductTags(searchTerm: string) {
         .from('product_tags')
         .select('*')
         .eq('tenant_id', tenant.id)
-        .ilike('name', `%${searchTerm}%`)
+        .ilike('name', `%${escapePostgresLike(searchTerm)}%`)
         .order('name', { ascending: true })
         .limit(20);
 
