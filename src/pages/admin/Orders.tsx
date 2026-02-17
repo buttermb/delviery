@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
+import { Package, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -881,19 +881,24 @@ export default function Orders() {
                   : undefined
               }
               emptyState={{
-                icon: Package,
-                title: "No orders found",
+                icon: ShoppingCart,
+                title: hasActiveFilters ? "No orders found" : "No orders yet",
                 description: hasActiveFilters
-                  ? "We couldn't find any orders matching your filters."
-                  : "You haven't received any orders yet.",
-                primaryAction: !hasActiveFilters ? {
+                  ? "Try adjusting your filters to find orders"
+                  : "Orders appear here when customers order from your menus",
+                primaryAction: hasActiveFilters ? {
+                  label: "Clear Filters",
+                  onClick: handleClearFilters
+                } : {
                   label: "Create First Order",
                   onClick: () => navigate('wholesale-orders'),
                   icon: Plus
-                } : {
-                  label: "Clear Filters",
-                  onClick: handleClearFilters
-                }
+                },
+                secondaryAction: !hasActiveFilters ? {
+                  label: "Create a Menu",
+                  onClick: () => navigate('disposable-menus')
+                } : undefined,
+                designSystem: "tenant-admin"
               }}
               mobileRenderer={(order) => (
                 <SwipeableItem
