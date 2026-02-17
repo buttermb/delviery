@@ -46,6 +46,7 @@ import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
+import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
 
 interface Product {
   id: string;
@@ -197,6 +198,7 @@ function CashRegisterContent() {
 
   // Refund dialog
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [lastRefundData, setLastRefundData] = useState<RefundCompletionData | null>(null);
 
   // Load products with expanded fields
   const { data: products = [] } = useQuery({
@@ -457,7 +459,8 @@ function CashRegisterContent() {
         return;
       }
 
-      // Store transaction and cart details for receipt
+      // Store transaction and cart details for receipt (clear any refund data)
+      setLastRefundData(null);
       setLastTransaction({
         ...result,
         total,
@@ -597,37 +600,56 @@ function CashRegisterContent() {
 
   // Print receipt
   const handlePrintReceipt = useCallback(async () => {
-    if (!lastTransaction) return;
+    if (!lastTransaction && !lastRefundData) return;
 
     setIsPrinting(true);
     try {
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         const businessName = tenant?.business_name || 'Store';
-        const txDate = new Date(lastTransaction.created_at || '');
+        const isRefund = !!lastRefundData;
+        const now = new Date();
+        const txDate = lastTransaction ? new Date(lastTransaction.created_at || '') : now;
         const dateStr = txDate.toLocaleDateString();
         const timeStr = txDate.toLocaleTimeString();
         const receipt = lastReceiptData;
 
-        const itemRows = receipt?.items.map(item =>
-          `<tr>
-            <td class="item-name" colspan="3">${item.name}</td>
-          </tr>
-          <tr>
-            <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
-            <td></td>
-            <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
-          </tr>`
-        ).join('') || `<tr><td colspan="3">${lastTransaction.items_count} item(s)</td></tr>`;
+        // Build item rows from receipt data or refund data
+        let itemRows: string;
+        if (isRefund && lastRefundData.items.length > 0) {
+          itemRows = lastRefundData.items.map(item =>
+            `<tr>
+              <td class="item-name" colspan="3">${item.name}</td>
+            </tr>
+            <tr>
+              <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+              <td></td>
+              <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+            </tr>`
+          ).join('');
+        } else if (receipt?.items) {
+          itemRows = receipt.items.map(item =>
+            `<tr>
+              <td class="item-name" colspan="3">${item.name}</td>
+            </tr>
+            <tr>
+              <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+              <td></td>
+              <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+            </tr>`
+          ).join('');
+        } else {
+          itemRows = `<tr><td colspan="3">${lastTransaction?.items_count || 0} item(s)</td></tr>`;
+        }
 
-        const discountRow = receipt && receipt.discountAmount > 0
+        const discountRow = !isRefund && receipt && receipt.discountAmount > 0
           ? `<tr>
               <td colspan="2">Discount${receipt.discountType === 'percentage' ? ` (${receipt.discountValue}%)` : ''}</td>
               <td class="item-amount">-$${receipt.discountAmount.toFixed(2)}</td>
             </tr>`
           : '';
 
-        const taxRow = receipt && receipt.taxAmount > 0
+        const taxRow = !isRefund && receipt && receipt.taxAmount > 0
           ? `<tr>
               <td colspan="2">Tax (${(receipt.taxRate * 100).toFixed(2)}%)</td>
               <td class="item-amount">$${receipt.taxAmount.toFixed(2)}</td>
@@ -638,10 +660,26 @@ function CashRegisterContent() {
           ? `<p class="customer">Customer: ${receipt.customerName}</p>`
           : '';
 
+        // Refund-specific fields
+        const refundOriginalRef = isRefund
+          ? `<div class="info-row"><span>Original Order:</span><span>${lastRefundData.originalOrderNumber}</span></div>`
+          : '';
+
+        const refundMethodRow = isRefund
+          ? `<div class="info-row"><span>Refund Method:</span><span style="text-transform:capitalize">${lastRefundData.refundMethod}</span></div>`
+          : '';
+
+        const receiptLabel = isRefund ? 'REFUND' : 'RECEIPT';
+        const totalAmount = isRefund ? lastRefundData.refundAmount : (lastTransaction?.total || 0);
+        const totalLabel = isRefund ? 'REFUND TOTAL' : 'TOTAL';
+        const footerText = isRefund ? 'Refund processed.' : 'Thank you for your purchase!';
+        const receiptNumber = lastTransaction?.transaction_number || '';
+        const titlePrefix = isRefund ? 'Refund' : 'Receipt';
+
         const receiptHtml = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Receipt - ${lastTransaction.transaction_number}</title>
+  <title>${titlePrefix} - ${receiptNumber || lastRefundData?.originalOrderNumber || ''}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -681,33 +719,34 @@ function CashRegisterContent() {
     <h2>${businessName}</h2>
   </div>
   <hr class="sep" />
-  <div class="receipt-label">RECEIPT</div>
+  <div class="receipt-label">${receiptLabel}</div>
   <hr class="sep" />
   <div class="info-row"><span>Date:</span><span>${dateStr}</span></div>
   <div class="info-row"><span>Time:</span><span>${timeStr}</span></div>
-  <div class="info-row"><span>Receipt #:</span><span>${lastTransaction.transaction_number}</span></div>
+  ${receiptNumber ? `<div class="info-row"><span>Receipt #:</span><span>${receiptNumber}</span></div>` : ''}
+  ${refundOriginalRef}
   ${customerRow}
   <hr class="sep" />
   <table>${itemRows}</table>
   <hr class="sep" />
   <table class="totals">
-    <tr>
+    ${!isRefund ? `<tr>
       <td colspan="2">Subtotal</td>
-      <td class="item-amount">$${(receipt?.subtotal ?? lastTransaction.total ?? 0).toFixed(2)}</td>
-    </tr>
+      <td class="item-amount">$${(receipt?.subtotal ?? lastTransaction?.total ?? 0).toFixed(2)}</td>
+    </tr>` : ''}
     ${discountRow}
     ${taxRow}
     <tr class="total-row">
-      <td colspan="2">TOTAL</td>
-      <td class="item-amount">$${(lastTransaction.total || 0).toFixed(2)}</td>
+      <td colspan="2">${totalLabel}</td>
+      <td class="item-amount">$${totalAmount.toFixed(2)}</td>
     </tr>
   </table>
   <hr class="sep" />
-  <div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction.payment_method}</span></div>
+  ${isRefund ? refundMethodRow : `<div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction?.payment_method || ''}</span></div>`}
   <div class="footer">
-    <p>Thank you for your purchase!</p>
+    <p>${footerText}</p>
   </div>
-  <p class="receipt-no">${lastTransaction.transaction_id || ''}</p>
+  <p class="receipt-no">${lastTransaction?.transaction_id || ''}</p>
 </body>
 </html>`;
         printWindow.document.write(receiptHtml);
@@ -720,7 +759,7 @@ function CashRegisterContent() {
     } finally {
       setIsPrinting(false);
     }
-  }, [lastTransaction, lastReceiptData, tenant, toast]);
+  }, [lastTransaction, lastReceiptData, lastRefundData, tenant, toast]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1499,15 +1538,43 @@ function CashRegisterContent() {
       </AlertDialog>
 
       {/* Receipt Dialog */}
-      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+      <Dialog open={receiptDialogOpen} onOpenChange={(open) => {
+        setReceiptDialogOpen(open);
+        if (!open) setLastRefundData(null);
+      }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5" />
-              Transaction Complete
+              {lastRefundData ? 'Refund Processed' : 'Transaction Complete'}
             </DialogTitle>
           </DialogHeader>
-          {lastTransaction && (
+          {lastRefundData ? (
+            <div className="space-y-4">
+              <div className="text-center py-4 border-b">
+                <div className="text-2xl font-bold text-red-600">
+                  -${lastRefundData.refundAmount.toFixed(2)}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Refund for {lastRefundData.originalOrderNumber}
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Items Refunded</span>
+                  <span>{lastRefundData.items.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Refund Method</span>
+                  <span className="capitalize">{lastRefundData.refundMethod}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Date</span>
+                  <span>{new Date().toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          ) : lastTransaction ? (
             <div className="space-y-4">
               <div className="text-center py-4 border-b">
                 <div className="text-2xl font-bold text-green-600">
@@ -1532,9 +1599,9 @@ function CashRegisterContent() {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
           <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setReceiptDialogOpen(false)} className="flex-1">
+            <Button variant="outline" onClick={() => { setReceiptDialogOpen(false); setLastRefundData(null); }} className="flex-1">
               Close
             </Button>
             <Button onClick={handlePrintReceipt} disabled={isPrinting} className="flex-1">
@@ -1558,7 +1625,12 @@ function CashRegisterContent() {
           queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-          toast({ title: 'Refund processed successfully' });
+        }}
+        onRefundComplete={(data) => {
+          setLastRefundData(data);
+          setLastTransaction(null);
+          setLastReceiptData(null);
+          setReceiptDialogOpen(true);
         }}
       />
 

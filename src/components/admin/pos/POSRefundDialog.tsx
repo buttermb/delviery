@@ -56,10 +56,19 @@ const refundFormSchema = z.object({
 
 type RefundFormValues = z.infer<typeof refundFormSchema>;
 
+export interface RefundCompletionData {
+  refundAmount: number;
+  refundMethod: string;
+  originalOrderNumber: string;
+  items: Array<{ name: string; quantity: number; price: number; subtotal: number }>;
+  notes?: string;
+}
+
 interface POSRefundDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  onRefundComplete?: (data: RefundCompletionData) => void;
   shiftId?: string;
 }
 
@@ -67,6 +76,7 @@ export function POSRefundDialog({
   open,
   onOpenChange,
   onSuccess,
+  onRefundComplete,
   shiftId,
 }: POSRefundDialogProps) {
   const { tenant } = useTenantAdminAuth();
@@ -298,6 +308,27 @@ export function POSRefundDialog({
         title: 'Refund processed',
         description: `$${values.refundAmount.toFixed(2)} refunded for order ${foundOrder.order_number}`,
       });
+
+      // Pass refund data for receipt printing
+      const refundedItems = orderItems
+        .filter((item) => selectedItems.has(item.id))
+        .map((item) => ({
+          name: item.product_name,
+          quantity: item.quantity,
+          price: item.unit_price,
+          subtotal: item.total_price,
+        }));
+
+      onRefundComplete?.({
+        refundAmount: values.refundAmount,
+        refundMethod: values.refundMethod === 'original_method'
+          ? (foundOrder.payment_method || 'cash')
+          : 'cash',
+        originalOrderNumber: foundOrder.order_number,
+        items: refundedItems,
+        notes: values.notes || undefined,
+      });
+
       handleOpenChange(false);
       onSuccess?.();
     } catch (err) {
