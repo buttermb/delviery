@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 
 // Types
@@ -183,7 +184,7 @@ export function useSearchCustomerNotes(customerId: string | undefined, searchQue
         `)
         .eq('tenant_id', tenant.id)
         .eq('customer_id', customerId)
-        .ilike('note', `%${searchQuery}%`)
+        .ilike('note', `%${escapePostgresLike(searchQuery)}%`)
         .order('created_at', { ascending: false });
 
       if (error) {
