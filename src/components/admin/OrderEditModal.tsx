@@ -104,9 +104,9 @@ export function OrderEditModal({
   const canEdit = order ? isOrderEditable(order.status) : false;
   const editRestrictionMessage = order ? getEditRestrictionMessage(order.status) : null;
 
-  // Reset form when order changes
+  // Reset form when order changes or dialog opens
   useEffect(() => {
-    if (order) {
+    if (open && order) {
       // Map order items to editable format
       const editableItems: EditableOrderItem[] = (order.order_items || []).map((item, index) => ({
         id: item.id || `temp-${index}`,
@@ -119,7 +119,14 @@ export function OrderEditModal({
       setDeliveryNotes(order.delivery_notes || '');
       setCustomerNotes(order.customer_notes || '');
     }
-  }, [order]);
+    if (!open) {
+      setItems([]);
+      setDeliveryAddress('');
+      setDeliveryNotes('');
+      setCustomerNotes('');
+      setIsSubmitting(false);
+    }
+  }, [open, order]);
 
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.price, 0);

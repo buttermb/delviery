@@ -112,7 +112,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
     },
   });
 
-  // Reset form when menu data loads
+  // Reset form when menu data loads or dialog closes
   useEffect(() => {
     if (menuData && open) {
       const currentProductIds = menuData.disposable_menu_products?.map(
@@ -127,6 +127,15 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
         neverExpires: menuData.never_expires ?? true,
         selectedProducts: currentProductIds,
       });
+    }
+    if (!open) {
+      form.reset({
+        name: '',
+        expirationDate: '',
+        neverExpires: true,
+        selectedProducts: [],
+      });
+      setProductSearch('');
     }
   }, [menuData, open, form]);
 
