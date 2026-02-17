@@ -154,6 +154,8 @@ export default function InvoiceDetailPage() {
         toast.success("Public link copied to clipboard");
     };
 
+    const isVoided = invoice.status === 'cancelled' || invoice.status === 'void';
+
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "paid":
@@ -196,95 +198,100 @@ export default function InvoiceDetailPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" onClick={copyPublicLink}>
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Share Link
-                        </Button>
                         <Button variant="outline" onClick={() => window.print()}>
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                         </Button>
-                        <Button
-                            variant="outline"
-                            onClick={handleDuplicateInvoice}
-                            disabled={duplicateInvoice.isPending}
-                        >
-                            <Copy className="mr-2 h-4 w-4" />
-                            Duplicate
-                        </Button>
 
-                        {invoice.status === "draft" && (
-                            <Button
-                                variant="outline"
-                                onClick={handleMarkAsSent}
-                                disabled={markAsSent.isPending}
-                                className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                            >
-                                <Send className="mr-2 h-4 w-4" />
-                                Mark as Sent
-                            </Button>
-                        )}
-
-                        {(invoice.status === "sent" || invoice.status === "partially_paid") && (
-                            <Button
-                                onClick={() => setShowPaymentDialog(true)}
-                                className="bg-green-600 hover:bg-green-700"
-                            >
-                                <DollarSign className="mr-2 h-4 w-4" />
-                                Record Payment
-                                {invoice.amount_paid ? ` (${formatCurrency(invoice.total - (invoice.amount_paid || 0))} remaining)` : ''}
-                            </Button>
-                        )}
-
-                        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50">
-                                        <Ban className="mr-2 h-4 w-4" />
-                                        Void
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Void Invoice?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will mark the invoice as cancelled. This action cannot be undone.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={handleVoidInvoice}
-                                            className="bg-orange-600 text-white hover:bg-orange-700"
-                                        >
-                                            Void Invoice
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        )}
-
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="icon">
-                                    <Trash2 className="h-4 w-4" />
+                        {!isVoided && (
+                            <>
+                                <Button variant="outline" onClick={copyPublicLink}>
+                                    <ExternalLink className="mr-2 h-4 w-4" />
+                                    Share Link
                                 </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the invoice.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleDuplicateInvoice}
+                                    disabled={duplicateInvoice.isPending}
+                                >
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Duplicate
+                                </Button>
+
+                                {invoice.status === "draft" && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleMarkAsSent}
+                                        disabled={markAsSent.isPending}
+                                        className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                                    >
+                                        <Send className="mr-2 h-4 w-4" />
+                                        Mark as Sent
+                                    </Button>
+                                )}
+
+                                {(invoice.status === "sent" || invoice.status === "partially_paid") && (
+                                    <Button
+                                        onClick={() => setShowPaymentDialog(true)}
+                                        className="bg-green-600 hover:bg-green-700"
+                                    >
+                                        <DollarSign className="mr-2 h-4 w-4" />
+                                        Record Payment
+                                        {invoice.amount_paid ? ` (${formatCurrency(invoice.total - (invoice.amount_paid || 0))} remaining)` : ''}
+                                    </Button>
+                                )}
+
+                                {invoice.status !== "paid" && (
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50">
+                                                <Ban className="mr-2 h-4 w-4" />
+                                                Void
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Void Invoice?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will mark the invoice as cancelled. This action cannot be undone.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={handleVoidInvoice}
+                                                    className="bg-orange-600 text-white hover:bg-orange-700"
+                                                >
+                                                    Void Invoice
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
+
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="icon">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the invoice.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </>
+                        )}
                     </div>
                 </div>
 
