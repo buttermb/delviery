@@ -5,7 +5,7 @@ import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
   MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store,
-  ArrowUpDown
+  ArrowUpDown, Pencil
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -21,6 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { EditMenuDialog } from './EditMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
 import { MenuShareDialogEnhanced } from './MenuShareDialogEnhanced';
@@ -70,6 +71,7 @@ interface MenuCardProps {
 }
 
 export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [burnDialogOpen, setBurnDialogOpen] = useState(false);
   const [manageAccessOpen, setManageAccessOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -291,6 +293,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  {isActive && (
+                    <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit Menu
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => setAccessDetailsOpen(true)}>
                     <Lock className="h-4 w-4 mr-2" />
                     Access Details
@@ -367,6 +375,14 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       </Card>
 
       {/* Dialogs */}
+      {isActive && (
+        <EditMenuDialog
+          menuId={menu.id}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+        />
+      )}
+
       <BurnMenuDialog
         menu={menu as any}
         open={burnDialogOpen}
