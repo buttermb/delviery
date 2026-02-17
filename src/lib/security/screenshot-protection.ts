@@ -13,6 +13,7 @@ export class ScreenshotProtection {
     private onSuspiciousActivity: ((type: string) => void) | null = null;
     private config: ScreenshotProtectionConfig = {};
     private screenshotCount = 0;
+    private devToolsIntervalId: ReturnType<typeof setInterval> | null = null;
 
     private constructor() { }
 
@@ -107,7 +108,7 @@ export class ScreenshotProtection {
             }
         };
 
-        setInterval(checkDevTools, 1000);
+        this.devToolsIntervalId = setInterval(checkDevTools, 1000);
 
         // Method 5: Key press detection (PrintScreen)
         window.addEventListener('keyup', (e) => {

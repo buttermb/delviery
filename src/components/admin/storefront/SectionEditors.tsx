@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, Star, Monitor, Tablet, Smartphone } from 'lucide-react';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface SectionConfig {
     id: string;
@@ -929,7 +930,7 @@ function CustomHTMLEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                             {showPreview ? (
                                 <div
                                     className="p-3 border rounded-lg min-h-[120px] prose prose-sm max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: (content.html_content as string) || '' }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml((content.html_content as string) || '') }}
                                 />
                             ) : (
                                 <Textarea

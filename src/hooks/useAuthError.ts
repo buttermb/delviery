@@ -51,10 +51,10 @@ export function useAuthError() {
     };
 
     // Listen for custom auth error events
-    window.addEventListener("auth-error" as any, handleAuthError as EventListener);
+    window.addEventListener("auth-error", handleAuthError as EventListener);
 
     return () => {
-      window.removeEventListener("auth-error" as any, handleAuthError as EventListener);
+      window.removeEventListener("auth-error", handleAuthError as EventListener);
     };
   }, [navigate]);
 }
