@@ -43,6 +43,17 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 type CustomerMode = 'retail' | 'wholesale';
 type OrderType = 'all' | 'retail' | 'wholesale';
 
+interface UnifiedOrder {
+  id: string;
+  created_at: string;
+  order_type: 'retail' | 'wholesale';
+  display_number: string | null;
+  display_total: number | null;
+  display_status: string | null;
+  seller_name?: string;
+  tracking_number?: string | null;
+}
+
 export default function UnifiedOrdersPage() {
   const { slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
@@ -58,7 +69,7 @@ export default function UnifiedOrdersPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -68,7 +79,7 @@ export default function UnifiedOrdersPage() {
   }, [setMode]);
 
   // Fetch retail orders
-  const { data: retailOrders = [] } = useQuery({
+  const { data: retailOrders = [], isLoading: retailLoading } = useQuery({
     queryKey: ['customer-retail-orders', tenantId, customerId, statusFilter],
     queryFn: async () => {
       if (!tenantId || !customerId) return [];
@@ -91,19 +102,21 @@ export default function UnifiedOrdersPage() {
         throw error;
       }
 
-      return (data || []).map((order: any) => ({
-        ...order,
+      return (data || []).map((order): UnifiedOrder => ({
+        id: order.id,
+        created_at: order.created_at,
         order_type: 'retail' as const,
         display_number: order.order_number,
         display_total: order.total_amount,
         display_status: order.status,
+        tracking_number: null,
       }));
     },
     enabled: !!tenantId && !!customerId && (orderTypeFilter === 'all' || orderTypeFilter === 'retail'),
   });
 
   // Fetch wholesale orders
-  const { data: wholesaleOrders = [] } = useQuery({
+  const { data: wholesaleOrders = [], isLoading: wholesaleLoading } = useQuery({
     queryKey: ['customer-wholesale-orders', tenantId, statusFilter],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -132,13 +145,15 @@ export default function UnifiedOrdersPage() {
         throw error;
       }
 
-      return (data || []).map((order: any) => ({
-        ...order,
+      return (data || []).map((order): UnifiedOrder => ({
+        id: order.id,
+        created_at: order.created_at,
         order_type: 'wholesale' as const,
         display_number: order.order_number,
         display_total: order.total_amount,
         display_status: order.status,
         seller_name: order.marketplace_profiles?.business_name || 'Unknown Seller',
+        tracking_number: order.tracking_number,
       }));
     },
     enabled: !!tenantId && (orderTypeFilter === 'all' || orderTypeFilter === 'wholesale'),
@@ -152,7 +167,9 @@ export default function UnifiedOrdersPage() {
   });
 
   // Filter by search query
-  const filteredOrders = allOrders.filter((order: any) => {
+  const isLoading = retailLoading || wholesaleLoading;
+
+  const filteredOrders = allOrders.filter((order) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -280,13 +297,23 @@ export default function UnifiedOrdersPage() {
             </Tabs>
           </CardHeader>
           <CardContent>
-            {filteredOrders.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-sm text-muted-foreground mt-4">Loading orders...</p>
+              </div>
+            ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">No Orders Found</h3>
-                <p className="text-sm text-muted-foreground">
-                  {searchQuery ? 'Try adjusting your search' : 'You haven\'t placed any orders yet'}
+                <p className="text-sm text-muted-foreground mb-4">
+                  {searchQuery ? 'Try adjusting your search or clear filters' : 'You haven\'t placed any orders yet. Browse a menu to get started!'}
                 </p>
+                {searchQuery && (
+                  <Button variant="outline" onClick={() => { setSearchQuery(''); setStatusFilter('all'); setOrderTypeFilter('all'); }}>
+                    Clear Filters
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="rounded-lg border overflow-hidden">
@@ -303,7 +330,7 @@ export default function UnifiedOrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredOrders.map((order: any) => (
+                    {filteredOrders.map((order) => (
                       <TableRow key={`${order.order_type}-${order.id}`}>
                         <TableCell className="font-medium">{order.display_number}</TableCell>
                         <TableCell>

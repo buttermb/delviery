@@ -55,7 +55,7 @@ export default function WholesaleOrdersPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -101,7 +101,7 @@ export default function WholesaleOrdersPage() {
   });
 
   // Filter orders by search query
-  const filteredOrders = orders.filter((order: any) => {
+  const filteredOrders = orders.filter((order) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -255,7 +255,7 @@ export default function WholesaleOrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredOrders.map((order: any) => (
+                    {filteredOrders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.order_number}</TableCell>
                         <TableCell>

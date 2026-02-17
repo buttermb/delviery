@@ -164,8 +164,9 @@ export default function CustomerPortal() {
                 ) : orders.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No orders yet</p>
-                    <Button className="mt-4">Place Your First Order</Button>
+                    <p className="text-lg font-medium mb-1">No orders yet</p>
+                    <p className="text-sm mb-4">Your order history will appear here once you place an order.</p>
+                    <Button onClick={() => navigate('/willysbo/shop/dashboard')}>Place Your First Order</Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
