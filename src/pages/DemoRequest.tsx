@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,34 +13,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useFormPersistence } from "@/hooks/useFormPersistence";
 
+const INITIAL_FORM = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  companyName: "",
+  companySize: "",
+  orderVolume: "",
+  interests: "",
+  preferredDate: "",
+  preferredTime: "",
+};
+
 export default function DemoRequest() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData, clearFormData] = useFormPersistence("demo_request_form", {
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    companyName: "",
-    companySize: "",
-    orderVolume: "",
-    interests: "",
-    preferredDate: "",
-    preferredTime: "",
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM);
+  const { restoreForm, clearSavedForm } = useFormPersistence("demo_request_form", formData);
+
+  useEffect(() => {
+    const saved = restoreForm();
+    if (saved) setFormData(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call
     setTimeout(() => {
       toast({
         title: "Demo scheduled!",
         description: "We've sent a confirmation email.",
       });
-      clearFormData();
+      clearSavedForm();
       navigate("/demo/confirm", { state: formData });
     }, 1000);
   };

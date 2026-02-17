@@ -15,7 +15,7 @@
  * Security Features:
  * - Production console.log removal
  * - Source map obfuscation
- * - Terser minification with dead code elimination
+ * - esbuild minification with dead code elimination
  * 
  * Contact: contact@webflowstudios.dev
  */
@@ -180,6 +180,10 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'], // Force single React instance
   },
+  esbuild: {
+    drop: ['debugger'],
+    legalComments: 'none',
+  },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
     exclude: [],
@@ -190,20 +194,11 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: 'es2020',
-    minify: 'terser',
+    minify: 'esbuild',
     assetsInlineLimit: 4096,
     cssMinify: true,
     // Reduce memory pressure during builds
     reportCompressedSize: false,
-    terserOptions: {
-      compress: {
-        drop_console: ['log'], // Only drop console.log, keep errors/warnings
-        drop_debugger: true,
-      },
-      format: {
-        comments: false,
-      },
-    },
     sourcemap: 'hidden', // Generate hidden source maps for production debugging
     commonjsOptions: {
       include: [/node_modules/],
@@ -218,30 +213,27 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/asset-[hash].[ext]',
         // Ensure React is not split into separate chunks
         manualChunks: (id) => {
-          // Exclude React from chunking - keep it in vendor
-          if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-            return 'vendor';
-          }
-          // Large deps into separate chunks
           if (id.includes('node_modules')) {
-            if (id.includes('@tanstack')) {
-              return 'vendor-query';
-            }
-            if (id.includes('framer-motion')) {
-              return 'vendor-motion';
-            }
-            if (id.includes('mapbox') || id.includes('leaflet')) {
-              return 'vendor-maps';
-            }
-            // Split Radix UI components into separate chunk
-            if (id.includes('@radix-ui')) {
-              return 'vendor-ui';
-            }
-            // Split chart libraries
-            if (id.includes('recharts') || id.includes('@tremor')) {
-              return 'vendor-charts';
-            }
-            return 'vendor';
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) return 'vendor-react';
+            if (id.includes('react-router')) return 'vendor-router';
+            if (id.includes('@tanstack')) return 'vendor-query';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('remotion') || id.includes('@remotion')) return 'vendor-remotion';
+            if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-map';
+            if (id.includes('@radix-ui')) return 'vendor-ui';
+            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) return 'vendor-charts';
+            if (id.includes('react-pdf') || id.includes('@react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) return 'vendor-pdf';
+            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform/resolvers')) return 'vendor-forms';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('@ai-sdk') || id.includes('@xenova')) return 'vendor-ai';
+            if (id.includes('crypto-js') || id.includes('bcryptjs') || id.includes('@aikidosec')) return 'vendor-crypto';
+            if (id.includes('date-fns') || id.includes('lodash')) return 'vendor-utils';
+            if (id.includes('qrcode') || id.includes('jsbarcode') || id.includes('html5-qrcode') || id.includes('@zxing')) return 'vendor-barcode';
+            if (id.includes('lucide-react') || id.includes('@phosphor-icons')) return 'vendor-icons';
+            if (id.includes('xlsx')) return 'vendor-xlsx';
+            if (id.includes('@capacitor')) return 'vendor-capacitor';
+            if (id.includes('reactflow')) return 'vendor-flow';
+            return 'vendor-misc';
           }
         },
       },
