@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,12 +13,14 @@ import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBot
 import { OrderProgressBar } from "@/components/customer/OrderProgressBar";
 import { OrderTrackingMap } from "@/components/customer/OrderTrackingMap";
 import { toast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 type OrderStatus = "pending" | "confirmed" | "preparing" | "ready_for_pickup" | "out_for_delivery" | "delivered" | "cancelled";
 
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { customer, tenant } = useCustomerAuth();
   const tenantId = tenant?.id;
   const customerId = customer?.customer_id || customer?.id;
@@ -62,8 +65,38 @@ export default function OrderTrackingPage() {
       return data;
     },
     enabled: !!orderId && !!tenantId && !!customerId,
-    refetchInterval: 10000, // Poll every 10 seconds for updates
+    refetchInterval: 10000, // Poll every 10 seconds as fallback
   });
+
+  // Realtime subscription for instant order status updates
+  useEffect(() => {
+    if (!orderId || !tenantId) return;
+
+    const channel = supabase
+      .channel(`customer-order-${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          logger.debug('Order status update received', payload.new, 'OrderTrackingPage');
+          queryClient.invalidateQueries({ queryKey: ['customer-order', orderId] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Realtime subscribed for order tracking', { orderId }, 'OrderTrackingPage');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId, tenantId, queryClient]);
 
   if (isLoading) {
     return (
