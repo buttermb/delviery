@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,7 +169,7 @@ export default function SuperAdminEnhanced() {
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
-        query = query.or(`business_name.ilike.%${searchTerm}%,slug.ilike.%${searchTerm}%,owner_email.ilike.%${searchTerm}%,owner_name.ilike.%${searchTerm}%`);
+        query = query.or(`business_name.ilike.%${escapePostgresLike(searchTerm)}%,slug.ilike.%${escapePostgresLike(searchTerm)}%,owner_email.ilike.%${escapePostgresLike(searchTerm)}%,owner_name.ilike.%${escapePostgresLike(searchTerm)}%`);
       }
 
       if (statusFilter !== 'all') {

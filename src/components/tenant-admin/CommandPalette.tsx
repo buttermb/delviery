@@ -14,6 +14,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { create } from 'zustand';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import {
   CommandDialog,
   CommandEmpty,
@@ -205,7 +206,7 @@ export function TenantAdminCommandPalette() {
             .from('wholesale_clients')
             .select('id, business_name, contact_name')
             .eq('tenant_id', tenant.id)
-            .or(`business_name.ilike.%${search}%,contact_name.ilike.%${search}%`)
+            .or(`business_name.ilike.%${escapePostgresLike(search)}%,contact_name.ilike.%${escapePostgresLike(search)}%`)
             .limit(5),
 
           supabase
@@ -219,7 +220,7 @@ export function TenantAdminCommandPalette() {
             .from('products')
             .select('id, name, sku, category')
             .eq('tenant_id', tenant.id)
-            .or(`name.ilike.%${search}%,sku.ilike.%${search}%`)
+            .or(`name.ilike.%${escapePostgresLike(search)}%,sku.ilike.%${escapePostgresLike(search)}%`)
             .limit(5),
         ]);
 

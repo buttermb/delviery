@@ -9,6 +9,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import {
   Users,
   ArrowRight,
@@ -137,7 +138,7 @@ export function CustomerMerge({
         .from('customers')
         .select('id, first_name, last_name, email, phone, address, city, state, zip_code, total_spent, loyalty_points, created_at')
         .eq('tenant_id', tenantId)
-        .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%`)
+        .or(`first_name.ilike.%${escapePostgresLike(searchQuery)}%,last_name.ilike.%${escapePostgresLike(searchQuery)}%,email.ilike.%${escapePostgresLike(searchQuery)}%,phone.ilike.%${escapePostgresLike(searchQuery)}%`)
         .limit(10);
 
       if (error) {

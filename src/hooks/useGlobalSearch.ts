@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 // Relevance scoring weights
 const EXACT_MATCH_SCORE = 100;
@@ -152,7 +153,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .from('orders')
             .select('id, order_number, status, total_amount, customer_name')
             .eq('tenant_id', tenant.id)
-            .or(`order_number.ilike.%${searchTerm}%,customer_name.ilike.%${searchTerm}%`)
+            .or(`order_number.ilike.%${escapePostgresLike(searchTerm)}%,customer_name.ilike.%${escapePostgresLike(searchTerm)}%`)
             .limit(limitPerCategory),
 
           // Search products
@@ -160,7 +161,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .from('products')
             .select('id, name, sku, category, is_active')
             .eq('tenant_id', tenant.id)
-            .or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`)
+            .or(`name.ilike.%${escapePostgresLike(searchTerm)}%,sku.ilike.%${escapePostgresLike(searchTerm)}%`)
             .limit(limitPerCategory),
 
           // Search customers (profiles)
@@ -168,7 +169,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .from('profiles')
             .select('id, user_id, full_name, phone, email')
             .eq('account_id', tenant.id)
-            .or(`full_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
+            .or(`full_name.ilike.%${escapePostgresLike(searchTerm)}%,phone.ilike.%${escapePostgresLike(searchTerm)}%,email.ilike.%${escapePostgresLike(searchTerm)}%`)
             .limit(limitPerCategory),
 
           // Search vendors
@@ -176,7 +177,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .from('vendors')
             .select('id, name, contact_name, contact_email, status')
             .eq('account_id', tenant.id)
-            .or(`name.ilike.%${searchTerm}%,contact_name.ilike.%${searchTerm}%`)
+            .or(`name.ilike.%${escapePostgresLike(searchTerm)}%,contact_name.ilike.%${escapePostgresLike(searchTerm)}%`)
             .limit(limitPerCategory),
         ]);
 

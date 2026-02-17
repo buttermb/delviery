@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { escapePostgresLike } from "@/lib/utils/searchSanitize";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -76,26 +77,27 @@ const GlobalSearch = () => {
       if (!searchTerm || searchTerm.length < 2 || !tenant) return null;
 
       const searchLower = searchTerm.toLowerCase();
+      const escapedSearch = escapePostgresLike(searchLower);
 
       const usersPromise = supabase
         .from("profiles")
         .select("*, user_roles(role)")
         .eq("account_id", tenant.id)
-        .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+        .or(`full_name.ilike.%${escapedSearch}%,email.ilike.%${escapedSearch}%,phone.ilike.%${escapedSearch}%`)
         .limit(10) as any;
 
       const ordersPromise = (supabase as any)
         .from("orders")
         .select("*, profiles(full_name)")
         .eq("tenant_id", tenant.id)
-        .or(`order_number.ilike.%${searchLower}%,tracking_code.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
+        .or(`order_number.ilike.%${escapedSearch}%,tracking_code.ilike.%${escapedSearch}%,customer_name.ilike.%${escapedSearch}%`)
         .limit(10);
 
       const productsPromise = (supabase as any)
         .from("products")
         .select("*")
         .eq("tenant_id", tenant.id)
-        .or(`name.ilike.%${searchLower}%,description.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
+        .or(`name.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,category.ilike.%${escapedSearch}%`)
         .limit(10);
 
       // Break type inference for complex query
@@ -104,7 +106,7 @@ const GlobalSearch = () => {
         .select("*, profiles(full_name)")
         .eq("tenant_id", tenant.id);
       const addressesPromise = addressesQuery
-        .or(`street.ilike.%${searchLower}%,neighborhood.ilike.%${searchLower}%,borough.ilike.%${searchLower}%`)
+        .or(`street.ilike.%${escapedSearch}%,neighborhood.ilike.%${escapedSearch}%,borough.ilike.%${escapedSearch}%`)
         .limit(10);
 
       const results: any = await Promise.all([

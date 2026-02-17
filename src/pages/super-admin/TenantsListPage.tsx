@@ -7,6 +7,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -115,7 +116,7 @@ export default function TenantsListPage() {
 
       if (searchQuery) {
         query = query.or(
-          `business_name.ilike.%${searchQuery}%,owner_email.ilike.%${searchQuery}%,id.eq.${searchQuery}`
+          `business_name.ilike.%${escapePostgresLike(searchQuery)}%,owner_email.ilike.%${escapePostgresLike(searchQuery)}%,id.eq.${searchQuery}`
         );
       }
 

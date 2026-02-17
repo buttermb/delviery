@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 export interface SearchResult {
   id: string;
@@ -65,7 +66,7 @@ export function useDataSearch(): UseDataSearchReturn {
             .from('wholesale_clients')
             .select('id, business_name, contact_name')
             .eq('tenant_id', tenant.id)
-            .or(`business_name.ilike.%${query}%,contact_name.ilike.%${query}%`)
+            .or(`business_name.ilike.%${escapePostgresLike(query)}%,contact_name.ilike.%${escapePostgresLike(query)}%`)
             .limit(5),
 
           // Search wholesale orders by ID
@@ -73,7 +74,7 @@ export function useDataSearch(): UseDataSearchReturn {
             .from('wholesale_orders')
             .select('id, total_amount, status, wholesale_clients(business_name)')
             .eq('tenant_id', tenant.id)
-            .or(`id.ilike.%${query}%`)
+            .or(`id.ilike.%${escapePostgresLike(query)}%`)
             .limit(5),
 
           // Search products
@@ -81,7 +82,7 @@ export function useDataSearch(): UseDataSearchReturn {
             .from('products')
             .select('id, name, sku')
             .eq('tenant_id', tenant.id)
-            .or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+            .or(`name.ilike.%${escapePostgresLike(query)}%,sku.ilike.%${escapePostgresLike(query)}%`)
             .limit(5),
         ]);
 

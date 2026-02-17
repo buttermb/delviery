@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 import { useState, useCallback, useMemo } from 'react';
 
@@ -98,7 +99,7 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
         // Apply search filter (search in action and description)
         if (filters.searchTerm) {
           query = query.or(
-            `action.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%,user_email.ilike.%${filters.searchTerm}%`
+            `action.ilike.%${escapePostgresLike(filters.searchTerm)}%,description.ilike.%${escapePostgresLike(filters.searchTerm)}%,user_email.ilike.%${escapePostgresLike(filters.searchTerm)}%`
           );
         }
 

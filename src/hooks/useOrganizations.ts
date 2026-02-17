@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 import type {
   Organization,
@@ -123,7 +124,7 @@ async function fetchOrganizations(
     query = query.eq('organization_type', filters.organization_type);
   }
   if (filters?.search) {
-    query = query.or(`name.ilike.%${filters.search}%,legal_name.ilike.%${filters.search}%`);
+    query = query.or(`name.ilike.%${escapePostgresLike(filters.search)}%,legal_name.ilike.%${escapePostgresLike(filters.search)}%`);
   }
 
   const { data, error } = await query;
@@ -810,7 +811,7 @@ export function useOrganizationSearch(searchTerm: string) {
         .from('customer_organizations')
         .select('id, name, legal_name, organization_type, status')
         .eq('tenant_id', tenantId)
-        .or(`name.ilike.%${searchTerm}%,legal_name.ilike.%${searchTerm}%`)
+        .or(`name.ilike.%${escapePostgresLike(searchTerm)}%,legal_name.ilike.%${escapePostgresLike(searchTerm)}%`)
         .eq('status', 'active')
         .limit(10);
 

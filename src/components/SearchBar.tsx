@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { Command } from 'cmdk';
 import { useState, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
@@ -56,7 +57,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
         const { data } = await supabase
           .from('products')
           .select('*')
-          .or(`name.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%,category.ilike.%${debouncedSearch}%`)
+          .or(`name.ilike.%${escapePostgresLike(debouncedSearch)}%,description.ilike.%${escapePostgresLike(debouncedSearch)}%,category.ilike.%${escapePostgresLike(debouncedSearch)}%`)
           .eq('in_stock', true)
           .limit(10);
         

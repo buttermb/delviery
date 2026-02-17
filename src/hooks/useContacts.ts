@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 import { invalidateOnEvent } from '@/lib/invalidation';
 
@@ -161,7 +162,7 @@ export function useContacts(options: UseContactsOptions = {}) {
       }
       if (search) {
         query = query.or(
-          `name.ilike.%${search}%,email.ilike.%${search}%,business_name.ilike.%${search}%,phone.ilike.%${search}%`
+          `name.ilike.%${escapePostgresLike(search)}%,email.ilike.%${escapePostgresLike(search)}%,business_name.ilike.%${escapePostgresLike(search)}%,phone.ilike.%${escapePostgresLike(search)}%`
         );
       }
 

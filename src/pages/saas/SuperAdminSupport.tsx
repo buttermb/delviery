@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,7 +90,7 @@ export default function SuperAdminSupport() {
       }
 
       if (searchTerm) {
-        query = query.or(`subject.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+        query = query.or(`subject.ilike.%${escapePostgresLike(searchTerm)}%,description.ilike.%${escapePostgresLike(searchTerm)}%`);
       }
 
       const { data, error } = await query;

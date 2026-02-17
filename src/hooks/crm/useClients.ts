@@ -4,6 +4,7 @@ import type { CRMClient, ClientFormValues } from '@/types/crm';
 import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -406,7 +407,7 @@ export function useSearchClients(searchTerm: string) {
                 .from('crm_clients')
                 .select('id, account_id, name, email, phone, open_balance, status, created_at, updated_at')
                 .eq('account_id', accountId)
-                .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`)
+                .or(`name.ilike.%${escapePostgresLike(searchTerm)}%,email.ilike.%${escapePostgresLike(searchTerm)}%,phone.ilike.%${escapePostgresLike(searchTerm)}%`)
                 .limit(10);
 
             if (error) {
