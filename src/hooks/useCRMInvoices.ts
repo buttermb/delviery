@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResul
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 
 export interface CustomerInvoice {
@@ -81,7 +82,7 @@ export function useCRMInvoices(): UseCRMInvoicesReturn {
         }
 
         if (filters?.search) {
-          query = query.ilike('invoice_number', `%${filters.search}%`);
+          query = query.ilike('invoice_number', `%${escapePostgresLike(filters.search)}%`);
         }
 
         const { data, error } = await query;
