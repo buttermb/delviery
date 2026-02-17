@@ -640,6 +640,7 @@ export function OrderDetailsPage() {
               wholesaleClientId={order.wholesale_client_id}
               deliveryAddress={order.delivery_address}
               deliveryNotes={order.delivery_notes}
+              disabled={updateStatusMutation.isPending}
               orderItems={(order.order_items || []).map(item => ({
                 id: item.id,
                 product_id: item.product_id,

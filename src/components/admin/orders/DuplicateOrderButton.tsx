@@ -70,6 +70,7 @@ interface DuplicateOrderButtonProps {
   className?: string;
   variant?: 'default' | 'outline' | 'ghost' | 'secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  disabled?: boolean;
 }
 
 export function DuplicateOrderButton({
@@ -83,6 +84,7 @@ export function DuplicateOrderButton({
   className,
   variant = 'outline',
   size = 'sm',
+  disabled,
 }: DuplicateOrderButtonProps) {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
@@ -259,6 +261,7 @@ export function DuplicateOrderButton({
         size={size}
         onClick={handleOpenDialog}
         className={className}
+        disabled={disabled || duplicateMutation.isPending}
       >
         <Copy className="w-4 h-4 mr-1" />
         Duplicate Order
