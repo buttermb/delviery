@@ -101,19 +101,42 @@ export function useStorefrontBuilder() {
         });
     }, [toast]);
 
+    // Sync layout_config and theme_config to marketplace_profiles so the
+    // public shop RPC (get_marketplace_store_by_slug) returns fresh data.
+    // The RPC reads from marketplace_profiles, not marketplace_stores.
+    const syncToMarketplaceProfiles = async (
+        layoutCfg: SectionConfig[],
+        themeCfg: ThemeConfig,
+    ) => {
+        try {
+            const { error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
+                .from('marketplace_profiles')
+                .update({
+                    layout_config: JSON.parse(JSON.stringify(layoutCfg)),
+                    theme_config: themeCfg,
+                } as Record<string, unknown>)
+                .eq('tenant_id', tenant?.id);
+            if (error) {
+                logger.warn('Failed to sync config to marketplace_profiles', error);
+            }
+        } catch (e) {
+            logger.warn('marketplace_profiles sync error', e);
+        }
+    };
+
     // Fetch Store Config
     const { data: store, isLoading } = useQuery({
         queryKey: ['marketplace-settings', tenant?.id],
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
-                    .eq('tenant_id', tenant?.id)
+                    .eq('tenant_id', tenant?.id!)
                     .maybeSingle();
 
                 if (error) throw error;
-                return data as MarketplaceStore;
+                return data as unknown as MarketplaceStore;
             } catch (e) {
                 logger.warn("Using mock data as DB fetch failed", e);
                 return {
@@ -180,7 +203,7 @@ export function useStorefrontBuilder() {
 
         setIsValidatingSlug(true);
         try {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('marketplace_stores')
                 .select('id')
                 .eq('slug', slug)
@@ -217,14 +240,14 @@ export function useStorefrontBuilder() {
     // Create store mutation
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            const { data: newStore, error } = await (supabase as any)
+            const { data: newStore, error } = await supabase
                 .from('marketplace_stores')
                 .insert({
-                    tenant_id: tenant?.id,
+                    tenant_id: tenant?.id!,
                     store_name: data.storeName,
                     slug: data.slug,
                     layout_config: [],
-                    theme_config: themeConfig,
+                    theme_config: themeConfig as unknown as Record<string, unknown>,
                     is_active: true,
                     is_public: false,
                 })
@@ -240,6 +263,7 @@ export function useStorefrontBuilder() {
                 description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`
             });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             setShowCreateDialog(false);
             setNewStoreName('');
             setNewStoreSlug('');
@@ -279,20 +303,25 @@ export function useStorefrontBuilder() {
     // Save draft mutation
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as any)
+            const configPayload = JSON.parse(JSON.stringify(layoutConfig));
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
-                    theme_config: themeConfig,
+                    layout_config: configPayload,
+                    theme_config: themeConfig as unknown as Record<string, unknown>,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id);
+                .eq('tenant_id', tenant?.id!);
 
             if (error) throw error;
+
+            // Sync to marketplace_profiles so live store RPC picks up changes
+            await syncToMarketplaceProfiles(layoutConfig, themeConfig);
         },
         onSuccess: () => {
             toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
             toast({
@@ -307,21 +336,26 @@ export function useStorefrontBuilder() {
     // Publish mutation
     const publishMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as any)
+            const configPayload = JSON.parse(JSON.stringify(layoutConfig));
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
-                    layout_config: JSON.parse(JSON.stringify(layoutConfig)),
-                    theme_config: themeConfig,
+                    layout_config: configPayload,
+                    theme_config: themeConfig as unknown as Record<string, unknown>,
                     is_public: true,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id);
+                .eq('tenant_id', tenant?.id!);
 
             if (error) throw error;
+
+            // Sync to marketplace_profiles so live store RPC picks up changes
+            await syncToMarketplaceProfiles(layoutConfig, themeConfig);
         },
         onSuccess: () => {
             toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
             toast({
@@ -336,19 +370,20 @@ export function useStorefrontBuilder() {
     // Unpublish mutation
     const unpublishMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
                     is_public: false,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id);
+                .eq('tenant_id', tenant?.id!);
 
             if (error) throw error;
         },
         onSuccess: () => {
             toast({ title: "Store unpublished", description: "Your storefront is now in draft mode." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
             toast({

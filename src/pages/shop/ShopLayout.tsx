@@ -46,7 +46,7 @@ interface StoreInfo {
   is_public: boolean;
   require_age_verification: boolean;
   minimum_age: number;
-  layout_config?: any[] | null;
+  layout_config?: Record<string, unknown>[] | null;
   theme_config?: {
     theme?: 'default' | 'luxury' | 'minimal';
     colors?: {
@@ -127,7 +127,7 @@ export default function ShopLayout() {
       if (!storeSlug) return null;
 
       const { data, error } = await supabase
-        .rpc('get_marketplace_store_by_slug' as any, { p_slug: storeSlug });
+        .rpc('get_marketplace_store_by_slug', { p_slug: storeSlug });
 
       if (error) {
         logger.error('Failed to fetch store', error, { component: 'ShopLayout' });
@@ -210,7 +210,7 @@ export default function ShopLayout() {
         if (cart) {
           try {
             const items = JSON.parse(cart);
-            setCartItemCount(items.reduce((sum: number, item: any) => sum + item.quantity, 0));
+            setCartItemCount(items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0));
           } catch {
             // Invalid cart data
           }
