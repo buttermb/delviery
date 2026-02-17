@@ -62,7 +62,7 @@ export function validateAdminRoutes(): RouteValidationResult {
     '/admin/pos-system',
     '/admin/cash-register',
     '/admin/pos-analytics',
-    '/admin/staff-management',
+    '/admin/team-members',
     '/admin/role-management',
     '/admin/activity-logs',
     '/admin/locations',

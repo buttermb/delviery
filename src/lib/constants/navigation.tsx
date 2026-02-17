@@ -163,7 +163,7 @@ export const navigation: NavItem[] = [
     children: [
       {
         name: 'Staff Management',
-        href: '/admin/staff-management',
+        href: '/admin/team-members',
         icon: <Users className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },

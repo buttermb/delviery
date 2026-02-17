@@ -275,7 +275,7 @@ const HOOD_TIER: TierPreset = {
     { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/orders?tab=wholesale' },
     { id: 'pnl', label: 'P&L Summary', icon: 'DollarSign', path: '/admin/finance-hub' },
     { id: 'analytics', label: 'Analytics', icon: 'BarChart3', path: '/admin/analytics-hub' },
-    { id: 'team', label: 'Team', icon: 'Users', path: '/admin/staff-management' },
+    { id: 'team', label: 'Team', icon: 'Users', path: '/admin/team-members' },
   ],
 
   navSections: ['command-center', 'sales', 'inventory', 'customers', 'operations', 'analytics', 'compliance', 'settings'],

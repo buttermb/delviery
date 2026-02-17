@@ -75,7 +75,7 @@ const moreCategories = [
     section: 'Settings',
     items: [
       { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
-      { id: 'team', label: 'Team', icon: Users, path: '/admin/staff-management' },
+      { id: 'team', label: 'Team', icon: Users, path: '/admin/team-members' },
     ],
   },
 ];

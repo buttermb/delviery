@@ -414,7 +414,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Manage staff and permissions',
     tier: 'professional',
     category: 'Operations',
-    route: '/admin/staff-management',
+    route: '/admin/team-members',
   },
   'role-management': {
     id: 'role-management',

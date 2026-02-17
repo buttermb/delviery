@@ -89,7 +89,7 @@ const navigation: NavItem[] = [
     name: 'Team',
     icon: <Users className="h-5 w-5" />,
     children: [
-      { name: 'Staff Management', href: '/admin/staff-management', icon: <Users className="h-4 w-4" /> },
+      { name: 'Staff Management', href: '/admin/team-members', icon: <Users className="h-4 w-4" /> },
       { name: 'Roles & Permissions', href: '/admin/role-management', icon: <Shield className="h-4 w-4" /> },
       { name: 'Activity Log', href: '/admin/audit-trail', icon: <FileText className="h-4 w-4" /> },
     ],
