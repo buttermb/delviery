@@ -50,18 +50,36 @@ const normalizeInvoice = (row: unknown): CRMInvoice => {
     };
 };
 
+export type InvoiceSortState = {
+    column: string;
+    ascending: boolean;
+} | null;
+
+const INVOICE_SORT_COLUMN_MAP: Record<string, string> = {
+    invoice_date: 'invoice_date',
+    due_date: 'due_date',
+    total: 'total',
+    status: 'status',
+    invoice_number: 'invoice_number',
+    amount_paid: 'amount_paid',
+    created_at: 'created_at',
+};
+
 export function useInvoices() {
     const accountId = useAccountIdSafe();
 
-    const useInvoicesQuery = () => useQuery({
-        queryKey: crmInvoiceKeys.lists(),
+    const useInvoicesQuery = (sort?: InvoiceSortState) => useQuery({
+        queryKey: [...crmInvoiceKeys.lists(), { sort }],
         queryFn: async () => {
             if (!accountId) return [];
+            const sortCol = sort?.column && INVOICE_SORT_COLUMN_MAP[sort.column]
+                ? INVOICE_SORT_COLUMN_MAP[sort.column]
+                : 'created_at';
             const { data, error } = await crmClient
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
-                .order('created_at', { ascending: false });
+                .order(sortCol, { ascending: sort?.ascending ?? false });
             if (error) throw error;
             return (data || []).map((row: Record<string, unknown>) => normalizeInvoice(row));
         },

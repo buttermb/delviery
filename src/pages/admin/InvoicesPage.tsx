@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { logger } from "@/lib/logger";
 import jsPDF from "jspdf";
-import { useInvoices } from "@/hooks/crm/useInvoices";
+import { useInvoices, type InvoiceSortState } from "@/hooks/crm/useInvoices";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useCRMSettings } from "@/hooks/crm/useCRMSettings";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,10 @@ import {
     Send,
     Copy,
     Ban,
-    TrendingUp
+    TrendingUp,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown,
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
@@ -426,9 +429,10 @@ export function InvoicesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [sort, setSort] = useState<InvoiceSortState>({ column: 'created_at', ascending: false });
 
     const { useInvoicesQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice } = useInvoices();
-    const { data: invoices, isLoading } = useInvoicesQuery();
+    const { data: invoices, isLoading } = useInvoicesQuery(sort);
     const markAsPaid = useMarkInvoicePaid();
     const markAsSent = useMarkInvoiceSent();
     const voidInvoice = useVoidInvoice();
@@ -571,6 +575,24 @@ export function InvoicesPage() {
             default:
                 return <Clock className="h-4 w-4 text-muted-foreground" />;
         }
+    };
+
+    const handleSort = (column: string) => {
+        setSort((prev) => {
+            if (prev?.column === column) {
+                // Cycle: ascending → descending → no sort
+                if (prev.ascending) return { column, ascending: false };
+                return null;
+            }
+            return { column, ascending: true };
+        });
+    };
+
+    const SortIcon = ({ column }: { column: string }) => {
+        if (sort?.column !== column) return <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/50" />;
+        return sort.ascending
+            ? <ArrowUp className="ml-1 h-3 w-3" />
+            : <ArrowDown className="ml-1 h-3 w-3" />;
     };
 
     // Calculate stats
@@ -892,14 +914,44 @@ export function InvoicesPage() {
                     <Table className="hidden md:table">
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Invoice #</TableHead>
+                                <TableHead
+                                    className="cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('invoice_number')}
+                                >
+                                    <span className="inline-flex items-center">Invoice # <SortIcon column="invoice_number" /></span>
+                                </TableHead>
                                 <TableHead>Client</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Due Date</TableHead>
-                                <TableHead className="text-right">Amount Due</TableHead>
-                                <TableHead className="text-right">Amount Paid</TableHead>
+                                <TableHead
+                                    className="cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('invoice_date')}
+                                >
+                                    <span className="inline-flex items-center">Date <SortIcon column="invoice_date" /></span>
+                                </TableHead>
+                                <TableHead
+                                    className="cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('due_date')}
+                                >
+                                    <span className="inline-flex items-center">Due Date <SortIcon column="due_date" /></span>
+                                </TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('total')}
+                                >
+                                    <span className="inline-flex items-center justify-end w-full">Amount Due <SortIcon column="total" /></span>
+                                </TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('amount_paid')}
+                                >
+                                    <span className="inline-flex items-center justify-end w-full">Amount Paid <SortIcon column="amount_paid" /></span>
+                                </TableHead>
                                 <TableHead className="text-right">Balance</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead
+                                    className="cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('status')}
+                                >
+                                    <span className="inline-flex items-center">Status <SortIcon column="status" /></span>
+                                </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
