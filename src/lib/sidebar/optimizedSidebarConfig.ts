@@ -82,6 +82,8 @@ export interface NavItem {
     tier: SubscriptionTier;
     keywords?: string[];
     isNew?: boolean; // Show "NEW" badge
+    /** Feature toggle key — when set, item is only visible if the toggle is enabled */
+    featureFlag?: string;
 }
 
 export interface NavSection {
@@ -175,6 +177,7 @@ const SELL: NavItem[] = [
         shortcut: '⌘P',
         tier: 'PROFESSIONAL',
         keywords: ['point of sale', 'register', 'checkout', 'cash'],
+        featureFlag: 'pos',
     },
     {
         id: 'cash-register',
@@ -183,6 +186,7 @@ const SELL: NavItem[] = [
         icon: Calculator,
         tier: 'PROFESSIONAL',
         keywords: ['till', 'drawer', 'cash'],
+        featureFlag: 'pos',
     },
     // Menus
     {
@@ -318,6 +322,7 @@ const MANAGE: NavItem[] = [
         icon: Target,
         tier: 'PROFESSIONAL',
         keywords: ['relationships', 'pipeline', 'leads'],
+        featureFlag: 'crm_advanced',
     },
     {
         id: 'invoices',
@@ -390,6 +395,7 @@ const DELIVER: NavItem[] = [
         icon: Truck,
         tier: 'PROFESSIONAL',
         keywords: ['delivery', 'shipping', 'logistics', 'dispatch'],
+        featureFlag: 'delivery_tracking',
     },
     {
         id: 'couriers',
@@ -398,6 +404,7 @@ const DELIVER: NavItem[] = [
         icon: Users,
         tier: 'ENTERPRISE',
         keywords: ['drivers', 'runners', 'delivery team'],
+        featureFlag: 'courier_portal',
     },
     {
         id: 'live-tracking',
@@ -406,6 +413,7 @@ const DELIVER: NavItem[] = [
         icon: MapPinned,
         tier: 'ENTERPRISE',
         keywords: ['live map', 'gps', 'location', 'real-time'],
+        featureFlag: 'delivery_tracking',
     },
     {
         id: 'live-map',
@@ -414,6 +422,7 @@ const DELIVER: NavItem[] = [
         icon: MapPin,
         tier: 'ENTERPRISE',
         keywords: ['map', 'locations', 'fleet'],
+        featureFlag: 'live_map',
     },
 ];
 
@@ -475,6 +484,7 @@ const GROW: NavItem[] = [
         icon: BarChart3,
         tier: 'PROFESSIONAL',
         keywords: ['reports', 'metrics', 'data', 'insights'],
+        featureFlag: 'analytics_advanced',
     },
     {
         id: 'reports',
@@ -491,6 +501,7 @@ const GROW: NavItem[] = [
         icon: PieChart,
         tier: 'ENTERPRISE',
         keywords: ['deep dive', 'charts', 'trends'],
+        featureFlag: 'analytics_advanced',
     },
     // Marketing
     {
@@ -500,6 +511,7 @@ const GROW: NavItem[] = [
         icon: Mail,
         tier: 'PROFESSIONAL',
         keywords: ['campaigns', 'promotions', 'email'],
+        featureFlag: 'marketing_hub',
     },
     {
         id: 'coupons',
@@ -508,6 +520,7 @@ const GROW: NavItem[] = [
         icon: Tag,
         tier: 'PROFESSIONAL',
         keywords: ['discounts', 'codes', 'promotions'],
+        featureFlag: 'marketing_hub',
     },
     {
         id: 'reviews',

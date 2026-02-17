@@ -69,6 +69,7 @@ function createItem(
     badge?: number | string;
     hot?: boolean;
     shortcut?: string;
+    featureFlag?: string;
   }
 ) {
   const feature = FEATURES[featureId];
@@ -82,6 +83,7 @@ function createItem(
     badge: options?.badge,
     hot: options?.hot,
     shortcut: options?.shortcut,
+    featureFlag: options?.featureFlag,
   };
 }
 
@@ -178,7 +180,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Customers',
     items: [
       createItem('customers', 'All Customers', '/admin/customer-hub', Users),
-      createItem('marketing-automation', 'Marketing', '/admin/marketing-hub', Mail),
+      createItem('marketing-automation', 'Marketing', '/admin/marketing-hub', Mail, { featureFlag: 'marketing_hub' }),
       createItem('storefront', 'Reviews', '/admin/storefront-hub?tab=reviews', MessageSquare),
     ],
   },
@@ -192,7 +194,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
   {
     section: 'Analytics & Finance',
     items: [
-      createItem('analytics', 'Analytics', '/admin/analytics-hub', BarChart3),
+      createItem('analytics', 'Analytics', '/admin/analytics-hub', BarChart3, { featureFlag: 'analytics_advanced' }),
       createItem('financial-center', 'Finance', '/admin/finance-hub', Briefcase),
     ],
   },
@@ -230,8 +232,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
       createItem('live-orders', 'Live Orders', '/admin/orders?tab=live', Activity),
-      createItem('pos-system', 'POS', '/admin/pos-system', CreditCard),
-      createItem('live-map', 'Live Map', '/admin/live-map', MapPinned),
+      createItem('pos-system', 'POS', '/admin/pos-system', CreditCard, { featureFlag: 'pos' }),
+      createItem('live-map', 'Live Map', '/admin/live-map', MapPinned, { featureFlag: 'live_map' }),
     ],
   },
   // ==========================================================================
@@ -267,7 +269,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Customers',
     items: [
       createItem('customers', 'All Customers', '/admin/customer-hub', Users),
-      createItem('customer-crm', 'CRM', '/admin/customer-hub?tab=crm', Briefcase),
+      createItem('customer-crm', 'CRM', '/admin/customer-hub?tab=crm', Briefcase, { featureFlag: 'crm_advanced' }),
       createItem('crm-invoices', 'Invoices', '/admin/customer-hub?tab=invoices', Receipt),
       createItem('support-tickets', 'Support', '/admin/customer-hub?tab=support', Layers),
       createItem('loyalty-program', 'Loyalty', '/admin/customer-hub?tab=loyalty', Star),
@@ -293,10 +295,10 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Fulfillment',
     items: [
-      createItem('delivery-management', 'Overview', '/admin/fulfillment-hub', Truck),
-      createItem('fleet-management', 'Fleet', '/admin/fulfillment-hub?tab=fleet', Truck),
-      createItem('couriers', 'Couriers', '/admin/fulfillment-hub?tab=couriers', Users),
-      createItem('delivery-tracking', 'Tracking', '/admin/fulfillment-hub?tab=map', MapPinned),
+      createItem('delivery-management', 'Overview', '/admin/fulfillment-hub', Truck, { featureFlag: 'delivery_tracking' }),
+      createItem('fleet-management', 'Fleet', '/admin/fulfillment-hub?tab=fleet', Truck, { featureFlag: 'fleet_management' }),
+      createItem('couriers', 'Couriers', '/admin/fulfillment-hub?tab=couriers', Users, { featureFlag: 'courier_portal' }),
+      createItem('delivery-tracking', 'Tracking', '/admin/fulfillment-hub?tab=map', MapPinned, { featureFlag: 'delivery_tracking' }),
     ],
   },
   // ==========================================================================
@@ -307,9 +309,9 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
       createItem('storefront', 'Reviews', '/admin/storefront-hub?tab=reviews', Star),
-      createItem('coupons', 'Coupons', '/admin/storefront-hub?tab=coupons', Tag),
-      createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail),
-      createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare),
+      createItem('coupons', 'Coupons', '/admin/storefront-hub?tab=coupons', Tag, { featureFlag: 'marketing_hub' }),
+      createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail, { featureFlag: 'marketing_hub' }),
+      createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare, { featureFlag: 'live_chat' }),
     ],
   },
   // ==========================================================================
@@ -318,10 +320,10 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Analytics',
     items: [
-      createItem('analytics', 'Overview', '/admin/analytics-hub', BarChart3),
-      createItem('reports', 'Reports', '/admin/analytics-hub?tab=reports', FileText),
-      createItem('advanced-reporting', 'Advanced', '/admin/analytics-hub?tab=advanced', PieChart),
-      createItem('data-export', 'Export', '/admin/analytics-hub?tab=export', Download),
+      createItem('analytics', 'Overview', '/admin/analytics-hub', BarChart3, { featureFlag: 'analytics_advanced' }),
+      createItem('reports', 'Reports', '/admin/analytics-hub?tab=reports', FileText, { featureFlag: 'analytics_advanced' }),
+      createItem('advanced-reporting', 'Advanced', '/admin/analytics-hub?tab=advanced', PieChart, { featureFlag: 'analytics_advanced' }),
+      createItem('data-export', 'Export', '/admin/analytics-hub?tab=export', Download, { featureFlag: 'analytics_advanced' }),
     ],
   },
   // ==========================================================================
@@ -332,8 +334,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('team-members', 'Team', '/admin/operations-hub?tab=team', Users),
       createItem('role-management', 'Roles', '/admin/operations-hub?tab=team&sub=roles', UserCog),
-      createItem('suppliers', 'Vendors', '/admin/operations-hub?tab=procurement&sub=vendors', Building2),
-      createItem('purchase-orders', 'Purchase Orders', '/admin/operations-hub?tab=procurement&sub=purchase-orders', FileText),
+      createItem('suppliers', 'Vendors', '/admin/operations-hub?tab=procurement&sub=vendors', Building2, { featureFlag: 'vendor_management' }),
+      createItem('purchase-orders', 'Purchase Orders', '/admin/operations-hub?tab=procurement&sub=purchase-orders', FileText, { featureFlag: 'purchase_orders' }),
       createItem('locations', 'Locations', '/admin/operations-hub?tab=locations', MapPin),
       createItem('activity-logs', 'Activity Logs', '/admin/operations-hub?tab=activity', ScrollText),
     ],

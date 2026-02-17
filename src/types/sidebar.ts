@@ -45,6 +45,8 @@ export interface SidebarItem {
   submenu?: SidebarItem[];
   /** Feature ID for feature access checking */
   featureId?: string;
+  /** Feature toggle key — when set, item is only visible if the toggle is enabled */
+  featureFlag?: string;
 }
 
 /**
