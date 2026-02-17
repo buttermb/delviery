@@ -745,14 +745,18 @@ export function InvoicesPage() {
                             <div className="p-6">
                                 <EnhancedEmptyState
                                     icon={FileText}
-                                    title={searchQuery || statusFilter ? "No Invoices Found" : "No Invoices Yet"}
-                                    description={searchQuery || statusFilter ? "No invoices match your current filters." : "Create your first invoice to get started."}
-                                    primaryAction={!searchQuery && !statusFilter ? {
+                                    title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
+                                    description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track customer payments"}
+                                    primaryAction={searchQuery || statusFilter ? {
+                                        label: "Clear Filters",
+                                        onClick: () => { setSearchQuery(""); setStatusFilter(null); },
+                                    } : {
                                         label: "Create Invoice",
                                         onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
                                         icon: Plus
-                                    } : undefined}
+                                    }}
                                     compact
+                                    designSystem="tenant-admin"
                                 />
                             </div>
                         ) : (
@@ -920,14 +924,18 @@ export function InvoicesPage() {
                                     <TableCell colSpan={9} className="h-64">
                                         <EnhancedEmptyState
                                             icon={FileText}
-                                            title={searchQuery || statusFilter ? "No Invoices Found" : "No Invoices Yet"}
-                                            description={searchQuery || statusFilter ? "No invoices match your current filters." : "Create your first invoice to get started."}
-                                            primaryAction={!searchQuery && !statusFilter ? {
+                                            title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
+                                            description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track customer payments"}
+                                            primaryAction={searchQuery || statusFilter ? {
+                                                label: "Clear Filters",
+                                                onClick: () => { setSearchQuery(""); setStatusFilter(null); },
+                                            } : {
                                                 label: "Create Invoice",
                                                 onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
                                                 icon: Plus
-                                            } : undefined}
+                                            }}
                                             compact
+                                            designSystem="tenant-admin"
                                         />
                                     </TableCell>
                                 </TableRow>
