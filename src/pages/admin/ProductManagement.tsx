@@ -495,7 +495,7 @@ export default function ProductManagement() {
         // Sync to marketplace if store exists (auto-trigger handles marketplace_product_settings,
         // this handles marketplace_products with additional fields like slug)
         if (store?.id && newProduct) {
-          const { error: syncError } = await (supabase as any).rpc('sync_product_to_marketplace', {
+          const { error: syncError } = await (supabase.rpc as (fn: string, params: Record<string, string>) => ReturnType<typeof supabase.rpc>)('sync_product_to_marketplace', {
             p_product_id: newProduct.id,
             p_store_id: store.id,
           });
@@ -515,8 +515,8 @@ export default function ProductManagement() {
       }
       setIsDialogOpen(false);
       setEditingProduct(null);
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save product');
     } finally {
       setIsGenerating(false);
     }
@@ -577,8 +577,8 @@ export default function ProductManagement() {
 
       setDeleteDialogOpen(false);
       setProductToDelete(null);
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete product');
     } finally {
       setIsDeleting(false);
     }
@@ -678,8 +678,8 @@ export default function ProductManagement() {
 
           handleCombinedBatchClear();
           closeBatchDeleteDialog();
-        } catch (err: any) {
-          toast.error(err.message);
+        } catch (err: unknown) {
+          toast.error(err instanceof Error ? err.message : 'Failed to delete products');
         } finally {
           setBatchDeleteLoading(false);
         }
@@ -739,14 +739,15 @@ export default function ProductManagement() {
       return;
     }
     try {
-      const { data, error } = await (supabase.rpc as any)('sync_product_to_marketplace', {
+      const { data, error } = await (supabase.rpc as (fn: string, params: Record<string, string>) => ReturnType<typeof supabase.rpc>)('sync_product_to_marketplace', {
         p_product_id: productId,
         p_store_id: store.id
       });
 
       if (error) throw error;
 
-      if ((data as any)?.success) {
+      const result = data as Record<string, unknown> | null;
+      if (result?.success) {
         toast.success("Product published to storefront");
         // Invalidate storefront caches so the new product appears instantly
         invalidateProductCaches({
@@ -755,11 +756,11 @@ export default function ProductManagement() {
           productId,
         });
       } else {
-        toast.error((data as any)?.error || "Failed to publish product");
+        toast.error((result?.error as string) || "Failed to publish product");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Failed to publish product', err);
-      toast.error(err.message || "Failed to publish product");
+      toast.error(err instanceof Error ? err.message : "Failed to publish product");
     }
   };
 
@@ -1358,7 +1359,7 @@ export default function ProductManagement() {
       {/* Product Label Dialog */}
       {labelProduct && (
         <ProductLabel
-          product={labelProduct as any}
+          product={{ ...labelProduct, barcode_image_url: labelProduct.barcode_image_url ?? null }}
           open={labelDialogOpen}
           onOpenChange={setLabelDialogOpen}
         />

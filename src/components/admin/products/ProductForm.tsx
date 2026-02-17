@@ -52,7 +52,7 @@ interface ProductFormProps {
     onCancel: () => void;
     isLoading: boolean;
     isEditMode: boolean;
-    storeSettings?: any; // Pass in settings for potency limits
+    storeSettings?: { potency_limit_thc?: number; potency_limit_cbd?: number };
 }
 
 const DEFAULT_FORM_DATA: ProductFormData = {
