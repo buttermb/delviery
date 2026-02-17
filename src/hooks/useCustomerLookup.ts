@@ -20,6 +20,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 export interface CustomerMatch {
   id: string;
@@ -131,10 +132,10 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
         if (searchType === 'phone') {
           const normalizedPhone = normalizePhone(debouncedQuery);
           // Search for phone containing the digits
-          queryBuilder = queryBuilder.ilike('phone', `%${normalizedPhone}%`);
+          queryBuilder = queryBuilder.ilike('phone', `%${escapePostgresLike(normalizedPhone)}%`);
         } else if (searchType === 'email') {
           const normalizedEmail = normalizeEmail(debouncedQuery);
-          queryBuilder = queryBuilder.ilike('email', `%${normalizedEmail}%`);
+          queryBuilder = queryBuilder.ilike('email', `%${escapePostgresLike(normalizedEmail)}%`);
         }
 
         const { data, error: queryError } = await queryBuilder.limit(5);
