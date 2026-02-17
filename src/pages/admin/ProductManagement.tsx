@@ -115,7 +115,7 @@ export default function ProductManagement() {
   const { invalidateProductCaches } = useProductMutations();
 
   // Product duplication hook with callback to open edit dialog
-  const { duplicateProduct } = useProductDuplicate({
+  const { duplicateProduct, isPending: isDuplicating } = useProductDuplicate({
     onSuccess: (newProduct) => {
       // Add to local state and open edit dialog
       setProducts(prev => [newProduct, ...prev]);
@@ -244,6 +244,7 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Optimistic locking for concurrent edit protection
   const { updateWithLock } = useOptimisticLock('products', tenant?.id);
@@ -738,6 +739,7 @@ export default function ProductManagement() {
       toast.error("Storefront not configured. Please set up your store first.");
       return;
     }
+    setIsPublishing(true);
     try {
       const { data, error } = await (supabase.rpc as (fn: string, params: Record<string, string>) => ReturnType<typeof supabase.rpc>)('sync_product_to_marketplace', {
         p_product_id: productId,
@@ -761,6 +763,8 @@ export default function ProductManagement() {
     } catch (err: unknown) {
       logger.error('Failed to publish product', err);
       toast.error(err instanceof Error ? err.message : "Failed to publish product");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -939,10 +943,10 @@ export default function ProductManagement() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
+            <DropdownMenuItem disabled={isGenerating} onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => duplicateProduct(product)}>
+            <DropdownMenuItem disabled={isDuplicating} onClick={() => duplicateProduct(product)}>
               <Copy className="mr-2 h-4 w-4" /> Duplicate
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
@@ -950,11 +954,12 @@ export default function ProductManagement() {
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
+              disabled={isDeleting}
               onClick={() => handleDelete(product.id)}
             >
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handlePublish(product.id)}>
+            <DropdownMenuItem disabled={isPublishing} onClick={() => handlePublish(product.id)}>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -1090,7 +1095,7 @@ export default function ProductManagement() {
             }}
           >
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
+              <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>

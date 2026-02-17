@@ -188,7 +188,7 @@ export function CustomerManagement() {
         });
       }
 
-      setCustomers(decryptedCustomers as any);
+      setCustomers(decryptedCustomers as Customer[]);
       if (decryptedCustomers.length > 0) {
         // toast.success("Customers loaded"); // Reduced noise
       }
