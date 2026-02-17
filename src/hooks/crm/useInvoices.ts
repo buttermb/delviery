@@ -73,15 +73,17 @@ export function useInvoices() {
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            const { data, error } = await crmClient
+            if (!accountId) return null;
+            const { data, error } = await supabase
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('id', id)
+                .eq('account_id', accountId)
                 .maybeSingle();
             if (error) throw error;
             return data ? normalizeInvoice(data as Record<string, unknown>) : null;
         },
-        enabled: !!id,
+        enabled: !!id && !!accountId,
         staleTime: 30_000,
         gcTime: 300_000,
     });
@@ -127,10 +129,12 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
                 const { data, error } = await supabase
                     .from('crm_invoices')
                     .update({ status: 'sent' })
                     .eq('id', invoiceId)
+                    .eq('account_id', accountId)
                     .select('*, client:crm_clients(*)')
                     .maybeSingle();
                 if (error) throw error;
@@ -146,10 +150,12 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
                 const { data, error } = await supabase
                     .from('crm_invoices')
                     .update({ status: 'cancelled' })
                     .eq('id', invoiceId)
+                    .eq('account_id', accountId)
                     .select('*, client:crm_clients(*)')
                     .maybeSingle();
                 if (error) throw error;
@@ -165,11 +171,13 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
+                if (!accountId) throw new Error('Account ID required');
                 // First fetch the original invoice
                 const { data: original, error: fetchError } = await supabase
                     .from('crm_invoices')
                     .select('*')
                     .eq('id', invoiceId)
+                    .eq('account_id', accountId)
                     .maybeSingle();
 
                 if (fetchError) throw fetchError;
