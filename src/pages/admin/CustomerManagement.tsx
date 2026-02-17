@@ -668,13 +668,18 @@ export function CustomerManagement() {
             {filteredCustomers.length === 0 && (
               <EnhancedEmptyState
                 icon={Users}
-                title={debouncedSearchTerm ? "No Customers Found" : "No Customers Yet"}
-                description={debouncedSearchTerm ? "No customers match your search." : "Add your first customer to get started."}
-                primaryAction={!debouncedSearchTerm ? {
-                  label: "Add Your First Customer",
+                title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
+                description={debouncedSearchTerm ? "No customers match your search." : "Customers are added when they place orders"}
+                primaryAction={debouncedSearchTerm ? {
+                  label: "Clear Search",
+                  onClick: () => setSearchTerm('')
+                } : undefined}
+                secondaryAction={!debouncedSearchTerm ? {
+                  label: "Add Customer",
                   onClick: () => navigateToAdmin('customers/new'),
                   icon: Plus
                 } : undefined}
+                designSystem="tenant-admin"
               />
             )}
           </div>
@@ -686,13 +691,18 @@ export function CustomerManagement() {
         {filteredCustomers.length === 0 ? (
           <EnhancedEmptyState
             icon={Users}
-            title={debouncedSearchTerm ? "No Customers Found" : "No Customers Yet"}
-            description={debouncedSearchTerm ? "No customers match your search." : "Add your first customer to get started."}
-            primaryAction={!debouncedSearchTerm ? {
-              label: "Add Your First Customer",
+            title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
+            description={debouncedSearchTerm ? "No customers match your search." : "Customers are added when they place orders"}
+            primaryAction={debouncedSearchTerm ? {
+              label: "Clear Search",
+              onClick: () => setSearchTerm('')
+            } : undefined}
+            secondaryAction={!debouncedSearchTerm ? {
+              label: "Add Customer",
               onClick: () => navigateToAdmin('customers/new'),
               icon: Plus
             } : undefined}
+            designSystem="tenant-admin"
           />
         ) : (
           <AnimatePresence>
