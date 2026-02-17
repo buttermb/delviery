@@ -31,6 +31,7 @@ import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeli
 import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
+import { DeliveryExceptions } from '@/components/admin/delivery';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,6 +89,7 @@ import FileText from "lucide-react/dist/esm/icons/file-text";
 import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -190,6 +192,9 @@ export function OrderDetailsPage() {
 
   // Refund modal state
   const [showRefundModal, setShowRefundModal] = useState(false);
+
+  // Delivery exceptions dialog state
+  const [showDeliveryExceptionsDialog, setShowDeliveryExceptionsDialog] = useState(false);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -497,6 +502,18 @@ export function OrderDetailsPage() {
               >
                 <RotateCcw className="w-4 h-4 mr-1" />
                 {order.payment_status === 'refunded' ? 'Refunded' : 'Refund'}
+              </Button>
+            )}
+
+            {/* Report Delivery Issue Button — only for in-transit/out-for-delivery */}
+            {['in_transit', 'out_for_delivery'].includes(order.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeliveryExceptionsDialog(true)}
+              >
+                <AlertTriangle className="w-4 h-4 mr-1" />
+                Report Issue
               </Button>
             )}
 
@@ -1139,6 +1156,21 @@ export function OrderDetailsPage() {
             toast.success('Refund processed successfully');
           }}
         />
+      </div>
+
+      {/* Delivery Exceptions Dialog — hidden on print */}
+      <div className="print:hidden">
+        <Dialog open={showDeliveryExceptionsDialog} onOpenChange={setShowDeliveryExceptionsDialog}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Report Delivery Issue</DialogTitle>
+              <DialogDescription>
+                Log delivery exceptions for order #{order.order_number}
+              </DialogDescription>
+            </DialogHeader>
+            <DeliveryExceptions />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Assign Delivery Runner Dialog — hidden on print */}
