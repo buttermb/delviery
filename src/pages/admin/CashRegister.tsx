@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet
+  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw
 } from 'lucide-react';
 import {
   Dialog,
@@ -45,6 +45,7 @@ import {
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
 
 interface Product {
   id: string;
@@ -181,6 +182,9 @@ function CashRegisterContent() {
 
   // Keyboard shortcuts help
   const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
+
+  // Refund dialog
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
 
   // Load products with expanded fields
   const { data: products = [] } = useQuery({
@@ -820,6 +824,15 @@ function CashRegisterContent() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setRefundDialogOpen(true)}
+            disabled={processPayment.isPending}
+          >
+            <RotateCcw className="h-4 w-4 mr-1" />
+            Refund/Return
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setKeyboardHelpOpen(true)}
             className="text-xs"
           >
@@ -1432,6 +1445,19 @@ function CashRegisterContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* POS Refund Dialog */}
+      <POSRefundDialog
+        open={refundDialogOpen}
+        onOpenChange={setRefundDialogOpen}
+        shiftId={activeShift?.id}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          toast({ title: 'Refund processed successfully' });
+        }}
+      />
 
       {/* Keyboard Shortcuts Help Dialog */}
       <Dialog open={keyboardHelpOpen} onOpenChange={setKeyboardHelpOpen}>
