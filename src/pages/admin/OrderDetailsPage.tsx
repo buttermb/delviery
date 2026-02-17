@@ -909,6 +909,92 @@ export function OrderDetailsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Delivery Status Timeline */}
+                  {(() => {
+                    const deliverySteps = [
+                      {
+                        key: 'ordered',
+                        label: 'Ordered',
+                        icon: Package,
+                        timestamp: order.created_at,
+                        reached: true,
+                      },
+                      {
+                        key: 'assigned',
+                        label: 'Courier Assigned',
+                        icon: UserPlus,
+                        timestamp: order.courier_id ? (order.confirmed_at || order.created_at) : null,
+                        reached: !!order.courier_id,
+                      },
+                      {
+                        key: 'picked_up',
+                        label: 'Picked Up',
+                        icon: Package,
+                        timestamp: order.shipped_at,
+                        reached: !!order.shipped_at || ['in_transit', 'out_for_delivery', 'delivered', 'completed'].includes(order.status),
+                      },
+                      {
+                        key: 'in_transit',
+                        label: 'In Transit',
+                        icon: Truck,
+                        timestamp: order.shipped_at,
+                        reached: ['in_transit', 'out_for_delivery', 'delivered', 'completed'].includes(order.status),
+                      },
+                      {
+                        key: order.status === 'cancelled' ? 'failed' : 'delivered',
+                        label: order.status === 'cancelled' ? 'Failed' : 'Delivered',
+                        icon: order.status === 'cancelled' ? XCircle : CheckCircle,
+                        timestamp: order.delivered_at || order.cancelled_at,
+                        reached: ['delivered', 'completed'].includes(order.status) || order.status === 'cancelled',
+                      },
+                    ];
+
+                    return (
+                      <div className="flex items-start justify-between gap-1 mb-4">
+                        {deliverySteps.map((step, idx) => {
+                          const StepIcon = step.icon;
+                          const isFailed = step.key === 'failed' && step.reached;
+                          const isActive = step.reached;
+
+                          return (
+                            <div key={step.key} className="flex items-start flex-1 min-w-0">
+                              <div className="flex flex-col items-center text-center w-full">
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                    isFailed
+                                      ? 'bg-destructive text-destructive-foreground'
+                                      : isActive
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted text-muted-foreground'
+                                  }`}
+                                >
+                                  <StepIcon className="w-4 h-4" />
+                                </div>
+                                <p className={`text-xs font-medium mt-1 ${
+                                  isFailed ? 'text-destructive' : isActive ? 'text-primary' : 'text-muted-foreground'
+                                }`}>
+                                  {step.label}
+                                </p>
+                                {step.timestamp && step.reached && (
+                                  <p className="text-[10px] text-muted-foreground">
+                                    {format(new Date(step.timestamp), 'MMM d, h:mm a')}
+                                  </p>
+                                )}
+                              </div>
+                              {idx < deliverySteps.length - 1 && (
+                                <div className={`h-0.5 mt-4 flex-1 min-w-2 ${
+                                  deliverySteps[idx + 1].reached ? 'bg-primary' : 'bg-muted'
+                                }`} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
+                  <Separator />
+
                   {order.delivery_method && (
                     <div>
                       <Label className="text-xs text-muted-foreground">Delivery Method</Label>
