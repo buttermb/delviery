@@ -218,6 +218,7 @@ const CreateInvoicePage = lazy(() => import("./pages/admin/CreateInvoicePage"));
 const InvoiceDetailPage = lazy(() => import("./pages/admin/InvoiceDetailPage"));
 const CreatePreOrderPage = lazy(() => import("./pages/admin/CreatePreOrderPage"));
 const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage"));
+const ProductDetailsPage = lazy(() => import("./pages/admin/ProductDetailsPage"));
 const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
 const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
 const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
@@ -852,6 +853,7 @@ const App = () => {
                                         <Route path="orders/offline-create" element={<OfflineOrderCreate />} />
 
                                         <Route path="inventory-hub" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="products/:productId" element={<FeatureProtectedRoute featureId="products"><ProductDetailsPage /></FeatureProtectedRoute>} />
                                         <Route path="inventory-dashboard" element={<Navigate to="inventory-hub?tab=stock" replace />} />
                                         <Route path="inventory-monitoring" element={<Navigate to="inventory-hub?tab=monitoring" replace />} />
                                         <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
