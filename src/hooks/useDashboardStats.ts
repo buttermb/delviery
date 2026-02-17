@@ -228,10 +228,10 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
           .gte('created_at', today.toISOString())
           .in('status', ['completed', 'delivered']),
 
-        // Yesterday's orders (for trend)
+        // Yesterday's orders count (for trend — count only, no row data needed)
         supabase
           .from('orders')
-          .select('id, total_amount', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
           .gte('created_at', yesterday.toISOString())
           .lt('created_at', today.toISOString())
@@ -353,7 +353,7 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
         }
       }
 
-      // Extract yesterday orders and revenue
+      // Extract yesterday orders count
       let totalOrdersYesterday = 0;
       if (yesterdayOrdersResult.status === 'fulfilled') {
         const { count, error } = yesterdayOrdersResult.value;
