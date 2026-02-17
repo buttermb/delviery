@@ -292,7 +292,14 @@ export default function InvoiceDetailPage() {
                     {/* Main Content */}
                     <div className="md:col-span-2 space-y-6 print:space-y-0">
                         {/* Invoice Document */}
-                        <Card className="overflow-hidden invoice-print-document print:border-none print:shadow-none">
+                        <Card className="overflow-hidden invoice-print-document print:border-none print:shadow-none relative">
+                            {(invoice.status === 'cancelled' || invoice.status === 'void') && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
+                                    <span className="text-8xl font-bold text-red-500/15 -rotate-[30deg]">
+                                        VOID
+                                    </span>
+                                </div>
+                            )}
                             <CardHeader className="bg-muted/30 border-b pb-8 print:bg-white print:border-b-2 print:border-b-gray-800 print:px-0">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
