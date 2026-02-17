@@ -64,7 +64,8 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
           stock_quantity: stock,
           in_stock: status === "active",
         })
-        .eq("id", product.id);
+        .eq("id", product.id)
+        .eq("tenant_id", tenant?.id);
 
       if (error) throw error;
     },
@@ -76,6 +77,10 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
       // Cross-panel invalidation - product update affects POS, storefront, inventory, wholesale
       if (tenant?.id && product) {
         invalidateOnEvent(queryClient, 'PRODUCT_UPDATED', tenant.id, {
+          productId: product.id,
+        });
+        // Stock change should also invalidate dashboard stats (Low Stock KPI)
+        invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id, {
           productId: product.id,
         });
       }

@@ -96,6 +96,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { getStatusColor, getStatusVariant } from '@/lib/utils/statusColors';
 
 // Status steps for the timeline
@@ -385,6 +386,9 @@ export function OrderDetailsPage() {
             }
           }
           logger.info('Inventory restored for cancelled order', { component: 'OrderDetailsPage', orderId });
+          if (tenant?.id) {
+            invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id);
+          }
         } catch (stockError) {
           logger.error('Failed to restore inventory on cancel', stockError, { component: 'OrderDetailsPage', orderId });
           toast.error('Order cancelled but inventory restore failed — adjust stock manually');
@@ -411,6 +415,9 @@ export function OrderDetailsPage() {
             }
           }
           logger.info('Stock deducted for delivered order', { component: 'OrderDetailsPage', orderId });
+          if (tenant?.id) {
+            invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id);
+          }
         } catch (stockError) {
           logger.error('Failed to deduct stock on delivery', stockError, { component: 'OrderDetailsPage', orderId });
           toast.error('Order delivered but stock deduction failed — adjust stock manually');

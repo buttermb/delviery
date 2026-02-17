@@ -26,6 +26,8 @@ import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export interface Product {
   id: string;
@@ -56,6 +58,7 @@ export default function PointOfSale() {
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -319,13 +322,18 @@ export default function PointOfSale() {
           if (transactionError) throw transactionError;
           transactionId = transaction?.id;
 
-          // Update inventory 
+          // Update inventory
           for (const item of cart) {
             await supabase
               .from('products')
               .update({ stock_quantity: item.stock_quantity - item.quantity })
               .eq('id', item.id)
               .eq('tenant_id', tenantId);
+          }
+
+          // Invalidate dashboard stats so Low Stock KPI updates
+          if (tenantId) {
+            invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenantId);
           }
 
           // Update loyalty
