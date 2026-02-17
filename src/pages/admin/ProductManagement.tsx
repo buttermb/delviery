@@ -479,6 +479,34 @@ export default function ProductManagement() {
         // Update state with new version
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData, version: expectedVersion + 1 } : p));
 
+        // Warn if price changed and product is on active menus
+        const priceChanged =
+          productData.wholesale_price !== editingProduct.wholesale_price ||
+          productData.retail_price !== editingProduct.retail_price ||
+          productData.cost_per_unit !== editingProduct.cost_per_unit;
+
+        if (priceChanged) {
+          try {
+            const now = new Date().toISOString();
+            const { count } = await supabase
+              .from('disposable_menu_products')
+              .select('menu_id, disposable_menus!inner(id)', { count: 'exact', head: true })
+              .eq('product_id', editingProduct.id)
+              .eq('disposable_menus.status', 'active')
+              .is('disposable_menus.burned_at', null)
+              .or(`never_expires.eq.true,expiration_date.gt.${now}`, { referencedTable: 'disposable_menus' });
+
+            if (count && count > 0) {
+              toast.warning(
+                `This product is on ${count} active menu${count > 1 ? 's' : ''}. Menu prices won't update automatically.`
+              );
+            }
+          } catch (menuCheckError) {
+            // Non-blocking — don't let menu check failure affect product save
+            logger.warn('Failed to check active menus for price change warning', { error: menuCheckError });
+          }
+        }
+
         // Invalidate all product caches so storefront reflects changes instantly
         invalidateProductCaches({
           tenantId: tenant.id,
@@ -813,6 +841,28 @@ export default function ProductManagement() {
         prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
       );
       toast.success('Updated!');
+
+      // Warn if price changed and product is on active menus
+      if (field === 'wholesale_price' || field === 'retail_price' || field === 'cost_per_unit') {
+        try {
+          const now = new Date().toISOString();
+          const { count } = await supabase
+            .from('disposable_menu_products')
+            .select('menu_id, disposable_menus!inner(id)', { count: 'exact', head: true })
+            .eq('product_id', productId)
+            .eq('disposable_menus.status', 'active')
+            .is('disposable_menus.burned_at', null)
+            .or(`never_expires.eq.true,expiration_date.gt.${now}`, { referencedTable: 'disposable_menus' });
+
+          if (count && count > 0) {
+            toast.warning(
+              `This product is on ${count} active menu${count > 1 ? 's' : ''}. Menu prices won't update automatically.`
+            );
+          }
+        } catch (menuCheckError) {
+          logger.warn('Failed to check active menus for price change warning', { error: menuCheckError });
+        }
+      }
 
       // Invalidate storefront caches for instant sync
       invalidateProductCaches({
