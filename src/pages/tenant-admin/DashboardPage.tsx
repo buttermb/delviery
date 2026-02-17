@@ -48,6 +48,17 @@ import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { useToast } from "@/hooks/use-toast";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { handleError } from "@/utils/errorHandling/handlers";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { TrialExpirationBanner } from '@/components/billing/TrialExpirationBanner';
 import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGrid';
 import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotificationsCenter';
@@ -835,23 +846,44 @@ export default function TenantAdminDashboardPage() {
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={handleGenerateDemoData}
-                disabled={generatingDemoData}
-                className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
-              >
-                {generatingDemoData ? (
-                  <>
-                    <Activity className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="mr-2 h-4 w-4" />
-                    Generate Demo Data
-                  </>
-                )}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    disabled={generatingDemoData}
+                    className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+                  >
+                    {generatingDemoData ? (
+                      <>
+                        <Activity className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="mr-2 h-4 w-4" />
+                        Generate Demo Data
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Generate Demo Data?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will create sample customers, products, and orders in your account.
+                      You can delete them later if needed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleGenerateDemoData}
+                      disabled={generatingDemoData}
+                    >
+                      {generatingDemoData ? "Generating..." : "Generate"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         )}
