@@ -155,6 +155,9 @@ export default function InvoiceDetailPage() {
     };
 
     const isVoided = invoice.status === 'cancelled' || invoice.status === 'void';
+    const isOverdue = invoice.due_date
+        && new Date(invoice.due_date) < new Date()
+        && ['sent', 'partially_paid'].includes(invoice.status);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -190,6 +193,7 @@ export default function InvoiceDetailPage() {
                                     Invoice #{invoice.invoice_number}
                                 </h1>
                                 {getStatusBadge(invoice.status)}
+                                {isOverdue && <Badge variant="destructive">Overdue</Badge>}
                             </div>
                             <p className="text-muted-foreground">
                                 Created on {format(new Date(invoice.created_at), "PPP")}
