@@ -973,16 +973,16 @@ const App = () => {
                                         <Route path="coupons" element={<Navigate to="storefront-hub?tab=coupons" replace />} />
                                         <Route path="quality-control" element={<Navigate to="operations-hub?tab=quality" replace />} />
                                         <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
-                                        <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm"><ClientsPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/clients/:clientId" element={<FeatureProtectedRoute featureId="customer-crm"><ClientDetailPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/invoices" element={<FeatureProtectedRoute featureId="customer-crm"><InvoicesPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/invoices/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreateInvoicePage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/invoices/:invoiceId" element={<FeatureProtectedRoute featureId="customer-crm"><InvoiceDetailPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><ClientsPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/clients/:clientId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><ClientDetailPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/invoices" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvoicesPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/invoices/new" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CreateInvoicePage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/invoices/:invoiceId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvoiceDetailPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/pre-orders" element={<Navigate to="orders?tab=preorders" replace />} />
-                                        <Route path="crm/pre-orders/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreatePreOrderPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrderDetailPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm"><CRMSettingsPage /></FeatureProtectedRoute>} />
-                                        <Route path="crm/invites" element={<FeatureProtectedRoute featureId="customer-crm"><InvitesPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/pre-orders/new" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CreatePreOrderPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><PreOrderDetailPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CRMSettingsPage /></FeatureProtectedRoute>} />
+                                        <Route path="crm/invites" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvitesPage /></FeatureProtectedRoute>} />
                                         <Route path="marketing-automation" element={<Navigate to="marketing-hub?tab=campaigns" replace />} />
                                         <Route path="appointments" element={<Navigate to="operations-hub?tab=appointments" replace />} />
                                         <Route path="support-tickets" element={<Navigate to="operations-hub?tab=support" replace />} />
