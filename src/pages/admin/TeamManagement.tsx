@@ -121,19 +121,17 @@ export default function TeamManagement() {
         is_owner: true,
       };
 
-      const members = (tenantUsers || []).map((user: any): TeamMember => ({
+      const members = (tenantUsers || []).map((user): TeamMember => ({
         id: user.id,
-        user_id: user.user_id,
+        user_id: user.user_id || '',
         email: user.email,
         first_name: user.first_name,
-        last_name: user.last_name || null,
-        full_name: user.first_name && user.last_name
-          ? `${user.first_name} ${user.last_name}`
-          : user.first_name || user.last_name || null,
+        last_name: null,
+        full_name: user.name || user.first_name || null,
         role: user.role as TeamMember['role'],
         status: user.status as TeamMember['status'],
         avatar_url: user.avatar_url,
-        created_at: user.created_at,
+        created_at: user.created_at || '',
         last_login_at: user.last_login_at,
         is_owner: false,
       }));
@@ -403,7 +401,7 @@ export default function TeamManagement() {
             return <span className="text-xs text-muted-foreground italic">Cannot modify owner</span>;
           }
 
-          const isUpdating = updateRoleMutation.isPending || updateStatusMutation.isPending;
+          const isUpdating = updateRoleMutation.isPending || updateStatusMutation.isPending || removeMutation.isPending;
 
           return (
             <DropdownMenu>
@@ -419,21 +417,21 @@ export default function TeamManagement() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'admin' })}
-                  disabled={row.role === 'admin'}
+                  disabled={row.role === 'admin' || isUpdating}
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   Make Admin
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'member' })}
-                  disabled={row.role === 'member'}
+                  disabled={row.role === 'member' || isUpdating}
                 >
                   <Users className="h-4 w-4 mr-2" />
                   Make Member
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'viewer' })}
-                  disabled={row.role === 'viewer'}
+                  disabled={row.role === 'viewer' || isUpdating}
                 >
                   <Users className="h-4 w-4 mr-2" />
                   Make Viewer
@@ -443,6 +441,7 @@ export default function TeamManagement() {
                   <DropdownMenuItem
                     onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'suspended' })}
                     className="text-amber-600"
+                    disabled={isUpdating}
                   >
                     <UserX className="h-4 w-4 mr-2" />
                     Suspend Member
@@ -451,6 +450,7 @@ export default function TeamManagement() {
                   <DropdownMenuItem
                     onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'active' })}
                     className="text-green-600"
+                    disabled={isUpdating}
                   >
                     <UserCheck className="h-4 w-4 mr-2" />
                     Reactivate Member
@@ -460,6 +460,7 @@ export default function TeamManagement() {
                 <DropdownMenuItem
                   onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
                   className="text-destructive"
+                  disabled={isUpdating}
                 >
                   Remove Member
                 </DropdownMenuItem>
@@ -469,7 +470,7 @@ export default function TeamManagement() {
         },
       },
     ],
-    [updateRoleMutation.isPending, updateStatusMutation.isPending]
+    [updateRoleMutation.isPending, updateStatusMutation.isPending, removeMutation.isPending]
   );
 
   if (authLoading) {
@@ -526,7 +527,7 @@ export default function TeamManagement() {
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button disabled={isLimitReached}>
+            <Button disabled={isLimitReached || inviteMutation.isPending}>
               <Plus className="w-4 h-4 mr-2" />
               Invite Member
             </Button>
