@@ -42,7 +42,7 @@ export function FeatureProtectedRoute({ feature, children }: FeatureProtectedRou
             This feature is currently disabled. Enable it in Settings &gt; Features to start using it.
           </p>
           <Button asChild>
-            <Link to={`/${tenantSlug}/admin/settings?section=features`}>
+            <Link to={`/${tenantSlug}/admin/settings?tab=features`}>
               <Settings className="mr-2 h-4 w-4" />
               Go to Settings
             </Link>

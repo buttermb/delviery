@@ -71,8 +71,13 @@ export default function SettingsPage() {
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'general';
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const tabParam = searchParams.get('tab') || 'general';
+  const [activeTab, setActiveTab] = useState(tabParam);
+
+  // Sync active tab with URL search param changes
+  useEffect(() => {
+    setActiveTab(tabParam);
+  }, [tabParam]);
   const [loading, setLoading] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [formsInitialized, setFormsInitialized] = useState(false);
