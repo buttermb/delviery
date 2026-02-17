@@ -272,8 +272,8 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('customer-crm', 'CRM', '/admin/customer-hub?tab=crm', Briefcase, { featureFlag: 'crm_advanced' }),
       createItem('crm-invoices', 'Invoices', '/admin/customer-hub?tab=invoices', Receipt),
       createItem('support-tickets', 'Support', '/admin/customer-hub?tab=support', Layers),
-      createItem('loyalty-program', 'Loyalty', '/admin/customer-hub?tab=loyalty', Star),
-      createItem('customer-analytics', 'Analytics', '/admin/customer-hub?tab=analytics', PieChart),
+      createItem('loyalty-program', 'Loyalty', '/admin/customer-hub?tab=loyalty', Star, { featureFlag: 'marketing_hub' }),
+      createItem('customer-analytics', 'Analytics', '/admin/customer-hub?tab=analytics', PieChart, { featureFlag: 'crm_advanced' }),
     ],
   },
   // ==========================================================================
