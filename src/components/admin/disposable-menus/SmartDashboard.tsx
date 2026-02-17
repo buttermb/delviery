@@ -5,7 +5,7 @@ import {
   Plus, Settings, LayoutGrid, ShoppingBag, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
   Zap, Target, AlertCircle, CheckCircle, BarChart3,
-  Download, Activity
+  Download, Activity, Link
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -917,16 +917,17 @@ export function SmartDashboard() {
               renderItem={(menu: MenuData) => <MenuCard menu={menu as unknown as Parameters<typeof MenuCard>[0]['menu']} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
-                icon: LayoutGrid,
-                title: searchQuery || statusFilter !== 'all' ? 'No menus found' : 'Create Your First Menu',
+                icon: Link,
+                title: searchQuery || statusFilter !== 'all' ? 'No menus found' : 'No menus yet',
                 description: searchQuery || statusFilter !== 'all'
                   ? 'Try adjusting your search or filters'
-                  : 'Disposable menus are secure, time-limited catalogs that you can share with clients. They auto-destruct after use.',
+                  : 'Create a disposable menu to share with your customers',
                 primaryAction: (!searchQuery && statusFilter === 'all') ? {
-                  label: 'Create Your First Menu',
+                  label: 'Create Menu',
                   onClick: () => setWizardOpen(true),
                   icon: Plus
-                } : undefined
+                } : undefined,
+                designSystem: 'tenant-admin'
               }}
             />
           </TabsContent>

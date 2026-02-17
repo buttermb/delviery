@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Plus, Shield, AlertTriangle, Flame,
-  Eye, ShoppingCart, ExternalLink
+  Eye, ShoppingCart, ExternalLink, Link
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, formatDistanceToNow, isPast } from 'date-fns';
@@ -195,10 +195,12 @@ export function EnhancedMenuDashboard() {
           <div className="text-center py-8 text-muted-foreground">Loading menus...</div>
         ) : activeMenus.length === 0 ? (
           <Card className="p-8 text-center">
-            <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">No active menus yet</p>
+            <Link className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-1">No menus yet</h3>
+            <p className="text-muted-foreground mb-4">Create a disposable menu to share with your customers</p>
             <Button onClick={() => setCreateDialogOpen(true)}>
-              Create Your First Menu
+              <Plus className="h-4 w-4 mr-2" />
+              Create Menu
             </Button>
           </Card>
         ) : (
