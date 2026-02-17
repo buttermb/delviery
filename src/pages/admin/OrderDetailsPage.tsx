@@ -30,6 +30,7 @@ import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessi
 import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
 import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
+import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,6 +87,7 @@ import Calendar from "lucide-react/dist/esm/icons/calendar";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import Printer from "lucide-react/dist/esm/icons/printer";
+import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -185,6 +187,9 @@ export function OrderDetailsPage() {
 
   // Edit order modal state
   const [showEditModal, setShowEditModal] = useState(false);
+
+  // Refund modal state
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -479,6 +484,19 @@ export function OrderDetailsPage() {
               <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
                 <Edit className="w-4 h-4 mr-1" />
                 Edit Order
+              </Button>
+            )}
+
+            {/* Refund Button — only for delivered/completed, disabled if already refunded */}
+            {['delivered', 'completed'].includes(order.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowRefundModal(true)}
+                disabled={order.payment_status === 'refunded'}
+              >
+                <RotateCcw className="w-4 h-4 mr-1" />
+                {order.payment_status === 'refunded' ? 'Refunded' : 'Refund'}
               </Button>
             )}
 
@@ -1060,6 +1078,65 @@ export function OrderDetailsPage() {
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
             toast.success('Order updated');
+          }}
+        />
+      </div>
+
+      {/* Order Refund Modal — hidden on print */}
+      <div className="print:hidden">
+        <OrderRefundModal
+          open={showRefundModal}
+          onOpenChange={setShowRefundModal}
+          order={order ? {
+            id: order.id,
+            tenant_id: tenant?.id || '',
+            order_number: order.order_number,
+            order_type: 'wholesale',
+            source: order.order_source || 'admin',
+            status: order.status as 'delivered' | 'completed',
+            subtotal: order.subtotal || 0,
+            tax_amount: order.tax_amount || 0,
+            discount_amount: order.discount_amount || 0,
+            total_amount: order.total_amount,
+            payment_method: null,
+            payment_status: order.payment_status as 'paid' | 'unpaid' | 'refunded' | 'partially_paid',
+            customer_id: order.customer_id || null,
+            wholesale_client_id: order.wholesale_client_id || null,
+            menu_id: null,
+            shift_id: null,
+            delivery_address: order.delivery_address,
+            delivery_notes: order.delivery_notes,
+            courier_id: order.courier_id,
+            contact_name: null,
+            contact_phone: null,
+            metadata: {},
+            created_at: order.created_at,
+            updated_at: order.updated_at,
+            cancelled_at: order.cancelled_at,
+            cancellation_reason: order.cancellation_reason,
+            priority: 'normal',
+            priority_set_at: null,
+            priority_set_by: null,
+            priority_auto_set: false,
+            items: (order.order_items || []).map(item => ({
+              id: item.id,
+              order_id: order.id,
+              product_id: item.product_id,
+              inventory_id: null,
+              product_name: item.product_name,
+              sku: null,
+              quantity: item.quantity,
+              quantity_unit: 'unit',
+              unit_price: item.unit_price,
+              discount_amount: 0,
+              total_price: item.total_price,
+              metadata: {},
+            })),
+          } : null}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+            toast.success('Refund processed successfully');
           }}
         />
       </div>
