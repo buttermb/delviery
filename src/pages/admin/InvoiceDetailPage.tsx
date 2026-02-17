@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useTenant } from "@/contexts/TenantContext";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useInvoices } from "@/hooks/crm/useInvoices";
+import { InvoicePaymentDialog } from "@/components/admin/invoices/InvoicePaymentDialog";
 import { RelatedEntitiesPanel } from "@/components/admin/RelatedEntitiesPanel";
 import { useRelatedInvoicePreOrders } from "@/hooks/useRelatedEntities";
 import { Button } from "@/components/ui/button";
@@ -11,13 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import {
     ArrowLeft,
     ExternalLink,
-    CheckCircle,
     Send,
     Printer,
     Trash2,
     Copy,
     Ban,
-    FileText
+    FileText,
+    DollarSign
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
@@ -50,15 +52,15 @@ export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
     const { navigateToAdmin } = useTenantNavigation();
     const { tenant } = useTenant();
-    const { useInvoiceQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice, useDeleteInvoice } = useInvoices();
+    const { useInvoiceQuery, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice, useDeleteInvoice } = useInvoices();
 
     const { data: invoice, isLoading } = useInvoiceQuery(invoiceId || '');
     const relatedPreOrders = useRelatedInvoicePreOrders(invoice?.client_id, invoiceId);
-    const markAsPaid = useMarkInvoicePaid();
     const markAsSent = useMarkInvoiceSent();
     const voidInvoiceMutation = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
+    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
     // Set breadcrumb label to show invoice number
     useBreadcrumbLabel(invoice ? `Invoice #${invoice.invoice_number}` : null);
@@ -70,19 +72,6 @@ export default function InvoiceDetailPage() {
     if (!invoice) {
         return <div className="p-8 text-center">Invoice not found</div>;
     }
-
-    const handleMarkAsPaid = () => {
-        markAsPaid.mutate(invoice.id, {
-            onSuccess: () => {
-                toast.success("Invoice marked as paid");
-            },
-            onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to update invoice";
-                toast.error("Update failed", { description: message });
-                logger.error('Failed to mark invoice as paid', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
-            },
-        });
-    };
 
     const handleMarkAsSent = () => {
         markAsSent.mutate(invoice.id, {
@@ -208,14 +197,14 @@ export default function InvoiceDetailPage() {
                             </Button>
                         )}
 
-                        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                        {(invoice.status === "sent" || invoice.status === "partially_paid") && (
                             <Button
-                                onClick={handleMarkAsPaid}
-                                disabled={markAsPaid.isPending}
+                                onClick={() => setShowPaymentDialog(true)}
                                 className="bg-green-600 hover:bg-green-700"
                             >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Mark Paid
+                                <DollarSign className="mr-2 h-4 w-4" />
+                                Record Payment
+                                {invoice.amount_paid ? ` (${formatCurrency(invoice.total - (invoice.amount_paid || 0))} remaining)` : ''}
                             </Button>
                         )}
 
@@ -466,6 +455,14 @@ export default function InvoiceDetailPage() {
                     </div>
                 </div>
             </div>
+
+            <InvoicePaymentDialog
+                invoiceId={invoice.id}
+                amountDue={invoice.total}
+                amountPaid={invoice.amount_paid || 0}
+                open={showPaymentDialog}
+                onOpenChange={setShowPaymentDialog}
+            />
         </SwipeBackWrapper>
     );
 }

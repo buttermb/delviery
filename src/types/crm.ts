@@ -107,9 +107,11 @@ export interface CRMInvoice {
     tax_amount: number;
     tax: number; // Alias for tax_amount for compatibility
     total: number;
+    amount_paid: number | null;
+    payment_history: unknown[] | null;
 
     // Status
-    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+    status: 'draft' | 'sent' | 'paid' | 'partially_paid' | 'overdue' | 'cancelled';
     paid_at: string | null;
 
     // Sharing
