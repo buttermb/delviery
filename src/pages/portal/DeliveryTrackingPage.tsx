@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -222,8 +223,8 @@ export default function DeliveryTrackingPage() {
           // Lookup mode: order number + phone (last 4 digits)
           const phoneDigits = lookupPhone.replace(/\D/g, '').slice(-4);
           query = query
-            .ilike('tracking_code', `%${lookupOrderNumber}%`)
-            .ilike('customer_phone', `%${phoneDigits}`);
+            .ilike('tracking_code', `%${escapePostgresLike(lookupOrderNumber)}%`)
+            .ilike('customer_phone', `%${escapePostgresLike(phoneDigits)}`);
         } else {
           return null;
         }
