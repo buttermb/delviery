@@ -90,6 +90,7 @@ import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import Save from "lucide-react/dist/esm/icons/save";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -214,6 +215,10 @@ export function OrderDetailsPage() {
 
   // Delivery exceptions dialog state
   const [showDeliveryExceptionsDialog, setShowDeliveryExceptionsDialog] = useState(false);
+
+  // Delivery notes editing state
+  const [deliveryNotesValue, setDeliveryNotesValue] = useState<string>('');
+  const [isEditingDeliveryNotes, setIsEditingDeliveryNotes] = useState(false);
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
@@ -450,6 +455,42 @@ export function OrderDetailsPage() {
       toast.error('Failed to copy');
     }
   };
+
+  // Save delivery notes mutation
+  const saveDeliveryNotesMutation = useMutation({
+    mutationFn: async (notes: string) => {
+      if (!tenant?.id || !orderId) throw new Error('Missing required data');
+
+      const updateData = { delivery_notes: notes || null };
+
+      // Try unified_orders first
+      const { error: unifiedError } = await supabase
+        .from('unified_orders')
+        .update(updateData)
+        .eq('id', orderId)
+        .eq('tenant_id', tenant.id);
+
+      if (!unifiedError) return;
+
+      // Fallback to orders table
+      const { error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', orderId)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+      toast.success('Delivery notes saved');
+      setIsEditingDeliveryNotes(false);
+    },
+    onError: (error) => {
+      logger.error('Failed to save delivery notes', error, { component: 'OrderDetailsPage' });
+      toast.error('Failed to save delivery notes');
+    },
+  });
 
   if (isLoading) {
     return (
@@ -1007,8 +1048,72 @@ export function OrderDetailsPage() {
                       <p className="text-sm">{order.delivery_address}</p>
                     </div>
                   )}
+                  {/* Editable Delivery Notes */}
+                  <div className="print:hidden">
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs text-muted-foreground">Delivery Notes</Label>
+                      {!isEditingDeliveryNotes && !isCancelled && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => {
+                            setDeliveryNotesValue(order.delivery_notes || '');
+                            setIsEditingDeliveryNotes(true);
+                          }}
+                          disabled={saveDeliveryNotesMutation.isPending}
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          {order.delivery_notes ? 'Edit' : 'Add'}
+                        </Button>
+                      )}
+                    </div>
+                    {isEditingDeliveryNotes ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Gate code, delivery instructions, special requests..."
+                          value={deliveryNotesValue}
+                          onChange={(e) => setDeliveryNotesValue(e.target.value)}
+                          rows={3}
+                          maxLength={500}
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {deliveryNotesValue.length}/500
+                          </span>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setIsEditingDeliveryNotes(false)}
+                              disabled={saveDeliveryNotesMutation.isPending}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => saveDeliveryNotesMutation.mutate(deliveryNotesValue.trim())}
+                              disabled={saveDeliveryNotesMutation.isPending}
+                            >
+                              {saveDeliveryNotesMutation.isPending ? (
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              ) : (
+                                <Save className="w-3 h-3 mr-1" />
+                              )}
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : order.delivery_notes ? (
+                      <p className="text-sm whitespace-pre-wrap">{order.delivery_notes}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No delivery notes</p>
+                    )}
+                  </div>
+                  {/* Print-only delivery notes (non-editable) */}
                   {order.delivery_notes && (
-                    <div>
+                    <div className="hidden print:block">
                       <Label className="text-xs text-muted-foreground">Delivery Notes</Label>
                       <p className="text-sm">{order.delivery_notes}</p>
                     </div>
