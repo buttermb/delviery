@@ -102,7 +102,7 @@ import { getStatusColor, getStatusVariant } from '@/lib/utils/statusColors';
 const STATUS_STEPS = [
   { status: 'pending', label: 'Order Placed', icon: Package, description: 'Order received' },
   { status: 'confirmed', label: 'Confirmed', icon: CheckCircle, description: 'Order confirmed' },
-  { status: 'processing', label: 'Processing', icon: Clock, description: 'Being prepared' },
+  { status: 'preparing', label: 'Preparing', icon: Clock, description: 'Being prepared' },
   { status: 'ready', label: 'Ready', icon: Package, description: 'Ready for pickup/delivery' },
   { status: 'in_transit', label: 'In Transit', icon: Truck, description: 'Out for delivery' },
   { status: 'delivered', label: 'Delivered', icon: CheckCircle, description: 'Successfully delivered' },
@@ -651,7 +651,7 @@ export function OrderDetailsPage() {
             />
 
             {/* Assign Runner Button - show when order is ready for delivery */}
-            {!isCancelled && !order.courier_id && ['confirmed', 'processing', 'ready', 'pending'].includes(order.status) && (
+            {!isCancelled && !order.courier_id && ['confirmed', 'preparing', 'ready', 'pending'].includes(order.status) && (
               <Button
                 variant="outline"
                 size="sm"
