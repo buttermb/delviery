@@ -15,6 +15,7 @@ import {
   CalendarX2, Ban
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 
 // ============================================
@@ -46,6 +47,7 @@ interface CartItem {
 
 interface MenuDataResponse {
   id: string;
+  tenant_id?: string;
   name: string;
   description?: string;
   products: MenuProduct[];
@@ -385,8 +387,21 @@ function ProductCard({
         {/* Price & Actions */}
         <div className="flex items-center justify-between pt-2 border-t border-white/10">
           <div>
-            <div className="text-2xl font-bold text-emerald-400">${product.price}</div>
-            <div className="text-xs text-white/40">per lb</div>
+            {product.prices && Object.keys(product.prices).length > 0 ? (
+              <div className="space-y-0.5">
+                {Object.entries(product.prices).slice(0, 3).map(([weight, price]) => (
+                  <div key={weight} className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-bold text-emerald-400">${Number(price).toFixed(2)}</span>
+                    <span className="text-xs text-white/40">/ {weight}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-emerald-400">${Number(product.price).toFixed(2)}</div>
+                <div className="text-xs text-white/40">per lb</div>
+              </>
+            )}
           </div>
 
           {cartQuantity === 0 ? (
@@ -529,13 +544,14 @@ function OrderConfirmation({
         notes,
       };
 
-      const { error } = await (supabase as any).from('menu_orders').insert({
+      const { error } = await supabase.from('menu_orders').insert({
         menu_id: menuData.menu_id,
+        tenant_id: menuData.tenant_id || '',
         access_whitelist_id: menuData.whitelist_id || null,
         contact_phone: contactPhone,
         total_amount: totalAmount,
         status: 'pending',
-        order_data: orderData,
+        order_data: orderData as unknown as Json,
       });
 
       if (error) throw error;

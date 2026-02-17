@@ -488,16 +488,24 @@ const SecureMenuView = () => {
     }
   }, [token, navigate, setMenuToken]);
 
+  const getProductPrice = useCallback((product: Product, weight?: string) => {
+    if (product.prices && typeof product.prices === 'object') {
+      const selectedWeight = weight || selectedWeights[product.id] || getDefaultWeight(product.prices);
+      return product.prices[selectedWeight] || 0;
+    }
+    return product.price || 0;
+  }, [selectedWeights]);
+
   // Filtered and sorted products
   const filteredProducts = useMemo(() => {
     if (!menuData?.products) return [];
-    
+
     let products = [...menuData.products];
-    
+
     // Filter by search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      products = products.filter(p => 
+      products = products.filter(p =>
         p.name.toLowerCase().includes(query) ||
         p.description?.toLowerCase().includes(query) ||
         p.category?.toLowerCase().includes(query) ||
@@ -505,12 +513,12 @@ const SecureMenuView = () => {
         p.flavors?.some(f => f.toLowerCase().includes(query))
       );
     }
-    
+
     // Filter by strain type
     if (selectedStrain !== 'All') {
       products = products.filter(p => p.strain_type === selectedStrain);
     }
-    
+
     // Sort
     products.sort((a, b) => {
       switch (sortBy) {
@@ -526,17 +534,9 @@ const SecureMenuView = () => {
           return 0;
       }
     });
-    
-    return products;
-  }, [menuData?.products, searchQuery, selectedStrain, sortBy]);
 
-  const getProductPrice = (product: Product, weight?: string) => {
-    if (product.prices && typeof product.prices === 'object') {
-      const selectedWeight = weight || selectedWeights[product.id] || getDefaultWeight(product.prices);
-      return product.prices[selectedWeight] || 0;
-    }
-    return product.price || 0;
-  };
+    return products;
+  }, [menuData?.products, searchQuery, selectedStrain, sortBy, getProductPrice]);
 
   const handleAddToCart = useCallback((product: Product) => {
     const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
@@ -555,7 +555,7 @@ const SecureMenuView = () => {
     }
 
     toast.success(`${product.name} added to cart`);
-  }, [selectedWeights, addItem, menuData?.tenant_id, trackAddToCart]);
+  }, [selectedWeights, addItem, menuData?.tenant_id, trackAddToCart, getProductPrice]);
 
   const handleUpdateQuantity = (productId: string, delta: number) => {
     const existingItem = cartItems.find(item => item.productId === productId);
