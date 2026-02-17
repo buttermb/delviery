@@ -524,13 +524,13 @@ export function OrderDetailsPage() {
           </div>
 
           <div className="flex flex-wrap gap-2 print:hidden">
-            <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Button variant="outline" size="sm" onClick={() => window.print()} disabled={updateStatusMutation.isPending}>
               <Printer className="w-4 h-4 mr-1" />
               Print
             </Button>
 
             {order.tracking_token && (
-              <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl}>
+              <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl} disabled={updateStatusMutation.isPending}>
                 <Copy className="w-4 h-4 mr-1" />
                 Share Tracking
               </Button>
@@ -538,7 +538,7 @@ export function OrderDetailsPage() {
 
             {/* Edit Order Button — only for pending/confirmed */}
             {['pending', 'confirmed'].includes(order.status) && (
-              <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
+              <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)} disabled={updateStatusMutation.isPending}>
                 <Edit className="w-4 h-4 mr-1" />
                 Edit Order
               </Button>
@@ -550,7 +550,7 @@ export function OrderDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowRefundModal(true)}
-                disabled={order.payment_status === 'refunded'}
+                disabled={order.payment_status === 'refunded' || updateStatusMutation.isPending}
               >
                 <RotateCcw className="w-4 h-4 mr-1" />
                 {order.payment_status === 'refunded' ? 'Refunded' : 'Refund'}
@@ -563,6 +563,7 @@ export function OrderDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDeliveryExceptionsDialog(true)}
+                disabled={updateStatusMutation.isPending}
               >
                 <AlertTriangle className="w-4 h-4 mr-1" />
                 Report Issue
@@ -593,6 +594,7 @@ export function OrderDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAssignRunnerDialog(true)}
+                disabled={updateStatusMutation.isPending}
               >
                 <UserPlus className="w-4 h-4 mr-1" />
                 Assign Runner
@@ -602,7 +604,7 @@ export function OrderDetailsPage() {
             {!isCancelled && (
               <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled={updateStatusMutation.isPending}>
                     <Edit className="w-4 h-4 mr-1" />
                     Update Status
                   </Button>
@@ -649,7 +651,7 @@ export function OrderDetailsPage() {
             {canCancel && (
               <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-destructive border-destructive/50 hover:bg-destructive/10">
+                  <Button variant="outline" size="sm" className="text-destructive border-destructive/50 hover:bg-destructive/10" disabled={updateStatusMutation.isPending}>
                     <Ban className="w-4 h-4 mr-1" />
                     Cancel Order
                   </Button>
