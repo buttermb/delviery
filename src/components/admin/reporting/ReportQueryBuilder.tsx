@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -282,7 +283,7 @@ export function ReportQueryBuilder(props: ReportQueryBuilderProps) {
               query = query.neq(fieldName, filter.value);
               break;
             case 'contains':
-              query = query.ilike(fieldName, `%${filter.value}%`);
+              query = query.ilike(fieldName, `%${escapePostgresLike(filter.value)}%`);
               break;
             case 'greater_than':
               query = query.gt(fieldName, filter.value);
