@@ -108,7 +108,7 @@ export default function WholesaleClients() {
 
       let query = supabase
         .from("wholesale_clients")
-        .select("*, wholesale_payments(amount)")
+        .select("id, business_name, contact_name, status, client_type, email, phone, outstanding_balance, credit_limit, address, monthly_volume, risk_score, reliability_score, portal_token, created_at, tenant_id, wholesale_payments(amount)")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 
@@ -127,11 +127,11 @@ export default function WholesaleClients() {
 
       // Wholesale clients are NOT encrypted - use plaintext fields directly
       // Map to expected format
-      return (data || []).map((client: any) => ({
+      return (data || []).map((client) => ({
         ...client,
         territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
-        total_spent: client.wholesale_payments?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) || 0
+        total_spent: client.wholesale_payments?.reduce((sum: number, p: { amount: number | null }) => sum + (Number(p.amount) || 0), 0) || 0
       })) as WholesaleClient[];
     }
   });
