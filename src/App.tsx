@@ -936,7 +936,7 @@ const App = () => {
                                         <Route path="customer-invoices" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="fleet-management" element={<Navigate to="fulfillment-hub?tab=fleet" replace />} />
                                         <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
-                                        <Route path="fulfillment-hub" element={<FeatureProtectedRoute featureId="delivery-management"><FulfillmentHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="fulfillment-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                         <Route path="settings-hub" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="integrations-hub" element={<Navigate to="settings-hub?tab=integrations" replace />} />
@@ -946,8 +946,8 @@ const App = () => {
                                         <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program"><MarketingHubPage /></FeatureProtectedRoute>} />
                                         <Route path="marketing/reviews" element={<FeatureProtectedRoute featureId="storefront"><ReviewsPage /></FeatureProtectedRoute>} />
                                         <Route path="delivery-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
-                                        <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
-                                        <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
+                                        <Route path="live-map" element={<FeatureProtectedRoute feature="delivery_tracking"><LiveMap /></FeatureProtectedRoute>} />
+                                        <Route path="gps-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><RunnerLocationTracking /></FeatureProtectedRoute>} />
                                         <Route path="pos-system" element={<FeatureProtectedRoute feature="pos"><POSHubPage /></FeatureProtectedRoute>} />
                                         <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
                                         <Route path="locations/warehouses" element={<FeatureProtectedRoute featureId="locations"><WarehousesPage /></FeatureProtectedRoute>} />
@@ -961,7 +961,7 @@ const App = () => {
                                         <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
                                         <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
                                         <Route path="delivery-tracking" element={<Navigate to="operations-hub?tab=delivery" replace />} />
-                                        <Route path="delivery-zones" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryZonesPage /></FeatureProtectedRoute>} />
+                                        <Route path="delivery-zones" element={<FeatureProtectedRoute feature="delivery_tracking"><DeliveryZonesPage /></FeatureProtectedRoute>} />
                                         <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                         <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                         <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
@@ -1016,7 +1016,7 @@ const App = () => {
                                         <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReportsPage /></FeatureProtectedRoute>} />
                                         <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTrackingPage /></FeatureProtectedRoute>} />
                                         <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReportsPage /></FeatureProtectedRoute>} />
-                                        <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
+                                        <Route path="delivery-analytics" element={<FeatureProtectedRoute feature="delivery_tracking"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="cash-register" element={<FeatureProtectedRoute feature="pos"><CashRegisterPage /></FeatureProtectedRoute>} />
                                         <Route path="pos-analytics" element={<FeatureProtectedRoute feature="pos"><POSAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="pos-shifts" element={<FeatureProtectedRoute feature="pos"><POSShiftsPage /></FeatureProtectedRoute>} />
