@@ -338,7 +338,59 @@ export function OrderDetailsPage() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
+      // Restore inventory when cancelling
+      if (variables.newStatus === 'cancelled' && order?.order_items?.length) {
+        try {
+          for (const item of order.order_items) {
+            if (!item.product_id) continue;
+            const { data: product } = await supabase
+              .from('products')
+              .select('stock_quantity')
+              .eq('id', item.product_id)
+              .eq('tenant_id', tenant?.id || '')
+              .maybeSingle();
+            if (product) {
+              await supabase
+                .from('products')
+                .update({ stock_quantity: (product.stock_quantity || 0) + item.quantity })
+                .eq('id', item.product_id)
+                .eq('tenant_id', tenant?.id || '');
+            }
+          }
+          logger.info('Inventory restored for cancelled order', { component: 'OrderDetailsPage', orderId });
+        } catch (stockError) {
+          logger.error('Failed to restore inventory on cancel', stockError, { component: 'OrderDetailsPage', orderId });
+          toast.error('Order cancelled but inventory restore failed — adjust stock manually');
+        }
+      }
+
+      // Deduct stock on delivery/completion
+      if (['delivered', 'completed'].includes(variables.newStatus) && order?.order_items?.length) {
+        try {
+          for (const item of order.order_items) {
+            if (!item.product_id) continue;
+            const { data: product } = await supabase
+              .from('products')
+              .select('stock_quantity')
+              .eq('id', item.product_id)
+              .eq('tenant_id', tenant?.id || '')
+              .maybeSingle();
+            if (product) {
+              await supabase
+                .from('products')
+                .update({ stock_quantity: Math.max(0, (product.stock_quantity || 0) - item.quantity) })
+                .eq('id', item.product_id)
+                .eq('tenant_id', tenant?.id || '');
+            }
+          }
+          logger.info('Stock deducted for delivered order', { component: 'OrderDetailsPage', orderId });
+        } catch (stockError) {
+          logger.error('Failed to deduct stock on delivery', stockError, { component: 'OrderDetailsPage', orderId });
+          toast.error('Order delivered but stock deduction failed — adjust stock manually');
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Order status updated');
