@@ -177,44 +177,27 @@ export function InventorySyncIndicator({
 
   const tenantId = tenant?.id;
 
-  /**
-   * Handle incoming realtime changes
-   */
-  const handleRealtimeChange = useCallback(() => {
+  // Use refs for callbacks to avoid re-triggering the realtime subscription useEffect
+  const handleRealtimeChangeRef = useRef(() => {
     logger.debug('[InventorySyncIndicator] Received inventory update');
 
-    // Set syncing status temporarily
     setSyncStatus('syncing');
 
-    // Clear any existing timeout
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current);
     }
 
-    // After a brief delay, mark as synced
     syncTimeoutRef.current = setTimeout(() => {
       setSyncStatus('synced');
       setLastSyncAt(new Date());
       setSyncCount((prev) => prev + 1);
     }, 500);
-  }, []);
+  });
 
-  /**
-   * Check for sync lag
-   */
-  const checkForLag = useCallback(() => {
-    if (!lastSyncAt) return;
-
-    const timeSinceLastSync = Date.now() - lastSyncAt.getTime();
-    if (timeSinceLastSync > LAG_THRESHOLD_MS && syncStatus === 'synced') {
-      // Only show lag warning if we've been synced before but haven't received updates
-      // This prevents false positives on initial load
-      logger.debug('[InventorySyncIndicator] Sync lag detected', {
-        timeSinceLastSync,
-        threshold: LAG_THRESHOLD_MS,
-      });
-    }
-  }, [lastSyncAt, syncStatus]);
+  const lastSyncAtRef = useRef(lastSyncAt);
+  const syncStatusRef = useRef(syncStatus);
+  lastSyncAtRef.current = lastSyncAt;
+  syncStatusRef.current = syncStatus;
 
   /**
    * Force manual sync of inventory queries
@@ -253,7 +236,8 @@ export function InventorySyncIndicator({
   }, [tenantId, queryClient]);
 
   /**
-   * Setup realtime subscription
+   * Setup realtime subscription — only re-runs when tenantId changes.
+   * Callbacks are accessed via refs to avoid re-subscription storms.
    */
   useEffect(() => {
     if (!tenantId) {
@@ -262,11 +246,6 @@ export function InventorySyncIndicator({
     }
 
     setConnectionStatus('connecting');
-
-    // Clean up existing channel
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-    }
 
     const channelName = `inventory-sync-indicator-${tenantId}`;
     const channel = supabase.channel(channelName);
@@ -281,7 +260,7 @@ export function InventorySyncIndicator({
           table,
           filter: `tenant_id=eq.${tenantId}`,
         },
-        handleRealtimeChange
+        () => handleRealtimeChangeRef.current()
       );
     });
 
@@ -304,22 +283,39 @@ export function InventorySyncIndicator({
 
     channelRef.current = channel;
 
-    // Setup lag check interval
-    lagCheckIntervalRef.current = setInterval(checkForLag, 10000);
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
+      channelRef.current = null;
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
       }
+    };
+  }, [tenantId]);
+
+  /**
+   * Lag check interval — separate from subscription to avoid re-subscription.
+   */
+  useEffect(() => {
+    lagCheckIntervalRef.current = setInterval(() => {
+      const lastSync = lastSyncAtRef.current;
+      const currentStatus = syncStatusRef.current;
+      if (!lastSync) return;
+
+      const timeSinceLastSync = Date.now() - lastSync.getTime();
+      if (timeSinceLastSync > LAG_THRESHOLD_MS && currentStatus === 'synced') {
+        logger.debug('[InventorySyncIndicator] Sync lag detected', {
+          timeSinceLastSync,
+          threshold: LAG_THRESHOLD_MS,
+        });
+      }
+    }, 10000);
+
+    return () => {
       if (lagCheckIntervalRef.current) {
         clearInterval(lagCheckIntervalRef.current);
       }
     };
-  }, [tenantId, handleRealtimeChange, checkForLag]);
+  }, []);
 
   const statusConfig = useMemo(() => getSyncStatusConfig(syncStatus), [syncStatus]);
   const connectionConfig = useMemo(() => getConnectionConfig(connectionStatus), [connectionStatus]);
