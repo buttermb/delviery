@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
@@ -155,13 +155,10 @@ export default function WholesaleClients() {
     await queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.list({ filter }) });
   };
 
-  const handleUpdateClient = async (clientId: string, updates: Record<string, any>) => {
-    if (!tenant?.id) {
-      toast.error("Tenant context required");
-      return;
-    }
+  const updateClientMutation = useMutation({
+    mutationFn: async ({ clientId, updates }: { clientId: string; updates: Record<string, unknown> }) => {
+      if (!tenant?.id) throw new Error("Tenant context required");
 
-    try {
       const { error } = await supabase
         .from('wholesale_clients')
         .update(updates)
@@ -169,13 +166,19 @@ export default function WholesaleClients() {
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
       toast.success("Client updated successfully");
       handleRefresh();
-    } catch (error) {
+    },
+    onError: (error) => {
       logger.error('Error updating client:', error);
       toast.error("Failed to update client");
-    }
+    },
+  });
+
+  const handleUpdateClient = (clientId: string, updates: Record<string, unknown>) => {
+    updateClientMutation.mutate({ clientId, updates });
   };
 
   return (
@@ -207,6 +210,7 @@ export default function WholesaleClients() {
               variant="outline"
               size="sm"
               className="min-h-[48px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
+              disabled={updateClientMutation.isPending}
               onClick={() => setImportDialogOpen(true)}
             >
               <Plus className="h-4 w-4 sm:mr-2" />
@@ -214,6 +218,7 @@ export default function WholesaleClients() {
             </Button>
             <Button
               className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
+              disabled={updateClientMutation.isPending}
               onClick={() => setCreateClientDialogOpen(true)}
               data-tutorial="add-customer"
             >
@@ -336,6 +341,7 @@ export default function WholesaleClients() {
                           <Select
                             defaultValue={client.client_type}
                             onValueChange={(value) => handleUpdateClient(client.id, { client_type: value })}
+                            disabled={updateClientMutation.isPending}
                           >
                             <SelectTrigger className="h-8 w-[100px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
                               <SelectValue>
@@ -431,6 +437,7 @@ export default function WholesaleClients() {
                               size="sm"
                               variant="ghost"
                               className="min-h-[48px] min-w-[48px] touch-manipulation"
+                              disabled={updateClientMutation.isPending}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setPortalLinkClient(client);
@@ -444,6 +451,7 @@ export default function WholesaleClients() {
                               size="sm"
                               variant="ghost"
                               className="min-h-[48px] min-w-[48px] touch-manipulation"
+                              disabled={updateClientMutation.isPending}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSmsClient(client);
@@ -456,6 +464,7 @@ export default function WholesaleClients() {
                               size="sm"
                               variant="ghost"
                               className="min-h-[48px] min-w-[48px] touch-manipulation"
+                              disabled={updateClientMutation.isPending}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (client.phone) {
@@ -472,6 +481,7 @@ export default function WholesaleClients() {
                                 size="sm"
                                 variant="destructive"
                                 className="min-h-[48px] min-w-[48px] touch-manipulation"
+                                disabled={updateClientMutation.isPending}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setPaymentDialog({ open: true, client });
@@ -485,6 +495,7 @@ export default function WholesaleClients() {
                               size="sm"
                               variant="default"
                               className="min-h-[48px] touch-manipulation"
+                              disabled={updateClientMutation.isPending}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (tenant?.slug) {
@@ -605,6 +616,7 @@ export default function WholesaleClients() {
                           size="sm"
                           variant="ghost"
                           className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
+                          disabled={updateClientMutation.isPending}
                           onClick={() => {
                             setSmsClient(client);
                             setSmsDialogOpen(true);
@@ -617,6 +629,7 @@ export default function WholesaleClients() {
                           size="sm"
                           variant="ghost"
                           className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
+                          disabled={updateClientMutation.isPending}
                           onClick={() => {
                             if (client.phone) {
                               window.location.href = `tel:${client.phone}`;
@@ -633,6 +646,7 @@ export default function WholesaleClients() {
                             size="sm"
                             variant="destructive"
                             className="min-h-[48px] flex-1 min-w-[100px]"
+                            disabled={updateClientMutation.isPending}
                             onClick={() => {
                               setPaymentDialog({ open: true, client });
                             }}
@@ -645,6 +659,7 @@ export default function WholesaleClients() {
                           size="sm"
                           variant="default"
                           className="min-h-[48px] flex-1 min-w-[100px]"
+                          disabled={updateClientMutation.isPending}
                           onClick={() => {
                             if (tenant?.slug) {
                               navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
@@ -805,7 +820,7 @@ export default function WholesaleClients() {
                       setImporting(false);
                     }
                   }}
-                  disabled={!importFile || importing}
+                  disabled={!importFile || importing || updateClientMutation.isPending}
                   className="flex-1 min-h-[44px]"
                 >
                   {importing ? 'Importing...' : 'Import'}
