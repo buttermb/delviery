@@ -187,45 +187,6 @@ export default function SignUpPage() {
     }
   }, [form]);
 
-
-
-
-  // Auto-save form data to localStorage with expiry
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      try {
-        const expiryTime = Date.now() + (DRAFT_EXPIRY_HOURS * 60 * 60 * 1000);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-        localStorage.setItem(STORAGE_EXPIRY_KEY, expiryTime.toString());
-      } catch (error) {
-        logger.error('Failed to save form data to localStorage', error);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  // Load saved form data on mount (with expiry check)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const expiry = localStorage.getItem(STORAGE_EXPIRY_KEY);
-
-      if (saved && expiry) {
-        const expiryTime = parseInt(expiry, 10);
-        const now = Date.now();
-
-        if (now < expiryTime) {
-          // Data is still valid
-          const parsed = JSON.parse(saved);
-          form.reset(parsed);
-        }
-        // Note: Expired data is cleared when form is submitted successfully
-      }
-    } catch (error) {
-      logger.error('Failed to load form data from localStorage', error);
-    }
-  }, [form]);
-
   const onSubmit = async (data: SignupFormData) => {
     if (!validateToken()) {
       toast({
@@ -253,7 +214,7 @@ export default function SignUpPage() {
     // Track analytics: signup attempt
     try {
       if (typeof window !== 'undefined' && 'analytics' in window) {
-        (window as any).analytics?.track('Signup Attempt', {
+        (window as unknown as Record<string, { track?: (event: string, props: Record<string, unknown>) => void }>).analytics?.track('Signup Attempt', {
           email: data.email,
           business_name: data.business_name,
           has_phone: !!data.phone,
@@ -432,7 +393,7 @@ export default function SignUpPage() {
       // Track analytics: signup success
       try {
         if (typeof window !== 'undefined' && 'analytics' in window) {
-          (window as any).analytics?.track('Signup Success', {
+          (window as unknown as Record<string, { track?: (event: string, props: Record<string, unknown>) => void }>).analytics?.track('Signup Success', {
             tenant_id: tenant.id,
             tenant_slug: tenant.slug,
             email: data.email,
@@ -460,9 +421,9 @@ export default function SignUpPage() {
         }
 
         // Grant initial credits via RPC
-        const { error: creditError } = await (supabase.rpc as any)('grant_free_credits', {
+        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
           p_tenant_id: tenant.id
-        });
+        } as never);
 
         if (creditError) {
           logger.warn('[SIGNUP] Failed to grant initial credits', creditError);
@@ -538,7 +499,7 @@ export default function SignUpPage() {
       // Track analytics: signup error
       try {
         if (typeof window !== 'undefined' && 'analytics' in window) {
-          (window as any).analytics?.track('Signup Error', {
+          (window as unknown as Record<string, { track?: (event: string, props: Record<string, unknown>) => void }>).analytics?.track('Signup Error', {
             error_message: message,
             email: data.email,
           });
