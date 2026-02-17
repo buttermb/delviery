@@ -17,6 +17,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // ============================================
 // Types
@@ -529,6 +530,12 @@ function OrderConfirmation({
   const handleSubmitOrder = async () => {
     if (!contactPhone.trim()) return;
 
+    if (!menuData.tenant_id) {
+      toast.error('Unable to place order. Please try refreshing the page.');
+      logger.error('Missing tenant_id on menu data', { component: 'SecureMenuAccess' });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const orderData = {
@@ -546,7 +553,7 @@ function OrderConfirmation({
 
       const { error } = await supabase.from('menu_orders').insert({
         menu_id: menuData.menu_id,
-        tenant_id: menuData.tenant_id || '',
+        tenant_id: menuData.tenant_id,
         access_whitelist_id: menuData.whitelist_id || null,
         contact_phone: contactPhone,
         total_amount: totalAmount,
@@ -557,8 +564,11 @@ function OrderConfirmation({
       if (error) throw error;
 
       setOrderSuccess(true);
+      toast.success('Order placed successfully!');
       logger.info('Order submitted successfully', { component: 'SecureMenuAccess' });
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not place order. Please try again.';
+      toast.error(message);
       logger.error('Order submission failed', err, { component: 'SecureMenuAccess' });
     } finally {
       setSubmitting(false);
