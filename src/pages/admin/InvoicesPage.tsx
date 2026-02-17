@@ -760,7 +760,7 @@ export function InvoicesPage() {
                                 />
                             </div>
                         ) : (
-                            filteredInvoices?.map((invoice) => (
+                            (paginatedInvoices as CRMInvoice[])?.map((invoice) => (
                                 <div
                                     key={invoice.id}
                                     className="p-4 active:bg-muted/50 transition-colors"
