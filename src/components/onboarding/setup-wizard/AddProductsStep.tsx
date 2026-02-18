@@ -74,7 +74,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
           price: Number(data.price),
           category: data.category || 'Flower',
           thca_percentage: 0,
-          status: 'active',
+          in_stock: true,
         });
 
       if (error) throw error;
@@ -152,7 +152,8 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
           sku: skuIdx !== -1 ? cols[skuIdx] || null : null,
           category: (categoryIdx !== -1 && cols[categoryIdx]) ? cols[categoryIdx] : 'Flower',
           thca_percentage: 0,
-        } as any);
+          in_stock: true,
+        });
       }
 
       if (products.length > 0) {

@@ -61,7 +61,6 @@ interface WholesaleClient extends WholesaleClientRow {
   territory: string;
   monthly_volume_lbs: number;
   total_spent: number;
-  risk_score?: number | null;
 }
 
 import { useTablePreferences } from "@/hooks/useTablePreferences";
@@ -437,7 +436,7 @@ export default function WholesaleClients() {
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
                           <CustomerRiskBadge
-                            score={client.risk_score ?? client.reliability_score ?? null}
+                            score={client.reliability_score ?? null}
                             showLabel={true}
                           />
                         </TableCell>
@@ -633,7 +632,7 @@ export default function WholesaleClients() {
                         <div className="flex flex-col gap-1">
                           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reliability</div>
                           <CustomerRiskBadge
-                            score={client.risk_score ?? client.reliability_score ?? null}
+                            score={client.reliability_score ?? null}
                             showLabel={true}
                           />
                         </div>

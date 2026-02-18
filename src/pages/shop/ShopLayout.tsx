@@ -56,7 +56,7 @@ interface StoreInfo {
       background?: string;
     };
   } | null;
-  operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
+  operating_hours: Record<string, unknown>;
   // Delivery settings
   free_delivery_threshold?: number;
   default_delivery_fee?: number;
@@ -249,7 +249,7 @@ export default function ShopLayout() {
 
     const now = new Date();
     const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const hours = store.operating_hours[dayName];
+    const hours = store.operating_hours[dayName] as { open: string; close: string; closed: boolean } | undefined;
 
     if (!hours || hours.closed) return false;
 
