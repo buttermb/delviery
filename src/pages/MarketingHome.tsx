@@ -62,6 +62,7 @@ export default function MarketingHome() {
         <SEOHead
           title="FloraIQ - Secure Disposable Menus for Cannabis Operators"
           description="Create encrypted, disposable menus in 30 seconds. Auto-burn on screenshot, device fingerprinting, OPSEC-grade security. No demo required."
+          image="/og-image.png"
           structuredData={{
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
