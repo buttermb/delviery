@@ -267,7 +267,7 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
       let query = supabase
         .from('menu_orders')
         .select(`
-          id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at,
+          id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at, converted_to_invoice_id,
           menu:disposable_menus(name)
         `)
         .eq('tenant_id', tenantId)
