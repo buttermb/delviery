@@ -29,7 +29,6 @@ import { analytics } from "@/utils/analytics";
 
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
-const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
 const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
@@ -109,17 +108,6 @@ export default function MarketingHome() {
             <section className="bg-gray-50 py-24 border-y border-gray-100">
               <Suspense fallback={<SectionLoader />}>
                 <IntegrationEcosystem />
-              </Suspense>
-            </section>
-          </SectionTransition>
-        </MarketingErrorBoundary>
-
-        {/* SECTION 8: COMPARISON - WHITE BG */}
-        <MarketingErrorBoundary section="Comparison">
-          <SectionTransition variant="fade" delay={0}>
-            <section className="bg-white py-24">
-              <Suspense fallback={<SectionLoader />}>
-                <ComparisonSection />
               </Suspense>
             </section>
           </SectionTransition>
