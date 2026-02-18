@@ -92,13 +92,14 @@ export default function InventoryDashboard() {
     if (!tenantId) return;
 
     const channel = supabase
-      .channel('inventory-dashboard-updates')
+      .channel(`inventory-dashboard-updates-${tenantId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'products',
+          filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
           queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
