@@ -879,13 +879,6 @@ const App = () => {
                                         <Route path="marketplace/messages" element={<FeatureProtectedRoute featureId="marketplace"><MessagesPage /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/financials" element={<FeatureProtectedRoute featureId="marketplace"><VendorPayoutsPage /></FeatureProtectedRoute>} />
 
-                                        {/* Marketplace (Buyer & Seller) */}
-                                        <Route path="marketplace/listings" element={<MyListingsPage />} />
-                                        <Route path="marketplace/listings/new" element={<ListingForm />} />
-                                        <Route path="marketplace/listings/:id" element={<ListingForm />} />
-
-                                        <Route path="marketplace/profile" element={<SellerProfilePage />} />
-
                                         {/* Marketplace Buyer Routes */}
                                         <Route path="marketplace/browse" element={<MarketplaceBrowsePage />} />
                                         <Route path="marketplace/product/:productId" element={<MarketplaceProductDetailPage />} />
