@@ -26,7 +26,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
 const BillingPage = lazy(() => import('@/pages/tenant-admin/BillingPage'));
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
-const SecurityPage = lazy(() => import('@/pages/super-admin/SecurityPage'));
+const TenantSecuritySettings = lazy(() => import('@/components/admin/settings/TenantSecuritySettings'));
 const HelpPage = lazy(() => import('@/pages/HelpPage'));
 
 const TabSkeleton = () => (
@@ -106,7 +106,7 @@ export default function SettingsHubPage() {
                     <Suspense fallback={<TabSkeleton />}><APIAccessPage /></Suspense>
                 </TabsContent>
                 <TabsContent value="security" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><SecurityPage /></Suspense>
+                    <Suspense fallback={<TabSkeleton />}><TenantSecuritySettings /></Suspense>
                 </TabsContent>
                 <TabsContent value="support" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><HelpPage /></Suspense>
