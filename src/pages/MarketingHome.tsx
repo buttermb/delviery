@@ -24,7 +24,7 @@ import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarouse
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
-import { TrustedBy } from "@/components/marketing/TrustedBy";
+
 import { lazy, Suspense, useEffect } from "react";
 import { analytics } from "@/utils/analytics";
 
@@ -80,9 +80,6 @@ export default function MarketingHome() {
 
         {/* SECTION 1: MODERN HERO - WHITE BG */}
         <ModernHero />
-
-        {/* TRUSTED BY SECTION - WHITE BG (Continues visual flow) */}
-        <TrustedBy />
 
         {/* SECTION 2: PROBLEM/SOLUTION - GRAY BG */}
         <MarketingErrorBoundary section="ProblemSolution">
