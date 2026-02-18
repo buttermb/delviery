@@ -69,7 +69,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => Record<string, unknown> })
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .select(`
           id, name, expiration_date, never_expires, tenant_id,
@@ -170,19 +170,19 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
         menuUpdate.expiration_date = null;
       }
 
-      const { error: menuError } = await (supabase as unknown as { from: (table: string) => Record<string, unknown> })
+      const { error: menuError } = await (supabase as any)
         .from('disposable_menus')
         .update(menuUpdate)
         .eq('id', menuId)
-        .eq('tenant_id', tenant.id) as { error: { message: string } | null };
+        .eq('tenant_id', tenant.id);
 
       if (menuError) throw new Error(menuError.message);
 
       // 2. Sync products — delete existing, insert new set
-      const { error: deleteError } = await (supabase as unknown as { from: (table: string) => Record<string, unknown> })
+      const { error: deleteError } = await (supabase as any)
         .from('disposable_menu_products')
         .delete()
-        .eq('menu_id', menuId) as { error: { message: string } | null };
+        .eq('menu_id', menuId);
 
       if (deleteError) throw new Error(deleteError.message);
 
@@ -195,9 +195,9 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
           is_encrypted: false,
         }));
 
-        const { error: insertError } = await (supabase as unknown as { from: (table: string) => Record<string, unknown> })
+        const { error: insertError } = await (supabase as any)
           .from('disposable_menu_products')
-          .insert(productRows) as { error: { message: string } | null };
+          .insert(productRows);
 
         if (insertError) throw new Error(insertError.message);
       }

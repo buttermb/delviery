@@ -149,7 +149,7 @@ interface OrderData {
   total_amount?: number | string | null;
   contact_phone?: string | null;
   created_at?: string | null;
-  order_data?: { items?: unknown[] } | null;
+  order_data?: unknown;
   whitelist?: { customer_name?: string | null } | null;
   menu?: { name?: string | null } | null;
 }
@@ -159,7 +159,8 @@ function OrderCard({ order, onStatusChange }: { order: OrderData; onStatusChange
   const customerName = order.whitelist?.customer_name || order.contact_phone || 'Unknown';
   const menuName = order.menu?.name || 'Menu';
   const total = Number(order.total_amount || 0);
-  const orderItems = order.order_data?.items || [];
+  const parsedData = order.order_data as Record<string, unknown> | null;
+  const orderItems = (parsedData?.items as unknown[]) || [];
   const itemCount = Array.isArray(orderItems) ? orderItems.length : 0;
   const createdAt = order.created_at ? new Date(order.created_at) : new Date();
 
@@ -496,7 +497,7 @@ function OrdersTab() {
                               {order.whitelist?.customer_name || order.contact_phone || 'Unknown'}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {order.menu?.name} • {Array.isArray(order.order_data?.items) ? order.order_data.items.length : 0} items
+                              {order.menu?.name} • {Array.isArray((order.order_data as Record<string, unknown> | null)?.items) ? ((order.order_data as Record<string, unknown>).items as unknown[]).length : 0} items
                             </div>
                           </div>
                         </div>
