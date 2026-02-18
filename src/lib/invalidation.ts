@@ -336,6 +336,8 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.crm.clients.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.customers() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
     },
 
     // ============================================================================

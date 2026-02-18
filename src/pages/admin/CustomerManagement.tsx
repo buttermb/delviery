@@ -7,6 +7,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { queryKeys } from "@/lib/queryKeys";
+import { invalidateOnEvent } from "@/lib/invalidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -233,7 +234,7 @@ export function CustomerManagement() {
         toast.success("Customer deleted successfully");
       }
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all }); // Refresh the list
+      invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', tenant.id, { customerId: customerToDelete.id });
       setDeleteDialogOpen(false);
       setCustomerToDelete(null);
       setSelectedCustomerForDrawer(null); // Close drawer if open
