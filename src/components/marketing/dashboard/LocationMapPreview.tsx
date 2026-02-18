@@ -38,13 +38,13 @@ export function LocationMapPreview() {
         ref={mapRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="relative h-[300px] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden border"
+        className="relative h-[300px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden border"
       >
         {/* Grid overlay for map effect */}
         <div className="absolute inset-0 opacity-10">
           <div className="grid grid-cols-8 grid-rows-6 h-full">
             {Array.from({ length: 48 }).map((_, i) => (
-              <div key={i} className="border border-slate-300 dark:border-slate-700" />
+              <div key={i} className="border border-slate-300" />
             ))}
           </div>
         </div>

@@ -39,8 +39,8 @@ export function EnhancedIntegrationHub({ integrations }: EnhancedIntegrationHubP
                 </div>
 
                 {/* Hub Rings */}
-                <div className="absolute inset-0 -m-4 border border-indigo-200 dark:border-indigo-800 rounded-full animate-[spin_10s_linear_infinite]" />
-                <div className="absolute inset-0 -m-8 border border-indigo-100 dark:border-indigo-900 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                <div className="absolute inset-0 -m-4 border border-indigo-200 rounded-full animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-0 -m-8 border border-indigo-100 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
             </motion.div>
 
             {/* Orbiting Integrations */}

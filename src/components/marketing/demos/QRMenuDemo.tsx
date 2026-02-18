@@ -55,7 +55,7 @@ const MOCK_MENUS: MockMenu[] = [
 // Mobile-optimized version
 function QRMenuDemoMobile() {
   return (
-    <div className="w-full min-h-[300px] bg-slate-50 dark:bg-zinc-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative p-5">
+    <div className="w-full min-h-[300px] bg-slate-50 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
