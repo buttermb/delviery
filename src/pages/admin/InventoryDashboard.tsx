@@ -102,9 +102,10 @@ export default function InventoryDashboard() {
           filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
-          queryClient.invalidateQueries({ queryKey: ['inventory-stats', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['low-stock-products', tenantId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stats(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.categoryStock(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stockDistribution(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lowStockProducts(tenantId) });
         }
       )
       .subscribe((status) => {
@@ -120,7 +121,7 @@ export default function InventoryDashboard() {
 
   // Fetch inventory stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['inventory-stats', tenantId],
+    queryKey: queryKeys.inventory.stats(tenantId),
     queryFn: async (): Promise<InventoryStats> => {
       if (!tenantId) {
         return {
@@ -169,7 +170,7 @@ export default function InventoryDashboard() {
 
   // Fetch category-wise stock breakdown
   const { data: categoryData = [], isLoading: categoryLoading } = useQuery({
-    queryKey: ['category-stock', tenantId],
+    queryKey: queryKeys.inventory.categoryStock(tenantId),
     queryFn: async (): Promise<CategoryStock[]> => {
       if (!tenantId) return [];
 
@@ -208,7 +209,7 @@ export default function InventoryDashboard() {
 
   // Fetch stock level distribution
   const { data: stockDistribution = [], isLoading: distributionLoading } = useQuery({
-    queryKey: ['stock-distribution', tenantId],
+    queryKey: queryKeys.inventory.stockDistribution(tenantId),
     queryFn: async (): Promise<StockDistribution[]> => {
       if (!tenantId) return [];
 
@@ -259,7 +260,7 @@ export default function InventoryDashboard() {
 
   // Fetch low stock products for alerts
   const { data: lowStockProducts = [], isLoading: lowStockLoading } = useQuery({
-    queryKey: ['low-stock-products', tenantId],
+    queryKey: queryKeys.inventory.lowStockProducts(tenantId),
     queryFn: async (): Promise<LowStockProduct[]> => {
       if (!tenantId) return [];
 
@@ -299,10 +300,10 @@ export default function InventoryDashboard() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['inventory-stats', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['category-stock', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['stock-distribution', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['low-stock-products', tenantId] }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stats(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.categoryStock(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stockDistribution(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lowStockProducts(tenantId) }),
     ]);
     setRefreshing(false);
   };

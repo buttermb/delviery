@@ -124,6 +124,14 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'by-location', locationId] as const,
     summary: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'summary', tenantId] as const,
+    stats: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'stats', tenantId] as const,
+    categoryStock: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'category-stock', tenantId] as const,
+    stockDistribution: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'stock-distribution', tenantId] as const,
+    lowStockProducts: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'low-stock-products', tenantId] as const,
     locations: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'locations', tenantId] as const,
   },
