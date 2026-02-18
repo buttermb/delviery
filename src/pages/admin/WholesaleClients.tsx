@@ -20,7 +20,6 @@ import {
 import {
   Plus,
   Phone,
-  MessageSquare,
   DollarSign,
   Package,
   Edit2
@@ -32,7 +31,6 @@ import { ClientStatusBadge } from "@/components/admin/ClientStatusBadge";
 import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { toast } from "sonner";
 import { queryKeys } from "@/lib/queryKeys";
-// SendSMS removed per plan - can be re-added if needed
 import {
   Select,
   SelectContent,
@@ -95,8 +93,6 @@ export default function WholesaleClients() {
   useEffect(() => {
     savePreferences({ customFilters: { filter } });
   }, [filter, savePreferences]);
-  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
-  const [smsClient, setSmsClient] = useState<WholesaleClient | null>(null);
   const [portalLinkDialogOpen, setPortalLinkDialogOpen] = useState(false);
   const [portalLinkClient, setPortalLinkClient] = useState<WholesaleClient | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -473,19 +469,6 @@ export default function WholesaleClients() {
                               disabled={updateClientMutation.isPending}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSmsClient(client);
-                                setSmsDialogOpen(true);
-                              }}
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="min-h-[48px] min-w-[48px] touch-manipulation"
-                              disabled={updateClientMutation.isPending}
-                              onClick={(e) => {
-                                e.stopPropagation();
                                 if (client.phone) {
                                   window.location.href = `tel:${client.phone}`;
                                 } else {
@@ -650,19 +633,6 @@ export default function WholesaleClients() {
                           className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
                           disabled={updateClientMutation.isPending}
                           onClick={() => {
-                            setSmsClient(client);
-                            setSmsDialogOpen(true);
-                          }}
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          <span className="text-xs">Message</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
-                          disabled={updateClientMutation.isPending}
-                          onClick={() => {
                             if (client.phone) {
                               window.location.href = `tel:${client.phone}`;
                             } else {
@@ -746,21 +716,6 @@ export default function WholesaleClients() {
             open={paymentDialog.open}
             onOpenChange={(open) => setPaymentDialog({ open, client: open ? paymentDialog.client : undefined })}
           />
-        )}
-
-        {/* SMS Dialog */}
-        {smsClient && (
-          <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Send SMS to {smsClient.business_name || smsClient.contact_name}</DialogTitle>
-              </DialogHeader>
-              {/* SendSMS removed per plan - can be re-added if needed */}
-              <div className="p-4 text-center text-muted-foreground">
-                SMS functionality temporarily unavailable
-              </div>
-            </DialogContent>
-          </Dialog>
         )}
 
         {/* Send Portal Link Dialog */}
