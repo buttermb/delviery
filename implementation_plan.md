@@ -6,7 +6,7 @@
 
 - [x] Task 2: Fix SettingsHubPage importing SuperAdmin SecurityPage. In src/pages/admin/hubs/SettingsHubPage.tsx line 29, it imports SecurityPage from '@/pages/super-admin/SecurityPage'. Replace with a simple tenant-scoped security settings panel (password change, 2FA toggle, session management) or redirect to the existing SettingsPage security tab.
 
-- [ ] Task 3: Migrate CustomerManagement.tsx from useEffect/useState data fetching to useQuery. Replace the loadCustomers() function (line 111) with useQuery using queryKeys.customers pattern. Replace manual loadCustomers() calls after mutations with queryClient.invalidateQueries({ queryKey: queryKeys.customers.all }).
+- [x] Task 3: Migrate CustomerManagement.tsx from useEffect/useState data fetching to useQuery. Replace the loadCustomers() function (line 111) with useQuery using queryKeys.customers pattern. Replace manual loadCustomers() calls after mutations with queryClient.invalidateQueries({ queryKey: queryKeys.customers.all }).
 
 - [ ] Task 4: Fix build errors from schema mismatches. Apply targeted fixes: (a) useProductsForMenu.ts — remove or alias 'sku' reference, (b) useTenantFeatureToggles.ts — remove 'feature_toggles' column reference, (c) WholesaleClients.tsx — remove 'risk_score' reference, (d) marketplace pages — remove 'verified_badge' reference, (e) OrderDetailsPage.tsx — fix 'partially_paid' to 'partial', (f) AddProductsStep.tsx — change 'status' to 'is_active', (g) ShopLayout.tsx — cast operating_hours with `as Record<string, unknown>`. For columns that truly don't exist, remove the reference or use optional chaining. Run `npx tsc --noEmit` after to verify.
 
