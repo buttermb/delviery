@@ -115,8 +115,8 @@ export default function WholesaleClients() {
         query = query.eq("status", "active");
       } else if (filter === "credit_approved") {
         query = query.gt("credit_limit", 0);
-      } else if (filter === "overdue") {
-        query = query.gt("outstanding_balance", 10000);
+      } else if (filter === "high_balance") {
+        query = query.gt("outstanding_balance", 0);
       }
 
       const { data, error } = await query;
@@ -294,12 +294,12 @@ export default function WholesaleClients() {
                 Credit Approved
               </Button>
               <Button
-                variant={filter === "overdue" ? "default" : "outline"}
+                variant={filter === "high_balance" ? "default" : "outline"}
                 size="sm"
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                onClick={() => setFilter("overdue")}
+                className="min-h-[44px] touch-manipulation text-xs sm:text-sm border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white"
+                onClick={() => setFilter("high_balance")}
               >
-                Overdue
+                High Balance
               </Button>
             </div>
           </div>
