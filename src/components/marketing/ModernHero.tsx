@@ -88,8 +88,11 @@ export function ModernHero() {
             </AnimatePresence>
           </div>
 
-          <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto">
-            The only menu system built for operators who need to disappear.
+          <p className="text-lg text-slate-500 mb-4 max-w-xl mx-auto font-semibold">
+            Your operation. One platform.
+          </p>
+          <p className="text-base text-slate-400 mb-10 max-w-xl mx-auto">
+            Manage wholesale orders, inventory, menus, and compliance — all in one place.
           </p>
 
           {/* CTAs */}
