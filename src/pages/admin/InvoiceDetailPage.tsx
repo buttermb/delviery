@@ -171,7 +171,7 @@ export default function InvoiceDetailPage() {
     };
 
     const isAnyPending = markAsSent.isPending || voidInvoiceMutation.isPending || duplicateInvoice.isPending || deleteInvoice.isPending;
-    const isVoided = invoice.status === 'cancelled' || (invoice.status as string) === 'void';
+    const isVoided = invoice.status === 'cancelled';
     const isOverdue = invoice.due_date
         && new Date(invoice.due_date) < new Date()
         && ['sent', 'partially_paid'].includes(invoice.status);
@@ -323,7 +323,7 @@ export default function InvoiceDetailPage() {
                     <div className="md:col-span-2 space-y-6 print:space-y-0">
                         {/* Invoice Document */}
                         <Card className="overflow-hidden invoice-print-document print:border-none print:shadow-none relative">
-                            {(invoice.status === 'cancelled' || (invoice.status as string) === 'void') && (
+                            {invoice.status === 'cancelled' && (
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
                                     <span className="text-8xl font-bold text-red-500/15 -rotate-[30deg]">
                                         VOID
