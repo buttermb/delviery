@@ -1,10 +1,12 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,8 +85,7 @@ export function CustomerManagement() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterType, setFilterType] = useState("all");
@@ -100,19 +101,11 @@ export function CustomerManagement() {
   // Get customer IDs filtered by tags
   const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
 
-  useEffect(() => {
-    if (tenant && !accountLoading) {
-      loadCustomers();
-    } else if (!accountLoading && !tenant) {
-      setLoading(false);
-    }
-  }, [tenant, accountLoading, filterType, filterStatus]);
+  const { data: customers = [], isLoading: loading } = useQuery({
+    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus }),
+    queryFn: async () => {
+      if (!tenant) return [];
 
-  const loadCustomers = async () => {
-    if (!tenant) return;
-
-    try {
-      setLoading(true);
       let query = supabase
         .from("customers")
         .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
@@ -165,8 +158,8 @@ export function CustomerManagement() {
               };
             }
           });
-        } catch (error) {
-          logger.warn('Failed to decrypt customers, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerManagement' });
+        } catch (decryptionError) {
+          logger.warn('Failed to decrypt customers, using plaintext', decryptionError instanceof Error ? decryptionError : new Error(String(decryptionError)), { component: 'CustomerManagement' });
           decryptedCustomers = data || [];
         }
       } else if (data && data.length > 0) {
@@ -188,17 +181,10 @@ export function CustomerManagement() {
         });
       }
 
-      setCustomers(decryptedCustomers as unknown as Customer[]);
-      if (decryptedCustomers.length > 0) {
-        // toast.success("Customers loaded"); // Reduced noise
-      }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load customers";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return decryptedCustomers as unknown as Customer[];
+    },
+    enabled: !!tenant && !accountLoading,
+  });
 
   const handleDeleteClick = (customerId: string, customerName: string) => {
     triggerHaptic('medium');
@@ -247,7 +233,7 @@ export function CustomerManagement() {
         toast.success("Customer deleted successfully");
       }
 
-      loadCustomers(); // Refresh the list
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all }); // Refresh the list
       setDeleteDialogOpen(false);
       setCustomerToDelete(null);
       setSelectedCustomerForDrawer(null); // Close drawer if open
@@ -506,7 +492,7 @@ export function CustomerManagement() {
               <span className="hidden sm:inline">Import</span>
               <span className="sm:hidden">Import</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={loadCustomers} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
+            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
               <Filter className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Refresh</span>
@@ -888,7 +874,7 @@ export function CustomerManagement() {
       <CustomerImportDialog
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
-        onSuccess={loadCustomers}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })}
       />
     </div>
   );
