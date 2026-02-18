@@ -21,7 +21,6 @@ import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigat
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
-import { VideoShowcase } from "@/components/marketing/VideoShowcase";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
@@ -36,7 +35,6 @@ const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSe
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
 const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
-const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 
 
 // Loading fallback component
@@ -114,62 +112,6 @@ export default function MarketingHome() {
           </section>
         </MarketingErrorBoundary>
 
-        {/* SECTION 5.5: VIDEO SHOWCASE - GRAY BG */}
-        <MarketingErrorBoundary section="VideoShowcase">
-          <section className="bg-gray-50 py-24 border-y border-gray-100">
-            <VideoShowcase />
-          </section>
-        </MarketingErrorBoundary>
-
-        {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD - WHITE BG */}
-        <section className="py-24 relative bg-white">
-          <div className="absolute inset-0 bg-gradient-to-b from-white to-gray-50/50 pointer-events-none" />
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-7xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">
-                  See FloraIQ in Action
-                </h2>
-                <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto">
-                  Explore our interactive dashboard - click around and see all the features
-                </p>
-              </div>
-
-              {/* Full Interactive Dashboard */}
-              <MarketingErrorBoundary section="DashboardPreview">
-                <Suspense fallback={<SectionLoader />}>
-                  <div className="rounded-xl shadow-2xl border border-gray-200 overflow-hidden bg-white">
-                    <EnhancedDashboardPreview />
-                  </div>
-                </Suspense>
-              </MarketingErrorBoundary>
-
-              {/* Feature Highlights */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12 max-w-5xl mx-auto">
-                {[
-                  "Create secure catalog in 2 clicks",
-                  "Track deliveries in real-time",
-                  "Manage orders from one dashboard",
-                  "Customer portal for self-service"
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:shadow-md hover:border-emerald-200 transition-all duration-200">
-                    <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium text-slate-700">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-12">
-                <Link to="/demo">
-                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8 rounded-xl text-lg hover:shadow-lg transition-all duration-200">
-                    Request Live Demo
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* SECTION 7: INTEGRATION - GRAY BG */}
         <MarketingErrorBoundary section="IntegrationEcosystem">
