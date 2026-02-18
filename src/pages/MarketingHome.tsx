@@ -30,7 +30,6 @@ import { analytics } from "@/utils/analytics";
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
-const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
 const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
 
 
@@ -284,14 +283,6 @@ export default function MarketingHome() {
               </Link>
             </div>
 
-            {/* ROI Calculator */}
-            <MarketingErrorBoundary section="ROICalculator">
-              <div className="max-w-2xl mx-auto mt-16">
-                <Suspense fallback={<SectionLoader />}>
-                  <ROICalculator />
-                </Suspense>
-              </div>
-            </MarketingErrorBoundary>
           </div>
         </section>
 
