@@ -1,58 +1,19 @@
-import { motion } from "framer-motion";
-
-const DISTRIBUTORS = [
-    "GreenLeaf Distribution",
-    "CannaLogistics",
-    "HighTide Wholesale",
-    "Verde Valley",
-    "Apex Cannabis",
-    "Pacific Roots",
-    "Emerald City Distro",
-    "Urban Harvest",
-    "Nature's Gift",
-    "Elevated Supply",
-    // Duplicate for seamless loop
-    "GreenLeaf Distribution",
-    "CannaLogistics",
-    "HighTide Wholesale",
-    "Verde Valley",
-    "Apex Cannabis",
-];
-
 export function TrustedBy() {
     return (
-        <section className="py-10 border-y border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))/0.3] overflow-x-hidden">
-            <div className="container mx-auto px-4 text-center mb-8">
+        <section className="py-10 border-y border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))/0.3]">
+            <div className="container mx-auto px-4 text-center">
                 <p className="text-sm font-medium text-[hsl(var(--marketing-text-light))] uppercase tracking-wider">
-                    Trusted by <span className="text-[hsl(var(--marketing-primary))] font-bold">500+</span> Cannabis Distributors
+                    Built for licensed cannabis operators
                 </p>
-            </div>
-
-            <div className="relative flex">
-                <motion.div
-                    className="flex whitespace-nowrap"
-                    animate={{ x: [0, -1000] }}
-                    transition={{
-                        repeat: Infinity,
-                        ease: "linear",
-                        duration: 30
-                    }}
-                >
-                    {DISTRIBUTORS.map((name, i) => (
-                        <div key={i} className="mx-8 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity cursor-default">
-                            <span className="text-xl font-bold text-[hsl(var(--marketing-text))]">{name}</span>
-                        </div>
-                    ))}
-                    {DISTRIBUTORS.map((name, i) => (
-                        <div key={`dup-${i}`} className="mx-8 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity cursor-default">
-                            <span className="text-xl font-bold text-[hsl(var(--marketing-text))]">{name}</span>
-                        </div>
-                    ))}
-                </motion.div>
-
-                {/* Fade edges */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[hsl(var(--marketing-bg))] to-transparent z-10" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[hsl(var(--marketing-bg))] to-transparent z-10" />
+                <div className="mt-4 flex flex-wrap justify-center gap-8 text-[hsl(var(--marketing-text-light))]">
+                    <span className="text-sm">Wholesale Distribution</span>
+                    <span className="text-sm hidden sm:inline" aria-hidden="true">&middot;</span>
+                    <span className="text-sm">Inventory Management</span>
+                    <span className="text-sm hidden sm:inline" aria-hidden="true">&middot;</span>
+                    <span className="text-sm">Compliance Ready</span>
+                    <span className="text-sm hidden sm:inline" aria-hidden="true">&middot;</span>
+                    <span className="text-sm">Multi-Tenant Platform</span>
+                </div>
             </div>
         </section>
     );
