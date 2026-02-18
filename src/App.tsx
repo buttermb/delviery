@@ -287,6 +287,7 @@ const POSShiftsPage = lazy(() => import("./pages/tenant-admin/POSShiftsPage"));
 const ZReportPage = lazy(() => import("./pages/tenant-admin/ZReportPage"));
 const POSHubPage = lazy(() => import("./pages/admin/hubs/POSHubPage"));
 const OrdersHubPage = lazy(() => import("./pages/admin/hubs/OrdersHubPage"));
+const OrderDetailsPage = lazy(() => import("./pages/admin/OrderDetailsPage"));
 const InventoryHubPage = lazy(() => import("./pages/admin/hubs/InventoryHubPage"));
 const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"));
 const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
@@ -830,6 +831,7 @@ const App = () => {
                                         <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                                         <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                         <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="orders/:orderId" element={<FeatureProtectedRoute featureId="basic-orders"><OrderDetailsPage /></FeatureProtectedRoute>} />
 
                                         {/* Orders Hub Redirects */}
                                         <Route path="disposable-menu-orders" element={<Navigate to="orders?tab=menu" replace />} />
