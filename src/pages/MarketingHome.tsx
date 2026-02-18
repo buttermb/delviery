@@ -23,7 +23,7 @@ import { analytics } from "@/utils/analytics";
 
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
-const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
+
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -85,17 +85,6 @@ export default function MarketingHome() {
           <DetailedFeatureSection />
         </section>
 
-
-        {/* SECTION 7: INTEGRATION - GRAY BG */}
-        <MarketingErrorBoundary section="IntegrationEcosystem">
-          <SectionTransition variant="fade" delay={0}>
-            <section className="bg-gray-50 py-24 border-y border-gray-100">
-              <Suspense fallback={<SectionLoader />}>
-                <IntegrationEcosystem />
-              </Suspense>
-            </section>
-          </SectionTransition>
-        </MarketingErrorBoundary>
 
 
         {/* SECTION 9: PRICING PREVIEW - GRAY BG */}
