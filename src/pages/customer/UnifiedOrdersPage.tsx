@@ -127,8 +127,7 @@ export default function UnifiedOrdersPage() {
           *,
           marketplace_profiles!seller_profile_id (
             id,
-            business_name,
-            verified_badge
+            business_name
           )
         `)
         .eq('buyer_tenant_id', tenantId)

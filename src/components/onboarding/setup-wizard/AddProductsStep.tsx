@@ -152,8 +152,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
           sku: skuIdx !== -1 ? cols[skuIdx] || null : null,
           category: (categoryIdx !== -1 && cols[categoryIdx]) ? cols[categoryIdx] : 'Flower',
           thca_percentage: 0,
-          status: 'active',
-        });
+        } as any);
       }
 
       if (products.length > 0) {

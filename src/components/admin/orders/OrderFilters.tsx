@@ -327,7 +327,7 @@ export async function applyOrderFilters(
       .from('products')
       .select('id')
       .eq('account_id', tenantId)
-      .ilike('name', `%${escapePostgresLike(filters.productName)}%`)
+      .ilike('name', `%${escapePostgresLike(String(filters.productName))}%`)
       .limit(50);
 
     if (productData && productData.length > 0) {

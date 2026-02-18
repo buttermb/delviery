@@ -283,7 +283,7 @@ export function ReportQueryBuilder(props: ReportQueryBuilderProps) {
               query = query.neq(fieldName, filter.value);
               break;
             case 'contains':
-              query = query.ilike(fieldName, `%${escapePostgresLike(filter.value)}%`);
+              query = query.ilike(fieldName, `%${escapePostgresLike(String(filter.value))}%`);
               break;
             case 'greater_than':
               query = query.gt(fieldName, filter.value);

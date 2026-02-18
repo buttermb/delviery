@@ -1454,7 +1454,7 @@ export function OrderDetailsPage() {
             discount_amount: order.discount_amount || 0,
             total_amount: order.total_amount,
             payment_method: null,
-            payment_status: order.payment_status as 'paid' | 'unpaid' | 'refunded' | 'partially_paid',
+            payment_status: (order.payment_status === 'partially_paid' ? 'partial' : order.payment_status) as 'paid' | 'unpaid' | 'refunded' | 'partial',
             customer_id: order.customer_id || null,
             wholesale_client_id: order.wholesale_client_id || null,
             menu_id: null,

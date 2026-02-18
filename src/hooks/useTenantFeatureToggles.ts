@@ -36,7 +36,7 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
     queryFn: async (): Promise<Record<string, boolean>> => {
       if (!tenantId) return {};
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenants')
         .select('feature_toggles')
         .eq('id', tenantId)

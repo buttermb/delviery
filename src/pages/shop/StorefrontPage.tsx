@@ -107,7 +107,7 @@ export function StorefrontPage() {
 
     if (!store) return null;
 
-    const layoutConfig = store.layout_config as LayoutSection[] | null | undefined;
+    const layoutConfig = store.layout_config as unknown as LayoutSection[] | null | undefined;
     const hasValidLayout = Array.isArray(layoutConfig) && layoutConfig.length > 0;
     const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
 

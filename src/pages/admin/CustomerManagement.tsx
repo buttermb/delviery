@@ -188,7 +188,7 @@ export function CustomerManagement() {
         });
       }
 
-      setCustomers(decryptedCustomers as Customer[]);
+      setCustomers(decryptedCustomers as unknown as Customer[]);
       if (decryptedCustomers.length > 0) {
         // toast.success("Customers loaded"); // Reduced noise
       }
@@ -677,7 +677,6 @@ export function CustomerManagement() {
                 secondaryAction={!debouncedSearchTerm ? {
                   label: "Add Customer",
                   onClick: () => navigateToAdmin('customers/new'),
-                  icon: Plus
                 } : undefined}
                 designSystem="tenant-admin"
               />
@@ -700,7 +699,6 @@ export function CustomerManagement() {
             secondaryAction={!debouncedSearchTerm ? {
               label: "Add Customer",
               onClick: () => navigateToAdmin('customers/new'),
-              icon: Plus
             } : undefined}
             designSystem="tenant-admin"
           />
