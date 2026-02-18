@@ -24,7 +24,6 @@ import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarouse
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
-import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
 import { TrustedBy } from "@/components/marketing/TrustedBy";
 import { lazy, Suspense, useEffect } from "react";
 import { analytics } from "@/utils/analytics";
@@ -350,9 +349,6 @@ export default function MarketingHome() {
 
         {/* Live Chat Widget */}
         <LiveChatWidget />
-
-        {/* Sticky Mobile CTA */}
-        <StickyMobileCTA />
 
       </div>
     </ForceLightMode>
