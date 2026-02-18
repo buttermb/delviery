@@ -13,12 +13,9 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { CTASection } from "@/components/marketing/CTASection";
 import { ModernHero } from "@/components/marketing/ModernHero";
 import { DetailedFeatureSection } from "@/components/marketing/DetailedFeatureSection";
-import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
-import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
-import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
@@ -30,8 +27,6 @@ import { analytics } from "@/utils/analytics";
 // Lazy load heavy components
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
 const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
-const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
-
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -72,7 +67,6 @@ export default function MarketingHome() {
           }}
         />
 
-        <ScrollProgressIndicator />
         <MarketingNav />
 
         {/* SECTION 1: MODERN HERO - WHITE BG */}
@@ -306,18 +300,6 @@ export default function MarketingHome() {
         {/* SECTION 11: FOOTER */}
         <MarketingFooter />
 
-        {/* Floating Chat Button */}
-        <MarketingErrorBoundary section="FloatingChat">
-          <Suspense fallback={null}>
-            <FloatingChatButton />
-          </Suspense>
-        </MarketingErrorBoundary>
-
-        {/* Keyboard Navigation Helper */}
-        <KeyboardNavigationHelper />
-
-        {/* Live Chat Widget */}
-        <LiveChatWidget />
 
       </div>
     </ForceLightMode>
