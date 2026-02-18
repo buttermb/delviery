@@ -18,9 +18,6 @@ import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
-
-import { StatsSection } from "@/components/marketing/StatsSection";
-
 import { lazy, Suspense, useEffect } from "react";
 import { analytics } from "@/utils/analytics";
 
@@ -87,12 +84,6 @@ export default function MarketingHome() {
         <section className="bg-white py-24">
           <DetailedFeatureSection />
         </section>
-
-        {/* STATS SECTION - GRAY BG */}
-        <section className="bg-gray-50 py-24 border-y border-gray-100">
-          <StatsSection />
-        </section>
-
 
 
         {/* SECTION 7: INTEGRATION - GRAY BG */}
