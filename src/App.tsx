@@ -335,11 +335,6 @@ const ListingForm = lazy(() => import("./pages/tenant-admin/marketplace/ListingF
 const ListingDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/ListingDetailPage"));
 const MarketplaceOrdersPage = lazy(() => import("./pages/admin/marketplace/OrdersPage"));
 const OrderDetailPage = lazy(() => import("./pages/admin/marketplace/OrderDetailPage"));
-const MarketplaceBrowsePage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceBrowsePage"));
-const MarketplaceProductDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceProductDetailPage"));
-const MarketplaceCartPage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceCartPage"));
-const MarketplacePurchasesPage = lazy(() => import('@/pages/tenant-admin/marketplace/MarketplacePurchasesPage'));
-const PurchaseOrderDetailPage = lazy(() => import('@/pages/tenant-admin/marketplace/PurchaseOrderDetailPage'));
 const VendorPayoutsPage = lazy(() => import('@/pages/tenant-admin/marketplace/VendorPayoutsPage'));
 const MessagesPage = lazy(() => import("./pages/tenant-admin/marketplace/MessagesPage"));
 
@@ -881,12 +876,6 @@ const App = () => {
                                         <Route path="marketplace/messages" element={<FeatureProtectedRoute featureId="marketplace"><MessagesPage /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/financials" element={<FeatureProtectedRoute featureId="marketplace"><VendorPayoutsPage /></FeatureProtectedRoute>} />
 
-                                        {/* Marketplace Buyer Routes */}
-                                        <Route path="marketplace/browse" element={<MarketplaceBrowsePage />} />
-                                        <Route path="marketplace/product/:productId" element={<MarketplaceProductDetailPage />} />
-                                        <Route path="marketplace/cart" element={<MarketplaceCartPage />} />
-                                        <Route path="marketplace/purchases" element={<MarketplacePurchasesPage />} />
-                                        <Route path="marketplace/purchases/:orderId" element={<PurchaseOrderDetailPage />} />
 
                                         {/* White-Label Storefront Routes */}
                                         <Route
