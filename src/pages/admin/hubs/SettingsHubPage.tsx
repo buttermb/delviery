@@ -97,7 +97,7 @@ export default function SettingsHubPage() {
                 </div>
 
                 <TabsContent value="general" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><SettingsPage /></Suspense>
+                    <Suspense fallback={<TabSkeleton />}><SettingsPage embedded /></Suspense>
                 </TabsContent>
                 <TabsContent value="billing" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><BillingPage /></Suspense>

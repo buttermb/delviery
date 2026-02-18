@@ -65,7 +65,11 @@ type GeneralFormValues = z.infer<typeof generalSchema>;
 type SecurityFormValues = z.infer<typeof securitySchema>;
 type NotificationFormValues = z.infer<typeof notificationSchema>;
 
-export default function SettingsPage() {
+interface SettingsPageProps {
+  embedded?: boolean;
+}
+
+export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
@@ -359,6 +363,81 @@ export default function SettingsPage() {
   };
 
 
+  // General settings content - shared between embedded and standalone modes
+  const generalSettingsContent = (
+    <>
+      {showSkeletons ? (
+        <GeneralSettingsSkeleton />
+      ) : (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            General Settings
+          </h3>
+          <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
+            <div>
+              <Label>Company Name</Label>
+              <Input {...generalForm.register("companyName")} />
+              {generalForm.formState.errors.companyName && (
+                <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
+              )}
+            </div>
+            <div>
+              <Label>Details</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input type="email" {...generalForm.register("email")} />
+                  {generalForm.formState.errors.email && (
+                    <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Phone</Label>
+                  <Input type="tel" {...generalForm.register("phone")} />
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Textarea {...generalForm.register("address")} rows={3} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Timezone</Label>
+                <Input value="America/New_York" disabled />
+              </div>
+              <div>
+                <Label>Currency</Label>
+                <Input value="USD" disabled />
+              </div>
+            </div>
+            <Button type="submit" disabled={loading}>
+              <Save className="h-4 w-4 mr-2" />
+              Save General Settings
+            </Button>
+          </form>
+          <div className="pt-4 border-t mt-6">
+            <h4 className="text-sm font-medium mb-2">Team Management</h4>
+            <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
+              <Users className="h-4 w-4 mr-2" />
+              Manage Team Members
+            </Button>
+          </div>
+        </Card>
+      )}
+    </>
+  );
+
+  // When embedded inside SettingsHubPage, render only general settings content
+  if (embedded) {
+    return (
+      <div className="p-2 sm:p-6 space-y-6">
+        {generalSettingsContent}
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-2 sm:p-6 space-y-6">
       <div>
@@ -435,66 +514,7 @@ export default function SettingsPage() {
 
         {/* General Settings */}
         <TabsContent value="general">
-          {showSkeletons ? (
-            <GeneralSettingsSkeleton />
-          ) : (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                General Settings
-              </h3>
-              <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
-                <div>
-                  <Label>Company Name</Label>
-                  <Input {...generalForm.register("companyName")} />
-                  {generalForm.formState.errors.companyName && (
-                    <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
-                  )}
-                </div>
-                <div>
-                  <Label>Details</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Email</Label>
-                      <Input type="email" {...generalForm.register("email")} />
-                      {generalForm.formState.errors.email && (
-                        <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Phone</Label>
-                      <Input type="tel" {...generalForm.register("phone")} />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Label>Address</Label>
-                  <Textarea {...generalForm.register("address")} rows={3} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Timezone</Label>
-                    <Input value="America/New_York" disabled />
-                  </div>
-                  <div>
-                    <Label>Currency</Label>
-                    <Input value="USD" disabled />
-                  </div>
-                </div>
-                <Button type="submit" disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save General Settings
-                </Button>
-              </form>
-              <div className="pt-4 border-t mt-6">
-                <h4 className="text-sm font-medium mb-2">Team Management</h4>
-                <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Manage Team Members
-                </Button>
-              </div>
-            </Card>
-          )}
+          {generalSettingsContent}
         </TabsContent>
 
         {/* Security Settings */}
