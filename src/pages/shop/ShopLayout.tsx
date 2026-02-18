@@ -139,7 +139,7 @@ export default function ShopLayout() {
         return null;
       }
 
-      return data[0] as StoreInfo;
+      return data[0] as unknown as StoreInfo;
     },
     enabled: !!storeSlug,
     retry: false,

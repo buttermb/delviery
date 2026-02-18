@@ -277,7 +277,7 @@ function CashRegisterContent() {
 
       try {
         // pos_transactions table may not be in generated types yet
-        const client = supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> };
+        const client = supabase as any;
         const { data, error } = await client
           .from('pos_transactions')
           .select('*')

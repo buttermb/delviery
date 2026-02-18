@@ -331,7 +331,7 @@ const DisposableMenuOrders = () => {
                           ${parseFloat(String(order.total_amount || 0)).toFixed(2)}
                         </div>
                         <div className="flex gap-2 justify-end">
-                          {!order.converted_to_invoice_id && (
+                          {!(order as any).converted_to_invoice_id && (
                             <Button
                               size="sm"
                               variant="outline"

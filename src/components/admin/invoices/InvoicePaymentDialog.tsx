@@ -172,7 +172,7 @@ export function InvoicePaymentDialog({
       if (accountId) {
         invalidateOnEvent(queryClient, 'INVOICE_PAID', accountId, {
           invoiceId,
-          customerId: (data as Record<string, unknown>)?.client_id,
+          customerId: (data as Record<string, unknown>)?.client_id as string,
         });
       }
       const newPaid = (amountPaid || 0) + (watch('amount') || 0);
