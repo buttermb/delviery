@@ -7,7 +7,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 
 export function PricingSection() {
   return (
@@ -124,20 +123,16 @@ export function PricingSection() {
               ))}
             </ul>
             <Link to={plan.id === "enterprise" ? "/contact?reason=enterprise" : `/signup?plan=${plan.id}`}>
-              <ConfettiButton
+              <Button
                 variant={plan.popular ? "default" : "outline"}
                 size="lg"
                 className={`w-full rounded-xl h-12 font-semibold transition-all duration-200 ${plan.popular
                   ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg"
                   : "border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-emerald-200 hover:text-emerald-700"
                   }`}
-                confettiConfig={{
-                  particleCount: plan.popular ? 150 : 100,
-                  colors: ['#10B981', '#34D399', '#059669'],
-                }}
               >
                 {plan.cta}
-              </ConfettiButton>
+              </Button>
             </Link>
             {plan.name !== "ENTERPRISE" && (
               <div className="text-[10px] text-center mt-3 text-slate-400 flex justify-center gap-1">
