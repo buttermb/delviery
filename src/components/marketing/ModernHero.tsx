@@ -52,7 +52,7 @@ export function ModernHero() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm text-sm font-medium uppercase tracking-wider text-emerald-700"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--marketing-primary)/0.1)] border border-[hsl(var(--marketing-primary)/0.2)] shadow-sm text-sm font-medium uppercase tracking-wider text-[hsl(var(--marketing-primary))]"
               >
                 <ShieldCheck className="w-4 h-4" />
                 {ROTATING_FEATURES[featureIndex].badge}
@@ -63,10 +63,10 @@ export function ModernHero() {
           {/* Headline - Responsive sizing */}
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.1] max-w-4xl mx-auto">
             Create a Secure Menu <br className="hidden sm:block" />
-            <span className="relative inline-block text-emerald-600">
+            <span className="relative inline-block text-[hsl(var(--marketing-primary))]">
               in 30 Seconds
-              {/* Emerald underline accent */}
-              <svg className="absolute w-full h-3 -bottom-2 left-0 text-emerald-200" viewBox="0 0 100 10" preserveAspectRatio="none">
+              {/* Primary underline accent */}
+              <svg className="absolute w-full h-3 -bottom-2 left-0 text-[hsl(var(--marketing-primary)/0.3)]" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" opacity="0.6" />
               </svg>
             </span>
@@ -100,7 +100,7 @@ export function ModernHero() {
             <Link to="/signup?plan=free&flow=menu" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary)/0.9)] text-white rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
               >
                 Create Menu Free
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -111,7 +111,7 @@ export function ModernHero() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-2 border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-emerald-200 hover:text-emerald-700 rounded-xl transition-all duration-200"
+                className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-2 border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-[hsl(var(--marketing-primary)/0.3)] hover:text-[hsl(var(--marketing-primary))] rounded-xl transition-all duration-200"
               >
                 Watch Demo
               </Button>
@@ -146,7 +146,7 @@ export function ModernHero() {
             <div className="aspect-[16/9] bg-slate-50 relative flex items-center justify-center overflow-hidden">
               <div className="w-full h-full p-6 grid grid-cols-4 gap-4">
                 <div className="col-span-1 space-y-3">
-                  <div className="h-8 bg-emerald-100 rounded-lg" />
+                  <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded-lg" />
                   <div className="h-6 bg-slate-200 rounded w-3/4" />
                   <div className="h-6 bg-slate-200 rounded w-2/3" />
                   <div className="h-6 bg-slate-200 rounded w-4/5" />
@@ -156,15 +156,15 @@ export function ModernHero() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="h-24 bg-white rounded-xl border border-gray-200 p-4">
                       <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
-                      <div className="h-8 bg-emerald-100 rounded w-2/3" />
+                      <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded w-2/3" />
                     </div>
                     <div className="h-24 bg-white rounded-xl border border-gray-200 p-4">
                       <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
-                      <div className="h-8 bg-emerald-100 rounded w-2/3" />
+                      <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded w-2/3" />
                     </div>
                     <div className="h-24 bg-white rounded-xl border border-gray-200 p-4">
                       <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
-                      <div className="h-8 bg-emerald-100 rounded w-2/3" />
+                      <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded w-2/3" />
                     </div>
                   </div>
                   <div className="h-48 bg-white rounded-xl border border-gray-200" />
@@ -174,7 +174,7 @@ export function ModernHero() {
               {/* CTA Overlay */}
               <div className="absolute inset-0 flex items-end justify-center pb-6">
                 <Link to="/demo">
-                  <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 shadow-xl hover:bg-emerald-700 transition-colors">
+                  <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--marketing-primary))] shadow-xl hover:bg-[hsl(var(--marketing-primary)/0.9)] transition-colors">
                     <Play className="w-4 h-4 text-white" />
                     <span className="font-bold text-white text-sm">Watch Demo</span>
                   </div>
@@ -184,7 +184,7 @@ export function ModernHero() {
           </div>
 
           {/* Bottom Glow */}
-          <div className="absolute -bottom-10 left-0 right-0 h-40 bg-emerald-500 opacity-20 blur-[120px] z-[-1]" />
+          <div className="absolute -bottom-10 left-0 right-0 h-40 bg-[hsl(var(--marketing-primary))] opacity-20 blur-[120px] z-[-1]" />
         </div>
       </div>
     </section>

@@ -462,23 +462,23 @@ body.keyboard-open [data-radix-dialog-content] {
     --saas-bg: 30 30% 96%;
     /* #F8F5F0 - Warm Linen */
 
-    /* Marketing Site Colors - Flowhub Bespoke Style */
-    --marketing-primary: 254 70% 28%;
-    /* #2E1679 - Deep Indigo */
-    --marketing-secondary: 254 70% 28%;
-    /* #2E1679 - Same as primary */
+    /* Marketing Site Colors - Emerald Brand */
+    --marketing-primary: 160 84% 39%;
+    /* #10B981 - Emerald 500 */
+    --marketing-secondary: 160 84% 39%;
+    /* #10B981 - Same as primary */
     --marketing-accent: 35 89% 60%;
     /* #F3A73D - Gold */
-    --marketing-text: 254 70% 28%;
-    /* #2E1679 - Indigo */
-    --marketing-text-light: 254 25% 45%;
-    /* Indigo-tinted gray */
+    --marketing-text: 160 60% 12%;
+    /* Dark emerald-tinted text */
+    --marketing-text-light: 160 10% 45%;
+    /* Emerald-tinted gray */
     --marketing-bg: 0 0% 100%;
     /* Pure White */
-    --marketing-bg-subtle: 254 30% 98.5%;
-    /* Very faint indigo tint */
-    --marketing-border: 254 20% 93%;
-    /* Subtle indigo border */
+    --marketing-bg-subtle: 160 30% 98.5%;
+    /* Very faint emerald tint */
+    --marketing-border: 160 20% 93%;
+    /* Subtle emerald border */
     --radius: 0.5rem;
 
     /* Unified Design System - Spacing Scale (4px base unit) */
@@ -713,12 +713,12 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Dark background */
 
     /* Marketing Site Colors - Dark Theme (Forced Light Mode for consistency) */
-    --marketing-primary: 254 70% 28%;
-    /* #2E1679 - Deep Indigo (Flowhub Primary) */
-    --marketing-secondary: 254 70% 28%;
-    /* #2E1679 - Same as primary */
+    --marketing-primary: 160 84% 39%;
+    /* #10B981 - Emerald 500 */
+    --marketing-secondary: 160 84% 39%;
+    /* #10B981 - Same as primary */
     --marketing-accent: 35 89% 60%;
-    /* #F3A73D - Gold (Flowhub Accent) */
+    /* #F3A73D - Gold */
     --marketing-text: 222 47% 11%;
     /* #0f172a - Slate 900 (High Contrast) */
     --marketing-text-light: 215 16% 47%;
