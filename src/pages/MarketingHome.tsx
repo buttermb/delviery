@@ -20,7 +20,6 @@ import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
-import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
@@ -102,12 +101,6 @@ export default function MarketingHome() {
           <StatsSection />
         </section>
 
-        {/* SECTION 5: TESTIMONIALS CAROUSEL - WHITE BG */}
-        <MarketingErrorBoundary section="Testimonials">
-          <section className="bg-white py-24">
-            <TestimonialsCarousel />
-          </section>
-        </MarketingErrorBoundary>
 
 
         {/* SECTION 7: INTEGRATION - GRAY BG */}
