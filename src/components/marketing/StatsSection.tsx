@@ -10,32 +10,30 @@ const stats = [
 
 export function StatsSection() {
     return (
-        <section className="py-20 bg-[hsl(var(--marketing-bg))] border-y border-[hsl(var(--marketing-border))]">
-            <div className="container mx-auto px-4">
-                <h2 className="text-center text-xl font-semibold mb-12 text-[hsl(var(--marketing-text))]">Trusted Scale & Reliability</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-12">
-                    {stats.map((stat, index) => (
-                        <div key={index} className="p-6 rounded-2xl bg-[hsl(var(--marketing-bg-subtle))]/20 hover:bg-[hsl(var(--marketing-bg-subtle))]/40 transition-colors">
-                            <div className="text-4xl md:text-5xl font-bold text-[hsl(var(--marketing-primary))] mb-2">
-                                <CountUpNumber
-                                    end={stat.value}
-                                    prefix={stat.prefix}
-                                    suffix={stat.suffix}
-                                    decimals={stat.decimals}
-                                />
-                            </div>
-                            <div className="text-[hsl(var(--marketing-text-light))] font-medium">
-                                {stat.label}
-                            </div>
+        <div className="container mx-auto px-4">
+            <h2 className="text-center text-xl font-semibold mb-12 text-slate-500 uppercase tracking-widest">Trusted Scale & Reliability</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-12">
+                {stats.map((stat, index) => (
+                    <div key={index} className="p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div className="text-4xl md:text-5xl font-bold text-emerald-600 mb-2">
+                            <CountUpNumber
+                                end={stat.value}
+                                prefix={stat.prefix}
+                                suffix={stat.suffix}
+                                decimals={stat.decimals}
+                            />
                         </div>
-                    ))}
-                </div>
-                <div className="text-center">
-                    <a href="/case-studies" className="inline-flex items-center text-[hsl(var(--marketing-primary))] hover:text-[hsl(var(--marketing-primary))/80] font-medium transition-colors">
-                        See Our Case Studies <ArrowRight className="w-4 h-4 ml-2 inline-block" aria-hidden="true" />
-                    </a>
-                </div>
+                        <div className="text-slate-600 font-medium text-lg">
+                            {stat.label}
+                        </div>
+                    </div>
+                ))}
             </div>
-        </section>
+            <div className="text-center">
+                <a href="/case-studies" className="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-semibold transition-colors text-lg">
+                    See Our Case Studies <ArrowRight className="w-5 h-5 ml-2 inline-block" aria-hidden="true" />
+                </a>
+            </div>
+        </div>
     );
 }

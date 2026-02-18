@@ -80,16 +80,16 @@ export default function MarketingHome() {
         <ScrollProgressIndicator />
         <MarketingNav />
 
-        {/* SECTION 1: MODERN HERO */}
+        {/* SECTION 1: MODERN HERO - WHITE BG */}
         <ModernHero />
 
-        {/* TRUSTED BY SECTION */}
+        {/* TRUSTED BY SECTION - WHITE BG (Continues visual flow) */}
         <TrustedBy />
 
-        {/* SECTION 2: PROBLEM/SOLUTION */}
+        {/* SECTION 2: PROBLEM/SOLUTION - GRAY BG */}
         <MarketingErrorBoundary section="ProblemSolution">
           <SectionTransition variant="fade" delay={0}>
-            <section>
+            <section className="bg-gray-50 py-24 border-y border-gray-100">
               <Suspense fallback={<SectionLoader />}>
                 <ProblemSolutionSection />
               </Suspense>
@@ -97,35 +97,40 @@ export default function MarketingHome() {
           </SectionTransition>
         </MarketingErrorBoundary>
 
-        {/* SECTION 3: DETAILED FEATURES */}
-        <DetailedFeatureSection />
+        {/* SECTION 3: DETAILED FEATURES - WHITE BG */}
+        <section className="bg-white py-24">
+          <DetailedFeatureSection />
+        </section>
 
-        {/* STATS SECTION */}
-        <StatsSection />
+        {/* STATS SECTION - GRAY BG */}
+        <section className="bg-gray-50 py-24 border-y border-gray-100">
+          <StatsSection />
+        </section>
 
-
-
-
-        {/* SECTION 5: TESTIMONIALS CAROUSEL */}
+        {/* SECTION 5: TESTIMONIALS CAROUSEL - WHITE BG */}
         <MarketingErrorBoundary section="Testimonials">
-          <TestimonialsCarousel />
+          <section className="bg-white py-24">
+            <TestimonialsCarousel />
+          </section>
         </MarketingErrorBoundary>
 
-        {/* SECTION 5.5: VIDEO SHOWCASE */}
+        {/* SECTION 5.5: VIDEO SHOWCASE - GRAY BG */}
         <MarketingErrorBoundary section="VideoShowcase">
-          <VideoShowcase />
+          <section className="bg-gray-50 py-24 border-y border-gray-100">
+            <VideoShowcase />
+          </section>
         </MarketingErrorBoundary>
 
-        {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
-        <section className="py-12 md:py-16 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-bg-subtle))]/50 pointer-events-none" />
+        {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD - WHITE BG */}
+        <section className="py-24 relative bg-white">
+          <div className="absolute inset-0 bg-gradient-to-b from-white to-gray-50/50 pointer-events-none" />
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-7xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">
                   See FloraIQ in Action
                 </h2>
-                <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-8">
+                <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto">
                   Explore our interactive dashboard - click around and see all the features
                 </p>
               </div>
@@ -133,28 +138,30 @@ export default function MarketingHome() {
               {/* Full Interactive Dashboard */}
               <MarketingErrorBoundary section="DashboardPreview">
                 <Suspense fallback={<SectionLoader />}>
-                  <EnhancedDashboardPreview />
+                  <div className="rounded-xl shadow-2xl border border-gray-200 overflow-hidden bg-white">
+                    <EnhancedDashboardPreview />
+                  </div>
                 </Suspense>
               </MarketingErrorBoundary>
 
               {/* Feature Highlights */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12 max-w-5xl mx-auto">
                 {[
                   "Create secure catalog in 2 clicks",
                   "Track deliveries in real-time",
                   "Manage orders from one dashboard",
                   "Customer portal for self-service"
                 ].map((feature, i) => (
-                  <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))]">
-                    <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-primary))] flex-shrink-0 mt-1" />
-                    <span className="text-sm text-[hsl(var(--marketing-text))]">{feature}</span>
+                  <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:shadow-md hover:border-emerald-200 transition-all duration-200">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-slate-700">{feature}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="text-center mt-8">
+              <div className="text-center mt-12">
                 <Link to="/demo">
-                  <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white h-12 px-8 rounded-xl">
+                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8 rounded-xl text-lg hover:shadow-lg transition-all duration-200">
                     Request Live Demo
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -164,10 +171,10 @@ export default function MarketingHome() {
           </div>
         </section>
 
-        {/* SECTION 7: INTEGRATION */}
+        {/* SECTION 7: INTEGRATION - GRAY BG */}
         <MarketingErrorBoundary section="IntegrationEcosystem">
           <SectionTransition variant="fade" delay={0}>
-            <section>
+            <section className="bg-gray-50 py-24 border-y border-gray-100">
               <Suspense fallback={<SectionLoader />}>
                 <IntegrationEcosystem />
               </Suspense>
@@ -175,10 +182,10 @@ export default function MarketingHome() {
           </SectionTransition>
         </MarketingErrorBoundary>
 
-        {/* SECTION 8: COMPARISON */}
+        {/* SECTION 8: COMPARISON - WHITE BG */}
         <MarketingErrorBoundary section="Comparison">
           <SectionTransition variant="fade" delay={0}>
-            <section>
+            <section className="bg-white py-24">
               <Suspense fallback={<SectionLoader />}>
                 <ComparisonSection />
               </Suspense>
@@ -187,49 +194,49 @@ export default function MarketingHome() {
         </MarketingErrorBoundary>
 
 
-        {/* SECTION 9: PRICING PREVIEW */}
-        <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
+        {/* SECTION 9: PRICING PREVIEW - GRAY BG */}
+        <section className="py-24 bg-gray-50 border-t border-gray-100">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">
                 Simple, Transparent Pricing
               </h2>
-              <p className="text-xl text-[hsl(var(--marketing-text-light))]">
+              <p className="text-lg text-slate-600">
                 Start free, upgrade as you grow
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
               {/* FREE TIER - With Premium Glow Animation */}
-              <div className="p-6 rounded-3xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 relative overflow-hidden transition-all hover:-translate-y-2 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.2)]">
+              <div className="p-6 rounded-xl border-2 border-emerald-500 bg-white relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
 
-                <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-bl-2xl shadow-sm">
+                <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-bl-xl shadow-sm tracking-wider uppercase">
                   NO CC REQUIRED
                 </div>
 
                 <div className="relative z-10">
-                  <h3 className="text-xl font-bold mb-1 text-center text-emerald-700 dark:text-emerald-400 tracking-wide">FREE FOREVER</h3>
-                  <div className="text-center mb-2">
-                    <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">$0</span>
-                    <span className="text-lg text-[hsl(var(--marketing-text-light))]">/mo</span>
+                  <h3 className="text-xl font-bold mb-2 text-center text-emerald-700 tracking-wide">FREE FOREVER</h3>
+                  <div className="text-center mb-4">
+                    <span className="text-5xl font-bold text-emerald-600">$0</span>
+                    <span className="text-lg text-slate-500">/mo</span>
                   </div>
-                  <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-4">Perfect for getting started</p>
-                  <div className="text-center mb-6 py-2 px-4 bg-emerald-100 dark:bg-emerald-900/40 rounded-full inline-flex items-center gap-2 mx-auto w-full justify-center">
+                  <p className="text-sm text-center text-slate-500 mb-6">Perfect for getting started</p>
+                  <div className="text-center mb-6 py-2 px-4 bg-emerald-50 rounded-full inline-flex items-center gap-2 mx-auto w-full justify-center border border-emerald-100">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">500 FREE credits/month</span>
+                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">500 FREE credits/month</span>
                   </div>
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-4 mb-8">
                     {["All core features", "50 customers", "3 menus", "1 location", "No credit card ever"].map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-[hsl(var(--marketing-text))]">
-                        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                          <CheckCircle className="h-3 w-3 text-white" />
+                      <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="h-3 w-3 text-emerald-600" />
                         </div>
                         {feature}
                       </li>
                     ))}
                   </ul>
                   <Link to="/signup?plan=free">
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl shadow-sm transition-all hover:scale-[1.02]">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5">
                       Start Free Now
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -269,33 +276,33 @@ export default function MarketingHome() {
               ].map((plan, index) => (
                 <div
                   key={index}
-                  className={`p-6 md:p-8 rounded-3xl border transition-all duration-200 hover:scale-[1.02] hover:-translate-y-1 relative overflow-hidden ${plan.popular
-                    ? "border-[hsl(var(--marketing-primary))] bg-gradient-to-b from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-bg-subtle))] shadow-[0_0_40px_rgba(16,185,129,0.15)] md:scale-105"
-                    : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]"
+                  className={`p-6 rounded-xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-md relative overflow-hidden bg-white ${plan.popular
+                    ? "border-emerald-500 shadow-sm ring-4 ring-emerald-500/5 md:scale-105"
+                    : "border-gray-200"
                     }`}
                 >
                   {plan.popular && (
-                    <>
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--marketing-primary))]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                      <div className="text-center mb-6">
-                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold shadow-lg">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                          MOST POPULAR
-                        </span>
-                      </div>
-                    </>
+                    <div className="absolute top-0 inset-x-0 h-1 bg-emerald-500" />
                   )}
-                  <h3 className="text-lg font-bold mb-1 text-center text-[hsl(var(--marketing-text-light))] tracking-wide">{plan.name}</h3>
-                  <div className="text-center mb-2">
-                    <span className="text-5xl font-bold text-[hsl(var(--marketing-text))]">{plan.price}</span>
-                    <span className="text-lg text-[hsl(var(--marketing-text-light))]">{plan.period}</span>
+
+                  {plan.popular && (
+                    <div className="text-center mb-6">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold tracking-wider uppercase border border-emerald-200">
+                        MOST POPULAR
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="text-lg font-bold mb-2 text-center text-slate-900 tracking-wide uppercase">{plan.name}</h3>
+                  <div className="text-center mb-4">
+                    <span className="text-5xl font-bold text-slate-900">{plan.price}</span>
+                    <span className="text-lg text-slate-500">{plan.period}</span>
                   </div>
-                  <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-6">{plan.description}</p>
-                  <ul className="space-y-3 mb-8">
+                  <p className="text-sm text-center text-slate-500 mb-6">{plan.description}</p>
+                  <ul className="space-y-4 mb-8">
                     {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3 text-sm text-[hsl(var(--marketing-text))]">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-[hsl(var(--marketing-primary))]' : 'bg-[hsl(var(--marketing-primary))]/20'}`}>
-                          <CheckCircle className={`h-3 w-3 ${plan.popular ? 'text-white' : 'text-[hsl(var(--marketing-primary))]'}`} />
+                      <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-emerald-100' : 'bg-gray-100'}`}>
+                          <CheckCircle className={`h-3 w-3 ${plan.popular ? 'text-emerald-600' : 'text-slate-400'}`} />
                         </div>
                         {feature}
                       </li>
@@ -305,9 +312,9 @@ export default function MarketingHome() {
                     <ConfettiButton
                       variant={plan.popular ? "default" : "outline"}
                       size="lg"
-                      className={`w-full rounded-xl min-h-[52px] font-semibold touch-manipulation active:scale-[0.98] transition-transform ${plan.popular
-                        ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white shadow-lg shadow-[hsl(var(--marketing-primary))]/25"
-                        : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))] hover:border-[hsl(var(--marketing-primary))]/50"
+                      className={`w-full rounded-xl h-12 font-semibold transition-all duration-200 ${plan.popular
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg"
+                        : "border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-emerald-200 hover:text-emerald-700"
                         }`}
                       confettiConfig={{
                         particleCount: plan.popular ? 150 : 100,
@@ -318,39 +325,39 @@ export default function MarketingHome() {
                     </ConfettiButton>
                   </Link>
                   {plan.name !== "ENTERPRISE" && (
-                    <div className="text-[10px] text-center mt-2 text-[hsl(var(--marketing-text-light))] flex justify-center gap-1">
-                      <AlertTriangle className="w-3 h-3 inline-block mr-1" aria-hidden="true" /> Credit card required for trial
+                    <div className="text-[10px] text-center mt-3 text-slate-400 flex justify-center gap-1">
+                      <AlertTriangle className="w-3 h-3 inline-block" aria-hidden="true" /> Credit card required for trial
                     </div>
                   )}
                 </div>
               ))}
             </div>
 
-            <div className="text-center mt-8">
-              <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-xl max-w-lg mx-auto text-left">
-                <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-4 flex items-center gap-2 text-lg">
+            <div className="text-center mt-12">
+              <div className="mt-12 p-6 bg-blue-50 border border-blue-100 rounded-xl max-w-lg mx-auto text-left">
+                <h4 className="font-bold text-blue-900 mb-4 flex items-center gap-2 text-lg">
                   <HelpCircle className="w-5 h-5" />
                   When is a credit card required?
                 </h4>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
-                    <span className="text-blue-800 dark:text-blue-200">
-                      <strong className="block text-blue-900 dark:text-blue-100">FREE tier</strong>
+                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                    <span className="text-blue-800">
+                      <strong className="block text-blue-900">FREE tier</strong>
                       No credit card ever. Just sign up and start.
                     </span>
                   </div>
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                    <span className="text-blue-800 dark:text-blue-200">
-                      <strong className="block text-blue-900 dark:text-blue-100">Paid plan trials</strong>
+                    <span className="text-blue-800">
+                      <strong className="block text-blue-900">Paid plan trials</strong>
                       Credit card required at signup to verify identity. <br />You won't be charged during the 14-day trial.
                     </span>
                   </div>
                 </div>
               </div>
               <Link to="/pricing">
-                <Button variant="ghost" className="group text-[hsl(var(--marketing-text))] hover:text-[hsl(var(--marketing-primary))] hover:scale-105 active:scale-95 transition-transform">
+                <Button variant="ghost" className="mt-8 group text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
                   See Full Pricing Details
                   <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -359,7 +366,7 @@ export default function MarketingHome() {
 
             {/* ROI Calculator */}
             <MarketingErrorBoundary section="ROICalculator">
-              <div className="max-w-2xl mx-auto mt-12">
+              <div className="max-w-2xl mx-auto mt-16">
                 <Suspense fallback={<SectionLoader />}>
                   <ROICalculator />
                 </Suspense>
@@ -369,19 +376,21 @@ export default function MarketingHome() {
         </section>
 
         {/* SECTION 10: FINAL CTA */}
-        <CTASection
-          title="Ready to Create Your First Secure Menu?"
-          description="Live in 60 seconds. No demo. No contract."
-          primaryCta={{
-            text: "Create Menu Free",
-            link: "/signup?plan=free&flow=menu",
-          }}
-          secondaryCta={{
-            text: "Watch Demo",
-            link: "/demo",
-          }}
-          variant="default"
-        />
+        <section className="py-24 bg-white">
+          <CTASection
+            title="Ready to Create Your First Secure Menu?"
+            description="Live in 60 seconds. No demo. No contract."
+            primaryCta={{
+              text: "Create Menu Free",
+              link: "/signup?plan=free&flow=menu",
+            }}
+            secondaryCta={{
+              text: "Watch Demo",
+              link: "/demo",
+            }}
+            variant="default"
+          />
+        </section>
 
         {/* SECTION 11: FOOTER */}
         <MarketingFooter />
