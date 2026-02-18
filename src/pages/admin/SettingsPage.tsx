@@ -25,7 +25,7 @@ import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { FeatureTogglesPanel } from '@/components/admin/settings/FeatureTogglesPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   GeneralSettingsSkeleton,
   SecuritySettingsSkeleton,
@@ -73,7 +73,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
-  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(tabParam);
@@ -180,10 +179,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       if (error) throw error;
 
       await refreshAccount();
-      toast({ title: "Settings Saved", description: "General settings updated successfully." });
+      toast.success("General settings updated successfully.");
     } catch (err) {
       logger.error("Error saving general settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+      toast.error("Failed to save settings.");
     } finally {
       setLoading(false);
     }
@@ -206,10 +205,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
       if (error) throw error;
       await refreshAccount();
-      toast({ title: "Settings Saved", description: "Security settings updated successfully." });
+      toast.success("Security settings updated successfully.");
     } catch (err) {
       logger.error("Error saving security settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+      toast.error("Failed to save settings.");
     } finally {
       setLoading(false);
     }
@@ -240,10 +239,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       }
 
       await refreshAccount();
-      toast({ title: "Settings Saved", description: "Notification preferences updated." });
+      toast.success("Notification preferences updated.");
     } catch (err) {
       logger.error("Error saving notification settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+      toast.error("Failed to save settings.");
     } finally {
       setLoading(false);
     }
@@ -353,7 +352,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       }
 
       await refreshAccount();
-      toast({ title: "Settings Imported", description: "Your settings have been imported successfully." });
+      toast.success("Your settings have been imported successfully.");
     } catch (err) {
       logger.error("Error importing settings", err);
       throw err;
