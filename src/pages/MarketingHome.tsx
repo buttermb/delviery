@@ -60,7 +60,7 @@ export default function MarketingHome() {
       <div id="main-content" className="min-h-dvh bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans">
 
         <SEOHead
-          title="FloraIQ - Secure Disposable Menus for Cannabis Operators"
+          title="FloraIQ - Cannabis Wholesale Operations Platform"
           description="Create encrypted, disposable menus in 30 seconds. Auto-burn on screenshot, device fingerprinting, OPSEC-grade security. No demo required."
           image="/og-image.png"
           structuredData={{
