@@ -35,7 +35,8 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
   const totalViews = accessLogs?.length || 0;
   const uniqueVisitors = new Set(accessLogs?.map(log => log.access_whitelist_id || log.ip_address)).size;
   const totalOrders = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(String(order.total_amount || 0)), 0) || 0;
+  const typedOrders = (orders || []) as Array<{ id: string; contact_phone?: string | null; created_at: string; total_amount?: number | string | null; status: string }>;
+  const totalRevenue = typedOrders.reduce((sum, order) => sum + parseFloat(String(order.total_amount || 0)), 0);
   const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(2) : '0.00';
 
   const handleExportLogs = () => {
@@ -47,13 +48,13 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
 
   const handleExportOrders = () => {
     if (!orders || orders.length === 0) return;
-    const ordersWithMenuName = orders.map(order => ({ ...order, menu_name: menu.name }));
+    const ordersWithMenuName = typedOrders.map(order => ({ ...order, menu_name: menu.name }));
     exportOrders(ordersWithMenuName);
     showSuccessToast('Export Complete', 'Orders exported to CSV');
   };
 
   const handleExportAnalytics = () => {
-    exportMenuAnalytics(menu, accessLogs || [], orders || []);
+    exportMenuAnalytics(menu, accessLogs || [], typedOrders);
     showSuccessToast('Export Complete', 'Analytics exported to CSV');
   };
 
@@ -169,13 +170,13 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                   <CardTitle>Recent Orders</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {!orders || orders.length === 0 ? (
+                  {typedOrders.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       No orders yet
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {orders.slice(0, 5).map(order => (
+                      {typedOrders.slice(0, 5).map(order => (
                         <div key={order.id} className="border rounded-lg p-3">
                           <div className="flex items-start justify-between">
                             <div>
@@ -201,7 +202,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
             <TabsContent value="charts" className="p-1">
               <AnalyticsCharts
                 accessLogs={accessLogs || []}
-                orders={orders || []}
+                orders={typedOrders as any}
                 securityEvents={securityEvents || []}
               />
             </TabsContent>
@@ -286,13 +287,13 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                 </CardHeader>
                 <CardContent>
                   <ScrollArea className="h-[300px]">
-                    {!orders || orders.length === 0 ? (
+                    {typedOrders.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No orders yet
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {orders.map(order => (
+                        {typedOrders.map(order => (
                           <div key={order.id} className="border rounded-lg p-3">
                             <div className="flex items-start justify-between">
                               <div>

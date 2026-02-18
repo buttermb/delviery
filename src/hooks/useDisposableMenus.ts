@@ -267,7 +267,7 @@ export const useMenuOrders = (menuId?: string, tenantId?: string) => {
       let query = supabase
         .from('menu_orders')
         .select(`
-          id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at, updated_at,
+          id, menu_id, tenant_id, contact_phone, status, total_amount, order_data, created_at,
           menu:disposable_menus(name)
         `)
         .eq('tenant_id', tenantId)
@@ -296,7 +296,7 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
       const { data, error } = await (supabase as any)
         .from('menu_orders')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update({ status })
         .eq('id', orderId)
         .select()
         .single();

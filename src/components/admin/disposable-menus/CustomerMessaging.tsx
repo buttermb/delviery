@@ -51,19 +51,20 @@ export const CustomerMessaging = () => {
   }
 
   // Get unique customers from orders using contact_phone
-  const customers = orders?.reduce((acc: Customer[], order: OrderData) => {
+  const typedOrders = (orders || []) as OrderData[];
+  const customers = typedOrders.reduce((acc: Customer[], order: OrderData) => {
     if (order.contact_phone && !acc.find(c => c.phone === order.contact_phone)) {
       acc.push({
         name: order.contact_phone,
         phone: order.contact_phone,
         email: null,
-        orderCount: orders.filter(o => o.contact_phone === order.contact_phone).length,
+        orderCount: typedOrders.filter(o => o.contact_phone === order.contact_phone).length,
         lastOrder: order.created_at,
         status: order.status
       });
     }
     return acc;
-  }, []) || [];
+  }, []);
 
   const filteredCustomers = filterStatus === 'all' 
     ? customers 
