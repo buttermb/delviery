@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
   User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw
@@ -122,7 +122,6 @@ const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 function CashRegisterContent() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
   const { execute: executeCreditAction } = useCreditGatedAction();
@@ -362,8 +361,7 @@ function CashRegisterContent() {
       3
     );
 
-    toast({
-      title: 'Transaction queued',
+    toast.info('Transaction queued', {
       description: 'Will be processed when connection is restored.'
     });
     // Reset transaction state inline to avoid circular dependency
@@ -372,7 +370,7 @@ function CashRegisterContent() {
     setDiscountValue(0);
     setDiscountType('percentage');
     setSelectedCustomer(null);
-  }, [tenantId, paymentMethod, selectedCustomer, toast]);
+  }, [tenantId, paymentMethod, selectedCustomer]);
 
   // Reset transaction state
   const resetTransaction = useCallback(() => {
@@ -482,8 +480,7 @@ function CashRegisterContent() {
         customerName: selectedCustomer?.name ?? null,
       });
 
-      toast({
-        title: 'Payment processed successfully!',
+      toast.success('Payment processed successfully!', {
         description: `Transaction ${result.transaction_number}`
       });
 
@@ -510,10 +507,8 @@ function CashRegisterContent() {
     onError: (error: unknown) => {
       triggerError();
       logger.error('Payment processing failed', error, { component: 'CashRegister' });
-      toast({
-        title: 'Payment failed',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
+      toast.error('Payment failed', {
+        description: error instanceof Error ? error.message : 'An error occurred'
       });
     }
   });
@@ -528,7 +523,7 @@ function CashRegisterContent() {
       if (existingItem) {
         if (existingItem.quantity >= stock) {
           triggerError();
-          toast({ title: 'Not enough stock', variant: 'destructive' });
+          toast.error('Not enough stock');
           return;
         }
         triggerLight();
@@ -540,7 +535,7 @@ function CashRegisterContent() {
       } else {
         if (stock <= 0) {
           triggerError();
-          toast({ title: 'Product out of stock', variant: 'destructive' });
+          toast.error('Product out of stock');
           return;
         }
         triggerLight();
@@ -551,7 +546,7 @@ function CashRegisterContent() {
       // Small delay for visual feedback
       setTimeout(() => setIsAddingToCart(null), 150);
     }
-  }, [cart, triggerError, triggerLight, toast]);
+  }, [cart, triggerError, triggerLight]);
 
   const updateQuantity = (productId: string, change: number) => {
     setCart(cart.map(item => {
@@ -578,24 +573,24 @@ function CashRegisterContent() {
   const confirmClearCart = () => {
     resetTransaction();
     setClearCartDialogOpen(false);
-    toast({ title: 'Cart cleared' });
+    toast.success('Cart cleared');
   };
 
   // Apply discount
   const handleApplyDiscount = (type: 'percentage' | 'fixed', value: number) => {
     // Validate discount
     if (type === 'percentage' && value > 100) {
-      toast({ title: 'Percentage cannot exceed 100%', variant: 'destructive' });
+      toast.error('Percentage cannot exceed 100%');
       return;
     }
     if (type === 'fixed' && value > subtotal) {
-      toast({ title: 'Discount cannot exceed subtotal', variant: 'destructive' });
+      toast.error('Discount cannot exceed subtotal');
       return;
     }
     setDiscountType(type);
     setDiscountValue(value);
     setDiscountDialogOpen(false);
-    toast({ title: `Discount applied: ${type === 'percentage' ? `${value}%` : `$${value.toFixed(2)}`}` });
+    toast.success(`Discount applied: ${type === 'percentage' ? `${value}%` : `$${value.toFixed(2)}`}`);
   };
 
   // Print receipt
@@ -755,11 +750,11 @@ function CashRegisterContent() {
       }
     } catch (error) {
       logger.error('Print failed', error, { component: 'CashRegister' });
-      toast({ title: 'Print failed', variant: 'destructive' });
+      toast.error('Print failed');
     } finally {
       setIsPrinting(false);
     }
-  }, [lastTransaction, lastReceiptData, lastRefundData, tenant, toast]);
+  }, [lastTransaction, lastReceiptData, lastRefundData, tenant]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -858,13 +853,11 @@ function CashRegisterContent() {
 
         if (product) {
           addToCart(product);
-          toast({ title: `Added: ${product.name}` });
+          toast.success(`Added: ${product.name}`);
         } else {
           triggerError();
-          toast({
-            title: 'Product not found',
-            description: `No product with barcode: ${barcode}`,
-            variant: 'destructive'
+          toast.error('Product not found', {
+            description: `No product with barcode: ${barcode}`
           });
         }
         barcodeBufferRef.current = '';
@@ -875,7 +868,7 @@ function CashRegisterContent() {
 
     window.addEventListener('keydown', handleBarcodeInput);
     return () => window.removeEventListener('keydown', handleBarcodeInput);
-  }, [products, addToCart, triggerError, toast]);
+  }, [products, addToCart, triggerError]);
 
   if (isLoading) {
     return (
