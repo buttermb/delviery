@@ -376,7 +376,7 @@
 - [x] Task 186: Improve POS receipt layout — Already exists from Part A (Task 36): handlePrintReceipt in CashRegister.tsx (lines 638-823) has full 80mm thermal layout (302px/80mm @page), monospace font, store name, date/time, items with qty/price, subtotal, tax, total, payment method, receipt number, and "*** REFUND ***" bordered header for refund receipts. No changes needed.
 - [x] Task 187: Add keyboard shortcuts to CashRegister — Already exists from Part A (Task 37): F2=New Sale, F3=Search Product, F4=Refund, F8=Pay Cash, F9=Pay Card, Esc=Clear/Close, ?=Help. useEffect keydown listener with cleanup. Shortcut hints on buttons. Help dialog. No changes needed.
 - [x] Task 188: Add quick-add product grid — Already exists from Part A (Task 38): topProducts useMemo computes top 12 by sale frequency from transactions (lines 333-361), responsive grid UI with images/prices/out-of-stock badges and one-tap addToCart (lines 1064-1125). No changes needed.
-- [ ] Task 189: Add customer lookup to POS
+- [x] Task 189: Add customer lookup to POS
 - [ ] Task 190: Run npx tsc --noEmit � Checkpoint.
 
 ## Phase B4: Invoice Partial Payments (12 tasks)

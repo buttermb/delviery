@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
+  Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
 } from 'lucide-react';
 import {
   Dialog,
@@ -50,6 +50,8 @@ import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
 import { useCustomerLoyaltyStatus, useLoyaltyConfig, calculatePointsToEarn, TIER_DISPLAY_INFO } from '@/hooks/useCustomerLoyalty';
+import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
+import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
 
 interface Product {
   id: string;
@@ -68,12 +70,7 @@ interface Category {
   name: string;
 }
 
-interface Customer {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-}
+// Customer type is POSCustomer from POSCustomerSelector
 
 interface POSTransaction {
   id: string;
@@ -180,9 +177,7 @@ function CashRegisterContent() {
   const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
 
   // Customer state
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(null);
 
   // Customer credit balance (for showing available store credit)
   const { balance: customerCreditBalance } = useCustomerCredit(selectedCustomer?.id);
@@ -249,28 +244,30 @@ function CashRegisterContent() {
     enabled: !!tenantId,
   });
 
-  // Load customers for selection
-  const { data: customers = [] } = useQuery({
+  // Load customers for selection (POSCustomer format for POSCustomerSelector)
+  const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, first_name, last_name, email, phone')
+          .select('id, first_name, last_name, email, phone, customer_type, loyalty_points')
           .eq('tenant_id', tenantId)
           .order('first_name', { ascending: true })
           .limit(100);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        // Map first_name/last_name to name for Customer interface
-        return ((data || []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null }>).map(c => ({
+        return ((data || []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; customer_type: string | null; loyalty_points: number | null }>).map(c => ({
           id: c.id,
-          name: [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email || 'Unknown',
+          first_name: c.first_name || '',
+          last_name: c.last_name || '',
           email: c.email,
           phone: c.phone,
-        })) as Customer[];
+          customer_type: c.customer_type || 'recreational',
+          loyalty_points: c.loyalty_points || 0,
+        })) as POSCustomer[];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
@@ -359,15 +356,6 @@ function CashRegisterContent() {
 
     return sorted.slice(0, 12);
   }, [transactions, products]);
-
-  // Filter customers by search
-  const filteredCustomers = customers.filter(c => {
-    const searchLower = customerSearchQuery.toLowerCase();
-    return customerSearchQuery === '' ||
-      c.name.toLowerCase().includes(searchLower) ||
-      (c.email && c.email.toLowerCase().includes(searchLower)) ||
-      (c.phone && c.phone.includes(customerSearchQuery));
-  });
 
   // Queue transaction for offline processing
   const queueOfflineTransaction = useCallback(async (items: CartItem[], finalTotal: number, discAmt: number, taxAmt: number) => {
@@ -518,7 +506,7 @@ function CashRegisterContent() {
         discountValue,
         taxAmount,
         taxRate,
-        customerName: selectedCustomer?.name ?? null,
+        customerName: selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`.trim() : null,
       });
 
       toast.success('Payment processed successfully!', {
@@ -879,10 +867,9 @@ function CashRegisterContent() {
 
       // Escape - Clear cart or close dialogs
       if (e.key === 'Escape') {
-        const anyDialogOpen = productDialogOpen || customerDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
+        const anyDialogOpen = productDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
         if (anyDialogOpen) {
           setProductDialogOpen(false);
-          setCustomerDialogOpen(false);
           setDiscountDialogOpen(false);
           setReceiptDialogOpen(false);
           setKeyboardHelpOpen(false);
@@ -902,7 +889,7 @@ function CashRegisterContent() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- processPayment.mutateAsync is stable
-  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, customerDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
+  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
 
   // Barcode scanner support
   useEffect(() => {
@@ -1149,54 +1136,34 @@ function CashRegisterContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Customer Selection */}
-            <div className="flex items-center justify-between p-2 border rounded bg-muted/30">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                {selectedCustomer ? (
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <span className="font-medium text-sm">{selectedCustomer.name}</span>
-                      {selectedCustomer.phone && (
-                        <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
-                      )}
-                    </div>
-                    {customerCreditBalance > 0 && (
-                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
-                        <Wallet className="h-3 w-3 mr-1" />
-                        ${customerCreditBalance.toFixed(2)} credit
-                      </Badge>
-                    )}
-                    {loyaltyActive && loyaltyStatus && (
-                      <Badge variant="secondary" className={`${TIER_DISPLAY_INFO[loyaltyStatus.tier].bgColor} ${TIER_DISPLAY_INFO[loyaltyStatus.tier].color} text-xs`}>
-                        <Award className="h-3 w-3 mr-1" />
-                        {TIER_DISPLAY_INFO[loyaltyStatus.tier].label} &middot; {loyaltyStatus.current_points} pts
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Walk-in Customer</span>
-                )}
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="lg:min-h-[44px]"
-                  onClick={() => setCustomerDialogOpen(true)}
-                >
-                  {selectedCustomer ? 'Change' : 'Select'}
-                </Button>
-                {selectedCustomer && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="lg:min-h-[44px] lg:min-w-[44px]"
-                    onClick={() => setSelectedCustomer(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+            <div className="space-y-2">
+              <POSCustomerSelector
+                customers={customers}
+                selectedCustomer={selectedCustomer}
+                onSelectCustomer={setSelectedCustomer}
+                onCustomerCreated={(customer) => {
+                  queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+                  setSelectedCustomer(customer);
+                }}
+                isLoading={customersLoading}
+                tenantId={tenantId}
+              />
+              {selectedCustomer && (
+                <div className="flex items-center gap-2 px-2">
+                  {customerCreditBalance > 0 && (
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
+                      <Wallet className="h-3 w-3 mr-1" />
+                      ${customerCreditBalance.toFixed(2)} credit
+                    </Badge>
+                  )}
+                  {loyaltyActive && loyaltyStatus && (
+                    <Badge variant="secondary" className={`${TIER_DISPLAY_INFO[loyaltyStatus.tier].bgColor} ${TIER_DISPLAY_INFO[loyaltyStatus.tier].color} text-xs`}>
+                      <Award className="h-3 w-3 mr-1" />
+                      {TIER_DISPLAY_INFO[loyaltyStatus.tier].label} &middot; {loyaltyStatus.current_points} pts
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Cart Items */}
@@ -1510,65 +1477,7 @@ function CashRegisterContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Customer Selection Dialog */}
-      <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Select Customer</DialogTitle>
-            <DialogDescription>Search for an existing customer or proceed with walk-in</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                aria-label="Search by name, email, or phone"
-                placeholder="Search by name, email, or phone..."
-                value={customerSearchQuery}
-                onChange={(e) => setCustomerSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="max-h-60 overflow-auto space-y-2">
-              {filteredCustomers.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No customers found
-                </div>
-              ) : (
-                filteredCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    className="flex items-center justify-between p-3 border rounded cursor-pointer hover:bg-muted/50"
-                    onClick={() => {
-                      setSelectedCustomer(customer);
-                      setCustomerDialogOpen(false);
-                      setCustomerSearchQuery('');
-                    }}
-                  >
-                    <div>
-                      <div className="font-medium">{customer.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {customer.email || customer.phone || 'No contact info'}
-                      </div>
-                    </div>
-                    <User className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCustomerDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              setSelectedCustomer(null);
-              setCustomerDialogOpen(false);
-            }}>
-              Walk-in Customer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Customer selection is now inline via POSCustomerSelector */}
 
       {/* Discount Dialog */}
       <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
