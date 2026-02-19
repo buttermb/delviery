@@ -113,8 +113,8 @@ export default function CustomerDetails() {
       // Customer data is NOT encrypted - use plaintext fields directly
       setCustomer(customerData as Customer);
 
-      // Load orders
-      const { data: ordersData, error: ordersError } = await supabase
+      // Load orders (filter by tenant_id)
+      const ordersQuery = supabase
         .from('orders')
         .select(`
           *,
@@ -125,6 +125,12 @@ export default function CustomerDetails() {
         `)
         .eq('customer_id', id)
         .order('created_at', { ascending: false });
+
+      if (tenantId) {
+        ordersQuery.eq('tenant_id', tenantId);
+      }
+
+      const { data: ordersData, error: ordersError } = await ordersQuery;
 
       if (ordersError) throw ordersError;
       setOrders(ordersData || []);
@@ -147,15 +153,18 @@ export default function CustomerDetails() {
       if (paymentsError) throw paymentsError;
       setPayments(paymentsData || []);
 
-      // Load notes
-      const { data: notesData, error: notesError } = await (supabase as any)
-        .from('customer_notes')
+      // Load notes (customer_notes not in generated types)
+      const notesResult = await (supabase
+        .from('customer_notes' as 'customers')
         .select('id, created_at, note, note_type')
-        .eq('customer_id', id)
-        .order('created_at', { ascending: false });
+        .eq('customer_id', id as string)
+        .order('created_at', { ascending: false })) as unknown as {
+          data: Array<{ id: string; created_at: string; note: string; note_type: string }> | null;
+          error: unknown;
+        };
 
-      if (notesError) throw notesError;
-      setNotes((notesData || []).map((n: any) => ({
+      if (notesResult.error) throw notesResult.error;
+      setNotes((notesResult.data || []).map((n) => ({
         id: n.id,
         created_at: n.created_at,
         note: n.note,
@@ -212,6 +221,12 @@ export default function CustomerDetails() {
   }
 
   const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+  // Customer Lifetime Value: compute from orders for accuracy
+  const totalOrdersCount = orders.length;
+  const totalSpentFromOrders = orders.reduce((sum, o) => sum + ((o as Record<string, unknown>).total_amount as number || 0), 0);
+  const computedTotalSpent = totalSpentFromOrders > 0 ? totalSpentFromOrders : (customer?.total_spent || 0);
+  const averageOrderValue = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
@@ -279,7 +294,7 @@ export default function CustomerDetails() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Spent</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
-                      ${customer.total_spent?.toFixed(2) || '0.00'}
+                      ${computedTotalSpent.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
@@ -294,7 +309,7 @@ export default function CustomerDetails() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{orders.length}</p>
+                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{totalOrdersCount}</p>
                   </div>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <ShoppingBag className="w-6 h-6 text-blue-600" />
@@ -325,7 +340,7 @@ export default function CustomerDetails() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Average Order</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
-                      ${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}
+                      ${averageOrderValue.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -456,11 +471,11 @@ export default function CustomerDetails() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Total Orders</label>
-                      <p>{orders.length} orders</p>
+                      <p>{totalOrdersCount} orders</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Average Order Value</label>
-                      <p>${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}</p>
+                      <p>${averageOrderValue.toFixed(2)}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
