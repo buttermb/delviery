@@ -440,7 +440,7 @@
 - [x] Task 238: Fix text overflow — WholesaleClients table — Added maxWidthClass="max-w-[200px]" to TruncatedText for business_name, territory, contact_name, email, phone in desktop table. Replaced plain CSS truncate on mobile business_name, territory, contact_name, phone with TruncatedText (max-w-[180px]) for tooltip-on-hover support.
 - [x] Task 239: Fix text overflow — Invoices table — Added overflow-hidden to CustomerLink wrapper divs in both desktop (max-w-[200px]) and mobile (max-w-[180px]) views so the internal truncate on customer name text properly clips. Invoice # already had TruncatedText.
 - [x] Task 240: Sorting � Orders table -- Already implemented from Part A (Task 90): SortableHeader on Customer, Status, Total, Date columns. handleSort toggles asc/desc. sortedOrders useMemo with client-side sort logic. Default created_at DESC. No changes needed.
-- [ ] Task 241: Sorting � Products table
+- [x] Task 241: Sorting — Products table — Already implemented: SortableHeader on Name, Category, Price, Stock columns. handleSort toggles asc/desc. filteredProducts useMemo with client-side sort logic. Persisted via useTablePreferences. No changes needed.
 - [ ] Task 242: Sorting � Invoices table
 - [ ] Task 243: Sorting � WholesaleClients table
 - [ ] Task 244: Pagination � Orders
