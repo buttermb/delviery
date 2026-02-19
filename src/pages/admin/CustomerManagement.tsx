@@ -32,6 +32,8 @@ import {
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
@@ -99,6 +101,8 @@ export function CustomerManagement() {
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
+  const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const posEnabled = isFeatureEnabled('pos');
 
   // Get customer IDs filtered by tags
   const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
@@ -703,7 +707,11 @@ export function CustomerManagement() {
                             <Edit className="w-4 h-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}>
+                          <DropdownMenuItem
+                            disabled={!posEnabled}
+                            title={!posEnabled ? 'Enable POS in Settings' : undefined}
+                            onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
+                          >
                             <DollarSign className="w-4 h-4 mr-2" />
                             New Order
                           </DropdownMenuItem>
@@ -921,10 +929,25 @@ export function CustomerManagement() {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <Button className="w-full mb-2" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}>
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Create New Order
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="w-full">
+                          <Button
+                            className="w-full mb-2"
+                            disabled={!posEnabled}
+                            onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Create New Order
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!posEnabled && (
+                        <TooltipContent>Enable POS in Settings</TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="grid grid-cols-2 gap-2">
                     <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${selectedCustomerForDrawer.id}`)}>
                       View Profile
