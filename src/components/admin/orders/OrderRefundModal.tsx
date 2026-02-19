@@ -68,7 +68,7 @@ export function OrderRefundModal({
   onSuccess,
 }: OrderRefundModalProps) {
   // Use the refund hook with full inventory restore logic
-  const { refundOrder, isRefunding } = useOrderRefund();
+  const { refundOrderAsync, isRefunding } = useOrderRefund();
 
   // Form state
   const [refundType, setRefundType] = useState<RefundType>('full');
@@ -142,23 +142,27 @@ export function OrderRefundModal({
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!order || !validation.valid) return;
 
-    refundOrder({
-      orderId: order.id,
-      refundType,
-      amount: refundAmount,
-      reason,
-      refundMethod,
-      notes: notes ? sanitizeTextareaInput(notes, 500) : null,
-      restoreInventory,
-    });
+    try {
+      await refundOrderAsync({
+        orderId: order.id,
+        refundType,
+        amount: refundAmount,
+        reason,
+        refundMethod,
+        notes: notes ? sanitizeTextareaInput(notes, 500) : null,
+        restoreInventory,
+      });
 
-    handleOpenChange(false);
-    onSuccess?.();
+      handleOpenChange(false);
+      onSuccess?.();
+    } catch {
+      // Error is already handled by the useOrderRefund hook's onError callback
+    }
   };
 
   if (!order) return null;
