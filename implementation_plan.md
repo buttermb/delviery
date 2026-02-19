@@ -454,7 +454,7 @@
 - [x] Task 249: Block negative prices — Updated productSchema in validation.ts with .min(0) on price, wholesale_price, cost_price, sale_price. Added wholesale_price and retail_price field-level error validation in PricingStep.tsx getFieldError(). CurrencyInput already blocks negative keystrokes. ProductForm.tsx and CreateProductForm.tsx already had manual negative blocking on submit.
 - [x] Task 250: Block negative quantities
 - [x] Task 251: Block negative invoice amounts — Added Math.max() clamping in CustomerInvoices.tsx updateLineItem (rate>=0, quantity>=1), min={0} on tax_rate input with clamping, and submit-time validation rejecting negative totals. InvoicePaymentDialog already had .positive(), RecurringInvoiceForm already had Math.max() clamping.
-- [ ] Task 252: Character limits on text fields
+- [x] Task 252: Character limits on text fields — Added .max() to Zod schemas and maxLength on inputs: CreateInvoicePage notes (1000), admin CreateClientDialog business_name/contact_name (200), address (500), email (254), notes (1000), CustomerNotes edit/add textareas (1000), NewWholesaleOrder delivery notes (1000), AddProductsStep product name (200), QuickCreateCustomerDialog first/last name (100), phone (20), CustomerForm medical_card_number (50), CRM Create/EditClientDialog email (254). Central productSchema and CustomerForm already had limits from Part A.
 - [ ] Task 253: Email validation
 - [ ] Task 254: Phone validation
 - [ ] Task 255: Duplicate product name check

@@ -29,7 +29,7 @@ import { toast } from 'sonner';
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
 const productSchema = z.object({
-  name: z.string().min(2, 'Product name is required'),
+  name: z.string().min(2, 'Product name is required').max(200, 'Product name must be 200 characters or less'),
   sku: z.string().optional(),
   price: z.string().min(1, 'Price is required').refine((val) => !isNaN(Number(val)) && Number(val) >= 0, 'Price must be a valid number'),
   category: z.string().optional(),
@@ -223,7 +223,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
                   <FormItem>
                     <FormLabel required>Product Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Blue Dream 3.5g" {...field} />
+                      <Input placeholder="e.g., Blue Dream 3.5g" maxLength={200} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

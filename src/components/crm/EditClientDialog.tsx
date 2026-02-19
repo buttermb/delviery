@@ -142,7 +142,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                                 <FormItem>
                                     <FormLabel>Email (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input type="email" {...field} />
+                                        <Input type="email" maxLength={254} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

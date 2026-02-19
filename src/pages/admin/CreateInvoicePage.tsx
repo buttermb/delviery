@@ -51,7 +51,7 @@ const formSchema = z.object({
     due_date: z.date(),
     status: z.enum(["draft", "sent", "paid"]),
     tax_rate: z.coerce.number().min(0, "Tax rate cannot be negative").max(100, "Tax rate cannot exceed 100%"),
-    notes: z.string().optional(),
+    notes: z.string().max(1000, "Notes must be 1000 characters or less").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -330,6 +330,7 @@ export default function CreateInvoicePage() {
                                                 <Textarea
                                                     placeholder="Add any notes or payment instructions..."
                                                     className="min-h-[120px]"
+                                                    maxLength={1000}
                                                     {...field}
                                                 />
                                             </FormControl>

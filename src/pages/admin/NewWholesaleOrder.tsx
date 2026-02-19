@@ -1011,6 +1011,7 @@ export default function NewWholesaleOrder() {
                     onChange={(e) => setOrderData((prev) => ({ ...prev, notes: e.target.value }))}
                     placeholder="Special instructions for the runner..."
                     rows={3}
+                    maxLength={1000}
                   />
                 </div>
               </div>

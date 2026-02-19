@@ -43,9 +43,9 @@ import { useEncryption } from '@/lib/hooks/useEncryption';
 import type { POSCustomer } from './POSCustomerSelector';
 
 const formSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
-  phone: z.string().optional(),
+  first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
+  last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be 100 characters or less'),
+  phone: z.string().max(20, 'Phone must be 20 characters or less').optional(),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
 });
@@ -215,7 +215,7 @@ export function QuickCreateCustomerDialog({
                   <FormItem>
                     <FormLabel required>First Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" autoFocus {...field} />
+                      <Input placeholder="John" autoFocus maxLength={100} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -228,7 +228,7 @@ export function QuickCreateCustomerDialog({
                   <FormItem>
                     <FormLabel required>Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      <Input placeholder="Doe" maxLength={100} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -243,7 +243,7 @@ export function QuickCreateCustomerDialog({
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="(555) 123-4567" type="tel" {...field} />
+                    <Input placeholder="(555) 123-4567" type="tel" maxLength={20} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -157,7 +157,7 @@ export function CreateClientDialog({
                                 <FormItem>
                                     <FormLabel>Email (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="john@example.com" type="email" {...field} />
+                                        <Input placeholder="john@example.com" type="email" maxLength={254} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

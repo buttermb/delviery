@@ -42,7 +42,7 @@ const customerFormSchema = z.object({
   date_of_birth: z.string().min(1, 'Date of birth is required'),
   address: z.string().max(500, 'Address must be 500 characters or less').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
-  medical_card_number: z.string().optional().or(z.literal('')),
+  medical_card_number: z.string().max(50, 'Medical card number must be 50 characters or less').optional().or(z.literal('')),
   medical_card_expiration: z.string().optional().or(z.literal('')),
   status: z.enum(['active', 'inactive', 'suspended']),
 });
@@ -412,7 +412,7 @@ export default function CustomerForm() {
                           <FormItem>
                             <FormLabel>Medical Card Number</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input maxLength={50} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

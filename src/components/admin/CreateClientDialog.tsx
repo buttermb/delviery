@@ -176,6 +176,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.business_name}
                 onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                 placeholder="e.g., Big Mike's Shop"
+                maxLength={200}
                 required
               />
             </div>
@@ -187,6 +188,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.contact_name}
                 onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
                 placeholder="e.g., Mike Johnson"
+                maxLength={200}
                 required
               />
             </div>
@@ -214,6 +216,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="mike@example.com"
+                maxLength={254}
               />
             </div>
           </div>
@@ -225,6 +228,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="123 Main St, Bronx, NY"
+              maxLength={500}
             />
           </div>
 
@@ -287,6 +291,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Additional notes about this client..."
               rows={3}
+              maxLength={1000}
             />
           </div>
 

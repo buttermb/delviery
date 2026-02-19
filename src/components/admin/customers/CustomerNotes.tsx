@@ -266,6 +266,7 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               onChange={(e) => setEditedText(e.target.value)}
               rows={3}
               className="resize-none"
+              maxLength={1000}
               autoFocus
             />
             <div className="flex items-center gap-2">
@@ -440,6 +441,7 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               placeholder="Add a note about this customer..."
               rows={3}
               className="resize-none"
+              maxLength={1000}
               autoFocus
             />
             <div className="flex items-center gap-2">
