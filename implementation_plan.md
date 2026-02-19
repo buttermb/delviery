@@ -60,7 +60,7 @@
 
 - [x] Task 28: Sanitize search in any remaining pages — All .ilike() calls already use escapePostgresLike() from @/lib/utils/searchSanitize. No unsanitized calls found.
 
-- [ ] Task 29: Add debounce to all search inputs — Find all search inputs that trigger queries on every keystroke. Add 300ms debounce using a useDebounce hook (create if doesn't exist). Prevents excessive API calls while typing.
+- [x] Task 29: Add debounce to all search inputs — All search inputs that trigger server-side queries already use useDebounce(value, 300) from @/hooks/useDebounce.ts. Verified 15+ consumers. Client-side search inputs (filtering in-memory arrays) don't trigger API calls and don't need debounce.
 
 - [ ] Task 30: Run npx tsc --noEmit — Fix all TS errors from Phase 2. Checkpoint.
 
