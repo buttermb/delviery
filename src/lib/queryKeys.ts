@@ -493,6 +493,12 @@ export const queryKeys = {
     reports: (tenantId: string) => [...queryKeys.compliance.byTenant(tenantId), 'reports'] as const,
   },
 
+  // Permissions / user role
+  permissions: {
+    all: ['user-role'] as const,
+    role: (userId?: string, tenantId?: string) => [...queryKeys.permissions.all, userId, tenantId] as const,
+  },
+
   // Team
   team: {
     all: ['team'] as const,

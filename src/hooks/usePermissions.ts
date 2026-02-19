@@ -1,10 +1,11 @@
-import { useMemo, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useCallback, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { hasPermission } from '@/lib/permissions/checkPermissions';
 import { ROLES, Role, Permission, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 /**
@@ -139,10 +140,43 @@ const MODULE_PERMISSION_MAP: Record<PermissionModule, {
  */
 export function usePermissions() {
   const { admin, tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
+
+  // Realtime subscription: auto-invalidate role query when tenant_users record changes
+  useEffect(() => {
+    if (!admin?.userId || !tenant?.id) return;
+
+    const channel = supabase
+      .channel(`role-change-${admin.userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tenant_users',
+          filter: `tenant_id=eq.${tenant.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as { user_id?: string; role?: string };
+          if (updated.user_id === admin.userId) {
+            logger.info('Role change detected via realtime, refreshing permissions', {
+              newRole: updated.role,
+              component: 'usePermissions',
+            });
+            queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [admin?.userId, tenant?.id, queryClient]);
 
   // Fetch user roles from user_roles table
   const { data: userRole } = useQuery<Role>({
-    queryKey: ['user-role', admin?.userId, tenant?.id],
+    queryKey: queryKeys.permissions.role(admin?.userId, tenant?.id),
     queryFn: async () => {
       // SECURITY: Default to least privilege (VIEWER) when context is missing
       if (!admin?.userId || !tenant?.id) return ROLES.VIEWER;
