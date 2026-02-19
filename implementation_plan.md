@@ -22,7 +22,7 @@
 
 - [x] Task 10: Apply FeatureGate to Delivery routes — Wrap DeliveryDashboard, LiveMap, FleetManagement, CourierManagement with featureId="delivery_tracking".
 
-- [ ] Task 11: Apply FeatureGate to Analytics routes — Wrap analytics hub/pages with featureId="analytics_advanced".
+- [x] Task 11: Apply FeatureGate to Analytics routes — Wrap analytics hub/pages with featureId="analytics_advanced".
 
 - [ ] Task 12: Apply FeatureGate to Marketing routes — Wrap CouponManagement, Campaigns with featureId="marketing_hub".
 

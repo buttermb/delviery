@@ -857,7 +857,7 @@ const App = () => {
                                         {/* Billing redirects to Settings */}
                                         <Route path="billing" element={<Navigate to="../settings?tab=payments" replace />} />
                                         {/* Credit Routes */}
-                                        <Route path="credits/analytics" element={<CreditAnalyticsPage />} />
+                                        <Route path="credits/analytics" element={<FeatureProtectedRoute feature="analytics_advanced"><CreditAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
                                         <Route path="settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
@@ -977,13 +977,13 @@ const App = () => {
                                         <Route path="compliance" element={<Navigate to="compliance-hub" replace />} />
                                         <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting" feature="analytics_advanced"><AdvancedReportingPage /></FeatureProtectedRoute>} />
                                         <Route path="predictive-analytics" element={<Navigate to="analytics-hub?tab=forecasting" replace />} />
-                                        <Route path="board-report" element={<BoardReportPage />} />
-                                        <Route path="strategic-dashboard" element={<StrategicDashboardPage />} />
-                                        <Route path="expansion" element={<ExpansionAnalysisPage />} />
+                                        <Route path="board-report" element={<FeatureProtectedRoute feature="analytics_advanced"><BoardReportPage /></FeatureProtectedRoute>} />
+                                        <Route path="strategic-dashboard" element={<FeatureProtectedRoute feature="analytics_advanced"><StrategicDashboardPage /></FeatureProtectedRoute>} />
+                                        <Route path="expansion" element={<FeatureProtectedRoute feature="analytics_advanced"><ExpansionAnalysisPage /></FeatureProtectedRoute>} />
 
                                         {/* Professional Tier - Analytics */}
                                         <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics" feature="analytics_advanced"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
-                                        <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
+                                        <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard" feature="analytics_advanced"><SalesDashboardPage /></FeatureProtectedRoute>} />
                                         <Route path="customer-insights" element={<Navigate to="customer-hub?tab=insights" replace />} />
 
                                         {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
