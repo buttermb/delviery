@@ -190,7 +190,7 @@
 
 - [x] Task 88: Fix long text overflow in WholesaleClients table — Business name, contact, notes columns. Apply truncation.
 
-- [ ] Task 89: Fix long text overflow in Invoices table — Customer name, invoice number columns. Apply truncation.
+- [x] Task 89: Fix long text overflow in Invoices table — Customer name, invoice number columns. Apply truncation.
 
 - [ ] Task 90: Add sorting to Orders table — Ensure columns are sortable: Date (default desc), Total, Status, Customer. If sort doesn't work, wire it to query orderBy.
 

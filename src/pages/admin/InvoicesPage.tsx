@@ -49,6 +49,7 @@ import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
@@ -808,14 +809,14 @@ export function InvoicesPage() {
                                     onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <span className="font-semibold text-sm">{invoice.invoice_number}</span>
-                                            <p className="text-sm text-foreground/90 font-medium">
+                                        <div className="min-w-0 flex-1 mr-2">
+                                            <TruncatedText text={invoice.invoice_number} className="font-semibold text-sm" maxWidthClass="max-w-[180px]" />
+                                            <div className="text-sm text-foreground/90 font-medium min-w-0 max-w-[180px]">
                                                 <CustomerLink
                                                     customerId={invoice.client_id}
                                                     customerName={invoice.client?.name || "Unknown Client"}
                                                 />
-                                            </p>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             {getStatusBadge(invoice.status)}
@@ -1024,11 +1025,11 @@ export function InvoicesPage() {
                                         className="cursor-pointer hover:bg-muted/50"
                                         onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
                                     >
-                                        <TableCell className="font-medium">
-                                            {invoice.invoice_number}
+                                        <TableCell className="max-w-[200px]">
+                                            <TruncatedText text={invoice.invoice_number} className="font-medium" maxWidthClass="max-w-[200px]" />
                                         </TableCell>
                                         <TableCell className="max-w-[200px]">
-                                            <div className="truncate">
+                                            <div className="max-w-[200px] min-w-0">
                                                 <CustomerLink
                                                     customerId={invoice.client_id}
                                                     customerName={invoice.client?.name || "Unknown Client"}
