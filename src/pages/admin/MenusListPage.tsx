@@ -254,7 +254,7 @@ export function MenusListPage() {
                             </div>
 
                             {/* Pagination */}
-                            {totalItems > pageSize && (
+                            {totalItems > 0 && (
                                 <div className="mt-6 pt-4 border-t">
                                     <StandardPagination
                                         currentPage={currentPage}

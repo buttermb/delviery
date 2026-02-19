@@ -598,7 +598,7 @@ export default function WholesaleClients() {
           </div>
 
           {/* Desktop Pagination */}
-          {totalItems > pageSize && (
+          {totalItems > 0 && (
             <StandardPagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -756,7 +756,7 @@ export default function WholesaleClients() {
           </div>
 
           {/* Mobile Pagination */}
-          {totalItems > pageSize && (
+          {totalItems > 0 && (
             <StandardPagination
               currentPage={currentPage}
               totalPages={totalPages}
