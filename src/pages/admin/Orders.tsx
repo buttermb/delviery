@@ -6,6 +6,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -535,6 +536,84 @@ export default function Orders() {
     defaultPageSize: 25,
     persistInUrl: false,
   });
+
+  // Loading skeleton — full page placeholder while data fetches
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6">
+        {/* Header skeleton */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-12 w-24 rounded-md" />
+            <Skeleton className="h-12 w-32 rounded-md" />
+            <Skeleton className="h-12 w-28 rounded-md" />
+          </div>
+        </div>
+
+        {/* Stats grid skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="p-3 sm:p-4 border-none shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-7 w-12" />
+                </div>
+                <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded" />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Controls skeleton */}
+        <Card className="p-3 sm:p-4 border-none shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 w-full sm:w-[180px]" />
+            <Skeleton className="h-10 w-full sm:w-[220px]" />
+          </div>
+
+          {/* Table skeleton */}
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  {["", "Order #", "Customer", "Status", "Total", "Source", "Date", ""].map((h, i) => (
+                    <th key={i} className="px-4 py-3 text-left">
+                      <Skeleton className="h-3 w-16" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {Array.from({ length: 8 }).map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-36" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-8 w-8 rounded" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const handleDelete = (id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
