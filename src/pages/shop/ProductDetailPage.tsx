@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
 import { queryKeys } from '@/lib/queryKeys';
@@ -163,7 +163,6 @@ export function ProductDetailPage() {
   const isSlugBased = !!productSlug && !productId;
   const identifier = productSlug || productId;
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();
-  const { toast } = useToast();
 
   // Use unified cart hook
   const { addItem, cartCount, subtotal } = useShopCart({
@@ -223,6 +222,7 @@ export function ProductDetailPage() {
               image_url: item.image_url,
               images: item.images || [],
               in_stock: item.stock_quantity > 0,
+              stock_quantity: item.stock_quantity,
               is_featured: item.is_featured,
               marketplace_category_name: item.category,
               variants: [],
@@ -232,10 +232,10 @@ export function ProductDetailPage() {
               strain_type: item.strain_type,
               thc_content: item.thc_content,
               cbd_content: item.cbd_content,
-              metrc_retail_id: null,
-              exclude_from_discounts: false,
-              minimum_price: null,
-              effects: [],
+              metrc_retail_id: item.metrc_retail_id ?? null,
+              exclude_from_discounts: item.exclude_from_discounts ?? false,
+              minimum_price: item.minimum_price ?? null,
+              effects: item.effects || [],
               slug: item.slug,
             } as ProductDetails & { slug?: string };
           }
@@ -263,7 +263,7 @@ export function ProductDetailPage() {
 
   // Fetch product reviews
   const { data: reviews = [] } = useQuery({
-    queryKey: ['product-reviews', store?.id, product?.product_id],
+    queryKey: queryKeys.shopProducts.reviews(store?.id, product?.product_id),
     queryFn: async () => {
       if (!store?.id || !product?.product_id) return [];
 
@@ -417,28 +417,25 @@ export function ProductDetailPage() {
 
   // Toggle wishlist with error handling
   const toggleWishlist = () => {
-    if (!store?.id || !productId) return;
+    if (!store?.id || !product?.product_id) return;
 
     try {
       const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
       let newWishlist;
 
       if (isWishlisted) {
-        newWishlist = wishlist.filter((id: string) => id !== productId);
-        toast({ title: 'Removed from wishlist' });
+        newWishlist = wishlist.filter((id: string) => id !== product.product_id);
+        toast.success('Removed from wishlist');
       } else {
-        newWishlist = [...wishlist, productId];
-        toast({ title: 'Added to wishlist', description: 'View in your account' });
+        newWishlist = [...wishlist, product.product_id];
+        toast.success('Added to wishlist');
       }
 
       localStorage.setItem(`shop_wishlist_${store.id}`, JSON.stringify(newWishlist));
       setIsWishlisted(!isWishlisted);
     } catch (error) {
       logger.error('Wishlist operation failed', error);
-      toast({
-        title: isWishlisted ? 'Removed from wishlist' : 'Added to wishlist',
-        description: 'Changes may not persist across sessions'
-      });
+      toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
       setIsWishlisted(!isWishlisted);
     }
   };
@@ -1037,7 +1034,7 @@ export function ProductDetailPage() {
 
             {/* Recently Viewed */}
             <RecentlyViewedSection
-              currentProductId={productId}
+              currentProductId={product?.product_id}
               className="py-12 border-t border-white/5"
             />
           </div>

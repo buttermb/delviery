@@ -36,6 +36,8 @@ export const queryKeys = {
     categories: (storeId?: string) => ['shop-categories', storeId] as const,
     related: (storeId?: string, category?: string) =>
       ['related-products', storeId, category] as const,
+    reviews: (storeId?: string, productId?: string) =>
+      ['shop-product-reviews', storeId, productId] as const,
     carousels: (storeId?: string) => ['marketplace-products-map', storeId] as const,
   },
 

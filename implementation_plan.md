@@ -152,7 +152,7 @@
 
 - [x] Task 70: Fix product browsing — On shop page: verify category filters work, search filters products, sorting (price, name, newest) works. Fix any that don't function.
 
-- [ ] Task 71: Fix product detail page — Click a product in shop. Verify: image displays, description shows, price is correct, "Add to Cart" button works. Fix if broken.
+- [x] Task 71: Fix product detail page — Click a product in shop. Verify: image displays, description shows, price is correct, "Add to Cart" button works. Fix if broken.
 
 - [ ] Task 72: Fix cart functionality — Add items to cart. Verify: cart badge updates, cart page shows items, can update quantity, can remove items, subtotal updates. Cart should persist across page navigations (use localStorage or context). Fix any broken parts.
 
