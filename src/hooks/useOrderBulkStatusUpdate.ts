@@ -106,19 +106,32 @@ async function restoreInventoryForCancelledOrders(
 
   for (const orderId of orderIds) {
     try {
-      // Fetch order items for the cancelled order
-      const { data: orderItems, error: itemsError } = await supabase
+      // Fetch order items — try order_items first, then unified_order_items
+      let orderItems: { id: string; product_id: string; quantity: number }[] | null = null;
+
+      const { data: legacyItems, error: legacyError } = await supabase
         .from('order_items')
         .select('id, product_id, quantity')
         .eq('order_id', orderId);
 
-      if (itemsError) {
-        logger.error('Failed to fetch order items for inventory restore', itemsError, {
-          component: 'useOrderBulkStatusUpdate',
-          orderId,
-        });
-        failedCount++;
-        continue;
+      if (!legacyError && legacyItems && legacyItems.length > 0) {
+        orderItems = legacyItems;
+      } else {
+        // Fallback to unified_order_items
+        const { data: unifiedItems, error: unifiedError } = await supabase
+          .from('unified_order_items')
+          .select('id, product_id, quantity')
+          .eq('order_id', orderId);
+
+        if (unifiedError) {
+          logger.error('Failed to fetch order items for inventory restore', unifiedError, {
+            component: 'useOrderBulkStatusUpdate',
+            orderId,
+          });
+          failedCount++;
+          continue;
+        }
+        orderItems = unifiedItems;
       }
 
       if (!orderItems || orderItems.length === 0) {
@@ -235,19 +248,31 @@ async function decrementInventoryForDeliveredOrders(
         continue;
       }
 
-      // Fetch order items for the delivered order
-      const { data: orderItems, error: itemsError } = await supabase
+      // Fetch order items — try order_items first, then unified_order_items
+      let orderItems: { id: string; product_id: string; quantity: number }[] | null = null;
+
+      const { data: legacyItems, error: legacyError } = await supabase
         .from('order_items')
         .select('id, product_id, quantity')
         .eq('order_id', orderId);
 
-      if (itemsError) {
-        logger.error('Failed to fetch order items for inventory decrement', itemsError, {
-          component: 'useOrderBulkStatusUpdate',
-          orderId,
-        });
-        failedCount++;
-        continue;
+      if (!legacyError && legacyItems && legacyItems.length > 0) {
+        orderItems = legacyItems;
+      } else {
+        const { data: unifiedItems, error: unifiedError } = await supabase
+          .from('unified_order_items')
+          .select('id, product_id, quantity')
+          .eq('order_id', orderId);
+
+        if (unifiedError) {
+          logger.error('Failed to fetch order items for inventory decrement', unifiedError, {
+            component: 'useOrderBulkStatusUpdate',
+            orderId,
+          });
+          failedCount++;
+          continue;
+        }
+        orderItems = unifiedItems;
       }
 
       if (!orderItems || orderItems.length === 0) {

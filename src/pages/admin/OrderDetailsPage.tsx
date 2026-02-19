@@ -384,11 +384,34 @@ export function OrderDetailsPage() {
               .eq('tenant_id', tenant?.id || '')
               .maybeSingle();
             if (product) {
+              const previousQuantity = product.stock_quantity || 0;
+              const newQuantity = previousQuantity + item.quantity;
               await supabase
                 .from('products')
-                .update({ stock_quantity: (product.stock_quantity || 0) + item.quantity })
+                .update({
+                  stock_quantity: newQuantity,
+                  available_quantity: newQuantity,
+                  updated_at: new Date().toISOString(),
+                })
                 .eq('id', item.product_id)
                 .eq('tenant_id', tenant?.id || '');
+              // Log to inventory_history for audit trail
+              await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: unknown }> } })
+                .from('inventory_history')
+                .insert({
+                  tenant_id: tenant?.id,
+                  product_id: item.product_id,
+                  change_type: 'return',
+                  previous_quantity: previousQuantity,
+                  new_quantity: newQuantity,
+                  change_amount: item.quantity,
+                  reference_type: 'order_cancelled',
+                  reference_id: orderId,
+                  reason: 'order_cancelled',
+                  notes: `Order cancelled — inventory restored`,
+                  performed_by: tenant?.id || null,
+                  metadata: { order_id: orderId, source: 'order_details_page' },
+                });
             }
           }
           logger.info('Inventory restored for cancelled order', { component: 'OrderDetailsPage', orderId });
