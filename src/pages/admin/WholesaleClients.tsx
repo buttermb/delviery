@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -23,7 +23,10 @@ import {
   DollarSign,
   Package,
   Edit2,
-  Building
+  Building,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
 } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
@@ -63,6 +66,9 @@ interface WholesaleClient extends WholesaleClientRow {
   total_spent: number;
 }
 
+type ClientSortField = 'business_name' | 'outstanding_balance' | 'created_at' | 'status';
+type SortOrder = 'asc' | 'desc';
+
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import CopyButton from "@/components/CopyButton";
 import { ExportButton } from "@/components/ui/ExportButton";
@@ -89,6 +95,8 @@ export default function WholesaleClients() {
     setSearchTerm(value);
   }, []);
   const [filter, setFilter] = useState<string>(preferences.customFilters?.filter || "all");
+  const [sortField, setSortField] = useState<ClientSortField>('business_name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: WholesaleClient }>({ open: false });
 
   // Save preferences when filter changes
@@ -141,6 +149,57 @@ export default function WholesaleClients() {
     client.contact_name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  const handleSort = (field: ClientSortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'created_at' ? 'desc' : 'asc');
+    }
+  };
+
+  const SortableHeader = ({ field, label }: { field: ClientSortField; label: string }) => {
+    const isActive = sortField === field;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8 hover:bg-transparent"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        {isActive ? (
+          sortOrder === 'asc' ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+        ) : (
+          <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </Button>
+    );
+  };
+
+  const sortedClients = useMemo(() => {
+    const sorted = [...filteredClients];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'business_name':
+          cmp = (a.business_name || '').localeCompare(b.business_name || '');
+          break;
+        case 'outstanding_balance':
+          cmp = (Number(a.outstanding_balance) || 0) - (Number(b.outstanding_balance) || 0);
+          break;
+        case 'created_at':
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'status':
+          cmp = (a.status || '').localeCompare(b.status || '');
+          break;
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [filteredClients, sortField, sortOrder]);
+
   const {
     paginatedItems: paginatedClients,
     currentPage,
@@ -150,16 +209,16 @@ export default function WholesaleClients() {
     goToPage,
     changePageSize,
     pageSizeOptions,
-  } = usePagination(filteredClients, {
+  } = usePagination(sortedClients, {
     defaultPageSize: 25,
     persistInUrl: true,
     urlKey: 'clients',
   });
 
-  // Reset to page 1 when search or filter changes
+  // Reset to page 1 when search, filter, or sort changes
   useEffect(() => {
     goToPage(1);
-  }, [searchTerm, filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchTerm, filter, sortField, sortOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getClientTypeLabel = (type: string) => {
     const types: Record<string, string> = {
@@ -314,13 +373,13 @@ export default function WholesaleClients() {
               <Table data-tutorial="customer-list" className="w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs sm:text-sm">Client</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="business_name" label="Client" /></TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="status" label="Status" /></TableHead>
                     <TableHead className="text-xs sm:text-sm">Type</TableHead>
                     <TableHead className="text-xs sm:text-sm">Contact</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Credit Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="outstanding_balance" label="Credit Status" /></TableHead>
                     <TableHead className="text-xs sm:text-sm">Reliability</TableHead>
-                    <TableHead className="text-xs sm:text-sm">This Month</TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="created_at" label="This Month" /></TableHead>
                     <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
                   </TableRow>
                 </TableHeader>

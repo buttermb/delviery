@@ -198,7 +198,7 @@
 
 - [x] Task 92: Add sorting to Invoices table — Sortable: Date, Due Date, Amount, Balance, Status. Wire to query.
 
-- [ ] Task 93: Add sorting to WholesaleClients table — Sortable: Name, Balance, Last Order, Status.
+- [x] Task 93: Add sorting to WholesaleClients table — Sortable: Name, Balance, Last Order, Status.
 
 - [ ] Task 94: Verify pagination on Orders page — With many orders, verify pagination controls appear and work. Next/prev, page numbers, items per page selector. Fix if broken.
 
