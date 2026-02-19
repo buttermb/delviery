@@ -239,7 +239,7 @@ export function EditPurchaseOrderDialog({
                                                     type="button"
                                                     variant="outline"
                                                     size="icon"
-                                                    className="h-7 w-7"
+                                                    className="h-11 w-11 sm:h-7 sm:w-7"
                                                     onClick={() =>
                                                         handleUpdateItem(item.id, 'quantity', Math.max(1, item.quantity - 1))
                                                     }
@@ -258,7 +258,7 @@ export function EditPurchaseOrderDialog({
                                                     type="button"
                                                     variant="outline"
                                                     size="icon"
-                                                    className="h-7 w-7"
+                                                    className="h-11 w-11 sm:h-7 sm:w-7"
                                                     onClick={() =>
                                                         handleUpdateItem(item.id, 'quantity', item.quantity + 1)
                                                     }

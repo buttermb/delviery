@@ -256,7 +256,7 @@ export function EditWholesaleOrderDialog({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11 sm:h-7 sm:w-7"
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity_lbs', Math.max(1, item.quantity_lbs - 1))
                           }
@@ -275,7 +275,7 @@ export function EditWholesaleOrderDialog({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11 sm:h-7 sm:w-7"
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity_lbs', item.quantity_lbs + 1)
                           }

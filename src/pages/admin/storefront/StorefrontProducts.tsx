@@ -558,7 +558,7 @@ export default function StorefrontProducts() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => handleMoveUp(product.id, setting?.display_order ?? 999)}
                             disabled={updateOrderMutation.isPending}
                             title="Move up"
@@ -568,7 +568,7 @@ export default function StorefrontProducts() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => handleMoveDown(product.id, setting?.display_order ?? 999)}
                             disabled={updateOrderMutation.isPending}
                             title="Move down"

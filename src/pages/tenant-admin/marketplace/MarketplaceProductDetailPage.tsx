@@ -267,7 +267,7 @@ export default function MarketplaceProductDetailPage() {
                             <div className="flex items-center justify-between">
                                 <span className="font-medium">Quantity ({product.unit_of_measure}s)</span>
                                 <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleDecrement} disabled={quantity <= 1}>
+                                    <Button variant="outline" size="icon" className="h-11 w-11 sm:h-8 sm:w-8" onClick={handleDecrement} disabled={quantity <= 1}>
                                         <Minus className="h-3 w-3" />
                                     </Button>
                                     <Input
@@ -278,7 +278,7 @@ export default function MarketplaceProductDetailPage() {
                                         min={1}
                                         max={product.quantity_available}
                                     />
-                                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleIncrement} disabled={quantity >= (product.quantity_available || 100)}>
+                                    <Button variant="outline" size="icon" className="h-11 w-11 sm:h-8 sm:w-8" onClick={handleIncrement} disabled={quantity >= (product.quantity_available || 100)}>
                                         <Plus className="h-3 w-3" />
                                     </Button>
                                 </div>

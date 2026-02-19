@@ -128,7 +128,7 @@ export function FeatureDiscoveryTip({
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 flex-shrink-0"
+          className="h-11 w-11 sm:h-6 sm:w-6 flex-shrink-0"
           onClick={handleDismiss}
         >
           <X className="h-3 w-3" />

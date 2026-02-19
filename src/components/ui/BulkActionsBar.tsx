@@ -87,7 +87,7 @@ export function BulkActionsBar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="h-11 w-11 sm:h-6 sm:w-6"
           onClick={onClearSelection}
         >
           <X className="h-4 w-4" />

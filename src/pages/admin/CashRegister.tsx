@@ -1182,7 +1182,7 @@ function CashRegisterContent() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 md:h-10 md:w-10 lg:h-11 lg:w-11"
+                        className="h-10 w-10 lg:h-11 lg:w-11"
                         onClick={() => updateQuantity(item.id, -1)}
                         disabled={item.quantity <= 1}
                       >
@@ -1192,7 +1192,7 @@ function CashRegisterContent() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 md:h-10 md:w-10 lg:h-11 lg:w-11"
+                        className="h-10 w-10 lg:h-11 lg:w-11"
                         onClick={() => updateQuantity(item.id, 1)}
                         disabled={item.quantity >= item.stock_quantity}
                       >
@@ -1201,7 +1201,7 @@ function CashRegisterContent() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 md:h-10 md:w-10 lg:h-11 lg:w-11"
+                        className="h-10 w-10 lg:h-11 lg:w-11"
                         onClick={() => removeFromCart(item.id)}
                       >
                         <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-destructive" />

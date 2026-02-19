@@ -105,7 +105,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-11 w-11 sm:h-6 sm:w-6"
                         onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
                         disabled={previewZoom <= 0.5}
                     >
@@ -115,7 +115,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-11 w-11 sm:h-6 sm:w-6"
                         onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
                         disabled={previewZoom >= 1.2}
                     >

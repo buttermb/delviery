@@ -506,7 +506,7 @@
 - [x] Task 292: Command palette mobile — Added min-h-[44px] touch targets to super-admin CommandPalette items, hidden keyboard shortcut hints on mobile (hidden sm:inline) in super-admin, admin, and AdminCommandPalette, made shared CommandPalette footer responsive (shows "Tap to select" on mobile instead of keyboard hints). Tenant-admin CommandPalette already had proper mobile handling.
 - [x] Task 293: Pull-to-refresh LiveOrders — Fixed PullToRefresh component: replaced window.scrollY check with scroll parent detection (getScrollParent walks DOM for overflow:auto/scroll ancestor), used refs for state in touch handlers to avoid stale closures, moved handlers inside useEffect for proper cleanup. Already wired to LiveOrders.tsx (wraps kanban content, calls refetch on pull).
 - [x] Task 294: Print layouts media print — Added print:hidden to all 3 PageHeader variants (shared, admin, super-admin) for actions/breadcrumbs/back buttons. Expanded @media print max-width overrides (3xl-7xl + .container). Added [data-sonner-toaster] and #nprogress to hidden elements. Added print:hidden to GenerateBarcodes controls/tabs/action buttons. Invoice, Z-Report, OrderDetails, InvoicePublicPage already had proper print handling.
-- [ ] Task 295: Touch targets 44x44px
+- [x] Task 295: Touch targets 44x44px
 - [ ] Task 296: Run npx tsc --noEmit � Checkpoint.
 
 ## Phase B12: Final Cleanup (4 tasks)

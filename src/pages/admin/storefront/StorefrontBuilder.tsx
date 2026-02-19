@@ -817,7 +817,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
                             disabled={previewZoom <= 0.5}
                         >
@@ -827,7 +827,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
                             disabled={previewZoom >= 1.2}
                         >
@@ -1128,7 +1128,7 @@ export function StorefrontBuilder({
                                 <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
                                 <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-6 sm:w-6" onClick={() => setRightPanelOpen(false)}>
                                 <X className="w-4 h-4" />
                             </Button>
                         </div>

@@ -510,7 +510,7 @@ export default function StorefrontCoupons() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => copyCode(coupon.code)}
                           >
                             <Copy className="w-3 h-3" />

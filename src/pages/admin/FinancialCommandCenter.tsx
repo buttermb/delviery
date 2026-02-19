@@ -157,7 +157,7 @@ export default function FinancialCommandCenter() {
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 border-zinc-700 hover:bg-zinc-800"
+              className="h-11 w-11 sm:h-8 sm:w-8 border-zinc-700 hover:bg-zinc-800"
               onClick={() => navigateToAdmin('settings')}
             >
               <Settings className="h-3.5 w-3.5" />

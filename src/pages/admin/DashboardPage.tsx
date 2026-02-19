@@ -271,7 +271,7 @@ export function DashboardPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 shrink-0 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-900"
+            className="h-11 w-11 sm:h-6 sm:w-6 shrink-0 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-900"
             onClick={() => {
               localStorage.setItem(WHATS_NEW_KEY, 'dismissed');
               setWhatsNewDismissed(true);

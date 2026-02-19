@@ -553,7 +553,7 @@ export default function OfflineOrderCreate() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => updateQuantity(item.productId, -1)}
                           >
                             <Minus className="h-3 w-3" />
@@ -564,7 +564,7 @@ export default function OfflineOrderCreate() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => updateQuantity(item.productId, 1)}
                           >
                             <Plus className="h-3 w-3" />
@@ -572,7 +572,7 @@ export default function OfflineOrderCreate() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 text-destructive"
+                            className="h-11 w-11 sm:h-6 sm:w-6 text-destructive"
                             onClick={() => removeFromCart(item.productId)}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -688,7 +688,7 @@ export default function OfflineOrderCreate() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-11 w-11 sm:h-8 sm:w-8"
                               onClick={() => retryOrder(order.id)}
                               disabled={!isOnline}
                               title="Retry sync"
@@ -699,7 +699,7 @@ export default function OfflineOrderCreate() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive"
+                            className="h-11 w-11 sm:h-8 sm:w-8 text-destructive"
                             onClick={() => removeOfflineOrder(order.id)}
                             title="Remove order"
                           >
