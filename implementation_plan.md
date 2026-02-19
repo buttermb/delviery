@@ -142,7 +142,7 @@
 
 - [x] Task 66: Verify setup wizard — Navigate to /admin/setup. Walk through all steps. Each step should save. Final step redirects to dashboard. Fix any broken steps.
 
-- [ ] Task 67: Add skip on optional wizard steps — Delivery zones step and invite driver step: add "Skip for now" text link below main CTA. Advances to next step without saving that section.
+- [x] Task 67: Add skip on optional wizard steps — Delivery zones step and invite driver step: add "Skip for now" text link below main CTA. Advances to next step without saving that section.
 
 - [ ] Task 68: Run npx tsc --noEmit — Fix all TS errors from Phase 5. Checkpoint.
 
