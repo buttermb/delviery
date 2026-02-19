@@ -496,7 +496,7 @@
 
 ## Phase B11: Mobile Responsiveness (12 tasks)
 
-- [ ] Task 285: Admin sidebar mobile hamburger
+- [x] Task 285: Admin sidebar mobile hamburger — Already implemented from Part A (Task 135): useIsMobile hook uses 768px breakpoint, Sidebar component renders as Sheet overlay on mobile, SidebarTrigger shows Menu (hamburger) icon on mobile with 48px touch target, MobileSidebarCloser auto-closes on route change, swipe-to-close gesture enabled, MobileBottomNav "More" drawer provides full sidebar access. No changes needed.
 - [ ] Task 286: Dashboard mobile stacking
 - [ ] Task 287: Tables mobile (card view or scroll)
 - [ ] Task 288: Modals mobile full-screen
