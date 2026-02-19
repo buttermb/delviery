@@ -169,7 +169,7 @@ export function OrderSMSButton({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0"
+              className="h-11 w-11 p-0"
               onClick={() => setOpen(false)}
               aria-label="Close SMS dialog"
             >

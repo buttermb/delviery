@@ -412,7 +412,7 @@ export default function TeamManagement() {
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={isUpdating}>
+                <Button variant="ghost" size="sm" className="h-11 w-11 p-0" disabled={isUpdating}>
                   {isUpdating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (

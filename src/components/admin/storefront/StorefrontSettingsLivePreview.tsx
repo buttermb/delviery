@@ -76,7 +76,7 @@ export function StorefrontSettingsLivePreview({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 mr-1"
+            className="h-11 w-11 mr-1"
             onClick={() => setOrientation(prev => prev === 'portrait' ? 'landscape' : 'portrait')}
             disabled={deviceMode === 'desktop'}
             title="Rotate Orientation"
@@ -86,7 +86,7 @@ export function StorefrontSettingsLivePreview({
           <Button
             variant={deviceMode === 'desktop' ? 'secondary' : 'ghost'}
             size="icon"
-            className="h-7 w-7"
+            className="h-11 w-11"
             onClick={() => { setDeviceMode('desktop'); setOrientation('portrait'); }}
           >
             <Monitor className="h-3.5 w-3.5" />
@@ -94,7 +94,7 @@ export function StorefrontSettingsLivePreview({
           <Button
             variant={deviceMode === 'tablet' ? 'secondary' : 'ghost'}
             size="icon"
-            className="h-7 w-7"
+            className="h-11 w-11"
             onClick={() => setDeviceMode('tablet')}
           >
             <Tablet className="h-3.5 w-3.5" />
@@ -102,7 +102,7 @@ export function StorefrontSettingsLivePreview({
           <Button
             variant={deviceMode === 'mobile' ? 'secondary' : 'ghost'}
             size="icon"
-            className="h-7 w-7"
+            className="h-11 w-11"
             onClick={() => setDeviceMode('mobile')}
           >
             <Smartphone className="h-3.5 w-3.5" />

@@ -463,7 +463,7 @@ export default function PurchaseOrders() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleView(po)}
-                              className="h-8 w-8 p-0"
+                              className="h-11 w-11 p-0"
                               title="View details"
                             >
                               <Eye className="h-4 w-4" />
@@ -473,7 +473,7 @@ export default function PurchaseOrders() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleEdit(po)}
-                                className="h-8 w-8 p-0"
+                                className="h-11 w-11 p-0"
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
@@ -484,7 +484,7 @@ export default function PurchaseOrders() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDelete(po)}
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                className="h-11 w-11 p-0 text-destructive hover:text-destructive"
                                 title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />

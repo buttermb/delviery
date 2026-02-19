@@ -38,7 +38,7 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatch
             variant="ghost"
             size="icon"
             onClick={onClear}
-            className="h-8 w-8"
+            className="h-11 w-11"
           >
             <X className="h-4 w-4" />
           </Button>

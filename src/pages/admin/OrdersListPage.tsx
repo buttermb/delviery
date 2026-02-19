@@ -460,7 +460,7 @@ export function OrdersListPage() {
       cell: ({ original }: { original: Order }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+            <Button size="sm" variant="ghost" className="h-11 w-11 p-0">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

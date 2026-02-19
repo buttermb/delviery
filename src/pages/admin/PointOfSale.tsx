@@ -724,11 +724,11 @@ export default function PointOfSale() {
                         <div className="text-sm text-muted-foreground">${item.price}</div>
                       </div>
                       <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}>
+                        <Button size="icon" variant="ghost" className="h-11 w-11" onClick={() => updateQuantity(item.id, -1)}>
                           {item.quantity === 1 ? <Trash2 className="h-3 w-3 text-destructive" /> : <Minus className="h-3 w-3" />}
                         </Button>
                         <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}>
+                        <Button size="icon" variant="ghost" className="h-11 w-11" onClick={() => updateQuantity(item.id, 1)}>
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>

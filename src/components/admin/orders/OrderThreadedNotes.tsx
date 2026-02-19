@@ -608,7 +608,7 @@ export function OrderThreadedNotes({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>

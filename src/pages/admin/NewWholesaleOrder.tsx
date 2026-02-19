@@ -723,7 +723,7 @@ export default function NewWholesaleOrder() {
                                 <Button
                                   size="icon"
                                   variant="outline"
-                                  className="h-7 w-7"
+                                  className="h-11 w-11"
                                   onClick={() => handleUpdateQty(product.id, product.qty - 1)}
                                 >
                                   <Minus className="h-3 w-3" />
@@ -736,7 +736,7 @@ export default function NewWholesaleOrder() {
                                 <Button
                                   size="icon"
                                   variant="outline"
-                                  className="h-7 w-7"
+                                  className="h-11 w-11"
                                   onClick={() => handleUpdateQty(product.id, product.qty + 1)}
                                 >
                                   <Plus className="h-3 w-3" />

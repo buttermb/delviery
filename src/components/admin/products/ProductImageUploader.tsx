@@ -576,7 +576,7 @@ export function ProductImageUploader({
                   type="button"
                   variant="secondary"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-11 w-11"
                   onClick={() => setAsMainImage(index)}
                   disabled={disabled || isUploading}
                   title="Set as main image"
@@ -587,7 +587,7 @@ export function ProductImageUploader({
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-11 w-11"
                   onClick={() => removeAdditionalImage(index)}
                   disabled={disabled || isUploading}
                   title="Remove image"

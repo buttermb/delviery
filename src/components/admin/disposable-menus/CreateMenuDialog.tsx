@@ -794,7 +794,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0"
+                              className="h-11 w-11 p-0"
                               onClick={() => removeCustomPrice(productId)}
                             >
                               <X className="h-3 w-3" />

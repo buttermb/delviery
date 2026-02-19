@@ -245,7 +245,7 @@ export function PinnedNotesWidget() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-orange-600 hover:bg-orange-100 dark:hover:bg-orange-900/30 flex-shrink-0"
+                        className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-orange-600 hover:bg-orange-100 dark:hover:bg-orange-900/30 flex-shrink-0"
                         onClick={(e) => handleUnpin(e, note.id)}
                         disabled={isUnpinning}
                         title="Mark as resolved"

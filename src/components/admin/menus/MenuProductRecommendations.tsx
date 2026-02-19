@@ -574,7 +574,7 @@ export function MenuProductRecommendations({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </TooltipTrigger>

@@ -148,7 +148,7 @@ export function LowStockBanner({ className, onViewDetails }: LowStockBannerProps
             size="sm"
             variant="ghost"
             onClick={handleDismiss}
-            className="h-8 w-8 p-0"
+            className="h-11 w-11 p-0"
             data-testid="low-stock-dismiss"
             aria-label="Dismiss alert"
           >

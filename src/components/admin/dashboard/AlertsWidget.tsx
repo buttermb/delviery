@@ -284,7 +284,7 @@ export function AlertsWidget() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={(e) => handleDismiss(e, alert.id)}
                 disabled={dismissMutation.isPending}
                 title="Dismiss alert"

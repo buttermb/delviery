@@ -588,7 +588,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-11 w-11"
                                 onClick={() => handleCopyLink(mp.product_id, mp.product!.product_name)}
                                 title="Copy deep link"
                               >
@@ -601,7 +601,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-11 w-11"
                                 onClick={() => handleShowQR(mp.product_id, mp.product!.product_name)}
                                 title="Show QR code"
                               >
@@ -610,7 +610,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-11 w-11"
                                 onClick={() => handleOpenLink(mp.product_id)}
                                 title="Open deep link"
                               >

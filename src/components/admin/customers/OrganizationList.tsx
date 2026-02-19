@@ -339,7 +339,7 @@ export function OrganizationList({
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Organization actions">
+                          <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Organization actions">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>

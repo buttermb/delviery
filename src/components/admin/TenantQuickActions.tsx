@@ -153,7 +153,7 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
                     variant="ghost"
                     size="sm"
                     disabled={isLoading}
-                    className="h-8 w-8 p-0"
+                    className="h-11 w-11 p-0"
                 >
                     <MoreVertical className="h-4 w-4" />
                     <span className="sr-only">Open menu</span>

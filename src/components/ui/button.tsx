@@ -23,7 +23,7 @@ const buttonVariants = cva(
         default: "h-10 px-4 py-2 rounded-lg", // 40px default height
         sm: "h-9 px-3 rounded-lg", // 36px small height
         lg: "h-11 px-8 rounded-lg", // 44px large height
-        icon: "h-10 w-10 rounded-lg", // 40px square icon buttons
+        icon: "h-11 w-11 rounded-lg", // 44px square icon buttons — WCAG touch target
         mobile: "h-12 px-6 rounded-lg text-base", // 48px extra large for mobile touch targets
       },
     },

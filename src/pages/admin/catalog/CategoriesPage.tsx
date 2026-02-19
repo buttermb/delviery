@@ -430,7 +430,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 shrink-0"
+              className="h-11 w-11 shrink-0"
               onClick={() => toggleCategory(category.id)}
             >
               {isExpanded ? (
@@ -502,7 +502,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-11 w-11"
               onClick={() => navigateToFilteredProducts(category.id)}
               title="View products"
             >
@@ -511,7 +511,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-11 w-11"
               onClick={() => setEditingCategory(category)}
             >
               <Edit className="h-4 w-4" />
@@ -519,7 +519,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-11 w-11"
               onClick={() => {
                 setCategoryToDelete({ id: category.id, name: category.name });
                 setDeleteDialogOpen(true);

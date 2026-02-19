@@ -388,7 +388,7 @@ function MenuAppearanceItem({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11"
           onClick={() => navigateToAdmin(`menus/${menu.id}`)}
         >
           <ExternalLink className="h-4 w-4" />
@@ -492,7 +492,7 @@ function StoreAppearanceItem({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11"
           onClick={() => navigateToAdmin(`storefront/${store.id}`)}
         >
           <ExternalLink className="h-4 w-4" />

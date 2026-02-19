@@ -375,7 +375,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0"
+            className="h-11 w-11 p-0"
             onClick={() => navigate(`wholesale-orders/${order.id}`)}
           >
             <Eye className="h-4 w-4" />

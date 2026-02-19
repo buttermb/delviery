@@ -808,7 +808,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-8 w-8 p-0"
+                                    className="h-11 w-11 p-0"
                                     onClick={() => setCustomPrices(prev => {
                                       const updated = { ...prev };
                                       delete updated[productId];

@@ -353,7 +353,7 @@ export function OrderEditModal({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11"
                           disabled={!canEdit}
                           onClick={() =>
                             handleUpdateItem(
@@ -383,7 +383,7 @@ export function OrderEditModal({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11"
                           disabled={!canEdit}
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity', item.quantity + 1)

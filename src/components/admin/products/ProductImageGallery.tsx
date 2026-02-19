@@ -574,7 +574,7 @@ export function ProductImageGallery({
                   variant={devicePreview === 'desktop' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setDevicePreview('desktop')}
-                  className="h-8 w-8 p-0"
+                  className="h-11 w-11 p-0"
                 >
                   <Monitor className="h-4 w-4" />
                 </Button>
@@ -582,7 +582,7 @@ export function ProductImageGallery({
                   variant={devicePreview === 'mobile' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setDevicePreview('mobile')}
-                  className="h-8 w-8 p-0"
+                  className="h-11 w-11 p-0"
                 >
                   <Smartphone className="h-4 w-4" />
                 </Button>

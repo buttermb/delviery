@@ -316,7 +316,7 @@ function ProductRuleCard({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-11 w-11"
                             onClick={() => onToggleRule(rule)}
                           >
                             {rule.isActive ? (
@@ -338,7 +338,7 @@ function ProductRuleCard({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-11 w-11"
                             onClick={() => onEditRule(rule)}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -354,7 +354,7 @@ function ProductRuleCard({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            className="h-11 w-11 text-destructive hover:text-destructive"
                             onClick={() => onDeleteRule(rule.id)}
                           >
                             <Trash2 className="w-3.5 h-3.5" />

@@ -359,7 +359,7 @@ export default function ReturnsManagementPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleView(ra)}
-                              className="h-8 w-8 p-0"
+                              className="h-11 w-11 p-0"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -368,7 +368,7 @@ export default function ReturnsManagementPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleEdit(ra)}
-                                className="h-8 w-8 p-0"
+                                className="h-11 w-11 p-0"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -378,7 +378,7 @@ export default function ReturnsManagementPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDelete(ra)}
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                className="h-11 w-11 p-0 text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>

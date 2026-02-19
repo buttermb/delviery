@@ -195,7 +195,7 @@ export function DashboardPage() {
             onClick={handleRefresh}
             disabled={isFetching}
             aria-label="Refresh dashboard"
-            className="h-8 w-8"
+            className="h-11 w-11"
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>

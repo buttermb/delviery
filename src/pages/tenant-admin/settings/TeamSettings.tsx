@@ -209,7 +209,7 @@ export default function TeamSettings() {
           {member.role !== 'owner' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-11 w-11">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -244,8 +244,8 @@ export default function TeamSettings() {
       header: "Actions",
       cell: () => (
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8"><RefreshCw className="h-3 w-3" /></Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><XCircle className="h-3 w-3" /></Button>
+          <Button variant="ghost" size="icon" className="h-11 w-11"><RefreshCw className="h-3 w-3" /></Button>
+          <Button variant="ghost" size="icon" className="h-11 w-11 text-destructive"><XCircle className="h-3 w-3" /></Button>
         </div>
       )
     }

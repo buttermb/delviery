@@ -310,7 +310,7 @@
 
 - [x] Task 144: Fix print layouts — Invoice print, receipt print, Z-report print: verify @media print CSS hides sidebar, header, and non-essential UI. Content fills page width. Test with browser print preview.
 
-- [ ] Task 145: Fix touch targets across admin — Audit all icon buttons (edit, delete, view). Minimum 44x44px touch target. Common offenders: table action buttons, modal close X, pagination arrows. Add min-w-[44px] min-h-[44px] where needed.
+- [x] Task 145: Fix touch targets across admin — Audit all icon buttons (edit, delete, view). Minimum 44x44px touch target. Common offenders: table action buttons, modal close X, pagination arrows. Add min-w-[44px] min-h-[44px] where needed.
 
 - [ ] Task 146: Run npx tsc --noEmit — Fix all TS errors from Phase 11. Checkpoint.
 

@@ -128,7 +128,7 @@ function SortableProduct({ product, index, onRemove }: SortableProductProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 shrink-0"
+        className="h-11 w-11 shrink-0"
         onClick={() => onRemove(product.id)}
       >
         <X className="w-4 h-4" />

@@ -212,7 +212,7 @@ export function RewardCatalog() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(reward)}
-                        className="h-8 w-8 p-0"
+                        className="h-11 w-11 p-0"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>

@@ -961,7 +961,7 @@ function TemplateCard({ template, onEdit, onDelete, onUse, onDuplicate, onViewVe
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Template actions">
+              <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Template actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

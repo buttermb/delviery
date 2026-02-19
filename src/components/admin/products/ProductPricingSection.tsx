@@ -379,7 +379,7 @@ export function ProductPricingSection({
                               type="button"
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-11 w-11"
                               onClick={() => handleRemoveBulkTier(index)}
                             >
                               <Trash2 className="h-4 w-4" />

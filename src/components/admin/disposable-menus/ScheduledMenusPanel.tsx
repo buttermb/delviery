@@ -97,7 +97,7 @@ function ScheduledMenuItem({ menu }: ScheduledMenuItemProps) {
         <Badge variant="outline" className={cn("text-xs", config.color)}>
           {config.label}
         </Badge>
-        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View scheduled menu details">
+        <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="View scheduled menu details">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

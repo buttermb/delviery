@@ -167,7 +167,7 @@ export function TeamActivityFeed({
               <Badge variant="outline" className="text-xs">
                 Live
               </Badge>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleRefresh} aria-label="Refresh activity feed">
+              <Button variant="ghost" size="icon" className="h-11 w-11" onClick={handleRefresh} aria-label="Refresh activity feed">
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>

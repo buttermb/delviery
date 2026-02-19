@@ -762,15 +762,15 @@ export function StorefrontBuilder({
                     <div className="flex rounded-md bg-muted p-1">
                         <Button
                             variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
-                            size="icon" className="h-7 w-7"
+                            size="icon" className="h-11 w-11"
                             onClick={() => setDevicePreview('desktop')}><Monitor className="w-4 h-4" /></Button>
                         <Button
                             variant={devicePreview === 'tablet' ? 'secondary' : 'ghost'}
-                            size="icon" className="h-7 w-7"
+                            size="icon" className="h-11 w-11"
                             onClick={() => setDevicePreview('tablet')}><Tablet className="w-4 h-4" /></Button>
                         <Button
                             variant={devicePreview === 'mobile' ? 'secondary' : 'ghost'}
-                            size="icon" className="h-7 w-7"
+                            size="icon" className="h-11 w-11"
                             onClick={() => setDevicePreview('mobile')}><Smartphone className="w-4 h-4" /></Button>
                     </div>
                     <Separator orientation="vertical" className="h-6" />
@@ -778,7 +778,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-11 w-11"
                             onClick={undo}
                             disabled={historyIndex <= 0}
                         >
@@ -787,7 +787,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-11 w-11"
                             onClick={redo}
                             disabled={historyIndex >= history.length - 1}
                         >
