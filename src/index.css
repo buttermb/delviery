@@ -2356,7 +2356,9 @@ body.keyboard-open [data-radix-dialog-content] {
   aside,
   .no-print,
   .print\\:hidden,
-  [data-radix-popper-content-wrapper] {
+  [data-radix-popper-content-wrapper],
+  [data-sonner-toaster],
+  #nprogress {
     display: none !important;
   }
 
@@ -2383,8 +2385,12 @@ body.keyboard-open [data-radix-dialog-content] {
     width: 100% !important;
   }
 
+  .max-w-3xl,
+  .max-w-4xl,
   .max-w-5xl,
-  .max-w-7xl {
+  .max-w-6xl,
+  .max-w-7xl,
+  .container {
     max-width: 100% !important;
   }
 

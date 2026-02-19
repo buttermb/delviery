@@ -84,7 +84,7 @@ export function PageHeader({
           variant="ghost"
           size="sm"
           onClick={handleBack}
-          className="mb-2 -ml-2 text-muted-foreground hover:text-foreground"
+          className="mb-2 -ml-2 text-muted-foreground hover:text-foreground print:hidden"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           {backLabel || 'Back'}
@@ -101,7 +101,7 @@ export function PageHeader({
             )}
           </div>
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <div className="flex items-center gap-2 print:hidden">{actions}</div>}
       </div>
     </div>
   );

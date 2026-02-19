@@ -116,7 +116,7 @@ export function PageHeader({
       {breadcrumbs.length > 0 && (
         <nav
           aria-label="Page breadcrumb"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground print:hidden"
         >
           {/* Tenant root */}
           <Link
@@ -191,7 +191,7 @@ export function PageHeader({
 
         {/* Action buttons - aligned right */}
         {actions && (
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0 print:hidden">
             {actions}
           </div>
         )}

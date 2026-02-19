@@ -333,7 +333,7 @@ export default function GenerateBarcodes() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <div>
           <h1 className="text-3xl font-bold">Barcode & QR Code Generator</h1>
           <p className="text-muted-foreground">
@@ -342,7 +342,7 @@ export default function GenerateBarcodes() {
         </div>
       </div>
 
-      <Tabs defaultValue={mode} onValueChange={(v) => setMode(v as GenerationMode)} className="space-y-6">
+      <Tabs defaultValue={mode} onValueChange={(v) => setMode(v as GenerationMode)} className="space-y-6 print:hidden">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="product">
             <Package className="h-4 w-4 mr-2" />
@@ -595,7 +595,7 @@ export default function GenerateBarcodes() {
                   Preview and print your barcodes
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 print:hidden">
                 <Button
                   variant="outline"
                   size="sm"

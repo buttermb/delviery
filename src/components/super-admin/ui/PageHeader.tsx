@@ -20,7 +20,9 @@ interface PageHeaderProps {
 export function PageHeader({ title, description, icon, actions }: PageHeaderProps) {
   return (
     <div className="space-y-4 mb-6">
-      <Breadcrumbs />
+      <div className="print:hidden">
+        <Breadcrumbs />
+      </div>
       <SharedPageHeader
         title={title}
         description={description}
