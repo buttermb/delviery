@@ -258,7 +258,7 @@
 
 - [x] Task 120: Fix 404 for invalid tenant slug — Navigate to /invalid-slug/admin. Should show "Business not found" or redirect to signup. Fix if shows error.
 
-- [ ] Task 121: Add not-found state to ProductDetailPage — Navigate to /admin/products/fake-uuid. Should show "Product not found" card with "Back to Products" link. Fix if infinite loading.
+- [x] Task 121: Add not-found state to ProductDetailPage — Navigate to /admin/products/fake-uuid. Should show "Product not found" card with "Back to Products" link. Fix if infinite loading.
 
 - [ ] Task 122: Add not-found state to ClientDetailPage — Navigate to /admin/clients/fake-uuid. Same pattern. Fix if broken.
 
