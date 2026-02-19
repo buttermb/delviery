@@ -88,7 +88,10 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
 
   const updateLineItem = (index: number, field: keyof RecurringLineItem, value: string | number) => {
     const updated = [...lineItems];
-    updated[index] = { ...updated[index], [field]: value };
+    let safeValue = value;
+    if (field === 'quantity') safeValue = Math.max(1, Number(value));
+    if (field === 'unit_price') safeValue = Math.max(0, Number(value));
+    updated[index] = { ...updated[index], [field]: safeValue };
     setLineItems(updated);
   };
 

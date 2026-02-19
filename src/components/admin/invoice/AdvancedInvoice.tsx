@@ -104,7 +104,11 @@ export function AdvancedInvoice() {
   const updateItem = (id: string, field: keyof InvoiceItem, value: string | number) => {
     const updatedItems = invoice.lineItems.map(item => {
       if (item.id === id) {
-        const updated = { ...item, [field]: value };
+        let safeValue = value;
+        if (field === 'quantity') safeValue = Math.max(1, Number(value));
+        if (field === 'unitPrice') safeValue = Math.max(0, Number(value));
+        if (field === 'taxRate') safeValue = Math.max(0, Math.min(100, Number(value)));
+        const updated = { ...item, [field]: safeValue };
         if (field === 'quantity' || field === 'unitPrice' || field === 'taxRate') {
           updated.total = updated.quantity * updated.unitPrice * (1 + updated.taxRate / 100);
         }
@@ -336,8 +340,9 @@ ${invoice.companyName}
                       <Label className="print:hidden">Qty</Label>
                       <Input
                         type="number"
+                        min={1}
                         value={item.quantity}
-                        onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 1)}
                         className="print:border-none print:p-0"
                       />
                     </div>
@@ -345,6 +350,8 @@ ${invoice.companyName}
                       <Label className="print:hidden">Unit Price</Label>
                       <Input
                         type="number"
+                        min={0}
+                        step={0.01}
                         value={item.unitPrice}
                         onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
                         className="print:border-none print:p-0"
@@ -354,6 +361,8 @@ ${invoice.companyName}
                       <Label className="print:hidden">Tax %</Label>
                       <Input
                         type="number"
+                        min={0}
+                        max={100}
                         value={item.taxRate}
                         onChange={(e) => updateItem(item.id, 'taxRate', parseFloat(e.target.value) || 0)}
                         className="print:border-none print:p-0"

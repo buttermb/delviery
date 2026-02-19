@@ -50,7 +50,7 @@ const formSchema = z.object({
     issue_date: z.date(),
     due_date: z.date(),
     status: z.enum(["draft", "sent", "paid"]),
-    tax_rate: z.coerce.number().min(0).max(100),
+    tax_rate: z.coerce.number().min(0, "Tax rate cannot be negative").max(100, "Tax rate cannot exceed 100%"),
     notes: z.string().optional(),
 });
 

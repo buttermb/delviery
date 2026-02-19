@@ -216,7 +216,7 @@
 
 - [x] Task 100: Add negative number blocking to quantity fields — Stock quantity, order quantity, reorder point: z.number().int().min(0). Apply to all inventory and order forms.
 
-- [ ] Task 101: Add negative number blocking to invoice amounts — Invoice total, payment amount, discount: z.number().min(0). Apply to all invoice forms.
+- [x] Task 101: Add negative number blocking to invoice amounts — Invoice total, payment amount, discount: z.number().min(0). Apply to all invoice forms.
 
 - [ ] Task 102: Add character limits to text fields — Product name: max 200. Description: max 2000. Customer name: max 100. Notes: max 1000. Apply limits in Zod schemas AND as maxLength on inputs.
 
