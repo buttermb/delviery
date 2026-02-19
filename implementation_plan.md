@@ -381,7 +381,7 @@
 
 ## Phase B4: Invoice Partial Payments (12 tasks)
 
-- [ ] Task 191: Create InvoicePaymentDialog � src/components/admin/invoices/InvoicePaymentDialog.tsx. Amount, method, date, reference. Zod validation.
+- [x] Task 191: Create InvoicePaymentDialog — Already exists from Part A with full implementation: RHF + Zod, CurrencyInput for amount, payment method select, DatePickerWithPresets, reference/notes, mutation with payment history JSONB, tenant_id filtering via account_id. No changes needed.
 - [ ] Task 192: Wire InvoicePaymentDialog to InvoiceDetailPage
 - [ ] Task 193: Create payment mutation � Update paid/partial status.
 - [ ] Task 194: Payment history section on InvoiceDetailPage
