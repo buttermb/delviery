@@ -188,7 +188,7 @@
 
 - [x] Task 87: Fix long text overflow in Customers table — Name, email, address columns. Apply truncation.
 
-- [ ] Task 88: Fix long text overflow in WholesaleClients table — Business name, contact, notes columns. Apply truncation.
+- [x] Task 88: Fix long text overflow in WholesaleClients table — Business name, contact, notes columns. Apply truncation.
 
 - [ ] Task 89: Fix long text overflow in Invoices table — Customer name, invoice number columns. Apply truncation.
 

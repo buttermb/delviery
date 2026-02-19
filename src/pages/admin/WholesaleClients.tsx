@@ -53,6 +53,7 @@ import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { SearchInput } from "@/components/shared/SearchInput";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -339,15 +340,15 @@ export default function WholesaleClients() {
                         className="cursor-pointer hover:bg-muted/50 touch-manipulation"
                         onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
                       >
-                        <TableCell className="text-xs sm:text-sm">
-                          <div>
-                            <div className="font-semibold text-foreground flex items-center gap-2">
+                        <TableCell className="text-xs sm:text-sm max-w-[200px]">
+                          <div className="max-w-[200px] min-w-0">
+                            <div className="font-semibold text-foreground flex items-center gap-2 min-w-0">
                               <CustomerQuickViewCard customer={client}>
-                                <span className="truncate">{client.business_name}</span>
+                                <TruncatedText text={client.business_name} className="font-semibold" />
                               </CustomerQuickViewCard>
-                              <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">{client.territory}</div>
+                            <TruncatedText text={client.territory} className="text-xs text-muted-foreground" />
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
@@ -374,18 +375,20 @@ export default function WholesaleClients() {
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <div>
-                            <div className="text-xs sm:text-sm text-foreground truncate">{client.contact_name}</div>
+                        <TableCell className="text-xs sm:text-sm max-w-[200px]">
+                          <div className="max-w-[200px] min-w-0">
+                            <TruncatedText text={client.contact_name} className="text-xs sm:text-sm text-foreground" />
                             <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
                               {client.email && (
                                 <>
-                                  <span className="truncate">{client.email}</span>
+                                  <TruncatedText text={client.email} className="text-xs text-muted-foreground" />
                                   <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">{client.phone}</div>
+                            {client.phone && (
+                              <TruncatedText text={client.phone} className="text-xs text-muted-foreground" />
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
