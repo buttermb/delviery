@@ -507,7 +507,7 @@
 - [x] Task 293: Pull-to-refresh LiveOrders — Fixed PullToRefresh component: replaced window.scrollY check with scroll parent detection (getScrollParent walks DOM for overflow:auto/scroll ancestor), used refs for state in touch handlers to avoid stale closures, moved handlers inside useEffect for proper cleanup. Already wired to LiveOrders.tsx (wraps kanban content, calls refetch on pull).
 - [x] Task 294: Print layouts media print — Added print:hidden to all 3 PageHeader variants (shared, admin, super-admin) for actions/breadcrumbs/back buttons. Expanded @media print max-width overrides (3xl-7xl + .container). Added [data-sonner-toaster] and #nprogress to hidden elements. Added print:hidden to GenerateBarcodes controls/tabs/action buttons. Invoice, Z-Report, OrderDetails, InvoicePublicPage already had proper print handling.
 - [x] Task 295: Touch targets 44x44px
-- [ ] Task 296: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 296: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B12: Final Cleanup (4 tasks)
 
