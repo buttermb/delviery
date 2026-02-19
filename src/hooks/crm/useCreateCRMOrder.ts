@@ -6,6 +6,7 @@ import { crmPreOrderKeys } from './usePreOrders';
 import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export interface CreateCRMOrderInput {
     client_id: string;
@@ -120,6 +121,13 @@ export function useCreateCRMOrder() {
         onSuccess: (result) => {
             if (result.type === 'invoice') {
                 toast.success('Invoice created successfully');
+                // Cross-panel invalidation — finance hub, dashboard, collections
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                        invoiceId: result.data?.id,
+                        customerId: (result.data as CRMInvoice)?.client_id,
+                    });
+                }
             } else {
                 toast.success('Order created successfully');
             }

@@ -391,7 +391,7 @@
 - [x] Task 198: Payment columns on InvoicesPage � Already exists from Part A (Task 48): desktop table has Amount, Paid, Balance columns with color-coding (green=paid, yellow=partial, red=overdue), sort by balance, and mobile view shows equivalent info. No changes needed.
 - [x] Task 199: isPending on all InvoiceDetailPage buttons — Already complete from Part A (Task 49): all action buttons (Print, Share Link, Duplicate, Mark as Sent, Record Payment, Void, Delete) have disabled={isAnyPending}, Void confirm has disabled={voidInvoiceMutation.isPending}, ConfirmDeleteDialog has isLoading={deleteInvoice.isPending}. No changes needed.
 - [x] Task 200: Partial payment on printed invoice
-- [ ] Task 201: Invoice creation to finance dashboard invalidation
+- [x] Task 201: Invoice creation to finance dashboard invalidation
 - [ ] Task 202: Run npx tsc --noEmit � Checkpoint.
 
 ## Phase B5: Empty States and Onboarding (16 tasks)

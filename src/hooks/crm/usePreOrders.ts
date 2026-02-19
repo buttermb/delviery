@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export const crmPreOrderKeys = {
     all: ['crm-pre-orders'] as const,
@@ -157,7 +158,16 @@ export function useConvertPreOrderToInvoice() {
             logger.error('Pre-order conversion failed', error, { component: 'useConvertPreOrderToInvoice' });
             toast.error('Conversion failed', { description: message });
         },
-        onSuccess: () => { toast.success('Converted successfully'); },
+        onSuccess: (result) => {
+            toast.success('Converted successfully');
+            // Cross-panel invalidation — finance hub, dashboard, collections
+            if (accountId) {
+                invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                    invoiceId: result?.invoice?.id,
+                    customerId: result?.invoice?.client_id,
+                });
+            }
+        },
         onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); },
     });
 }

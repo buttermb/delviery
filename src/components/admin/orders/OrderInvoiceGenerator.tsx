@@ -15,6 +15,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { Button } from '@/components/ui/button';
 import FileText from 'lucide-react/dist/esm/icons/file-text';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
@@ -879,6 +880,14 @@ export function useOrderInvoiceSave() {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+
+      // Cross-panel invalidation — finance hub, dashboard, collections
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'INVOICE_CREATED', tenant.id, {
+          invoiceId: (data as SavedInvoice)?.id,
+          customerId: (data as SavedInvoice)?.customer_id,
+        });
+      }
 
       const invoice = data as SavedInvoice;
       toast.success('Invoice created successfully', {
