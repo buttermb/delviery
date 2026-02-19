@@ -29,16 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Tooltip,
   TooltipContent,
@@ -573,25 +564,15 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
       </CardContent>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmNote} onOpenChange={() => setDeleteConfirmNote(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Note</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this note? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteNote}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteConfirmNote}
+        onOpenChange={() => setDeleteConfirmNote(null)}
+        onConfirm={handleDeleteNote}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+        itemType="note"
+        isLoading={deleteNoteMutation.isPending}
+      />
     </Card>
   );
 }

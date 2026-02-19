@@ -51,16 +51,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -1385,27 +1376,16 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingTemplate} onOpenChange={() => setDeletingTemplate(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{deletingTemplate?.name}"? This action cannot be
-              undone and will also delete all version history.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteTemplate}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteTemplate.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deletingTemplate}
+        onOpenChange={() => setDeletingTemplate(null)}
+        onConfirm={handleDeleteTemplate}
+        title="Delete Template?"
+        description={`Are you sure you want to delete "${deletingTemplate?.name}"? This action cannot be undone and will also delete all version history.`}
+        itemName={deletingTemplate?.name}
+        itemType="template"
+        isLoading={deleteTemplate.isPending}
+      />
 
       {/* Version History Dialog */}
       {viewingVersions && (

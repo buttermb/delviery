@@ -461,7 +461,7 @@
 - [x] Task 256: Duplicate client check — CreateWholesaleClientDialog.tsx and admin CreateClientDialog.tsx already had duplicate checks. Added duplicate name check to CRM CreateClientDialog.tsx: queries crm_clients by name+account_id before insert, shows "A client with this name already exists" toast if duplicate found.
 - [x] Task 257: Required field indicators (*) — Added `required` to QuickCreateCustomerDialog customer_type FormLabel, added red asterisk spans to POSRefundDialog Refund Amount and Refund Method labels. All other forms (AddRunnerDialog, AddCourierDialog, OrganizationForm, ProductForm, CreateClientDialog, etc.) already had required indicators.
 - [x] Task 258: Form error visibility — Added FormMessage to all PaymentSettingsForm fields (cash_instructions, zelle_username, zelle_phone, zelle_instructions, cashapp_username, cashapp_instructions, lightning_address, ethereum_address, usdt_address, crypto_instructions). Added error display for refundMethod and notes in POSRefundDialog. Added start_time error in DeliveryScheduler. Added address error in SettingsPage.
-- [ ] Task 259: ConfirmDeleteDialog on all deletes
+- [x] Task 259: ConfirmDeleteDialog on all deletes — Replaced raw AlertDialog with standardized ConfirmDeleteDialog in 11 files: CustomerDeliveryAddressesTab, CustomerNotes, OrganizationList, MenuTemplates, ProductTagsManager, ProductVariants, RecurringOrdersList, StorefrontBuilder, VendorContactsManager, VendorCommunicationLog, VendorDocumentManager. All delete actions now use consistent ConfirmDeleteDialog with haptic feedback, loading states, and unified styling.
 - [ ] Task 260: Modal close after success
 - [ ] Task 261: Dirty state warning on navigate
 - [ ] Task 262: Run npx tsc --noEmit � Checkpoint.

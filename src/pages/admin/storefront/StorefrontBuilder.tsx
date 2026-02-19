@@ -47,7 +47,7 @@ import { detectAdvancedCustomizations } from '@/lib/storefrontPresets';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
 
 // Define available section types (8 total)
@@ -1214,22 +1214,14 @@ export function StorefrontBuilder({
             </Dialog>
 
             {/* Delete Section Confirmation Dialog */}
-            <AlertDialog open={!!sectionToDelete} onOpenChange={(open) => !open && cancelRemoveSection()}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Section?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete this section? This action cannot be undone.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={cancelRemoveSection}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmRemoveSection} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDeleteDialog
+                open={!!sectionToDelete}
+                onOpenChange={(open) => !open && cancelRemoveSection()}
+                onConfirm={confirmRemoveSection}
+                title="Delete Section?"
+                description="Are you sure you want to delete this section? This action cannot be undone."
+                itemType="section"
+            />
 
             {/* Out of Credits Modal */}
             <OutOfCreditsModal
