@@ -208,7 +208,7 @@
 
 - [x] Task 97: Add row count display to all tables — Show "Showing X-Y of Z results" below each table. Use total count from query.
 
-- [ ] Task 98: Run npx tsc --noEmit — Fix all TS errors from Phase 7. Checkpoint.
+- [x] Task 98: Run npx tsc --noEmit — Fix all TS errors from Phase 7. Checkpoint.
 
 ## Phase 8: Form Validation Hardening (14 tasks)
 
