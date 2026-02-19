@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccount } from '@/contexts/AccountContext';
@@ -28,6 +28,7 @@ interface CustomerUser {
 
 export default function CustomerPortal() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { user } = useAuth();
   const { userProfile, loading: accountLoading } = useAccount();
   const [customerUser, setCustomerUser] = useState<CustomerUser | null>(null);
@@ -43,11 +44,11 @@ export default function CustomerPortal() {
         setCustomerUser(JSON.parse(userData));
       } catch (error) {
         logger.error('Error parsing customer user data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerPortal' });
-        navigate('/willysbo/customer/login');
+        navigate(`/${tenantSlug || 'shop'}/customer/login`);
       }
     } else if (!user) {
       // No customer auth and no regular user auth - redirect to login
-      navigate('/willysbo/customer/login');
+      navigate(`/${tenantSlug || 'shop'}/customer/login`);
     }
     setAuthLoading(false);
   }, [user, navigate]);
@@ -166,7 +167,7 @@ export default function CustomerPortal() {
                     <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p className="text-lg font-medium mb-1">No orders yet</p>
                     <p className="text-sm mb-4">Your order history will appear here once you place an order.</p>
-                    <Button onClick={() => navigate('/willysbo/shop/dashboard')}>Place Your First Order</Button>
+                    <Button onClick={() => navigate(`/${tenantSlug}/shop/dashboard`)}>Place Your First Order</Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -212,16 +213,17 @@ export default function CustomerPortal() {
                             </>
                           )}
 
-                          {order.tracking_token && (
-                            <div className="mt-3 pt-3 border-t">
-                              <Button variant="outline" size="sm" className="w-full" asChild>
-                                <a href={`/track/${order.tracking_token}`}>
-                                  Track Order
-                                  <ChevronRight className="h-4 w-4 ml-2" />
-                                </a>
-                              </Button>
-                            </div>
-                          )}
+                          <div className="mt-3 pt-3 border-t">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => navigate(`/${tenantSlug}/shop/orders/${order.id}`)}
+                            >
+                              View Order Details
+                              <ChevronRight className="h-4 w-4 ml-2" />
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}

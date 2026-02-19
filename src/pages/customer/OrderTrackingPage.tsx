@@ -60,47 +60,101 @@ export default function OrderTrackingPage() {
   const { customer, tenant } = useCustomerAuth();
   const tenantId = tenant?.id;
   const customerId = customer?.customer_id || customer?.id;
+  const customerEmail = customer?.email;
 
-  // Fetch order details
+  // Fetch order details (try orders table first, then marketplace_orders for storefront orders)
   const { data: order, isLoading } = useQuery({
-    queryKey: ["customer-order", orderId, tenantId, customerId],
+    queryKey: ["customer-order", orderId, tenantId, customerId, customerEmail],
     queryFn: async (): Promise<OrderWithDetails | null> => {
-      if (!orderId || !tenantId || !customerId) return null;
+      if (!orderId || !tenantId) return null;
 
-      const { data, error } = await supabase
-        .from("orders")
-        .select(`
-          *,
-          order_items (
-            id,
-            product_id,
-            product_name,
-            quantity,
-            price,
-            products (
+      // Try orders table first (admin/POS orders)
+      if (customerId) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select(`
+            *,
+            order_items (
               id,
-              name,
-              image_url
+              product_id,
+              product_name,
+              quantity,
+              price,
+              products (
+                id,
+                name,
+                image_url
+              )
+            ),
+            courier:courier_id (
+              full_name,
+              current_lat,
+              current_lng,
+              vehicle_type
             )
-          ),
-          courier:courier_id (
-            full_name,
-            current_lat,
-            current_lng,
-            vehicle_type
-          )
-        `)
-        .eq("id", orderId)
-        .eq("tenant_id", tenantId)
-        .eq("customer_id", customerId)
-        .maybeSingle();
+          `)
+          .eq("id", orderId)
+          .eq("tenant_id", tenantId)
+          .eq("customer_id", customerId)
+          .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error("Order not found");
+        if (error) {
+          logger.warn('Orders table query failed, trying marketplace_orders', error, { component: 'OrderTrackingPage' });
+        }
+        if (data) return data as unknown as OrderWithDetails;
+      }
 
-      return data as unknown as OrderWithDetails;
+      // Fallback: try marketplace_orders (storefront orders)
+      if (customerEmail) {
+        const { data: sfData, error: sfError } = await supabase
+          .from("marketplace_orders")
+          .select("*")
+          .eq("id", orderId)
+          .eq("seller_tenant_id", tenantId)
+          .eq("customer_email", customerEmail.toLowerCase())
+          .maybeSingle();
+
+        if (sfError) throw sfError;
+        if (sfData) {
+          // Parse items from JSONB
+          const rawItems = (sfData.items as unknown as Array<{ product_id?: string; name?: string; quantity: number; price: number }>) || [];
+          // Parse delivery address
+          let deliveryAddr = '';
+          if (typeof sfData.shipping_address === 'string') {
+            deliveryAddr = sfData.shipping_address;
+          } else if (sfData.shipping_address && typeof sfData.shipping_address === 'object') {
+            const addr = sfData.shipping_address as Record<string, unknown>;
+            deliveryAddr = (addr.street as string) || (addr.address as string) || JSON.stringify(sfData.shipping_address);
+          }
+
+          return {
+            id: sfData.id,
+            status: sfData.status || 'pending',
+            tracking_code: sfData.tracking_token,
+            delivery_address: deliveryAddr || sfData.delivery_notes || '',
+            total_amount: sfData.total_amount || 0,
+            delivery_fee: sfData.shipping_cost || 0,
+            delivered_at: sfData.delivered_at,
+            created_at: sfData.created_at,
+            dropoff_lat: null,
+            dropoff_lng: null,
+            courier_id: null,
+            order_items: rawItems.map((item, idx) => ({
+              id: `sf-item-${idx}`,
+              product_id: item.product_id || '',
+              product_name: item.name || 'Product',
+              quantity: item.quantity,
+              price: item.price,
+              products: null,
+            })),
+            courier: null,
+          };
+        }
+      }
+
+      return null;
     },
-    enabled: !!orderId && !!tenantId && !!customerId,
+    enabled: !!orderId && !!tenantId && (!!customerId || !!customerEmail),
     refetchInterval: 10000, // Poll every 10 seconds as fallback
   });
 

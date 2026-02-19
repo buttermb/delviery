@@ -421,7 +421,7 @@
 - [x] Task 222: Fix cart functionality
 - [x] Task 223: Fix checkout flow
 - [x] Task 224: Fix order confirmation — Fixed OrderConfirmationPage to accept orderId from SinglePageCheckout state (was redirecting back to store). Added Delivery Details card with customer name, delivery address, and estimated delivery time. Fetches delivery_address and customer_name from storefront_orders.
-- [ ] Task 225: Fix customer order tracking
+- [x] Task 225: Fix customer order tracking — Fixed UnifiedOrdersPage: replaced useToast with sonner, removed duplicate useState import, added storefront orders query (marketplace_orders by customer_email + seller_tenant_id). Fixed OrderTrackingPage: added fallback query to marketplace_orders when order not found in orders table, mapping storefront order fields to OrderWithDetails. Fixed CustomerPortal: replaced hardcoded /willysbo/ paths with dynamic tenantSlug from useParams, changed Track Order link to navigate to order detail page.
 - [ ] Task 226: Fix customer profile page
 - [ ] Task 227: Fix disposable menu customer flow
 - [ ] Task 228: Fix menu link expiry
