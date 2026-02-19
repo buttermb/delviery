@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, Package } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cleanProductName as _cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
@@ -246,13 +246,21 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
               </div>
             ))}
           </div>
+        ) : products.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-3xl border border-dashed border-neutral-300">
+            <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mb-6 text-neutral-300">
+              <Package className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-bold" style={{ color: customAccent }}>This store doesn&apos;t have any products yet</h3>
+            <p className="text-neutral-500 mt-2 max-w-md mx-auto">Check back soon for new arrivals</p>
+          </div>
         ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-3xl border border-dashed border-neutral-300">
             <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mb-6 text-neutral-300">
               <Search className="w-10 h-10" />
             </div>
             <h3 className="text-2xl font-bold" style={{ color: customAccent }}>No matches found</h3>
-            <p className="text-neutral-500 mt-2 max-w-md mx-auto">We couldn't find any products matching your filters.</p>
+            <p className="text-neutral-500 mt-2 max-w-md mx-auto">We couldn&apos;t find any products matching your filters.</p>
             <Button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
               className="mt-8 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg"
