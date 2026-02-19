@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
+import { getTenantFromSlug } from '@/lib/tenant';
+import TenantNotFoundPage from '@/pages/TenantNotFoundPage';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -32,8 +34,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const [verified, setVerified] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [skipVerification, setSkipVerification] = useState(false);
+  const [tenantSlugValid, setTenantSlugValid] = useState<boolean | null>(null);
   const location = useLocation();
   const totalWaitStartRef = useRef<number | null>(null);
+  const tenantCheckSlugRef = useRef<string | null>(null);
 
   // Consolidated auth variables
   const effectiveLoading = loading;
@@ -75,6 +79,29 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
     return () => clearTimeout(timeout);
   }, [verifying]);
+
+  // Check if tenant slug exists in DB when user is not authenticated
+  useEffect(() => {
+    // Only check when auth is done loading and user is NOT authenticated
+    if (effectiveLoading) return;
+    if (effectiveAdmin && effectiveTenant) return;
+    if (!tenantSlug) return;
+    if (tenantCheckSlugRef.current === tenantSlug) return;
+
+    tenantCheckSlugRef.current = tenantSlug;
+
+    getTenantFromSlug(tenantSlug)
+      .then((result) => {
+        setTenantSlugValid(!!result);
+        if (!result) {
+          logger.warn('[PROTECTED ROUTE] Tenant slug not found in database', { tenantSlug });
+        }
+      })
+      .catch(() => {
+        // On error (RLS, network), assume valid to not block the login redirect
+        setTenantSlugValid(true);
+      });
+  }, [effectiveLoading, effectiveAdmin, effectiveTenant, tenantSlug]);
 
   // Main verification effect with total wait timeout
   useEffect(() => {
@@ -305,8 +332,18 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     return <LoadingFallback />;
   }
 
-  // Not authenticated - redirect to login
+  // Not authenticated - check tenant exists then redirect to login
   if (!effectiveAdmin || !effectiveTenant) {
+    // If tenant slug was checked and doesn't exist, show "Business not found"
+    if (tenantSlugValid === false) {
+      return <TenantNotFoundPage />;
+    }
+
+    // Still checking tenant existence, show loading
+    if (tenantSlugValid === null && tenantSlug) {
+      return <LoadingFallback />;
+    }
+
     // Save the current path as intended destination before redirecting to login
     const currentPath = location.pathname + location.search;
     intendedDestinationUtils.save(currentPath);
