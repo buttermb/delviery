@@ -475,7 +475,7 @@
 - [x] Task 267: Loading skeletons → Dashboard — Replaced spinner loading state in tenant-admin DashboardPage.tsx with skeleton placeholders matching dashboard layout: header bar, 3 KPI cards with icon/value/progress shapes, quick actions grid, and activity feed items. Admin DashboardPage already had KPICardSkeleton via useDashboardStats isLoading. No changes needed there.
 - [x] Task 268: Loading skeletons → table pages — Orders.tsx was the only table page missing a full-page skeleton loading state (Products, Customers, Invoices already had them). Added early-return skeleton to Orders.tsx with header, stats grid, controls/search bar, and 8-row table skeleton matching page layout. Imported Skeleton component. ResponsiveTable already had built-in skeleton rows but surrounding page elements (stats, filters) showed zeros during initial load.
 - [x] Task 269: 404 for admin routes — Already implemented: App.tsx line 1042 has catch-all `<Route path="*">` inside `/:tenantSlug/admin/*` rendering AdminNotFoundPage. AdminNotFoundPage.tsx shows "Page Not Found" card with FileQuestion icon, "Back to Dashboard" button using tenantSlug, "Go Back" button, dev-mode path display. Uses logger, @/ imports. No changes needed.
-- [ ] Task 270: 404 for invalid tenant slug
+- [x] Task 270: 404 for invalid tenant slug — Already implemented: TenantAdminProtectedRoute.tsx validates slug via getTenantFromSlug(), renders TenantNotFoundPage when slug doesn't exist in DB. TenantNotFoundPage.tsx shows "Business Not Found" card with Building2 icon, slug display, Sign Up and Go Back buttons. Shows loading while checking. No changes needed.
 - [ ] Task 271: Not-found � ProductDetail
 - [ ] Task 272: Not-found � ClientDetail
 - [ ] Task 273: Not-found � InvoiceDetail
