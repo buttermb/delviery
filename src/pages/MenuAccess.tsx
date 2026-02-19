@@ -6,24 +6,41 @@ import { useDeviceTracking } from '@/hooks/useDeviceTracking';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle, CheckCircle2, MapPin, Clock } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 import { EnhancedMenuProductGrid } from '@/components/menu/EnhancedMenuProductGrid';
 import { MenuHeader } from '@/components/menu/MenuHeader';
 import { CartButton } from '@/components/menu/CartButton';
 import { CartDrawer } from '@/components/menu/CartDrawer';
 import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
-import { MenuCartProvider } from '@/contexts/MenuCartContext';
-import { toast } from '@/hooks/use-toast';
+import { useMenuCartStore } from '@/stores/menuCartStore';
+import { toast } from 'sonner';
 
-
+interface MenuProduct {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  category?: string;
+  image_url?: string | null;
+  images?: string[];
+  quantity_lbs?: number;
+  prices?: Record<string, number>;
+  strain_type?: string;
+  thc_percentage?: number;
+  cbd_percentage?: number;
+  terpenes?: Array<{ name: string; percentage: number }>;
+  effects?: string[];
+  flavors?: string[];
+}
 
 interface AccessValidation {
   access_granted: boolean;
   menu_data?: {
     id: string;
+    tenant_id?: string;
     name: string;
     description: string | null;
-    products: any[];
+    products: MenuProduct[];
     menu_id: string;
     min_order_quantity: number;
     max_order_quantity: number;
@@ -61,13 +78,10 @@ export default function MenuAccess() {
   const [cartOpen, setCartOpen] = useState(false);
   const [orderFormOpen, setOrderFormOpen] = useState(false);
 
+  const clearCart = useMenuCartStore((state) => state.clearCart);
+
   // Initialize device tracking
   useDeviceTracking();
-
-  // Initialize geofencing (simplified - edge function already validates)
-  const geoAccessGranted = true;
-  const geoChecking = false;
-  const geoViolation = null;
 
   // Initialize screenshot protection based on menu security settings
   const securitySettings = validation?.menu_data?.security_settings;
@@ -161,20 +175,13 @@ export default function MenuAccess() {
       logger.error('Access validation error', err, { component: 'MenuAccess' });
       const errorMessage = err instanceof Error ? err.message : 'Failed to validate access';
       setError(errorMessage);
-      toast({
-        variant: 'destructive',
-        title: 'Access Error',
-        description: 'Unable to validate menu access. Please try again.',
-      });
+      toast.error('Unable to validate menu access. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Simplified - edge function handles all time restrictions
-  const isWithinTimeRestriction = () => true;
-
-  if (loading || geoChecking) {
+  if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
@@ -216,7 +223,7 @@ export default function MenuAccess() {
     );
   }
 
-  if (error || !validation?.access_granted || !geoAccessGranted || !isWithinTimeRestriction()) {
+  if (error || !validation?.access_granted) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
@@ -229,11 +236,7 @@ export default function MenuAccess() {
           <CardContent className="space-y-4">
             <Alert variant="destructive">
               <AlertDescription>
-                {!geoAccessGranted
-                  ? 'You must be within the allowed location to access this menu.'
-                  : !isWithinTimeRestriction()
-                    ? 'This menu is only available during specific hours.'
-                    : error || 'You do not have permission to view this menu.'}
+                {error || 'You do not have permission to view this menu.'}
               </AlertDescription>
             </Alert>
 
@@ -243,21 +246,11 @@ export default function MenuAccess() {
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {validation.violations.map((violation, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <span className="text-destructive">•</span>
+                      <span className="text-destructive">&bull;</span>
                       {violation}
                     </li>
                   ))}
                 </ul>
-              </div>
-            )}
-
-            {geoViolation && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Location Issue
-                </p>
-                <p className="text-sm text-muted-foreground">{geoViolation.reason}</p>
               </div>
             )}
 
@@ -274,57 +267,67 @@ export default function MenuAccess() {
 
   const menuData = validation.menu_data!;
 
+  const handleOrderComplete = (orderId?: string) => {
+    toast.success('Order placed successfully!');
+    clearCart();
+    setOrderFormOpen(false);
+    logger.info('Menu order completed', { orderId, component: 'MenuAccess' });
+  };
+
   return (
-    <MenuCartProvider>
-      <div className="min-h-dvh bg-background">
-        <MenuHeader
-          title={menuData.name}
-          description={menuData.description}
-          expiresAt={null}
-          customerName={validation.whitelist_entry?.customer_name}
+    <div className="min-h-dvh bg-background">
+      <MenuHeader
+        title={menuData.name}
+        description={menuData.description}
+        expiresAt={null}
+        customerName={validation.whitelist_entry?.customer_name}
+      />
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Success message */}
+        <Alert className="mb-6 border-primary/50 bg-primary/5">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertDescription>
+            Welcome! You have been granted access to this exclusive menu.
+            {validation.remaining_views && validation.remaining_views > 0 && (
+              <> ({validation.remaining_views} views remaining)</>
+            )}
+          </AlertDescription>
+        </Alert>
+
+        {/* Products */}
+        <EnhancedMenuProductGrid
+          products={menuData.products}
+          menuId={menuData.id}
+          whitelistEntryId={validation.whitelist_entry?.id}
         />
 
-        <div className="container mx-auto px-4 py-8">
-          {/* Success message */}
-          <Alert className="mb-6 border-primary/50 bg-primary/5">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <AlertDescription>
-              Welcome! You have been granted access to this exclusive menu.
-              {validation.remaining_views && validation.remaining_views > 0 && (
-                <> ({validation.remaining_views} views remaining)</>
-              )}
-            </AlertDescription>
-          </Alert>
+        {/* Floating Cart Button */}
+        <CartButton onClick={() => setCartOpen(true)} />
 
-          {/* Products */}
-          <EnhancedMenuProductGrid
-            products={menuData.products}
-            menuId={menuData.id}
-            whitelistEntryId={validation.whitelist_entry?.id}
-          />
+        {/* Cart Drawer */}
+        <CartDrawer
+          open={cartOpen}
+          onClose={() => setCartOpen(false)}
+          onCheckout={() => {
+            setCartOpen(false);
+            setOrderFormOpen(true);
+          }}
+        />
 
-          {/* Floating Cart Button */}
-          <CartButton onClick={() => setCartOpen(true)} />
-
-          {/* Cart Drawer */}
-          <CartDrawer
-            open={cartOpen}
-            onClose={() => setCartOpen(false)}
-            onCheckout={() => {
-              setCartOpen(false);
-              setOrderFormOpen(true);
-            }}
-          />
-
-          {/* Modern Checkout Flow */}
-          <ModernCheckoutFlow
-            open={orderFormOpen}
-            onClose={() => setOrderFormOpen(false)}
-            menuId={menuData.id}
-            whitelistEntryId={validation.whitelist_entry?.id}
-          />
-        </div>
+        {/* Modern Checkout Flow */}
+        <ModernCheckoutFlow
+          open={orderFormOpen}
+          onOpenChange={setOrderFormOpen}
+          menuId={menuData.menu_id}
+          tenantId={menuData.tenant_id}
+          accessToken={validation.whitelist_entry?.id}
+          minOrder={menuData.min_order_quantity}
+          maxOrder={menuData.max_order_quantity}
+          onOrderComplete={handleOrderComplete}
+          products={menuData.products.map(p => ({ id: p.id, name: p.name, image_url: p.image_url ?? undefined }))}
+        />
       </div>
-    </MenuCartProvider>
+    </div>
   );
 }

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMenuCartStore } from '@/stores/menuCartStore';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ShoppingCart, Search, ZoomIn, Plus, Check, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -93,10 +93,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
       origin: { y: 0.8 }
     });
 
-    toast({
-      title: 'Added to cart',
-      description: `${product.name} (${selectedWeight}) has been added to your cart`,
-    });
+    toast.success(`${product.name} (${selectedWeight}) added to cart`);
   };
 
   const getPriceDisplay = (product: Product) => {
