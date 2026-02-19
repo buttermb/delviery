@@ -264,7 +264,7 @@
 
 - [x] Task 123: Add not-found state to InvoiceDetailPage — Navigate to /admin/invoices/fake-uuid. Same pattern.
 
-- [ ] Task 124: Run npx tsc --noEmit — Fix all TS errors from Phase 9. Checkpoint.
+- [x] Task 124: Run npx tsc --noEmit — Fix all TS errors from Phase 9. Checkpoint.
 
 ## Phase 10: Cross-Feature Integration (10 tasks)
 
