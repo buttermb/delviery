@@ -156,7 +156,7 @@
 
 - [x] Task 72: Fix cart functionality — Add items to cart. Verify: cart badge updates, cart page shows items, can update quantity, can remove items, subtotal updates. Cart should persist across page navigations (use localStorage or context). Fix any broken parts.
 
-- [ ] Task 73: Fix checkout flow — From cart, click checkout. Verify: shipping/delivery form works, payment method selection works, can place order, shows confirmation. Fix any broken steps.
+- [x] Task 73: Fix checkout flow — From cart, click checkout. Verify: shipping/delivery form works, payment method selection works, can place order, shows confirmation. Fix any broken steps.
 
 - [ ] Task 74: Fix order confirmation page — After placing order, verify customer sees confirmation with order number, items ordered, estimated delivery. Fix if redirects wrong or shows blank.
 

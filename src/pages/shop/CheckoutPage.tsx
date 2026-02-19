@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
@@ -80,8 +80,6 @@ export function CheckoutPage() {
   const [searchParams] = useSearchParams();
   const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText } = useLuxuryTheme();
-  const { toast } = useToast();
-
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
@@ -89,8 +87,7 @@ export function CheckoutPage() {
   // Handle cancelled Stripe checkout return
   useEffect(() => {
     if (searchParams.get('cancelled') === 'true') {
-      toast({
-        title: 'Payment cancelled',
+      toast('Payment cancelled', {
         description: 'Your payment was not completed. You can try again or choose a different payment method.',
       });
       // Remove the cancelled param from URL without navigation
@@ -98,7 +95,7 @@ export function CheckoutPage() {
       newParams.delete('cancelled');
       window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
     }
-  }, [searchParams, toast]);
+  }, [searchParams]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CheckoutData>({
@@ -187,10 +184,10 @@ export function CheckoutPage() {
   // Redirect to cart if empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
-      toast({ title: 'Your cart is empty', description: 'Add some items before checkout.' });
+      toast('Your cart is empty', { description: 'Add some items before checkout.' });
       navigate(`/shop/${storeSlug}/cart`);
     }
-  }, [isInitialized, cartItems.length, navigate, storeSlug, toast]);
+  }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
   // Validate cart on mount
   useEffect(() => {
@@ -211,7 +208,7 @@ export function CheckoutPage() {
     const result = await applyCoupon(couponCode.trim(), subtotal);
 
     if (result.success) {
-      toast({ title: 'Coupon applied!', description: `Saved ${formatCurrency(result.coupon?.calculated_discount || 0)}` });
+      toast.success('Coupon applied!', { description: `Saved ${formatCurrency(result.coupon?.calculated_discount || 0)}` });
       setCouponCode('');
     } else {
       setCouponError(result.error || 'Invalid coupon');
@@ -247,15 +244,15 @@ export function CheckoutPage() {
             balance: card.current_balance
           });
           setGiftCardCode('');
-          toast({ title: 'Gift card applied!', description: `Balance: $${card.current_balance}` });
+          toast.success('Gift card applied!', { description: `Balance: $${card.current_balance}` });
         } else {
-          toast({ title: 'Invalid card', description: card.message, variant: 'destructive' });
+          toast.error('Invalid card', { description: card.message });
         }
       } else {
-        toast({ title: 'Invalid card', description: 'Card not found', variant: 'destructive' });
+        toast.error('Invalid card', { description: 'Card not found' });
       }
     } catch {
-      toast({ title: 'Error', description: 'Failed to validate card', variant: 'destructive' });
+      toast.error('Error', { description: 'Failed to validate card' });
     } finally {
       setIsCheckingGiftCard(false);
     }
@@ -304,26 +301,26 @@ export function CheckoutPage() {
     switch (currentStep) {
       case 1:
         if (!formData.firstName || !formData.lastName || !formData.email) {
-          toast({ title: 'Please fill in all required fields', variant: 'destructive' });
+          toast.error('Please fill in all required fields');
           return false;
         }
         if (!EMAIL_REGEX.test(formData.email)) {
-          toast({ title: 'Invalid email address', description: 'Please enter a valid email.', variant: 'destructive' });
+          toast.error('Invalid email address', { description: 'Please enter a valid email.' });
           return false;
         }
         if ((store as any)?.checkout_settings?.require_phone && !formData.phone) {
-          toast({ title: 'Phone number is required', variant: 'destructive' });
+          toast.error('Phone number is required');
           return false;
         }
         // Validate phone format if provided
         if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
-          toast({ title: 'Invalid phone number', description: 'Please enter a valid phone number.', variant: 'destructive' });
+          toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
           return false;
         }
         return true;
       case 2:
         if (!formData.street || !formData.city || !formData.zip) {
-          toast({ title: 'Please fill in your delivery address', variant: 'destructive' });
+          toast.error('Please fill in your delivery address');
           return false;
         }
         // Validate delivery zone if zones are configured
@@ -331,19 +328,15 @@ export function CheckoutPage() {
         if (deliveryZones.length > 0) {
           const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
           if (!matchingZone) {
-            toast({
-              title: 'Delivery not available',
+            toast.error('Delivery not available', {
               description: `We don't currently deliver to zip code ${formData.zip}. Please try a different address.`,
-              variant: 'destructive'
             });
             return false;
           }
           // Check minimum order if zone has one
           if (matchingZone.min_order && subtotal < matchingZone.min_order) {
-            toast({
-              title: 'Minimum order not met',
+            toast.error('Minimum order not met', {
               description: `This delivery zone requires a minimum order of $${matchingZone.min_order}.`,
-              variant: 'destructive'
             });
             return false;
           }
@@ -351,13 +344,13 @@ export function CheckoutPage() {
         return true;
       case 3:
         if (!formData.paymentMethod) {
-          toast({ title: 'Please select a payment method', variant: 'destructive' });
+          toast.error('Please select a payment method');
           return false;
         }
         return true;
       case 4:
         if (!agreeToTerms) {
-          toast({ title: 'Please agree to the terms to continue', variant: 'destructive' });
+          toast.error('Please agree to the terms to continue');
           return false;
         }
         return true;
@@ -553,9 +546,7 @@ export function CheckoutPage() {
           // Retry on network errors
           if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
             setOrderRetryCount(attempt);
-            toast({
-              title: `Connection issue, retrying (${attempt}/3)...`,
-            });
+            toast(`Connection issue, retrying (${attempt}/3)...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
             return attemptOrder(attempt + 1);
           }
@@ -620,10 +611,8 @@ export function CheckoutPage() {
           }
         } catch (stripeError: any) {
           logger.error('Stripe checkout error', stripeError, { component: 'CheckoutPage' });
-          toast({
-            title: 'Payment setup failed',
+          toast.error('Payment setup failed', {
             description: stripeError.message || 'Unable to initialize payment. Please try again or choose a different payment method.',
-            variant: 'destructive',
           });
           return;
         }
@@ -680,22 +669,14 @@ export function CheckoutPage() {
         errorMessage.toLowerCase().includes('fetch') ||
         errorMessage.toLowerCase().includes('timeout');
 
-      toast({
-        title: 'Order failed',
+      toast.error('Order failed', {
         description: isNetworkError
           ? 'Network connection issue. Check your connection and try again.'
           : errorMessage,
-        variant: 'destructive',
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePlaceOrder()}
-            className="ml-2"
-          >
-            Retry
-          </Button>
-        ),
+        action: {
+          label: 'Retry',
+          onClick: () => handlePlaceOrder(),
+        },
       });
     },
   });
