@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -884,11 +884,11 @@ export default function Orders() {
                   : undefined
               }
               emptyState={{
-                icon: ShoppingCart,
+                icon: ShoppingBag,
                 title: hasActiveFilters ? "No orders found" : "No orders yet",
                 description: hasActiveFilters
                   ? "Try adjusting your filters to find orders"
-                  : "Orders appear here when customers order from your menus",
+                  : "Orders appear here when customers purchase from your menus or storefront",
                 primaryAction: hasActiveFilters ? {
                   label: "Clear Filters",
                   onClick: handleClearFilters

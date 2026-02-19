@@ -120,7 +120,7 @@
 
 - [x] Task 55: Add empty state to Products page — Zero products: Package icon, "No products yet", "Add your inventory to start selling", "Add Product" button that opens the add product flow.
 
-- [ ] Task 56: Add empty state to Orders page — Zero orders: ShoppingBag icon, "No orders yet", "Orders appear here when customers purchase from your menus or storefront", secondary "Create Menu" link.
+- [x] Task 56: Add empty state to Orders page — Zero orders: ShoppingBag icon, "No orders yet", "Orders appear here when customers purchase from your menus or storefront", secondary "Create Menu" link.
 
 - [ ] Task 57: Add empty state to Menus page — Zero menus: Link icon, "No menus yet", "Create disposable menus to share with customers", "Create Menu" CTA.
 
