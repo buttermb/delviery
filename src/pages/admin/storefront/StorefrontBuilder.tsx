@@ -521,14 +521,22 @@ export function StorefrontBuilder({
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
             const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
+            const colors = (themeToSave as ExtendedThemeConfig)?.colors;
+
+            const updatePayload: Record<string, unknown> = {
+                layout_config: JSON.parse(JSON.stringify(configToSave)),
+                theme_config: themeToSave,
+                updated_at: new Date().toISOString(),
+            };
+
+            // Sync top-level color columns so the shop shell (header/footer) reflects builder changes
+            if (colors?.primary) updatePayload.primary_color = colors.primary;
+            if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
+            if (colors?.accent) updatePayload.accent_color = colors.accent;
 
             const { error } = await (supabase as any)
                 .from('marketplace_stores')
-                .update({
-                    layout_config: JSON.parse(JSON.stringify(configToSave)),
-                    theme_config: themeToSave,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
@@ -536,6 +544,7 @@ export function StorefrontBuilder({
         onSuccess: () => {
             toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             easyModeBuilder.markClean();
         },
         onError: (err) => {
@@ -552,15 +561,23 @@ export function StorefrontBuilder({
     const publishMutation = useMutation({
         mutationFn: async () => {
             const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
+            const colors = (themeToSave as ExtendedThemeConfig)?.colors;
+
+            const updatePayload: Record<string, unknown> = {
+                layout_config: JSON.parse(JSON.stringify(configToSave)),
+                theme_config: themeToSave,
+                is_public: true,
+                updated_at: new Date().toISOString(),
+            };
+
+            // Sync top-level color columns so the shop shell (header/footer) reflects builder changes
+            if (colors?.primary) updatePayload.primary_color = colors.primary;
+            if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
+            if (colors?.accent) updatePayload.accent_color = colors.accent;
 
             const { error } = await (supabase as any)
                 .from('marketplace_stores')
-                .update({
-                    layout_config: JSON.parse(JSON.stringify(configToSave)),
-                    theme_config: themeToSave,
-                    is_public: true,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
@@ -568,6 +585,7 @@ export function StorefrontBuilder({
         onSuccess: () => {
             toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             easyModeBuilder.markClean();
         },
         onError: (err) => {

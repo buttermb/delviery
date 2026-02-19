@@ -172,7 +172,7 @@
 
 - [x] Task 80: Fix mobile cart/checkout — On mobile: verify cart drawer/page works, checkout form fields aren't overlapping, submit button is visible, keyboard doesn't cover inputs.
 
-- [ ] Task 81: Verify storefront builder → live store — Make a change in admin StorefrontBuilder (color, logo, store name). Refresh /shop/:slug. Verify change appears. Fix if disconnected.
+- [x] Task 81: Verify storefront builder → live store — Make a change in admin StorefrontBuilder (color, logo, store name). Refresh /shop/:slug. Verify change appears. Fix if disconnected.
 
 - [ ] Task 82: Add order status realtime to customer portal — In customer order tracking page, add Supabase realtime subscription on the order's status. When admin changes status, customer sees update without refresh. If already exists, verify it works.
 
