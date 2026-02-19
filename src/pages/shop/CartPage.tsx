@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -58,8 +58,6 @@ export default function CartPage() {
     inputText,
     buttonOutline
   } = useLuxuryTheme();
-  const { toast } = useToast();
-
   // Use unified cart hook
   const {
     cartItems,
@@ -88,10 +86,8 @@ export default function CartPage() {
       const { valid, outOfStock } = await checkInventoryAvailability();
 
       if (!valid && outOfStock.length > 0) {
-        toast({
-          title: "Some items are out of stock",
+        toast.error("Some items are out of stock", {
           description: `Please remove ${outOfStock.length} out of stock item(s) before proceeding.`,
-          variant: "destructive"
         });
         return;
       }
@@ -99,10 +95,8 @@ export default function CartPage() {
       navigate(`/shop/${storeSlug}/checkout`);
     } catch (error) {
       logger.error('Checkout check failed', error);
-      toast({
-        title: "Error checking stock",
+      toast.error("Error checking stock", {
         description: "Please try again.",
-        variant: "destructive"
       });
     } finally {
       setIsCheckingStock(false);
@@ -117,14 +111,14 @@ export default function CartPage() {
   // Handle remove item
   const handleRemoveItem = (productId: string, variant?: string) => {
     removeItem(productId, variant);
-    toast({ title: 'Item removed from cart' });
+    toast('Item removed from cart');
   };
 
   // Handle clear cart
   const handleClearCart = () => {
     clearCart();
     setAppliedCoupon(null);
-    toast({ title: 'Cart cleared' });
+    toast('Cart cleared');
   };
 
   // Apply coupon with retry logic
@@ -144,10 +138,8 @@ export default function CartPage() {
       if (error) {
         // Handle case where RPC function doesn't exist yet
         if (error.message?.includes('function') || error.code === '42883') {
-          toast({
-            title: 'Coupons not available',
+          toast.error('Coupons not available', {
             description: 'Coupon feature is not configured for this store.',
-            variant: 'destructive',
           });
           return;
         }
@@ -162,12 +154,10 @@ export default function CartPage() {
           type: result.discount_type,
         });
         setCouponCode('');
-        toast({ title: 'Coupon applied!' });
+        toast.success('Coupon applied!');
       } else {
-        toast({
-          title: 'Invalid coupon',
+        toast.error('Invalid coupon', {
           description: result?.error_message || 'This coupon cannot be applied.',
-          variant: 'destructive',
         });
       }
     } catch (error: unknown) {
@@ -178,19 +168,17 @@ export default function CartPage() {
 
       // Retry on network errors
       if (isNetworkError && retryCount < MAX_COUPON_RETRIES) {
-        toast({ title: 'Connection issue, retrying...' });
+        toast('Connection issue, retrying...');
         await new Promise(resolve => setTimeout(resolve, 1000));
         setIsApplyingCoupon(false); // Reset to try again
         return applyCoupon(retryCount + 1);
       }
 
       logger.error('Error applying coupon', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: isNetworkError
           ? 'Network issue. Check your connection and try again.'
           : 'Failed to apply coupon. Please try again.',
-        variant: 'destructive',
       });
     } finally {
       setIsApplyingCoupon(false);
@@ -200,7 +188,7 @@ export default function CartPage() {
   // Remove coupon
   const removeCoupon = () => {
     setAppliedCoupon(null);
-    toast({ title: 'Coupon removed' });
+    toast('Coupon removed');
   };
 
   // Calculate totals

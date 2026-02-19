@@ -154,7 +154,7 @@
 
 - [x] Task 71: Fix product detail page — Click a product in shop. Verify: image displays, description shows, price is correct, "Add to Cart" button works. Fix if broken.
 
-- [ ] Task 72: Fix cart functionality — Add items to cart. Verify: cart badge updates, cart page shows items, can update quantity, can remove items, subtotal updates. Cart should persist across page navigations (use localStorage or context). Fix any broken parts.
+- [x] Task 72: Fix cart functionality — Add items to cart. Verify: cart badge updates, cart page shows items, can update quantity, can remove items, subtotal updates. Cart should persist across page navigations (use localStorage or context). Fix any broken parts.
 
 - [ ] Task 73: Fix checkout flow — From cart, click checkout. Verify: shipping/delivery form works, payment method selection works, can place order, shows confirmation. Fix any broken steps.
 
