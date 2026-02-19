@@ -30,7 +30,7 @@ import { logger } from '@/lib/logger';
 import { Plus, Loader2, AlertTriangle } from 'lucide-react';
 
 const formSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or less'),
     email: z.string().email('Invalid email address').optional().or(z.literal('')),
     phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
 });
@@ -144,7 +144,7 @@ export function CreateClientDialog({
                                 <FormItem>
                                     <FormLabel required>Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="John Doe" {...field} />
+                                        <Input placeholder="John Doe" maxLength={100} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

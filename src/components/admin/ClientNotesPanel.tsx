@@ -145,6 +145,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
             placeholder="Add internal note about this client..."
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
+            maxLength={1000}
             className="min-h-[100px]"
           />
 

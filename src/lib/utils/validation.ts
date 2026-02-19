@@ -105,8 +105,8 @@ export const validationSchemas = {
  * Product validation schema
  */
 export const productSchema = z.object({
-  name: z.string().min(1).max(100),
-  description: z.string().max(1000).optional(),
+  name: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
   price: z.number().positive().max(999999),
   sku: z.string().regex(/^[A-Z0-9-]+$/).optional(),
   category: z.enum(['flower', 'edibles', 'pre-rolls', 'concentrates', 'vapes']),

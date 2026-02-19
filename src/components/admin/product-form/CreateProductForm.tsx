@@ -294,14 +294,14 @@ export function CreateProductForm({
   const sanitizeFormData = (data: CreateProductFormData): CreateProductFormData => {
     return {
       ...data,
-      name: sanitizeFormInput(data.name, 100),
+      name: sanitizeFormInput(data.name, 200),
       sku: data.sku ? sanitizeSkuInput(data.sku) : "",
       vendor_name: sanitizeFormInput(data.vendor_name, 100),
       strain_name: sanitizeFormInput(data.strain_name, 100),
       strain_lineage: sanitizeFormInput(data.strain_lineage, 200),
       batch_number: sanitizeFormInput(data.batch_number, 100),
       lab_name: sanitizeFormInput(data.lab_name, 100),
-      description: sanitizeTextareaInput(data.description, 1000),
+      description: sanitizeTextareaInput(data.description, 2000),
       usage_tips: sanitizeTextareaInput(data.usage_tips, 500),
       barcode: sanitizeFormInput(data.barcode, 50),
     };

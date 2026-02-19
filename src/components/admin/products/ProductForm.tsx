@@ -215,12 +215,12 @@ export function ProductForm({
 
         const sanitizedData: ProductFormData = {
             ...formData,
-            name: sanitizeFormInput(formData.name, 100),
+            name: sanitizeFormInput(formData.name, 200),
             sku: formData.sku ? sanitizeSkuInput(formData.sku) : '',
             vendor_name: sanitizeFormInput(formData.vendor_name, 100),
             strain_name: sanitizeFormInput(formData.strain_name, 100),
             batch_number: sanitizeFormInput(formData.batch_number, 100),
-            description: sanitizeTextareaInput(formData.description, 1000),
+            description: sanitizeTextareaInput(formData.description, 2000),
             metrc_retail_id: sanitizeFormInput(formData.metrc_retail_id, 100),
         };
         onSubmit(sanitizedData, imageFile);
@@ -259,6 +259,7 @@ export function ProductForm({
                                 <Label>Product Name *</Label>
                                 <Input
                                     required
+                                    maxLength={200}
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="Blue Dream 1/8oz"
@@ -340,6 +341,7 @@ export function ProductForm({
                             <div className="space-y-2">
                                 <Label>Description</Label>
                                 <Textarea
+                                    maxLength={2000}
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Product description..."

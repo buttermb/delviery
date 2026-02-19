@@ -30,8 +30,8 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
 
 const customerFormSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
+  first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
+  last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be 100 characters or less'),
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   phone: z.string()
     .optional()
@@ -47,7 +47,7 @@ const customerFormSchema = z.object({
       )
     ),
   date_of_birth: z.string().min(1, 'Date of birth is required'),
-  address: z.string().optional().or(z.literal('')),
+  address: z.string().max(500, 'Address must be 500 characters or less').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
   medical_card_number: z.string().optional().or(z.literal('')),
   medical_card_expiration: z.string().optional().or(z.literal('')),
@@ -278,7 +278,7 @@ export default function CustomerForm() {
                         <FormItem>
                           <FormLabel required>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="John" autoFocus {...field} />
+                            <Input placeholder="John" autoFocus maxLength={100} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -291,7 +291,7 @@ export default function CustomerForm() {
                         <FormItem>
                           <FormLabel required>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Doe" {...field} />
+                            <Input placeholder="Doe" maxLength={100} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -373,7 +373,7 @@ export default function CustomerForm() {
                       <FormItem>
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Main St" {...field} />
+                          <Input placeholder="123 Main St" maxLength={500} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

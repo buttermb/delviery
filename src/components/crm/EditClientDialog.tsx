@@ -35,7 +35,7 @@ import { Loader2, Pencil } from 'lucide-react';
 import type { CRMClient } from '@/types/crm';
 
 const formSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or less'),
     email: z.string().email('Invalid email address').optional().or(z.literal('')),
     phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
     status: z.enum(['active', 'archived']),
@@ -129,7 +129,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                                 <FormItem>
                                     <FormLabel required>Name</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input maxLength={100} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

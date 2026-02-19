@@ -26,7 +26,7 @@ function getFieldError(
   switch (field) {
     case "name":
       if (!value || !(value as string).trim()) return "Product name is required";
-      if ((value as string).trim().length > 100) return "Name must be 100 characters or less";
+      if ((value as string).trim().length > 200) return "Name must be 200 characters or less";
       return null;
     case "category":
       if (!value) return "Category is required";
@@ -60,6 +60,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
           <Label htmlFor="name">Product Name <span className="text-destructive">*</span></Label>
           <Input
             id="name"
+            maxLength={200}
             value={formData.name || ""}
             onChange={(e) => updateFormData({ name: e.target.value })}
             onBlur={() => markTouched("name")}

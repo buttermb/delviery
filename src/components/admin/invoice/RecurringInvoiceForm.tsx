@@ -25,13 +25,13 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Name is required").max(200, "Name must be 200 characters or less"),
   client_id: z.string().min(1, "Client is required"),
   frequency: z.enum(["weekly", "biweekly", "monthly", "quarterly", "yearly"]),
   next_run_date: z.string().min(1, "Start date is required"),
   day_of_month: z.number().optional(),
   auto_send_email: z.boolean(),
-  notes: z.string().optional(),
+  notes: z.string().max(1000, "Notes must be 1000 characters or less").optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -139,7 +139,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Schedule Name</Label>
-              <Input {...register("name")} placeholder="Monthly Retainer" />
+              <Input {...register("name")} placeholder="Monthly Retainer" maxLength={200} />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
@@ -273,7 +273,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
             </div>
             <div className="space-y-2">
               <Label>Notes (optional)</Label>
-              <Textarea {...register("notes")} placeholder="Internal notes about this schedule..." />
+              <Textarea {...register("notes")} placeholder="Internal notes about this schedule..." maxLength={1000} />
             </div>
           </div>
 

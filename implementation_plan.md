@@ -218,7 +218,7 @@
 
 - [x] Task 101: Add negative number blocking to invoice amounts — Invoice total, payment amount, discount: z.number().min(0). Apply to all invoice forms.
 
-- [ ] Task 102: Add character limits to text fields — Product name: max 200. Description: max 2000. Customer name: max 100. Notes: max 1000. Apply limits in Zod schemas AND as maxLength on inputs.
+- [x] Task 102: Add character limits to text fields — Product name: max 200. Description: max 2000. Customer name: max 100. Notes: max 1000. Apply limits in Zod schemas AND as maxLength on inputs.
 
 - [ ] Task 103: Add email validation to customer/client forms — All email fields: z.string().email("Invalid email address"). Apply to customer creation, wholesale client, team invite forms.
 
