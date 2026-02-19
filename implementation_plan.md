@@ -54,7 +54,7 @@
 
 - [x] Task 25: Sanitize search in DisposableMenuOrders.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 
-- [ ] Task 26: Sanitize search in CRM pages — Find .ilike() calls in any CRM-related pages. Apply sanitizeForIlike().
+- [x] Task 26: Sanitize search in CRM pages — No unsanitized .ilike() calls found; CRM pages use client-side search, and useCRMInvoices.ts already uses escapePostgresLike(). No changes needed.
 
 - [ ] Task 27: Sanitize search in Marketplace pages — Find .ilike() calls. Apply sanitizeForIlike().
 
