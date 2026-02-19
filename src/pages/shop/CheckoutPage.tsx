@@ -67,6 +67,36 @@ interface CheckoutData {
   paymentMethod: string;
 }
 
+// Extended store properties beyond base StoreInfo type
+interface DeliveryZone {
+  zip_code: string;
+  fee?: number;
+  min_order?: number;
+}
+
+interface PurchaseLimits {
+  enabled?: boolean;
+  max_per_order?: number;
+  max_daily?: number;
+  max_weekly?: number;
+}
+
+interface GiftCardValidationResult {
+  is_valid: boolean;
+  current_balance: number;
+  message: string;
+}
+
+interface OrderResult {
+  order_id: string;
+  order_number: string;
+  tracking_token?: string;
+  total?: number;
+}
+
+// Helper type for calling untyped Supabase RPCs
+type SupabaseRpc = (name: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>;
+
 const STEPS = [
   { id: 1, name: 'Contact', icon: User },
   { id: 2, name: 'Delivery', icon: MapPin },
@@ -231,15 +261,16 @@ export function CheckoutPage() {
     setIsCheckingGiftCard(true);
 
     try {
-      const { data, error } = await (supabase.rpc as any)('validate_marketplace_gift_card', {
+      const { data, error } = await (supabase.rpc as unknown as SupabaseRpc)('validate_marketplace_gift_card', {
         p_store_id: store.id,
         p_code: giftCardCode.trim()
       });
 
       if (error) throw error;
 
-      if (data && (data as any[]).length > 0) {
-        const card = data[0];
+      const giftCardResults = data as unknown as GiftCardValidationResult[] | null;
+      if (giftCardResults && giftCardResults.length > 0) {
+        const card = giftCardResults[0];
         if (card.is_valid) {
           applyGiftCard({
             code: giftCardCode.trim(),
@@ -265,8 +296,8 @@ export function CheckoutPage() {
     if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
 
     // Check if zip matches a delivery zone
-    const deliveryZones = (store as any)?.delivery_zones || [];
-    const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
+    const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) || [];
+    const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
 
     if (matchingZone) {
       return matchingZone.fee || store?.default_delivery_fee || 5;
@@ -284,7 +315,7 @@ export function CheckoutPage() {
   const rawTotal = Math.max(0, subtotal + effectiveDeliveryFee - loyaltyDiscount - dealsDiscount - couponDiscount);
 
   // Cart rounding: round to nearest dollar if enabled
-  const enableCartRounding = (store as any)?.enable_cart_rounding === true;
+  const enableCartRounding = (store as unknown as { enable_cart_rounding?: boolean })?.enable_cart_rounding === true;
   const totalBeforeGiftCards = enableCartRounding ? Math.round(rawTotal) : rawTotal;
   const roundingAdjustment = enableCartRounding ? (totalBeforeGiftCards - rawTotal) : 0;
 
@@ -310,7 +341,7 @@ export function CheckoutPage() {
           toast.error('Invalid email address', { description: 'Please enter a valid email.' });
           return false;
         }
-        if ((store as any)?.checkout_settings?.require_phone && !formData.phone) {
+        if (store?.checkout_settings?.require_phone && !formData.phone) {
           toast.error('Phone number is required');
           return false;
         }
@@ -326,9 +357,9 @@ export function CheckoutPage() {
           return false;
         }
         // Validate delivery zone if zones are configured
-        const deliveryZones = (store as any)?.delivery_zones || [];
+        const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) || [];
         if (deliveryZones.length > 0) {
-          const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
+          const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
           if (!matchingZone) {
             toast.error('Delivery not available', {
               description: `We don't currently deliver to zip code ${formData.zip}. Please try a different address.`,
@@ -419,7 +450,7 @@ export function CheckoutPage() {
       }
 
       // Validate purchase limits
-      const purchaseLimits = (store as any)?.purchase_limits;
+      const purchaseLimits = (store as unknown as { purchase_limits?: PurchaseLimits })?.purchase_limits;
       if (purchaseLimits?.enabled) {
         // Check max per order limit
         if (purchaseLimits.max_per_order && total > purchaseLimits.max_per_order) {
@@ -479,7 +510,7 @@ export function CheckoutPage() {
       // Calculate gift card usage for RPC
       // Attempt to place order with retries
       // Attempt to place order with retries
-      const attemptOrder = async (attempt: number): Promise<any> => {
+      const attemptOrder = async (attempt: number): Promise<OrderResult> => {
         try {
           if (!store?.id) throw new Error('Store ID missing');
 
@@ -524,26 +555,38 @@ export function CheckoutPage() {
 
           if (!orderId) throw new Error('Failed to create order');
 
-          // 2. Complete Reservations (use any to bypass type checking since function is newly created)
-          await (supabase.rpc as any)('complete_reservation', {
+          // 2. Complete Reservations
+          await (supabase.rpc as unknown as SupabaseRpc)('complete_reservation', {
             p_session_id: sessionId,
             p_order_id: orderId
           });
 
           // 3. Redeem Coupon
           if (appliedCoupon?.coupon_id) {
-            await (supabase.rpc as any)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
+            await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
           }
 
-          // Return order info - orderId is a UUID string
-          return { order_id: orderId, order_number: orderId };
+          // 4. Fetch order details (tracking token, order number, total)
+          const { data: orderRow } = await supabase
+            .from('storefront_orders')
+            .select('order_number, tracking_token, total')
+            .eq('id', orderId as string)
+            .maybeSingle();
 
-        } catch (err: any) {
-          const isNetworkError = err instanceof Error &&
-            (err.message.toLowerCase().includes('network') ||
-              err.message.toLowerCase().includes('fetch') ||
-              err.message.toLowerCase().includes('timeout') ||
-              err.message.toLowerCase().includes('failed to fetch'));
+          return {
+            order_id: orderId as string,
+            order_number: (orderRow?.order_number as string) || (orderId as string),
+            tracking_token: (orderRow?.tracking_token as string) || undefined,
+            total: (orderRow?.total as number) || undefined,
+          };
+
+        } catch (err: unknown) {
+          const errMessage = err instanceof Error ? err.message : String(err);
+          const isNetworkError =
+            errMessage.toLowerCase().includes('network') ||
+              errMessage.toLowerCase().includes('fetch') ||
+              errMessage.toLowerCase().includes('timeout') ||
+              errMessage.toLowerCase().includes('failed to fetch');
 
           // Retry on network errors
           if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
@@ -574,7 +617,8 @@ export function CheckoutPage() {
           }));
 
           const origin = window.location.origin;
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}&token=${data.tracking_token}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
+          const trackingParam = data.tracking_token ? `&token=${data.tracking_token}` : '';
+          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}${trackingParam}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
           const cancelUrl = `${origin}/shop/${storeSlug}/checkout?cancelled=true`;
 
           // Calculate total discount applied (coupon + loyalty + deals)
@@ -611,10 +655,11 @@ export function CheckoutPage() {
             window.location.href = url;
             return;
           }
-        } catch (stripeError: any) {
+        } catch (stripeError: unknown) {
           logger.error('Stripe checkout error', stripeError, { component: 'CheckoutPage' });
+          const stripeErrMsg = stripeError instanceof Error ? stripeError.message : 'Unable to initialize payment. Please try again or choose a different payment method.';
           toast.error('Payment setup failed', {
-            description: stripeError.message || 'Unable to initialize payment. Please try again or choose a different payment method.',
+            description: stripeErrMsg,
           });
           return;
         }
@@ -647,7 +692,7 @@ export function CheckoutPage() {
           delivery_fee: deliveryFee,
           total: data.total,
           store_name: store?.store_name || 'Store',
-          tracking_url: `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}`,
+          tracking_url: data.tracking_token ? `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}` : undefined,
         },
       }).catch((err) => {
         logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
@@ -662,11 +707,11 @@ export function CheckoutPage() {
         },
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
 
-      const errorMessage = error?.message || 'Something went wrong. Please try again.';
+      const errorMessage = error.message || 'Something went wrong. Please try again.';
       const isNetworkError = errorMessage.toLowerCase().includes('network') ||
         errorMessage.toLowerCase().includes('fetch') ||
         errorMessage.toLowerCase().includes('timeout');
@@ -1392,7 +1437,7 @@ export function CheckoutPage() {
                         <span className="font-mono">{card.code}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-500">-${formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
+                        <span className="text-emerald-500">-{formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
                         <Button
                           variant="ghost"
                           size="icon"
