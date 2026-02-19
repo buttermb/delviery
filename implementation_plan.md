@@ -298,7 +298,7 @@
 
 - [x] Task 138: Fix all modals on mobile — Modals should be nearly full-screen on mobile (max-w-full on small screens). Form inputs shouldn't be cut off. Submit button must be visible without scrolling past the fold.
 
-- [ ] Task 139: Fix CashRegister on tablet — POS should be optimized for iPad-size screens (1024px). Product grid + cart side by side. Touch-friendly button sizes (min 44px).
+- [x] Task 139: Fix CashRegister on tablet — POS should be optimized for iPad-size screens (1024px). Product grid + cart side by side. Touch-friendly button sizes (min 44px).
 
 - [ ] Task 140: Fix date pickers on mobile — Date inputs should use native date picker on mobile (type="date") or ensure custom date picker is touch-friendly and doesn't overflow viewport.
 
