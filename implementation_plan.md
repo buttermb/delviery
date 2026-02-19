@@ -469,7 +469,7 @@
 ## Phase B9: Error Handling and Loading (12 tasks)
 
 - [x] Task 263: Error boundaries on hub pages — Verified 12/14 hub pages already have ModuleErrorBoundary wrapping lazy-loaded tabs. Added ModuleErrorBoundary to HelpHubPage's 4 tab panels (Getting Started, Documentation, Support, Feedback). Fixed HelpHubPage: replaced useToast from use-toast with toast from sonner. DashboardHubPage has no lazy tabs (single page) and already has error state handling.
-- [ ] Task 264: Error state � Dashboard
+- [x] Task 264: Error state → Dashboard — Enhanced error card in admin DashboardPage.tsx: when error+no data shows centered error card with AlertTriangle icon, message, and "Try Again" retry button (uses handleRefresh+isFetching); when error+cached data shows inline error banner with "Retry" button and "Showing cached data" message; when error+no stats hides KPI sections entirely to avoid misleading zero values
 - [ ] Task 265: Error state � Orders
 - [ ] Task 266: Error state � Products
 - [ ] Task 267: Loading skeletons � Dashboard

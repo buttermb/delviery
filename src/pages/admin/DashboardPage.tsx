@@ -202,12 +202,48 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {error && (
+      {error && !stats && (
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="pt-6 flex flex-col items-center text-center gap-4 py-12">
+            <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <div>
+              <p className="font-semibold text-destructive">Failed to load dashboard data</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Something went wrong while fetching your stats. Please try again.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isFetching}
+              className="border-destructive/30 text-destructive hover:bg-destructive/10"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+              {isFetching ? 'Retrying...' : 'Try Again'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {error && stats && (
         <Card className="border-destructive">
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 flex items-center justify-between gap-4">
             <p className="text-destructive text-sm">
-              Failed to load dashboard stats. Data will retry automatically.
+              Failed to refresh dashboard stats. Showing cached data.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isFetching}
+              className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+              Retry
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -248,7 +284,7 @@ export function DashboardPage() {
       )}
 
       {/* Empty state for brand-new tenants with zero orders AND zero products */}
-      {!isLoading && stats && stats.totalProducts === 0 && stats.totalOrdersMTD === 0 && stats.pendingOrders === 0 ? (
+      {error && !stats ? null : !isLoading && stats && stats.totalProducts === 0 && stats.totalOrdersMTD === 0 && stats.pendingOrders === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <EmptyState
