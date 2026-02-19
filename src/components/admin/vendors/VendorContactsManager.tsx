@@ -104,7 +104,7 @@ const contactFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   role: z.string().optional(),
   department: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   is_primary: z.boolean().default(false),
   notes: z.string().optional(),

@@ -45,7 +45,7 @@ import type { POSCustomer } from './POSCustomerSelector';
 const formSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
   last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be 100 characters or less'),
-  phone: z.string().max(20, 'Phone must be 20 characters or less').optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
 });

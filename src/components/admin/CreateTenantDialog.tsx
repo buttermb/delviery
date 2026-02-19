@@ -67,7 +67,7 @@ const createTenantSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
   owner_email: z.string().email('Invalid email address'),
   owner_name: z.string().min(2, 'Owner name must be at least 2 characters'),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   subscription_plan: z.enum(['starter', 'professional', 'enterprise']),
   subscription_status: z.enum(['trial', 'active', 'suspended']),
   state: z.string().optional(),

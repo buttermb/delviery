@@ -48,7 +48,7 @@ const paymentSettingsSchema = z.object({
   accept_usdt: z.boolean().default(false),
   // Payment details
   zelle_username: z.string().max(100).optional().nullable(),
-  zelle_phone: z.string().max(20).optional().nullable(),
+  zelle_phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')).nullable(),
   cashapp_username: z.string().max(100).optional().nullable(),
   bitcoin_address: z.string().max(100).optional().nullable(),
   lightning_address: z.string().max(200).optional().nullable(),

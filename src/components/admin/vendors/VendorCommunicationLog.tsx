@@ -109,7 +109,7 @@ const communicationFormSchema = z.object({
   purchase_order_id: z.string().optional(),
   contact_name: z.string().optional(),
   contact_email: z.string().email('Invalid email').optional().or(z.literal('')),
-  contact_phone: z.string().optional(),
+  contact_phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   communication_date: z.string().optional(),
 });
 

@@ -77,7 +77,7 @@ const organizationFormSchema = z.object({
 
   // Contact
   email: z.string().email('Invalid email').optional().or(z.literal('')),
-  phone: z.string().max(20).optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
 
   // Address

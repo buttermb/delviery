@@ -25,7 +25,7 @@ const formSchema = z.object({
     company_name: z.string().optional(),
     company_address: z.string().optional(),
     company_email: z.string().email().optional().or(z.literal("")),
-    company_phone: z.string().optional(),
+    company_phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
     logo_url: z.string().url().optional().or(z.literal("")),
 });
 
