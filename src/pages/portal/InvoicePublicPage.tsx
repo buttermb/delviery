@@ -202,9 +202,24 @@ export default function InvoicePublicPage() {
                                 )}
                                 <Separator />
                                 <div className="flex justify-between pt-2">
-                                    <span className="text-lg font-bold text-slate-900">Total Due</span>
+                                    <span className="text-lg font-bold text-slate-900">Total</span>
                                     <span className="text-2xl font-bold text-primary">{formatCurrency(invoice.total)}</span>
                                 </div>
+                                {(invoice.amount_paid ?? 0) > 0 && (
+                                    <>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-emerald-600">Amount Paid</span>
+                                            <span className="font-medium text-emerald-600">{formatCurrency(invoice.amount_paid ?? 0)}</span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between pt-1">
+                                            <span className="text-base font-bold text-slate-900">Amount Due</span>
+                                            <span className={`text-xl font-bold ${Math.max(0, invoice.total - (invoice.amount_paid ?? 0)) > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                {formatCurrency(Math.max(0, invoice.total - (invoice.amount_paid ?? 0)))}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 

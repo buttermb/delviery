@@ -27,6 +27,7 @@ interface InvoiceData {
   tax: number;
   taxRate?: number;
   total: number;
+  amountPaid?: number;
   notes?: string;
 }
 
@@ -201,6 +202,20 @@ export function InvoicePDF({ invoice }: { invoice: InvoiceData }) {
             <Text style={styles.totalLabel}>Total:</Text>
             <Text style={styles.totalValue}>${invoice.total.toFixed(2)}</Text>
           </View>
+          {(invoice.amountPaid ?? 0) > 0 && (
+            <>
+              <View style={styles.totalRow}>
+                <Text style={[styles.totalLabel, { color: '#22c55e' }]}>Amount Paid:</Text>
+                <Text style={[styles.totalValue, { color: '#22c55e' }]}>${(invoice.amountPaid ?? 0).toFixed(2)}</Text>
+              </View>
+              <View style={[styles.totalRow, { borderTop: '1 solid #e5e7eb', paddingTop: 5, marginTop: 5 }]}>
+                <Text style={[styles.totalLabel, { fontWeight: 'bold' }]}>Amount Due:</Text>
+                <Text style={[styles.totalValue, { fontWeight: 'bold', color: Math.max(0, invoice.total - (invoice.amountPaid ?? 0)) > 0 ? '#ef4444' : '#22c55e' }]}>
+                  ${Math.max(0, invoice.total - (invoice.amountPaid ?? 0)).toFixed(2)}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Notes */}

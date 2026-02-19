@@ -10,6 +10,7 @@ export interface InvoicePDFGeneratorProps {
   companyName?: string;
   companyAddress?: string;
   paymentInstructions?: string;
+  amountPaid?: number;
 }
 
 export function generateInvoicePDF({
@@ -19,6 +20,7 @@ export function generateInvoicePDF({
   companyName = 'BigMike Wholesale',
   companyAddress = '',
   paymentInstructions = 'Please remit payment within 30 days.',
+  amountPaid = 0,
 }: InvoicePDFGeneratorProps): void {
   try {
     const pdf = new jsPDF({
@@ -149,7 +151,39 @@ export function generateInvoicePDF({
     pdf.setFont('helvetica', 'bold');
     pdf.text('Total:', totalsX, yPosition);
     pdf.text(`$${invoice.total.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-    yPosition += 10;
+    yPosition += 8;
+
+    // Partial payment indicator
+    if (amountPaid > 0) {
+      const balanceDue = Math.max(0, invoice.total - amountPaid);
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(34, 197, 94);
+      pdf.text('Amount Paid:', totalsX, yPosition);
+      pdf.text(`$${amountPaid.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      yPosition += 6;
+
+      pdf.setLineWidth(0.5);
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(totalsX, yPosition, pageWidth - margin, yPosition);
+      yPosition += 6;
+
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      if (balanceDue > 0) {
+        pdf.setTextColor(239, 68, 68);
+      } else {
+        pdf.setTextColor(34, 197, 94);
+      }
+      pdf.text('Amount Due:', totalsX, yPosition);
+      pdf.text(`$${balanceDue.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      yPosition += 8;
+
+      pdf.setTextColor(0, 0, 0);
+    }
+
+    yPosition += 2;
 
     // Payment Instructions
     if (paymentInstructions) {
