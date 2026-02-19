@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,10 @@ export default function CRMSettingsPage() {
             company_phone: "",
             logo_url: "",
         },
+    });
+
+    const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+        isDirty: form.formState.isDirty,
     });
 
     useEffect(() => {
@@ -229,6 +235,12 @@ export default function CRMSettingsPage() {
                     </div>
                 </form>
             </Form>
+
+            <UnsavedChangesDialog
+                open={showBlockerDialog}
+                onConfirmLeave={confirmLeave}
+                onCancelLeave={cancelLeave}
+            />
         </div>
     );
 }

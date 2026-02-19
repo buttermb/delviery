@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/unsaved-changes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,6 +76,10 @@ export default function CustomerForm() {
       status: 'active',
     },
     mode: 'onBlur',
+  });
+
+  const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+    isDirty: form.formState.isDirty,
   });
 
   useEffect(() => {
@@ -463,6 +469,12 @@ export default function CustomerForm() {
             </div>
           </form>
         </Form>
+
+        <UnsavedChangesDialog
+          open={showBlockerDialog}
+          onConfirmLeave={confirmLeave}
+          onCancelLeave={cancelLeave}
+        />
       </div>
     </div>
   );

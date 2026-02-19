@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -78,6 +80,10 @@ export default function CreateInvoicePage() {
             tax_rate: 0,
             notes: "",
         },
+    });
+
+    const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+        isDirty: form.formState.isDirty || lineItems.length > 0,
     });
 
     // Calculate totals
@@ -379,6 +385,12 @@ export default function CreateInvoicePage() {
                     </div>
                 </form>
             </Form>
+
+            <UnsavedChangesDialog
+                open={showBlockerDialog}
+                onConfirmLeave={confirmLeave}
+                onCancelLeave={cancelLeave}
+            />
         </div>
     );
 }
