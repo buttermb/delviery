@@ -5,9 +5,11 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { BarChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ZReport } from '@/components/pos/ZReport';
+import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -79,11 +81,11 @@ export default function ZReportPanel() {
             {selectedShiftId && <ZReport shiftId={selectedShiftId} />}
 
             {!selectedShiftId && shifts && shifts.length === 0 && (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                        No closed shifts found. Close a shift to generate a Z-Report.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={BarChart}
+                    title="No shift reports yet"
+                    description="Reports are generated when you complete a shift"
+                />
             )}
         </div>
     );
