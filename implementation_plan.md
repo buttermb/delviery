@@ -88,7 +88,7 @@
 
 ## Phase 4: Invoice Partial Payments (12 tasks)
 
-- [ ] Task 41: Create InvoicePaymentDialog — New file: src/components/admin/invoices/InvoicePaymentDialog.tsx. Props: open, onOpenChange, invoice (with total, amount_paid, balance), onSuccess. Fields: payment amount (default: remaining balance, editable for partial), payment method (select: cash, check, bank_transfer, card), payment date (default today), reference/note (optional text). Zod validation: amount > 0, amount <= remaining balance. RHF form.
+- [x] Task 41: Create InvoicePaymentDialog — New file: src/components/admin/invoices/InvoicePaymentDialog.tsx. Props: open, onOpenChange, invoice (with total, amount_paid, balance), onSuccess. Fields: payment amount (default: remaining balance, editable for partial), payment method (select: cash, check, bank_transfer, card), payment date (default today), reference/note (optional text). Zod validation: amount > 0, amount <= remaining balance. RHF form.
 
 - [ ] Task 42: Wire InvoicePaymentDialog to InvoiceDetailPage — Import dialog, add useState<boolean>, add "Record Payment" button (visible when balance > 0), pass invoice data, onSuccess invalidates invoice detail query + shows toast "Payment of $X recorded".
 
