@@ -56,7 +56,7 @@
 
 - [x] Task 26: Sanitize search in CRM pages — No unsanitized .ilike() calls found; CRM pages use client-side search, and useCRMInvoices.ts already uses escapePostgresLike(). No changes needed.
 
-- [ ] Task 27: Sanitize search in Marketplace pages — Find .ilike() calls. Apply sanitizeForIlike().
+- [x] Task 27: Sanitize search in Marketplace pages — No .ilike() calls found; Marketplace pages use client-side filtering or don't have search. No changes needed.
 
 - [ ] Task 28: Sanitize search in any remaining pages — Run grep -rn "\.ilike\(" src/ to find ALL remaining .ilike calls. Apply sanitizeForIlike() to every one.
 
