@@ -477,7 +477,7 @@
 - [x] Task 269: 404 for admin routes — Already implemented: App.tsx line 1042 has catch-all `<Route path="*">` inside `/:tenantSlug/admin/*` rendering AdminNotFoundPage. AdminNotFoundPage.tsx shows "Page Not Found" card with FileQuestion icon, "Back to Dashboard" button using tenantSlug, "Go Back" button, dev-mode path display. Uses logger, @/ imports. No changes needed.
 - [x] Task 270: 404 for invalid tenant slug — Already implemented: TenantAdminProtectedRoute.tsx validates slug via getTenantFromSlug(), renders TenantNotFoundPage when slug doesn't exist in DB. TenantNotFoundPage.tsx shows "Business Not Found" card with Building2 icon, slug display, Sign Up and Go Back buttons. Shows loading while checking. No changes needed.
 - [x] Task 271: Not-found → ProductDetail — Already implemented: useProduct hook uses .maybeSingle() (returns null for non-existent IDs), ProductDetailsPage.tsx lines 102-125 show centered Card with Package icon, "Product not found" message, and "Back to Products" button. Filters by tenant_id. No changes needed.
-- [ ] Task 272: Not-found � ClientDetail
+- [x] Task 272: Not-found → ClientDetail — Already implemented: both ClientDetailPage.tsx (CRM, lines 55-77, Users icon) and ClientDetail.tsx (Wholesale, lines 117-139, Building2 icon) show "Client not found" card with back button when client is null. Both hooks (useClient, useClientDetail) use .maybeSingle(). No changes needed.
 - [ ] Task 273: Not-found � InvoiceDetail
 - [ ] Task 274: Run npx tsc --noEmit � Checkpoint.
 
