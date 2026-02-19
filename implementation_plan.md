@@ -98,7 +98,7 @@
 
 - [x] Task 45: Add VOID watermark to cancelled invoices — In InvoiceDetailPage, when invoice.status === 'cancelled': overlay a semi-transparent red "VOID" text rotated 45deg across the invoice preview. Disable all action buttons except "Delete".
 
-- [ ] Task 46: Add overdue auto-detection to InvoiceDetailPage — Compute: isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent','partial'].includes(invoice.status). If true: render red "Overdue" Badge next to status badge. Show days overdue count.
+- [x] Task 46: Add overdue auto-detection to InvoiceDetailPage — Compute: isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent','partial'].includes(invoice.status). If true: render red "Overdue" Badge next to status badge. Show days overdue count.
 
 - [ ] Task 47: Add overdue badges to InvoicesPage list — In InvoicesPage.tsx table, add same overdue computation per row. Show red "Overdue" badge in status column for qualifying invoices. Add "Overdue" as a filter option.
 

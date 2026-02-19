@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import {
     Table,
@@ -175,6 +175,9 @@ export default function InvoiceDetailPage() {
     const isOverdue = invoice.due_date
         && new Date(invoice.due_date) < new Date()
         && ['sent', 'partially_paid'].includes(invoice.status);
+    const daysOverdue = isOverdue && invoice.due_date
+        ? differenceInCalendarDays(new Date(), new Date(invoice.due_date))
+        : 0;
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -210,7 +213,11 @@ export default function InvoiceDetailPage() {
                                     Invoice #{invoice.invoice_number}
                                 </h1>
                                 {getStatusBadge(invoice.status)}
-                                {isOverdue && <Badge variant="destructive">Overdue</Badge>}
+                                {isOverdue && (
+                                    <Badge variant="destructive">
+                                        Overdue {daysOverdue > 0 && `(${daysOverdue} day${daysOverdue === 1 ? '' : 's'})`}
+                                    </Badge>
+                                )}
                             </div>
                             <p className="text-muted-foreground">
                                 Created on {format(new Date(invoice.created_at), "PPP")}
