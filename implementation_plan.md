@@ -16,7 +16,7 @@
 
 - [x] Task 7: Filter sidebar by feature flags — In the sidebar rendering component, import useTenantFeatureToggles. Filter nav items: if item.featureFlag exists and !isEnabled(item.featureFlag), hide the item. Core items (no featureFlag) always show.
 
-- [ ] Task 8: Create FeatureProtectedRoute wrapper — File: src/components/admin/FeatureProtectedRoute.tsx. Wraps route content. Checks useTenantFeatureToggles.isEnabled(featureId). If disabled: show card with lock icon, "This feature is not enabled", "Enable it in Settings → Features" with link to settings page. Don't redirect — let them see where they are.
+- [x] Task 8: Create FeatureProtectedRoute wrapper — File: src/components/admin/FeatureProtectedRoute.tsx. Wraps route content. Checks useTenantFeatureToggles.isEnabled(featureId). If disabled: show card with lock icon, "This feature is not enabled", "Enable it in Settings → Features" with link to settings page. Don't redirect — let them see where they are.
 
 - [ ] Task 9: Apply FeatureGate to POS routes — Wrap POS pages (CashRegister, POSHub, Shifts, ZReport) with FeatureProtectedRoute featureId="pos" in App.tsx.
 
