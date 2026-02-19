@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,7 +158,19 @@ export default function OrderTrackingPage() {
     refetchInterval: 10000, // Poll every 10 seconds as fallback
   });
 
-  // Realtime subscription for instant order status updates
+  // Track previous status to show toast on change
+  const prevStatusRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (order?.status && prevStatusRef.current && order.status !== prevStatusRef.current) {
+      const label = order.status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      toast.info(`Order status updated to ${label}`);
+    }
+    if (order?.status) {
+      prevStatusRef.current = order.status;
+    }
+  }, [order?.status]);
+
+  // Realtime subscription for instant order status updates (orders + marketplace_orders)
   useEffect(() => {
     if (!orderId || !tenantId) return;
 
@@ -173,7 +185,20 @@ export default function OrderTrackingPage() {
           filter: `id=eq.${orderId}`,
         },
         (payload) => {
-          logger.debug('Order status update received', payload.new, 'OrderTrackingPage');
+          logger.debug('Order status update received (orders)', payload.new, 'OrderTrackingPage');
+          queryClient.invalidateQueries({ queryKey: ['customer-order', orderId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'marketplace_orders',
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          logger.debug('Order status update received (marketplace_orders)', payload.new, 'OrderTrackingPage');
           queryClient.invalidateQueries({ queryKey: ['customer-order', orderId] });
         }
       )
