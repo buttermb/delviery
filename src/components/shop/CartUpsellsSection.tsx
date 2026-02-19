@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -32,7 +32,6 @@ export function CartUpsellsSection({
 }: CartUpsellsSectionProps) {
     const { storeSlug } = useParams();
     const { setCartItemCount } = useShop();
-    const { toast } = useToast();
     const scrollRef = useRef<HTMLDivElement>(null);
     const {
         isLuxuryTheme,
@@ -63,26 +62,26 @@ export function CartUpsellsSection({
                 }
 
                 // Cast and map to MarketplaceProduct interface
-                const allProducts = (data as unknown as any[]) || [];
+                const allProducts = (data as unknown as Record<string, unknown>[]) || [];
 
                 return allProducts
-                    .filter((p: any) => (p.stock_quantity || 0) > 0 && !excludeProductIds.includes(p.product_id))
-                    .map((p: any) => ({
-                        product_id: p.product_id,
-                        product_name: p.product_name,
-                        category: p.category || '',
-                        strain_type: p.strain_type || '', // Ensure field exists
-                        price: p.price,
-                        description: p.description || '',
-                        image_url: p.image_url,
-                        images: p.images || [],
-                        thc_content: p.thc_content,
-                        cbd_content: p.cbd_content,
+                    .filter((p) => ((p.stock_quantity as number) || 0) > 0 && !excludeProductIds.includes(p.product_id as string))
+                    .map((p) => ({
+                        product_id: p.product_id as string,
+                        product_name: p.product_name as string,
+                        category: (p.category as string) || '',
+                        strain_type: (p.strain_type as string) || '',
+                        price: p.price as number,
+                        description: (p.description as string) || '',
+                        image_url: p.image_url as string | null,
+                        images: (p.images as string[]) || [],
+                        thc_content: p.thc_content as number | null,
+                        cbd_content: p.cbd_content as number | null,
                         is_visible: true,
                         display_order: 0,
-                        stock_quantity: p.stock_quantity,
-                        unit_type: p.unit_type,
-                        min_expiry_days: p.min_expiry_days
+                        stock_quantity: p.stock_quantity as number,
+                        unit_type: p.unit_type as string | null,
+                        min_expiry_days: p.min_expiry_days as number | undefined
                     }))
                     .slice(0, maxItems);
             } catch (err) {
@@ -119,8 +118,7 @@ export function CartUpsellsSection({
             minExpiryDays: product.min_expiry_days,
             variant: product.strain_type
         });
-        toast({
-            title: 'Added to cart',
+        toast.success('Added to cart', {
             description: `${product.product_name} has been added to your cart.`
         });
     };

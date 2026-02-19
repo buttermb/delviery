@@ -93,13 +93,13 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                     const parsed = JSON.parse(guestCart);
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         // Convert guest cart format to shop cart format if needed
-                        const migrated = parsed.map((item: any) => ({
-                            productId: item.product_id || item.productId,
-                            quantity: item.quantity || 1,
-                            price: item.price || 0,
-                            name: item.name || 'Unknown Product',
-                            imageUrl: item.imageUrl || item.image_url || null,
-                            variant: item.selected_weight || item.variant,
+                        const migrated = parsed.map((item: Record<string, unknown>) => ({
+                            productId: (item.product_id || item.productId) as string,
+                            quantity: (item.quantity as number) || 1,
+                            price: (item.price as number) || 0,
+                            name: (item.name as string) || 'Unknown Product',
+                            imageUrl: (item.imageUrl || item.image_url || null) as string | null,
+                            variant: (item.selected_weight || item.variant) as string | undefined,
                         }));
                         // Save migrated cart and clear old
                         safeStorage.setItem(cartKey, JSON.stringify(migrated));

@@ -418,7 +418,7 @@
 - [x] Task 219: Audit shop homepage loads — Already implemented from Part A (Task 69): ShopLayout fetches store by slug via RPC, has loading skeleton, "Store Not Found" error state, inactive "Coming Soon" state, age verification gate, luxury/default themes. StorefrontPage renders configurable sections (hero, deals, hot items, product grid) with sensible defaults. Header has nav links, cart, search, mobile menu. Footer, CartDrawer, FloatingCartButton, MobileBottomNav all wired. Zero TS errors. No changes needed.
 - [x] Task 220: Fix product browsing (filters, search, sort) — ProductCatalogPage.tsx already has working search, category filters, strain type filters, sorting (name/price/THC/newest), pagination, and grid/list views. Fixed ProductGridSection.tsx: replaced useToast with toast from sonner, replaced inline query key with queryKeys.shopProducts.list(), removed (supabase as any) cast, replaced all `any` types with proper `unknown` casts and LocalProduct types.
 - [x] Task 221: Fix product detail page — ProductDetailPage.tsx was already fully implemented (image gallery, description, price, add-to-cart, reviews, related products, SEO). Fixed bug: separated `showZoom` (dialog) from `isHovering` (image hover scale effect) to prevent hover from opening the zoom dialog. Added cursor-zoom-in and click handler.
-- [ ] Task 222: Fix cart functionality
+- [x] Task 222: Fix cart functionality
 - [ ] Task 223: Fix checkout flow
 - [ ] Task 224: Fix order confirmation
 - [ ] Task 225: Fix customer order tracking
