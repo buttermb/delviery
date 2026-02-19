@@ -218,6 +218,16 @@ export function CreateProductForm({
             valid = false;
           }
         }
+        // Block negative values on available_quantity and low_stock_alert
+        const quantityFields = [formData.available_quantity, formData.low_stock_alert];
+        for (const qf of quantityFields) {
+          if (qf !== "" && qf !== undefined && qf !== null) {
+            const num = typeof qf === 'string' ? parseFloat(qf as string) : (qf as number);
+            if (!isNaN(num) && num < 0) {
+              valid = false;
+            }
+          }
+        }
         break;
       }
 

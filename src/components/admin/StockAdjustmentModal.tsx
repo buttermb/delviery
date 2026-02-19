@@ -245,7 +245,7 @@ export function StockAdjustmentModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!parsedQuantity || !reason) return;
+    if (!parsedQuantity || parsedQuantity < 0 || !reason) return;
 
     adjustmentMutation.mutate({
       type: adjustmentType,

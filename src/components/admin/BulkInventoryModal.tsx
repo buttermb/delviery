@@ -196,7 +196,7 @@ export function BulkInventoryModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!parsedQuantity || !reason || selectedProducts.length === 0) return;
+    if (!parsedQuantity || parsedQuantity < 0 || !reason || selectedProducts.length === 0) return;
     bulkAdjustmentMutation.mutate();
   };
 

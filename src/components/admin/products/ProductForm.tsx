@@ -196,6 +196,23 @@ export function ProductForm({
             }
         }
 
+        // Validate quantity fields are not negative
+        const quantityFields: { label: string; value: string }[] = [
+            { label: "Initial Quantity", value: formData.available_quantity },
+            { label: "Low Stock Alert", value: formData.low_stock_alert },
+        ];
+
+        for (const field of quantityFields) {
+            if (field.value !== "" && field.value !== undefined) {
+                const num = parseInt(field.value, 10);
+                if (!isNaN(num) && num < 0) {
+                    toast.error(`${field.label} cannot be negative`);
+                    setActiveTab("inventory");
+                    return;
+                }
+            }
+        }
+
         const sanitizedData: ProductFormData = {
             ...formData,
             name: sanitizeFormInput(formData.name, 100),
