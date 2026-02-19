@@ -26,7 +26,7 @@
 
 - [x] Task 12: Apply FeatureGate to Marketing routes — Wrap CouponManagement, Campaigns with featureId="marketing_hub".
 
-- [ ] Task 13: Apply FeatureGate to CRM routes — Wrap CRM Hub pages with featureId="crm_advanced".
+- [x] Task 13: Apply FeatureGate to CRM routes — Wrap CRM Hub pages with featureId="crm_advanced".
 
 - [ ] Task 14: Apply FeatureGate to remaining advanced routes — Purchase Orders → 'purchase_orders', Vendor pages → 'vendor_management', QC → 'quality_control', Live Chat → 'live_chat', Fleet → 'fleet_management'.
 
