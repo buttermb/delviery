@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { useDebounce } from '@/hooks/useDebounce';
 import {
   Building2,
   Search,
@@ -96,6 +97,7 @@ export function OrganizationList({
   const [statusFilter, setStatusFilter] = useState<OrganizationStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<OrganizationType | 'all'>('all');
   const [deleteTarget, setDeleteTarget] = useState<OrganizationWithStats | null>(null);
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   const {
     organizations,
@@ -106,7 +108,7 @@ export function OrganizationList({
     isDeleting,
   } = useOrganizations({
     filters: {
-      search: searchQuery || undefined,
+      search: debouncedSearch || undefined,
       status: statusFilter === 'all' ? undefined : statusFilter,
       organization_type: typeFilter === 'all' ? undefined : typeFilter,
     },

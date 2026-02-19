@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenant } from '@/contexts/TenantContext';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,8 @@ export function GlobalProductCatalog() {
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string>('__all__');
     const [brandFilter, setBrandFilter] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 300);
+    const debouncedBrand = useDebounce(brandFilter, 300);
 
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<GlobalProduct | null>(null);
@@ -67,12 +70,12 @@ export function GlobalProductCatalog() {
 
     // Fetch Global Products
     const { data: products = [], isLoading } = useQuery({
-        queryKey: ['global-products', searchQuery, categoryFilter, brandFilter],
+        queryKey: ['global-products', debouncedSearch, categoryFilter, debouncedBrand],
         queryFn: async () => {
             const { data, error } = await (supabase.rpc as any)('search_global_products', {
-                p_query: searchQuery || null,
+                p_query: debouncedSearch || null,
                 p_category: categoryFilter === '__all__' ? null : categoryFilter || null,
-                p_brand: brandFilter || null,
+                p_brand: debouncedBrand || null,
                 p_limit: 50,
                 p_offset: 0
             });

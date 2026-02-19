@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,6 +96,7 @@ export default function TenantsListPage() {
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Dialog states for bulk actions
   const [changePlanDialogOpen, setChangePlanDialogOpen] = useState(false);
@@ -110,13 +112,13 @@ export default function TenantsListPage() {
 
   // Fetch tenants
   const { data: tenants = [], isLoading } = useQuery({
-    queryKey: ['super-admin-tenants-list', searchQuery, statusFilter, planFilter],
+    queryKey: ['super-admin-tenants-list', debouncedSearch, statusFilter, planFilter],
     queryFn: async () => {
       let query = supabase.from('tenants').select('*');
 
-      if (searchQuery) {
+      if (debouncedSearch) {
         query = query.or(
-          `business_name.ilike.%${escapePostgresLike(searchQuery)}%,owner_email.ilike.%${escapePostgresLike(searchQuery)}%,id.eq.${searchQuery}`
+          `business_name.ilike.%${escapePostgresLike(debouncedSearch)}%,owner_email.ilike.%${escapePostgresLike(debouncedSearch)}%,id.eq.${debouncedSearch}`
         );
       }
 
