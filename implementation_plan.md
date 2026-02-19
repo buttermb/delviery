@@ -228,7 +228,7 @@
 
 - [x] Task 106: Add duplicate client check — In AddWholesaleClient form: check business_name + tenant_id uniqueness before creating. Show error if duplicate.
 
-- [ ] Task 107: Add required field indicators — All required form fields should show red asterisk (*) after label. Check: product name, price, customer name, client business_name, invoice amount. Add to any missing.
+- [x] Task 107: Add required field indicators — All required form fields should show red asterisk (*) after label. Check: product name, price, customer name, client business_name, invoice amount. Add to any missing.
 
 - [ ] Task 108: Fix form error messages visibility — All Zod validation errors should show below the field in red text. Check forms use FormMessage or ErrorMessage component. Fix any that don't show errors.
 

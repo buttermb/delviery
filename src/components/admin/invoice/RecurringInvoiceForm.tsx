@@ -138,12 +138,12 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Schedule Name</Label>
+              <Label>Schedule Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input {...register("name")} placeholder="Monthly Retainer" maxLength={200} />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Client</Label>
+              <Label>Client <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Select
                 value={watch("client_id")}
                 onValueChange={(v) => setValue("client_id", v)}
@@ -166,7 +166,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
           {/* Schedule */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Frequency</Label>
+              <Label>Frequency <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Select
                 value={frequency}
                 onValueChange={(v: any) => setValue("frequency", v)}
@@ -184,7 +184,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>First Invoice Date</Label>
+              <Label>First Invoice Date <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input type="date" {...register("next_run_date")} />
               {errors.next_run_date && <p className="text-sm text-destructive">{errors.next_run_date.message}</p>}
             </div>

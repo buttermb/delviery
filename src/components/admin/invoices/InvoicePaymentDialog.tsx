@@ -212,7 +212,7 @@ export function InvoicePaymentDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Amount */}
           <div className="space-y-2">
-            <Label htmlFor="payment-amount">Amount *</Label>
+            <Label htmlFor="payment-amount">Amount <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Controller
               name="amount"
               control={control}
@@ -244,7 +244,7 @@ export function InvoicePaymentDialog({
 
           {/* Payment Method */}
           <div className="space-y-2">
-            <Label>Payment Method *</Label>
+            <Label>Payment Method <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Controller
               name="payment_method"
               control={control}
@@ -273,7 +273,7 @@ export function InvoicePaymentDialog({
 
           {/* Payment Date */}
           <div className="space-y-2">
-            <Label>Payment Date *</Label>
+            <Label>Payment Date <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Controller
               name="payment_date"
               control={control}

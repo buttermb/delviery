@@ -155,7 +155,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="thca">Cannabinoid Percentage *</Label>
+            <Label htmlFor="thca">Cannabinoid Percentage <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <div className="flex items-center mt-1.5">
               <Input
                 id="thca"
@@ -194,7 +194,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
         </div>
 
         <div>
-          <Label htmlFor="weight">Weight/Size *</Label>
+          <Label htmlFor="weight">Weight/Size <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
           <div className="flex gap-2 mt-1.5">
             <Input
               id="weight"
