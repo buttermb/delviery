@@ -359,7 +359,7 @@
 - [x] Task 172: Sanitize search in CustomerManagement.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 - [x] Task 173: Sanitize search in InvoicesPage.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). useCRMInvoices.ts already uses escapePostgresLike(). No changes needed.
 - [x] Task 174: Sanitize search in Products/Inventory pages — No .ilike() calls found; search is client-side via JS .filter()/.includes(). useProductTags.ts already uses escapePostgresLike(). No changes needed.
-- [ ] Task 175: Sanitize search in DisposableMenuOrders.tsx
+- [x] Task 175: Sanitize search in DisposableMenuOrders.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 - [ ] Task 176: Sanitize search in CRM pages
 - [ ] Task 177: Sanitize search in Marketplace pages
 - [ ] Task 178: Sanitize ALL remaining .ilike() � grep and fix every one
