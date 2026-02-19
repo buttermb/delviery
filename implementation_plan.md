@@ -353,7 +353,7 @@
 
 ## Phase B2: Search Sanitization (12 tasks)
 
-- [ ] Task 169: Create sanitizeSearchInput � src/lib/sanitizeSearch.ts. Escape %, _, \. Limit 100 chars. sanitizeForIlike().
+- [x] Task 169: Create sanitizeSearchInput — src/lib/sanitizeSearch.ts. Escape %, _, \. Limit 100 chars. sanitizeForIlike(). Already exists with full implementation.
 - [ ] Task 170: Sanitize search in Orders.tsx
 - [ ] Task 171: Sanitize search in WholesaleClients.tsx
 - [ ] Task 172: Sanitize search in CustomerManagement.tsx
