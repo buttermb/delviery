@@ -464,7 +464,7 @@
 - [x] Task 259: ConfirmDeleteDialog on all deletes — Replaced raw AlertDialog with standardized ConfirmDeleteDialog in 11 files: CustomerDeliveryAddressesTab, CustomerNotes, OrganizationList, MenuTemplates, ProductTagsManager, ProductVariants, RecurringOrdersList, StorefrontBuilder, VendorContactsManager, VendorCommunicationLog, VendorDocumentManager. All delete actions now use consistent ConfirmDeleteDialog with haptic feedback, loading states, and unified styling.
 - [x] Task 260: Modal close after success — Audited all dialog/modal forms. Only QuickCreateCustomerDialog.tsx was missing onOpenChange(false) in mutation onSuccess. Added close call. All other dialogs (InvoicePaymentDialog, POSRefundDialog, CreateClientDialog, EditClientDialog, CreateWholesaleClientDialog, StockAdjustmentDialog, AddCourierDialog, AddRunnerDialog, CreateMenuDialog, etc.) already close on success.
 - [x] Task 261: Dirty state warning on navigate — Already implemented on SettingsPage, ProductManagement, StorefrontDesignPage. Extended coverage to CreateInvoicePage (isDirty from form + lineItems), CustomerForm (isDirty from form), CRMSettingsPage (isDirty from form). All use useUnsavedChanges hook + UnsavedChangesDialog with beforeunload + React Router useBlocker.
-- [ ] Task 262: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 262: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B9: Error Handling and Loading (12 tasks)
 
