@@ -178,7 +178,7 @@
 
 - [x] Task 83: Fix shop empty state — New store with zero products: shop page should show "This store doesn't have any products yet" instead of blank page or loading spinner.
 
-- [ ] Task 84: Run npx tsc --noEmit — Fix all TS errors from Phase 6. Checkpoint.
+- [x] Task 84: Run npx tsc --noEmit — Fix all TS errors from Phase 6. Checkpoint.
 
 ## Phase 7: Table & List Polish (14 tasks)
 
