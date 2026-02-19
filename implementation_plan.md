@@ -6,7 +6,7 @@
 
 - [x] Task 2: Create useTenantFeatureToggles hook — New file: src/hooks/useTenantFeatureToggles.ts. Reads feature toggles from tenant_settings table (JSONB column) or falls back to FEATURE_FLAGS defaults. Returns: { isEnabled: (flag: FeatureFlag) => boolean, toggleFeature: (flag: FeatureFlag, enabled: boolean) => Promise<void>, flags: Record<FeatureFlag, boolean>, isLoading: boolean }. Uses TanStack Query with 5min staleTime. toggleFeature upserts to tenant_settings and invalidates query. If tenant_settings table or column doesn't exist, just return defaults — don't crash.
 
-- [ ] Task 3: Create FeatureGate component — New file: src/components/admin/FeatureGate.tsx. Props: feature: FeatureFlag, children: ReactNode, fallback?: ReactNode. Renders children only if isEnabled(feature) returns true. Otherwise renders fallback or null. Simple and lightweight.
+- [x] Task 3: Create FeatureGate component — New file: src/components/admin/FeatureGate.tsx. Props: feature: FeatureFlag, children: ReactNode, fallback?: ReactNode. Renders children only if isEnabled(feature) returns true. Otherwise renders fallback or null. Simple and lightweight.
 
 - [ ] Task 4: Create FeatureTogglesPanel — New file: src/components/admin/settings/FeatureTogglesPanel.tsx. Card-based grid showing all feature flags. Each card: icon, title, description, Switch toggle. Group into sections: "Core Features" (always on, switches disabled), "Advanced Features" (toggleable). Uses useTenantFeatureToggles().toggleFeature on switch change. Shows toast on toggle.
 
