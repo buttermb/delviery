@@ -937,14 +937,14 @@ export function InvoicesPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
+                                    className="cursor-pointer select-none hover:bg-muted/50 sticky left-0 z-20 bg-background"
                                     onClick={() => handleSort('invoice_number')}
                                 >
                                     <span className="inline-flex items-center">Invoice # <SortIcon column="invoice_number" /></span>
                                 </TableHead>
                                 <TableHead>Client</TableHead>
                                 <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
+                                    className="cursor-pointer select-none hover:bg-muted/50 hidden lg:table-cell"
                                     onClick={() => handleSort('invoice_date')}
                                 >
                                     <span className="inline-flex items-center">Date <SortIcon column="invoice_date" /></span>
@@ -962,7 +962,7 @@ export function InvoicesPage() {
                                     <span className="inline-flex items-center justify-end w-full">Amount <SortIcon column="total" /></span>
                                 </TableHead>
                                 <TableHead
-                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
+                                    className="text-right cursor-pointer select-none hover:bg-muted/50 hidden lg:table-cell"
                                     onClick={() => handleSort('amount_paid')}
                                 >
                                     <span className="inline-flex items-center justify-end w-full">Amount Paid <SortIcon column="amount_paid" /></span>
@@ -987,12 +987,12 @@ export function InvoicesPage() {
                                 // Skeleton loading state
                                 [...Array(5)].map((_, i) => (
                                     <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                        <TableCell className="sticky left-0 z-10 bg-background"><Skeleton className="h-4 w-20" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                                        <TableCell className="text-right hidden lg:table-cell"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                                         <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
@@ -1025,7 +1025,7 @@ export function InvoicesPage() {
                                         className="cursor-pointer hover:bg-muted/50"
                                         onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
                                     >
-                                        <TableCell className="max-w-[200px]">
+                                        <TableCell className="max-w-[200px] sticky left-0 z-10 bg-background">
                                             <TruncatedText text={invoice.invoice_number} className="font-medium" maxWidthClass="max-w-[200px]" />
                                         </TableCell>
                                         <TableCell className="max-w-[200px]">
@@ -1036,7 +1036,7 @@ export function InvoicesPage() {
                                                 />
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden lg:table-cell">
                                             {format(new Date(invoice.invoice_date), "MMM d, yyyy")}
                                         </TableCell>
                                         <TableCell>
@@ -1045,7 +1045,7 @@ export function InvoicesPage() {
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(invoice.total)}
                                         </TableCell>
-                                        <TableCell className={`text-right font-medium ${
+                                        <TableCell className={`text-right font-medium hidden lg:table-cell ${
                                             invoice.status === 'paid' ? 'text-green-600' :
                                             invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
                                         }`}>

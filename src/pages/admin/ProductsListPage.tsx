@@ -534,6 +534,7 @@ export function ProductsListPage() {
     {
       header: 'Image',
       accessorKey: 'image_url',
+      className: 'hidden lg:table-cell',
       cell: (product) => (
         <img
           src={product.image_url || '/placeholder.svg'}
@@ -568,7 +569,7 @@ export function ProductsListPage() {
     {
       header: <SortableHeader field="category" label="Category" />,
       accessorKey: 'category',
-      className: 'max-w-[150px]',
+      className: 'max-w-[150px] hidden lg:table-cell',
       cell: (product) => (
         <Badge variant="outline" className="capitalize max-w-[140px] truncate">
           {product.category || 'Uncategorized'}

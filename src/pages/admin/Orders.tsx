@@ -686,7 +686,7 @@ export default function Orders() {
     {
       header: "Source",
       cell: (order) => getSourceBadge(order.order_source),
-      className: "w-[120px]"
+      className: "w-[120px] hidden lg:table-cell"
     },
     {
       header: <SortableHeader field="customer" label="Customer" />,
@@ -751,10 +751,10 @@ export default function Orders() {
         );
       }
     },
-    { header: "Method", accessorKey: "delivery_method", className: "capitalize" },
+    { header: "Method", accessorKey: "delivery_method", className: "capitalize hidden lg:table-cell" },
     {
       header: "ETA",
-      className: "w-[130px]",
+      className: "w-[130px] hidden lg:table-cell",
       cell: (order) => (
         <DeliveryETACell
           eta={etaMap[order.id]}
