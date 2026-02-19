@@ -269,7 +269,7 @@ export function QuickCreateCustomerDialog({
               name="customer_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Type</FormLabel>
+                  <FormLabel required>Customer Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

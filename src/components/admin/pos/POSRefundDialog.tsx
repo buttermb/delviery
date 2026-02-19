@@ -496,7 +496,7 @@ export function POSRefundDialog({
 
             {/* Refund Amount */}
             <div className="space-y-2">
-              <Label htmlFor="pos-refund-amount">Refund Amount</Label>
+              <Label htmlFor="pos-refund-amount">Refund Amount <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Controller
                 name="refundAmount"
                 control={control}
@@ -524,7 +524,7 @@ export function POSRefundDialog({
 
             {/* Refund Method */}
             <div className="space-y-2">
-              <Label htmlFor="pos-refund-method">Refund Method</Label>
+              <Label htmlFor="pos-refund-method">Refund Method <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Controller
                 name="refundMethod"
                 control={control}

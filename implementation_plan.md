@@ -459,7 +459,7 @@
 - [x] Task 254: Phone validation — Added z.string().regex(/^[\d\s\-+()]+$/).min(7).max(20) to all phone fields: SettingsPage, CreateTenantDialog, AddRunnerDialog, AddCourierDialog, QuickCreateCustomerDialog, OrganizationForm, InviteDriverStep, SettingsImportDialog, PaymentSettingsForm (zelle_phone), VendorContactsManager, VendorCommunicationLog (contact_phone), DeliveryTrackingPage, CRMSettingsPage (company_phone). CustomerForm, CRM Create/EditClientDialog, SignupPage, SaaS SignUpPage, validation.ts already had proper validation.
 - [x] Task 255: Duplicate product name check — ProductManagement.tsx already had checkNameUniqueness() (lines 437-495). Added duplicate name check to AddProductsStep.tsx onSubmitProduct: queries products by name+tenant_id before insert, shows "A product with this name already exists" toast if duplicate found.
 - [x] Task 256: Duplicate client check — CreateWholesaleClientDialog.tsx and admin CreateClientDialog.tsx already had duplicate checks. Added duplicate name check to CRM CreateClientDialog.tsx: queries crm_clients by name+account_id before insert, shows "A client with this name already exists" toast if duplicate found.
-- [ ] Task 257: Required field indicators (*)
+- [x] Task 257: Required field indicators (*) — Added `required` to QuickCreateCustomerDialog customer_type FormLabel, added red asterisk spans to POSRefundDialog Refund Amount and Refund Method labels. All other forms (AddRunnerDialog, AddCourierDialog, OrganizationForm, ProductForm, CreateClientDialog, etc.) already had required indicators.
 - [ ] Task 258: Form error visibility
 - [ ] Task 259: ConfirmDeleteDialog on all deletes
 - [ ] Task 260: Modal close after success
