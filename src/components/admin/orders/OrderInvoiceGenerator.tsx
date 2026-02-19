@@ -847,7 +847,16 @@ export function useOrderInvoiceSave() {
         .join('\n\n');
 
       // Insert invoice record into customer_invoices table
-      const result = await (supabase as any).from('customer_invoices').insert({
+      const insertClient = supabase as unknown as {
+        from: (table: string) => {
+          insert: (data: Record<string, unknown>) => {
+            select: (columns: string) => {
+              maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }>;
+            };
+          };
+        };
+      };
+      const result = await insertClient.from('customer_invoices').insert({
         tenant_id: tenant.id,
         customer_id: customerId,
         invoice_number: invoiceNumber,
