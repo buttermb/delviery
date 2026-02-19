@@ -596,13 +596,14 @@ export function TenantAdminCommandPalette() {
         )}
       </CommandList>
 
-      {/* Footer hint */}
+      {/* Footer hint — hide keyboard shortcuts on mobile */}
       <div className="border-t px-3 py-2 text-xs text-muted-foreground flex items-center justify-between bg-muted/30">
-        <span>
+        <span className="sm:inline hidden">
           <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px] mr-1">⌘K</kbd>
           to toggle
         </span>
-        <span className="flex items-center gap-3">
+        <span className="sm:hidden text-muted-foreground">Tap to select</span>
+        <span className="hidden sm:flex items-center gap-3">
           <span>
             <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px] mr-1">↑↓</kbd>
             navigate

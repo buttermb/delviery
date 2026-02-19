@@ -304,7 +304,7 @@
 
 - [x] Task 141: Fix dropdown menus on mobile — All Select/Combobox dropdowns should not overflow screen edges. Apply max-h and position properly on small screens.
 
-- [ ] Task 142: Fix command palette on mobile — If Command/search palette exists (Cmd+K): verify it's usable on mobile with proper sizing and keyboard handling.
+- [x] Task 142: Fix command palette on mobile — If Command/search palette exists (Cmd+K): verify it's usable on mobile with proper sizing and keyboard handling.
 
 - [ ] Task 143: Add pull-to-refresh on mobile pages — For LiveOrders page on mobile: add pull-to-refresh gesture that invalidates queries. Use native overscroll or library.
 
