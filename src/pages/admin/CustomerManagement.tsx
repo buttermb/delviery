@@ -570,10 +570,12 @@ export function CustomerManagement() {
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                           {customer.first_name?.[0]}{customer.last_name?.[0]}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium">
-                            {customer.first_name} {customer.last_name}
-                          </div>
+                        <div className="ml-4 max-w-[200px]">
+                          <TruncatedText
+                            text={`${customer.first_name} ${customer.last_name}`}
+                            className="text-sm font-medium"
+                            as="div"
+                          />
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             {customer._encryptedIndicator ? (
                               <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
@@ -582,7 +584,11 @@ export function CustomerManagement() {
                               </span>
                             ) : (
                               <>
-                                {customer.email || customer.phone || 'No contact'}
+                                <TruncatedText
+                                  text={customer.email || customer.phone || 'No contact'}
+                                  className="text-sm text-muted-foreground"
+                                  as="span"
+                                />
                                 {customer.email && (
                                   <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 )}

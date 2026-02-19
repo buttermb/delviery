@@ -186,7 +186,7 @@
 
 - [x] Task 86: Fix long text overflow in Products table — Product name, description, SKU columns. Apply truncation.
 
-- [ ] Task 87: Fix long text overflow in Customers table — Name, email, address columns. Apply truncation.
+- [x] Task 87: Fix long text overflow in Customers table — Name, email, address columns. Apply truncation.
 
 - [ ] Task 88: Fix long text overflow in WholesaleClients table — Business name, contact, notes columns. Apply truncation.
 
