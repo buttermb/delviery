@@ -74,6 +74,8 @@ import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
 import type { Database } from '@/integrations/supabase/types';
 
 import { ProductComparison } from '@/components/admin/products/ProductComparison';
+import { usePagination } from '@/hooks/usePagination';
+import { StandardPagination } from '@/components/shared/StandardPagination';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 // Extended product type to include archived_at field (added via migration)
@@ -374,6 +376,21 @@ export function ProductsListPage() {
     );
   }, [advancedFilters]);
 
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredProducts, {
+    defaultPageSize: 25,
+    persistInUrl: false,
+  });
+
   // Stats
   const stats = useMemo(() => {
     const totalProducts = products.length;
@@ -425,12 +442,12 @@ export function ProductsListPage() {
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    if (selectedProducts.length === filteredProducts.length) {
+    if (selectedProducts.length === paginatedItems.length) {
       setSelectedProducts([]);
     } else {
-      setSelectedProducts(filteredProducts.map((p) => p.id));
+      setSelectedProducts(paginatedItems.map((p) => p.id));
     }
-  }, [selectedProducts.length, filteredProducts]);
+  }, [selectedProducts.length, paginatedItems]);
 
   const handleRefresh = useCallback(async () => {
     await refetch();
@@ -479,7 +496,7 @@ export function ProductsListPage() {
   };
 
   const columnsPerRow = getColumnsPerRow();
-  const gridRowCount = Math.ceil(filteredProducts.length / columnsPerRow);
+  const gridRowCount = Math.ceil(paginatedItems.length / columnsPerRow);
 
   const gridVirtualizer = useVirtualizer({
     count: gridRowCount,
@@ -494,8 +511,8 @@ export function ProductsListPage() {
       header: (
         <Checkbox
           checked={
-            filteredProducts.length > 0 &&
-            selectedProducts.length === filteredProducts.length
+            paginatedItems.length > 0 &&
+            selectedProducts.length === paginatedItems.length
           }
           onCheckedChange={handleSelectAll}
           aria-label="Select all"
@@ -880,7 +897,7 @@ export function ProductsListPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0 sm:p-6">
-          {filteredProducts.length > 0 ? (
+          {paginatedItems.length > 0 ? (
             viewMode === 'grid' ? (
               <div
                 ref={gridParentRef}
@@ -896,7 +913,7 @@ export function ProductsListPage() {
                 >
                   {gridVirtualizer.getVirtualItems().map((virtualRow) => {
                     const startIndex = virtualRow.index * columnsPerRow;
-                    const rowProducts = filteredProducts.slice(
+                    const rowProducts = paginatedItems.slice(
                       startIndex,
                       startIndex + columnsPerRow
                     );
@@ -942,7 +959,7 @@ export function ProductsListPage() {
               <div className="-mx-4 sm:mx-0">
                 <ResponsiveTable
                   columns={columns}
-                  data={filteredProducts}
+                  data={paginatedItems}
                   keyExtractor={(item) => item.id}
                   isLoading={false}
                   mobileRenderer={renderMobileProduct}
@@ -979,6 +996,19 @@ export function ProductsListPage() {
             />
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {filteredProducts.length > 0 && (
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            pageSizeOptions={pageSizeOptions}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+          />
+        )}
       </Card>
 
       {/* Product Comparison Dialog */}

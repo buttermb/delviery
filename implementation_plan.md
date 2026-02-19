@@ -202,7 +202,7 @@
 
 - [x] Task 94: Verify pagination on Orders page — With many orders, verify pagination controls appear and work. Next/prev, page numbers, items per page selector. Fix if broken.
 
-- [ ] Task 95: Verify pagination on Products page — Same pagination check.
+- [x] Task 95: Verify pagination on Products page — Same pagination check.
 
 - [ ] Task 96: Verify pagination on Customers page — Same pagination check.
 
