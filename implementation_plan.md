@@ -104,7 +104,7 @@
 
 - [x] Task 48: Add payment columns to InvoicesPage list — Ensure columns show: Amount (total), Paid, Balance. Color code: green if fully paid, yellow if partial, red if overdue. Add sort by balance.
 
-- [ ] Task 49: Add isPending to all InvoiceDetailPage action buttons — Every button (Record Payment, Void, Send, Print, Edit, Delete) must have disabled={isPending} during mutations. Check each and fix missing ones.
+- [x] Task 49: Add isPending to all InvoiceDetailPage action buttons — Every button (Record Payment, Void, Send, Print, Edit, Delete) must have disabled={isPending} during mutations. Check each and fix missing ones.
 
 - [ ] Task 50: Add partial payment indicator to invoice PDF/print — If invoice has partial payments, show "Amount Paid: $X / Amount Due: $Y" on the printed invoice. If using OrderInvoiceGenerator, update the template.
 
