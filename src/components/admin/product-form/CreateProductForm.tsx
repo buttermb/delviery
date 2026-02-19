@@ -201,6 +201,16 @@ export function CreateProductForm({
         if (!price || price <= 0) {
           valid = false;
         }
+        // Block negative values on all price fields
+        const priceFields = [formData.sale_price, formData.cost_per_unit, formData.wholesale_price, formData.retail_price];
+        for (const pf of priceFields) {
+          if (pf !== "" && pf !== undefined && pf !== null) {
+            const num = typeof pf === 'string' ? parseFloat(pf) : (pf as number);
+            if (!isNaN(num) && num < 0) {
+              valid = false;
+            }
+          }
+        }
         const stock = formData.stock_quantity;
         if (stock !== "" && stock !== undefined && stock !== null) {
           const stockNum = typeof stock === 'string' ? parseFloat(stock as string) : (stock as number);

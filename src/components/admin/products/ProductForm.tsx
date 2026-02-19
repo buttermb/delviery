@@ -176,6 +176,26 @@ export function ProductForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate price fields are not negative
+        const priceFields: { label: string; value: string }[] = [
+            { label: "Cost per Unit", value: formData.cost_per_unit },
+            { label: "Wholesale Price", value: formData.wholesale_price },
+            { label: "Retail Price", value: formData.retail_price },
+            { label: "Minimum Price", value: formData.minimum_price },
+        ];
+
+        for (const field of priceFields) {
+            if (field.value !== "" && field.value !== undefined) {
+                const num = parseFloat(field.value);
+                if (!isNaN(num) && num < 0) {
+                    toast.error(`${field.label} cannot be negative`);
+                    setActiveTab("pricing");
+                    return;
+                }
+            }
+        }
+
         const sanitizedData: ProductFormData = {
             ...formData,
             name: sanitizeFormInput(formData.name, 100),

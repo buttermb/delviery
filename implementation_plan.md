@@ -212,7 +212,7 @@
 
 ## Phase 8: Form Validation Hardening (14 tasks)
 
-- [ ] Task 99: Add negative number blocking to product price fields — In AddProduct/EditProduct forms, Zod schema: price must be z.number().min(0, "Price cannot be negative"). Also cost_price, wholesale_price. Apply to all product forms.
+- [x] Task 99: Add negative number blocking to product price fields — In AddProduct/EditProduct forms, Zod schema: price must be z.number().min(0, "Price cannot be negative"). Also cost_price, wholesale_price. Apply to all product forms.
 
 - [ ] Task 100: Add negative number blocking to quantity fields — Stock quantity, order quantity, reorder point: z.number().int().min(0). Apply to all inventory and order forms.
 
