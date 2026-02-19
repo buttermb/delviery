@@ -388,7 +388,7 @@
 - [x] Task 195: VOID watermark on cancelled invoices — Already exists from Part A (Task 45): InvoiceDetailPage.tsx lines 317-323 have semi-transparent red "VOID" text rotated -45deg overlay when status==='cancelled'. All action buttons except Print and Delete are hidden via isVoided check at line 236. No changes needed.
 - [x] Task 196: Overdue auto-detection on InvoiceDetailPage — Already exists from Part A (Task 46): isOverdue computed at line 177-179 (checks due_date < now && status in ['sent','partially_paid']), daysOverdue at lines 180-182, red "Overdue" Badge with days count rendered at lines 218-222 next to status badge. No changes needed.
 - [x] Task 197: Overdue badges on InvoicesPage list — Already exists from Part A (Task 47): InvoicesPage.tsx has overdue computation per row (lines 449-451), red "Overdue (Xd)" Badge in status column for both desktop (lines 1064-1068) and mobile (lines 823-827) views, "Overdue" filter option in dropdown (line 757-759), and balance column color-coded red for overdue invoices. No changes needed.
-- [ ] Task 198: Payment columns on InvoicesPage � Amount, Paid, Balance, color-coded.
+- [x] Task 198: Payment columns on InvoicesPage � Already exists from Part A (Task 48): desktop table has Amount, Paid, Balance columns with color-coding (green=paid, yellow=partial, red=overdue), sort by balance, and mobile view shows equivalent info. No changes needed.
 - [ ] Task 199: isPending on all InvoiceDetailPage buttons
 - [ ] Task 200: Partial payment on printed invoice
 - [ ] Task 201: Invoice creation to finance dashboard invalidation
