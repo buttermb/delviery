@@ -372,7 +372,7 @@
 - [x] Task 182: Wire POSRefundDialog to CashRegister — Already exists from Part A: imported at line 49, refundDialogOpen state at line 210, "Refund/Return" button at line 1040, dialog rendered at lines 1740-1755 with onSuccess (invalidates queries) and onRefundComplete (stores data for receipt). F4 shortcut at line 859. No changes needed.
 - [x] Task 183: Create POS refund mutation — Already exists from Part A in POSRefundDialog.tsx (lines 231-340): creates negative pos_transactions record with transaction_type='refund', restores stock for returned items, links to original order via order_id, updates order status for full refunds. All tenant_id filtering in place. No changes needed.
 - [x] Task 184: Add refund totals to Z-Report — Already exists from Part A (Task 34): ZReport.tsx has Sales Summary with refund count/total, Refund Breakdown section by payment method, cash refunds in cash drawer, and text report includes all refund data. No changes needed.
-- [ ] Task 185: Add refund totals to shift summary
+- [x] Task 185: Add refund totals to shift summary — Already exists from Part A (Task 35): ShiftManager.tsx active shift card shows refund count/total/net sales (lines 379-407), close shift dialog shows gross sales/refunds/net sales (lines 615-634), recent closed shifts show refunds_amount (lines 520-524), and closeShiftMutation saves refunds_amount to DB. No changes needed.
 - [ ] Task 186: Improve POS receipt layout � 80mm thermal, REFUND header for refunds.
 - [ ] Task 187: Add keyboard shortcuts to CashRegister � F2/F3/F4/F8/F9/Esc.
 - [ ] Task 188: Add quick-add product grid � Top 12 by frequency.
