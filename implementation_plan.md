@@ -377,7 +377,7 @@
 - [x] Task 187: Add keyboard shortcuts to CashRegister — Already exists from Part A (Task 37): F2=New Sale, F3=Search Product, F4=Refund, F8=Pay Cash, F9=Pay Card, Esc=Clear/Close, ?=Help. useEffect keydown listener with cleanup. Shortcut hints on buttons. Help dialog. No changes needed.
 - [x] Task 188: Add quick-add product grid — Already exists from Part A (Task 38): topProducts useMemo computes top 12 by sale frequency from transactions (lines 333-361), responsive grid UI with images/prices/out-of-stock badges and one-tap addToCart (lines 1064-1125). No changes needed.
 - [x] Task 189: Add customer lookup to POS
-- [ ] Task 190: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 190: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B4: Invoice Partial Payments (12 tasks)
 
