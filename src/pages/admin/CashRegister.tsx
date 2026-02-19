@@ -1026,7 +1026,7 @@ function CashRegisterContent() {
             size="sm"
             onClick={() => setRefundDialogOpen(true)}
             disabled={processPayment.isPending}
-            className="lg:min-h-[44px] lg:px-4"
+            className="md:min-h-[44px] md:px-4"
           >
             <RotateCcw className="h-4 w-4 mr-1" />
             Refund/Return
@@ -1036,7 +1036,7 @@ function CashRegisterContent() {
             variant="outline"
             size="sm"
             onClick={() => setKeyboardHelpOpen(true)}
-            className="text-xs lg:min-h-[44px] lg:px-4"
+            className="text-xs md:min-h-[44px] md:px-4"
           >
             <Keyboard className="h-4 w-4 mr-1" />
             Shortcuts
@@ -1077,7 +1077,7 @@ function CashRegisterContent() {
                     variant="outline"
                     onClick={() => addToCart(product)}
                     disabled={outOfStock || isAddingToCart === product.id}
-                    className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] lg:min-h-[56px] lg:py-4 lg:px-3"
+                    className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
                   >
                     {isAddingToCart === product.id ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -1125,7 +1125,7 @@ function CashRegisterContent() {
                   size="sm"
                   onClick={handleClearCart}
                   disabled={processPayment.isPending}
-                  className="text-destructive hover:text-destructive lg:min-h-[44px]"
+                  className="text-destructive hover:text-destructive md:min-h-[44px]"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Clear
@@ -1168,7 +1168,7 @@ function CashRegisterContent() {
 
             {/* Cart Items */}
             {cart.length > 0 ? (
-              <div className="space-y-2 max-h-48 lg:max-h-80 overflow-auto">
+              <div className="space-y-2 max-h-48 md:max-h-64 lg:max-h-80 overflow-auto">
                 <div className="text-sm font-medium">Items ({cart.reduce((sum, item) => sum + item.quantity, 0)})</div>
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center gap-2 p-2 border rounded">
@@ -1182,29 +1182,29 @@ function CashRegisterContent() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 lg:h-11 lg:w-11"
+                        className="h-6 w-6 md:h-10 md:w-10 lg:h-11 lg:w-11"
                         onClick={() => updateQuantity(item.id, -1)}
                         disabled={item.quantity <= 1}
                       >
-                        <Minus className="h-3 w-3 lg:h-4 lg:w-4" />
+                        <Minus className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
-                      <span className="w-8 text-center text-sm lg:text-base">{item.quantity}</span>
+                      <span className="w-8 text-center text-sm md:text-base">{item.quantity}</span>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 lg:h-11 lg:w-11"
+                        className="h-6 w-6 md:h-10 md:w-10 lg:h-11 lg:w-11"
                         onClick={() => updateQuantity(item.id, 1)}
                         disabled={item.quantity >= item.stock_quantity}
                       >
-                        <Plus className="h-3 w-3 lg:h-4 lg:w-4" />
+                        <Plus className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 lg:h-11 lg:w-11"
+                        className="h-6 w-6 md:h-10 md:w-10 lg:h-11 lg:w-11"
                         onClick={() => removeFromCart(item.id)}
                       >
-                        <Trash2 className="h-3 w-3 lg:h-4 lg:w-4 text-destructive" />
+                        <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-destructive" />
                       </Button>
                     </div>
                     <span className="font-bold text-sm w-16 text-right">${item.subtotal.toFixed(2)}</span>
@@ -1265,7 +1265,7 @@ function CashRegisterContent() {
                 size="sm"
                 onClick={() => setDiscountDialogOpen(true)}
                 disabled={processPayment.isPending}
-                className="w-full lg:min-h-[44px]"
+                className="w-full md:min-h-[44px]"
               >
                 <Percent className="h-4 w-4 mr-2" />
                 {discountAmount > 0 ? 'Edit Discount' : 'Add Discount'}
@@ -1291,7 +1291,7 @@ function CashRegisterContent() {
             {/* Actions */}
             <div className="flex gap-2">
               <Button
-                className="flex-1 lg:min-h-[44px]"
+                className="flex-1 md:min-h-[44px]"
                 variant="outline"
                 onClick={() => setProductDialogOpen(true)}
                 disabled={processPayment.isPending}
@@ -1301,7 +1301,7 @@ function CashRegisterContent() {
                 <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F3</kbd>
               </Button>
               <Button
-                className="flex-1 lg:min-h-[44px]"
+                className="flex-1 md:min-h-[44px]"
                 variant="default"
                 onClick={async () => {
                   await executeCreditAction('pos_process_sale', async () => {
