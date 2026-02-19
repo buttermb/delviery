@@ -296,7 +296,7 @@
 
 - [x] Task 137: Fix admin tables on mobile — Tables with many columns should: either show condensed card view on mobile, or have horizontal scroll with sticky first column. Check Orders, Products, Invoices tables.
 
-- [ ] Task 138: Fix all modals on mobile — Modals should be nearly full-screen on mobile (max-w-full on small screens). Form inputs shouldn't be cut off. Submit button must be visible without scrolling past the fold.
+- [x] Task 138: Fix all modals on mobile — Modals should be nearly full-screen on mobile (max-w-full on small screens). Form inputs shouldn't be cut off. Submit button must be visible without scrolling past the fold.
 
 - [ ] Task 139: Fix CashRegister on tablet — POS should be optimized for iPad-size screens (1024px). Product grid + cart side by side. Touch-friendly button sizes (min 44px).
 
