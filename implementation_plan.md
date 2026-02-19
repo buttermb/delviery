@@ -336,7 +336,7 @@
 - [x] Task 152: Create useTenantFeatureToggles hook � src/hooks/useTenantFeatureToggles.ts. Reads tenant_settings JSONB, falls back to defaults. Returns isEnabled, toggleFeature, flags, isLoading.
 - [x] Task 153: Create FeatureGate component — src/components/admin/FeatureGate.tsx. Props: feature, children, fallback?. Already exists with full implementation.
 - [x] Task 154: Create FeatureTogglesPanel — src/components/admin/settings/FeatureTogglesPanel.tsx already exists with full implementation (card grid, switch toggles, grouped Core/Advanced, toast on toggle).
-- [ ] Task 155: Wire FeatureTogglesPanel to Settings page � Add Features tab.
+- [x] Task 155: Wire FeatureTogglesPanel to Settings page — Already wired: imported at line 28, Features tab trigger at line 523, TabsContent with FeatureTogglesPanel at line 762 of SettingsPage.tsx.
 - [ ] Task 156: Map sidebar items to feature flags � Add featureFlag property to nav items.
 - [ ] Task 157: Filter sidebar by feature flags � Hide items where !isEnabled(featureFlag).
 - [ ] Task 158: Create FeatureProtectedRoute � Show disabled message + settings link when feature off.
