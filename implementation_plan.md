@@ -339,7 +339,7 @@
 - [x] Task 155: Wire FeatureTogglesPanel to Settings page — Already wired: imported at line 28, Features tab trigger at line 523, TabsContent with FeatureTogglesPanel at line 762 of SettingsPage.tsx.
 - [x] Task 156: Map sidebar items to feature flags — Add featureFlag property to nav items.
 - [x] Task 157: Filter sidebar by feature flags — Already implemented in both Sidebar.tsx (lines 197-201) and SidebarSection.tsx (lines 40-47). Both use useTenantFeatureToggles to hide items where !isEnabled(featureFlag).
-- [ ] Task 158: Create FeatureProtectedRoute � Show disabled message + settings link when feature off.
+- [x] Task 158: Create FeatureProtectedRoute — Already exists in src/components/admin/FeatureProtectedRoute.tsx and src/components/tenant-admin/FeatureProtectedRoute.tsx. Shows lock icon, "This feature is not enabled" message, settings link. Used extensively in App.tsx.
 - [ ] Task 159: Apply FeatureGate to POS routes
 - [ ] Task 160: Apply FeatureGate to Delivery routes
 - [ ] Task 161: Apply FeatureGate to Analytics routes
