@@ -383,7 +383,7 @@
 
 - [x] Task 191: Create InvoicePaymentDialog — Already exists from Part A with full implementation: RHF + Zod, CurrencyInput for amount, payment method select, DatePickerWithPresets, reference/notes, mutation with payment history JSONB, tenant_id filtering via account_id. No changes needed.
 - [x] Task 192: Wire InvoicePaymentDialog to InvoiceDetailPage — Already exists from Part A: imported at line 7, showPaymentDialog state at line 90, "Record Payment" button at line 265, dialog rendered at lines 577-583 with invoiceId, amountDue, amountPaid, open, onOpenChange. Dialog internally invalidates crmInvoiceKeys.all and shows toast. No changes needed.
-- [ ] Task 193: Create payment mutation � Update paid/partial status.
+- [x] Task 193: Create payment mutation — Already exists from Part A in InvoicePaymentDialog.tsx (lines 117-191): useMutation records payment amount, appends to payment_history JSONB, auto-updates status to 'paid' or 'partially_paid', sets paid_at timestamp, filters by account_id, invalidates crmInvoiceKeys.all + custom events. No changes needed.
 - [ ] Task 194: Payment history section on InvoiceDetailPage
 - [ ] Task 195: VOID watermark on cancelled invoices
 - [ ] Task 196: Overdue auto-detection on InvoiceDetailPage
