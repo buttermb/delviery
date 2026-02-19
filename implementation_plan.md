@@ -260,7 +260,7 @@
 
 - [x] Task 121: Add not-found state to ProductDetailPage — Navigate to /admin/products/fake-uuid. Should show "Product not found" card with "Back to Products" link. Fix if infinite loading.
 
-- [ ] Task 122: Add not-found state to ClientDetailPage — Navigate to /admin/clients/fake-uuid. Same pattern. Fix if broken.
+- [x] Task 122: Add not-found state to ClientDetailPage — Navigate to /admin/clients/fake-uuid. Same pattern. Fix if broken.
 
 - [ ] Task 123: Add not-found state to InvoiceDetailPage — Navigate to /admin/invoices/fake-uuid. Same pattern.
 
