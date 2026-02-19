@@ -46,7 +46,7 @@
 
 - [x] Task 21: Sanitize search in WholesaleClients.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 
-- [ ] Task 22: Sanitize search in CustomerManagement.tsx — Find .ilike() calls. Apply sanitizeForIlike().
+- [x] Task 22: Sanitize search in CustomerManagement.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 
 - [ ] Task 23: Sanitize search in InvoicesPage.tsx — Find .ilike() calls. Apply sanitizeForIlike().
 
