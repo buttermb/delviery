@@ -342,7 +342,7 @@
 - [x] Task 158: Create FeatureProtectedRoute — Already exists in src/components/admin/FeatureProtectedRoute.tsx and src/components/tenant-admin/FeatureProtectedRoute.tsx. Shows lock icon, "This feature is not enabled" message, settings link. Used extensively in App.tsx.
 - [x] Task 159: Apply FeatureGate to POS routes — Already implemented: all POS routes (pos-system, cash-register, pos-analytics, pos-shifts, z-reports) wrapped with FeatureProtectedRoute feature="pos" in App.tsx.
 - [x] Task 160: Apply FeatureGate to Delivery routes
-- [ ] Task 161: Apply FeatureGate to Analytics routes
+- [x] Task 161: Apply FeatureGate to Analytics routes
 - [ ] Task 162: Apply FeatureGate to Marketing routes
 - [ ] Task 163: Apply FeatureGate to CRM routes
 - [ ] Task 164: Apply FeatureGate to remaining routes (PO, Vendor, QC, Chat, Fleet)

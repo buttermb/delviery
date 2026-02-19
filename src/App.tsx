@@ -833,8 +833,8 @@ const App = () => {
 
                                         {/* Orders Hub Redirects */}
                                         <Route path="disposable-menu-orders" element={<Navigate to="orders?tab=menu" replace />} />
-                                        <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
-                                        <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics" feature="analytics_advanced"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics" feature="analytics_advanced"><MenuAnalytics /></FeatureProtectedRoute>} />
 
                                         {/* Inventory Hub Redirects */}
                                         <Route path="inventory/products" element={<Navigate to="../inventory-hub?tab=products" replace />} />
