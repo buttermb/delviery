@@ -60,11 +60,13 @@ serve(async (req) => {
       throw customerError;
     }
 
-    // 2. Create dummy products
+    // 2. Create dummy products (5)
     const products = [
       { name: 'Premium Flower', price: 45, category: 'Flower' },
       { name: 'Edible Gummies', price: 25, category: 'Edibles' },
       { name: 'Vape Cartridge', price: 35, category: 'Vapes' },
+      { name: 'Pre-Roll Pack', price: 15, category: 'Pre-Rolls' },
+      { name: 'Concentrate Wax', price: 55, category: 'Concentrates' },
     ].map((p) => ({
       tenant_id,
       name: p.name,
@@ -85,12 +87,13 @@ serve(async (req) => {
       throw productError;
     }
 
-    // 3. Create dummy orders
-    const orders = createdCustomers!.flatMap((customer) => {
-      return Array.from({ length: Math.floor(Math.random() * 3) + 1 }).map(() => ({
+    // 3. Create dummy orders (10)
+    const orders = createdCustomers!.flatMap((customer, idx) => {
+      // 2 orders per customer = 10 total
+      return Array.from({ length: 2 }).map((_, orderIdx) => ({
         tenant_id,
         customer_id: customer.id,
-        status: ['pending', 'processing', 'completed'][Math.floor(Math.random() * 3)],
+        status: ['pending', 'processing', 'completed'][((idx * 2) + orderIdx) % 3],
         total_amount: Math.floor(Math.random() * 200) + 50,
         payment_status: 'paid',
         created_at: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString(),

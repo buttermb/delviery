@@ -45,7 +45,7 @@ import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { handleError } from "@/utils/errorHandling/handlers";
 import {
@@ -106,7 +106,6 @@ export default function TenantAdminDashboardPage() {
   } = useCredits();
 
   const [generatingDemoData, setGeneratingDemoData] = useState(false);
-  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Credit purchase celebration state
@@ -520,8 +519,7 @@ export default function TenantAdminDashboardPage() {
         throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate demo data');
       }
 
-      toast({
-        title: "Demo Data Generated",
+      toast.success("Demo Data Generated", {
         description: "Your dashboard has been populated with sample data.",
       });
 

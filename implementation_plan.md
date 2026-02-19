@@ -138,7 +138,7 @@
 
 - [x] Task 64: Add empty state to Z-Report — No completed shifts: BarChart icon, "No shift reports yet", "Reports are generated when you complete a shift".
 
-- [ ] Task 65: Fix demo data loader — Verify Dashboard handleGenerateDemoData() works: creates sample products (5), orders (10), customers (5). Add ConfirmDialog before loading. If broken, fix. If missing, create it.
+- [x] Task 65: Fix demo data loader — Verify Dashboard handleGenerateDemoData() works: creates sample products (5), orders (10), customers (5). Add ConfirmDialog before loading. If broken, fix. If missing, create it.
 
 - [ ] Task 66: Verify setup wizard — Navigate to /admin/setup. Walk through all steps. Each step should save. Final step redirects to dashboard. Fix any broken steps.
 
