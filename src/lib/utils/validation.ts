@@ -106,7 +106,10 @@ export const validationSchemas = {
 export const productSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
-  price: z.number().positive().max(999999),
+  price: z.number().min(0, "Price cannot be negative").max(999999),
+  wholesale_price: z.number().min(0, "Wholesale price cannot be negative").max(999999).optional(),
+  cost_price: z.number().min(0, "Cost price cannot be negative").max(999999).optional(),
+  sale_price: z.number().min(0, "Sale price cannot be negative").max(999999).optional(),
   sku: z.string().regex(/^[A-Z0-9-]+$/).optional(),
   category: z.enum(['flower', 'edibles', 'pre-rolls', 'concentrates', 'vapes']),
   vendor_name: z.string().max(100).optional(),

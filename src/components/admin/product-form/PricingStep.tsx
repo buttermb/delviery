@@ -44,13 +44,25 @@ function getFieldError(
     case "sale_price": {
       if (value === "" || value === undefined || value === null) return null; // Optional
       const num = typeof value === "string" ? parseFloat(value) : (value as number);
-      if (isNaN(num) || num < 0) return "Sale price must be a positive number";
+      if (isNaN(num) || num < 0) return "Sale price cannot be negative";
       return null;
     }
     case "cost_per_unit": {
       if (value === "" || value === undefined || value === null) return null; // Optional
       const num = typeof value === "string" ? parseFloat(value) : (value as number);
-      if (isNaN(num) || num < 0) return "Cost must be a positive number";
+      if (isNaN(num) || num < 0) return "Cost cannot be negative";
+      return null;
+    }
+    case "wholesale_price": {
+      if (value === "" || value === undefined || value === null) return null; // Optional
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (isNaN(num) || num < 0) return "Wholesale price cannot be negative";
+      return null;
+    }
+    case "retail_price": {
+      if (value === "" || value === undefined || value === null) return null; // Optional
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (isNaN(num) || num < 0) return "Retail price cannot be negative";
       return null;
     }
     default:
