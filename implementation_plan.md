@@ -80,7 +80,7 @@
 
 - [x] Task 37: Add keyboard shortcuts to CashRegister — Add: F2 = New Sale, F3 = Search Product, F4 = Refund, F8 = Pay Cash, F9 = Pay Card, Esc = Clear. Show shortcut hints on buttons. Use useEffect with keydown listener, clean up on unmount.
 
-- [ ] Task 38: Add quick-add product grid to POS — If CashRegister only has search, add a grid of top/favorite products (last 12 sold or manually pinned) for one-tap adding. Query products ordered by sale frequency, limit 12.
+- [x] Task 38: Add quick-add product grid to POS — If CashRegister only has search, add a grid of top/favorite products (last 12 sold or manually pinned) for one-tap adding. Query products ordered by sale frequency, limit 12.
 
 - [ ] Task 39: Add customer lookup to POS — Add customer search field in CashRegister. When customer selected: show name, apply any loyalty discounts, link sale to customer for history. Optional — can process sale without customer.
 

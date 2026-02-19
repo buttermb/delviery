@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw
+  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp
 } from 'lucide-react';
 import {
   Dialog,
@@ -318,6 +318,36 @@ function CashRegisterContent() {
 
     return matchesSearch && matchesCategory;
   });
+
+  // Compute top-selling products from recent POS transactions for quick-add grid
+  const topProducts = useMemo(() => {
+    const frequencyMap = new Map<string, number>();
+
+    if (transactions && Array.isArray(transactions)) {
+      for (const tx of transactions) {
+        const items = (tx as Record<string, unknown>).items;
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (item && typeof item === 'object' && 'product_id' in (item as Record<string, unknown>)) {
+              const parsed = item as Record<string, unknown>;
+              const productId = String(parsed.product_id);
+              const qty = typeof parsed.quantity === 'number' ? parsed.quantity : 1;
+              frequencyMap.set(productId, (frequencyMap.get(productId) ?? 0) + qty);
+            }
+          }
+        }
+      }
+    }
+
+    // Sort products: frequent sellers first, then remaining products
+    const sorted = [...products].sort((a, b) => {
+      const freqA = frequencyMap.get(a.id) ?? 0;
+      const freqB = frequencyMap.get(b.id) ?? 0;
+      return freqB - freqA;
+    });
+
+    return sorted.slice(0, 12);
+  }, [transactions, products]);
 
   // Filter customers by search
   const filteredCustomers = customers.filter(c => {
@@ -1018,45 +1048,65 @@ function CashRegisterContent() {
         </div>
       </div>
 
-      {/* Quick Add Section */}
-      {products.length > 0 && (
+      {/* Quick Add Product Grid — Top sellers by frequency */}
+      {topProducts.length > 0 && (
         <Card className="bg-gradient-to-r from-primary/5 to-background">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Quick Add
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {products.slice(0, 8).map((product) => (
-                <Button
-                  key={product.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addToCart(product)}
-                  disabled={(product.stock_quantity ?? 0) <= 0 || isAddingToCart === product.id}
-                  className="h-auto py-2 px-3 flex flex-col items-start gap-0.5 min-w-[100px] hover:border-primary hover:bg-primary/5"
-                >
-                  {isAddingToCart === product.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <span className="font-medium text-xs truncate max-w-[80px]">{product.name}</span>
-                      <span className="text-xs text-muted-foreground">${product.price}</span>
-                    </>
-                  )}
-                </Button>
-              ))}
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Top Products
+              </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setProductDialogOpen(true)}
-                className="h-auto py-2 px-3"
+                className="text-xs h-7"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                More...
+                <Search className="h-3 w-3 mr-1" />
+                Browse All
               </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+              {topProducts.map((product) => {
+                const outOfStock = (product.stock_quantity ?? 0) <= 0;
+                return (
+                  <Button
+                    key={product.id}
+                    variant="outline"
+                    onClick={() => addToCart(product)}
+                    disabled={outOfStock || isAddingToCart === product.id}
+                    className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative"
+                  >
+                    {isAddingToCart === product.id ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="h-10 w-10 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 bg-muted rounded flex items-center justify-center">
+                            <Tag className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="font-medium text-xs truncate w-full text-center">{product.name}</span>
+                        <span className="text-xs text-muted-foreground">${product.price.toFixed(2)}</span>
+                        {outOfStock && (
+                          <Badge variant="destructive" className="text-[10px] px-1 py-0 absolute top-1 right-1">
+                            Out
+                          </Badge>
+                        )}
+                      </>
+                    )}
+                  </Button>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
