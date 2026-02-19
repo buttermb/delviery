@@ -271,6 +271,7 @@ export function PaymentSettingsForm({
                         <FormDescription>
                           Instructions shown to customers at checkout
                         </FormDescription>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -323,6 +324,7 @@ export function PaymentSettingsForm({
                               value={field.value ?? ''}
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -339,6 +341,7 @@ export function PaymentSettingsForm({
                               value={field.value ?? ''}
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -357,6 +360,7 @@ export function PaymentSettingsForm({
                             value={field.value ?? ''}
                           />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -414,6 +418,7 @@ export function PaymentSettingsForm({
                             />
                           </div>
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -431,6 +436,7 @@ export function PaymentSettingsForm({
                             value={field.value ?? ''}
                           />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -558,6 +564,7 @@ export function PaymentSettingsForm({
                         <FormDescription>
                           Your Lightning address (email-like) or LNURL
                         </FormDescription>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -626,6 +633,7 @@ export function PaymentSettingsForm({
                         <FormDescription>
                           Your Ethereum wallet address (also used for USDT)
                         </FormDescription>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -681,6 +689,7 @@ export function PaymentSettingsForm({
                         <FormDescription>
                           Your USDT address on Ethereum network
                         </FormDescription>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -711,6 +720,7 @@ export function PaymentSettingsForm({
                             value={field.value ?? ''}
                           />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />

@@ -546,6 +546,9 @@ export function POSRefundDialog({
                   </Select>
                 )}
               />
+              {errors.refundMethod && (
+                <p className="text-sm text-destructive">{errors.refundMethod.message}</p>
+              )}
             </div>
 
             {/* Notes */}
@@ -564,6 +567,9 @@ export function POSRefundDialog({
                   />
                 )}
               />
+              {errors.notes && (
+                <p className="text-sm text-destructive">{errors.notes.message}</p>
+              )}
             </div>
 
             {/* Refund Summary */}

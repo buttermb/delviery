@@ -415,6 +415,9 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
             <div>
               <Label>Address</Label>
               <Textarea {...generalForm.register("address")} rows={3} />
+              {generalForm.formState.errors.address && (
+                <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.address.message}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

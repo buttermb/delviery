@@ -830,6 +830,11 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
                   id="start_time"
                   {...form.register('start_time')}
                 />
+                {form.formState.errors.start_time && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.start_time.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end_time">End Time *</Label>
