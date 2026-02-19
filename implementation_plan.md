@@ -140,7 +140,7 @@
 
 - [x] Task 65: Fix demo data loader — Verify Dashboard handleGenerateDemoData() works: creates sample products (5), orders (10), customers (5). Add ConfirmDialog before loading. If broken, fix. If missing, create it.
 
-- [ ] Task 66: Verify setup wizard — Navigate to /admin/setup. Walk through all steps. Each step should save. Final step redirects to dashboard. Fix any broken steps.
+- [x] Task 66: Verify setup wizard — Navigate to /admin/setup. Walk through all steps. Each step should save. Final step redirects to dashboard. Fix any broken steps.
 
 - [ ] Task 67: Add skip on optional wizard steps — Delivery zones step and invite driver step: add "Skip for now" text link below main CTA. Advances to next step without saving that section.
 
