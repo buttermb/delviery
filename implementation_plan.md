@@ -349,7 +349,7 @@
 - [x] Task 165: Feature flag count in sidebar footer
 - [x] Task 166: Enable Feature tooltips on disabled buttons
 - [x] Task 167: Verify toggle flow end-to-end
-- [ ] Task 168: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 168: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B2: Search Sanitization (12 tasks)
 
