@@ -72,7 +72,7 @@
 
 - [x] Task 33: Create POS refund mutation — On POSRefundDialog submit: create negative transaction record in pos_transactions (or orders with type='refund'), restore stock for returned items (increment stock_quantity on products table), link to original order via original_order_id. Filter by tenant_id. Toast success with refund amount.
 
-- [ ] Task 34: Add refund totals to Z-Report — In ZReport.tsx: query refund transactions for shift period. Add section showing: Refund Count, Total Refunds ($), Net Sales = Gross Sales - Refunds.
+- [x] Task 34: Add refund totals to Z-Report — In ZReport.tsx: query refund transactions for shift period. Add section showing: Refund Count, Total Refunds ($), Net Sales = Gross Sales - Refunds.
 
 - [ ] Task 35: Add refund totals to shift summary — In shift end summary (ShiftManager or end-of-shift dialog), include refund count and total alongside gross sales.
 

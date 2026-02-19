@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Printer, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { useRealtimeTransactions } from '@/hooks/useRealtimePOS';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ZReportProps {
   shiftId: string;
@@ -14,14 +15,13 @@ interface ZReportProps {
 
 export function ZReport({ shiftId }: ZReportProps) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const tenantId = tenant?.id;
 
   // Enable real-time updates for this shift's transactions
   useRealtimeTransactions(tenantId, shiftId);
 
   const { data: shift, isLoading } = useQuery({
-    queryKey: ['shift-details', shiftId, tenantId],
+    queryKey: queryKeys.pos.shifts.detail(shiftId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data, error } = await supabase
@@ -39,7 +39,7 @@ export function ZReport({ shiftId }: ZReportProps) {
   });
 
   const { data: transactions } = useQuery({
-    queryKey: ['shift-transactions', shiftId, tenantId],
+    queryKey: queryKeys.pos.shifts.transactions(shiftId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase
@@ -58,7 +58,7 @@ export function ZReport({ shiftId }: ZReportProps) {
 
   const handlePrint = () => {
     window.print();
-    toast({ title: 'Printing Z-Report' });
+    toast.success('Printing Z-Report');
   };
 
   const handleDownload = () => {
@@ -75,7 +75,7 @@ export function ZReport({ shiftId }: ZReportProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast({ title: 'Report downloaded' });
+    toast.success('Report downloaded');
   };
 
   const generateReportText = () => {
