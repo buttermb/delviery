@@ -68,7 +68,7 @@ export function DatePickerWithPresets({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal min-h-[44px] md:min-h-0",
             !date && "text-muted-foreground",
             className
           )}
@@ -77,7 +77,7 @@ export function DatePickerWithPresets({
           {date ? format(date, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0 bg-popover" align="start">
+      <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] max-h-[min(480px,85vh)] p-0 bg-popover" align="start">
         <div className={cn("flex", isMobile && "flex-col")}>
           <div className={cn(
             "p-2 space-y-1",
@@ -89,7 +89,7 @@ export function DatePickerWithPresets({
                 key={preset.label}
                 variant="ghost"
                 size="sm"
-                className={cn("justify-start text-sm", isMobile ? "h-8 px-2" : "w-full")}
+                className={cn("justify-start text-sm", isMobile ? "h-9 min-w-[44px] px-3" : "w-full")}
                 onClick={() => handlePresetClick(preset)}
               >
                 {preset.label}
@@ -171,7 +171,7 @@ export function DateRangePickerWithPresets({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal min-h-[44px] md:min-h-0",
             !dateRange.from && "text-muted-foreground",
             className
           )}
@@ -180,7 +180,7 @@ export function DateRangePickerWithPresets({
           {formatDateRange() || <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0 bg-popover" align="start">
+      <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] max-h-[min(480px,85vh)] p-0 bg-popover" align="start">
         <div className={cn("flex", isMobile && "flex-col")}>
           <div className={cn(
             "p-2 space-y-1",
@@ -192,7 +192,7 @@ export function DateRangePickerWithPresets({
                 key={preset.label}
                 variant="ghost"
                 size="sm"
-                className={cn("justify-start text-sm", isMobile ? "h-8 px-2" : "w-full")}
+                className={cn("justify-start text-sm", isMobile ? "h-9 min-w-[44px] px-3" : "w-full")}
                 onClick={() => handlePresetClick(preset)}
               >
                 {preset.label}
