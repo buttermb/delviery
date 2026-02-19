@@ -1247,8 +1247,8 @@ export function CheckoutPage() {
           </Card>
         </div>
 
-        {/* Order Summary Sidebar */}
-        <div>
+        {/* Order Summary Sidebar — hidden on mobile (collapsible summary above) */}
+        <div className="hidden lg:block">
           <Card className="sticky top-24">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1310,7 +1310,7 @@ export function CheckoutPage() {
             </CardContent>
           </Card>
 
-          {/* Order Summary */}
+          {/* Order Summary — also hidden on mobile */}
           <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
             <CardHeader>
               <CardTitle className={isLuxuryTheme ? 'text-white font-light' : ''}>Order Summary</CardTitle>

@@ -190,7 +190,7 @@ export default function ShoppingCartPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-36 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
       
@@ -428,6 +428,32 @@ export default function ShoppingCartPage() {
           </div>
         )}
       </div>
+
+      {/* Sticky Mobile Checkout Bar */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40">
+          <div className="bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-xs text-[hsl(var(--customer-text-light))]">
+                  {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}
+                </p>
+                <p className="text-lg font-bold text-[hsl(var(--customer-primary))]">
+                  {formatCurrency(total)}
+                </p>
+              </div>
+              <Button
+                onClick={handleCheckout}
+                className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white flex-shrink-0"
+                size="lg"
+              >
+                Checkout
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation */}
       <CustomerMobileBottomNav />

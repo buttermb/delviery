@@ -170,7 +170,7 @@
 
 - [x] Task 79: Fix mobile shop layout — Open shop page on mobile viewport (375px). Verify: navigation works, products display in single column, cart is accessible, checkout form is usable. Fix responsive issues.
 
-- [ ] Task 80: Fix mobile cart/checkout — On mobile: verify cart drawer/page works, checkout form fields aren't overlapping, submit button is visible, keyboard doesn't cover inputs.
+- [x] Task 80: Fix mobile cart/checkout — On mobile: verify cart drawer/page works, checkout form fields aren't overlapping, submit button is visible, keyboard doesn't cover inputs.
 
 - [ ] Task 81: Verify storefront builder → live store — Make a change in admin StorefrontBuilder (color, logo, store name). Refresh /shop/:slug. Verify change appears. Fix if disconnected.
 

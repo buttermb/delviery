@@ -265,7 +265,7 @@ export default function CheckoutPage() {
   const selectedAddress = savedAddresses.find(addr => addr.id === deliveryInfo.addressId);
 
   return (
-    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+    <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-36 lg:pb-0">
       {/* Mobile Top Navigation */}
       <CustomerMobileNav />
 
@@ -541,7 +541,7 @@ export default function CheckoutPage() {
                           className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="city" className="text-[hsl(var(--customer-text))]">City</Label>
                           <Input
@@ -747,7 +747,7 @@ export default function CheckoutPage() {
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -759,7 +759,7 @@ export default function CheckoutPage() {
                     setCurrentStep(stepOrder[currentIndex - 1]);
                   }
                 }}
-                className="border-[hsl(var(--customer-border))]"
+                className="border-[hsl(var(--customer-border))] w-full sm:w-auto"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {currentStep === "delivery" ? "Back to Cart" : "Previous"}
@@ -774,7 +774,7 @@ export default function CheckoutPage() {
                     setCurrentStep(stepOrder[currentIndex + 1]);
                   }
                 }}
-                className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
+                className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white w-full sm:w-auto"
                 disabled={!deliveryInfo.addressId && user && savedAddresses.length > 0}
               >
                 {currentStep === "review" ? "Place Order" : "Continue"}
@@ -836,6 +836,39 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Sticky Mobile Checkout Bar */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40">
+          <div className="bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-xs text-[hsl(var(--customer-text-light))]">Order Total</p>
+                <p className="text-lg font-bold text-[hsl(var(--customer-primary))]">
+                  {formatCurrency(total)}
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  if (currentStep === "review") {
+                    handlePlaceOrder();
+                  } else {
+                    const stepOrder: CheckoutStep[] = ["delivery", "payment", "review"];
+                    const currentIndex = stepOrder.indexOf(currentStep);
+                    setCurrentStep(stepOrder[currentIndex + 1]);
+                  }
+                }}
+                className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white flex-shrink-0"
+                disabled={!deliveryInfo.addressId && user && savedAddresses.length > 0}
+                size="lg"
+              >
+                {currentStep === "review" ? "Place Order" : "Continue"}
+                <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation */}
       <CustomerMobileBottomNav />
