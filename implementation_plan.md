@@ -292,7 +292,7 @@
 
 - [x] Task 135: Fix admin sidebar on mobile — Sidebar should collapse to hamburger menu on screens < 768px. Verify: hamburger button visible, clicking opens overlay sidebar, clicking nav item closes sidebar, clicking outside closes sidebar.
 
-- [ ] Task 136: Fix admin dashboard on mobile — KPI cards should stack 2x2 or 1 column on mobile. Charts should be full width. No horizontal scrolling.
+- [x] Task 136: Fix admin dashboard on mobile — KPI cards should stack 2x2 or 1 column on mobile. Charts should be full width. No horizontal scrolling.
 
 - [ ] Task 137: Fix admin tables on mobile — Tables with many columns should: either show condensed card view on mobile, or have horizontal scroll with sticky first column. Check Orders, Products, Invoices tables.
 

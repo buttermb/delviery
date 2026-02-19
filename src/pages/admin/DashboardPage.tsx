@@ -54,7 +54,7 @@ function RevenueWidgetFallback() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-7 w-32" />
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <KPICardSkeleton key={i} />
         ))}
@@ -141,9 +141,9 @@ export function DashboardPage() {
 
   if (!tenant) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <KPICardSkeleton key={i} />
           ))}
@@ -157,7 +157,7 @@ export function DashboardPage() {
     : null;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6 overflow-x-hidden">
       <HubBreadcrumbs
         hubName="dashboard"
         hubHref="dashboard"
@@ -170,7 +170,7 @@ export function DashboardPage() {
             Real-time overview of your operations
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <ToggleGroup
             type="single"
             value={period}
@@ -185,7 +185,7 @@ export function DashboardPage() {
             ))}
           </ToggleGroup>
           {lastUpdated && (
-            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+            <Badge variant="secondary" className="text-xs whitespace-nowrap hidden sm:inline-flex">
               Updated {lastUpdated}
             </Badge>
           )}
@@ -265,21 +265,23 @@ export function DashboardPage() {
           {/* Low Stock Alert */}
           {!isLoading && stats && (stats.lowStockItems ?? 0) > 0 && (
             <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
-              <CardContent className="flex items-center gap-3 pt-6">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <div className="flex-1">
-                  <p className="font-medium text-amber-900 dark:text-amber-100">
-                    {stats.lowStockItems} product{stats.lowStockItems !== 1 ? 's' : ''} low on stock
-                  </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-300">
-                    {(stats.outOfStockItems ?? 0) > 0 && `${stats.outOfStockItems} out of stock. `}
-                    Review and restock to avoid missed sales.
-                  </p>
+              <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3 pt-6">
+                <div className="flex items-start sm:items-center gap-3 flex-1">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+                  <div className="flex-1">
+                    <p className="font-medium text-amber-900 dark:text-amber-100">
+                      {stats.lowStockItems} product{stats.lowStockItems !== 1 ? 's' : ''} low on stock
+                    </p>
+                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                      {(stats.outOfStockItems ?? 0) > 0 && `${stats.outOfStockItems} out of stock. `}
+                      Review and restock to avoid missed sales.
+                    </p>
+                  </div>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900"
+                  className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900 w-full sm:w-auto"
                   onClick={() => navigate(`/${tenantSlug}/admin/inventory-hub?tab=alerts`)}
                 >
                   View Inventory
@@ -299,7 +301,7 @@ export function DashboardPage() {
               <ShoppingCart className="h-5 w-5 text-blue-600" />
               Orders
             </h2>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
@@ -347,7 +349,7 @@ export function DashboardPage() {
               <Users className="h-5 w-5 text-indigo-600" />
               Customers
             </h2>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
@@ -387,7 +389,7 @@ export function DashboardPage() {
               <Package className="h-5 w-5 text-purple-600" />
               Inventory
             </h2>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
