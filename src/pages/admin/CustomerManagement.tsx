@@ -638,10 +638,11 @@ export function CustomerManagement() {
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                           {customer.first_name?.[0]}{customer.last_name?.[0]}
                         </div>
-                        <div className="ml-4 max-w-[200px]">
+                        <div className="ml-4">
                           <TruncatedText
                             text={`${customer.first_name} ${customer.last_name}`}
                             className="text-sm font-medium"
+                            maxWidthClass="max-w-[200px]"
                             as="div"
                           />
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
@@ -655,6 +656,7 @@ export function CustomerManagement() {
                                 <TruncatedText
                                   text={customer.email || customer.phone || 'No contact'}
                                   className="text-sm text-muted-foreground"
+                                  maxWidthClass="max-w-[200px]"
                                   as="span"
                                 />
                                 {customer.email && (
@@ -803,16 +805,21 @@ export function CustomerManagement() {
                           className="font-semibold text-base"
                           as="p"
                         />
-                        <p className="text-sm text-muted-foreground truncate">
+                        <div className="text-sm text-muted-foreground">
                           {customer._encryptedIndicator ? (
                             <span className="flex items-center gap-1 text-amber-600">
                               <Lock className="w-3 h-3" />
                               <span className="italic">Encrypted</span>
                             </span>
                           ) : (
-                            customer.email || customer.phone || 'No contact'
+                            <TruncatedText
+                              text={customer.email || customer.phone || 'No contact'}
+                              className="text-sm text-muted-foreground"
+                              maxWidthClass="max-w-[180px]"
+                              as="span"
+                            />
                           )}
-                        </p>
+                        </div>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
                             {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
