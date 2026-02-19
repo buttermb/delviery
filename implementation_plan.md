@@ -162,7 +162,7 @@
 
 - [x] Task 75: Fix customer order tracking — In customer portal, verify customer can see their orders list and click into order details with status timeline. Fix if broken or missing.
 
-- [ ] Task 76: Fix customer profile page — In customer portal, verify customer can update their name, phone, address. Fix if form doesn't save or fields are missing.
+- [x] Task 76: Fix customer profile page — In customer portal, verify customer can update their name, phone, address. Fix if form doesn't save or fields are missing.
 
 - [ ] Task 77: Fix disposable menu customer flow — Generate a disposable menu link from admin. Open link in incognito. Verify: menu loads, products display, can browse, can place order. Fix any broken steps.
 
