@@ -37,6 +37,7 @@ export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
               icon={<DollarSign className="h-5 w-5" />}
               description="Completed orders today"
               variant="success"
+              href="/admin/finance-hub"
             />
             <KPICard
               title="Month to Date"
@@ -48,6 +49,7 @@ export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
                 value: stats.revenueGrowthPercent,
                 label: 'vs last month'
               } : undefined}
+              href="/admin/finance-hub"
             />
             <KPICard
               title="Avg Order Value"
@@ -55,6 +57,7 @@ export function RevenueWidget({ period = '30d' }: RevenueWidgetProps) {
               icon={<ShoppingCart className="h-5 w-5" />}
               description="Per order this month"
               variant="default"
+              href="/admin/finance-hub"
             />
           </>
         )}

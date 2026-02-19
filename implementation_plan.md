@@ -278,7 +278,7 @@
 
 - [x] Task 129: Customer lifetime value on customer detail — On customer detail/profile page, show: total orders count, total spent, average order value, first order date. Query from orders table.
 
-- [ ] Task 130: Dashboard KPI click-through — Each KPI card on dashboard should link somewhere: Total Revenue → Finance Hub, Total Orders → Orders page, Total Customers → Customers page, Low Stock → Inventory filtered. Wrap in Link components.
+- [x] Task 130: Dashboard KPI click-through — Each KPI card on dashboard should link somewhere: Total Revenue → Finance Hub, Total Orders → Orders page, Total Customers → Customers page, Low Stock → Inventory filtered. Wrap in Link components.
 
 - [ ] Task 131: Verify notification bell — If notification bell exists in header: verify it shows count, clicking opens dropdown, clicking notification navigates to relevant page. If not implemented, hide the bell icon.
 
