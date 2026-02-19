@@ -406,6 +406,30 @@ export default function ProductManagement() {
     return data === null;
   };
 
+  // Check product name uniqueness within tenant
+  const checkNameUniqueness = async (name: string, excludeProductId?: string): Promise<boolean> => {
+    if (!name || !tenant?.id) return true;
+
+    let query = supabase
+      .from('products')
+      .select('id')
+      .eq('tenant_id', tenant.id)
+      .eq('name', name.trim());
+
+    if (excludeProductId) {
+      query = query.neq('id', excludeProductId);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      logger.error('Error checking product name uniqueness:', { error: error.message });
+      return true; // Allow submission on error, let DB handle constraint
+    }
+
+    return data === null;
+  };
+
   // Handlers
   const handleProductSubmit = async (data: ProductFormData) => {
     // Validate tenant context first
@@ -428,6 +452,16 @@ export default function ProductManagement() {
         const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
         if (!isSkuUnique) {
           toast.error('SKU already exists. Please use a unique SKU.');
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      // Check product name uniqueness
+      if (data.name) {
+        const isNameUnique = await checkNameUniqueness(data.name, editingProduct?.id);
+        if (!isNameUnique) {
+          toast.error('A product with this name already exists');
           setIsGenerating(false);
           return;
         }

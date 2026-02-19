@@ -224,7 +224,7 @@
 
 - [x] Task 104: Add phone validation to relevant forms — Phone fields: z.string().regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number").min(7).max(20). Apply to customer, client, team forms.
 
-- [ ] Task 105: Add duplicate product name check — In AddProduct form onSubmit: before creating, query products table for same name + tenant_id. If exists, show error "A product with this name already exists". Prevent duplicate creation.
+- [x] Task 105: Add duplicate product name check — In AddProduct form onSubmit: before creating, query products table for same name + tenant_id. If exists, show error "A product with this name already exists". Prevent duplicate creation.
 
 - [ ] Task 106: Add duplicate client check — In AddWholesaleClient form: check business_name + tenant_id uniqueness before creating. Show error if duplicate.
 
