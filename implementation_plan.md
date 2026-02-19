@@ -483,7 +483,7 @@
 
 ## Phase B10: Cross-Feature Integration (10 tasks)
 
-- [ ] Task 275: Stock decrement on delivery
+- [x] Task 275: Stock decrement on delivery — Already implemented from Part A (Task 125): useUpdateOrderStatus in useUnifiedOrders.ts (lines 553-623) decrements stock with double-decrement guard and inventory_history logging, OrderDetailsPage.tsx (lines 405-431) decrements on delivered/completed, useOrderBulkStatusUpdate.ts has decrementInventoryForDeliveredOrders for bulk ops. All filter by tenant_id. No changes needed.
 - [ ] Task 276: Stock restore on cancel
 - [ ] Task 277: Low stock alert on dashboard
 - [ ] Task 278: Invoice auto-creation from orders
