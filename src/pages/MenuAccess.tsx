@@ -44,6 +44,8 @@ interface AccessValidation {
     menu_id: string;
     min_order_quantity: number;
     max_order_quantity: number;
+    expiration_date?: string | null;
+    never_expires?: boolean;
     appearance_settings: {
       show_product_images: boolean;
       show_availability: boolean;
@@ -279,7 +281,7 @@ export default function MenuAccess() {
       <MenuHeader
         title={menuData.name}
         description={menuData.description}
-        expiresAt={null}
+        expiresAt={!menuData.never_expires && menuData.expiration_date ? menuData.expiration_date : null}
         customerName={validation.whitelist_entry?.customer_name}
       />
 
