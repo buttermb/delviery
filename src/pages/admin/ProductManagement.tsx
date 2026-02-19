@@ -33,7 +33,9 @@ import {
   Loader2,
   Printer,
   MoreVertical,
-  Store
+  Store,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -137,7 +139,6 @@ export default function ProductManagement() {
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
-  const [loading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -277,17 +278,36 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
+  // Fetch products via useQuery
+  const { data: productsData, isLoading: productsLoading, isError: productsError, refetch: refetchProductsQuery } = useQuery({
+    queryKey: queryKeys.products.list(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('name');
+      if (error) {
+        logger.error('Failed to fetch products', { error });
+        throw error;
+      }
+      return (data ?? []) as Product[];
+    },
+    enabled: !!tenant?.id,
+  });
+
+  // Sync query data into optimistic list
+  useEffect(() => {
+    if (productsData) {
+      setProducts(productsData);
+    }
+  }, [productsData, setProducts]);
+
   // Refetch products helper
   const refetchProducts = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: queryKeys.products.list(tenant?.id) });
   }, [queryClient, tenant?.id]);
-
-  // Sync query data when component mounts
-  useEffect(() => {
-    if (tenant?.id) {
-      refetchProducts();
-    }
-  }, [tenant?.id, refetchProducts]);
 
   // Alias for external usage
   const loadProducts = refetchProducts;
@@ -1387,7 +1407,19 @@ export default function ProductManagement() {
           </div>
         </CardHeader>
         <CardContent className="p-0 sm:p-6">
-          {loading ? (
+          {productsError && !productsLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+              <h3 className="text-lg font-semibold mb-1">Failed to load products</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                Something went wrong while fetching your products. Please try again.
+              </p>
+              <Button variant="outline" onClick={() => refetchProductsQuery()} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Try Again
+              </Button>
+            </div>
+          ) : productsLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
@@ -1420,7 +1452,7 @@ export default function ProductManagement() {
                   columns={columns}
                   data={filteredProducts}
                   keyExtractor={(item) => item.id}
-                  isLoading={loading}
+                  isLoading={productsLoading}
                   mobileRenderer={renderMobileProduct}
                 />
               </div>

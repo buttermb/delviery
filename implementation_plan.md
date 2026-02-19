@@ -248,7 +248,7 @@
 
 - [x] Task 115: Add error state to Orders page — If orders query fails, show error message with retry. Don't show empty table that looks like zero orders.
 
-- [ ] Task 116: Add error state to Products page — Same pattern: error message + retry on query failure.
+- [x] Task 116: Add error state to Products page — Same pattern: error message + retry on query failure.
 
 - [ ] Task 117: Add loading skeletons to Dashboard — Replace loading spinners with skeleton placeholders (Skeleton component from shadcn) that match KPI card shapes. Feels faster.
 
