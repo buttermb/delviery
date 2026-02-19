@@ -1392,7 +1392,7 @@ export default function ProductManagement() {
               description={
                 searchTerm || categoryFilter !== "all"
                   ? "Try adjusting your filters to find products"
-                  : "Add your first product to start selling"
+                  : "Add your inventory to start selling"
               }
               primaryAction={
                 !searchTerm && categoryFilter === "all"
