@@ -286,7 +286,7 @@
 
 - [x] Task 133: Role changes reflect in sidebar — After changing a team member's role via team management, their sidebar should reflect new permissions. Ensure role change invalidates the auth/permissions query.
 
-- [ ] Task 134: Run npx tsc --noEmit — Fix all TS errors from Phase 10. Checkpoint.
+- [x] Task 134: Run npx tsc --noEmit — Fix all TS errors from Phase 10. Checkpoint.
 
 ## Phase 11: Mobile Responsiveness (12 tasks)
 
