@@ -108,7 +108,7 @@
 
 - [x] Task 50: Add partial payment indicator to invoice PDF/print — If invoice has partial payments, show "Amount Paid: $X / Amount Due: $Y" on the printed invoice. If using OrderInvoiceGenerator, update the template.
 
-- [ ] Task 51: Wire invoice creation to finance dashboard — After creating any invoice, invalidate finance hub queries so revenue totals update without page refresh.
+- [x] Task 51: Wire invoice creation to finance dashboard — After creating any invoice, invalidate finance hub queries so revenue totals update without page refresh.
 
 - [ ] Task 52: Run npx tsc --noEmit — Fix all TS errors from Phase 4. Checkpoint.
 

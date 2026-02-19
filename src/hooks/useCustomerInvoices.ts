@@ -4,6 +4,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 export interface CustomerInvoiceLineItem {
   id?: string;
@@ -198,9 +199,15 @@ export function useCustomerInvoices() {
         if (result.error) throw result.error;
         return result.data as unknown as CustomerInvoice;
       },
-      onSuccess: () => {
+      onSuccess: (_data, variables) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
         toast.success('Invoice created successfully');
+        // Cross-panel invalidation — finance hub, dashboard, collections
+        if (tenant?.id) {
+          invalidateOnEvent(queryClient, 'INVOICE_CREATED', tenant.id, {
+            customerId: variables.customer_id,
+          });
+        }
       },
       onError: (error: Error) => {
         logger.error('Failed to create invoice', error, { component: 'useCustomerInvoices' });
