@@ -390,7 +390,7 @@
 - [x] Task 197: Overdue badges on InvoicesPage list — Already exists from Part A (Task 47): InvoicesPage.tsx has overdue computation per row (lines 449-451), red "Overdue (Xd)" Badge in status column for both desktop (lines 1064-1068) and mobile (lines 823-827) views, "Overdue" filter option in dropdown (line 757-759), and balance column color-coded red for overdue invoices. No changes needed.
 - [x] Task 198: Payment columns on InvoicesPage � Already exists from Part A (Task 48): desktop table has Amount, Paid, Balance columns with color-coding (green=paid, yellow=partial, red=overdue), sort by balance, and mobile view shows equivalent info. No changes needed.
 - [x] Task 199: isPending on all InvoiceDetailPage buttons — Already complete from Part A (Task 49): all action buttons (Print, Share Link, Duplicate, Mark as Sent, Record Payment, Void, Delete) have disabled={isAnyPending}, Void confirm has disabled={voidInvoiceMutation.isPending}, ConfirmDeleteDialog has isLoading={deleteInvoice.isPending}. No changes needed.
-- [ ] Task 200: Partial payment on printed invoice
+- [x] Task 200: Partial payment on printed invoice
 - [ ] Task 201: Invoice creation to finance dashboard invalidation
 - [ ] Task 202: Run npx tsc --noEmit � Checkpoint.
 

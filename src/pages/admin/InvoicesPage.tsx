@@ -362,7 +362,34 @@ async function generateEnhancedInvoicePDF({ invoice, settings }: GenerateInvoice
     doc.text("Total:", totalsX, yPosition);
     doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
     doc.text(formatCurrency(invoice.total), pageWidth - margin, yPosition, { align: "right" });
-    yPosition += 15;
+    yPosition += 10;
+
+    // Partial payment indicator
+    const amountPaid = invoice.amount_paid ?? 0;
+    if (amountPaid > 0) {
+        const balanceDue = Math.max(0, invoice.total - amountPaid);
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(34, 197, 94); // Green
+        doc.text("Amount Paid:", totalsX, yPosition);
+        doc.text(formatCurrency(amountPaid), pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 6;
+
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
+        yPosition += 6;
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(balanceDue > 0 ? 239 : 34, balanceDue > 0 ? 68 : 197, balanceDue > 0 ? 68 : 94);
+        doc.text("Amount Due:", totalsX, yPosition);
+        doc.text(formatCurrency(balanceDue), pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 10;
+    } else {
+        yPosition += 5;
+    }
 
     // Due Date Info
     const dueDateInfo = calculateDueDateInfo(invoice.due_date);
