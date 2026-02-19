@@ -24,7 +24,7 @@
 
 - [x] Task 11: Apply FeatureGate to Analytics routes — Wrap analytics hub/pages with featureId="analytics_advanced".
 
-- [ ] Task 12: Apply FeatureGate to Marketing routes — Wrap CouponManagement, Campaigns with featureId="marketing_hub".
+- [x] Task 12: Apply FeatureGate to Marketing routes — Wrap CouponManagement, Campaigns with featureId="marketing_hub".
 
 - [ ] Task 13: Apply FeatureGate to CRM routes — Wrap CRM Hub pages with featureId="crm_advanced".
 

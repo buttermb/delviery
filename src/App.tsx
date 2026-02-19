@@ -906,7 +906,7 @@ const App = () => {
                                         <Route path="marketplace" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/settings" element={<FeatureProtectedRoute featureId="marketplace"><StoreSettings /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/products" element={<FeatureProtectedRoute featureId="marketplace"><ProductVisibilityManager /></FeatureProtectedRoute>} />
-                                        <Route path="marketplace/coupons" element={<FeatureProtectedRoute featureId="marketplace"><CouponManager /></FeatureProtectedRoute>} />
+                                        <Route path="marketplace/coupons" element={<FeatureProtectedRoute featureId="marketplace" feature="marketing_hub"><CouponManager /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/categories" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceCategoryManager /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/sync" element={<FeatureProtectedRoute featureId="marketplace-product-sync"><ProductSyncPage /></FeatureProtectedRoute>} />
 
@@ -955,7 +955,7 @@ const App = () => {
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
                                         <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers" feature="purchase_orders"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
-                                        <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
+                                        <Route path="loyalty-program" element={<FeatureProtectedRoute feature="marketing_hub"><Navigate to="marketing-hub?tab=loyalty" replace /></FeatureProtectedRoute>} />
                                         <Route path="coupons" element={<Navigate to="storefront-hub?tab=coupons" replace />} />
                                         <Route path="quality-control" element={<FeatureProtectedRoute feature="quality_control"><Navigate to="operations-hub?tab=quality" replace /></FeatureProtectedRoute>} />
                                         <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
@@ -969,7 +969,7 @@ const App = () => {
                                         <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><PreOrderDetailPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CRMSettingsPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/invites" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvitesPage /></FeatureProtectedRoute>} />
-                                        <Route path="marketing-automation" element={<Navigate to="marketing-hub?tab=campaigns" replace />} />
+                                        <Route path="marketing-automation" element={<FeatureProtectedRoute feature="marketing_hub"><Navigate to="marketing-hub?tab=campaigns" replace /></FeatureProtectedRoute>} />
                                         <Route path="appointments" element={<Navigate to="operations-hub?tab=appointments" replace />} />
                                         <Route path="support-tickets" element={<Navigate to="operations-hub?tab=support" replace />} />
                                         <Route path="batch-recall" element={<Navigate to="compliance-hub?tab=batch-recall" replace />} />
