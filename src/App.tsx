@@ -273,6 +273,7 @@ const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmat
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
 const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
+const ShopDealsPage = lazy(() => import("./pages/shop/DealsPage"));
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
@@ -583,6 +584,7 @@ const App = () => {
                                         <Route path="products/:productId" element={<ShopProductDetailPage />} />
                                         {/* SEO-friendly slug-based product URLs */}
                                         <Route path="product/:productSlug" element={<ShopProductDetailPage />} />
+                                        <Route path="deals" element={<ShopDealsPage />} />
                                         <Route path="cart" element={<ShopCartPage />} />
                                         <Route path="checkout" element={<ShopCheckoutPage />} />
                                         <Route path="express-checkout" element={<SinglePageCheckout />} />

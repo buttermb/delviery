@@ -148,7 +148,7 @@
 
 ## Phase 6: Customer Portal & Storefront Flow (16 tasks)
 
-- [ ] Task 69: Audit shop homepage — Navigate to /{tenantSlug}/shop or /shop/:storeSlug. Verify: page loads, shows store name/logo, displays products, has navigation. Fix if broken or blank.
+- [x] Task 69: Audit shop homepage — Navigate to /{tenantSlug}/shop or /shop/:storeSlug. Verify: page loads, shows store name/logo, displays products, has navigation. Fix if broken or blank.
 
 - [ ] Task 70: Fix product browsing — On shop page: verify category filters work, search filters products, sorting (price, name, newest) works. Fix any that don't function.
 
