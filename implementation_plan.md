@@ -430,7 +430,7 @@
 - [x] Task 231: Verify storefront builder to live store — Fixed: replaced useToast with sonner in StorefrontBuilder.tsx and useStorefrontBuilder.ts, added syncToMarketplaceProfiles to StorefrontBuilder.tsx save/publish mutations (was only in the hook, not the main component), replaced (supabase as any) with proper type casts. Now both save draft and publish sync layout_config+theme_config to marketplace_profiles which is what the shop RPC reads.
 - [x] Task 232: Order status realtime in customer portal — Already had realtime subscription on orders table. Added second channel listener for marketplace_orders (storefront orders) so both order types get instant updates. Added toast notification when order status changes. Kept 10s polling fallback.
 - [x] Task 233: Shop empty state (zero products) — Fixed LuxuryProductGridSection.tsx to distinguish between "zero products in store" (shows Package icon + "This store doesn't have any products yet") vs "no search/filter results" (shows Search icon + "No matches found" + clear filters button). ProductCatalogPage and ProductGridSection already had proper empty states.
-- [ ] Task 234: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 234: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B7: Table and List Polish (14 tasks)
 
