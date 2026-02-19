@@ -177,6 +177,9 @@ export function QuickCreateCustomerDialog({
         email: data.email,
         phone: data.phone,
       });
+
+      // Close the dialog
+      onOpenChange(false);
     },
     onError: (error) => {
       logger.error('Failed to create customer', error, {
