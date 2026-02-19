@@ -144,7 +144,7 @@
 
 - [x] Task 67: Add skip on optional wizard steps — Delivery zones step and invite driver step: add "Skip for now" text link below main CTA. Advances to next step without saving that section.
 
-- [ ] Task 68: Run npx tsc --noEmit — Fix all TS errors from Phase 5. Checkpoint.
+- [x] Task 68: Run npx tsc --noEmit — Fix all TS errors from Phase 5. Checkpoint.
 
 ## Phase 6: Customer Portal & Storefront Flow (16 tasks)
 
