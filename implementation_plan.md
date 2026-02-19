@@ -396,7 +396,7 @@
 
 ## Phase B5: Empty States and Onboarding (16 tasks)
 
-- [ ] Task 203: Create EmptyState component � src/components/ui/EmptyState.tsx
+- [x] Task 203: Create EmptyState component — src/components/ui/EmptyState.tsx. Created reusable component with icon, title, description, optional actionLabel/onAction CTA button. Follows existing admin/shared/EmptyState pattern with centered card layout, muted icon circle, and shadcn Button.
 - [ ] Task 204: Empty state � Dashboard
 - [ ] Task 205: Empty state � Products
 - [ ] Task 206: Empty state � Orders
