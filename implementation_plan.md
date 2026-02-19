@@ -344,7 +344,7 @@
 - [x] Task 160: Apply FeatureGate to Delivery routes
 - [x] Task 161: Apply FeatureGate to Analytics routes
 - [x] Task 162: Apply FeatureGate to Marketing routes — Already implemented: marketplace/coupons (line 912), marketing-hub (line 935), marketing/reviews (line 936), loyalty-program (line 961), marketing-automation (line 975) all wrapped with FeatureProtectedRoute feature="marketing_hub"
-- [ ] Task 163: Apply FeatureGate to CRM routes
+- [x] Task 163: Apply FeatureGate to CRM routes — Already implemented: all CRM routes (crm/clients, crm/invoices, crm/pre-orders, crm/settings, crm/invites) wrapped with FeatureProtectedRoute feature="crm_advanced" in App.tsx
 - [ ] Task 164: Apply FeatureGate to remaining routes (PO, Vendor, QC, Chat, Fleet)
 - [ ] Task 165: Feature flag count in sidebar footer
 - [ ] Task 166: Enable Feature tooltips on disabled buttons
