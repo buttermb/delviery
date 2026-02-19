@@ -32,6 +32,7 @@ import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
 import { DeliveryExceptions } from '@/components/admin/delivery';
+import { useOrderInvoiceSave } from '@/components/admin/orders/OrderInvoiceGenerator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -504,6 +505,61 @@ export function OrderDetailsPage() {
     },
   });
 
+  // Check if invoice already exists for this order
+  const { data: existingInvoice } = useQuery({
+    queryKey: [...queryKeys.customerInvoices.all, 'by-order', orderId],
+    queryFn: async () => {
+      if (!orderId) return null;
+      const { data, error } = await supabase
+        .from('customer_invoices')
+        .select('id, invoice_number')
+        .eq('order_id', orderId)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!orderId,
+  });
+
+  // Create invoice from order data
+  const { createInvoice, isCreating: isCreatingInvoice } = useOrderInvoiceSave();
+
+  const handleCreateInvoice = async () => {
+    if (!order?.customer_id) {
+      toast.error('No customer linked to this order');
+      return;
+    }
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 30);
+    try {
+      await createInvoice({
+        order: {
+          id: order.id,
+          tracking_code: order.order_number,
+          created_at: order.created_at,
+          total_amount: order.total_amount,
+          status: order.status,
+          delivery_address: order.delivery_address || '',
+          order_items: (order.order_items || []).map(item => ({
+            quantity: item.quantity,
+            price: item.unit_price,
+            product_name: item.product_name,
+          })),
+          subtotal: order.subtotal || 0,
+          tax: order.tax_amount || 0,
+          discount: order.discount_amount || 0,
+          notes: order.notes || undefined,
+        },
+        customerId: order.customer_id,
+        dueDate: dueDate.toISOString().split('T')[0],
+        notes: `Auto-generated from Order #${order.order_number}`,
+      });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.customerInvoices.all, 'by-order', orderId] });
+    } catch {
+      // Error already handled by useOrderInvoiceSave onError
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6 p-6 max-w-5xl mx-auto">
@@ -628,6 +684,35 @@ export function OrderDetailsPage() {
               >
                 <RotateCcw className="w-4 h-4 mr-1" />
                 {order.payment_status === 'refunded' ? 'Refunded' : 'Refund'}
+              </Button>
+            )}
+
+            {/* Create Invoice Button — for delivered/completed orders with customer */}
+            {['delivered', 'completed'].includes(order.status) && order.customer_id && !existingInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCreateInvoice}
+                disabled={isCreatingInvoice || updateStatusMutation.isPending}
+              >
+                {isCreatingInvoice ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-1" />
+                )}
+                Create Invoice
+              </Button>
+            )}
+
+            {/* View Invoice link — if invoice already exists for this order */}
+            {existingInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateToAdmin('customer-invoices')}
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                View Invoice
               </Button>
             )}
 
