@@ -420,7 +420,7 @@
 - [x] Task 221: Fix product detail page — ProductDetailPage.tsx was already fully implemented (image gallery, description, price, add-to-cart, reviews, related products, SEO). Fixed bug: separated `showZoom` (dialog) from `isHovering` (image hover scale effect) to prevent hover from opening the zoom dialog. Added cursor-zoom-in and click handler.
 - [x] Task 222: Fix cart functionality
 - [x] Task 223: Fix checkout flow
-- [ ] Task 224: Fix order confirmation
+- [x] Task 224: Fix order confirmation — Fixed OrderConfirmationPage to accept orderId from SinglePageCheckout state (was redirecting back to store). Added Delivery Details card with customer name, delivery address, and estimated delivery time. Fetches delivery_address and customer_name from storefront_orders.
 - [ ] Task 225: Fix customer order tracking
 - [ ] Task 226: Fix customer profile page
 - [ ] Task 227: Fix disposable menu customer flow

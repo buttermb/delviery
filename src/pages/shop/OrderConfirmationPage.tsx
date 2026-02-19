@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag } from 'lucide-react';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useShopCart } from '@/hooks/useShopCart';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,13 +42,15 @@ export function OrderConfirmationPage() {
   const { clearCart } = useShopCart({ storeId: store?.id || '' });
 
   // Read from location.state first, fall back to URL query params (for Stripe redirects and page refreshes)
+  // Support both CheckoutPage state (orderNumber) and SinglePageCheckout state (orderId)
   const stateData = (location.state || {}) as {
     orderNumber?: string;
+    orderId?: string;
     trackingToken?: string;
     total?: number;
   };
 
-  const orderNumber = stateData.orderNumber || searchParams.get('order') || null;
+  const orderNumber = stateData.orderNumber || stateData.orderId || searchParams.get('order') || null;
   const trackingToken = stateData.trackingToken || searchParams.get('token') || null;
   const total = stateData.total || (searchParams.get('total') ? parseFloat(searchParams.get('total')!) : undefined);
   const sessionId = searchParams.get('session_id');
@@ -62,7 +64,7 @@ export function OrderConfirmationPage() {
       // Try fetching by tracking_token first, then by order_number/id
       let query = supabase
         .from('storefront_orders')
-        .select('order_number, items, subtotal, delivery_fee, total, status, created_at');
+        .select('order_number, items, subtotal, delivery_fee, total, status, created_at, delivery_address, customer_name');
 
       if (trackingToken) {
         query = query.eq('tracking_token', trackingToken);
@@ -291,6 +293,49 @@ export function OrderConfirmationPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Estimated Delivery */}
+      {orderDetails && (
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Truck className="w-5 h-5" style={{ color: store.primary_color }} />
+              <h3 className="font-semibold text-lg">Delivery Details</h3>
+            </div>
+            <div className="space-y-3">
+              {orderDetails.customer_name && (
+                <div className="flex items-start gap-3">
+                  <Mail className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">{orderDetails.customer_name}</p>
+                  </div>
+                </div>
+              )}
+              {orderDetails.delivery_address && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm">{orderDetails.delivery_address}</p>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-start gap-3">
+                <Clock className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Estimated Delivery</p>
+                  <p className="text-sm text-muted-foreground">
+                    {orderDetails.status === 'delivered'
+                      ? 'Delivered'
+                      : orderDetails.status === 'out_for_delivery'
+                        ? 'Out for delivery — arriving soon'
+                        : 'Within 30–60 minutes'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Items Ordered */}
       {orderLoading ? (
