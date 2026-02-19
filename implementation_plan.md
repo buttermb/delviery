@@ -382,7 +382,7 @@
 ## Phase B4: Invoice Partial Payments (12 tasks)
 
 - [x] Task 191: Create InvoicePaymentDialog — Already exists from Part A with full implementation: RHF + Zod, CurrencyInput for amount, payment method select, DatePickerWithPresets, reference/notes, mutation with payment history JSONB, tenant_id filtering via account_id. No changes needed.
-- [ ] Task 192: Wire InvoicePaymentDialog to InvoiceDetailPage
+- [x] Task 192: Wire InvoicePaymentDialog to InvoiceDetailPage — Already exists from Part A: imported at line 7, showPaymentDialog state at line 90, "Record Payment" button at line 265, dialog rendered at lines 577-583 with invoiceId, amountDue, amountPaid, open, onOpenChange. Dialog internally invalidates crmInvoiceKeys.all and shows toast. No changes needed.
 - [ ] Task 193: Create payment mutation � Update paid/partial status.
 - [ ] Task 194: Payment history section on InvoiceDetailPage
 - [ ] Task 195: VOID watermark on cancelled invoices
