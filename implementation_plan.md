@@ -192,7 +192,7 @@
 
 - [x] Task 89: Fix long text overflow in Invoices table — Customer name, invoice number columns. Apply truncation.
 
-- [ ] Task 90: Add sorting to Orders table — Ensure columns are sortable: Date (default desc), Total, Status, Customer. If sort doesn't work, wire it to query orderBy.
+- [x] Task 90: Add sorting to Orders table — Ensure columns are sortable: Date (default desc), Total, Status, Customer. If sort doesn't work, wire it to query orderBy.
 
 - [ ] Task 91: Add sorting to Products table — Sortable: Name, Price, Stock, Category. Wire to query.
 

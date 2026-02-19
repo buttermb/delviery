@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -83,6 +83,9 @@ interface Order {
   order_items?: OrderItem[];
 }
 
+type OrderSortField = 'created_at' | 'total_amount' | 'status' | 'customer';
+type SortOrder = 'asc' | 'desc';
+
 export default function Orders() {
   const navigate = useTenantNavigate();
   const { tenant, admin } = useTenantAdminAuth();
@@ -136,6 +139,8 @@ export default function Orders() {
   }>({ open: false, targetStatus: '' });
   const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+  const [sortField, setSortField] = useState<OrderSortField>('created_at');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -375,7 +380,7 @@ export default function Orders() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(filteredOrders.map(o => o.id));
+      setSelectedOrders(sortedOrders.map(o => o.id));
     } else {
       setSelectedOrders([]);
     }
@@ -458,6 +463,60 @@ export default function Orders() {
   };
 
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
+
+  const handleSort = (field: OrderSortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'created_at' ? 'desc' : 'asc');
+    }
+  };
+
+  const SortableHeader = ({ field, label }: { field: OrderSortField; label: string }) => {
+    const isActive = sortField === field;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8 hover:bg-transparent"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        {isActive ? (
+          sortOrder === 'asc' ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+        ) : (
+          <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </Button>
+    );
+  };
+
+  const sortedOrders = useMemo(() => {
+    const sorted = [...filteredOrders];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'created_at':
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'total_amount':
+          cmp = (a.total_amount || 0) - (b.total_amount || 0);
+          break;
+        case 'status':
+          cmp = (a.status || '').localeCompare(b.status || '');
+          break;
+        case 'customer': {
+          const nameA = a.user?.full_name || a.user?.email || '';
+          const nameB = b.user?.full_name || b.user?.email || '';
+          cmp = nameA.localeCompare(nameB);
+          break;
+        }
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [filteredOrders, sortField, sortOrder]);
 
   const handleDelete = (id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
@@ -582,7 +641,7 @@ export default function Orders() {
     {
       header: (
         <Checkbox
-          checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+          checked={sortedOrders.length > 0 && selectedOrders.length === sortedOrders.length}
           onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
         />
       ) as unknown as string, // Cast to string to satisfy older interfaces if strict type checking fails intermittently, though we updated it.
@@ -613,7 +672,7 @@ export default function Orders() {
       className: "w-[120px]"
     },
     {
-      header: "Customer",
+      header: <SortableHeader field="customer" label="Customer" />,
       className: "max-w-[200px]",
       cell: (order) => (
         <div className="flex flex-col gap-1 max-w-[200px] min-w-0">
@@ -641,7 +700,7 @@ export default function Orders() {
       )
     },
     {
-      header: "Status",
+      header: <SortableHeader field="status" label="Status" />,
       cell: (order) => {
         // Convert to SLA-compatible format
         const slaOrder: OrderWithSLATimestamps = {
@@ -687,11 +746,11 @@ export default function Orders() {
       ),
     },
     {
-      header: "Total",
+      header: <SortableHeader field="total_amount" label="Total" />,
       cell: (order) => <span className="font-mono font-medium">${order.total_amount?.toFixed(2)}</span>
     },
     {
-      header: "Date",
+      header: <SortableHeader field="created_at" label="Date" />,
       cell: (order) => <span className="text-muted-foreground">{formatSmartDate(order.created_at)}</span>
     },
     {
@@ -778,11 +837,11 @@ export default function Orders() {
             </div>
             <div className="flex gap-2">
               <OrderExportButton
-                orders={filteredOrders}
+                orders={sortedOrders}
                 filenamePrefix="orders-export"
                 variant="outline"
                 className="min-h-[48px] touch-manipulation"
-                disabled={filteredOrders.length === 0}
+                disabled={sortedOrders.length === 0}
               />
               <Button
                 variant="outline"
@@ -876,7 +935,7 @@ export default function Orders() {
 
             {/* Responsive Table */}
             <ResponsiveTable<Order>
-              data={filteredOrders}
+              data={sortedOrders}
               columns={columns}
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
@@ -1055,7 +1114,7 @@ export default function Orders() {
       <BulkAssignRunnerDialog
         open={assignRunnerDialogOpen}
         onOpenChange={setAssignRunnerDialogOpen}
-        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id)).map(o => ({
+        selectedOrders={sortedOrders.filter(o => selectedOrders.includes(o.id)).map(o => ({
           id: o.id,
           order_number: o.order_number,
         }))}
@@ -1066,7 +1125,7 @@ export default function Orders() {
       />
 
       <OrderMergeDialog
-        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id))}
+        selectedOrders={sortedOrders.filter(o => selectedOrders.includes(o.id))}
         open={mergeDialogOpen}
         onOpenChange={setMergeDialogOpen}
         onSuccess={() => {
