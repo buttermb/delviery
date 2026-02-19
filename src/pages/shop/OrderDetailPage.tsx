@@ -3,9 +3,9 @@
  * Full order details view with timeline, items, actions (cancel, reorder, track)
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -75,6 +75,7 @@ export function OrderDetailPage() {
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
@@ -122,6 +123,36 @@ export function OrderDetailPage() {
       return activeStatuses.includes(data.status) ? 30000 : false;
     },
   });
+
+  // Realtime subscription for instant order status updates
+  useEffect(() => {
+    if (!orderId || !store?.id) return;
+
+    const channel = supabase
+      .channel(`shop-order-detail-${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'marketplace_orders',
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          logger.debug('Shop order status update received', payload.new, 'OrderDetailPage');
+          queryClient.invalidateQueries({ queryKey: ['storefront-order-detail', store?.id, orderId] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Realtime subscribed for shop order detail', { orderId }, 'OrderDetailPage');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId, store?.id, queryClient]);
 
   // Cancel order handler
   const handleCancelOrder = async () => {

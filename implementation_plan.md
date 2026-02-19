@@ -174,7 +174,7 @@
 
 - [x] Task 81: Verify storefront builder → live store — Make a change in admin StorefrontBuilder (color, logo, store name). Refresh /shop/:slug. Verify change appears. Fix if disconnected.
 
-- [ ] Task 82: Add order status realtime to customer portal — In customer order tracking page, add Supabase realtime subscription on the order's status. When admin changes status, customer sees update without refresh. If already exists, verify it works.
+- [x] Task 82: Add order status realtime to customer portal — In customer order tracking page, add Supabase realtime subscription on the order's status. When admin changes status, customer sees update without refresh. If already exists, verify it works.
 
 - [ ] Task 83: Fix shop empty state — New store with zero products: shop page should show "This store doesn't have any products yet" instead of blank page or loading spinner.
 

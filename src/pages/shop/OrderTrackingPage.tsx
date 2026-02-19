@@ -3,8 +3,9 @@
  * Track order status with timeline
  */
 
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,6 +60,7 @@ const STATUS_STEPS = [
 export default function OrderTrackingPage() {
   const { storeSlug, trackingToken } = useParams();
   const { store } = useShop();
+  const queryClient = useQueryClient();
 
   // Fetch order details with retry and auto-refresh
   const { data: order, isLoading, error, refetch, isFetching } = useQuery({
@@ -90,6 +92,36 @@ export default function OrderTrackingPage() {
       return activeStatuses.includes(data.status) ? 30000 : false;
     },
   });
+
+  // Realtime subscription for instant order status updates
+  useEffect(() => {
+    if (!order?.order_id) return;
+
+    const channel = supabase
+      .channel(`shop-order-tracking-${order.order_id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'marketplace_orders',
+          filter: `id=eq.${order.order_id}`,
+        },
+        (payload) => {
+          logger.debug('Order tracking status update received', payload.new, 'ShopOrderTrackingPage');
+          queryClient.invalidateQueries({ queryKey: ['order-tracking', trackingToken] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Realtime subscribed for order tracking', { orderId: order.order_id }, 'ShopOrderTrackingPage');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [order?.order_id, trackingToken, queryClient]);
 
   if (isLoading) {
     return (
