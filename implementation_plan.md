@@ -410,7 +410,7 @@
 - [x] Task 214: Empty state → Z-Report — Already implemented from Part A (Task 64): ZReportPage.tsx and ZReportPanel.tsx both have EmptyState with BarChart icon, "No shift reports yet", "Reports are generated when you complete a shift" at lines 83-89. No changes needed.
 - [x] Task 215: Fix demo data loader — Already implemented from Part A (Task 65): handleGenerateDemoData() in tenant-admin/DashboardPage.tsx calls seed-demo-data edge function, AlertDialog confirmation exists, edge function creates 5 customers/5 products/10 orders, loading state + toast + error handling all present. No changes needed.
 - [x] Task 216: Verify setup wizard end-to-end — Already fully implemented and verified from Part A (Task 66): 5-step wizard (Business Profile, Add Products, Delivery Zones, Invite Driver, Preview Storefront) with auto-redirect for new tenants, RHF+Zod forms, tenant_id filtering, skip functionality, and dashboard redirect on completion. No changes needed.
-- [ ] Task 217: Skip on optional wizard steps
+- [x] Task 217: Skip on optional wizard steps — Already implemented from Part A (Task 67): DeliveryZonesStep.tsx shows "Skip for now" text link below form when no zones added (lines 249-256), InviteDriverStep.tsx shows "Skip for now" text link below form when no driver invited (lines 204-212). Both call onComplete to advance without saving. No changes needed.
 - [ ] Task 218: Run npx tsc --noEmit � Checkpoint.
 
 ## Phase B6: Customer Portal and Storefront (16 tasks)
