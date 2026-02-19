@@ -224,7 +224,7 @@ export function DashboardPage() {
               <button
                 type="button"
                 className="underline underline-offset-2 hover:text-blue-900 dark:hover:text-blue-100"
-                onClick={() => navigate(`/${tenantSlug}/admin/settings?tab=features`)}
+                onClick={() => navigate(`/${tenantSlug}/admin/settings-hub?tab=features`)}
               >
                 Enable more features in Settings
               </button>.

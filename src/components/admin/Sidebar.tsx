@@ -264,7 +264,7 @@ export function Sidebar() {
           {/* Feature flag count */}
           <div className="px-4 py-2 border-t">
             <Link
-              to={getFullPath('/admin/settings?tab=features')}
+              to={getFullPath('/admin/settings-hub?tab=features')}
               className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
               <Settings2 className="h-3 w-3" />
