@@ -300,7 +300,7 @@
 
 - [x] Task 139: Fix CashRegister on tablet — POS should be optimized for iPad-size screens (1024px). Product grid + cart side by side. Touch-friendly button sizes (min 44px).
 
-- [ ] Task 140: Fix date pickers on mobile — Date inputs should use native date picker on mobile (type="date") or ensure custom date picker is touch-friendly and doesn't overflow viewport.
+- [x] Task 140: Fix date pickers on mobile — Date inputs should use native date picker on mobile (type="date") or ensure custom date picker is touch-friendly and doesn't overflow viewport.
 
 - [ ] Task 141: Fix dropdown menus on mobile — All Select/Combobox dropdowns should not overflow screen edges. Apply max-h and position properly on small screens.
 

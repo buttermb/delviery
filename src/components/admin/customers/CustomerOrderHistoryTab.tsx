@@ -36,6 +36,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomerOrderHistoryTabProps {
   customerId: string;
@@ -97,6 +98,7 @@ function getPaymentStatusStyles(status: string | null): string {
 export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabProps) {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
+  const isMobile = useIsMobile();
   const tenantId = tenant?.id;
 
   // Filter state
@@ -414,7 +416,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
               <CalendarComponent
                 initialFocus
                 mode="range"
@@ -423,7 +425,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
                 onSelect={(range) => {
                   setDateRange({ from: range?.from, to: range?.to });
                 }}
-                numberOfMonths={2}
+                numberOfMonths={isMobile ? 1 : 2}
               />
             </PopoverContent>
           </Popover>

@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 /**
  * Filter option for select filters
@@ -169,6 +170,7 @@ export function FilterBar({
   customFilters,
   className,
 }: FilterBarProps) {
+  const isMobile = useIsMobile();
   const [internalSearchValue, setInternalSearchValue] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -312,14 +314,14 @@ export function FilterBar({
                 {formatDateRangeDisplay(config.key)}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
               <Calendar
                 initialFocus
                 mode="range"
                 defaultMonth={getDateRange(config.key)?.from}
                 selected={getDateRange(config.key)}
                 onSelect={(range) => handleDateRangeChange(config.key, range)}
-                numberOfMonths={2}
+                numberOfMonths={isMobile ? 1 : 2}
               />
             </PopoverContent>
           </Popover>
@@ -342,7 +344,7 @@ export function FilterBar({
                   : config.placeholder ?? 'Select date'}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
               <Calendar
                 mode="single"
                 selected={

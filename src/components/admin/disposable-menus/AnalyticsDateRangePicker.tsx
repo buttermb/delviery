@@ -5,6 +5,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AnalyticsDateRangePickerProps {
   dateRange: DateRange | undefined;
@@ -15,6 +16,8 @@ export const AnalyticsDateRangePicker = ({
   dateRange,
   onDateRangeChange,
 }: AnalyticsDateRangePickerProps) => {
+  const isMobile = useIsMobile();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -40,14 +43,14 @@ export const AnalyticsDateRangePicker = ({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
         <Calendar
           initialFocus
           mode="range"
           defaultMonth={dateRange?.from}
           selected={dateRange}
           onSelect={onDateRangeChange}
-          numberOfMonths={2}
+          numberOfMonths={isMobile ? 1 : 2}
         />
       </PopoverContent>
     </Popover>
