@@ -91,6 +91,9 @@ import Printer from "lucide-react/dist/esm/icons/printer";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Save from "lucide-react/dist/esm/icons/save";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
+import { FeatureGate } from '@/components/admin/FeatureGate';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -195,6 +198,8 @@ export function OrderDetailsPage() {
   const { tenant, tenantSlug } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
+  const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const deliveryEnabled = isFeatureEnabled('delivery_tracking');
 
   const [cancellationReason, setCancellationReason] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -660,15 +665,26 @@ export function OrderDetailsPage() {
 
             {/* Assign Runner Button - show when order is ready for delivery */}
             {!isCancelled && !order.courier_id && ['confirmed', 'preparing', 'ready', 'pending'].includes(order.status) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAssignRunnerDialog(true)}
-                disabled={updateStatusMutation.isPending}
-              >
-                <UserPlus className="w-4 h-4 mr-1" />
-                Assign Runner
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAssignRunnerDialog(true)}
+                        disabled={!deliveryEnabled || updateStatusMutation.isPending}
+                      >
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        Assign Runner
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!deliveryEnabled && (
+                    <TooltipContent>Enable Delivery Tracking in Settings</TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             {!isCancelled && (
@@ -1184,16 +1200,18 @@ export function OrderDetailsPage() {
               </div>
             )}
 
-            {/* Order Analytics Insights — hide on print */}
-            <div className="print:hidden">
-              <OrderAnalyticsInsights
-                orderId={order.id}
-                customerId={order.customer_id}
-                orderTotal={order.total_amount}
-                orderCreatedAt={order.created_at}
-                orderItems={order.order_items}
-              />
-            </div>
+            {/* Order Analytics Insights — hide on print, gated behind analytics_advanced */}
+            <FeatureGate feature="analytics_advanced">
+              <div className="print:hidden">
+                <OrderAnalyticsInsights
+                  orderId={order.id}
+                  customerId={order.customer_id}
+                  orderTotal={order.total_amount}
+                  orderCreatedAt={order.created_at}
+                  orderItems={order.order_items}
+                />
+              </div>
+            </FeatureGate>
 
             {/* Payment Status with Real-time Sync — hide on print */}
             <div className="print:hidden">

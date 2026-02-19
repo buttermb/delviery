@@ -39,6 +39,7 @@ import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { invalidateOnEvent } from "@/lib/invalidation";
 import { useDeliveryETA } from "@/hooks/useDeliveryETA";
+import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
@@ -87,6 +88,8 @@ export default function Orders() {
   const { tenant, admin } = useTenantAdminAuth();
   const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
+  const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const deliveryEnabled = isFeatureEnabled('delivery_tracking');
 
   useAdminKeyboardShortcuts({
     onSearch: () => {
@@ -985,6 +988,8 @@ export default function Orders() {
             id: 'assign-runner',
             label: 'Assign Runner',
             icon: <UserPlus className="h-4 w-4" />,
+            disabled: !deliveryEnabled,
+            tooltip: !deliveryEnabled ? 'Enable Delivery Tracking in Settings' : undefined,
             onClick: async () => { setAssignRunnerDialogOpen(true); },
           },
           {

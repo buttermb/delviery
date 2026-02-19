@@ -32,7 +32,7 @@
 
 - [x] Task 15: Add feature flag count to sidebar footer — Below sidebar nav, show small text: "X features enabled • Manage" where "Manage" links to Settings → Features tab.
 
-- [ ] Task 16: Add "Enable Feature" inline prompts — When a core page references a disabled feature (e.g. Orders page has "Assign Courier" but delivery_tracking is off), show the button as disabled with tooltip "Enable Delivery Tracking in Settings".
+- [x] Task 16: Add "Enable Feature" inline prompts — When a core page references a disabled feature (e.g. Orders page has "Assign Courier" but delivery_tracking is off), show the button as disabled with tooltip "Enable Delivery Tracking in Settings".
 
 - [ ] Task 17: Verify feature flag toggle flow end-to-end — Toggle POS on in settings → POS items appear in sidebar → navigate to CashRegister → page loads. Toggle off → items disappear → direct URL shows disabled message. Fix any issues.
 

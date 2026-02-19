@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   Loader2
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ExportButton } from "./ExportButton";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,8 @@ export interface BulkAction {
   label: string;
   icon?: React.ReactNode;
   variant?: "default" | "destructive";
+  disabled?: boolean;
+  tooltip?: string;
   onClick: (selectedIds: string[]) => Promise<void> | void;
 }
 
@@ -92,22 +95,37 @@ export function BulkActionsBar({
       </div>
 
       {/* Primary actions */}
-      {primaryActions.map((action) => (
-        <Button
-          key={action.id}
-          variant={action.variant === "destructive" ? "destructive" : "secondary"}
-          size="sm"
-          onClick={() => handleAction(action)}
-          disabled={loadingAction !== null}
-        >
-          {loadingAction === action.id ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            action.icon && <span className="mr-2">{action.icon}</span>
-          )}
-          {action.label}
-        </Button>
-      ))}
+      {primaryActions.map((action) => {
+        const btn = (
+          <Button
+            key={action.id}
+            variant={action.variant === "destructive" ? "destructive" : "secondary"}
+            size="sm"
+            onClick={() => handleAction(action)}
+            disabled={action.disabled || loadingAction !== null}
+          >
+            {loadingAction === action.id ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              action.icon && <span className="mr-2">{action.icon}</span>
+            )}
+            {action.label}
+          </Button>
+        );
+        if (action.disabled && action.tooltip) {
+          return (
+            <TooltipProvider key={action.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0}>{btn}</span>
+                </TooltipTrigger>
+                <TooltipContent>{action.tooltip}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        }
+        return btn;
+      })}
 
       {/* Export selected */}
       {data && selectedData.length > 0 && (
@@ -131,7 +149,9 @@ export function BulkActionsBar({
               <DropdownMenuItem
                 key={action.id}
                 onClick={() => handleAction(action)}
+                disabled={action.disabled}
                 className={action.variant === "destructive" ? "text-destructive" : ""}
+                title={action.disabled && action.tooltip ? action.tooltip : undefined}
               >
                 {action.icon && <span className="mr-2">{action.icon}</span>}
                 {action.label}
