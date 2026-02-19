@@ -65,6 +65,24 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
     setIsSubmitting(true);
 
     try {
+      // Check for duplicate product name within tenant
+      const { data: existingProduct, error: dupError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('tenant_id', tenant.id)
+        .eq('name', data.name.trim())
+        .maybeSingle();
+
+      if (dupError) {
+        logger.error('Error checking product name uniqueness', dupError, { component: 'AddProductsStep' });
+      }
+
+      if (existingProduct) {
+        toast.error('A product with this name already exists');
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('products')
         .insert({
