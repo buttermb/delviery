@@ -434,7 +434,7 @@
 
 ## Phase B7: Table and List Polish (14 tasks)
 
-- [ ] Task 235: Fix text overflow � Orders table
+- [x] Task 235: Fix text overflow — Orders table — Added TruncatedText (tooltip on hover) to Order #, customer email/phone, and Method columns. Added max-w constraints and truncation to mobile renderer.
 - [ ] Task 236: Fix text overflow � Products table
 - [ ] Task 237: Fix text overflow � Customers table
 - [ ] Task 238: Fix text overflow � WholesaleClients table

@@ -44,6 +44,7 @@ import { useDeliveryETA } from "@/hooks/useDeliveryETA";
 import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
   DropdownMenu,
@@ -674,12 +675,15 @@ export default function Orders() {
     },
     {
       header: "Order #",
+      className: "max-w-[150px]",
       cell: (order) => (
-        <div className="flex items-center gap-2">
-          <span className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}>
-            {order.order_number || order.id.slice(0, 8)}
-          </span>
-          <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="flex items-center gap-2 max-w-[150px] min-w-0">
+          <TruncatedText
+            text={order.order_number || order.id.slice(0, 8)}
+            maxWidthClass="max-w-[110px]"
+            className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}
+          />
+          <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )
     },
@@ -703,13 +707,13 @@ export default function Orders() {
           </div>
           {order.user?.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
-              <span className="truncate">{order.user.email}</span>
+              <TruncatedText text={order.user.email} maxWidthClass="max-w-[170px]" />
               <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
           {!order.user?.email && order.user?.phone && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
-              <span className="truncate">{order.user.phone}</span>
+              <TruncatedText text={order.user.phone} maxWidthClass="max-w-[170px]" />
               <CopyButton text={order.user.phone} label="Phone" showLabel={false} className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
@@ -751,7 +755,17 @@ export default function Orders() {
         );
       }
     },
-    { header: "Method", accessorKey: "delivery_method", className: "capitalize hidden lg:table-cell" },
+    {
+      header: "Method",
+      className: "max-w-[120px] hidden lg:table-cell",
+      cell: (order) => (
+        <TruncatedText
+          text={order.delivery_method || '—'}
+          maxWidthClass="max-w-[120px]"
+          className="capitalize"
+        />
+      )
+    },
     {
       header: "ETA",
       className: "w-[130px] hidden lg:table-cell",
@@ -1026,14 +1040,14 @@ export default function Orders() {
                         </span>
                         {getSourceBadge(order.order_source)}
                       </div>
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-medium truncate min-w-0">
                         <CustomerLink
                           customerId={order.user_id}
                           customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
                           customerEmail={order.user?.email}
                         />
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
                         {formatSmartDate(order.created_at)} • {order.delivery_method}
                       </p>
                     </div>
