@@ -1094,113 +1094,110 @@ export default function TenantAdminDashboardPage() {
 
         {/* Usage Limit Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4" data-tutorial="dashboard-stats">
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/inventory/products`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Package className="h-3 w-3" /> Products</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold">
-                {tenantUsage.products || 0}/{getDisplayLimit('products')}
-              </div>
-              {!isUnlimited('products') && (
-                <>
-                  <Progress
-                    value={getUsagePercentage('products')}
-                    className="mt-2 h-1.5 sm:h-2"
-                  />
-                  {getUsagePercentage('products') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
-                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('products'))}% capacity.
-                      Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
-                    </p>
-                  )}
-                </>
-              )}
-              {isUnlimited('products') && (
-                <p className="text-xs sm:text-sm text-green-600 mt-2">
-                  ✓ Unlimited products on {tenant?.subscription_plan || 'your'} plan
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Link to={`/${tenant?.slug}/admin/inventory/products`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Package className="h-3 w-3" /> Products</CardTitle>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                <div className="text-2xl sm:text-3xl font-bold">
+                  {tenantUsage.products || 0}/{getDisplayLimit('products')}
+                </div>
+                {!isUnlimited('products') && (
+                  <>
+                    <Progress
+                      value={getUsagePercentage('products')}
+                      className="mt-2 h-1.5 sm:h-2"
+                    />
+                    {getUsagePercentage('products') >= 80 && (
+                      <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
+                        <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('products'))}% capacity.
+                        Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
+                      </p>
+                    )}
+                  </>
+                )}
+                {isUnlimited('products') && (
+                  <p className="text-xs sm:text-sm text-green-600 mt-2">
+                    ✓ Unlimited products on {tenant?.subscription_plan || 'your'} plan
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/big-plug-clients`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Users className="h-3 w-3" /> Customers</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold">
-                {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
-              </div>
-              {!isUnlimited('customers') && (
-                <>
-                  <Progress
-                    value={getUsagePercentage('customers')}
-                    className="mt-2 h-1.5 sm:h-2"
-                  />
-                  {getUsagePercentage('customers') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
-                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('customers'))}% capacity.
-                      Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
-                    </p>
-                  )}
-                </>
-              )}
-              {isUnlimited('customers') && (
-                <p className="text-xs sm:text-sm text-green-600 mt-2">
-                  ✓ Unlimited customers on {tenant?.subscription_plan || 'your'} plan
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Link to={`/${tenant?.slug}/admin/big-plug-clients`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Users className="h-3 w-3" /> Customers</CardTitle>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                <div className="text-2xl sm:text-3xl font-bold">
+                  {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
+                </div>
+                {!isUnlimited('customers') && (
+                  <>
+                    <Progress
+                      value={getUsagePercentage('customers')}
+                      className="mt-2 h-1.5 sm:h-2"
+                    />
+                    {getUsagePercentage('customers') >= 80 && (
+                      <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
+                        <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('customers'))}% capacity.
+                        Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
+                      </p>
+                    )}
+                  </>
+                )}
+                {isUnlimited('customers') && (
+                  <p className="text-xs sm:text-sm text-green-600 mt-2">
+                    ✓ Unlimited customers on {tenant?.subscription_plan || 'your'} plan
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/disposable-menus`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Smartphone className="h-3 w-3" /> Menus</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
-                {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
-              </div>
-              {!isUnlimited('menus') && (
-                <>
-                  <Progress
-                    value={getUsagePercentage('menus')}
-                    className="mt-2 h-1.5 sm:h-2"
-                  />
-                  {getUsagePercentage('menus') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
-                      ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity.
-                      Upgrade to Professional for unlimited menus.
-                    </p>
-                  )}
-                </>
-              )}
-              {isUnlimited('menus') && (
-                <p className="text-xs sm:text-sm text-green-600 mt-2">
-                  ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Link to={`/${tenant?.slug}/admin/disposable-menus`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Smartphone className="h-3 w-3" /> Menus</CardTitle>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
+                  {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
+                </div>
+                {!isUnlimited('menus') && (
+                  <>
+                    <Progress
+                      value={getUsagePercentage('menus')}
+                      className="mt-2 h-1.5 sm:h-2"
+                    />
+                    {getUsagePercentage('menus') >= 80 && (
+                      <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
+                        ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity.
+                        Upgrade to Professional for unlimited menus.
+                      </p>
+                    )}
+                  </>
+                )}
+                {isUnlimited('menus') && (
+                  <p className="text-xs sm:text-sm text-green-600 mt-2">
+                    ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Quick Actions */}
