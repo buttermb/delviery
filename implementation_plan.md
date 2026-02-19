@@ -348,7 +348,7 @@
 - [x] Task 164: Apply FeatureGate to remaining routes (PO, Vendor, QC, Chat, Fleet) — Already implemented: purchase-orders (feature="purchase_orders"), vendor-management + vendor-dashboard (feature="vendor_management"), quality-control (feature="quality_control"), live-chat (feature="live_chat"), fleet-management (feature="fleet_management") all wrapped with FeatureProtectedRoute in App.tsx
 - [x] Task 165: Feature flag count in sidebar footer
 - [x] Task 166: Enable Feature tooltips on disabled buttons
-- [ ] Task 167: Verify toggle flow end-to-end
+- [x] Task 167: Verify toggle flow end-to-end
 - [ ] Task 168: Run npx tsc --noEmit � Checkpoint.
 
 ## Phase B2: Search Sanitization (12 tasks)
