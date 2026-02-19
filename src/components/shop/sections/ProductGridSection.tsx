@@ -6,8 +6,9 @@ import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package } from "lucid
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
 import { StorefrontProductCard } from "@/components/shop/StorefrontProductCard";
 
 // Local product type for data from RPC/queries that gets normalized
@@ -73,7 +74,6 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     const _isMobile = useIsMobile();
     const [searchQuery, setSearchQuery] = useState("");
     const [premiumFilter, setPremiumFilter] = useState(false);
-    const { toast } = useToast();
 
     // Cart integration
     const { addItem } = useShopCart({
@@ -81,31 +81,29 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         onCartChange: () => { },
     });
 
-    const handleQuickAdd = (e: React.MouseEvent, product: any) => {
+    const handleQuickAdd = (e: React.MouseEvent, product: LocalProduct & { id: string }) => {
         e.preventDefault();
 
         addItem({
             productId: product.id,
-            name: product.name,
-            price: product.price,
+            name: product.name || '',
+            price: product.price || 0,
             quantity: 1,
             imageUrl: product.images?.[0],
-            // variant: product.strain_type // Add if available in data
         });
-        toast({
-            title: 'Added to cart',
+        toast.success('Added to cart', {
             description: `${product.name} has been added to your cart.`
         });
     };
 
     // Fetch products - normalized to LocalProduct[]
     const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
-        queryKey: ["products", storeId],
+        queryKey: queryKeys.shopProducts.list(storeId),
         queryFn: async () => {
             if (storeId) {
                 // Public Storefront View - try RPC first, fallback to direct query
                 try {
-                    const { data, error } = await (supabase as any)
+                    const { data, error } = await supabase
                         .rpc('get_marketplace_products', { p_store_id: storeId });
 
                     if (error) {
@@ -126,28 +124,35 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                         if (fallbackError) throw fallbackError;
 
-                        return ((fallbackData as any[]) || []).map((item: any) => ({
-                            id: item.product_id,
-                            name: item.products?.name,
-                            price: item.custom_price || item.products?.price || 0,
-                            images: item.products?.images || [],
-                            category: item.products?.category,
-                            description: item.products?.description,
-                            in_stock: item.products?.in_stock,
-                        })) as LocalProduct[];
+                        return ((fallbackData as unknown[]) || []).map((item: unknown) => {
+                            const row = item as Record<string, unknown>;
+                            const products = row.products as Record<string, unknown> | null;
+                            return {
+                                id: row.product_id as string,
+                                name: products?.name as string | undefined,
+                                price: (row.custom_price as number) || (products?.price as number) || 0,
+                                images: (products?.images as string[]) || [],
+                                category: products?.category as string | undefined,
+                                description: products?.description as string | undefined,
+                                in_stock: products?.in_stock as boolean | undefined,
+                            };
+                        }) as LocalProduct[];
                     }
 
                     // Normalize RPC data to LocalProduct interface
-                    return ((data as any[]) || []).map((p: any) => ({
-                        id: p.product_id || p.id,
-                        name: p.product_name || p.name,
-                        price: p.base_price || p.price || 0,
-                        description: p.description,
-                        images: p.images || [],
-                        category: p.category,
-                        in_stock: (p.quantity_available || 0) > 0,
-                        strain_type: p.strain_type || '',
-                    })) as LocalProduct[];
+                    return ((data as unknown[]) || []).map((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        return {
+                            id: (p.product_id || p.id) as string,
+                            name: (p.product_name || p.name) as string,
+                            price: (p.base_price || p.price || 0) as number,
+                            description: p.description as string | undefined,
+                            images: (p.images as string[]) || [],
+                            category: p.category as string | undefined,
+                            in_stock: ((p.quantity_available as number) || 0) > 0,
+                            strain_type: (p.strain_type as string) || '',
+                        };
+                    }) as LocalProduct[];
                 } catch (err) {
                     logger.error('Error fetching marketplace products', err);
                     return [];
@@ -180,7 +185,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     const { data: _inventoryMap = {} } = useInventoryBatch(productIds);
 
     // Dynamic Categories
-    const uniqueCategories = Array.from(new Set(allProducts.map((p: any) => p.category))).filter((c): c is string => !!c);
+    const uniqueCategories = Array.from(new Set(allProducts.map((p) => p.category))).filter((c): c is string => !!c);
 
     // Icon Mapping Helper
     const getCategoryIcon = (category: string) => {
@@ -212,7 +217,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
     if (premiumFilter) {
         filteredProducts = filteredProducts.filter((p) => {
-            const price = typeof p.price === 'number' ? p.price : parseFloat(p.price);
+            const price = p.price ?? 0;
             return price >= 40 || p.description?.toLowerCase().includes('premium');
         });
     }
