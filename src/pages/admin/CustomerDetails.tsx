@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
   ArrowLeft, User, Mail, Phone, Calendar,
-  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare
+  DollarSign, Star, ShoppingBag, CreditCard, MessageSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -70,6 +70,7 @@ export default function CustomerDetails() {
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
+  const [firstOrderDate, setFirstOrderDate] = useState<string | null>(null);
   const [storeCreditDialogOpen, setStoreCreditDialogOpen] = useState(false);
   const [storeCreditAmount, setStoreCreditAmount] = useState('');
 
@@ -127,6 +128,14 @@ export default function CustomerDetails() {
 
       if (ordersError) throw ordersError;
       setOrders(ordersData || []);
+
+      // Compute first order date (orders are sorted desc, so last element is earliest)
+      if (ordersData && ordersData.length > 0) {
+        const earliest = ordersData[ordersData.length - 1];
+        setFirstOrderDate((earliest as Record<string, unknown>).created_at as string ?? null);
+      } else {
+        setFirstOrderDate(null);
+      }
 
       // Load payments
       const { data: paymentsData, error: paymentsError } = await supabase
@@ -298,11 +307,13 @@ export default function CustomerDetails() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Loyalty Points</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{customer.loyalty_points || 0}</p>
+                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">First Order</p>
+                    <p className="text-2xl font-bold font-mono text-[hsl(var(--tenant-text))]">
+                      {firstOrderDate ? format(new Date(firstOrderDate), 'MMM d, yyyy') : 'No orders'}
+                    </p>
                   </div>
                   <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                    <Gift className="w-6 h-6 text-emerald-600" />
+                    <Calendar className="w-6 h-6 text-emerald-600" />
                   </div>
                 </div>
               </CardContent>

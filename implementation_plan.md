@@ -276,7 +276,7 @@
 
 - [x] Task 128: Invoice auto-creation from orders — When a wholesale order is completed/delivered, offer to auto-generate invoice. Add "Create Invoice" button on OrderDetailsPage that pre-fills invoice from order data.
 
-- [ ] Task 129: Customer lifetime value on customer detail — On customer detail/profile page, show: total orders count, total spent, average order value, first order date. Query from orders table.
+- [x] Task 129: Customer lifetime value on customer detail — On customer detail/profile page, show: total orders count, total spent, average order value, first order date. Query from orders table.
 
 - [ ] Task 130: Dashboard KPI click-through — Each KPI card on dashboard should link somewhere: Total Revenue → Finance Hub, Total Orders → Orders page, Total Customers → Customers page, Low Stock → Inventory filtered. Wrap in Link components.
 
