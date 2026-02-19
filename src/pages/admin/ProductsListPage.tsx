@@ -44,6 +44,7 @@ import {
 import { SearchInput } from '@/components/shared/SearchInput';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { InventoryStatusBadge } from '@/components/admin/InventoryStatusBadge';
 import { ProductCard } from '@/components/admin/ProductCard';
 import {
@@ -485,18 +486,19 @@ export function ProductsListPage() {
     {
       header: 'Product',
       accessorKey: 'name',
+      className: 'max-w-[200px]',
       cell: (product) => (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{product.name}</span>
+        <div className="flex flex-col max-w-[200px] min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <TruncatedText text={product.name} className="font-medium" />
             {product.archived_at && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs shrink-0">
                 Archived
               </Badge>
             )}
           </div>
           {product.sku && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground truncate">
               SKU: {product.sku}
             </span>
           )}
@@ -506,8 +508,9 @@ export function ProductsListPage() {
     {
       header: 'Category',
       accessorKey: 'category',
+      className: 'max-w-[150px]',
       cell: (product) => (
-        <Badge variant="outline" className="capitalize">
+        <Badge variant="outline" className="capitalize max-w-[140px] truncate">
           {product.category || 'Uncategorized'}
         </Badge>
       ),

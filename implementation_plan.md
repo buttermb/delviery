@@ -184,7 +184,7 @@
 
 - [x] Task 85: Fix long text overflow in Orders table — Check customer name, product name, address columns. Apply max-w-[200px] truncate or TruncatedText component. Tooltip on hover to show full text.
 
-- [ ] Task 86: Fix long text overflow in Products table — Product name, description, SKU columns. Apply truncation.
+- [x] Task 86: Fix long text overflow in Products table — Product name, description, SKU columns. Apply truncation.
 
 - [ ] Task 87: Fix long text overflow in Customers table — Name, email, address columns. Apply truncation.
 
