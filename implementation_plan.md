@@ -68,7 +68,7 @@
 
 - [x] Task 31: Create POSRefundDialog — New file: src/components/admin/pos/POSRefundDialog.tsx. Dialog for POS returns. Fields: search previous transaction (order number text input), items to refund (checkboxes from found order), refund amount (auto-calc, editable for partial), refund method (select: cash, original_method). React Hook Form + Zod validation. Props: open, onOpenChange, onSuccess, shiftId?. Must filter by tenant_id when looking up orders.
 
-- [ ] Task 32: Wire POSRefundDialog to CashRegister — In CashRegister.tsx: import POSRefundDialog, add useState<boolean> for open, add "Refund" button in POS header/action area, render dialog, onSuccess invalidates POS queries + shows toast.
+- [x] Task 32: Wire POSRefundDialog to CashRegister — In CashRegister.tsx: import POSRefundDialog, add useState<boolean> for open, add "Refund" button in POS header/action area, render dialog, onSuccess invalidates POS queries + shows toast.
 
 - [ ] Task 33: Create POS refund mutation — On POSRefundDialog submit: create negative transaction record in pos_transactions (or orders with type='refund'), restore stock for returned items (increment stock_quantity on products table), link to original order via original_order_id. Filter by tenant_id. Toast success with refund amount.
 
