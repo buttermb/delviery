@@ -238,7 +238,7 @@
 
 - [x] Task 111: Add form dirty state warning — In major forms (product, settings, storefront builder): if user has unsaved changes and tries to navigate away, show "You have unsaved changes" warning. Use beforeunload event or React Router blocker.
 
-- [ ] Task 112: Run npx tsc --noEmit — Fix all TS errors from Phase 8. Checkpoint.
+- [x] Task 112: Run npx tsc --noEmit — Fix all TS errors from Phase 8. Checkpoint.
 
 ## Phase 9: Error Handling & Loading States (12 tasks)
 
