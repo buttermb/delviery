@@ -66,7 +66,7 @@
 
 ## Phase 3: POS Refunds & Receipt (10 tasks)
 
-- [ ] Task 31: Create POSRefundDialog — New file: src/components/admin/pos/POSRefundDialog.tsx. Dialog for POS returns. Fields: search previous transaction (order number text input), items to refund (checkboxes from found order), refund amount (auto-calc, editable for partial), refund method (select: cash, original_method). React Hook Form + Zod validation. Props: open, onOpenChange, onSuccess, shiftId?. Must filter by tenant_id when looking up orders.
+- [x] Task 31: Create POSRefundDialog — New file: src/components/admin/pos/POSRefundDialog.tsx. Dialog for POS returns. Fields: search previous transaction (order number text input), items to refund (checkboxes from found order), refund amount (auto-calc, editable for partial), refund method (select: cash, original_method). React Hook Form + Zod validation. Props: open, onOpenChange, onSuccess, shiftId?. Must filter by tenant_id when looking up orders.
 
 - [ ] Task 32: Wire POSRefundDialog to CashRegister — In CashRegister.tsx: import POSRefundDialog, add useState<boolean> for open, add "Refund" button in POS header/action area, render dialog, onSuccess invalidates POS queries + shows toast.
 

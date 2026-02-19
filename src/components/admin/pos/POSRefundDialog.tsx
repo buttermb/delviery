@@ -6,8 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 
 import type { UnifiedOrder, UnifiedOrderItem } from '@/hooks/useUnifiedOrders';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import {
@@ -81,7 +81,7 @@ export function POSRefundDialog({
 }: POSRefundDialogProps) {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
+
 
   // Order search state
   const [orderSearch, setOrderSearch] = useState('');
@@ -304,8 +304,7 @@ export function POSRefundDialog({
           .eq('tenant_id', tenantId);
       }
 
-      toast({
-        title: 'Refund processed',
+      toast.success('Refund processed', {
         description: `$${values.refundAmount.toFixed(2)} refunded for order ${foundOrder.order_number}`,
       });
 
@@ -333,10 +332,8 @@ export function POSRefundDialog({
       onSuccess?.();
     } catch (err) {
       logger.error('POS refund failed', err, { component: 'POSRefundDialog' });
-      toast({
-        title: 'Refund failed',
+      toast.error('Refund failed', {
         description: 'Unable to process refund. Please try again.',
-        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
