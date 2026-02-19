@@ -16,16 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Accordion,
   AccordionContent,
@@ -697,32 +688,19 @@ export function RoleManagement() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Delete Role
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the role{' '}
-              <span className="font-semibold">{roleToDelete?.name}</span>? This action cannot be
-              undone. Team members assigned to this role will lose these permissions.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteRoleMutation.isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => roleToDelete && deleteRoleMutation.mutate(roleToDelete.id)}
-              disabled={deleteRoleMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Delete Role
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={() => {
+          if (roleToDelete) {
+            deleteRoleMutation.mutate(roleToDelete.id);
+          }
+        }}
+        itemType="role"
+        itemName={roleToDelete?.name}
+        description={`Are you sure you want to delete the role "${roleToDelete?.name}"? This action cannot be undone. Team members assigned to this role will lose these permissions.`}
+        isLoading={deleteRoleMutation.isPending}
+      />
     </div>
   );
 }

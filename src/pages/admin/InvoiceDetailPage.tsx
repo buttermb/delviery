@@ -45,6 +45,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 
@@ -87,6 +88,7 @@ export default function InvoiceDetailPage() {
     const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // Set breadcrumb label to show invoice number
     useBreadcrumbLabel(invoice ? `Invoice #${invoice.invoice_number}` : null);
@@ -301,27 +303,9 @@ export default function InvoiceDetailPage() {
                             </>
                         )}
 
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="icon" disabled={isAnyPending}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the invoice.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} disabled={deleteInvoice.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                        <Button variant="destructive" size="icon" disabled={isAnyPending} onClick={() => setDeleteDialogOpen(true)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
 
@@ -596,6 +580,18 @@ export default function InvoiceDetailPage() {
                 amountPaid={invoice.amount_paid || 0}
                 open={showPaymentDialog}
                 onOpenChange={setShowPaymentDialog}
+            />
+
+            <ConfirmDeleteDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={() => {
+                    handleDelete();
+                    setDeleteDialogOpen(false);
+                }}
+                itemType="invoice"
+                itemName={`#${invoice.invoice_number}`}
+                isLoading={deleteInvoice.isPending}
             />
         </SwipeBackWrapper>
     );

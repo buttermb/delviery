@@ -232,7 +232,7 @@
 
 - [x] Task 108: Fix form error messages visibility — All Zod validation errors should show below the field in red text. Check forms use FormMessage or ErrorMessage component. Fix any that don't show errors.
 
-- [ ] Task 109: Add confirmation dialog to all delete actions — Every delete button across the app must show ConfirmDeleteDialog before executing. Check: products, orders, customers, clients, invoices, menus, team members. Add missing ones.
+- [x] Task 109: Add confirmation dialog to all delete actions — Every delete button across the app must show ConfirmDeleteDialog before executing. Check: products, orders, customers, clients, invoices, menus, team members. Add missing ones.
 
 - [ ] Task 110: Verify modal close after success — All dialog/modal forms: after successful submit, modal should close (onOpenChange(false)). Check: AddProduct, EditProduct, AddClient, InvoicePayment, POSRefund, OrderEdit, OrderRefund. Fix any that stay open.
 

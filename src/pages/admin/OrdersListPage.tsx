@@ -18,6 +18,7 @@ import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 import { DataTable, type SortState } from '@/components/shared/DataTable';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,6 +109,10 @@ export function OrdersListPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
   // Use the order filters hook for state management with persistence
   const {
@@ -483,7 +488,10 @@ export function OrdersListPage() {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
-              onClick={() => deleteMutation.mutate([original.id])}
+              onClick={() => {
+                setOrderToDelete(original.id);
+                setDeleteDialogOpen(true);
+              }}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -662,6 +670,20 @@ export function OrdersListPage() {
             Delete Selected
           </Button>
         }
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (orderToDelete) {
+            deleteMutation.mutate([orderToDelete]);
+            setDeleteDialogOpen(false);
+            setOrderToDelete(null);
+          }
+        }}
+        itemType="order"
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

@@ -73,6 +73,7 @@ import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
 
 import type { Database } from '@/integrations/supabase/types';
 
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ProductComparison } from '@/components/admin/products/ProductComparison';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
@@ -132,6 +133,10 @@ export function ProductsListPage() {
 
   // Comparison dialog state
   const [showComparison, setShowComparison] = useState(false);
+
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   // Persist filter changes
   const prevFiltersRef = useRef({ advancedFilters, sortBy });
@@ -422,11 +427,10 @@ export function ProductsListPage() {
 
   const handleDelete = useCallback(
     (productId: string) => {
-      if (window.confirm('Are you sure you want to delete this product?')) {
-        deleteMutation.mutate(productId);
-      }
+      setProductToDelete(productId);
+      setDeleteDialogOpen(true);
     },
-    [deleteMutation]
+    []
   );
 
   const handleAddProduct = useCallback(() => {
@@ -1016,6 +1020,20 @@ export function ProductsListPage() {
         productIds={selectedProducts}
         open={showComparison}
         onClose={() => setShowComparison(false)}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (productToDelete) {
+            deleteMutation.mutate(productToDelete);
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
+          }
+        }}
+        itemType="product"
+        isLoading={deleteMutation.isPending}
       />
     </div>
     </PullToRefresh>

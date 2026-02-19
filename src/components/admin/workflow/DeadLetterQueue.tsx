@@ -33,6 +33,7 @@ import {
   Clock,
   AlertTriangle,
 } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useDeadLetterQueue } from '@/hooks/useDeadLetterQueue';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -45,6 +46,8 @@ export function DeadLetterQueue() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
   
   const handleViewDetails = (entry: DeadLetterEntry) => {
     setSelectedEntry(entry);
@@ -221,7 +224,10 @@ export function DeadLetterQueue() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteEntry.mutate(entry.id)}
+                        onClick={() => {
+                          setEntryToDelete(entry.id);
+                          setDeleteDialogOpen(true);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -313,6 +319,20 @@ export function DeadLetterQueue() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (entryToDelete) {
+            deleteEntry.mutate(entryToDelete);
+            setDeleteDialogOpen(false);
+            setEntryToDelete(null);
+          }
+        }}
+        itemType="entry"
+        isLoading={deleteEntry.isPending}
+      />
     </div>
   );
 }

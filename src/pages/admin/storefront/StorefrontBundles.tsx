@@ -40,6 +40,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import {
   Plus,
@@ -82,6 +83,8 @@ export default function StorefrontBundles() {
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bundleToDelete, setBundleToDelete] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -633,7 +636,10 @@ export default function StorefrontBundles() {
                         variant="ghost"
                         size="icon"
                         className="text-red-500 hover:text-red-600"
-                        onClick={() => deleteBundleMutation.mutate(bundle.id)}
+                        onClick={() => {
+                          setBundleToDelete(bundle.id);
+                          setDeleteDialogOpen(true);
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -671,9 +677,22 @@ export default function StorefrontBundles() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (bundleToDelete) {
+            deleteBundleMutation.mutate(bundleToDelete);
+            setDeleteDialogOpen(false);
+            setBundleToDelete(null);
+          }
+        }}
+        itemType="bundle"
+        isLoading={deleteBundleMutation.isPending}
+      />
     </div>
   );
 }
-
 
 

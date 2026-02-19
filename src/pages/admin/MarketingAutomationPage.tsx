@@ -19,6 +19,7 @@ import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";
 import { queryKeys } from "@/lib/queryKeys";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +51,8 @@ export default function MarketingAutomationPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [_editingCampaign, _setEditingCampaign] = useState<MarketingCampaign | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: queryKeys.marketing.campaigns(),
@@ -114,7 +117,8 @@ export default function MarketingAutomationPage() {
   };
 
   const handleDeleteCampaign = (id: string) => {
-    deleteCampaignMutation.mutate(id);
+    setCampaignToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
   const filteredCampaigns = campaigns.filter(c =>
@@ -329,6 +333,20 @@ export default function MarketingAutomationPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (campaignToDelete) {
+            deleteCampaignMutation.mutate(campaignToDelete);
+            setDeleteDialogOpen(false);
+            setCampaignToDelete(null);
+          }
+        }}
+        itemType="campaign"
+        isLoading={deleteCampaignMutation.isPending}
+      />
     </div>
   );
 }
