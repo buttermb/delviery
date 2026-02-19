@@ -445,7 +445,7 @@
 - [x] Task 243: Sorting — WholesaleClients table — Already implemented: SortableHeader on Client (business_name), Status, Credit Status (outstanding_balance), This Month (created_at) columns. handleSort toggles asc/desc. sortedClients useMemo with client-side sort. Matches Orders.tsx pattern. No changes needed.
 - [x] Task 244: Pagination � Orders — Already implemented: usePagination hook (default 25 items) at line 534, StandardPagination component at lines 1065-1074 with page numbers, prev/next, page size selector. No changes needed.
 - [x] Task 245: Pagination — Products — Already implemented: usePagination hook (default 25 items) at line 385, StandardPagination component at lines 1011-1021 with page numbers, prev/next, page size selector. No changes needed.
-- [ ] Task 246: Pagination � Customers
+- [x] Task 246: Pagination — Customers — Already implemented: usePagination hook (default 25 items) at line 296, StandardPagination component at lines 848-858 with page numbers, prev/next, page size selector. Both desktop table and mobile list use paginatedCustomers. No changes needed.
 - [ ] Task 247: Row count display on all tables
 - [ ] Task 248: Run npx tsc --noEmit � Checkpoint.
 
