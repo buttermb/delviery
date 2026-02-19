@@ -364,7 +364,7 @@
 - [x] Task 177: Sanitize search in Marketplace pages — No .ilike() calls found; all Marketplace pages use client-side filtering via JS .filter()/.includes(). No changes needed.
 - [x] Task 178: Sanitize ALL remaining .ilike() — All .ilike() calls already use escapePostgresLike(). BusinessSettings.tsx uses hardcoded literals (not user input). No changes needed.
 - [x] Task 179: Add 300ms debounce to all search inputs — Added useDebounce(300ms) to 3 files with server-side search queries: TenantsListPage.tsx, OrganizationList.tsx, GlobalProductCatalog.tsx. All other search inputs (40+ files) are client-side filtering and don't need debounce.
-- [ ] Task 180: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 180: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B3: POS Refunds and Receipt (10 tasks)
 
