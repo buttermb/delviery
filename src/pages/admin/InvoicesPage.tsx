@@ -627,7 +627,6 @@ export function InvoicesPage() {
     const handleSort = (column: string) => {
         setSort((prev) => {
             if (prev?.column === column) {
-                // Cycle: ascending → descending → no sort
                 if (prev.ascending) return { column, ascending: false };
                 return null;
             }
@@ -635,11 +634,23 @@ export function InvoicesPage() {
         });
     };
 
-    const SortIcon = ({ column }: { column: string }) => {
-        if (sort?.column !== column) return <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/50" />;
-        return sort.ascending
-            ? <ArrowUp className="ml-1 h-3 w-3" />
-            : <ArrowDown className="ml-1 h-3 w-3" />;
+    const SortableHeader = ({ field, label }: { field: string; label: string }) => {
+        const isActive = sort?.column === field;
+        return (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-3 h-8 hover:bg-transparent"
+                onClick={() => handleSort(field)}
+            >
+                <span>{label}</span>
+                {isActive ? (
+                    sort.ascending ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+                ) : (
+                    <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+                )}
+            </Button>
+        );
     };
 
     // Calculate stats
@@ -963,48 +974,27 @@ export function InvoicesPage() {
                     <Table className="hidden md:table">
                         <TableHeader>
                             <TableRow>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50 sticky left-0 z-20 bg-background"
-                                    onClick={() => handleSort('invoice_number')}
-                                >
-                                    <span className="inline-flex items-center">Invoice # <SortIcon column="invoice_number" /></span>
+                                <TableHead className="sticky left-0 z-20 bg-background">
+                                    <SortableHeader field="invoice_number" label="Invoice #" />
                                 </TableHead>
                                 <TableHead>Client</TableHead>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50 hidden lg:table-cell"
-                                    onClick={() => handleSort('invoice_date')}
-                                >
-                                    <span className="inline-flex items-center">Date <SortIcon column="invoice_date" /></span>
+                                <TableHead className="hidden lg:table-cell">
+                                    <SortableHeader field="invoice_date" label="Date" />
                                 </TableHead>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('due_date')}
-                                >
-                                    <span className="inline-flex items-center">Due Date <SortIcon column="due_date" /></span>
+                                <TableHead>
+                                    <SortableHeader field="due_date" label="Due Date" />
                                 </TableHead>
-                                <TableHead
-                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('total')}
-                                >
-                                    <span className="inline-flex items-center justify-end w-full">Amount <SortIcon column="total" /></span>
+                                <TableHead className="text-right">
+                                    <SortableHeader field="total" label="Amount" />
                                 </TableHead>
-                                <TableHead
-                                    className="text-right cursor-pointer select-none hover:bg-muted/50 hidden lg:table-cell"
-                                    onClick={() => handleSort('amount_paid')}
-                                >
-                                    <span className="inline-flex items-center justify-end w-full">Amount Paid <SortIcon column="amount_paid" /></span>
+                                <TableHead className="text-right hidden lg:table-cell">
+                                    <SortableHeader field="amount_paid" label="Paid" />
                                 </TableHead>
-                                <TableHead
-                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('balance')}
-                                >
-                                    <span className="inline-flex items-center justify-end w-full">Balance <SortIcon column="balance" /></span>
+                                <TableHead className="text-right">
+                                    <SortableHeader field="balance" label="Balance" />
                                 </TableHead>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('status')}
-                                >
-                                    <span className="inline-flex items-center">Status <SortIcon column="status" /></span>
+                                <TableHead>
+                                    <SortableHeader field="status" label="Status" />
                                 </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>

@@ -441,7 +441,7 @@
 - [x] Task 239: Fix text overflow — Invoices table — Added overflow-hidden to CustomerLink wrapper divs in both desktop (max-w-[200px]) and mobile (max-w-[180px]) views so the internal truncate on customer name text properly clips. Invoice # already had TruncatedText.
 - [x] Task 240: Sorting � Orders table -- Already implemented from Part A (Task 90): SortableHeader on Customer, Status, Total, Date columns. handleSort toggles asc/desc. sortedOrders useMemo with client-side sort logic. Default created_at DESC. No changes needed.
 - [x] Task 241: Sorting — Products table — Already implemented: SortableHeader on Name, Category, Price, Stock columns. handleSort toggles asc/desc. filteredProducts useMemo with client-side sort logic. Persisted via useTablePreferences. No changes needed.
-- [ ] Task 242: Sorting � Invoices table
+- [x] Task 242: Sorting — Invoices table — Already had sorting (handleSort, SortIcon, InvoiceSortState) on all columns (Invoice #, Date, Due Date, Amount, Paid, Balance, Status) with server-side query + client-side balance sort. Refactored to use SortableHeader Button pattern matching Orders.tsx and WholesaleClients.tsx for consistency.
 - [ ] Task 243: Sorting � WholesaleClients table
 - [ ] Task 244: Pagination � Orders
 - [ ] Task 245: Pagination � Products
