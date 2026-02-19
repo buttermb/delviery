@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -159,7 +159,7 @@ export default function Orders() {
   }, [statusFilter, savePreferences]);
 
   // Data Fetching - includes both regular orders and POS orders from unified_orders
-  const { data: orders = [], isLoading, refetch } = useQuery({
+  const { data: orders = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['orders', tenant?.id, statusFilter],
     queryFn: async () => {
       if (!tenant) return [];
@@ -950,8 +950,23 @@ export default function Orders() {
 
             {/* Bulk Actions - handled by floating BulkActionsBar below */}
 
-            {/* Responsive Table */}
-            <ResponsiveTable<Order>
+            {/* Error State */}
+            {isError && !isLoading && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+                <h3 className="text-lg font-semibold mb-1">Failed to load orders</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Something went wrong while fetching your orders. Please try again.
+                </p>
+                <Button variant="outline" onClick={() => refetch()} className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
+            )}
+
+            {/* Responsive Table - hidden when error to avoid showing misleading empty state */}
+            {!isError && <ResponsiveTable<Order>
               data={paginatedItems}
               columns={columns}
               isLoading={isLoading}
@@ -1029,10 +1044,10 @@ export default function Orders() {
                   </div>
                 </SwipeableItem>
               )}
-            />
+            />}
 
             {/* Pagination */}
-            {sortedOrders.length > 0 && (
+            {!isError && sortedOrders.length > 0 && (
               <StandardPagination
                 currentPage={currentPage}
                 totalPages={totalPages}

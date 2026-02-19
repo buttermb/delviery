@@ -246,7 +246,7 @@
 
 - [x] Task 114: Add error state to Dashboard — If dashboard queries fail, show error card with retry button instead of broken KPI cards with NaN/undefined.
 
-- [ ] Task 115: Add error state to Orders page — If orders query fails, show error message with retry. Don't show empty table that looks like zero orders.
+- [x] Task 115: Add error state to Orders page — If orders query fails, show error message with retry. Don't show empty table that looks like zero orders.
 
 - [ ] Task 116: Add error state to Products page — Same pattern: error message + retry on query failure.
 
