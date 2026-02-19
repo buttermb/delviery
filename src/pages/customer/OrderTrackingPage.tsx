@@ -12,10 +12,46 @@ import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { OrderProgressBar } from "@/components/customer/OrderProgressBar";
 import { OrderTrackingMap } from "@/components/customer/OrderTrackingMap";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
 type OrderStatus = "pending" | "confirmed" | "preparing" | "ready_for_pickup" | "out_for_delivery" | "delivered" | "cancelled";
+
+interface OrderItemWithProduct {
+  id: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  products: {
+    id: string;
+    name: string;
+    image_url: string | null;
+  } | null;
+}
+
+interface CourierInfo {
+  full_name: string;
+  current_lat: number | null;
+  current_lng: number | null;
+  vehicle_type: string;
+}
+
+interface OrderWithDetails {
+  id: string;
+  status: string;
+  tracking_code: string | null;
+  delivery_address: string;
+  total_amount: number;
+  delivery_fee: number;
+  delivered_at: string | null;
+  created_at: string | null;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
+  courier_id: string | null;
+  order_items: OrderItemWithProduct[];
+  courier: CourierInfo | null;
+}
 
 export default function OrderTrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -28,7 +64,7 @@ export default function OrderTrackingPage() {
   // Fetch order details
   const { data: order, isLoading } = useQuery({
     queryKey: ["customer-order", orderId, tenantId, customerId],
-    queryFn: async () => {
+    queryFn: async (): Promise<OrderWithDetails | null> => {
       if (!orderId || !tenantId || !customerId) return null;
 
       const { data, error } = await supabase
@@ -38,9 +74,9 @@ export default function OrderTrackingPage() {
           order_items (
             id,
             product_id,
+            product_name,
             quantity,
-            unit_price,
-            total_price,
+            price,
             products (
               id,
               name,
@@ -62,7 +98,7 @@ export default function OrderTrackingPage() {
       if (error) throw error;
       if (!data) throw new Error("Order not found");
 
-      return data;
+      return data as unknown as OrderWithDetails;
     },
     enabled: !!orderId && !!tenantId && !!customerId,
     refetchInterval: 10000, // Poll every 10 seconds as fallback
@@ -161,8 +197,9 @@ export default function OrderTrackingPage() {
                         'Estimated Delivery'}
                   </h2>
                   <p className="text-3xl font-bold text-gray-900">
-                    {/* @ts-ignore - Property exists at runtime */}
-                    {orderStatus === 'delivered' ? format(new Date(order.updated_at), 'h:mm a') : '25-35 min'}
+                    {orderStatus === 'delivered' && order.delivered_at
+                      ? format(new Date(order.delivered_at), 'h:mm a')
+                      : '25-35 min'}
                   </p>
                 </div>
                 <OrderProgressBar status={orderStatus} />
@@ -170,11 +207,16 @@ export default function OrderTrackingPage() {
             </Card>
 
             {/* Map */}
-            {/* @ts-ignore - Order type mismatch with map component */}
-            <OrderTrackingMap order={order} />
+            <OrderTrackingMap order={{
+              id: order.id,
+              status: order.status,
+              dropoff_lat: order.dropoff_lat ?? undefined,
+              dropoff_lng: order.dropoff_lng ?? undefined,
+              courier_id: order.courier_id ?? undefined,
+              courier: order.courier ?? undefined,
+            }} />
 
             {/* Courier Info (if assigned) */}
-            {/* @ts-ignore - Courier properties exist at runtime */}
             {order.courier && (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4 flex items-center gap-4">
@@ -182,9 +224,7 @@ export default function OrderTrackingPage() {
                     🚗
                   </div>
                   <div className="flex-1">
-                    {/* @ts-ignore - Property exists at runtime */}
                     <h3 className="font-bold text-gray-900">{order.courier.full_name}</h3>
-                    {/* @ts-ignore - Property exists at runtime */}
                     <p className="text-sm text-gray-500">{order.courier.vehicle_type || 'Delivery Partner'}</p>
                   </div>
                   <Button variant="outline" size="icon" className="rounded-full">
@@ -210,14 +250,12 @@ export default function OrderTrackingPage() {
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
                   </div>
                 </div>
-                {/* @ts-ignore - Phone property exists in some tenant configurations */}
-                {tenant?.phone && (
+                {tenant?.business_name && (
                   <div className="flex items-start gap-3">
                     <Phone className="h-5 w-5 text-gray-400 mt-0.5" />
                     <div>
-                      <p className="font-medium text-gray-900">Store Contact</p>
-                      {/* @ts-ignore - Phone property exists in some tenant configurations */}
-                      <p className="text-sm text-gray-500">{tenant.phone}</p>
+                      <p className="font-medium text-gray-900">Store</p>
+                      <p className="text-sm text-gray-500">{tenant.business_name}</p>
                     </div>
                   </div>
                 )}
@@ -231,7 +269,7 @@ export default function OrderTrackingPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {order.order_items?.map((item: any) => (
+                  {order.order_items?.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                         {item.products?.image_url ? (
@@ -243,14 +281,14 @@ export default function OrderTrackingPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
                           <p className="font-medium text-sm text-gray-900 truncate pr-2">
-                            {item.quantity}x {item.products?.name}
+                            {item.quantity}x {item.products?.name || item.product_name}
                           </p>
                           <p className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                            {formatCurrency(item.total_price)}
+                            {formatCurrency(item.price * item.quantity)}
                           </p>
                         </div>
                         <p className="text-xs text-gray-500">
-                          {formatCurrency(item.unit_price)} / unit
+                          {formatCurrency(item.price)} / unit
                         </p>
                       </div>
                     </div>
@@ -263,7 +301,7 @@ export default function OrderTrackingPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Delivery Fee</span>
-                      <span className="font-medium">{formatCurrency(0)}</span>
+                      <span className="font-medium">{formatCurrency(order.delivery_fee)}</span>
                     </div>
                     <div className="flex justify-between text-base font-bold pt-2 border-t">
                       <span>Total</span>
@@ -287,10 +325,7 @@ export default function OrderTrackingPage() {
                 <Button
                   className="flex-1 bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
                   onClick={() => {
-                    toast({
-                      title: "Reorder",
-                      description: "Reorder functionality coming soon",
-                    });
+                    toast.info("Reorder functionality coming soon");
                   }}
                 >
                   Reorder

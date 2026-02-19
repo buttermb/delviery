@@ -160,7 +160,7 @@
 
 - [x] Task 74: Fix order confirmation page — After placing order, verify customer sees confirmation with order number, items ordered, estimated delivery. Fix if redirects wrong or shows blank.
 
-- [ ] Task 75: Fix customer order tracking — In customer portal, verify customer can see their orders list and click into order details with status timeline. Fix if broken or missing.
+- [x] Task 75: Fix customer order tracking — In customer portal, verify customer can see their orders list and click into order details with status timeline. Fix if broken or missing.
 
 - [ ] Task 76: Fix customer profile page — In customer portal, verify customer can update their name, phone, address. Fix if form doesn't save or fields are missing.
 
