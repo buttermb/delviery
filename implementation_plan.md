@@ -346,7 +346,7 @@
 - [x] Task 162: Apply FeatureGate to Marketing routes — Already implemented: marketplace/coupons (line 912), marketing-hub (line 935), marketing/reviews (line 936), loyalty-program (line 961), marketing-automation (line 975) all wrapped with FeatureProtectedRoute feature="marketing_hub"
 - [x] Task 163: Apply FeatureGate to CRM routes — Already implemented: all CRM routes (crm/clients, crm/invoices, crm/pre-orders, crm/settings, crm/invites) wrapped with FeatureProtectedRoute feature="crm_advanced" in App.tsx
 - [x] Task 164: Apply FeatureGate to remaining routes (PO, Vendor, QC, Chat, Fleet) — Already implemented: purchase-orders (feature="purchase_orders"), vendor-management + vendor-dashboard (feature="vendor_management"), quality-control (feature="quality_control"), live-chat (feature="live_chat"), fleet-management (feature="fleet_management") all wrapped with FeatureProtectedRoute in App.tsx
-- [ ] Task 165: Feature flag count in sidebar footer
+- [x] Task 165: Feature flag count in sidebar footer
 - [ ] Task 166: Enable Feature tooltips on disabled buttons
 - [ ] Task 167: Verify toggle flow end-to-end
 - [ ] Task 168: Run npx tsc --noEmit � Checkpoint.

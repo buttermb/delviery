@@ -21,8 +21,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
+import { LogOut, Settings, Settings2, ChevronDown, User, HelpCircle, RefreshCw, Search, Plus, ShoppingCart, LayoutDashboard, Package } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
 import { SidebarProvider as ContextProvider, useSidebar } from './SidebarContext';
@@ -67,6 +68,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const { sidebarConfig, hotItems, favorites, operationSize: _operationSize, isLoading } = useSidebarConfig();
   const { trackFeatureClick, toggleFavorite: _toggleFavorite, preferences, searchQuery, setSearchQuery } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
+  const { flags } = useTenantFeatureToggles();
 
   // Run storage migration on mount
   useSidebarMigration();
@@ -163,6 +165,10 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
 
   const handleNavigateToSettingsSidebar = useCallback(() => {
     if (tenantSlug) navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
+  }, [navigate, tenantSlug]);
+
+  const handleNavigateToFeatures = useCallback(() => {
+    if (tenantSlug) navigate(`/${tenantSlug}/admin/settings-hub?tab=features`);
   }, [navigate, tenantSlug]);
 
   // Guard against missing tenant slug - AFTER all hooks are called
@@ -373,6 +379,17 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               Help
             </Button>
           </div>
+          <button
+            onClick={handleNavigateToFeatures}
+            className="flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50"
+          >
+            <Settings2 className="h-3 w-3" />
+            <span>
+              {Object.values(flags).filter(Boolean).length} features enabled
+              {' · '}
+              <span className="underline underline-offset-2">Manage</span>
+            </span>
+          </button>
           <div className="text-[10px] text-muted-foreground/60 text-center mt-1">
             <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
           </div>
