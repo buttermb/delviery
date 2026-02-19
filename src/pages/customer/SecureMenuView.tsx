@@ -817,6 +817,7 @@ const SecureMenuView = () => {
         open={checkoutOpen}
         onOpenChange={setCheckoutOpen}
         menuId={menuData.menu_id}
+        tenantId={menuData.tenant_id}
         accessToken={menuData.whitelist_id}
         minOrder={menuData.min_order_quantity}
         maxOrder={menuData.max_order_quantity}

@@ -164,7 +164,7 @@
 
 - [x] Task 76: Fix customer profile page — In customer portal, verify customer can update their name, phone, address. Fix if form doesn't save or fields are missing.
 
-- [ ] Task 77: Fix disposable menu customer flow — Generate a disposable menu link from admin. Open link in incognito. Verify: menu loads, products display, can browse, can place order. Fix any broken steps.
+- [x] Task 77: Fix disposable menu customer flow — Generate a disposable menu link from admin. Open link in incognito. Verify: menu loads, products display, can browse, can place order. Fix any broken steps.
 
 - [ ] Task 78: Fix menu link expiry — If disposable menu has expiry, verify expired menus show "This menu has expired" instead of broken page or empty products.
 
