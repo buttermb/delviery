@@ -166,7 +166,7 @@
 
 - [x] Task 77: Fix disposable menu customer flow — Generate a disposable menu link from admin. Open link in incognito. Verify: menu loads, products display, can browse, can place order. Fix any broken steps.
 
-- [ ] Task 78: Fix menu link expiry — If disposable menu has expiry, verify expired menus show "This menu has expired" instead of broken page or empty products.
+- [x] Task 78: Fix menu link expiry — If disposable menu has expiry, verify expired menus show "This menu has expired" instead of broken page or empty products.
 
 - [ ] Task 79: Fix mobile shop layout — Open shop page on mobile viewport (375px). Verify: navigation works, products display in single column, cart is accessible, checkout form is usable. Fix responsive issues.
 

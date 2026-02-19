@@ -599,6 +599,26 @@ const SecureMenuView = () => {
     return null;
   }
 
+  // Check if menu has expired (client-side check for cached session data)
+  if (!menuData.never_expires && menuData.expiration_date && new Date(menuData.expiration_date) < new Date()) {
+    return (
+      <div className="min-h-dvh bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center p-8">
+          <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
+            <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">This Menu Has Expired</h1>
+          <p className="text-muted-foreground">
+            The link you followed has expired. Menus are time-limited for security purposes.
+          </p>
+          <p className="text-sm text-muted-foreground mt-4">
+            Please contact the merchant for an updated link.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   const totalItems = getItemCount();
   const totalAmount = getTotal();
   const cartMap = new Map(cartItems.map(item => [item.productId, item]));

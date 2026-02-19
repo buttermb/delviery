@@ -7,7 +7,7 @@ import { useDeviceTracking } from '@/hooks/useDeviceTracking';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle, CheckCircle2, MapPin } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle2, MapPin, Clock } from 'lucide-react';
 import { EnhancedMenuProductGrid } from '@/components/menu/EnhancedMenuProductGrid';
 import { MenuHeader } from '@/components/menu/MenuHeader';
 import { CartButton } from '@/components/menu/CartButton';
@@ -184,6 +184,33 @@ export default function MenuAccess() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-muted-foreground">Validating access...</p>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Detect expired menu specifically for a clearer user message
+  const isMenuExpired = error?.toLowerCase().includes('expired') ||
+    validation?.violations?.some(v => v.toLowerCase().includes('expired'));
+
+  if (isMenuExpired) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <CardTitle className="text-2xl">This Menu Has Expired</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              The link you followed has expired. Menus are time-limited for security purposes.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Please contact the merchant for an updated link.
+            </p>
           </CardContent>
         </Card>
       </div>
