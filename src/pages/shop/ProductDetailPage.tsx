@@ -649,7 +649,7 @@ export function ProductDetailPage() {
             <div className="lg:col-span-5 relative">
               <div className="sticky top-24 space-y-8">
                 {/* Glassmorphism Details Card */}
-                <div className={`rounded-3xl p-8 backdrop-blur-xl ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-card border'}`}>
+                <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-8 backdrop-blur-xl ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-card border'}`}>
                   {/* Brand & Category */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -677,7 +677,7 @@ export function ProductDetailPage() {
                   </div>
 
                   {/* Title */}
-                  <h1 className={`text-4xl md:text-5xl font-light tracking-tight mb-4 leading-tight ${isLuxuryTheme ? 'text-white' : ''}`}>
+                  <h1 className={`text-2xl sm:text-4xl md:text-5xl font-light tracking-tight mb-4 leading-tight ${isLuxuryTheme ? 'text-white' : ''}`}>
                     {product.name}
                   </h1>
 
@@ -867,18 +867,18 @@ export function ProductDetailPage() {
           <div className="mt-24 space-y-24">
 
             {/* Description & Reviews Tabs Overlay */}
-            <div className={`rounded-3xl p-8 lg:p-12 ${isLuxuryTheme ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-card border'}`}>
+            <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 ${isLuxuryTheme ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-card border'}`}>
               <Tabs defaultValue="description" className="w-full">
-                <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-8">
+                <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-6 sm:mb-8">
                   <TabsTrigger
                     value="description"
-                    className="text-lg px-8 py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
                   >
                     Description
                   </TabsTrigger>
                   <TabsTrigger
                     value="reviews"
-                    className="text-lg px-8 py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
                   >
                     Reviews ({reviews.length})
                   </TabsTrigger>
@@ -915,18 +915,19 @@ export function ProductDetailPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                       <div>
                         {/* Rating Summary */}
-                        <div className="flex items-center gap-8 mb-12 bg-white/5 p-8 rounded-2xl border border-white/5">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mb-8 sm:mb-12 bg-white/5 p-4 sm:p-8 rounded-2xl border border-white/5">
                           <div className="text-center">
-                            <span className="text-6xl font-light text-white block">{averageRating.toFixed(1)}</span>
+                            <span className="text-4xl sm:text-6xl font-light text-white block">{averageRating.toFixed(1)}</span>
                             <div className="flex justify-center mt-2">
                               {renderStars(averageRating, 'w-5 h-5')}
                             </div>
                             <span className="text-sm text-white/40 mt-2 block">{reviews.length} ratings</span>
                           </div>
-                          <div className="h-20 w-px bg-white/10" />
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-light text-white mb-2">Customer Reviews</h3>
-                            <p className="text-white/60 mb-6">95% of customers recommended this product</p>
+                          <div className="hidden sm:block h-20 w-px bg-white/10" />
+                          <Separator className="sm:hidden bg-white/10" />
+                          <div className="flex-1 text-center sm:text-left">
+                            <h3 className="text-xl sm:text-2xl font-light text-white mb-2">Customer Reviews</h3>
+                            <p className="text-white/60 mb-4 sm:mb-6">95% of customers recommended this product</p>
                             {store && product && (
                               <ReviewForm
                                 storeId={store.id}

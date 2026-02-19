@@ -710,7 +710,7 @@ export function CheckoutPage() {
               >
                 {/* Connecting Line */}
                 {index < STEPS.length - 1 && (
-                  <div className={`absolute top-5 left-[calc(50%+20px)] w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                  <div className={`absolute top-4 sm:top-5 left-[calc(50%+16px)] sm:left-[calc(50%+20px)] w-[calc(100%-32px)] sm:w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
                     <motion.div
                       className="h-full"
                       initial={{ width: "0%" }}
@@ -722,7 +722,7 @@ export function CheckoutPage() {
                 )}
 
                 <div
-                  className={`relative w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-4 ring-offset-background scale-110' : ''
+                  className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-2 sm:ring-offset-4 ring-offset-background scale-110' : ''
                     } ${isFuture ? (isLuxuryTheme ? 'bg-white/5 text-white/20' : 'bg-muted text-muted-foreground') : ''
                     }`}
                   style={{
@@ -733,9 +733,9 @@ export function CheckoutPage() {
                   }}
                 >
                   {isComplete ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
 
                   {/* Active Pulse Ring */}
@@ -751,7 +751,7 @@ export function CheckoutPage() {
                 </div>
 
                 <span
-                  className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
+                  className={`text-[10px] sm:text-xs uppercase tracking-wide sm:tracking-widest mt-2 sm:mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
                     }`}
                   style={{ color: isActive ? themeColor : undefined }}
                 >
