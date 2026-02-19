@@ -16,6 +16,7 @@ import {
     Plug,
     Shield,
     Headphones,
+    ToggleRight,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +29,7 @@ const BillingPage = lazy(() => import('@/pages/tenant-admin/BillingPage'));
 const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
 const TenantSecuritySettings = lazy(() => import('@/components/admin/settings/TenantSecuritySettings'));
 const HelpPage = lazy(() => import('@/pages/HelpPage'));
+const FeatureTogglesPanel = lazy(() => import('@/components/admin/settings/FeatureTogglesPanel').then(m => ({ default: m.FeatureTogglesPanel })));
 
 const TabSkeleton = () => (
     <div className="p-6 space-y-4">
@@ -39,6 +41,7 @@ const TabSkeleton = () => (
 const tabs = [
     // Configuration
     { id: 'general', label: 'General', icon: Settings, group: 'Configuration' },
+    { id: 'features', label: 'Features', icon: ToggleRight, group: 'Configuration' },
     // Account
     { id: 'billing', label: 'Billing', icon: CreditCard, group: 'Account' },
     { id: 'security', label: 'Security', icon: Shield, group: 'Account' },
@@ -98,6 +101,13 @@ export default function SettingsHubPage() {
 
                 <TabsContent value="general" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><SettingsPage embedded /></Suspense>
+                </TabsContent>
+                <TabsContent value="features" className="m-0">
+                    <Suspense fallback={<TabSkeleton />}>
+                        <div className="p-2 sm:p-6">
+                            <FeatureTogglesPanel />
+                        </div>
+                    </Suspense>
                 </TabsContent>
                 <TabsContent value="billing" className="m-0">
                     <Suspense fallback={<TabSkeleton />}><BillingPage /></Suspense>

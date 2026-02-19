@@ -10,7 +10,7 @@
 
 - [x] Task 4: Create FeatureTogglesPanel — New file: src/components/admin/settings/FeatureTogglesPanel.tsx. Card-based grid showing all feature flags. Each card: icon, title, description, Switch toggle. Group into sections: "Core Features" (always on, switches disabled), "Advanced Features" (toggleable). Uses useTenantFeatureToggles().toggleFeature on switch change. Shows toast on toggle.
 
-- [ ] Task 5: Wire FeatureTogglesPanel to Settings page — In SettingsPage.tsx or SettingsHubPage.tsx, add a "Features" tab. Import and render FeatureTogglesPanel. Place logically after General/Billing tabs.
+- [x] Task 5: Wire FeatureTogglesPanel to Settings page — In SettingsPage.tsx or SettingsHubPage.tsx, add a "Features" tab. Import and render FeatureTogglesPanel. Place logically after General/Billing tabs.
 
 - [ ] Task 6: Map sidebar items to feature flags — Find sidebar config (src/lib/constants/navigation.ts or sidebarConfigs.ts). Add featureFlag?: FeatureFlag property to each nav item. Map: POS items → 'pos', Delivery items → 'delivery_tracking', CRM Hub → 'crm_advanced', Analytics → 'analytics_advanced', Marketing/Coupons → 'marketing_hub', Purchase Orders → 'purchase_orders', Vendor Management → 'vendor_management', Quality Control → 'quality_control'.
 
