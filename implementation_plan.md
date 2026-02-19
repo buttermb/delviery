@@ -122,7 +122,7 @@
 
 - [x] Task 56: Add empty state to Orders page — Zero orders: ShoppingBag icon, "No orders yet", "Orders appear here when customers purchase from your menus or storefront", secondary "Create Menu" link.
 
-- [ ] Task 57: Add empty state to Menus page — Zero menus: Link icon, "No menus yet", "Create disposable menus to share with customers", "Create Menu" CTA.
+- [x] Task 57: Add empty state to Menus page — Zero menus: Link icon, "No menus yet", "Create disposable menus to share with customers", "Create Menu" CTA.
 
 - [ ] Task 58: Add empty state to Customers page — Zero customers: Users icon, "No customers yet", "Customers are automatically added when they place orders", secondary "Import Customers" if import feature exists.
 

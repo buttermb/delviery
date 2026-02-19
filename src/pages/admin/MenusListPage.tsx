@@ -17,6 +17,7 @@ import Eye from "lucide-react/dist/esm/icons/eye";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import MenuIcon from "lucide-react/dist/esm/icons/menu";
+import LinkIcon from "lucide-react/dist/esm/icons/link";
 import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
 import List from "lucide-react/dist/esm/icons/list";
 import Filter from "lucide-react/dist/esm/icons/filter";
@@ -223,12 +224,12 @@ export function MenusListPage() {
                         </div>
                     ) : filteredMenus.length === 0 ? (
                         <EnhancedEmptyState
-                            icon={MenuIcon}
-                            title={searchQuery || statusFilter !== 'all' ? "No Menus Found" : "No Menus Yet"}
+                            icon={LinkIcon}
+                            title={searchQuery || statusFilter !== 'all' ? "No Menus Found" : "No menus yet"}
                             description={
                                 searchQuery || statusFilter !== 'all'
                                     ? "No menus match your current filters."
-                                    : "Create your first product menu to start sharing with customers."
+                                    : "Create disposable menus to share with customers"
                             }
                             primaryAction={!searchQuery && statusFilter === 'all' ? {
                                 label: "Create Menu",
