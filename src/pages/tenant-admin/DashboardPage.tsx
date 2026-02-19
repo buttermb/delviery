@@ -76,6 +76,15 @@ interface DashboardInventoryRow {
   low_stock_alert: number | null;
 }
 
+interface LowStockItem {
+  id: string;
+  strain: string;
+  product_name: string | null;
+  quantity_lbs: number;
+  reorder_point: number;
+  weight_lbs: number;
+}
+
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1293,7 +1302,7 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
               <div className="space-y-2 sm:space-y-3">
-                {todayMetrics.lowStock.map((item: any, index: number) => (
+                {todayMetrics.lowStock.map((item: LowStockItem, index: number) => (
                   <div key={index} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50/50 dark:bg-orange-950/20 gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-xs sm:text-sm text-[hsl(var(--tenant-text))] truncate">{item.strain || item.product_name || 'Unknown'}</p>
