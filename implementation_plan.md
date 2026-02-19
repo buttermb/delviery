@@ -343,7 +343,7 @@
 - [x] Task 159: Apply FeatureGate to POS routes — Already implemented: all POS routes (pos-system, cash-register, pos-analytics, pos-shifts, z-reports) wrapped with FeatureProtectedRoute feature="pos" in App.tsx.
 - [x] Task 160: Apply FeatureGate to Delivery routes
 - [x] Task 161: Apply FeatureGate to Analytics routes
-- [ ] Task 162: Apply FeatureGate to Marketing routes
+- [x] Task 162: Apply FeatureGate to Marketing routes — Already implemented: marketplace/coupons (line 912), marketing-hub (line 935), marketing/reviews (line 936), loyalty-program (line 961), marketing-automation (line 975) all wrapped with FeatureProtectedRoute feature="marketing_hub"
 - [ ] Task 163: Apply FeatureGate to CRM routes
 - [ ] Task 164: Apply FeatureGate to remaining routes (PO, Vendor, QC, Chat, Fleet)
 - [ ] Task 165: Feature flag count in sidebar footer
