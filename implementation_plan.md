@@ -268,7 +268,7 @@
 
 ## Phase 10: Cross-Feature Integration (10 tasks)
 
-- [ ] Task 125: Stock decrement on order delivery — When order status changes to 'delivered': decrement product stock_quantity for each line item. Verify this happens or add it. Don't double-decrement if already implemented.
+- [x] Task 125: Stock decrement on order delivery — When order status changes to 'delivered': decrement product stock_quantity for each line item. Verify this happens or add it. Don't double-decrement if already implemented.
 
 - [ ] Task 126: Stock restore on order cancel — When order status changes to 'cancelled': restore stock_quantity for each line item. Verify or add.
 
