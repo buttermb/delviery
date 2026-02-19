@@ -96,7 +96,7 @@ export function StorefrontPage() {
                     <Skeleton className="h-32" />
                     <Skeleton className="h-32" />
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     {[1, 2, 3, 4].map((i) => (
                         <Skeleton key={i} className="h-64 rounded-lg" />
                     ))}

@@ -10,7 +10,7 @@ import { cleanProductName as _cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useWishlist } from '@/hooks/useWishlist';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { ProductQuickViewModal } from './ProductQuickViewModal';
 import { CartPreviewPopup } from '../CartPreviewPopup';
@@ -49,7 +49,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<MarketplaceProduct | null>(null);
   const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
-  const { toast } = useToast();
+  // toast imported from sonner at top level
 
   const [lastAddedItem, setLastAddedItem] = useState<{
     name: string;
@@ -152,11 +152,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         });
       }, 2000);
     } catch {
-      toast({
-        title: "Failed to add",
-        description: "Please try again",
-        variant: "destructive",
-      });
+      toast.error('Failed to add', { description: 'Please try again' });
     }
   };
 
@@ -234,14 +230,14 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             className="mb-10 pl-1 ml-1"
             style={{ borderLeft: `4px solid ${customAccent}` }}
           >
-            <h2 className="text-4xl font-extrabold ml-4 tracking-tight" style={{ color: customAccent }}>{heading}</h2>
+            <h2 className="text-2xl sm:text-4xl font-extrabold ml-4 tracking-tight" style={{ color: customAccent }}>{heading}</h2>
             {subheading && <p className="text-neutral-500 ml-4 mt-2 font-medium">{subheading}</p>}
           </motion.div>
         )}
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="bg-white rounded-2xl p-4 space-y-4 shadow-sm border border-neutral-100">
                 <Skeleton className="h-56 w-full rounded-xl bg-neutral-100" />
@@ -269,7 +265,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           /* Premium Product Grid */
           <motion.div
             layout
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 pb-20"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 pb-20"
           >
             <AnimatePresence>
               {filteredProducts.map((product, index) => (

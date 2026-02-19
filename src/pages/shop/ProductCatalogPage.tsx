@@ -480,7 +480,7 @@ export function ProductCatalogPage() {
       />
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">All Products</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">All Products</h1>
         <p className="text-muted-foreground">
           {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
         </p>
@@ -499,58 +499,64 @@ export function ProductCatalogPage() {
           />
         </div>
 
-        {/* Category Filter */}
-        <Select value={selectedCategory || "all"} onValueChange={(val) => setSelectedCategory(val === "all" ? "" : val)}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {productCategories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Mobile: Category + Sort in a 2-col row */}
+        <div className="grid grid-cols-2 gap-2 md:contents">
+          {/* Category Filter */}
+          <Select value={selectedCategory || "all"} onValueChange={(val) => setSelectedCategory(val === "all" ? "" : val)}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {productCategories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Sort */}
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Name A-Z</SelectItem>
-            <SelectItem value="price_asc">Price: Low to High</SelectItem>
-            <SelectItem value="price_desc">Price: High to Low</SelectItem>
-            <SelectItem value="newest">Newest</SelectItem>
-            <SelectItem value="thc_desc">THC%: High to Low</SelectItem>
-            <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
-          </SelectContent>
-        </Select>
+          {/* Sort */}
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Name A-Z</SelectItem>
+              <SelectItem value="price_asc">Price: Low to High</SelectItem>
+              <SelectItem value="price_desc">Price: High to Low</SelectItem>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="thc_desc">THC%: High to Low</SelectItem>
+              <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Strain Type Filter */}
-        <Select
-          value={selectedStrainTypes[0] || "all"}
-          onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
-        >
-          <SelectTrigger className="w-full md:w-[160px]">
-            <SelectValue placeholder="Strain Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Strains</SelectItem>
-            <SelectItem value="indica">Indica</SelectItem>
-            <SelectItem value="sativa">Sativa</SelectItem>
-            <SelectItem value="hybrid">Hybrid</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Mobile: Strain + Filter button in a 2-col row */}
+        <div className="grid grid-cols-2 gap-2 md:contents">
+          {/* Strain Type Filter */}
+          <Select
+            value={selectedStrainTypes[0] || "all"}
+            onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
+          >
+            <SelectTrigger className="w-full md:w-[160px]">
+              <SelectValue placeholder="Strain Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Strains</SelectItem>
+              <SelectItem value="indica">Indica</SelectItem>
+              <SelectItem value="sativa">Sativa</SelectItem>
+              <SelectItem value="hybrid">Hybrid</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {/* Advanced Filter Button */}
-        <FilterTriggerButton
-          onClick={() => setFilterDrawerOpen(true)}
-          activeCount={selectedCategory || inStockOnly ? 1 : 0}
-          className="md:hidden"
-        />
+          {/* Advanced Filter Button */}
+          <FilterTriggerButton
+            onClick={() => setFilterDrawerOpen(true)}
+            activeCount={selectedCategory || inStockOnly ? 1 : 0}
+            className="md:hidden"
+          />
+        </div>
 
         {/* View Toggle */}
         <div className="hidden md:flex items-center gap-1 border rounded-lg p-1">
@@ -636,7 +642,7 @@ export function ProductCatalogPage() {
 
       {/* Products Grid/List */}
       {productsLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
@@ -673,7 +679,7 @@ export function ProductCatalogPage() {
           </Button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {paginatedProducts.map((product) => (
             <StorefrontProductCard
               key={product.product_id}
