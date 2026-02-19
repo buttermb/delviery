@@ -408,7 +408,7 @@
 - [x] Task 212: Empty state → DisposableMenuOrders — Already implemented from Part A (Task 62): EnhancedEmptyState with ClipboardList icon, "No menu orders yet", description at lines 137-143 of DisposableMenuOrders.tsx. Filtered empty state also present at lines 316-321. No changes needed.
 - [x] Task 213: Empty state → CashRegister no shift — Already implemented from Part A (Task 63): CashRegister.tsx lines 1375-1389 have EmptyState with Clock icon, "No active shift" title, description, and "Start Shift" CTA that navigates to pos-system shifts tab. No changes needed.
 - [x] Task 214: Empty state → Z-Report — Already implemented from Part A (Task 64): ZReportPage.tsx and ZReportPanel.tsx both have EmptyState with BarChart icon, "No shift reports yet", "Reports are generated when you complete a shift" at lines 83-89. No changes needed.
-- [ ] Task 215: Fix demo data loader
+- [x] Task 215: Fix demo data loader — Already implemented from Part A (Task 65): handleGenerateDemoData() in tenant-admin/DashboardPage.tsx calls seed-demo-data edge function, AlertDialog confirmation exists, edge function creates 5 customers/5 products/10 orders, loading state + toast + error handling all present. No changes needed.
 - [ ] Task 216: Verify setup wizard end-to-end
 - [ ] Task 217: Skip on optional wizard steps
 - [ ] Task 218: Run npx tsc --noEmit � Checkpoint.
