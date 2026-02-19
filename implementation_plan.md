@@ -447,7 +447,7 @@
 - [x] Task 245: Pagination — Products — Already implemented: usePagination hook (default 25 items) at line 385, StandardPagination component at lines 1011-1021 with page numbers, prev/next, page size selector. No changes needed.
 - [x] Task 246: Pagination — Customers — Already implemented: usePagination hook (default 25 items) at line 296, StandardPagination component at lines 848-858 with page numbers, prev/next, page size selector. Both desktop table and mobile list use paginatedCustomers. No changes needed.
 - [x] Task 247: Row count display on all tables — StandardPagination already renders "Showing X to Y of Z items" by default (showItemCount=true). Fixed InvoicesPage, WholesaleClients (desktop+mobile), and MenusListPage to show StandardPagination when totalItems > 0 (was totalItems > pageSize, hiding row count for small result sets). Orders, Products, Customers, DisposableMenuOrders already showed correctly.
-- [ ] Task 248: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 248: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B8: Form Validation (14 tasks)
 
