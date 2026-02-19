@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind } from "lucide-react";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
@@ -268,9 +268,15 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     <div className="text-center py-20">
                         <p>Unable to load products.</p>
                     </div>
-                ) : categories.length === 0 ? (
+                ) : allProducts.length === 0 ? (
+                    <div className="text-center py-20">
+                        <Package className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: text_color }} />
+                        <h3 className="text-xl font-semibold mb-2 opacity-70">This store doesn&apos;t have any products yet</h3>
+                        <p className="opacity-50">Check back soon for new arrivals</p>
+                    </div>
+                ) : filteredProducts.length === 0 ? (
                     <div className="text-center py-20 opacity-50">
-                        <p>No products found in this collection.</p>
+                        <p>No products match your search.</p>
                     </div>
                 ) : (
                     <div className="space-y-12 md:space-y-16">
