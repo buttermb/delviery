@@ -335,7 +335,7 @@
 - [x] Task 151: Create feature flag constants � src/lib/featureFlags.ts. FEATURE_FLAGS with defaults. Core ON: orders, products, menus, invoices, customers, storefront, inventory. Advanced OFF: pos, crm_advanced, delivery_tracking, live_map, courier_portal, analytics_advanced, marketing_hub, purchase_orders, quality_control, credits_system, live_chat, fleet_management, vendor_management, storefront_builder_advanced.
 - [x] Task 152: Create useTenantFeatureToggles hook � src/hooks/useTenantFeatureToggles.ts. Reads tenant_settings JSONB, falls back to defaults. Returns isEnabled, toggleFeature, flags, isLoading.
 - [x] Task 153: Create FeatureGate component — src/components/admin/FeatureGate.tsx. Props: feature, children, fallback?. Already exists with full implementation.
-- [ ] Task 154: Create FeatureTogglesPanel � src/components/admin/settings/FeatureTogglesPanel.tsx. Card grid, switch toggles, grouped Core/Advanced.
+- [x] Task 154: Create FeatureTogglesPanel — src/components/admin/settings/FeatureTogglesPanel.tsx already exists with full implementation (card grid, switch toggles, grouped Core/Advanced, toast on toggle).
 - [ ] Task 155: Wire FeatureTogglesPanel to Settings page � Add Features tab.
 - [ ] Task 156: Map sidebar items to feature flags � Add featureFlag property to nav items.
 - [ ] Task 157: Filter sidebar by feature flags � Hide items where !isEnabled(featureFlag).
