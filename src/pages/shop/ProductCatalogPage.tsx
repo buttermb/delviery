@@ -39,7 +39,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
 
 /**
@@ -156,7 +156,6 @@ export function ProductCatalogPage() {
 
   // Wishlist integration
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
-  const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
   // Cart integration for Quick Add
@@ -171,10 +170,8 @@ export function ProductCatalogPage() {
 
     // Check stock before adding
     if (product.stock_quantity <= 0) {
-      toast({
-        title: "Out of Stock",
+      toast.error('Out of Stock', {
         description: `${product.name} is currently unavailable.`,
-        variant: "destructive",
       });
       return;
     }
@@ -194,7 +191,7 @@ export function ProductCatalogPage() {
       });
 
       setAddedProducts(prev => new Set(prev).add(product.product_id));
-      toast({ title: "Added to cart", duration: 2000 });
+      toast.success('Added to cart');
 
       setTimeout(() => {
         setAddedProducts(prev => {
@@ -204,11 +201,7 @@ export function ProductCatalogPage() {
         });
       }, 2000);
     } catch {
-      toast({
-        title: "Failed to add",
-        description: "Please try again",
-        variant: "destructive",
-      });
+      toast.error('Failed to add', { description: 'Please try again' });
     }
   };
 
@@ -276,7 +269,7 @@ export function ProductCatalogPage() {
           logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
-        return (data || []).map((item: any) => transformProduct(item as RpcProduct));
+        return (data || []).map((item: unknown) => transformProduct(item as RpcProduct));
       } catch (err) {
         logger.error('Error fetching products', err, { storeId: store.id });
         throw err;
@@ -390,6 +383,9 @@ export function ProductCatalogPage() {
         break;
       case 'thc_asc':
         result.sort((a, b) => (a.thc_content ?? 0) - (b.thc_content ?? 0));
+        break;
+      case 'newest':
+        // Keep original API order (newest products from DB)
         break;
       case 'name':
       default:
@@ -527,6 +523,7 @@ export function ProductCatalogPage() {
             <SelectItem value="name">Name A-Z</SelectItem>
             <SelectItem value="price_asc">Price: Low to High</SelectItem>
             <SelectItem value="price_desc">Price: High to Low</SelectItem>
+            <SelectItem value="newest">Newest</SelectItem>
             <SelectItem value="thc_desc">THC%: High to Low</SelectItem>
             <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
           </SelectContent>

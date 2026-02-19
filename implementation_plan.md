@@ -150,7 +150,7 @@
 
 - [x] Task 69: Audit shop homepage — Navigate to /{tenantSlug}/shop or /shop/:storeSlug. Verify: page loads, shows store name/logo, displays products, has navigation. Fix if broken or blank.
 
-- [ ] Task 70: Fix product browsing — On shop page: verify category filters work, search filters products, sorting (price, name, newest) works. Fix any that don't function.
+- [x] Task 70: Fix product browsing — On shop page: verify category filters work, search filters products, sorting (price, name, newest) works. Fix any that don't function.
 
 - [ ] Task 71: Fix product detail page — Click a product in shop. Verify: image displays, description shows, price is correct, "Add to Cart" button works. Fix if broken.
 
