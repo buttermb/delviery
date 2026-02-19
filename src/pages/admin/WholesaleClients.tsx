@@ -22,7 +22,8 @@ import {
   Phone,
   DollarSign,
   Package,
-  Edit2
+  Edit2,
+  Building
 } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
@@ -517,11 +518,11 @@ export default function WholesaleClients() {
                     <TableRow>
                       <TableCell colSpan={8} className="h-96 text-center">
                         <EnhancedEmptyState
-                          icon={Package}
-                          title={searchTerm ? "No Clients Found" : "No Clients Yet"}
-                          description={searchTerm ? "No clients found matching your search criteria." : "Get started by adding your first wholesale client."}
+                          icon={Building}
+                          title={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
+                          description={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
                           primaryAction={{
-                            label: "Add Your First Client",
+                            label: "Add Client",
                             onClick: () => setCreateClientDialogOpen(true),
                             icon: Plus
                           }}
@@ -679,11 +680,11 @@ export default function WholesaleClients() {
             ) : (
               <div className="py-8">
                 <EnhancedEmptyState
-                  icon={Package}
-                  title={searchTerm ? "No Clients Found" : "No Clients Yet"}
-                  description={searchTerm ? "No clients found matching your search criteria." : "Get started by adding your first wholesale client."}
+                  icon={Building}
+                  title={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
+                  description={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
                   primaryAction={{
-                    label: "Add Your First Client",
+                    label: "Add Client",
                     onClick: () => setCreateClientDialogOpen(true),
                     icon: Plus
                   }}

@@ -128,7 +128,7 @@
 
 - [x] Task 59: Add empty state to Invoices page — Zero invoices: FileText icon, "No invoices yet", "Create invoices to track payments from wholesale clients", "Create Invoice" CTA.
 
-- [ ] Task 60: Add empty state to WholesaleClients page — Zero clients: Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA.
+- [x] Task 60: Add empty state to WholesaleClients page — Zero clients: Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA.
 
 - [ ] Task 61: Add empty state to LiveOrders page — Zero live orders: Radio icon, "No active orders right now", "Live orders appear here in real-time when customers place orders". No CTA needed.
 
