@@ -20,6 +20,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import PackageX from "lucide-react/dist/esm/icons/package-x";
 import Package from "lucide-react/dist/esm/icons/package";
+import Rocket from "lucide-react/dist/esm/icons/rocket";
 import UserPlus from "lucide-react/dist/esm/icons/user-plus";
 import Users from "lucide-react/dist/esm/icons/users";
 import Activity from "lucide-react/dist/esm/icons/activity";
@@ -37,6 +38,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { EmptyState } from '@/components/admin/shared/EmptyState';
 
 // Lazy load RevenueWidget for better performance
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
@@ -245,156 +247,173 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* Revenue Section - Lazy Loaded */}
-      <Suspense fallback={<RevenueWidgetFallback />}>
-        <RevenueWidget period={period} />
-      </Suspense>
+      {/* Empty state for brand-new tenants with zero orders AND zero products */}
+      {!isLoading && stats && stats.totalProducts === 0 && stats.totalOrdersMTD === 0 && stats.pendingOrders === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <EmptyState
+              icon={Rocket}
+              title="Welcome to FloraIQ!"
+              description="Get started by adding your first product. Once you have products, you can create menus, take orders, and track everything from this dashboard."
+              actionLabel="Add Product"
+              onAction={() => navigate(`/${tenantSlug}/admin/inventory-hub`)}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Revenue Section - Lazy Loaded */}
+          <Suspense fallback={<RevenueWidgetFallback />}>
+            <RevenueWidget period={period} />
+          </Suspense>
 
-      {/* Orders Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <ShoppingCart className="h-5 w-5 text-blue-600" />
-          Orders
-        </h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-          ) : (
-            <>
-              <KPICard
-                title="Pending Orders"
-                value={stats?.pendingOrders ?? 0}
-                icon={<AlertTriangle className="h-5 w-5" />}
-                description="Awaiting processing"
-                variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
-                href="/admin/orders?status=pending"
-              />
-              <KPICard
-                title="Today's Orders"
-                value={stats?.totalOrdersToday ?? 0}
-                icon={<ShoppingCart className="h-5 w-5" />}
-                description="Orders placed today"
-                variant="default"
-                href="/admin/orders"
-              />
-              <KPICard
-                title="Completed Today"
-                value={stats?.completedOrdersToday ?? 0}
-                icon={<CheckCircle2 className="h-5 w-5" />}
-                description="Successfully delivered"
-                variant="success"
-                href="/admin/orders?status=completed"
-              />
-              <KPICard
-                title={`Orders (${PERIOD_LABELS[period]})`}
-                value={stats?.totalOrdersMTD ?? 0}
-                icon={<ShoppingCart className="h-5 w-5" />}
-                description={`Total in selected period`}
-                variant="default"
-                href="/admin/orders"
-              />
-            </>
-          )}
-        </div>
-      </div>
+          {/* Orders Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-blue-600" />
+              Orders
+            </h2>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
+              ) : (
+                <>
+                  <KPICard
+                    title="Pending Orders"
+                    value={stats?.pendingOrders ?? 0}
+                    icon={<AlertTriangle className="h-5 w-5" />}
+                    description="Awaiting processing"
+                    variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
+                    href="/admin/orders?status=pending"
+                  />
+                  <KPICard
+                    title="Today's Orders"
+                    value={stats?.totalOrdersToday ?? 0}
+                    icon={<ShoppingCart className="h-5 w-5" />}
+                    description="Orders placed today"
+                    variant="default"
+                    href="/admin/orders"
+                  />
+                  <KPICard
+                    title="Completed Today"
+                    value={stats?.completedOrdersToday ?? 0}
+                    icon={<CheckCircle2 className="h-5 w-5" />}
+                    description="Successfully delivered"
+                    variant="success"
+                    href="/admin/orders?status=completed"
+                  />
+                  <KPICard
+                    title={`Orders (${PERIOD_LABELS[period]})`}
+                    value={stats?.totalOrdersMTD ?? 0}
+                    icon={<ShoppingCart className="h-5 w-5" />}
+                    description={`Total in selected period`}
+                    variant="default"
+                    href="/admin/orders"
+                  />
+                </>
+              )}
+            </div>
+          </div>
 
-      {/* Customers Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Users className="h-5 w-5 text-indigo-600" />
-          Customers
-        </h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
-          ) : (
-            <>
-              <KPICard
-                title="Total Customers"
-                value={stats?.totalCustomers ?? 0}
-                icon={<Users className="h-5 w-5" />}
-                description="All registered customers"
-                variant="default"
-                href="/admin/customer-hub"
-              />
-              <KPICard
-                title="New Customers"
-                value={stats?.newCustomers ?? 0}
-                icon={<UserPlus className="h-5 w-5" />}
-                description={`Joined in the last ${PERIOD_LABELS[period]}`}
-                variant="success"
-                href="/admin/customer-hub"
-              />
-              <KPICard
-                title="Active Sessions"
-                value={stats?.activeSessions ?? 0}
-                icon={<Activity className="h-5 w-5" />}
-                description="Online in last 15 minutes"
-                variant="default"
-                href="/admin/analytics-hub"
-              />
-            </>
-          )}
-        </div>
-      </div>
+          {/* Customers Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Users className="h-5 w-5 text-indigo-600" />
+              Customers
+            </h2>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
+              ) : (
+                <>
+                  <KPICard
+                    title="Total Customers"
+                    value={stats?.totalCustomers ?? 0}
+                    icon={<Users className="h-5 w-5" />}
+                    description="All registered customers"
+                    variant="default"
+                    href="/admin/customer-hub"
+                  />
+                  <KPICard
+                    title="New Customers"
+                    value={stats?.newCustomers ?? 0}
+                    icon={<UserPlus className="h-5 w-5" />}
+                    description={`Joined in the last ${PERIOD_LABELS[period]}`}
+                    variant="success"
+                    href="/admin/customer-hub"
+                  />
+                  <KPICard
+                    title="Active Sessions"
+                    value={stats?.activeSessions ?? 0}
+                    icon={<Activity className="h-5 w-5" />}
+                    description="Online in last 15 minutes"
+                    variant="default"
+                    href="/admin/analytics-hub"
+                  />
+                </>
+              )}
+            </div>
+          </div>
 
-      {/* Inventory Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Package className="h-5 w-5 text-purple-600" />
-          Inventory
-        </h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-          ) : (
-            <>
-              <KPICard
-                title="Total Products"
-                value={stats?.totalProducts ?? 0}
-                icon={<Package className="h-5 w-5" />}
-                description="In catalog"
-                variant="default"
-                href="/admin/inventory-hub"
-              />
-              <KPICard
-                title="Low Stock"
-                value={stats?.lowStockItems ?? 0}
-                icon={<PackageX className="h-5 w-5" />}
-                description="Below reorder threshold"
-                variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
-                href="/admin/inventory-hub?tab=alerts"
-              />
-              <KPICard
-                title="Out of Stock"
-                value={stats?.outOfStockItems ?? 0}
-                icon={<AlertTriangle className="h-5 w-5" />}
-                description="Needs restocking"
-                variant={stats?.outOfStockItems && stats.outOfStockItems > 0 ? 'destructive' : 'default'}
-                href="/admin/inventory-hub?tab=alerts"
-              />
-              <KPICard
-                title="Inventory Value"
-                value={formatCurrency(stats?.totalInventoryValue ?? 0)}
-                icon={<Warehouse className="h-5 w-5" />}
-                description="Total stock value"
-                variant="default"
-                href="/admin/finance-hub"
-              />
-            </>
-          )}
-        </div>
-      </div>
+          {/* Inventory Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Package className="h-5 w-5 text-purple-600" />
+              Inventory
+            </h2>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
+              ) : (
+                <>
+                  <KPICard
+                    title="Total Products"
+                    value={stats?.totalProducts ?? 0}
+                    icon={<Package className="h-5 w-5" />}
+                    description="In catalog"
+                    variant="default"
+                    href="/admin/inventory-hub"
+                  />
+                  <KPICard
+                    title="Low Stock"
+                    value={stats?.lowStockItems ?? 0}
+                    icon={<PackageX className="h-5 w-5" />}
+                    description="Below reorder threshold"
+                    variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
+                    href="/admin/inventory-hub?tab=alerts"
+                  />
+                  <KPICard
+                    title="Out of Stock"
+                    value={stats?.outOfStockItems ?? 0}
+                    icon={<AlertTriangle className="h-5 w-5" />}
+                    description="Needs restocking"
+                    variant={stats?.outOfStockItems && stats.outOfStockItems > 0 ? 'destructive' : 'default'}
+                    href="/admin/inventory-hub?tab=alerts"
+                  />
+                  <KPICard
+                    title="Inventory Value"
+                    value={formatCurrency(stats?.totalInventoryValue ?? 0)}
+                    icon={<Warehouse className="h-5 w-5" />}
+                    description="Total stock value"
+                    variant="default"
+                    href="/admin/finance-hub"
+                  />
+                </>
+              )}
+            </div>
+          </div>
 
-      {/* Alerts Section - Lazy Loaded */}
-      <Suspense fallback={<AlertsWidgetFallback />}>
-        <AlertsWidget />
-      </Suspense>
+          {/* Alerts Section - Lazy Loaded */}
+          <Suspense fallback={<AlertsWidgetFallback />}>
+            <AlertsWidget />
+          </Suspense>
 
-      {/* Activity Feed Section - Lazy Loaded */}
-      <Suspense fallback={<ActivityWidgetFallback />}>
-        <ActivityWidget />
-      </Suspense>
+          {/* Activity Feed Section - Lazy Loaded */}
+          <Suspense fallback={<ActivityWidgetFallback />}>
+            <ActivityWidget />
+          </Suspense>
+        </>
+      )}
     </div>
   );
 }

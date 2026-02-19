@@ -116,7 +116,7 @@
 
 - [x] Task 53: Create reusable EmptyState component — New file: src/components/ui/EmptyState.tsx. Props: icon (LucideIcon), title (string), description (string), actionLabel? (string), onAction? (function). Renders centered card with icon, title, description, and optional CTA button. Use across all pages.
 
-- [ ] Task 54: Add empty state to Dashboard — When tenant has zero orders AND zero products, show welcome card: "Welcome to FloraIQ! Get started by adding your first product." with "Add Product" CTA. Hide KPI cards (they'd all be zero).
+- [x] Task 54: Add empty state to Dashboard — When tenant has zero orders AND zero products, show welcome card: "Welcome to FloraIQ! Get started by adding your first product." with "Add Product" CTA. Hide KPI cards (they'd all be zero).
 
 - [ ] Task 55: Add empty state to Products page — Zero products: Package icon, "No products yet", "Add your inventory to start selling", "Add Product" button that opens the add product flow.
 
