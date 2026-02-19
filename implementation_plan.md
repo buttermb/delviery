@@ -302,7 +302,7 @@
 
 - [x] Task 140: Fix date pickers on mobile — Date inputs should use native date picker on mobile (type="date") or ensure custom date picker is touch-friendly and doesn't overflow viewport.
 
-- [ ] Task 141: Fix dropdown menus on mobile — All Select/Combobox dropdowns should not overflow screen edges. Apply max-h and position properly on small screens.
+- [x] Task 141: Fix dropdown menus on mobile — All Select/Combobox dropdowns should not overflow screen edges. Apply max-h and position properly on small screens.
 
 - [ ] Task 142: Fix command palette on mobile — If Command/search palette exists (Cmd+K): verify it's usable on mobile with proper sizing and keyboard handling.
 
