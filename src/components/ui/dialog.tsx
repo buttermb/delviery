@@ -118,6 +118,9 @@ const DialogContent = React.forwardRef<
           // Mobile optimizations
           "mobile-input-container",
           className,
+          // Mobile forced overrides — after className so they win on small screens
+          // Ensures modals are nearly full-screen on mobile regardless of consumer max-w/max-h
+          "max-sm:max-h-[95vh] max-sm:max-w-[calc(100vw-1rem)] max-sm:w-[calc(100vw-1rem)]",
         )}
         style={{ zIndex: 200 }}
         onOpenAutoFocus={handleOpenAutoFocus}
@@ -143,7 +146,7 @@ DialogHeader.displayName = "DialogHeader";
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0",
       // Mobile: sticky footer so submit button stays visible without scrolling
       "sticky -bottom-4 z-10 bg-background pt-3 pb-4 -mx-4 px-4 border-t",
       "sm:static sm:bottom-auto sm:z-auto sm:bg-transparent sm:pt-0 sm:pb-0 sm:mx-0 sm:px-0 sm:border-t-0",

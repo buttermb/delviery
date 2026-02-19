@@ -952,10 +952,13 @@ body.keyboard-open [data-radix-dialog-content] {
       width: 100%;
     }
 
-    /* Mobile dialog/modal improvements */
-    [role="dialog"] {
-      max-width: calc(100vw - 2rem);
-      margin: 1rem;
+    /* Mobile dialog/modal improvements — nearly full-screen on small devices */
+    [role="dialog"],
+    [data-radix-dialog-content] {
+      max-width: calc(100vw - 1rem);
+      max-height: 95vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Mobile button improvements */
