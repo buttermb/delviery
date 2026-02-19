@@ -1204,4 +1204,11 @@ export const queryKeys = {
   orderPipeline: {
     all: ['order-pipeline'] as const,
   },
+
+  // Feature Toggles
+  featureToggles: {
+    all: ['feature-toggles'] as const,
+    byTenant: (tenantId?: string | null) =>
+      [...queryKeys.featureToggles.all, 'tenant', tenantId] as const,
+  },
 } as const;
