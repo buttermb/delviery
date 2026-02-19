@@ -542,149 +542,160 @@ export function DashboardHubPage() {
         </div>
       </div>
 
-      {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive text-sm">
-              Failed to load dashboard stats. Data will retry automatically.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Quick Actions (Task 3) */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Quick Actions</h2>
         <QuickActionsGrid tenantSlug={tenantSlug} />
       </div>
 
-      {/* KPI Cards (Task 1) */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Key Metrics</h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <KpiCardSkeleton key={i} />)
-          ) : (
-            <>
-              <KpiCard
-                title="Today's Revenue"
-                value={formatCurrency(stats?.revenueToday ?? 0)}
-                icon={<DollarSign className="h-5 w-5" />}
-                description="Orders + POS sales today"
-                variant="success"
-                href={buildUrl('finance-hub')}
-                trend={stats && stats.revenueYesterday > 0 ? {
-                  value: pctChange(stats.revenueToday, stats.revenueYesterday),
-                  label: 'vs yesterday',
-                } : undefined}
-              />
-              <KpiCard
-                title="Pending Orders"
-                value={stats?.pendingOrders ?? 0}
-                icon={<AlertTriangle className="h-5 w-5" />}
-                description="Awaiting processing"
-                variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
-                href={buildUrl('orders')}
-              />
-              <KpiCard
-                title="Low Stock Alerts"
-                value={stats?.lowStockItems ?? 0}
-                icon={<PackageX className="h-5 w-5" />}
-                description="Below reorder threshold"
-                variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
-                href={buildUrl('inventory-hub')}
-              />
-              <KpiCard
-                title="New Customers Today"
-                value={stats?.newCustomersToday ?? 0}
-                icon={<UserPlus className="h-5 w-5" />}
-                description="Joined today"
-                variant="success"
-                href={buildUrl('customer-hub')}
-                trend={stats && stats.newCustomersYesterday > 0 ? {
-                  value: pctChange(stats.newCustomersToday, stats.newCustomersYesterday),
-                  label: 'vs yesterday',
-                } : undefined}
-              />
-              <KpiCard
-                title="Active Deliveries"
-                value={stats?.activeDeliveries ?? 0}
-                icon={<Truck className="h-5 w-5" />}
-                description="In transit right now"
-                variant={stats?.activeDeliveries && stats.activeDeliveries > 0 ? 'success' : 'default'}
-                href={buildUrl('fulfillment-hub')}
-              />
-              <KpiCard
-                title="Active Menus"
-                value={stats?.activeMenus ?? 0}
-                icon={<Flame className="h-5 w-5" />}
-                description="Live disposable menus"
-                variant="default"
-                href={buildUrl('disposable-menus')}
-              />
-            </>
-          )}
-        </div>
-      </div>
+      {/* Error state - show retry card instead of broken KPI cards */}
+      {error && !isLoading && (
+        <Card className="border-destructive">
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+            <h3 className="text-lg font-semibold mb-1">Failed to load dashboard stats</h3>
+            <p className="text-muted-foreground text-sm mb-4 max-w-md">
+              Something went wrong while fetching your metrics. This may be a temporary issue.
+            </p>
+            <Button variant="outline" onClick={handleRefresh} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Secondary KPI Row */}
-      <div className="space-y-4">
-        <Link to={buildUrl('finance-hub')} className="group flex items-center gap-2">
-          <h2 className="text-lg font-semibold flex items-center gap-2 group-hover:text-primary transition-colors">
-            <DollarSign className="h-5 w-5 text-green-600" />
-            Revenue & Orders
-          </h2>
-          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-        </Link>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <KpiCardSkeleton key={i} />)
-          ) : (
-            <>
-              <KpiCard
-                title="Revenue MTD"
-                value={formatCurrency(stats?.revenueMTD ?? 0)}
-                icon={<TrendingUp className="h-5 w-5" />}
-                description="Month to date"
-                variant="success"
-                href={buildUrl('finance-hub')}
-                trend={stats?.revenueGrowthPercent !== undefined && stats.revenueGrowthPercent !== 0 ? {
-                  value: stats.revenueGrowthPercent,
-                  label: 'vs last month',
-                } : undefined}
-              />
-              <KpiCard
-                title="Today's Orders"
-                value={stats?.totalOrdersToday ?? 0}
-                icon={<ShoppingCart className="h-5 w-5" />}
-                description="Placed today"
-                variant="default"
-                href={buildUrl('orders')}
-                trend={stats && stats.totalOrdersYesterday > 0 ? {
-                  value: pctChange(stats.totalOrdersToday, stats.totalOrdersYesterday),
-                  label: 'vs yesterday',
-                } : undefined}
-              />
-              <KpiCard
-                title="Avg Order Value"
-                value={formatCurrency(stats?.avgOrderValue ?? 0)}
-                icon={<CircleDollarSign className="h-5 w-5" />}
-                description="Per order this month"
-                variant="default"
-                href={buildUrl('analytics-hub')}
-              />
-              <KpiCard
-                title="Total Customers"
-                value={stats?.totalCustomers ?? 0}
-                icon={<Users className="h-5 w-5" />}
-                description="All registered"
-                variant="default"
-                href={buildUrl('customer-hub')}
-              />
-            </>
-          )}
+      {/* KPI Cards (Task 1) - only show when not in error state */}
+      {!error && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Key Metrics</h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => <KpiCardSkeleton key={i} />)
+            ) : (
+              <>
+                <KpiCard
+                  title="Today's Revenue"
+                  value={formatCurrency(stats?.revenueToday ?? 0)}
+                  icon={<DollarSign className="h-5 w-5" />}
+                  description="Orders + POS sales today"
+                  variant="success"
+                  href={buildUrl('finance-hub')}
+                  trend={stats && stats.revenueYesterday > 0 ? {
+                    value: pctChange(stats.revenueToday, stats.revenueYesterday),
+                    label: 'vs yesterday',
+                  } : undefined}
+                />
+                <KpiCard
+                  title="Pending Orders"
+                  value={stats?.pendingOrders ?? 0}
+                  icon={<AlertTriangle className="h-5 w-5" />}
+                  description="Awaiting processing"
+                  variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
+                  href={buildUrl('orders')}
+                />
+                <KpiCard
+                  title="Low Stock Alerts"
+                  value={stats?.lowStockItems ?? 0}
+                  icon={<PackageX className="h-5 w-5" />}
+                  description="Below reorder threshold"
+                  variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
+                  href={buildUrl('inventory-hub')}
+                />
+                <KpiCard
+                  title="New Customers Today"
+                  value={stats?.newCustomersToday ?? 0}
+                  icon={<UserPlus className="h-5 w-5" />}
+                  description="Joined today"
+                  variant="success"
+                  href={buildUrl('customer-hub')}
+                  trend={stats && stats.newCustomersYesterday > 0 ? {
+                    value: pctChange(stats.newCustomersToday, stats.newCustomersYesterday),
+                    label: 'vs yesterday',
+                  } : undefined}
+                />
+                <KpiCard
+                  title="Active Deliveries"
+                  value={stats?.activeDeliveries ?? 0}
+                  icon={<Truck className="h-5 w-5" />}
+                  description="In transit right now"
+                  variant={stats?.activeDeliveries && stats.activeDeliveries > 0 ? 'success' : 'default'}
+                  href={buildUrl('fulfillment-hub')}
+                />
+                <KpiCard
+                  title="Active Menus"
+                  value={stats?.activeMenus ?? 0}
+                  icon={<Flame className="h-5 w-5" />}
+                  description="Live disposable menus"
+                  variant="default"
+                  href={buildUrl('disposable-menus')}
+                />
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Secondary KPI Row - only show when not in error state */}
+      {!error && (
+        <div className="space-y-4">
+          <Link to={buildUrl('finance-hub')} className="group flex items-center gap-2">
+            <h2 className="text-lg font-semibold flex items-center gap-2 group-hover:text-primary transition-colors">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              Revenue & Orders
+            </h2>
+            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Link>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => <KpiCardSkeleton key={i} />)
+            ) : (
+              <>
+                <KpiCard
+                  title="Revenue MTD"
+                  value={formatCurrency(stats?.revenueMTD ?? 0)}
+                  icon={<TrendingUp className="h-5 w-5" />}
+                  description="Month to date"
+                  variant="success"
+                  href={buildUrl('finance-hub')}
+                  trend={stats?.revenueGrowthPercent !== undefined && stats.revenueGrowthPercent !== 0 ? {
+                    value: stats.revenueGrowthPercent,
+                    label: 'vs last month',
+                  } : undefined}
+                />
+                <KpiCard
+                  title="Today's Orders"
+                  value={stats?.totalOrdersToday ?? 0}
+                  icon={<ShoppingCart className="h-5 w-5" />}
+                  description="Placed today"
+                  variant="default"
+                  href={buildUrl('orders')}
+                  trend={stats && stats.totalOrdersYesterday > 0 ? {
+                    value: pctChange(stats.totalOrdersToday, stats.totalOrdersYesterday),
+                    label: 'vs yesterday',
+                  } : undefined}
+                />
+                <KpiCard
+                  title="Avg Order Value"
+                  value={formatCurrency(stats?.avgOrderValue ?? 0)}
+                  icon={<CircleDollarSign className="h-5 w-5" />}
+                  description="Per order this month"
+                  variant="default"
+                  href={buildUrl('analytics-hub')}
+                />
+                <KpiCard
+                  title="Total Customers"
+                  value={stats?.totalCustomers ?? 0}
+                  icon={<Users className="h-5 w-5" />}
+                  description="All registered"
+                  variant="default"
+                  href={buildUrl('customer-hub')}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Charts + Activity Feed (Tasks 2 & 4) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

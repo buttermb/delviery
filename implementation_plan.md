@@ -244,7 +244,7 @@
 
 - [x] Task 113: Add error boundaries to hub pages — Create or verify ErrorBoundary component exists. Wrap each Hub page's lazy-loaded tabs with ErrorBoundary that shows "Something went wrong" + "Try Again" button instead of white screen of death.
 
-- [ ] Task 114: Add error state to Dashboard — If dashboard queries fail, show error card with retry button instead of broken KPI cards with NaN/undefined.
+- [x] Task 114: Add error state to Dashboard — If dashboard queries fail, show error card with retry button instead of broken KPI cards with NaN/undefined.
 
 - [ ] Task 115: Add error state to Orders page — If orders query fails, show error message with retry. Don't show empty table that looks like zero orders.
 
