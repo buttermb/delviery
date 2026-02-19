@@ -290,7 +290,7 @@
 
 ## Phase 11: Mobile Responsiveness (12 tasks)
 
-- [ ] Task 135: Fix admin sidebar on mobile — Sidebar should collapse to hamburger menu on screens < 768px. Verify: hamburger button visible, clicking opens overlay sidebar, clicking nav item closes sidebar, clicking outside closes sidebar.
+- [x] Task 135: Fix admin sidebar on mobile — Sidebar should collapse to hamburger menu on screens < 768px. Verify: hamburger button visible, clicking opens overlay sidebar, clicking nav item closes sidebar, clicking outside closes sidebar.
 
 - [ ] Task 136: Fix admin dashboard on mobile — KPI cards should stack 2x2 or 1 column on mobile. Charts should be full width. No horizontal scrolling.
 
