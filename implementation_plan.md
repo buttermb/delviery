@@ -386,7 +386,7 @@
 - [x] Task 193: Create payment mutation — Already exists from Part A in InvoicePaymentDialog.tsx (lines 117-191): useMutation records payment amount, appends to payment_history JSONB, auto-updates status to 'paid' or 'partially_paid', sets paid_at timestamp, filters by account_id, invalidates crmInvoiceKeys.all + custom events. No changes needed.
 - [x] Task 194: Payment history section on InvoiceDetailPage — Already exists from Part A (Task 44): PaymentHistoryEntry interface, isPaymentHistoryEntry type guard, formatPaymentMethod utility, and full payment history table with Date, Method, Reference, Amount, and running Balance columns at lines 426-471 of InvoiceDetailPage.tsx. No changes needed.
 - [x] Task 195: VOID watermark on cancelled invoices — Already exists from Part A (Task 45): InvoiceDetailPage.tsx lines 317-323 have semi-transparent red "VOID" text rotated -45deg overlay when status==='cancelled'. All action buttons except Print and Delete are hidden via isVoided check at line 236. No changes needed.
-- [ ] Task 196: Overdue auto-detection on InvoiceDetailPage
+- [x] Task 196: Overdue auto-detection on InvoiceDetailPage — Already exists from Part A (Task 46): isOverdue computed at line 177-179 (checks due_date < now && status in ['sent','partially_paid']), daysOverdue at lines 180-182, red "Overdue" Badge with days count rendered at lines 218-222 next to status badge. No changes needed.
 - [ ] Task 197: Overdue badges on InvoicesPage list
 - [ ] Task 198: Payment columns on InvoicesPage � Amount, Paid, Balance, color-coded.
 - [ ] Task 199: isPending on all InvoiceDetailPage buttons
