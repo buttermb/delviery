@@ -74,7 +74,7 @@
 
 - [x] Task 34: Add refund totals to Z-Report — In ZReport.tsx: query refund transactions for shift period. Add section showing: Refund Count, Total Refunds ($), Net Sales = Gross Sales - Refunds.
 
-- [ ] Task 35: Add refund totals to shift summary — In shift end summary (ShiftManager or end-of-shift dialog), include refund count and total alongside gross sales.
+- [x] Task 35: Add refund totals to shift summary — In shift end summary (ShiftManager or end-of-shift dialog), include refund count and total alongside gross sales.
 
 - [ ] Task 36: Improve POS receipt layout — In CashRegister handlePrintReceipt: ensure receipt includes store name, date/time, items with qty and price, subtotal, tax, total, payment method, receipt number. Format for 80mm thermal printer width. Add "REFUND" header for refund receipts.
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt, RotateCcw } from 'lucide-react';
 import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { queryKeys } from '@/lib/queryKeys';
@@ -50,7 +50,6 @@ interface Transaction {
 
 export function ShiftManager() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -229,13 +228,13 @@ export function ShiftManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
-      toast({ title: 'Shift started', description: 'Your POS shift has been opened.' });
+      toast.success('Shift started: Your POS shift has been opened.');
       setIsStartShiftOpen(false);
       setCashierName('');
       setOpeningCash('0.00');
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error(error.message);
     },
   });
 
@@ -278,12 +277,12 @@ export function ShiftManager() {
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.active(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.recent(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.shifts.transactions(activeShift?.id) });
-      toast({ title: 'Shift closed', description: 'Your POS shift has been closed successfully.' });
+      toast.success('Shift closed: Your POS shift has been closed successfully.');
       setIsCloseShiftOpen(false);
       setClosingCash('0.00');
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error(error.message);
     },
   });
 
@@ -615,14 +614,22 @@ export function ShiftManager() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
                 <div>
+                  <p className="text-sm text-muted-foreground">Gross Sales</p>
+                  <p className="font-semibold">${activeShift.total_sales.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Refunds ({shiftSummary.refundCount})</p>
+                  <p className="font-semibold text-red-600">-${shiftSummary.refundTotal.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Net Sales</p>
+                  <p className="font-semibold text-green-600">${(activeShift.total_sales - shiftSummary.refundTotal).toFixed(2)}</p>
+                </div>
+                <div>
                   <p className="text-sm text-muted-foreground">Expected Cash</p>
                   <p className="font-semibold">
                     ${(activeShift.opening_cash + activeShift.cash_sales).toFixed(2)}
                   </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Sales</p>
-                  <p className="font-semibold">${activeShift.total_sales.toFixed(2)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg text-sm">
@@ -634,18 +641,14 @@ export function ShiftManager() {
                   <p className="text-muted-foreground">+ Cash Sales</p>
                   <p className="font-medium">${activeShift.cash_sales.toFixed(2)}</p>
                 </div>
-                {shiftSummary.refundCount > 0 && (
-                  <>
-                    <div>
-                      <p className="text-muted-foreground">Refunds ({shiftSummary.refundCount})</p>
-                      <p className="font-medium text-red-600">-${shiftSummary.refundTotal.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Net Sales</p>
-                      <p className="font-medium">${(activeShift.total_sales - shiftSummary.refundTotal).toFixed(2)}</p>
-                    </div>
-                  </>
-                )}
+                <div>
+                  <p className="text-muted-foreground">+ Card Sales</p>
+                  <p className="font-medium">${activeShift.card_sales.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Transactions</p>
+                  <p className="font-medium">{activeShift.total_transactions}</p>
+                </div>
               </div>
               <div>
                 <Label htmlFor="closing-cash">Actual Cash Count</Label>
