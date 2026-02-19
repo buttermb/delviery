@@ -405,7 +405,7 @@
 - [x] Task 209: Empty state → Invoices — Already implemented from Part A (Task 59): EnhancedEmptyState with FileText icon, contextual titles, "Create Invoice" CTA in both mobile (lines 813-830) and desktop (lines 1028-1047) views of InvoicesPage.tsx. No changes needed.
 - [x] Task 210: Empty state → WholesaleClients — Already implemented from Part A (Task 60): EnhancedEmptyState with Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA in both desktop (lines 579-594) and mobile (lines 742-754) views of WholesaleClients.tsx. No changes needed.
 - [x] Task 211: Empty state → LiveOrders — Already implemented from Part A (Task 61): EmptyState with Radio icon, "No active orders right now", "Live orders appear here in real-time when customers place orders" at lines 342-347 of LiveOrders.tsx. No changes needed.
-- [ ] Task 212: Empty state � DisposableMenuOrders
+- [x] Task 212: Empty state → DisposableMenuOrders — Already implemented from Part A (Task 62): EnhancedEmptyState with ClipboardList icon, "No menu orders yet", description at lines 137-143 of DisposableMenuOrders.tsx. Filtered empty state also present at lines 316-321. No changes needed.
 - [ ] Task 213: Empty state � CashRegister no shift
 - [ ] Task 214: Empty state � Z-Report
 - [ ] Task 215: Fix demo data loader
