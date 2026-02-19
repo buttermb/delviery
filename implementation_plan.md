@@ -398,7 +398,7 @@
 
 - [x] Task 203: Create EmptyState component — src/components/ui/EmptyState.tsx. Created reusable component with icon, title, description, optional actionLabel/onAction CTA button. Follows existing admin/shared/EmptyState pattern with centered card layout, muted icon circle, and shadcn Button.
 - [x] Task 204: Empty state → Dashboard — Already implemented from Part A (lines 250-263 of DashboardPage.tsx). No changes needed.
-- [ ] Task 205: Empty state � Products
+- [x] Task 205: Empty state → Products — Already implemented from Part A (Task 55): EnhancedEmptyState with type="no_products" at lines 978-1001 of ProductsListPage.tsx, includes "Add Product" CTA button. No changes needed.
 - [ ] Task 206: Empty state � Orders
 - [ ] Task 207: Empty state � Menus
 - [ ] Task 208: Empty state � Customers
