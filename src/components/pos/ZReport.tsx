@@ -363,7 +363,7 @@ ${i + 1}. ${t.transaction_number}
           {transactions && transactions.length > 0 && (
             <div>
               <h3 className="font-semibold mb-4">Transaction Details ({transactions.length})</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto print:max-h-none print:overflow-visible">
                 {transactions.map((transaction, index) => (
                   <div key={transaction.id} className="p-3 border rounded-lg text-sm">
                     <div className="flex justify-between mb-1">

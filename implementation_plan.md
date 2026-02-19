@@ -308,7 +308,7 @@
 
 - [x] Task 143: Add pull-to-refresh on mobile pages — For LiveOrders page on mobile: add pull-to-refresh gesture that invalidates queries. Use native overscroll or library.
 
-- [ ] Task 144: Fix print layouts — Invoice print, receipt print, Z-report print: verify @media print CSS hides sidebar, header, and non-essential UI. Content fills page width. Test with browser print preview.
+- [x] Task 144: Fix print layouts — Invoice print, receipt print, Z-report print: verify @media print CSS hides sidebar, header, and non-essential UI. Content fills page width. Test with browser print preview.
 
 - [ ] Task 145: Fix touch targets across admin — Audit all icon buttons (edit, delete, view). Minimum 44x44px touch target. Common offenders: table action buttons, modal close X, pagination arrows. Add min-w-[44px] min-h-[44px] where needed.
 

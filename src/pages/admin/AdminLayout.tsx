@@ -167,6 +167,7 @@ const AdminLayout = () => {
   return (
     <TutorialProvider>
         {/* Impersonation Banner */}
+        <div className="print:hidden">
         <ImpersonationBanner />
 
         {/* Low Credit Warning */}
@@ -185,6 +186,7 @@ const AdminLayout = () => {
           open={isPurchaseModalOpen}
           onOpenChange={setIsPurchaseModalOpen}
         />
+        </div>
 
         {/* Command Palette */}
         <TenantAdminCommandPalette />
@@ -205,8 +207,10 @@ const AdminLayout = () => {
             </SidebarErrorBoundary>
             <BreadcrumbProvider>
             <div className="flex-1 flex flex-col min-w-0 h-dvh overflow-hidden">
-              <AccountSwitcher />
-              <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200">
+              <div className="print:hidden">
+                <AccountSwitcher />
+              </div>
+              <header className="glass-floating h-14 sm:h-14 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 flex-shrink-0 pt-safe safe-area-top transition-all duration-200 print:hidden">
                 {/* Sidebar trigger - 48px minimum touch target */}
                 <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-dropdown -ml-1 sm:ml-0 flex items-center justify-center" />
 
@@ -330,18 +334,24 @@ const AdminLayout = () => {
         </SidebarProvider>
 
         {/* Mobile bottom navigation */}
-        <MobileBottomNav />
+        <div className="print:hidden">
+          <MobileBottomNav />
+        </div>
 
         {/* Quick Actions FAB - hidden on mobile (use bottom nav) */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block print:hidden">
           <QuickActionsButton />
         </div>
 
         {/* PWA install */}
-        <InstallPWA />
+        <div className="print:hidden">
+          <InstallPWA />
+        </div>
 
         {/* Credit deduction toasts */}
-        <CreditToastContainer />
+        <div className="print:hidden">
+          <CreditToastContainer />
+        </div>
       </TutorialProvider>
   );
 };

@@ -2436,6 +2436,24 @@ body.keyboard-open [data-radix-dialog-content] {
     transition: none !important;
   }
 
+  /* Remove max-height constraints so content isn't truncated */
+  [class*="max-h-"] {
+    max-height: none !important;
+  }
+
+  /* Hide all fixed/sticky positioned UI chrome */
+  .fixed,
+  .sticky {
+    position: static !important;
+  }
+
+  /* Reset main content area for print — full width, no extra padding */
+  #main-content {
+    padding: 0 !important;
+    overflow: visible !important;
+    flex: none !important;
+  }
+
   /* Ensure links show URL in print if useful */
   a[href^="http"]::after {
     content: none; /* Don't clutter with URLs */

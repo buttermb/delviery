@@ -97,7 +97,7 @@ export function MobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav
-          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg"
+          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg no-print print:hidden"
           style={{
             pointerEvents: 'auto',
             zIndex: 100,
