@@ -415,7 +415,7 @@
 
 ## Phase B6: Customer Portal and Storefront (16 tasks)
 
-- [ ] Task 219: Audit shop homepage loads
+- [x] Task 219: Audit shop homepage loads — Already implemented from Part A (Task 69): ShopLayout fetches store by slug via RPC, has loading skeleton, "Store Not Found" error state, inactive "Coming Soon" state, age verification gate, luxury/default themes. StorefrontPage renders configurable sections (hero, deals, hot items, product grid) with sensible defaults. Header has nav links, cart, search, mobile menu. Footer, CartDrawer, FloatingCartButton, MobileBottomNav all wired. Zero TS errors. No changes needed.
 - [ ] Task 220: Fix product browsing (filters, search, sort)
 - [ ] Task 221: Fix product detail page
 - [ ] Task 222: Fix cart functionality
