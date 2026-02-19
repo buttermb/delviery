@@ -86,6 +86,7 @@ function SuspenseProgressFallback() {
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
+const AdminNotFoundPage = lazy(() => import("./pages/admin/AdminNotFoundPage"));
 const ButtonMonitorPage = lazy(() => import("./pages/debug/ButtonMonitorPage"));
 
 // Marketing & Public Pages
@@ -1037,6 +1038,8 @@ const App = () => {
                                         <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
                                         {/* Coming Soon Pages for missing features */}
                                         <Route path="expense-tracking" element={<ComingSoonPage pageName="Expense Tracking" description="Track and manage business expenses" />} />
+                                        {/* Catch-all for unknown admin routes */}
+                                        <Route path="*" element={<Suspense fallback={<LoadingFallback />}><AdminNotFoundPage /></Suspense>} />
                                       </Route>
 
                                       {/* Mobile Test Route */}

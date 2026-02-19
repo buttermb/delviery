@@ -254,7 +254,7 @@
 
 - [x] Task 118: Add loading skeletons to table pages — Orders, Products, Customers, Invoices: show skeleton rows (5-8 rows of gray bars) while loading instead of spinner or blank.
 
-- [ ] Task 119: Fix 404 page for admin routes — Navigate to /{tenantSlug}/admin/nonexistent-page. Should show "Page not found" with link back to dashboard. If shows white screen, add catch-all route.
+- [x] Task 119: Fix 404 page for admin routes — Navigate to /{tenantSlug}/admin/nonexistent-page. Should show "Page not found" with link back to dashboard. If shows white screen, add catch-all route.
 
 - [ ] Task 120: Fix 404 for invalid tenant slug — Navigate to /invalid-slug/admin. Should show "Business not found" or redirect to signup. Fix if shows error.
 
