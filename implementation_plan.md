@@ -435,7 +435,7 @@
 ## Phase B7: Table and List Polish (14 tasks)
 
 - [x] Task 235: Fix text overflow — Orders table — Added TruncatedText (tooltip on hover) to Order #, customer email/phone, and Method columns. Added max-w constraints and truncation to mobile renderer.
-- [ ] Task 236: Fix text overflow � Products table
+- [x] Task 236: Fix text overflow — Products table — Applied TruncatedText (tooltip on hover) to SKU and Category columns in ProductsListPage.tsx table view. Added TruncatedText to SKU and Category badge in ProductCard.tsx mobile card view. Product name already had TruncatedText.
 - [ ] Task 237: Fix text overflow � Customers table
 - [ ] Task 238: Fix text overflow � WholesaleClients table
 - [ ] Task 239: Fix text overflow � Invoices table

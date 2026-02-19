@@ -98,8 +98,8 @@ export function ProductCard({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           {product.category && (
-            <Badge className="absolute top-3 right-3 bg-[hsl(var(--tenant-bg))]/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm">
-              {product.category}
+            <Badge className="absolute top-3 right-3 bg-[hsl(var(--tenant-bg))]/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm max-w-[140px]">
+              <TruncatedText text={product.category || ''} maxWidthClass="max-w-[120px]" />
             </Badge>
           )}
           {!isInStock && (
@@ -138,9 +138,11 @@ export function ProductCard({
               </p>
             )}
             {product.sku && (
-              <code className="text-xs text-[hsl(var(--tenant-text-light))] bg-[hsl(var(--tenant-surface))] px-2 py-1 rounded">
-                {String(product.sku)}
-              </code>
+              <TruncatedText
+                text={String(product.sku)}
+                className="text-xs text-[hsl(var(--tenant-text-light))] bg-[hsl(var(--tenant-surface))] px-2 py-1 rounded font-mono"
+                maxWidthClass="max-w-[160px]"
+              />
             )}
           </div>
           <DropdownMenu>

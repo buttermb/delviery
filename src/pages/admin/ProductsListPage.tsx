@@ -559,9 +559,11 @@ export function ProductsListPage() {
             )}
           </div>
           {product.sku && (
-            <span className="text-xs text-muted-foreground truncate">
-              SKU: {product.sku}
-            </span>
+            <TruncatedText
+              text={`SKU: ${product.sku}`}
+              className="text-xs text-muted-foreground"
+              maxWidthClass="max-w-[200px]"
+            />
           )}
         </div>
       ),
@@ -571,8 +573,11 @@ export function ProductsListPage() {
       accessorKey: 'category',
       className: 'max-w-[150px] hidden lg:table-cell',
       cell: (product) => (
-        <Badge variant="outline" className="capitalize max-w-[140px] truncate">
-          {product.category || 'Uncategorized'}
+        <Badge variant="outline" className="capitalize max-w-[140px] inline-flex">
+          <TruncatedText
+            text={product.category || 'Uncategorized'}
+            maxWidthClass="max-w-[120px]"
+          />
         </Badge>
       ),
     },
