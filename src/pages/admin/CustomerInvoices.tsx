@@ -243,7 +243,10 @@ export default function CustomerInvoices() {
 
   const updateLineItem = (index: number, field: string, value: string | number) => {
     const updated = [...lineItems];
-    updated[index] = { ...updated[index], [field]: value };
+    let safeValue = value;
+    if (field === 'quantity') safeValue = Math.max(1, Number(value));
+    if (field === 'rate') safeValue = Math.max(0, Number(value));
+    updated[index] = { ...updated[index], [field]: safeValue };
 
     // Calculate amount
     if (field === 'quantity' || field === 'rate') {
@@ -266,6 +269,15 @@ export default function CustomerInvoices() {
     if (!tenant) return;
 
     const { subtotal, tax, total } = calculateTotals();
+
+    if (total < 0 || subtotal < 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Invoice total cannot be negative',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -544,8 +556,9 @@ export default function CustomerInvoices() {
                       <Input
                         type="number"
                         step="0.001"
+                        min={0}
                         value={formData.tax_rate}
-                        onChange={(e) => setFormData({ ...formData, tax_rate: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, tax_rate: String(Math.max(0, parseFloat(e.target.value) || 0)) })}
                         className="w-20 h-8 text-right"
                       />
                       <span>%</span>
