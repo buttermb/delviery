@@ -56,7 +56,7 @@ interface UploadingFile {
  *     return result.url;
  *   }}
  *   onComplete={(file, url) => {
- *     console.log('Uploaded:', url);
+ *     logger.debug('Uploaded:', url);
  *   }}
  *   accept="image/*"
  *   maxSize={5 * 1024 * 1024} // 5MB

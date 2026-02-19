@@ -165,7 +165,7 @@ function calculateRunningTotals(
  *
  * // Access formatted entries
  * data?.formattedEntries.forEach(entry => {
- *   console.log(`${entry.changeTypeLabel}: ${entry.formattedChange} (Total: ${entry.runningTotal})`);
+ *   logger.debug(`${entry.changeTypeLabel}: ${entry.formattedChange} (Total: ${entry.runningTotal})`);
  * });
  * ```
  */

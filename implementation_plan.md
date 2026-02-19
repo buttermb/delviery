@@ -316,7 +316,7 @@
 
 ## Phase 12: Final Verification & Cleanup (4 tasks)
 
-- [ ] Task 147: Remove all console.log statements — Run grep -rn "console\.\(log\|warn\|error\|debug\)" src/ --include="*.tsx" --include="*.ts" | grep -v node_modules | grep -v logger.ts. Replace with logger.debug/warn/error or remove. Skip test files.
+- [x] Task 147: Remove all console.log statements — Run grep -rn "console\.\(log\|warn\|error\|debug\)" src/ --include="*.tsx" --include="*.ts" | grep -v node_modules | grep -v logger.ts. Replace with logger.debug/warn/error or remove. Skip test files.
 
 - [ ] Task 148: Remove all @ts-ignore and @ts-nocheck — Run grep -rn "@ts-ignore\|@ts-nocheck" src/. Remove each one and fix the underlying TS error properly.
 

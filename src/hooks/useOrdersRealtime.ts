@@ -66,7 +66,7 @@ interface UseOrdersRealtimeReturn {
  * const { newOrderIds, isSubscribed } = useOrdersRealtime({
  *   enabled: true,
  *   onNewOrder: (event) => {
- *     console.log('New order:', event);
+ *     logger.debug('New order:', event);
  *   }
  * });
  *

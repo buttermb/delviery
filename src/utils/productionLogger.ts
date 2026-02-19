@@ -55,10 +55,8 @@ class ProductionLogger {
     this.logs.push(entry);
     this.saveLogs();
 
-    // Keep console.error in production for critical issues
-    if (typeof console !== 'undefined' && console.error) {
-      logger.error('[Production Error]', message, context);
-    }
+    // Log critical production errors via logger
+    logger.error('[Production Error]', message, context);
   }
 
   warning(message: string, context?: Record<string, unknown>) {
