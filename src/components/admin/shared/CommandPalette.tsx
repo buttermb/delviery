@@ -392,7 +392,7 @@ export function CommandPalette() {
 
       {/* Footer with keyboard hints */}
       <div className="border-t px-3 py-2 text-xs text-muted-foreground flex items-center justify-between bg-muted/30">
-        <span className="flex items-center gap-1">
+        <span className="hidden sm:flex items-center gap-1">
           <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px]">
             {typeof navigator !== 'undefined' && navigator.platform?.includes('Mac')
               ? '⌘'
@@ -401,7 +401,8 @@ export function CommandPalette() {
           <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px]">K</kbd>
           <span className="ml-1">to toggle</span>
         </span>
-        <span className="flex items-center gap-3">
+        <span className="sm:hidden text-muted-foreground">Tap to select</span>
+        <span className="hidden sm:flex items-center gap-3">
           <span className="flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px]">↑</kbd>
             <kbd className="px-1.5 py-0.5 bg-background border rounded text-[10px]">↓</kbd>
