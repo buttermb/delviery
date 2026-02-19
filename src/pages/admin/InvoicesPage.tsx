@@ -787,7 +787,7 @@ export function InvoicesPage() {
                                 <EnhancedEmptyState
                                     icon={FileText}
                                     title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
-                                    description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track customer payments"}
+                                    description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
                                     primaryAction={searchQuery || statusFilter ? {
                                         label: "Clear Filters",
                                         onClick: () => { setSearchQuery(""); setStatusFilter(null); },
@@ -1003,7 +1003,7 @@ export function InvoicesPage() {
                                         <EnhancedEmptyState
                                             icon={FileText}
                                             title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
-                                            description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track customer payments"}
+                                            description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
                                             primaryAction={searchQuery || statusFilter ? {
                                                 label: "Clear Filters",
                                                 onClick: () => { setSearchQuery(""); setStatusFilter(null); },

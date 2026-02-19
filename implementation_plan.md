@@ -126,7 +126,7 @@
 
 - [x] Task 58: Add empty state to Customers page — Zero customers: Users icon, "No customers yet", "Customers are automatically added when they place orders", secondary "Import Customers" if import feature exists.
 
-- [ ] Task 59: Add empty state to Invoices page — Zero invoices: FileText icon, "No invoices yet", "Create invoices to track payments from wholesale clients", "Create Invoice" CTA.
+- [x] Task 59: Add empty state to Invoices page — Zero invoices: FileText icon, "No invoices yet", "Create invoices to track payments from wholesale clients", "Create Invoice" CTA.
 
 - [ ] Task 60: Add empty state to WholesaleClients page — Zero clients: Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA.
 
