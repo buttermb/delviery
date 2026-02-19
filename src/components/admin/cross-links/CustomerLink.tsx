@@ -72,9 +72,9 @@ export function CustomerLink({
 
   // Build the link content with avatar
   const linkContent = (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-2 min-w-0">
       {showAvatar && (
-        <Avatar className="h-6 w-6">
+        <Avatar className="h-6 w-6 shrink-0">
           {customerAvatar ? (
             <AvatarImage src={customerAvatar} alt={displayName} />
           ) : null}
@@ -83,7 +83,7 @@ export function CustomerLink({
           </AvatarFallback>
         </Avatar>
       )}
-      <span>{displayName}</span>
+      <span className="truncate">{displayName}</span>
     </span>
   );
 

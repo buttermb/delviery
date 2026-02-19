@@ -614,24 +614,27 @@ export default function Orders() {
     },
     {
       header: "Customer",
+      className: "max-w-[200px]",
       cell: (order) => (
-        <div className="flex flex-col gap-1">
-          <CustomerLink
-            customerId={order.user_id}
-            customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
-            customerEmail={order.user?.email}
-            className="font-medium"
-          />
+        <div className="flex flex-col gap-1 max-w-[200px] min-w-0">
+          <div className="min-w-0 truncate">
+            <CustomerLink
+              customerId={order.user_id}
+              customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+              customerEmail={order.user?.email}
+              className="font-medium"
+            />
+          </div>
           {order.user?.email && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {order.user.email}
-              <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <span className="truncate">{order.user.email}</span>
+              <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
           {!order.user?.email && order.user?.phone && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {order.user.phone}
-              <CopyButton text={order.user.phone} label="Phone" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <span className="truncate">{order.user.phone}</span>
+              <CopyButton text={order.user.phone} label="Phone" showLabel={false} className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
         </div>
