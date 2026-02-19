@@ -320,7 +320,7 @@
 
 - [x] Task 148: Remove all @ts-ignore and @ts-nocheck — Run grep -rn "@ts-ignore\|@ts-nocheck" src/. Remove each one and fix the underlying TS error properly.
 
-- [ ] Task 149: Full TypeScript check — Run npx tsc --noEmit. Fix ALL remaining errors. Zero errors required.
+- [x] Task 149: Full TypeScript check — Run npx tsc --noEmit. Fix ALL remaining errors. Zero errors required.
 
 - [ ] Task 150: Production build — Run npx vite build. Must succeed with zero errors. Fix any build failures.
 
