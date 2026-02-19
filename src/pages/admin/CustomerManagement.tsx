@@ -656,14 +656,14 @@ export function CustomerManagement() {
               <EnhancedEmptyState
                 icon={Users}
                 title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-                description={debouncedSearchTerm ? "No customers match your search." : "Customers are added when they place orders"}
+                description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
                 primaryAction={debouncedSearchTerm ? {
                   label: "Clear Search",
                   onClick: () => setSearchTerm('')
                 } : undefined}
                 secondaryAction={!debouncedSearchTerm ? {
-                  label: "Add Customer",
-                  onClick: () => navigateToAdmin('customers/new'),
+                  label: "Import Customers",
+                  onClick: () => setImportDialogOpen(true),
                 } : undefined}
                 designSystem="tenant-admin"
               />
@@ -678,14 +678,14 @@ export function CustomerManagement() {
           <EnhancedEmptyState
             icon={Users}
             title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-            description={debouncedSearchTerm ? "No customers match your search." : "Customers are added when they place orders"}
+            description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
             primaryAction={debouncedSearchTerm ? {
               label: "Clear Search",
               onClick: () => setSearchTerm('')
             } : undefined}
             secondaryAction={!debouncedSearchTerm ? {
-              label: "Add Customer",
-              onClick: () => navigateToAdmin('customers/new'),
+              label: "Import Customers",
+              onClick: () => setImportDialogOpen(true),
             } : undefined}
             designSystem="tenant-admin"
           />

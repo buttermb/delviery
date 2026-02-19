@@ -124,7 +124,7 @@
 
 - [x] Task 57: Add empty state to Menus page — Zero menus: Link icon, "No menus yet", "Create disposable menus to share with customers", "Create Menu" CTA.
 
-- [ ] Task 58: Add empty state to Customers page — Zero customers: Users icon, "No customers yet", "Customers are automatically added when they place orders", secondary "Import Customers" if import feature exists.
+- [x] Task 58: Add empty state to Customers page — Zero customers: Users icon, "No customers yet", "Customers are automatically added when they place orders", secondary "Import Customers" if import feature exists.
 
 - [ ] Task 59: Add empty state to Invoices page — Zero invoices: FileText icon, "No invoices yet", "Create invoices to track payments from wholesale clients", "Create Invoice" CTA.
 
