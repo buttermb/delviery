@@ -492,7 +492,7 @@
 - [x] Task 281: Verify notification bell — Already fully implemented: NotificationBell.tsx in AdminLayout header shows unread count badge, Popover dropdown with grouped notifications (error/warning/success/info), click navigates to entity via useEntityNavigation, mark as read/mark all as read, useNotifications hook with tenant_id filtering, real-time Supabase subscription + 15s polling, graceful 42P01 fallback if notifications table doesn't exist. No changes needed.
 - [x] Task 282: Coupon validation in checkout — Already fully implemented: CheckoutPage.tsx has coupon code input (line 1370), Apply button with loading spinner, error display, applied coupon with Remove button and discount amount. CartPage.tsx has same flow. useShopCart.ts applyCoupon() calls validate_marketplace_coupon RPC (validates active, not expired, usage limit, min order). getCouponDiscount() handles percentage/fixed/free_shipping. CheckoutPage calls redeem_coupon RPC after order placement to increment usage. Toast on success/error. Coupon persists in localStorage. No changes needed.
 - [x] Task 283: Role changes reflect in sidebar — Already implemented from Part A (Task 133): TeamManagement.tsx invalidates queryKeys.permissions.all on all role/status/remove mutations (lines 220, 245, 272). usePermissions.ts has realtime subscription on tenant_users table that auto-invalidates permissions when current user's role changes (lines 145-175). useSidebarConfig.ts depends on usePermissions() so sidebar re-renders with new filtered items automatically. No changes needed.
-- [ ] Task 284: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 284: Run npx tsc --noEmit — Checkpoint. Zero errors.
 
 ## Phase B11: Mobile Responsiveness (12 tasks)
 
