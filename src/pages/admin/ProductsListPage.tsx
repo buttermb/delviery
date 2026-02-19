@@ -70,6 +70,8 @@ import GitCompare from "lucide-react/dist/esm/icons/git-compare";
 import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
 import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
 import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 
 import type { Database } from '@/integrations/supabase/types';
 
@@ -174,7 +176,8 @@ export function ProductsListPage() {
   const {
     data: products = [],
     isLoading,
-    error,
+    isError,
+    isFetching,
     refetch,
   } = useQuery({
     queryKey: queryKeys.products.byTenant(tenant?.id || ''),
@@ -725,30 +728,6 @@ export function ProductsListPage() {
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive">Failed to load products</p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() =>
-                queryClient.invalidateQueries({
-                  queryKey: queryKeys.products.all,
-                })
-              }
-            >
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
@@ -766,8 +745,8 @@ export function ProductsListPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Stats Cards — hidden when error with no cached data (zeros are misleading) */}
+      {!(isError && products.length === 0) && <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -814,9 +793,52 @@ export function ProductsListPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
-      {/* Search and Filters */}
+      {/* Error State — no cached data */}
+      {isError && products.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="font-semibold text-destructive">Failed to load products</p>
+          <p className="text-muted-foreground text-sm mt-1 mb-4">
+            Something went wrong while fetching your products. Please try again.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="border-destructive/30 text-destructive hover:bg-destructive/10"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            {isFetching ? 'Retrying...' : 'Try Again'}
+          </Button>
+        </div>
+      )}
+
+      {/* Error banner — cached data still available */}
+      {isError && products.length > 0 && (
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-destructive bg-destructive/5 px-4 py-3">
+          <p className="text-destructive text-sm">
+            Failed to refresh products. Showing cached data.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Search, Filters, and Products — hidden when error with no data */}
+      {!(isError && products.length === 0) && <>
       <div className="flex flex-col gap-3">
         {/* Search Bar */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
@@ -1020,6 +1042,7 @@ export function ProductsListPage() {
           />
         )}
       </Card>
+      </>}
 
       {/* Product Comparison Dialog */}
       <ProductComparison
