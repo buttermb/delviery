@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { UnifiedOrder, UnifiedOrderItem } from '@/hooks/useUnifiedOrders';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,13 +81,12 @@ export function POSRefundDialog({
 }: POSRefundDialogProps) {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-
+  const queryClient = useQueryClient();
 
   // Order search state
   const [orderSearch, setOrderSearch] = useState('');
   const [searchSubmitted, setSearchSubmitted] = useState('');
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch order by order_number when search is submitted
   const {
@@ -218,7 +217,6 @@ export function POSRefundDialog({
     setOrderSearch('');
     setSearchSubmitted('');
     setSelectedItems(new Set());
-    setIsSubmitting(false);
     reset({ refundAmount: 0, refundMethod: 'cash', notes: '' });
   };
 
@@ -229,20 +227,23 @@ export function POSRefundDialog({
     onOpenChange(newOpen);
   };
 
-  // Submit refund
-  const onSubmit = async (values: RefundFormValues) => {
-    if (!foundOrder || !tenantId) return;
+  // POS refund mutation
+  const refundMutation = useMutation({
+    mutationFn: async (values: RefundFormValues) => {
+      if (!foundOrder || !tenantId) throw new Error('Missing order or tenant');
 
-    setIsSubmitting(true);
-    try {
       const refundedItemIds = orderItems
         .filter((item) => selectedItems.has(item.id))
         .map((item) => item.id);
 
-      // Create a negative transaction record (refund)
+      // Create a negative transaction record (refund) in pos_transactions
       const refundClient = supabase as unknown as {
         from: (table: string) => ReturnType<typeof supabase.from>;
       };
+
+      const resolvedMethod = values.refundMethod === 'original_method'
+        ? (foundOrder.payment_method || 'cash')
+        : 'cash';
 
       const { error: refundError } = await refundClient
         .from('pos_transactions')
@@ -251,9 +252,7 @@ export function POSRefundDialog({
           order_id: foundOrder.id,
           transaction_type: 'refund',
           amount: -values.refundAmount,
-          payment_method: values.refundMethod === 'original_method'
-            ? (foundOrder.payment_method || 'cash')
-            : 'cash',
+          payment_method: resolvedMethod,
           shift_id: shiftId || null,
           notes: values.notes ? sanitizeTextareaInput(values.notes, 500) : null,
           refunded_items: refundedItemIds,
@@ -265,7 +264,7 @@ export function POSRefundDialog({
         throw refundError;
       }
 
-      // Restore stock for returned items
+      // Restore stock for returned items (increment stock_quantity)
       const itemsToRestore = orderItems.filter((item) => selectedItems.has(item.id));
       for (const item of itemsToRestore) {
         if (!item.product_id) continue;
@@ -291,11 +290,11 @@ export function POSRefundDialog({
             component: 'POSRefundDialog',
             productId: item.product_id,
           });
-          // Don't block refund for stock failure
+          // Don't block refund for stock restore failure
         }
       }
 
-      // Update order payment_status if full refund
+      // Update order status if full refund
       if (values.refundAmount >= foundOrder.total_amount) {
         await supabase
           .from('unified_orders')
@@ -304,40 +303,45 @@ export function POSRefundDialog({
           .eq('tenant_id', tenantId);
       }
 
-      toast.success('Refund processed', {
-        description: `$${values.refundAmount.toFixed(2)} refunded for order ${foundOrder.order_number}`,
-      });
-
-      // Pass refund data for receipt printing
-      const refundedItems = orderItems
-        .filter((item) => selectedItems.has(item.id))
-        .map((item) => ({
+      // Return data for onSuccess callback (receipt printing)
+      return {
+        refundAmount: values.refundAmount,
+        refundMethod: resolvedMethod,
+        originalOrderNumber: foundOrder.order_number,
+        items: itemsToRestore.map((item) => ({
           name: item.product_name,
           quantity: item.quantity,
           price: item.unit_price,
           subtotal: item.total_price,
-        }));
-
-      onRefundComplete?.({
-        refundAmount: values.refundAmount,
-        refundMethod: values.refundMethod === 'original_method'
-          ? (foundOrder.payment_method || 'cash')
-          : 'cash',
-        originalOrderNumber: foundOrder.order_number,
-        items: refundedItems,
+        })),
         notes: values.notes || undefined,
+      } satisfies RefundCompletionData;
+    },
+    onSuccess: (data) => {
+      // Invalidate affected queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+
+      toast.success('Refund processed', {
+        description: `$${data.refundAmount.toFixed(2)} refunded for order ${data.originalOrderNumber}`,
       });
 
+      onRefundComplete?.(data);
       handleOpenChange(false);
       onSuccess?.();
-    } catch (err) {
+    },
+    onError: (err) => {
       logger.error('POS refund failed', err, { component: 'POSRefundDialog' });
       toast.error('Refund failed', {
         description: 'Unable to process refund. Please try again.',
       });
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  // Submit refund
+  const onSubmit = (values: RefundFormValues) => {
+    refundMutation.mutate(values);
   };
 
   return (
@@ -578,17 +582,17 @@ export function POSRefundDialog({
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
-                disabled={isSubmitting}
+                disabled={refundMutation.isPending}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={!canSubmit || isSubmitting}
+                disabled={!canSubmit || refundMutation.isPending}
                 className="flex-1"
               >
-                {isSubmitting ? (
+                {refundMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...

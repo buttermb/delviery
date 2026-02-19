@@ -70,7 +70,7 @@
 
 - [x] Task 32: Wire POSRefundDialog to CashRegister — In CashRegister.tsx: import POSRefundDialog, add useState<boolean> for open, add "Refund" button in POS header/action area, render dialog, onSuccess invalidates POS queries + shows toast.
 
-- [ ] Task 33: Create POS refund mutation — On POSRefundDialog submit: create negative transaction record in pos_transactions (or orders with type='refund'), restore stock for returned items (increment stock_quantity on products table), link to original order via original_order_id. Filter by tenant_id. Toast success with refund amount.
+- [x] Task 33: Create POS refund mutation — On POSRefundDialog submit: create negative transaction record in pos_transactions (or orders with type='refund'), restore stock for returned items (increment stock_quantity on products table), link to original order via original_order_id. Filter by tenant_id. Toast success with refund amount.
 
 - [ ] Task 34: Add refund totals to Z-Report — In ZReport.tsx: query refund transactions for shift period. Add section showing: Refund Count, Total Refunds ($), Net Sales = Gross Sales - Refunds.
 
