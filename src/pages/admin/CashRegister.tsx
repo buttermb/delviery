@@ -611,7 +611,9 @@ function CashRegisterContent() {
 
         // Build item rows from receipt data or refund data
         let itemRows: string;
+        let itemCount = 0;
         if (isRefund && lastRefundData.items.length > 0) {
+          itemCount = lastRefundData.items.reduce((sum, i) => sum + i.quantity, 0);
           itemRows = lastRefundData.items.map(item =>
             `<tr>
               <td class="item-name" colspan="3">${item.name}</td>
@@ -619,10 +621,11 @@ function CashRegisterContent() {
             <tr>
               <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
               <td></td>
-              <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+              <td class="item-amount">-$${item.subtotal.toFixed(2)}</td>
             </tr>`
           ).join('');
         } else if (receipt?.items) {
+          itemCount = receipt.items.reduce((sum, i) => sum + i.quantity, 0);
           itemRows = receipt.items.map(item =>
             `<tr>
               <td class="item-name" colspan="3">${item.name}</td>
@@ -634,7 +637,8 @@ function CashRegisterContent() {
             </tr>`
           ).join('');
         } else {
-          itemRows = `<tr><td colspan="3">${lastTransaction?.items_count || 0} item(s)</td></tr>`;
+          itemCount = lastTransaction?.items_count || 0;
+          itemRows = `<tr><td colspan="3">${itemCount} item(s)</td></tr>`;
         }
 
         const discountRow = !isRefund && receipt && receipt.discountAmount > 0
@@ -652,7 +656,7 @@ function CashRegisterContent() {
           : '';
 
         const customerRow = receipt?.customerName
-          ? `<p class="customer">Customer: ${receipt.customerName}</p>`
+          ? `<div class="info-row"><span>Customer:</span><span>${receipt.customerName}</span></div>`
           : '';
 
         // Refund-specific fields
@@ -664,9 +668,14 @@ function CashRegisterContent() {
           ? `<div class="info-row"><span>Refund Method:</span><span style="text-transform:capitalize">${lastRefundData.refundMethod}</span></div>`
           : '';
 
-        const receiptLabel = isRefund ? 'REFUND' : 'RECEIPT';
+        const refundNotesRow = isRefund && lastRefundData.notes
+          ? `<div class="info-row"><span>Reason:</span><span>${lastRefundData.notes}</span></div>`
+          : '';
+
+        const receiptLabel = isRefund ? '*** REFUND ***' : 'RECEIPT';
         const totalAmount = isRefund ? lastRefundData.refundAmount : (lastTransaction?.total || 0);
         const totalLabel = isRefund ? 'REFUND TOTAL' : 'TOTAL';
+        const totalFormatted = isRefund ? `-$${totalAmount.toFixed(2)}` : `$${totalAmount.toFixed(2)}`;
         const footerText = isRefund ? 'Refund processed.' : 'Thank you for your purchase!';
         const receiptNumber = lastTransaction?.transaction_number || '';
         const titlePrefix = isRefund ? 'Refund' : 'Receipt';
@@ -680,31 +689,44 @@ function CashRegisterContent() {
     body {
       font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
-      max-width: 300px;
+      width: 302px;
       margin: 0 auto;
       padding: 10px;
       color: #000;
     }
     .header { text-align: center; margin-bottom: 8px; }
-    .header h2 { font-size: 16px; margin-bottom: 4px; text-transform: uppercase; }
+    .header h2 { font-size: 16px; margin-bottom: 2px; text-transform: uppercase; }
     .header p { font-size: 11px; line-height: 1.4; }
-    .sep { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-    .receipt-label { text-align: center; font-size: 14px; font-weight: bold; letter-spacing: 2px; margin: 4px 0; }
+    .sep { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+    .sep-double { border: none; border-top: 2px solid #000; margin: 6px 0; }
+    .receipt-label {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin: 6px 0;
+      padding: 4px 0;
+    }
+    .receipt-label.refund {
+      border: 2px solid #000;
+      padding: 6px 0;
+    }
+    .col-header { display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; border-bottom: 1px solid #000; padding-bottom: 2px; }
     table { width: 100%; border-collapse: collapse; }
     td { padding: 1px 0; vertical-align: top; }
     .item-name { font-weight: bold; font-size: 11px; padding-top: 4px; }
     .item-detail { font-size: 11px; color: #333; padding-left: 8px; }
     .item-amount { text-align: right; white-space: nowrap; }
+    .item-count { font-size: 10px; text-align: right; margin-top: 4px; }
     .totals td { padding: 2px 0; }
     .total-row td { font-weight: bold; font-size: 14px; padding-top: 4px; }
     .info-row { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
-    .info-row span:last-child { text-align: right; }
-    .customer { font-size: 11px; margin: 4px 0; }
+    .info-row span:last-child { text-align: right; max-width: 55%; word-break: break-word; }
     .footer { text-align: center; margin-top: 12px; font-size: 11px; }
     .footer p { margin: 2px 0; }
-    .receipt-no { font-size: 10px; text-align: center; margin-top: 8px; color: #666; }
+    .receipt-id { font-size: 9px; text-align: center; margin-top: 8px; color: #666; word-break: break-all; }
     @media print {
-      body { padding: 0; margin: 0; }
+      body { padding: 0; margin: 0; width: 80mm; }
       @page { margin: 0; size: 80mm auto; }
     }
   </style>
@@ -713,17 +735,19 @@ function CashRegisterContent() {
   <div class="header">
     <h2>${businessName}</h2>
   </div>
-  <hr class="sep" />
-  <div class="receipt-label">${receiptLabel}</div>
-  <hr class="sep" />
+  <hr class="sep-double" />
+  <div class="receipt-label${isRefund ? ' refund' : ''}">${receiptLabel}</div>
+  <hr class="sep-double" />
   <div class="info-row"><span>Date:</span><span>${dateStr}</span></div>
   <div class="info-row"><span>Time:</span><span>${timeStr}</span></div>
   ${receiptNumber ? `<div class="info-row"><span>Receipt #:</span><span>${receiptNumber}</span></div>` : ''}
   ${refundOriginalRef}
   ${customerRow}
   <hr class="sep" />
+  <div class="col-header"><span>Item</span><span>Amount</span></div>
   <table>${itemRows}</table>
-  <hr class="sep" />
+  <div class="item-count">${itemCount} item(s)</div>
+  <hr class="sep-double" />
   <table class="totals">
     ${!isRefund ? `<tr>
       <td colspan="2">Subtotal</td>
@@ -733,15 +757,16 @@ function CashRegisterContent() {
     ${taxRow}
     <tr class="total-row">
       <td colspan="2">${totalLabel}</td>
-      <td class="item-amount">$${totalAmount.toFixed(2)}</td>
+      <td class="item-amount">${totalFormatted}</td>
     </tr>
   </table>
   <hr class="sep" />
   ${isRefund ? refundMethodRow : `<div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction?.payment_method || ''}</span></div>`}
+  ${refundNotesRow}
   <div class="footer">
     <p>${footerText}</p>
   </div>
-  <p class="receipt-no">${lastTransaction?.transaction_id || ''}</p>
+  <p class="receipt-id">${lastTransaction?.transaction_id || ''}</p>
 </body>
 </html>`;
         printWindow.document.write(receiptHtml);

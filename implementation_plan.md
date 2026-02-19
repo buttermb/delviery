@@ -76,7 +76,7 @@
 
 - [x] Task 35: Add refund totals to shift summary — In shift end summary (ShiftManager or end-of-shift dialog), include refund count and total alongside gross sales.
 
-- [ ] Task 36: Improve POS receipt layout — In CashRegister handlePrintReceipt: ensure receipt includes store name, date/time, items with qty and price, subtotal, tax, total, payment method, receipt number. Format for 80mm thermal printer width. Add "REFUND" header for refund receipts.
+- [x] Task 36: Improve POS receipt layout — In CashRegister handlePrintReceipt: ensure receipt includes store name, date/time, items with qty and price, subtotal, tax, total, payment method, receipt number. Format for 80mm thermal printer width. Add "REFUND" header for refund receipts.
 
 - [ ] Task 37: Add keyboard shortcuts to CashRegister — Add: F2 = New Sale, F3 = Search Product, F4 = Refund, F8 = Pay Cash, F9 = Pay Card, Esc = Clear. Show shortcut hints on buttons. Use useEffect with keydown listener, clean up on unmount.
 
