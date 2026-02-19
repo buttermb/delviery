@@ -338,7 +338,7 @@
 - [x] Task 154: Create FeatureTogglesPanel — src/components/admin/settings/FeatureTogglesPanel.tsx already exists with full implementation (card grid, switch toggles, grouped Core/Advanced, toast on toggle).
 - [x] Task 155: Wire FeatureTogglesPanel to Settings page — Already wired: imported at line 28, Features tab trigger at line 523, TabsContent with FeatureTogglesPanel at line 762 of SettingsPage.tsx.
 - [x] Task 156: Map sidebar items to feature flags — Add featureFlag property to nav items.
-- [ ] Task 157: Filter sidebar by feature flags � Hide items where !isEnabled(featureFlag).
+- [x] Task 157: Filter sidebar by feature flags — Already implemented in both Sidebar.tsx (lines 197-201) and SidebarSection.tsx (lines 40-47). Both use useTenantFeatureToggles to hide items where !isEnabled(featureFlag).
 - [ ] Task 158: Create FeatureProtectedRoute � Show disabled message + settings link when feature off.
 - [ ] Task 159: Apply FeatureGate to POS routes
 - [ ] Task 160: Apply FeatureGate to Delivery routes
