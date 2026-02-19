@@ -403,7 +403,7 @@
 - [x] Task 207: Empty state → Menus — Already implemented from Part A (Task 57): MenusListPage.tsx has EnhancedEmptyState with LinkIcon, "No menus yet", "Create Menu" CTA at lines 225-239. SmartDashboard.tsx also has empty state via ResponsiveGrid at lines 920-932. No changes needed.
 - [x] Task 208: Empty state → Customers — Already implemented from Part A (Task 58): EnhancedEmptyState with Users icon, "No customers yet", "Import Customers" secondary action in both desktop (lines 733-748) and mobile (lines 755-769) views of CustomerManagement.tsx. No changes needed.
 - [x] Task 209: Empty state → Invoices — Already implemented from Part A (Task 59): EnhancedEmptyState with FileText icon, contextual titles, "Create Invoice" CTA in both mobile (lines 813-830) and desktop (lines 1028-1047) views of InvoicesPage.tsx. No changes needed.
-- [ ] Task 210: Empty state � WholesaleClients
+- [x] Task 210: Empty state → WholesaleClients — Already implemented from Part A (Task 60): EnhancedEmptyState with Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA in both desktop (lines 579-594) and mobile (lines 742-754) views of WholesaleClients.tsx. No changes needed.
 - [ ] Task 211: Empty state � LiveOrders
 - [ ] Task 212: Empty state � DisposableMenuOrders
 - [ ] Task 213: Empty state � CashRegister no shift
