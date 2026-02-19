@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
+import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,7 +66,8 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       return;
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    const emailCheck = z.string().email("Invalid email address");
+    if (formData.email && !emailCheck.safeParse(formData.email).success) {
       showErrorToast("Invalid email address");
       return;
     }

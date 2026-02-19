@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
+import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +53,8 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             return;
         }
 
-        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        const emailCheck = z.string().email('Invalid email address');
+        if (formData.email && !emailCheck.safeParse(formData.email).success) {
             toast.error('Invalid email address');
             return;
         }
