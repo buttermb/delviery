@@ -272,7 +272,7 @@
 
 - [x] Task 126: Stock restore on order cancel — When order status changes to 'cancelled': restore stock_quantity for each line item. Verify or add.
 
-- [ ] Task 127: Low stock alert on dashboard — Dashboard should show "X products low on stock" card when any product's stock_quantity < reorder_point (or < 10 default). Link to inventory page filtered to low stock.
+- [x] Task 127: Low stock alert on dashboard — Dashboard should show "X products low on stock" card when any product's stock_quantity < reorder_point (or < 10 default). Link to inventory page filtered to low stock.
 
 - [ ] Task 128: Invoice auto-creation from orders — When a wholesale order is completed/delivered, offer to auto-generate invoice. Add "Create Invoice" button on OrderDetailsPage that pre-fills invoice from order data.
 
