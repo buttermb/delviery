@@ -174,6 +174,7 @@ export function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<{
@@ -568,18 +569,19 @@ export function ProductDetailPage() {
             {/* Left Column: Image Gallery (Span 7) */}
             <div className="lg:col-span-7 space-y-6">
               <div
-                className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5"
-                onMouseEnter={() => setShowZoom(true)}
-                onMouseLeave={() => setShowZoom(false)}
+                className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                onClick={() => setShowZoom(true)}
               >
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={selectedImage}
                     src={allImages[selectedImage] || '/placeholder.png'}
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${showZoom ? 'scale-110' : 'scale-100'}`}
+                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
                     initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: showZoom ? 1.1 : 1 }}
+                    animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4 }}
                   />
