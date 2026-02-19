@@ -160,7 +160,7 @@ export default function Orders() {
   }, [statusFilter, savePreferences]);
 
   // Data Fetching - includes both regular orders and POS orders from unified_orders
-  const { data: orders = [], isLoading, isError, refetch } = useQuery({
+  const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['orders', tenant?.id, statusFilter],
     queryFn: async () => {
       if (!tenant) return [];
@@ -899,23 +899,25 @@ export default function Orders() {
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={stat.label} className="p-3 sm:p-4 border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                      <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
+          {/* Stats Grid — hidden when error with no cached data (zeros are misleading) */}
+          {!(isError && orders.length === 0) && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+              {stats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <Card key={stat.label} className="p-3 sm:p-4 border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
+                        <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
+                      </div>
+                      <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} flex-shrink-0`} />
                     </div>
-                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} flex-shrink-0`} />
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           {/* Controls */}
           <Card className="p-3 sm:p-4 border-none shadow-sm">
@@ -964,23 +966,50 @@ export default function Orders() {
 
             {/* Bulk Actions - handled by floating BulkActionsBar below */}
 
-            {/* Error State */}
-            {isError && !isLoading && (
+            {/* Error State — no cached data */}
+            {isError && orders.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
-                <h3 className="text-lg font-semibold mb-1">Failed to load orders</h3>
-                <p className="text-muted-foreground text-sm mb-4">
+                <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                </div>
+                <p className="font-semibold text-destructive">Failed to load orders</p>
+                <p className="text-muted-foreground text-sm mt-1 mb-4">
                   Something went wrong while fetching your orders. Please try again.
                 </p>
-                <Button variant="outline" onClick={() => refetch()} className="gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Try Again
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+                  {isFetching ? 'Retrying...' : 'Try Again'}
                 </Button>
               </div>
             )}
 
-            {/* Responsive Table - hidden when error to avoid showing misleading empty state */}
-            {!isError && <ResponsiveTable<Order>
+            {/* Error banner — cached data still available */}
+            {isError && orders.length > 0 && (
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-destructive bg-destructive/5 px-4 py-3 mb-4">
+                <p className="text-destructive text-sm">
+                  Failed to refresh orders. Showing cached data.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+                  Retry
+                </Button>
+              </div>
+            )}
+
+            {/* Responsive Table - hidden when error with no data to avoid showing misleading empty state */}
+            {!(isError && orders.length === 0) && <ResponsiveTable<Order>
               data={paginatedItems}
               columns={columns}
               isLoading={isLoading}
@@ -1061,7 +1090,7 @@ export default function Orders() {
             />}
 
             {/* Pagination */}
-            {!isError && sortedOrders.length > 0 && (
+            {!(isError && orders.length === 0) && sortedOrders.length > 0 && (
               <StandardPagination
                 currentPage={currentPage}
                 totalPages={totalPages}
