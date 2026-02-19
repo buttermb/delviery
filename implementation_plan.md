@@ -468,7 +468,7 @@
 
 ## Phase B9: Error Handling and Loading (12 tasks)
 
-- [ ] Task 263: Error boundaries on hub pages
+- [x] Task 263: Error boundaries on hub pages — Verified 12/14 hub pages already have ModuleErrorBoundary wrapping lazy-loaded tabs. Added ModuleErrorBoundary to HelpHubPage's 4 tab panels (Getting Started, Documentation, Support, Feedback). Fixed HelpHubPage: replaced useToast from use-toast with toast from sonner. DashboardHubPage has no lazy tabs (single page) and already has error state handling.
 - [ ] Task 264: Error state � Dashboard
 - [ ] Task 265: Error state � Orders
 - [ ] Task 266: Error state � Products

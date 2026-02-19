@@ -24,6 +24,7 @@ import {
     ExternalLink,
 } from 'lucide-react';
 import { Fragment, useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -121,7 +122,6 @@ export default function HelpHubPage() {
     usePageTitle('Help Center');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'getting-started';
-    const { toast } = useToast();
     const [feedbackType, setFeedbackType] = useState<'bug' | 'feature'>('feature');
     const [feedbackText, setFeedbackText] = useState('');
     const [ticketSubject, setTicketSubject] = useState('');
@@ -135,8 +135,7 @@ export default function HelpHubPage() {
     const progressPercentage = (completedSteps / onboardingSteps.length) * 100;
 
     const handleSubmitTicket = () => {
-        toast({
-            title: 'Ticket Submitted',
+        toast.success('Ticket Submitted', {
             description: 'We\'ll get back to you within 24 hours.',
         });
         setTicketSubject('');
@@ -144,10 +143,10 @@ export default function HelpHubPage() {
     };
 
     const handleSubmitFeedback = () => {
-        toast({
-            title: feedbackType === 'bug' ? 'Bug Report Submitted' : 'Feature Request Submitted',
-            description: 'Thank you for your feedback!',
-        });
+        toast.success(
+            feedbackType === 'bug' ? 'Bug Report Submitted' : 'Feature Request Submitted',
+            { description: 'Thank you for your feedback!' },
+        );
         setFeedbackText('');
     };
 
@@ -164,23 +163,19 @@ export default function HelpHubPage() {
     const handleWatchVideos = () => {
         // Switch to getting-started tab where videos are
         handleTabChange('getting-started');
-        toast({
-            title: 'Video Library',
+        toast.info('Video Library', {
             description: 'Scroll down to see all available tutorials.',
         });
     };
 
     const handleStartChat = () => {
-        toast({
-            title: 'Live Chat',
+        toast.info('Live Chat', {
             description: 'Live chat is available during business hours (9 AM - 6 PM EST).',
         });
     };
 
     const handleUpgradeEnterprise = () => {
-        // Navigate to pricing page or open upgrade modal
-        toast({
-            title: 'Enterprise Upgrade',
+        toast.info('Enterprise Upgrade', {
             description: 'Contact sales@floraiq.com for enterprise pricing.',
         });
     };
@@ -226,6 +221,7 @@ export default function HelpHubPage() {
 
                 {/* Getting Started Tab */}
                 <TabsContent value="getting-started" className="m-0 p-6">
+                    <ModuleErrorBoundary moduleName="Getting Started">
                     <div className="space-y-6">
                         {/* Onboarding Progress */}
                         <Card>
@@ -293,10 +289,12 @@ export default function HelpHubPage() {
                             </CardContent>
                         </Card>
                     </div>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Documentation Tab */}
                 <TabsContent value="docs" className="m-0 p-6">
+                    <ModuleErrorBoundary moduleName="Documentation">
                     <div className="space-y-6">
                         {/* Quick Links */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -369,10 +367,12 @@ export default function HelpHubPage() {
                             </CardContent>
                         </Card>
                     </div>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Support Tab */}
                 <TabsContent value="support" className="m-0 p-6">
+                    <ModuleErrorBoundary moduleName="Support">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Submit Ticket */}
                         <Card>
@@ -458,10 +458,12 @@ export default function HelpHubPage() {
                             </Card>
                         </div>
                     </div>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Feedback Tab */}
                 <TabsContent value="feedback" className="m-0 p-6">
+                    <ModuleErrorBoundary moduleName="Feedback">
                     <div className="max-w-2xl mx-auto space-y-6">
                         <Card>
                             <CardHeader>
@@ -522,6 +524,7 @@ export default function HelpHubPage() {
                             </CardContent>
                         </Card>
                     </div>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>
