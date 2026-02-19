@@ -52,7 +52,7 @@
 
 - [x] Task 24: Sanitize search in Products/Inventory pages — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 
-- [ ] Task 25: Sanitize search in DisposableMenuOrders.tsx — Find .ilike() calls. Apply sanitizeForIlike().
+- [x] Task 25: Sanitize search in DisposableMenuOrders.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 
 - [ ] Task 26: Sanitize search in CRM pages — Find .ilike() calls in any CRM-related pages. Apply sanitizeForIlike().
 
