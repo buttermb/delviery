@@ -196,7 +196,7 @@
 
 - [x] Task 91: Add sorting to Products table — Sortable: Name, Price, Stock, Category. Wire to query.
 
-- [ ] Task 92: Add sorting to Invoices table — Sortable: Date, Due Date, Amount, Balance, Status. Wire to query.
+- [x] Task 92: Add sorting to Invoices table — Sortable: Date, Due Date, Amount, Balance, Status. Wire to query.
 
 - [ ] Task 93: Add sorting to WholesaleClients table — Sortable: Name, Balance, Last Order, Status.
 
