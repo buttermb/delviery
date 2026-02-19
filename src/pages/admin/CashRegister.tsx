@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award
+  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
 } from 'lucide-react';
 import {
   Dialog,
@@ -46,6 +47,7 @@ import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
 import { useCustomerLoyaltyStatus, useLoyaltyConfig, calculatePointsToEarn, TIER_DISPLAY_INFO } from '@/hooks/useCustomerLoyalty';
 
@@ -121,9 +123,10 @@ interface ReceiptData {
 const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
 function CashRegisterContent() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
   const { execute: executeCreditAction } = useCreditGatedAction();
   const { isOnline, pendingCount } = useOfflineQueue();
@@ -1399,15 +1402,20 @@ function CashRegisterContent() {
         </div>
       )}
 
-      {/* No Active Shift Alert */}
+      {/* No Active Shift Empty State */}
       {!activeShift && (
-        <Alert className="mt-4">
-          <Wallet className="h-4 w-4" />
-          <AlertTitle>No Active Shift</AlertTitle>
-          <AlertDescription>
-            Start a shift from the POS page to track cash drawer activity and generate Z-reports.
-          </AlertDescription>
-        </Alert>
+        <EmptyState
+          icon={Clock}
+          title="No active shift"
+          description="Start a shift to begin processing sales and track cash drawer activity."
+          action={{
+            label: 'Start Shift',
+            onClick: () => navigate(`/${tenantSlug}/admin/pos-system?tab=shifts`),
+            icon: Clock,
+          }}
+          variant="card"
+          className="mt-4"
+        />
       )}
 
       {/* Product Selection Dialog */}
