@@ -340,7 +340,7 @@
 - [x] Task 156: Map sidebar items to feature flags — Add featureFlag property to nav items.
 - [x] Task 157: Filter sidebar by feature flags — Already implemented in both Sidebar.tsx (lines 197-201) and SidebarSection.tsx (lines 40-47). Both use useTenantFeatureToggles to hide items where !isEnabled(featureFlag).
 - [x] Task 158: Create FeatureProtectedRoute — Already exists in src/components/admin/FeatureProtectedRoute.tsx and src/components/tenant-admin/FeatureProtectedRoute.tsx. Shows lock icon, "This feature is not enabled" message, settings link. Used extensively in App.tsx.
-- [ ] Task 159: Apply FeatureGate to POS routes
+- [x] Task 159: Apply FeatureGate to POS routes — Already implemented: all POS routes (pos-system, cash-register, pos-analytics, pos-shifts, z-reports) wrapped with FeatureProtectedRoute feature="pos" in App.tsx.
 - [ ] Task 160: Apply FeatureGate to Delivery routes
 - [ ] Task 161: Apply FeatureGate to Analytics routes
 - [ ] Task 162: Apply FeatureGate to Marketing routes
