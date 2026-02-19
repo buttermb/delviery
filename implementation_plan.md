@@ -36,7 +36,7 @@
 
 - [x] Task 17: Verify feature flag toggle flow end-to-end — Toggle POS on in settings → POS items appear in sidebar → navigate to CashRegister → page loads. Toggle off → items disappear → direct URL shows disabled message. Fix any issues.
 
-- [ ] Task 18: Run npx tsc --noEmit — Fix all TS errors from Phase 1. Checkpoint.
+- [x] Task 18: Run npx tsc --noEmit — Fix all TS errors from Phase 1. Checkpoint.
 
 ## Phase 2: Search Sanitization (12 tasks)
 
