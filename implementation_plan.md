@@ -84,7 +84,7 @@
 
 - [x] Task 39: Add customer lookup to POS — Add customer search field in CashRegister. When customer selected: show name, apply any loyalty discounts, link sale to customer for history. Optional — can process sale without customer.
 
-- [ ] Task 40: Run npx tsc --noEmit — Fix all TS errors from Phase 3. Checkpoint.
+- [x] Task 40: Run npx tsc --noEmit — Fix all TS errors from Phase 3. Checkpoint.
 
 ## Phase 4: Invoice Partial Payments (12 tasks)
 
