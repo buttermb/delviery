@@ -58,7 +58,7 @@
 
 - [x] Task 27: Sanitize search in Marketplace pages — No .ilike() calls found; Marketplace pages use client-side filtering or don't have search. No changes needed.
 
-- [ ] Task 28: Sanitize search in any remaining pages — Run grep -rn "\.ilike\(" src/ to find ALL remaining .ilike calls. Apply sanitizeForIlike() to every one.
+- [x] Task 28: Sanitize search in any remaining pages — All .ilike() calls already use escapePostgresLike() from @/lib/utils/searchSanitize. No unsanitized calls found.
 
 - [ ] Task 29: Add debounce to all search inputs — Find all search inputs that trigger queries on every keystroke. Add 300ms debounce using a useDebounce hook (create if doesn't exist). Prevents excessive API calls while typing.
 
