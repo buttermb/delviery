@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -36,12 +35,6 @@ import { CartItemStockWarning, CartStockSummary } from '@/components/shop/CartSt
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 
-interface AppliedCoupon {
-  code: string;
-  discount: number;
-  type: string;
-}
-
 export default function CartPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
@@ -66,7 +59,11 @@ export default function CartPage() {
     updateQuantity,
     removeItem,
     clearCart,
-    checkInventoryAvailability
+    checkInventoryAvailability,
+    appliedCoupon,
+    applyCoupon: applySharedCoupon,
+    removeCoupon: removeSharedCoupon,
+    getCouponDiscount,
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -76,7 +73,6 @@ export default function CartPage() {
   const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems);
 
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
 
@@ -117,68 +113,27 @@ export default function CartPage() {
   // Handle clear cart
   const handleClearCart = () => {
     clearCart();
-    setAppliedCoupon(null);
     toast('Cart cleared');
   };
 
-  // Apply coupon with retry logic
-  const MAX_COUPON_RETRIES = 2;
-  const applyCoupon = async (retryCount = 0) => {
+  // Apply coupon via shared cart hook
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim() || !store?.id) return;
-
     setIsApplyingCoupon(true);
     try {
-      const { data, error } = await supabase
-        .rpc('validate_marketplace_coupon', {
-          p_store_id: store.id,
-          p_code: couponCode.trim(),
-          p_subtotal: subtotal,
-        });
-
-      if (error) {
-        // Handle case where RPC function doesn't exist yet
-        if (error.message?.includes('function') || error.code === '42883') {
-          toast.error('Coupons not available', {
-            description: 'Coupon feature is not configured for this store.',
-          });
-          return;
-        }
-        throw error;
-      }
-
-      const result = data?.[0];
-      if (result?.is_valid) {
-        setAppliedCoupon({
-          code: couponCode.trim().toUpperCase(),
-          discount: result.discount_amount,
-          type: result.discount_type,
-        });
+      const result = await applySharedCoupon(couponCode.trim(), subtotal);
+      if (result.success) {
         setCouponCode('');
         toast.success('Coupon applied!');
       } else {
         toast.error('Invalid coupon', {
-          description: result?.error_message || 'This coupon cannot be applied.',
+          description: result.error || 'This coupon cannot be applied.',
         });
       }
     } catch (error: unknown) {
-      const isNetworkError = error instanceof Error &&
-        (error.message.toLowerCase().includes('network') ||
-          error.message.toLowerCase().includes('fetch') ||
-          error.message.toLowerCase().includes('timeout'));
-
-      // Retry on network errors
-      if (isNetworkError && retryCount < MAX_COUPON_RETRIES) {
-        toast('Connection issue, retrying...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsApplyingCoupon(false); // Reset to try again
-        return applyCoupon(retryCount + 1);
-      }
-
       logger.error('Error applying coupon', error);
       toast.error('Error', {
-        description: isNetworkError
-          ? 'Network issue. Check your connection and try again.'
-          : 'Failed to apply coupon. Please try again.',
+        description: 'Failed to apply coupon. Please try again.',
       });
     } finally {
       setIsApplyingCoupon(false);
@@ -187,14 +142,14 @@ export default function CartPage() {
 
   // Remove coupon
   const removeCoupon = () => {
-    setAppliedCoupon(null);
+    removeSharedCoupon();
     toast('Coupon removed');
   };
 
   // Calculate totals
   const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
   const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : (store?.default_delivery_fee || 5);
-  const couponDiscount = appliedCoupon?.discount || 0;
+  const couponDiscount = getCouponDiscount(subtotal);
   const totalDiscount = dealsDiscount + couponDiscount;
   const total = Math.max(0, subtotal + deliveryFee - totalDiscount);
 
@@ -433,7 +388,7 @@ export default function CartPage() {
                   />
                   <Button
                     variant="outline"
-                    onClick={() => applyCoupon()}
+                    onClick={handleApplyCoupon}
                     disabled={isApplyingCoupon || !!appliedCoupon || !couponCode.trim()}
                     className={isLuxuryTheme ? buttonOutline : ''}
                   >

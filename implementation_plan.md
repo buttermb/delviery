@@ -282,7 +282,7 @@
 
 - [x] Task 131: Verify notification bell — If notification bell exists in header: verify it shows count, clicking opens dropdown, clicking notification navigates to relevant page. If not implemented, hide the bell icon.
 
-- [ ] Task 132: Coupon validation in checkout — In customer checkout/cart: if coupon code field exists, verify flow: enter code → validate against coupons table (active, not expired, usage limit not reached) → apply discount → show updated total. Fix if broken. If no coupon table, hide the field.
+- [x] Task 132: Coupon validation in checkout — In customer checkout/cart: if coupon code field exists, verify flow: enter code → validate against coupons table (active, not expired, usage limit not reached) → apply discount → show updated total. Fix if broken. If no coupon table, hide the field.
 
 - [ ] Task 133: Role changes reflect in sidebar — After changing a team member's role via team management, their sidebar should reflect new permissions. Ensure role change invalidates the auth/permissions query.
 

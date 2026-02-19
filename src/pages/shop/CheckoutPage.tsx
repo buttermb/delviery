@@ -41,7 +41,7 @@ import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock, Ban } from 'lucide-react';
+import { Clock, Ban, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 
 // Email validation regex
@@ -169,6 +169,7 @@ export function CheckoutPage() {
     isInitialized,
     applyCoupon,
     appliedCoupon,
+    removeCoupon,
     getCouponDiscount,
     validateCart
   } = useShopCart({
@@ -178,8 +179,8 @@ export function CheckoutPage() {
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
-  const [, setIsApplyingCoupon] = useState(false);
-  const [, setCouponError] = useState<string | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   // Redirect to cart if empty
   useEffect(() => {
@@ -200,7 +201,7 @@ export function CheckoutPage() {
   const { totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
 
   // Apply coupon handler
-  const _handleApplyCoupon = async () => {
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     setIsApplyingCoupon(true);
     setCouponError(null);
@@ -212,6 +213,7 @@ export function CheckoutPage() {
       setCouponCode('');
     } else {
       setCouponError(result.error || 'Invalid coupon');
+      toast.error('Invalid coupon', { description: result.error || 'This coupon cannot be applied.' });
     }
     setIsApplyingCoupon(false);
   };
@@ -1316,6 +1318,52 @@ export function CheckoutPage() {
               <CardTitle className={isLuxuryTheme ? 'text-white font-light' : ''}>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Coupon Code Input */}
+              {!appliedCoupon ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Coupon code"
+                      value={couponCode}
+                      onChange={(e) => { setCouponCode(e.target.value); setCouponError(null); }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                      className={isLuxuryTheme ? `${inputBg} ${inputBorder} ${inputText}` : ''}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleApplyCoupon}
+                      disabled={isApplyingCoupon || !couponCode.trim()}
+                      className={isLuxuryTheme ? 'border-white/10 hover:bg-white/10 text-white' : ''}
+                    >
+                      {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                  {couponError && (
+                    <p className="text-xs text-red-500">{couponError}</p>
+                  )}
+                </div>
+              ) : (
+                <div className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-green-500/10' : 'bg-green-50'}`}>
+                  <div className="flex items-center gap-2">
+                    <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`} />
+                    <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`}>
+                      {appliedCoupon.code}
+                    </span>
+                    <span className={`text-xs ${isLuxuryTheme ? 'text-green-400/60' : 'text-green-500'}`}>
+                      (-{formatCurrency(couponDiscount)})
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { removeCoupon(); toast('Coupon removed'); }}
+                    className={isLuxuryTheme ? 'text-red-400 hover:text-red-300 hover:bg-white/5' : 'text-red-500 hover:text-red-600'}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              )}
+
               {/* Gift Card Input */}
               <div className="flex gap-2">
                 <Input
@@ -1376,6 +1424,12 @@ export function CheckoutPage() {
                   <div className="flex justify-between text-green-500">
                     <span>Deals & Discounts</span>
                     <span>-{formatCurrency(dealsDiscount)}</span>
+                  </div>
+                )}
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-green-500">
+                    <span>Coupon</span>
+                    <span>-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (
