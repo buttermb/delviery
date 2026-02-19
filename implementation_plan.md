@@ -322,7 +322,7 @@
 
 - [x] Task 149: Full TypeScript check — Run npx tsc --noEmit. Fix ALL remaining errors. Zero errors required.
 
-- [ ] Task 150: Production build — Run npx vite build. Must succeed with zero errors. Fix any build failures.
+- [x] Task 150: Production build — Run npx vite build. Must succeed with zero errors. Fix any build failures.
 
 ## Checkpoint: Project builds clean. All 150 tasks complete.
 
