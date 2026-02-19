@@ -52,6 +52,11 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             return;
         }
 
+        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            toast.error('Invalid email address');
+            return;
+        }
+
         setLoading(true);
 
         try {

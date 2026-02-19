@@ -92,6 +92,11 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       return;
     }
 
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      showErrorToast("Invalid email address");
+      return;
+    }
+
     try {
       setLoading(true);
       

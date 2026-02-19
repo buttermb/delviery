@@ -65,6 +65,11 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       return;
     }
 
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      showErrorToast("Invalid email address");
+      return;
+    }
+
     if (!tenant?.id) {
       showErrorToast("Tenant information not available");
       return;
