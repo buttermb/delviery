@@ -94,7 +94,7 @@
 
 - [x] Task 43: Create payment recording mutation — On InvoicePaymentDialog submit: insert into invoice_payments (or update invoice amount_paid). If amount_paid + new payment >= total: auto-update invoice status to 'paid'. If partial: update status to 'partial'. Invalidate invoice queries. Filter by tenant_id.
 
-- [ ] Task 44: Add payment history to InvoiceDetailPage — Below invoice details, add "Payment History" section. Query invoice_payments for this invoice. Show table: Date, Amount, Method, Reference. Show running balance. If no payments table exists, store payments as JSONB array on the invoice record.
+- [x] Task 44: Add payment history to InvoiceDetailPage — Below invoice details, add "Payment History" section. Query invoice_payments for this invoice. Show table: Date, Amount, Method, Reference. Show running balance. If no payments table exists, store payments as JSONB array on the invoice record.
 
 - [ ] Task 45: Add VOID watermark to cancelled invoices — In InvoiceDetailPage, when invoice.status === 'cancelled': overlay a semi-transparent red "VOID" text rotated 45deg across the invoice preview. Disable all action buttons except "Delete".
 
