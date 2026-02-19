@@ -270,7 +270,7 @@
 
 - [x] Task 125: Stock decrement on order delivery — When order status changes to 'delivered': decrement product stock_quantity for each line item. Verify this happens or add it. Don't double-decrement if already implemented.
 
-- [ ] Task 126: Stock restore on order cancel — When order status changes to 'cancelled': restore stock_quantity for each line item. Verify or add.
+- [x] Task 126: Stock restore on order cancel — When order status changes to 'cancelled': restore stock_quantity for each line item. Verify or add.
 
 - [ ] Task 127: Low stock alert on dashboard — Dashboard should show "X products low on stock" card when any product's stock_quantity < reorder_point (or < 10 default). Link to inventory page filtered to low stock.
 
