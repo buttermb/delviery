@@ -130,7 +130,7 @@
 
 - [x] Task 60: Add empty state to WholesaleClients page — Zero clients: Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA.
 
-- [ ] Task 61: Add empty state to LiveOrders page — Zero live orders: Radio icon, "No active orders right now", "Live orders appear here in real-time when customers place orders". No CTA needed.
+- [x] Task 61: Add empty state to LiveOrders page — Zero live orders: Radio icon, "No active orders right now", "Live orders appear here in real-time when customers place orders". No CTA needed.
 
 - [ ] Task 62: Add empty state to DisposableMenuOrders page — Zero orders: ClipboardList icon, "No menu orders yet", "Orders appear here when customers order from your disposable menus".
 
