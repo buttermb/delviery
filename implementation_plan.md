@@ -194,7 +194,7 @@
 
 - [x] Task 90: Add sorting to Orders table — Ensure columns are sortable: Date (default desc), Total, Status, Customer. If sort doesn't work, wire it to query orderBy.
 
-- [ ] Task 91: Add sorting to Products table — Sortable: Name, Price, Stock, Category. Wire to query.
+- [x] Task 91: Add sorting to Products table — Sortable: Name, Price, Stock, Category. Wire to query.
 
 - [ ] Task 92: Add sorting to Invoices table — Sortable: Date, Due Date, Amount, Balance, Status. Wire to query.
 

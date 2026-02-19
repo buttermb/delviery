@@ -67,6 +67,9 @@ import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Archive from "lucide-react/dist/esm/icons/archive";
 import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import GitCompare from "lucide-react/dist/esm/icons/git-compare";
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
+import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
 
 import type { Database } from '@/integrations/supabase/types';
 
@@ -78,6 +81,7 @@ type Product = ProductRow & { archived_at?: string | null };
 
 type ViewMode = 'grid' | 'table';
 type SortOption = 'name' | 'price' | 'stock' | 'category';
+type SortOrder = 'asc' | 'desc';
 
 export function ProductsListPage() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
@@ -119,6 +123,7 @@ export function ProductsListPage() {
   const [sortBy, setSortBy] = useState<SortOption>(
     (preferences.sortBy as SortOption) || 'name'
   );
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // Selection state
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -334,20 +339,24 @@ export function ProductsListPage() {
         return true;
       })
       .sort((a, b) => {
+        let cmp = 0;
         switch (sortBy) {
           case 'name':
-            return (a.name || '').localeCompare(b.name || '');
+            cmp = (a.name || '').localeCompare(b.name || '');
+            break;
           case 'price':
-            return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+            cmp = (a.wholesale_price || 0) - (b.wholesale_price || 0);
+            break;
           case 'stock':
-            return (b.available_quantity || 0) - (a.available_quantity || 0);
+            cmp = (a.available_quantity || 0) - (b.available_quantity || 0);
+            break;
           case 'category':
-            return (a.category || '').localeCompare(b.category || '');
-          default:
-            return 0;
+            cmp = (a.category || '').localeCompare(b.category || '');
+            break;
         }
+        return sortOrder === 'asc' ? cmp : -cmp;
       });
-  }, [products, debouncedSearch, advancedFilters, sortBy]);
+  }, [products, debouncedSearch, advancedFilters, sortBy, sortOrder]);
 
   // Check if any advanced filters are active
   const hasActiveFilters = useMemo(() => {
@@ -428,6 +437,36 @@ export function ProductsListPage() {
     triggerHaptic('light');
   }, [refetch]);
 
+  // Sort handler for clickable column headers
+  const handleSort = useCallback((field: SortOption) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder(field === 'price' || field === 'stock' ? 'desc' : 'asc');
+    }
+  }, [sortBy]);
+
+  // Sortable header component for table columns
+  const SortableHeader = useCallback(({ field, label }: { field: SortOption; label: string }) => {
+    const isActive = sortBy === field;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8 hover:bg-transparent"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        {isActive ? (
+          sortOrder === 'asc' ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+        ) : (
+          <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </Button>
+    );
+  }, [sortBy, sortOrder, handleSort]);
+
   // Virtual scrolling for grid view
   // Calculate items per row dynamically based on viewport
   const getColumnsPerRow = () => {
@@ -484,7 +523,7 @@ export function ProductsListPage() {
       ),
     },
     {
-      header: 'Product',
+      header: <SortableHeader field="name" label="Product" />,
       accessorKey: 'name',
       className: 'max-w-[200px]',
       cell: (product) => (
@@ -506,7 +545,7 @@ export function ProductsListPage() {
       ),
     },
     {
-      header: 'Category',
+      header: <SortableHeader field="category" label="Category" />,
       accessorKey: 'category',
       className: 'max-w-[150px]',
       cell: (product) => (
@@ -516,7 +555,7 @@ export function ProductsListPage() {
       ),
     },
     {
-      header: 'Price',
+      header: <SortableHeader field="price" label="Price" />,
       accessorKey: 'wholesale_price',
       className: 'text-right',
       cell: (product) => (
@@ -526,7 +565,7 @@ export function ProductsListPage() {
       ),
     },
     {
-      header: 'Stock',
+      header: <SortableHeader field="stock" label="Stock" />,
       accessorKey: 'available_quantity',
       cell: (product) => (
         <div className="flex items-center gap-2">
@@ -767,15 +806,19 @@ export function ProductsListPage() {
           <div className="flex items-center gap-2">
             <Select
               value={sortBy}
-              onValueChange={(v) => setSortBy(v as SortOption)}
+              onValueChange={(v) => {
+                const field = v as SortOption;
+                setSortBy(field);
+                setSortOrder(field === 'price' || field === 'stock' ? 'desc' : 'asc');
+              }}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name">Name (A-Z)</SelectItem>
-                <SelectItem value="price">Price (High-Low)</SelectItem>
-                <SelectItem value="stock">Stock (High-Low)</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="price">Price</SelectItem>
+                <SelectItem value="stock">Stock</SelectItem>
                 <SelectItem value="category">Category</SelectItem>
               </SelectContent>
             </Select>
