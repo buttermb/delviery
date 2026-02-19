@@ -48,6 +48,7 @@ import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { toast } from "sonner";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -582,12 +583,59 @@ export default function TenantAdminDashboardPage() {
 
   // Early return if auth loading takes too long
   if (authLoading) {
-    // Show loading fallback, but with timeout protection
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+      <div className="min-h-dvh bg-background">
+        {/* Skeleton Header */}
+        <header className="border-b border-border bg-background sticky top-0 z-50 shadow-sm">
+          <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-24 hidden sm:block" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-20 rounded-md" />
+              <Skeleton className="h-9 w-20 rounded-md" />
+            </div>
+          </div>
+        </header>
+        <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-6 lg:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+          {/* Skeleton KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card p-3 sm:p-4 md:p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg" />
+                </div>
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+          {/* Skeleton Quick Actions */}
+          <div className="rounded-lg border bg-card p-3 sm:p-4 md:p-6 space-y-4">
+            <Skeleton className="h-5 w-32" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
+          {/* Skeleton Activity Feed */}
+          <div className="rounded-lg border bg-card p-3 sm:p-4 md:p-6 space-y-4">
+            <Skeleton className="h-5 w-36" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 border rounded-lg">
+                  <Skeleton className="h-4 w-4 rounded-full mt-0.5" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
