@@ -442,7 +442,7 @@
 - [x] Task 240: Sorting � Orders table -- Already implemented from Part A (Task 90): SortableHeader on Customer, Status, Total, Date columns. handleSort toggles asc/desc. sortedOrders useMemo with client-side sort logic. Default created_at DESC. No changes needed.
 - [x] Task 241: Sorting — Products table — Already implemented: SortableHeader on Name, Category, Price, Stock columns. handleSort toggles asc/desc. filteredProducts useMemo with client-side sort logic. Persisted via useTablePreferences. No changes needed.
 - [x] Task 242: Sorting — Invoices table — Already had sorting (handleSort, SortIcon, InvoiceSortState) on all columns (Invoice #, Date, Due Date, Amount, Paid, Balance, Status) with server-side query + client-side balance sort. Refactored to use SortableHeader Button pattern matching Orders.tsx and WholesaleClients.tsx for consistency.
-- [ ] Task 243: Sorting � WholesaleClients table
+- [x] Task 243: Sorting — WholesaleClients table — Already implemented: SortableHeader on Client (business_name), Status, Credit Status (outstanding_balance), This Month (created_at) columns. handleSort toggles asc/desc. sortedClients useMemo with client-side sort. Matches Orders.tsx pattern. No changes needed.
 - [ ] Task 244: Pagination � Orders
 - [ ] Task 245: Pagination � Products
 - [ ] Task 246: Pagination � Customers
