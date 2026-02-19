@@ -97,6 +97,12 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       return;
     }
 
+    const phoneRegex = /^[\d\s\-+()]+$/;
+    if (!phoneRegex.test(formData.phone) || formData.phone.length < 7 || formData.phone.length > 20) {
+      showErrorToast("Invalid phone number", "Must be 7-20 characters with only digits, spaces, dashes, or parentheses");
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -175,6 +181,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="(555) 123-4567"
+                  maxLength={20}
                   required
                 />
               </div>

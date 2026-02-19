@@ -70,6 +70,12 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       return;
     }
 
+    const phoneRegex = /^[\d\s\-+()]+$/;
+    if (!phoneRegex.test(formData.phone) || formData.phone.length < 7 || formData.phone.length > 20) {
+      showErrorToast("Invalid phone number", "Must be 7-20 characters with only digits, spaces, dashes, or parentheses");
+      return;
+    }
+
     if (!tenant?.id) {
       showErrorToast("Tenant information not available");
       return;
@@ -177,6 +183,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="(555) 123-4567"
+                maxLength={20}
                 required
               />
             </div>

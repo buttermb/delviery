@@ -37,7 +37,7 @@ import type { CRMClient } from '@/types/crm';
 const formSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or less'),
     email: z.string().email('Invalid email address').optional().or(z.literal('')),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
+    phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
     status: z.enum(['active', 'archived']),
 });
 
@@ -155,7 +155,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                                 <FormItem>
                                     <FormLabel>Phone (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input type="tel" {...field} />
+                                        <Input type="tel" maxLength={20} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

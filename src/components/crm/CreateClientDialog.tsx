@@ -32,7 +32,7 @@ import { Plus, Loader2, AlertTriangle } from 'lucide-react';
 const formSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or less'),
     email: z.string().email('Invalid email address').optional().or(z.literal('')),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
+    phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -170,7 +170,7 @@ export function CreateClientDialog({
                                 <FormItem>
                                     <FormLabel>Phone (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="(555) 123-4567" type="tel" {...field} />
+                                        <Input placeholder="(555) 123-4567" type="tel" maxLength={20} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

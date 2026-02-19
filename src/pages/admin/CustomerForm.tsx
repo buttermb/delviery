@@ -34,18 +34,11 @@ const customerFormSchema = z.object({
   last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be 100 characters or less'),
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   phone: z.string()
-    .optional()
+    .regex(/^[\d\s\-+()]+$/, "Invalid phone number")
+    .min(7, "Phone number must be at least 7 characters")
+    .max(20, "Phone number must be 20 characters or less")
     .or(z.literal(''))
-    .transform(val => val || '')
-    .pipe(
-      z.string().refine(
-        (val) => val === '' || /^[\d\s\-+()]+$/.test(val),
-        'Phone must contain only digits, spaces, dashes, or parentheses'
-      ).refine(
-        (val) => val === '' || val.replace(/\D/g, '').length >= 10,
-        'Phone number must be at least 10 digits'
-      )
-    ),
+    .optional(),
   date_of_birth: z.string().min(1, 'Date of birth is required'),
   address: z.string().max(500, 'Address must be 500 characters or less').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
@@ -320,7 +313,7 @@ export default function CustomerForm() {
                         <FormItem>
                           <FormLabel>Phone</FormLabel>
                           <FormControl>
-                            <Input type="tel" placeholder="(555) 123-4567" {...field} />
+                            <Input type="tel" placeholder="(555) 123-4567" maxLength={20} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

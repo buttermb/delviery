@@ -222,7 +222,7 @@
 
 - [x] Task 103: Add email validation to customer/client forms — All email fields: z.string().email("Invalid email address"). Apply to customer creation, wholesale client, team invite forms.
 
-- [ ] Task 104: Add phone validation to relevant forms — Phone fields: z.string().regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number").min(7).max(20). Apply to customer, client, team forms.
+- [x] Task 104: Add phone validation to relevant forms — Phone fields: z.string().regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number").min(7).max(20). Apply to customer, client, team forms.
 
 - [ ] Task 105: Add duplicate product name check — In AddProduct form onSubmit: before creating, query products table for same name + tenant_id. If exists, show error "A product with this name already exists". Prevent duplicate creation.
 

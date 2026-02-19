@@ -57,6 +57,14 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             return;
         }
 
+        if (formData.phone) {
+            const phoneRegex = /^[\d\s\-+()]+$/;
+            if (!phoneRegex.test(formData.phone) || formData.phone.length < 7 || formData.phone.length > 20) {
+                toast.error('Invalid phone number. Must be 7-20 characters with only digits, spaces, dashes, or parentheses.');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
@@ -165,6 +173,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 placeholder="(555) 123-4567"
+                                maxLength={20}
                             />
                         </div>
                     </div>

@@ -92,9 +92,8 @@ export function validateURL(url: string): boolean {
 export const validationSchemas = {
   email: z.string().email().max(255),
   uuid: z.string().uuid(),
-  // Allow international phone numbers (E.164 supports up to 15 digits)
-  // Basic validation: 7-15 digits, optional leading plus
-  phone: z.string().regex(/^\+?[\d\s-().]{7,20}$/),
+  // Allow international phone numbers: digits, spaces, dashes, plus, parentheses
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
   url: z.string().url(),
   nonEmptyString: z.string().min(1).max(255),
   positiveNumber: z.number().positive(),
