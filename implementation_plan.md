@@ -110,7 +110,7 @@
 
 - [x] Task 51: Wire invoice creation to finance dashboard — After creating any invoice, invalidate finance hub queries so revenue totals update without page refresh.
 
-- [ ] Task 52: Run npx tsc --noEmit — Fix all TS errors from Phase 4. Checkpoint.
+- [x] Task 52: Run npx tsc --noEmit — Fix all TS errors from Phase 4. Checkpoint.
 
 ## Phase 5: Empty States & Onboarding Polish (16 tasks)
 
