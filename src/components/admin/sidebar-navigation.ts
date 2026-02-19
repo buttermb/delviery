@@ -287,13 +287,15 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Overview',
         href: '/admin/fulfillment-hub',
-        icon: Truck
+        icon: Truck,
+        featureFlag: 'delivery_tracking'
       },
       {
         title: 'Fleet',
         href: '/admin/fulfillment-hub?tab=fleet',
         icon: Car,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'fleet_management'
       },
       {
         title: 'Receiving & Packaging',
@@ -514,7 +516,8 @@ export const navigationSections: NavSection[] = [
         title: 'Coupons',
         href: '/admin/storefront/coupons',
         icon: Tags,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'marketing_hub'
       },
       {
         title: 'Analytics',
@@ -873,19 +876,22 @@ export const navigationSections: NavSection[] = [
         title: 'Strategic Dashboard',
         href: '/admin/strategic-dashboard',
         icon: Target,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Board Report',
         href: '/admin/board-report',
         icon: Briefcase,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Expansion Analysis',
         href: '/admin/expansion',
         icon: TrendingUp,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Export',
