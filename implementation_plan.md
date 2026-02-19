@@ -62,7 +62,7 @@
 
 - [x] Task 29: Add debounce to all search inputs — All search inputs that trigger server-side queries already use useDebounce(value, 300) from @/hooks/useDebounce.ts. Verified 15+ consumers. Client-side search inputs (filtering in-memory arrays) don't trigger API calls and don't need debounce.
 
-- [ ] Task 30: Run npx tsc --noEmit — Fix all TS errors from Phase 2. Checkpoint.
+- [x] Task 30: Run npx tsc --noEmit — Fix all TS errors from Phase 2. Checkpoint.
 
 ## Phase 3: POS Refunds & Receipt (10 tasks)
 
