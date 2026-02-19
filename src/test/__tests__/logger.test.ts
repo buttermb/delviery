@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Logger Utility Tests
  * Tests for the centralized logging utility

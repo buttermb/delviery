@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Global Button Interceptor
  * Automatically monitors all button clicks across the application

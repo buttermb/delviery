@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Excel/CSV Parser for Menu Migration
  * Parses spreadsheet data with header detection and column mapping

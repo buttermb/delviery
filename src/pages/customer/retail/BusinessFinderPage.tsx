@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Business Finder Page
  * Customers can browse and find nearby dispensaries/businesses

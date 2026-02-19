@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { TransitionOverlay } from '../components/TransitionOverlay';
 import { Lock, ShieldCheck, ArrowRight } from 'lucide-react';

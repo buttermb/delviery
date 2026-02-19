@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Search Autocomplete
  * Instant search with product suggestions

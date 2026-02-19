@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Package, CheckCircle2 } from 'lucide-react';
 import type { ImportProgress } from '@/types/migration';

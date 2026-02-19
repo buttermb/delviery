@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Create Tenant Page
  * Form for creating new tenants with trial subscription

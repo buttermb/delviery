@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Public Marketplace Page
  * Browse wholesale marketplace without login

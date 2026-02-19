@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Sequence } from 'remotion';
 import { DashboardScene } from './scenes/DashboardScene';
 import { OrdersScene } from './scenes/OrdersScene';

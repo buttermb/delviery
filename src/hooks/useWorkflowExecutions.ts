@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 /**
  * Hook for managing workflow executions with real-time updates

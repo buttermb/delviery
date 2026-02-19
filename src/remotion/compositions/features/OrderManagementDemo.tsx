@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * OrderManagementDemo — Shows order pipeline/kanban,
  * approval workflow, and delivery tracking.

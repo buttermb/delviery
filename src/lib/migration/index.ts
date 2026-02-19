@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * FloraIQ Menu Migration System
  * Main exports for the migration library

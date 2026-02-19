@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Filter Panel Component
  * Advanced filtering UI for data tables

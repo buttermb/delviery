@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';

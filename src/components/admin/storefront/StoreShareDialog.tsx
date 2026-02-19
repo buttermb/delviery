@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Store Share Dialog
  * Generate and share encrypted storefront links

@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Super Admin Automation Dashboard
  * View and manage automated enforcement rules

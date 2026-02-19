@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCurrentFrame, useVideoConfig } from 'remotion';
 import { interpolate } from 'remotion';
 import { DashboardMockup } from '../components/DashboardMockup';

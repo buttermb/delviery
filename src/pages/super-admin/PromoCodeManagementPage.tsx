@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Promo Code Management Page - Super Admin
  * 

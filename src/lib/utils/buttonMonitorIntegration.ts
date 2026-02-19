@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Button Monitor Integration
  * Provides easy integration for existing buttons

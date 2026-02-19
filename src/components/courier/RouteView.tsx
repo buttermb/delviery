@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import { useState, useEffect } from 'react';

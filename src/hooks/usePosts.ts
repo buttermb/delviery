@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Forum Posts Hooks
  * TanStack Query hooks for forum posts
