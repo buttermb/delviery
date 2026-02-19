@@ -42,7 +42,7 @@
 
 - [x] Task 19: Create sanitizeSearchInput utility — New file: src/lib/sanitizeSearch.ts. Export function that: strips leading/trailing whitespace, escapes Postgres LIKE special chars (%, _, \), limits to 100 chars, returns empty string for null/undefined. Also export sanitizeForIlike() that wraps result in % for partial matching.
 
-- [ ] Task 20: Sanitize search in Orders.tsx — Find all .ilike() calls. Replace raw search input with sanitizeForIlike(searchTerm). Verify search still works after.
+- [x] Task 20: Sanitize search in Orders.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). No changes needed.
 
 - [ ] Task 21: Sanitize search in WholesaleClients.tsx — Find .ilike() calls. Apply sanitizeForIlike().
 
