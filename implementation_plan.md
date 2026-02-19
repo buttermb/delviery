@@ -200,7 +200,7 @@
 
 - [x] Task 93: Add sorting to WholesaleClients table — Sortable: Name, Balance, Last Order, Status.
 
-- [ ] Task 94: Verify pagination on Orders page — With many orders, verify pagination controls appear and work. Next/prev, page numbers, items per page selector. Fix if broken.
+- [x] Task 94: Verify pagination on Orders page — With many orders, verify pagination controls appear and work. Next/prev, page numbers, items per page selector. Fix if broken.
 
 - [ ] Task 95: Verify pagination on Products page — Same pagination check.
 

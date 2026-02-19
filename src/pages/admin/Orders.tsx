@@ -38,6 +38,8 @@ import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { invalidateOnEvent } from "@/lib/invalidation";
+import { usePagination } from "@/hooks/usePagination";
+import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useDeliveryETA } from "@/hooks/useDeliveryETA";
 import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
@@ -380,7 +382,7 @@ export default function Orders() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(sortedOrders.map(o => o.id));
+      setSelectedOrders(paginatedItems.map(o => o.id));
     } else {
       setSelectedOrders([]);
     }
@@ -518,6 +520,21 @@ export default function Orders() {
     return sorted;
   }, [filteredOrders, sortField, sortOrder]);
 
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(sortedOrders, {
+    defaultPageSize: 25,
+    persistInUrl: false,
+  });
+
   const handleDelete = (id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
   };
@@ -641,7 +658,7 @@ export default function Orders() {
     {
       header: (
         <Checkbox
-          checked={sortedOrders.length > 0 && selectedOrders.length === sortedOrders.length}
+          checked={paginatedItems.length > 0 && selectedOrders.length === paginatedItems.length}
           onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
         />
       ) as unknown as string, // Cast to string to satisfy older interfaces if strict type checking fails intermittently, though we updated it.
@@ -935,7 +952,7 @@ export default function Orders() {
 
             {/* Responsive Table */}
             <ResponsiveTable<Order>
-              data={sortedOrders}
+              data={paginatedItems}
               columns={columns}
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
@@ -1013,6 +1030,19 @@ export default function Orders() {
                 </SwipeableItem>
               )}
             />
+
+            {/* Pagination */}
+            {sortedOrders.length > 0 && (
+              <StandardPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                pageSizeOptions={pageSizeOptions}
+                onPageChange={goToPage}
+                onPageSizeChange={changePageSize}
+              />
+            )}
           </Card>
         </div>
       </PullToRefresh>
