@@ -132,7 +132,7 @@
 
 - [x] Task 61: Add empty state to LiveOrders page — Zero live orders: Radio icon, "No active orders right now", "Live orders appear here in real-time when customers place orders". No CTA needed.
 
-- [ ] Task 62: Add empty state to DisposableMenuOrders page — Zero orders: ClipboardList icon, "No menu orders yet", "Orders appear here when customers order from your disposable menus".
+- [x] Task 62: Add empty state to DisposableMenuOrders page — Zero orders: ClipboardList icon, "No menu orders yet", "Orders appear here when customers order from your disposable menus".
 
 - [ ] Task 63: Add empty state to CashRegister shift — No active shift: Clock icon, "No active shift", "Start a shift to begin processing sales", "Start Shift" CTA.
 

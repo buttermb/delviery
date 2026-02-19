@@ -18,7 +18,8 @@ import {
   ArrowLeft,
   Package,
   TrendingUp,
-  FileText
+  FileText,
+  ClipboardList
 } from 'lucide-react';
 import { exportOrders } from '@/utils/exportHelpers';
 import { showSuccessToast } from '@/utils/toastHelpers';
@@ -115,6 +116,15 @@ const DisposableMenuOrders = () => {
         </Button>
       </div>
 
+      {/* Empty state when zero orders */}
+      {!isLoading && (!orders || orders.length === 0) ? (
+        <EnhancedEmptyState
+          icon={ClipboardList}
+          title="No menu orders yet"
+          description="Orders appear here when customers order from your disposable menus"
+        />
+      ) : (
+      <>
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card>
@@ -287,9 +297,9 @@ const DisposableMenuOrders = () => {
               </div>
             ) : filteredOrders.length === 0 ? (
               <EnhancedEmptyState
-                icon={ShoppingBag}
-                title="No Orders Found"
-                description={searchQuery || statusFilter !== 'all' ? "No orders match your current filters." : "No orders have been placed yet."}
+                icon={ClipboardList}
+                title="No orders found"
+                description="No orders match your current filters."
                 compact
               />
             ) : (
@@ -383,6 +393,8 @@ const DisposableMenuOrders = () => {
           </ScrollArea>
         </CardContent>
       </Card>
+      </>
+      )}
 
       {/* Order Details Dialog */}
       {selectedOrder && (
