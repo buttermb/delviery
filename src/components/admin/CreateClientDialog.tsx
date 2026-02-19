@@ -83,7 +83,25 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
 
     try {
       setLoading(true);
-      
+
+      // Check for duplicate business name within tenant
+      const { data: existingClient, error: dupCheckError } = await supabase
+        .from("wholesale_clients")
+        .select("id")
+        .eq("tenant_id", tenant.id)
+        .eq("business_name", formData.business_name.trim())
+        .maybeSingle();
+
+      if (dupCheckError) {
+        logger.error("Error checking duplicate client", dupCheckError, { component: 'CreateClientDialog' });
+      }
+
+      if (existingClient) {
+        showErrorToast("A client with this business name already exists");
+        setLoading(false);
+        return;
+      }
+
       const clientData: WholesaleClientInsert = {
         tenant_id: tenant.id,
         business_name: sanitizeFormInput(formData.business_name, 200),

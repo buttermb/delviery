@@ -226,7 +226,7 @@
 
 - [x] Task 105: Add duplicate product name check — In AddProduct form onSubmit: before creating, query products table for same name + tenant_id. If exists, show error "A product with this name already exists". Prevent duplicate creation.
 
-- [ ] Task 106: Add duplicate client check — In AddWholesaleClient form: check business_name + tenant_id uniqueness before creating. Show error if duplicate.
+- [x] Task 106: Add duplicate client check — In AddWholesaleClient form: check business_name + tenant_id uniqueness before creating. Show error if duplicate.
 
 - [ ] Task 107: Add required field indicators — All required form fields should show red asterisk (*) after label. Check: product name, price, customer name, client business_name, invoice amount. Add to any missing.
 

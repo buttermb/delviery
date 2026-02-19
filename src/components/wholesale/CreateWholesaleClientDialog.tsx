@@ -68,6 +68,24 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
         setLoading(true);
 
         try {
+            // Check for duplicate business name within tenant
+            const { data: existingClient, error: dupCheckError } = await supabase
+                .from('wholesale_clients')
+                .select('id')
+                .eq('tenant_id', tenant.id)
+                .eq('business_name', formData.business_name.trim())
+                .maybeSingle();
+
+            if (dupCheckError) {
+                logger.error('Error checking duplicate client:', dupCheckError);
+            }
+
+            if (existingClient) {
+                toast.error('A client with this business name already exists');
+                setLoading(false);
+                return;
+            }
+
             const { data, error } = await (supabase as any)
                 .from('wholesale_clients')
                 .insert({
