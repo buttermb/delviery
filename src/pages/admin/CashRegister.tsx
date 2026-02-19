@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp
+  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award
 } from 'lucide-react';
 import {
   Dialog,
@@ -47,6 +47,7 @@ import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
 import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
+import { useCustomerLoyaltyStatus, useLoyaltyConfig, calculatePointsToEarn, TIER_DISPLAY_INFO } from '@/hooks/useCustomerLoyalty';
 
 interface Product {
   id: string;
@@ -182,6 +183,13 @@ function CashRegisterContent() {
 
   // Customer credit balance (for showing available store credit)
   const { balance: customerCreditBalance } = useCustomerCredit(selectedCustomer?.id);
+
+  // Customer loyalty status (tier, points)
+  const { isActive: loyaltyActive, effectiveConfig: loyaltyEffectiveConfig } = useLoyaltyConfig();
+  const { status: loyaltyStatus } = useCustomerLoyaltyStatus({
+    customerId: selectedCustomer?.id,
+    enabled: !!selectedCustomer,
+  });
 
   // Clear cart confirmation
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false);
@@ -1154,6 +1162,12 @@ function CashRegisterContent() {
                         ${customerCreditBalance.toFixed(2)} credit
                       </Badge>
                     )}
+                    {loyaltyActive && loyaltyStatus && (
+                      <Badge variant="secondary" className={`${TIER_DISPLAY_INFO[loyaltyStatus.tier].bgColor} ${TIER_DISPLAY_INFO[loyaltyStatus.tier].color} text-xs`}>
+                        <Award className="h-3 w-3 mr-1" />
+                        {TIER_DISPLAY_INFO[loyaltyStatus.tier].label} &middot; {loyaltyStatus.current_points} pts
+                      </Badge>
+                    )}
                   </div>
                 ) : (
                   <span className="text-sm text-muted-foreground">Walk-in Customer</span>
@@ -1259,6 +1273,15 @@ function CashRegisterContent() {
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
+                {loyaltyActive && selectedCustomer && (
+                  <div className="flex justify-between text-sm text-blue-600">
+                    <span className="flex items-center gap-1">
+                      <Award className="h-3 w-3" />
+                      Points to earn
+                    </span>
+                    <span>+{calculatePointsToEarn(total, loyaltyEffectiveConfig.points_per_dollar, loyaltyStatus?.tier_multiplier ?? 1)}</span>
+                  </div>
+                )}
               </div>
             )}
 

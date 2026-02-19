@@ -82,7 +82,7 @@
 
 - [x] Task 38: Add quick-add product grid to POS — If CashRegister only has search, add a grid of top/favorite products (last 12 sold or manually pinned) for one-tap adding. Query products ordered by sale frequency, limit 12.
 
-- [ ] Task 39: Add customer lookup to POS — Add customer search field in CashRegister. When customer selected: show name, apply any loyalty discounts, link sale to customer for history. Optional — can process sale without customer.
+- [x] Task 39: Add customer lookup to POS — Add customer search field in CashRegister. When customer selected: show name, apply any loyalty discounts, link sale to customer for history. Optional — can process sale without customer.
 
 - [ ] Task 40: Run npx tsc --noEmit — Fix all TS errors from Phase 3. Checkpoint.
 
