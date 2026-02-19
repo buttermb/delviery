@@ -11,6 +11,7 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   invoices: true,
   customers: true,
   storefront: true,
+  inventory: true,
   // Advanced — default off
   pos: false,
   crm_advanced: false,
@@ -25,9 +26,14 @@ export const FEATURE_TOGGLE_DEFAULTS = {
   live_chat: false,
   fleet_management: false,
   vendor_management: false,
+  storefront_builder_advanced: false,
 } as const;
 
 export type FeatureToggleKey = keyof typeof FEATURE_TOGGLE_DEFAULTS;
+
+// Task 1 aliases — canonical names used by the implementation plan
+export const FEATURE_FLAGS = FEATURE_TOGGLE_DEFAULTS;
+export type FeatureFlag = FeatureToggleKey;
 
 // Default flags as fallback when database is unavailable
 const defaultFlags: Record<string, boolean> = {

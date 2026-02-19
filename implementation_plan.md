@@ -1,101 +1,519 @@
-# FloraIQ R4 Implementation Plan
+# FloraIQ R5 Implementation Plan — 150 Tasks
 
-## Phase 1: CRITICAL — Broken Core Flow (4 tasks)
+## Phase 1: Feature Flag System (18 tasks)
 
-- [x] Task 1: Delete duplicate unguarded marketplace routes in App.tsx (lines 882-887). These duplicate lines 869-880 but WITHOUT FeatureProtectedRoute, bypassing subscription gating. Delete the second set only.
+- [x] Task 1: Create feature flag constants — New file: src/lib/featureFlags.ts. Export FEATURE_FLAGS object with keys and boolean defaults. Core ON by default: orders, products, menus, invoices, customers, storefront, inventory. Advanced OFF by default: pos, crm_advanced, delivery_tracking, live_map, courier_portal, analytics_advanced, marketing_hub, purchase_orders, quality_control, credits_system, live_chat, fleet_management, vendor_management, storefront_builder_advanced. Export type FeatureFlag = keyof typeof FEATURE_FLAGS.
 
-- [x] Task 2: Fix SettingsHubPage importing SuperAdmin SecurityPage. In src/pages/admin/hubs/SettingsHubPage.tsx line 29, it imports SecurityPage from '@/pages/super-admin/SecurityPage'. Replace with a simple tenant-scoped security settings panel (password change, 2FA toggle, session management) or redirect to the existing SettingsPage security tab.
+- [ ] Task 2: Create useTenantFeatureToggles hook — New file: src/hooks/useTenantFeatureToggles.ts. Reads feature toggles from tenant_settings table (JSONB column) or falls back to FEATURE_FLAGS defaults. Returns: { isEnabled: (flag: FeatureFlag) => boolean, toggleFeature: (flag: FeatureFlag, enabled: boolean) => Promise<void>, flags: Record<FeatureFlag, boolean>, isLoading: boolean }. Uses TanStack Query with 5min staleTime. toggleFeature upserts to tenant_settings and invalidates query. If tenant_settings table or column doesn't exist, just return defaults — don't crash.
 
-- [x] Task 3: Migrate CustomerManagement.tsx from useEffect/useState data fetching to useQuery. Replace the loadCustomers() function (line 111) with useQuery using queryKeys.customers pattern. Replace manual loadCustomers() calls after mutations with queryClient.invalidateQueries({ queryKey: queryKeys.customers.all }).
+- [ ] Task 3: Create FeatureGate component — New file: src/components/admin/FeatureGate.tsx. Props: feature: FeatureFlag, children: ReactNode, fallback?: ReactNode. Renders children only if isEnabled(feature) returns true. Otherwise renders fallback or null. Simple and lightweight.
 
-- [x] Task 4: Fix build errors from schema mismatches. Apply targeted fixes: (a) useProductsForMenu.ts — remove or alias 'sku' reference, (b) useTenantFeatureToggles.ts — remove 'feature_toggles' column reference, (c) WholesaleClients.tsx — remove 'risk_score' reference, (d) marketplace pages — remove 'verified_badge' reference, (e) OrderDetailsPage.tsx — fix 'partially_paid' to 'partial', (f) AddProductsStep.tsx — change 'status' to 'is_active', (g) ShopLayout.tsx — cast operating_hours with `as Record<string, unknown>`. For columns that truly don't exist, remove the reference or use optional chaining. Run `npx tsc --noEmit` after to verify.
+- [ ] Task 4: Create FeatureTogglesPanel — New file: src/components/admin/settings/FeatureTogglesPanel.tsx. Card-based grid showing all feature flags. Each card: icon, title, description, Switch toggle. Group into sections: "Core Features" (always on, switches disabled), "Advanced Features" (toggleable). Uses useTenantFeatureToggles().toggleFeature on switch change. Shows toast on toggle.
 
-## Phase 2: HIGH — Disconnected Wiring (6 tasks)
+- [ ] Task 5: Wire FeatureTogglesPanel to Settings page — In SettingsPage.tsx or SettingsHubPage.tsx, add a "Features" tab. Import and render FeatureTogglesPanel. Place logically after General/Billing tabs.
 
-- [x] Task 5: Add OrderDetailsPage route to App.tsx. Add: `<Route path="orders/:orderId" element={<FeatureProtectedRoute featureId="basic-orders"><OrderDetailsPage /></FeatureProtectedRoute>} />` inside the admin routes. Verify OrderDetailsPage is already imported.
+- [ ] Task 6: Map sidebar items to feature flags — Find sidebar config (src/lib/constants/navigation.ts or sidebarConfigs.ts). Add featureFlag?: FeatureFlag property to each nav item. Map: POS items → 'pos', Delivery items → 'delivery_tracking', CRM Hub → 'crm_advanced', Analytics → 'analytics_advanced', Marketing/Coupons → 'marketing_hub', Purchase Orders → 'purchase_orders', Vendor Management → 'vendor_management', Quality Control → 'quality_control'.
 
-- [x] Task 6: Fix DisposableMenuOrders 'converted_to_invoice_id' reference. In src/pages/admin/DisposableMenuOrders.tsx line 334, this column doesn't exist on menu_orders. Remove the column reference and instead do a lookup join through customer_invoices to check if an invoice exists for the order. Or simply remove the conversion status UI if the join is too complex.
+- [ ] Task 7: Filter sidebar by feature flags — In the sidebar rendering component, import useTenantFeatureToggles. Filter nav items: if item.featureFlag exists and !isEnabled(item.featureFlag), hide the item. Core items (no featureFlag) always show.
 
-- [x] Task 7: Clean up orphaned SMS state in WholesaleClients.tsx. Remove smsDialogOpen, smsClient state variables (lines 99-100) and any button that sets smsDialogOpen to true. The SendSMS component was removed per plan (line 35 comment).
+- [ ] Task 8: Create FeatureProtectedRoute wrapper — File: src/components/admin/FeatureProtectedRoute.tsx. Wraps route content. Checks useTenantFeatureToggles.isEnabled(featureId). If disabled: show card with lock icon, "This feature is not enabled", "Enable it in Settings → Features" with link to settings page. Don't redirect — let them see where they are.
 
-- [x] Task 8: Clean up orphaned import dialog state in WholesaleClients.tsx. Check if an import dialog component is actually rendered. If not, remove importDialogOpen, importFile, and importing state (lines 103-105) and any associated button.
+- [ ] Task 9: Apply FeatureGate to POS routes — Wrap POS pages (CashRegister, POSHub, Shifts, ZReport) with FeatureProtectedRoute featureId="pos" in App.tsx.
 
-- [x] Task 9: Fix CustomerManagement cache invalidation. After migrating to useQuery (Task 3), ensure delete handler uses queryClient.invalidateQueries({ queryKey: queryKeys.customers.all }) instead of calling loadCustomers(). Also invalidate any dashboard/badge count queries that show customer counts.
+- [ ] Task 10: Apply FeatureGate to Delivery routes — Wrap DeliveryDashboard, LiveMap, FleetManagement, CourierManagement with featureId="delivery_tracking".
 
-- [x] Task 10: Fix InventoryDashboard realtime subscription tenant filtering. In src/pages/admin/InventoryDashboard.tsx lines 94-117, add tenant_id filter to the realtime channel: `.on('postgres_changes', { event: '*', schema: 'public', table: 'products', filter: \`tenant_id=eq.\${tenantId}\` })`. This prevents unnecessary re-renders from other tenants' changes.
+- [ ] Task 11: Apply FeatureGate to Analytics routes — Wrap analytics hub/pages with featureId="analytics_advanced".
 
-## Phase 3: HIGH — Data, Validation & Performance (5 tasks)
+- [ ] Task 12: Apply FeatureGate to Marketing routes — Wrap CouponManagement, Campaigns with featureId="marketing_hub".
 
-- [x] Task 11: Fix InventoryDashboard inline query keys. Replace inline strings at lines 121, 170, 213 (['inventory-stats', tenantId], ['category-stock', tenantId], ['low-stock-products', tenantId]) with queryKeys factory: queryKeys.inventory.summary(tenantId) etc. Add these keys to queryKeys factory if they don't exist.
+- [ ] Task 13: Apply FeatureGate to CRM routes — Wrap CRM Hub pages with featureId="crm_advanced".
 
-- [x] Task 12: Remove FinanceHubPage dead import. Delete the unused `_FrontedInventory` lazy import at line 40 of src/pages/admin/hubs/FinanceHubPage.tsx.
+- [ ] Task 14: Apply FeatureGate to remaining advanced routes — Purchase Orders → 'purchase_orders', Vendor pages → 'vendor_management', QC → 'quality_control', Live Chat → 'live_chat', Fleet → 'fleet_management'.
 
-- [x] Task 13: Fix marketing page 35-second LCP. In src/pages/MarketingHome.tsx: (a) Remove BusinessAdminDemo import and usage from ModernHero, (b) Remove VideoShowcase import (line 24) and usage, (c) Remove EnhancedDashboardPreview import (line 39) and usage (lines 139-145). Replace with a single static hero section. This alone should cut LCP by 90%+.
+- [ ] Task 15: Add feature flag count to sidebar footer — Below sidebar nav, show small text: "X features enabled • Manage" where "Manage" links to Settings → Features tab.
 
-- [x] Task 14: Fix marketing hero copy. In src/components/marketing/ModernHero.tsx, replace 'The only menu system built for operators who need to disappear' with 'Your operation. One platform.' and replace subtitle with 'Manage wholesale orders, inventory, menus, and compliance — all in one place.'
+- [ ] Task 16: Add "Enable Feature" inline prompts — When a core page references a disabled feature (e.g. Orders page has "Assign Courier" but delivery_tracking is off), show the button as disabled with tooltip "Enable Delivery Tracking in Settings".
 
-- [x] Task 15: Fix marketing color inconsistency. In src/components/marketing/ModernHero.tsx, replace hardcoded 'bg-emerald-600' CTAs with CSS variable usage or standardize on emerald across MarketingNav and all marketing components. Update src/index.css --marketing-primary to emerald values (160 84% 39%).
+- [ ] Task 17: Verify feature flag toggle flow end-to-end — Toggle POS on in settings → POS items appear in sidebar → navigate to CashRegister → page loads. Toggle off → items disappear → direct URL shows disabled message. Fix any issues.
 
-## Phase 4: MEDIUM — Consistency & Type Safety (7 tasks)
+- [ ] Task 18: Run npx tsc --noEmit — Fix all TS errors from Phase 1. Checkpoint.
 
-- [x] Task 16: Fix CashRegister.tsx toast import. Replace `import { useToast } from '@/hooks/use-toast'` (line 10) with `import { toast } from 'sonner'`. Update all toast() calls in the file to use sonner pattern: `toast.success('message')` / `toast.error('message')`.
+## Phase 2: Search Sanitization (12 tasks)
 
-- [x] Task 17: Fix WholesaleClients 'overdue' filter. Line 124 uses `.gt('outstanding_balance', 10000)` as overdue detection. Replace with actual payment term check: query for clients where latest invoice due_date < now AND outstanding_balance > 0. If no due_date column exists, rename the filter from 'overdue' to 'high_balance' to be honest about what it does.
+- [ ] Task 19: Create sanitizeSearchInput utility — New file: src/lib/sanitizeSearch.ts. Export function that: strips leading/trailing whitespace, escapes Postgres LIKE special chars (%, _, \), limits to 100 chars, returns empty string for null/undefined. Also export sanitizeForIlike() that wraps result in % for partial matching.
 
-- [x] Task 18: Fix InvoiceDetailPage void status. Line 174 compares to 'void' but the DB enum doesn't include it. Replace 'void' check with 'cancelled' only since that's what exists in the enum. Remove any UI that references 'void' status.
+- [ ] Task 20: Sanitize search in Orders.tsx — Find all .ilike() calls. Replace raw search input with sanitizeForIlike(searchTerm). Verify search still works after.
 
-- [x] Task 19: Fix SettingsPage nested tabs conflict. In src/pages/admin/SettingsPage.tsx, when rendered inside SettingsHubPage's 'general' tab, remove the internal Tabs wrapper and just render the general settings content directly. Use a prop like `embedded?: boolean` to toggle between standalone (with tabs) and embedded (content only) modes.
+- [ ] Task 21: Sanitize search in WholesaleClients.tsx — Find .ilike() calls. Apply sanitizeForIlike().
 
-- [x] Task 20: Fix SettingsPage useAccount import. In src/pages/admin/SettingsPage.tsx line 19, verify if useAccount from AccountContext properly maps to tenant context. If not, replace with useTenantAdminAuth() pattern.
+- [ ] Task 22: Sanitize search in CustomerManagement.tsx — Find .ilike() calls. Apply sanitizeForIlike().
 
-- [x] Task 21: Fix og:image for FloraIQ. In src/pages/MarketingHome.tsx SEOHead (line 64), add ogImage prop pointing to a branded image. Create a simple branded og:image as a static asset if one doesn't exist, or use a placeholder path like '/og-image.png'.
+- [ ] Task 23: Sanitize search in InvoicesPage.tsx — Find .ilike() calls. Apply sanitizeForIlike().
 
-- [x] Task 22: Fix marketing SEO title. In src/pages/MarketingHome.tsx line 65, change title from 'FloraIQ - Secure Disposable Menus for Cannabis Operators' to 'FloraIQ - Cannabis Wholesale Operations Platform'.
+- [ ] Task 24: Sanitize search in Products/Inventory pages — Find all .ilike() calls in product-related pages. Apply sanitizeForIlike().
 
-## Phase 5: MEDIUM — Marketing Polish (5 tasks)
+- [ ] Task 25: Sanitize search in DisposableMenuOrders.tsx — Find .ilike() calls. Apply sanitizeForIlike().
 
-- [x] Task 23: Fix StickyMobileCTA conflicting messaging. Delete src/components/marketing/StickyMobileCTA.tsx entirely. Remove import and usage from MarketingHome.tsx.
+- [ ] Task 26: Sanitize search in CRM pages — Find .ilike() calls in any CRM-related pages. Apply sanitizeForIlike().
 
-- [x] Task 24: Fix footer social icons. In src/components/marketing/MarketingFooter.tsx, replace plain text characters ('X', 'Li', 'Ig') with proper inline SVG icons for X/Twitter, LinkedIn, and Instagram.
+- [ ] Task 27: Sanitize search in Marketplace pages — Find .ilike() calls. Apply sanitizeForIlike().
 
-- [x] Task 25: Fix MarketingNav touch target. In src/components/marketing/MarketingNav.tsx, change hamburger button padding to meet 44px minimum: add `min-w-[44px] min-h-[44px]` classes.
+- [ ] Task 28: Sanitize search in any remaining pages — Run grep -rn "\.ilike\(" src/ to find ALL remaining .ilike calls. Apply sanitizeForIlike() to every one.
 
-- [x] Task 26: Remove dark: classes from marketing components. Search MarketingHome.tsx and all marketing components for `dark:` Tailwind classes. Remove them since ForceLightMode wraps the marketing page.
+- [ ] Task 29: Add debounce to all search inputs — Find all search inputs that trigger queries on every keystroke. Add 300ms debounce using a useDebounce hook (create if doesn't exist). Prevents excessive API calls while typing.
 
-- [x] Task 27: Fix fabricated marketing social proof. In src/components/marketing/TrustedBy.tsx, replace fake company names with either real metrics (total orders processed, active menus) or an honest tagline like 'Built for licensed cannabis operators'. If no real data available, replace with industry positioning block.
+- [ ] Task 30: Run npx tsc --noEmit — Fix all TS errors from Phase 2. Checkpoint.
 
-## Phase 6: CLEANUP — Delete Dead Code (13 tasks)
+## Phase 3: POS Refunds & Receipt (10 tasks)
 
-- [x] Task 28: Delete src/components/marketing/VideoShowcase.tsx (765 lines). Remove import from MarketingHome.tsx line 24 and any JSX usage.
+- [ ] Task 31: Create POSRefundDialog — New file: src/components/admin/pos/POSRefundDialog.tsx. Dialog for POS returns. Fields: search previous transaction (order number text input), items to refund (checkboxes from found order), refund amount (auto-calc, editable for partial), refund method (select: cash, original_method). React Hook Form + Zod validation. Props: open, onOpenChange, onSuccess, shiftId?. Must filter by tenant_id when looking up orders.
 
-- [x] Task 29: Delete src/components/marketing/EnhancedDashboardPreview.tsx. Remove import from MarketingHome.tsx line 39 and usage lines 139-145.
+- [ ] Task 32: Wire POSRefundDialog to CashRegister — In CashRegister.tsx: import POSRefundDialog, add useState<boolean> for open, add "Refund" button in POS header/action area, render dialog, onSuccess invalidates POS queries + shows toast.
 
-- [x] Task 30: Delete src/components/marketing/demos/BusinessAdminDemo.tsx. Remove import and usage from ModernHero.tsx.
+- [ ] Task 33: Create POS refund mutation — On POSRefundDialog submit: create negative transaction record in pos_transactions (or orders with type='refund'), restore stock for returned items (increment stock_quantity on products table), link to original order via original_order_id. Filter by tenant_id. Toast success with refund amount.
 
-- [x] Task 31: Delete src/components/marketing/TrustedBy.tsx. Remove import from MarketingHome.tsx line 29 and usage line 87.
+- [ ] Task 34: Add refund totals to Z-Report — In ZReport.tsx: query refund transactions for shift period. Add section showing: Refund Count, Total Refunds ($), Net Sales = Gross Sales - Refunds.
 
-- [x] Task 32: Delete src/components/marketing/TestimonialsCarousel.tsx (258 lines). Remove import from MarketingHome.tsx line 23 and usage lines 112-115.
+- [ ] Task 35: Add refund totals to shift summary — In shift end summary (ShiftManager or end-of-shift dialog), include refund count and total alongside gross sales.
 
-- [x] Task 33: Delete src/components/marketing/ComparisonSection.tsx (193 lines). Remove import from MarketingHome.tsx line 35 and usage lines 186-194.
+- [ ] Task 36: Improve POS receipt layout — In CashRegister handlePrintReceipt: ensure receipt includes store name, date/time, items with qty and price, subtotal, tax, total, payment method, receipt number. Format for 80mm thermal printer width. Add "REFUND" header for refund receipts.
 
-- [x] Task 34: Delete src/components/marketing/ROICalculator.tsx (241 lines). Remove import from MarketingHome.tsx line 37 and usage.
+- [ ] Task 37: Add keyboard shortcuts to CashRegister — Add: F2 = New Sale, F3 = Search Product, F4 = Refund, F8 = Pay Cash, F9 = Pay Card, Esc = Clear. Show shortcut hints on buttons. Use useEffect with keydown listener, clean up on unmount.
 
-- [x] Task 35: Delete these 4 files: ScrollProgressIndicator.tsx, KeyboardNavigationHelper.tsx, FloatingChatButton.tsx, LiveChatWidget.tsx. Remove all imports and usage from MarketingHome.tsx.
+- [ ] Task 38: Add quick-add product grid to POS — If CashRegister only has search, add a grid of top/favorite products (last 12 sold or manually pinned) for one-tap adding. Query products ordered by sale frequency, limit 12.
 
-- [x] Task 36: Delete src/components/marketing/CountUpNumber.tsx and src/components/marketing/StatsSection.tsx. Remove imports and usage from MarketingHome.tsx.
+- [ ] Task 39: Add customer lookup to POS — Add customer search field in CashRegister. When customer selected: show name, apply any loyalty discounts, link sale to customer for history. Optional — can process sale without customer.
 
-- [x] Task 37: Delete src/components/marketing/IntegrationEcosystem.tsx. Remove import and usage from MarketingHome.tsx.
+- [ ] Task 40: Run npx tsc --noEmit — Fix all TS errors from Phase 3. Checkpoint.
 
-- [x] Task 38: Extract inline pricing section from MarketingHome.tsx. Move lines 196-395 (pricing grid) into src/components/marketing/PricingSection.tsx. Import and use the new component in MarketingHome.tsx.
+## Phase 4: Invoice Partial Payments (12 tasks)
 
-- [x] Task 39: Replace ConfettiButton with standard Button in pricing CTAs. In the pricing section (now PricingSection.tsx after Task 38), replace ConfettiButton imports/usage with standard shadcn Button. Remove canvas-confetti dependency if no longer used elsewhere.
+- [ ] Task 41: Create InvoicePaymentDialog — New file: src/components/admin/invoices/InvoicePaymentDialog.tsx. Props: open, onOpenChange, invoice (with total, amount_paid, balance), onSuccess. Fields: payment amount (default: remaining balance, editable for partial), payment method (select: cash, check, bank_transfer, card), payment date (default today), reference/note (optional text). Zod validation: amount > 0, amount <= remaining balance. RHF form.
 
-- [x] Task 40: Audit marketing footer links. Check each link in MarketingFooter.tsx (/integrations, /docs, /status, /careers, /blog, /case-studies). For any that lead to empty/placeholder pages, either remove the link or add a "Coming Soon" state to the target page.
+- [ ] Task 42: Wire InvoicePaymentDialog to InvoiceDetailPage — Import dialog, add useState<boolean>, add "Record Payment" button (visible when balance > 0), pass invoice data, onSuccess invalidates invoice detail query + shows toast "Payment of $X recorded".
 
-## Phase 7: FINAL VERIFICATION (2 tasks)
+- [ ] Task 43: Create payment recording mutation — On InvoicePaymentDialog submit: insert into invoice_payments (or update invoice amount_paid). If amount_paid + new payment >= total: auto-update invoice status to 'paid'. If partial: update status to 'partial'. Invalidate invoice queries. Filter by tenant_id.
 
-- [x] Task 41: Run full TypeScript check. Execute `npx tsc --noEmit` and fix ANY remaining errors introduced by previous tasks.
+- [ ] Task 44: Add payment history to InvoiceDetailPage — Below invoice details, add "Payment History" section. Query invoice_payments for this invoice. Show table: Date, Amount, Method, Reference. Show running balance. If no payments table exists, store payments as JSONB array on the invoice record.
 
-- [x] Task 42: Run `npx vite build` to verify production build succeeds with no errors.
+- [ ] Task 45: Add VOID watermark to cancelled invoices — In InvoiceDetailPage, when invoice.status === 'cancelled': overlay a semi-transparent red "VOID" text rotated 45deg across the invoice preview. Disable all action buttons except "Delete".
 
-## Checkpoint: Run `npx tsc --noEmit 2>&1 | head -50` — project must build and type-check without errors.
+- [ ] Task 46: Add overdue auto-detection to InvoiceDetailPage — Compute: isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent','partial'].includes(invoice.status). If true: render red "Overdue" Badge next to status badge. Show days overdue count.
+
+- [ ] Task 47: Add overdue badges to InvoicesPage list — In InvoicesPage.tsx table, add same overdue computation per row. Show red "Overdue" badge in status column for qualifying invoices. Add "Overdue" as a filter option.
+
+- [ ] Task 48: Add payment columns to InvoicesPage list — Ensure columns show: Amount (total), Paid, Balance. Color code: green if fully paid, yellow if partial, red if overdue. Add sort by balance.
+
+- [ ] Task 49: Add isPending to all InvoiceDetailPage action buttons — Every button (Record Payment, Void, Send, Print, Edit, Delete) must have disabled={isPending} during mutations. Check each and fix missing ones.
+
+- [ ] Task 50: Add partial payment indicator to invoice PDF/print — If invoice has partial payments, show "Amount Paid: $X / Amount Due: $Y" on the printed invoice. If using OrderInvoiceGenerator, update the template.
+
+- [ ] Task 51: Wire invoice creation to finance dashboard — After creating any invoice, invalidate finance hub queries so revenue totals update without page refresh.
+
+- [ ] Task 52: Run npx tsc --noEmit — Fix all TS errors from Phase 4. Checkpoint.
+
+## Phase 5: Empty States & Onboarding Polish (16 tasks)
+
+- [ ] Task 53: Create reusable EmptyState component — New file: src/components/ui/EmptyState.tsx. Props: icon (LucideIcon), title (string), description (string), actionLabel? (string), onAction? (function). Renders centered card with icon, title, description, and optional CTA button. Use across all pages.
+
+- [ ] Task 54: Add empty state to Dashboard — When tenant has zero orders AND zero products, show welcome card: "Welcome to FloraIQ! Get started by adding your first product." with "Add Product" CTA. Hide KPI cards (they'd all be zero).
+
+- [ ] Task 55: Add empty state to Products page — Zero products: Package icon, "No products yet", "Add your inventory to start selling", "Add Product" button that opens the add product flow.
+
+- [ ] Task 56: Add empty state to Orders page — Zero orders: ShoppingBag icon, "No orders yet", "Orders appear here when customers purchase from your menus or storefront", secondary "Create Menu" link.
+
+- [ ] Task 57: Add empty state to Menus page — Zero menus: Link icon, "No menus yet", "Create disposable menus to share with customers", "Create Menu" CTA.
+
+- [ ] Task 58: Add empty state to Customers page — Zero customers: Users icon, "No customers yet", "Customers are automatically added when they place orders", secondary "Import Customers" if import feature exists.
+
+- [ ] Task 59: Add empty state to Invoices page — Zero invoices: FileText icon, "No invoices yet", "Create invoices to track payments from wholesale clients", "Create Invoice" CTA.
+
+- [ ] Task 60: Add empty state to WholesaleClients page — Zero clients: Building icon, "No wholesale clients yet", "Add clients to manage wholesale relationships", "Add Client" CTA.
+
+- [ ] Task 61: Add empty state to LiveOrders page — Zero live orders: Radio icon, "No active orders right now", "Live orders appear here in real-time when customers place orders". No CTA needed.
+
+- [ ] Task 62: Add empty state to DisposableMenuOrders page — Zero orders: ClipboardList icon, "No menu orders yet", "Orders appear here when customers order from your disposable menus".
+
+- [ ] Task 63: Add empty state to CashRegister shift — No active shift: Clock icon, "No active shift", "Start a shift to begin processing sales", "Start Shift" CTA.
+
+- [ ] Task 64: Add empty state to Z-Report — No completed shifts: BarChart icon, "No shift reports yet", "Reports are generated when you complete a shift".
+
+- [ ] Task 65: Fix demo data loader — Verify Dashboard handleGenerateDemoData() works: creates sample products (5), orders (10), customers (5). Add ConfirmDialog before loading. If broken, fix. If missing, create it.
+
+- [ ] Task 66: Verify setup wizard — Navigate to /admin/setup. Walk through all steps. Each step should save. Final step redirects to dashboard. Fix any broken steps.
+
+- [ ] Task 67: Add skip on optional wizard steps — Delivery zones step and invite driver step: add "Skip for now" text link below main CTA. Advances to next step without saving that section.
+
+- [ ] Task 68: Run npx tsc --noEmit — Fix all TS errors from Phase 5. Checkpoint.
+
+## Phase 6: Customer Portal & Storefront Flow (16 tasks)
+
+- [ ] Task 69: Audit shop homepage — Navigate to /{tenantSlug}/shop or /shop/:storeSlug. Verify: page loads, shows store name/logo, displays products, has navigation. Fix if broken or blank.
+
+- [ ] Task 70: Fix product browsing — On shop page: verify category filters work, search filters products, sorting (price, name, newest) works. Fix any that don't function.
+
+- [ ] Task 71: Fix product detail page — Click a product in shop. Verify: image displays, description shows, price is correct, "Add to Cart" button works. Fix if broken.
+
+- [ ] Task 72: Fix cart functionality — Add items to cart. Verify: cart badge updates, cart page shows items, can update quantity, can remove items, subtotal updates. Cart should persist across page navigations (use localStorage or context). Fix any broken parts.
+
+- [ ] Task 73: Fix checkout flow — From cart, click checkout. Verify: shipping/delivery form works, payment method selection works, can place order, shows confirmation. Fix any broken steps.
+
+- [ ] Task 74: Fix order confirmation page — After placing order, verify customer sees confirmation with order number, items ordered, estimated delivery. Fix if redirects wrong or shows blank.
+
+- [ ] Task 75: Fix customer order tracking — In customer portal, verify customer can see their orders list and click into order details with status timeline. Fix if broken or missing.
+
+- [ ] Task 76: Fix customer profile page — In customer portal, verify customer can update their name, phone, address. Fix if form doesn't save or fields are missing.
+
+- [ ] Task 77: Fix disposable menu customer flow — Generate a disposable menu link from admin. Open link in incognito. Verify: menu loads, products display, can browse, can place order. Fix any broken steps.
+
+- [ ] Task 78: Fix menu link expiry — If disposable menu has expiry, verify expired menus show "This menu has expired" instead of broken page or empty products.
+
+- [ ] Task 79: Fix mobile shop layout — Open shop page on mobile viewport (375px). Verify: navigation works, products display in single column, cart is accessible, checkout form is usable. Fix responsive issues.
+
+- [ ] Task 80: Fix mobile cart/checkout — On mobile: verify cart drawer/page works, checkout form fields aren't overlapping, submit button is visible, keyboard doesn't cover inputs.
+
+- [ ] Task 81: Verify storefront builder → live store — Make a change in admin StorefrontBuilder (color, logo, store name). Refresh /shop/:slug. Verify change appears. Fix if disconnected.
+
+- [ ] Task 82: Add order status realtime to customer portal — In customer order tracking page, add Supabase realtime subscription on the order's status. When admin changes status, customer sees update without refresh. If already exists, verify it works.
+
+- [ ] Task 83: Fix shop empty state — New store with zero products: shop page should show "This store doesn't have any products yet" instead of blank page or loading spinner.
+
+- [ ] Task 84: Run npx tsc --noEmit — Fix all TS errors from Phase 6. Checkpoint.
+
+## Phase 7: Table & List Polish (14 tasks)
+
+- [ ] Task 85: Fix long text overflow in Orders table — Check customer name, product name, address columns. Apply max-w-[200px] truncate or TruncatedText component. Tooltip on hover to show full text.
+
+- [ ] Task 86: Fix long text overflow in Products table — Product name, description, SKU columns. Apply truncation.
+
+- [ ] Task 87: Fix long text overflow in Customers table — Name, email, address columns. Apply truncation.
+
+- [ ] Task 88: Fix long text overflow in WholesaleClients table — Business name, contact, notes columns. Apply truncation.
+
+- [ ] Task 89: Fix long text overflow in Invoices table — Customer name, invoice number columns. Apply truncation.
+
+- [ ] Task 90: Add sorting to Orders table — Ensure columns are sortable: Date (default desc), Total, Status, Customer. If sort doesn't work, wire it to query orderBy.
+
+- [ ] Task 91: Add sorting to Products table — Sortable: Name, Price, Stock, Category. Wire to query.
+
+- [ ] Task 92: Add sorting to Invoices table — Sortable: Date, Due Date, Amount, Balance, Status. Wire to query.
+
+- [ ] Task 93: Add sorting to WholesaleClients table — Sortable: Name, Balance, Last Order, Status.
+
+- [ ] Task 94: Verify pagination on Orders page — With many orders, verify pagination controls appear and work. Next/prev, page numbers, items per page selector. Fix if broken.
+
+- [ ] Task 95: Verify pagination on Products page — Same pagination check.
+
+- [ ] Task 96: Verify pagination on Customers page — Same pagination check.
+
+- [ ] Task 97: Add row count display to all tables — Show "Showing X-Y of Z results" below each table. Use total count from query.
+
+- [ ] Task 98: Run npx tsc --noEmit — Fix all TS errors from Phase 7. Checkpoint.
+
+## Phase 8: Form Validation Hardening (14 tasks)
+
+- [ ] Task 99: Add negative number blocking to product price fields — In AddProduct/EditProduct forms, Zod schema: price must be z.number().min(0, "Price cannot be negative"). Also cost_price, wholesale_price. Apply to all product forms.
+
+- [ ] Task 100: Add negative number blocking to quantity fields — Stock quantity, order quantity, reorder point: z.number().int().min(0). Apply to all inventory and order forms.
+
+- [ ] Task 101: Add negative number blocking to invoice amounts — Invoice total, payment amount, discount: z.number().min(0). Apply to all invoice forms.
+
+- [ ] Task 102: Add character limits to text fields — Product name: max 200. Description: max 2000. Customer name: max 100. Notes: max 1000. Apply limits in Zod schemas AND as maxLength on inputs.
+
+- [ ] Task 103: Add email validation to customer/client forms — All email fields: z.string().email("Invalid email address"). Apply to customer creation, wholesale client, team invite forms.
+
+- [ ] Task 104: Add phone validation to relevant forms — Phone fields: z.string().regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number").min(7).max(20). Apply to customer, client, team forms.
+
+- [ ] Task 105: Add duplicate product name check — In AddProduct form onSubmit: before creating, query products table for same name + tenant_id. If exists, show error "A product with this name already exists". Prevent duplicate creation.
+
+- [ ] Task 106: Add duplicate client check — In AddWholesaleClient form: check business_name + tenant_id uniqueness before creating. Show error if duplicate.
+
+- [ ] Task 107: Add required field indicators — All required form fields should show red asterisk (*) after label. Check: product name, price, customer name, client business_name, invoice amount. Add to any missing.
+
+- [ ] Task 108: Fix form error messages visibility — All Zod validation errors should show below the field in red text. Check forms use FormMessage or ErrorMessage component. Fix any that don't show errors.
+
+- [ ] Task 109: Add confirmation dialog to all delete actions — Every delete button across the app must show ConfirmDeleteDialog before executing. Check: products, orders, customers, clients, invoices, menus, team members. Add missing ones.
+
+- [ ] Task 110: Verify modal close after success — All dialog/modal forms: after successful submit, modal should close (onOpenChange(false)). Check: AddProduct, EditProduct, AddClient, InvoicePayment, POSRefund, OrderEdit, OrderRefund. Fix any that stay open.
+
+- [ ] Task 111: Add form dirty state warning — In major forms (product, settings, storefront builder): if user has unsaved changes and tries to navigate away, show "You have unsaved changes" warning. Use beforeunload event or React Router blocker.
+
+- [ ] Task 112: Run npx tsc --noEmit — Fix all TS errors from Phase 8. Checkpoint.
+
+## Phase 9: Error Handling & Loading States (12 tasks)
+
+- [ ] Task 113: Add error boundaries to hub pages — Create or verify ErrorBoundary component exists. Wrap each Hub page's lazy-loaded tabs with ErrorBoundary that shows "Something went wrong" + "Try Again" button instead of white screen of death.
+
+- [ ] Task 114: Add error state to Dashboard — If dashboard queries fail, show error card with retry button instead of broken KPI cards with NaN/undefined.
+
+- [ ] Task 115: Add error state to Orders page — If orders query fails, show error message with retry. Don't show empty table that looks like zero orders.
+
+- [ ] Task 116: Add error state to Products page — Same pattern: error message + retry on query failure.
+
+- [ ] Task 117: Add loading skeletons to Dashboard — Replace loading spinners with skeleton placeholders (Skeleton component from shadcn) that match KPI card shapes. Feels faster.
+
+- [ ] Task 118: Add loading skeletons to table pages — Orders, Products, Customers, Invoices: show skeleton rows (5-8 rows of gray bars) while loading instead of spinner or blank.
+
+- [ ] Task 119: Fix 404 page for admin routes — Navigate to /{tenantSlug}/admin/nonexistent-page. Should show "Page not found" with link back to dashboard. If shows white screen, add catch-all route.
+
+- [ ] Task 120: Fix 404 for invalid tenant slug — Navigate to /invalid-slug/admin. Should show "Business not found" or redirect to signup. Fix if shows error.
+
+- [ ] Task 121: Add not-found state to ProductDetailPage — Navigate to /admin/products/fake-uuid. Should show "Product not found" card with "Back to Products" link. Fix if infinite loading.
+
+- [ ] Task 122: Add not-found state to ClientDetailPage — Navigate to /admin/clients/fake-uuid. Same pattern. Fix if broken.
+
+- [ ] Task 123: Add not-found state to InvoiceDetailPage — Navigate to /admin/invoices/fake-uuid. Same pattern.
+
+- [ ] Task 124: Run npx tsc --noEmit — Fix all TS errors from Phase 9. Checkpoint.
+
+## Phase 10: Cross-Feature Integration (10 tasks)
+
+- [ ] Task 125: Stock decrement on order delivery — When order status changes to 'delivered': decrement product stock_quantity for each line item. Verify this happens or add it. Don't double-decrement if already implemented.
+
+- [ ] Task 126: Stock restore on order cancel — When order status changes to 'cancelled': restore stock_quantity for each line item. Verify or add.
+
+- [ ] Task 127: Low stock alert on dashboard — Dashboard should show "X products low on stock" card when any product's stock_quantity < reorder_point (or < 10 default). Link to inventory page filtered to low stock.
+
+- [ ] Task 128: Invoice auto-creation from orders — When a wholesale order is completed/delivered, offer to auto-generate invoice. Add "Create Invoice" button on OrderDetailsPage that pre-fills invoice from order data.
+
+- [ ] Task 129: Customer lifetime value on customer detail — On customer detail/profile page, show: total orders count, total spent, average order value, first order date. Query from orders table.
+
+- [ ] Task 130: Dashboard KPI click-through — Each KPI card on dashboard should link somewhere: Total Revenue → Finance Hub, Total Orders → Orders page, Total Customers → Customers page, Low Stock → Inventory filtered. Wrap in Link components.
+
+- [ ] Task 131: Verify notification bell — If notification bell exists in header: verify it shows count, clicking opens dropdown, clicking notification navigates to relevant page. If not implemented, hide the bell icon.
+
+- [ ] Task 132: Coupon validation in checkout — In customer checkout/cart: if coupon code field exists, verify flow: enter code → validate against coupons table (active, not expired, usage limit not reached) → apply discount → show updated total. Fix if broken. If no coupon table, hide the field.
+
+- [ ] Task 133: Role changes reflect in sidebar — After changing a team member's role via team management, their sidebar should reflect new permissions. Ensure role change invalidates the auth/permissions query.
+
+- [ ] Task 134: Run npx tsc --noEmit — Fix all TS errors from Phase 10. Checkpoint.
+
+## Phase 11: Mobile Responsiveness (12 tasks)
+
+- [ ] Task 135: Fix admin sidebar on mobile — Sidebar should collapse to hamburger menu on screens < 768px. Verify: hamburger button visible, clicking opens overlay sidebar, clicking nav item closes sidebar, clicking outside closes sidebar.
+
+- [ ] Task 136: Fix admin dashboard on mobile — KPI cards should stack 2x2 or 1 column on mobile. Charts should be full width. No horizontal scrolling.
+
+- [ ] Task 137: Fix admin tables on mobile — Tables with many columns should: either show condensed card view on mobile, or have horizontal scroll with sticky first column. Check Orders, Products, Invoices tables.
+
+- [ ] Task 138: Fix all modals on mobile — Modals should be nearly full-screen on mobile (max-w-full on small screens). Form inputs shouldn't be cut off. Submit button must be visible without scrolling past the fold.
+
+- [ ] Task 139: Fix CashRegister on tablet — POS should be optimized for iPad-size screens (1024px). Product grid + cart side by side. Touch-friendly button sizes (min 44px).
+
+- [ ] Task 140: Fix date pickers on mobile — Date inputs should use native date picker on mobile (type="date") or ensure custom date picker is touch-friendly and doesn't overflow viewport.
+
+- [ ] Task 141: Fix dropdown menus on mobile — All Select/Combobox dropdowns should not overflow screen edges. Apply max-h and position properly on small screens.
+
+- [ ] Task 142: Fix command palette on mobile — If Command/search palette exists (Cmd+K): verify it's usable on mobile with proper sizing and keyboard handling.
+
+- [ ] Task 143: Add pull-to-refresh on mobile pages — For LiveOrders page on mobile: add pull-to-refresh gesture that invalidates queries. Use native overscroll or library.
+
+- [ ] Task 144: Fix print layouts — Invoice print, receipt print, Z-report print: verify @media print CSS hides sidebar, header, and non-essential UI. Content fills page width. Test with browser print preview.
+
+- [ ] Task 145: Fix touch targets across admin — Audit all icon buttons (edit, delete, view). Minimum 44x44px touch target. Common offenders: table action buttons, modal close X, pagination arrows. Add min-w-[44px] min-h-[44px] where needed.
+
+- [ ] Task 146: Run npx tsc --noEmit — Fix all TS errors from Phase 11. Checkpoint.
+
+## Phase 12: Final Verification & Cleanup (4 tasks)
+
+- [ ] Task 147: Remove all console.log statements — Run grep -rn "console\.\(log\|warn\|error\|debug\)" src/ --include="*.tsx" --include="*.ts" | grep -v node_modules | grep -v logger.ts. Replace with logger.debug/warn/error or remove. Skip test files.
+
+- [ ] Task 148: Remove all @ts-ignore and @ts-nocheck — Run grep -rn "@ts-ignore\|@ts-nocheck" src/. Remove each one and fix the underlying TS error properly.
+
+- [ ] Task 149: Full TypeScript check — Run npx tsc --noEmit. Fix ALL remaining errors. Zero errors required.
+
+- [ ] Task 150: Production build — Run npx vite build. Must succeed with zero errors. Fix any build failures.
+
+## Checkpoint: Project builds clean. All 150 tasks complete.
+
+# ================================================================
+# PART B: FEATURE TASKS (Tasks 151-300)
+# ================================================================
+
+## Phase B1: Feature Flag System (18 tasks)
+
+- [ ] Task 151: Create feature flag constants � src/lib/featureFlags.ts. FEATURE_FLAGS with defaults. Core ON: orders, products, menus, invoices, customers, storefront, inventory. Advanced OFF: pos, crm_advanced, delivery_tracking, live_map, courier_portal, analytics_advanced, marketing_hub, purchase_orders, quality_control, credits_system, live_chat, fleet_management, vendor_management, storefront_builder_advanced.
+- [ ] Task 152: Create useTenantFeatureToggles hook � src/hooks/useTenantFeatureToggles.ts. Reads tenant_settings JSONB, falls back to defaults. Returns isEnabled, toggleFeature, flags, isLoading.
+- [ ] Task 153: Create FeatureGate component � src/components/admin/FeatureGate.tsx. Props: feature, children, fallback?.
+- [ ] Task 154: Create FeatureTogglesPanel � src/components/admin/settings/FeatureTogglesPanel.tsx. Card grid, switch toggles, grouped Core/Advanced.
+- [ ] Task 155: Wire FeatureTogglesPanel to Settings page � Add Features tab.
+- [ ] Task 156: Map sidebar items to feature flags � Add featureFlag property to nav items.
+- [ ] Task 157: Filter sidebar by feature flags � Hide items where !isEnabled(featureFlag).
+- [ ] Task 158: Create FeatureProtectedRoute � Show disabled message + settings link when feature off.
+- [ ] Task 159: Apply FeatureGate to POS routes
+- [ ] Task 160: Apply FeatureGate to Delivery routes
+- [ ] Task 161: Apply FeatureGate to Analytics routes
+- [ ] Task 162: Apply FeatureGate to Marketing routes
+- [ ] Task 163: Apply FeatureGate to CRM routes
+- [ ] Task 164: Apply FeatureGate to remaining routes (PO, Vendor, QC, Chat, Fleet)
+- [ ] Task 165: Feature flag count in sidebar footer
+- [ ] Task 166: Enable Feature tooltips on disabled buttons
+- [ ] Task 167: Verify toggle flow end-to-end
+- [ ] Task 168: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B2: Search Sanitization (12 tasks)
+
+- [ ] Task 169: Create sanitizeSearchInput � src/lib/sanitizeSearch.ts. Escape %, _, \. Limit 100 chars. sanitizeForIlike().
+- [ ] Task 170: Sanitize search in Orders.tsx
+- [ ] Task 171: Sanitize search in WholesaleClients.tsx
+- [ ] Task 172: Sanitize search in CustomerManagement.tsx
+- [ ] Task 173: Sanitize search in InvoicesPage.tsx
+- [ ] Task 174: Sanitize search in Products/Inventory pages
+- [ ] Task 175: Sanitize search in DisposableMenuOrders.tsx
+- [ ] Task 176: Sanitize search in CRM pages
+- [ ] Task 177: Sanitize search in Marketplace pages
+- [ ] Task 178: Sanitize ALL remaining .ilike() � grep and fix every one
+- [ ] Task 179: Add 300ms debounce to all search inputs
+- [ ] Task 180: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B3: POS Refunds and Receipt (10 tasks)
+
+- [ ] Task 181: Create POSRefundDialog � src/components/admin/pos/POSRefundDialog.tsx. RHF + Zod. Search transaction, select items, amount, method.
+- [ ] Task 182: Wire POSRefundDialog to CashRegister
+- [ ] Task 183: Create POS refund mutation � Negative record, restore stock, link original.
+- [ ] Task 184: Add refund totals to Z-Report
+- [ ] Task 185: Add refund totals to shift summary
+- [ ] Task 186: Improve POS receipt layout � 80mm thermal, REFUND header for refunds.
+- [ ] Task 187: Add keyboard shortcuts to CashRegister � F2/F3/F4/F8/F9/Esc.
+- [ ] Task 188: Add quick-add product grid � Top 12 by frequency.
+- [ ] Task 189: Add customer lookup to POS
+- [ ] Task 190: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B4: Invoice Partial Payments (12 tasks)
+
+- [ ] Task 191: Create InvoicePaymentDialog � src/components/admin/invoices/InvoicePaymentDialog.tsx. Amount, method, date, reference. Zod validation.
+- [ ] Task 192: Wire InvoicePaymentDialog to InvoiceDetailPage
+- [ ] Task 193: Create payment mutation � Update paid/partial status.
+- [ ] Task 194: Payment history section on InvoiceDetailPage
+- [ ] Task 195: VOID watermark on cancelled invoices
+- [ ] Task 196: Overdue auto-detection on InvoiceDetailPage
+- [ ] Task 197: Overdue badges on InvoicesPage list
+- [ ] Task 198: Payment columns on InvoicesPage � Amount, Paid, Balance, color-coded.
+- [ ] Task 199: isPending on all InvoiceDetailPage buttons
+- [ ] Task 200: Partial payment on printed invoice
+- [ ] Task 201: Invoice creation to finance dashboard invalidation
+- [ ] Task 202: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B5: Empty States and Onboarding (16 tasks)
+
+- [ ] Task 203: Create EmptyState component � src/components/ui/EmptyState.tsx
+- [ ] Task 204: Empty state � Dashboard
+- [ ] Task 205: Empty state � Products
+- [ ] Task 206: Empty state � Orders
+- [ ] Task 207: Empty state � Menus
+- [ ] Task 208: Empty state � Customers
+- [ ] Task 209: Empty state � Invoices
+- [ ] Task 210: Empty state � WholesaleClients
+- [ ] Task 211: Empty state � LiveOrders
+- [ ] Task 212: Empty state � DisposableMenuOrders
+- [ ] Task 213: Empty state � CashRegister no shift
+- [ ] Task 214: Empty state � Z-Report
+- [ ] Task 215: Fix demo data loader
+- [ ] Task 216: Verify setup wizard end-to-end
+- [ ] Task 217: Skip on optional wizard steps
+- [ ] Task 218: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B6: Customer Portal and Storefront (16 tasks)
+
+- [ ] Task 219: Audit shop homepage loads
+- [ ] Task 220: Fix product browsing (filters, search, sort)
+- [ ] Task 221: Fix product detail page
+- [ ] Task 222: Fix cart functionality
+- [ ] Task 223: Fix checkout flow
+- [ ] Task 224: Fix order confirmation
+- [ ] Task 225: Fix customer order tracking
+- [ ] Task 226: Fix customer profile page
+- [ ] Task 227: Fix disposable menu customer flow
+- [ ] Task 228: Fix menu link expiry
+- [ ] Task 229: Fix mobile shop layout
+- [ ] Task 230: Fix mobile cart/checkout
+- [ ] Task 231: Verify storefront builder to live store
+- [ ] Task 232: Order status realtime in customer portal
+- [ ] Task 233: Shop empty state (zero products)
+- [ ] Task 234: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B7: Table and List Polish (14 tasks)
+
+- [ ] Task 235: Fix text overflow � Orders table
+- [ ] Task 236: Fix text overflow � Products table
+- [ ] Task 237: Fix text overflow � Customers table
+- [ ] Task 238: Fix text overflow � WholesaleClients table
+- [ ] Task 239: Fix text overflow � Invoices table
+- [ ] Task 240: Sorting � Orders table
+- [ ] Task 241: Sorting � Products table
+- [ ] Task 242: Sorting � Invoices table
+- [ ] Task 243: Sorting � WholesaleClients table
+- [ ] Task 244: Pagination � Orders
+- [ ] Task 245: Pagination � Products
+- [ ] Task 246: Pagination � Customers
+- [ ] Task 247: Row count display on all tables
+- [ ] Task 248: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B8: Form Validation (14 tasks)
+
+- [ ] Task 249: Block negative prices
+- [ ] Task 250: Block negative quantities
+- [ ] Task 251: Block negative invoice amounts
+- [ ] Task 252: Character limits on text fields
+- [ ] Task 253: Email validation
+- [ ] Task 254: Phone validation
+- [ ] Task 255: Duplicate product name check
+- [ ] Task 256: Duplicate client check
+- [ ] Task 257: Required field indicators (*)
+- [ ] Task 258: Form error visibility
+- [ ] Task 259: ConfirmDeleteDialog on all deletes
+- [ ] Task 260: Modal close after success
+- [ ] Task 261: Dirty state warning on navigate
+- [ ] Task 262: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B9: Error Handling and Loading (12 tasks)
+
+- [ ] Task 263: Error boundaries on hub pages
+- [ ] Task 264: Error state � Dashboard
+- [ ] Task 265: Error state � Orders
+- [ ] Task 266: Error state � Products
+- [ ] Task 267: Loading skeletons � Dashboard
+- [ ] Task 268: Loading skeletons � table pages
+- [ ] Task 269: 404 for admin routes
+- [ ] Task 270: 404 for invalid tenant slug
+- [ ] Task 271: Not-found � ProductDetail
+- [ ] Task 272: Not-found � ClientDetail
+- [ ] Task 273: Not-found � InvoiceDetail
+- [ ] Task 274: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B10: Cross-Feature Integration (10 tasks)
+
+- [ ] Task 275: Stock decrement on delivery
+- [ ] Task 276: Stock restore on cancel
+- [ ] Task 277: Low stock alert on dashboard
+- [ ] Task 278: Invoice auto-creation from orders
+- [ ] Task 279: Customer lifetime value on detail page
+- [ ] Task 280: Dashboard KPI click-through links
+- [ ] Task 281: Verify notification bell
+- [ ] Task 282: Coupon validation in checkout
+- [ ] Task 283: Role changes reflect in sidebar
+- [ ] Task 284: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B11: Mobile Responsiveness (12 tasks)
+
+- [ ] Task 285: Admin sidebar mobile hamburger
+- [ ] Task 286: Dashboard mobile stacking
+- [ ] Task 287: Tables mobile (card view or scroll)
+- [ ] Task 288: Modals mobile full-screen
+- [ ] Task 289: CashRegister tablet layout
+- [ ] Task 290: Date pickers mobile
+- [ ] Task 291: Dropdowns mobile positioning
+- [ ] Task 292: Command palette mobile
+- [ ] Task 293: Pull-to-refresh LiveOrders
+- [ ] Task 294: Print layouts media print
+- [ ] Task 295: Touch targets 44x44px
+- [ ] Task 296: Run npx tsc --noEmit � Checkpoint.
+
+## Phase B12: Final Cleanup (4 tasks)
+
+- [ ] Task 297: Remove all console.log � replace with logger or remove
+- [ ] Task 298: Remove all ts-ignore and ts-nocheck
+- [ ] Task 299: Full TypeScript check � npx tsc --noEmit, zero errors
+- [ ] Task 300: Production build � npx vite build, zero errors
+
+## Checkpoint: All 300 tasks complete. Clean build.
