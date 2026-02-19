@@ -291,30 +291,30 @@ export default function InvoiceDetailPage() {
                                         </AlertDialogContent>
                                     </AlertDialog>
                                 )}
-
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" size="icon" disabled={isAnyPending}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the invoice.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDelete} disabled={deleteInvoice.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
                             </>
                         )}
+
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="icon" disabled={isAnyPending}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the invoice.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} disabled={deleteInvoice.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </div>
 
@@ -325,7 +325,7 @@ export default function InvoiceDetailPage() {
                         <Card className="overflow-hidden invoice-print-document print:border-none print:shadow-none relative">
                             {invoice.status === 'cancelled' && (
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
-                                    <span className="text-8xl font-bold text-red-500/15 -rotate-[30deg]">
+                                    <span className="text-8xl font-bold text-red-500/20 -rotate-45">
                                         VOID
                                     </span>
                                 </div>

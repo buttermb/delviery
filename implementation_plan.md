@@ -96,7 +96,7 @@
 
 - [x] Task 44: Add payment history to InvoiceDetailPage — Below invoice details, add "Payment History" section. Query invoice_payments for this invoice. Show table: Date, Amount, Method, Reference. Show running balance. If no payments table exists, store payments as JSONB array on the invoice record.
 
-- [ ] Task 45: Add VOID watermark to cancelled invoices — In InvoiceDetailPage, when invoice.status === 'cancelled': overlay a semi-transparent red "VOID" text rotated 45deg across the invoice preview. Disable all action buttons except "Delete".
+- [x] Task 45: Add VOID watermark to cancelled invoices — In InvoiceDetailPage, when invoice.status === 'cancelled': overlay a semi-transparent red "VOID" text rotated 45deg across the invoice preview. Disable all action buttons except "Delete".
 
 - [ ] Task 46: Add overdue auto-detection to InvoiceDetailPage — Compute: isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent','partial'].includes(invoice.status). If true: render red "Overdue" Badge next to status badge. Show days overdue count.
 
