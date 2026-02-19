@@ -438,7 +438,7 @@
 - [x] Task 236: Fix text overflow — Products table — Applied TruncatedText (tooltip on hover) to SKU and Category columns in ProductsListPage.tsx table view. Added TruncatedText to SKU and Category badge in ProductCard.tsx mobile card view. Product name already had TruncatedText.
 - [x] Task 237: Fix text overflow — Customers table — Added maxWidthClass="max-w-[200px]" to TruncatedText for name and email/phone in desktop table. Replaced plain CSS truncate on mobile email/phone with TruncatedText (max-w-[180px]) for tooltip-on-hover support.
 - [x] Task 238: Fix text overflow — WholesaleClients table — Added maxWidthClass="max-w-[200px]" to TruncatedText for business_name, territory, contact_name, email, phone in desktop table. Replaced plain CSS truncate on mobile business_name, territory, contact_name, phone with TruncatedText (max-w-[180px]) for tooltip-on-hover support.
-- [ ] Task 239: Fix text overflow � Invoices table
+- [x] Task 239: Fix text overflow — Invoices table — Added overflow-hidden to CustomerLink wrapper divs in both desktop (max-w-[200px]) and mobile (max-w-[180px]) views so the internal truncate on customer name text properly clips. Invoice # already had TruncatedText.
 - [ ] Task 240: Sorting � Orders table
 - [ ] Task 241: Sorting � Products table
 - [ ] Task 242: Sorting � Invoices table

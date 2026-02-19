@@ -838,7 +838,7 @@ export function InvoicesPage() {
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="min-w-0 flex-1 mr-2">
                                             <TruncatedText text={invoice.invoice_number} className="font-semibold text-sm" maxWidthClass="max-w-[180px]" />
-                                            <div className="text-sm text-foreground/90 font-medium min-w-0 max-w-[180px]">
+                                            <div className="text-sm text-foreground/90 font-medium min-w-0 max-w-[180px] overflow-hidden">
                                                 <CustomerLink
                                                     customerId={invoice.client_id}
                                                     customerName={invoice.client?.name || "Unknown Client"}
@@ -1056,7 +1056,7 @@ export function InvoicesPage() {
                                             <TruncatedText text={invoice.invoice_number} className="font-medium" maxWidthClass="max-w-[200px]" />
                                         </TableCell>
                                         <TableCell className="max-w-[200px]">
-                                            <div className="max-w-[200px] min-w-0">
+                                            <div className="max-w-[200px] min-w-0 overflow-hidden">
                                                 <CustomerLink
                                                     customerId={invoice.client_id}
                                                     customerName={invoice.client?.name || "Unknown Client"}
