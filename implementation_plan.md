@@ -392,7 +392,7 @@
 - [x] Task 199: isPending on all InvoiceDetailPage buttons — Already complete from Part A (Task 49): all action buttons (Print, Share Link, Duplicate, Mark as Sent, Record Payment, Void, Delete) have disabled={isAnyPending}, Void confirm has disabled={voidInvoiceMutation.isPending}, ConfirmDeleteDialog has isLoading={deleteInvoice.isPending}. No changes needed.
 - [x] Task 200: Partial payment on printed invoice
 - [x] Task 201: Invoice creation to finance dashboard invalidation
-- [ ] Task 202: Run npx tsc --noEmit � Checkpoint.
+- [x] Task 202: Run npx tsc --noEmit — Checkpoint. Zero TS errors.
 
 ## Phase B5: Empty States and Onboarding (16 tasks)
 
