@@ -15,8 +15,10 @@ import { cn } from '@/lib/utils';
 import { EditorEntryCard } from '@/components/admin/storefront/EditorEntryCard';
 import { FullScreenEditorPortal } from '@/components/admin/storefront/FullScreenEditorPortal';
 import { UnsavedChangesDialog } from '@/components/admin/storefront/UnsavedChangesDialog';
+import { UnsavedChangesDialog as RouteUnsavedChangesDialog } from '@/components/unsaved-changes';
 import { StorefrontBuilder } from '@/pages/admin/storefront/StorefrontBuilder';
 import { useFullScreenEditor } from '@/hooks/useFullScreenEditor';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 import type { MarketplaceStore } from '@/types/marketplace-extended';
 
@@ -91,6 +93,11 @@ export function StorefrontDesignPage() {
         setShowCompactMode(true);
     }, []);
 
+    // Block route navigation when there are unsaved changes
+    const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+        isDirty: hasUnsavedChanges,
+    });
+
     // If compact mode is shown directly
     if (showCompactMode && !isFullScreen) {
         return (
@@ -130,13 +137,20 @@ export function StorefrontDesignPage() {
                 />
             </FullScreenEditorPortal>
 
-            {/* Unsaved Changes Dialog */}
+            {/* Unsaved Changes Dialog — full-screen editor exit */}
             <UnsavedChangesDialog
                 open={showExitDialog}
                 isExiting={isExiting}
                 onDiscard={confirmDiscard}
                 onSaveDraft={confirmSaveAndExit}
                 onCancel={cancelExit}
+            />
+
+            {/* Unsaved Changes Dialog — route navigation */}
+            <RouteUnsavedChangesDialog
+                open={showBlockerDialog}
+                onConfirmLeave={confirmLeave}
+                onCancelLeave={cancelLeave}
             />
         </>
     );

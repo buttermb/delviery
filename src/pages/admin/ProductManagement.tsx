@@ -1,5 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { useSearchParams } from "react-router-dom";
@@ -141,6 +143,11 @@ export default function ProductManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Warn on navigation when product dialog is open
+  const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+    isDirty: isDialogOpen,
+  });
 
   // Table preferences persistence
   const { preferences, savePreferences } = useTablePreferences('products', {
@@ -1517,6 +1524,12 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
+      />
+
+      <UnsavedChangesDialog
+        open={showBlockerDialog}
+        onConfirmLeave={confirmLeave}
+        onCancelLeave={cancelLeave}
       />
     </div>
   );

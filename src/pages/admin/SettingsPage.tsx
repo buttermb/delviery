@@ -1,5 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/unsaved-changes';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,6 +157,16 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
   // Determine if we should show loading skeletons
   const showSkeletons = accountLoading || !formsInitialized;
+
+  // Warn on unsaved changes when navigating away
+  const isDirty = formsInitialized && (
+    generalForm.formState.isDirty ||
+    securityForm.formState.isDirty ||
+    notificationForm.formState.isDirty
+  );
+  const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+    isDirty,
+  });
 
 
   // --- Submit Handlers ---
@@ -751,6 +763,12 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <UnsavedChangesDialog
+        open={showBlockerDialog}
+        onConfirmLeave={confirmLeave}
+        onCancelLeave={cancelLeave}
+      />
     </div>
   );
 }

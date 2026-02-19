@@ -236,7 +236,7 @@
 
 - [x] Task 110: Verify modal close after success — All dialog/modal forms: after successful submit, modal should close (onOpenChange(false)). Check: AddProduct, EditProduct, AddClient, InvoicePayment, POSRefund, OrderEdit, OrderRefund. Fix any that stay open.
 
-- [ ] Task 111: Add form dirty state warning — In major forms (product, settings, storefront builder): if user has unsaved changes and tries to navigate away, show "You have unsaved changes" warning. Use beforeunload event or React Router blocker.
+- [x] Task 111: Add form dirty state warning — In major forms (product, settings, storefront builder): if user has unsaved changes and tries to navigate away, show "You have unsaved changes" warning. Use beforeunload event or React Router blocker.
 
 - [ ] Task 112: Run npx tsc --noEmit — Fix all TS errors from Phase 8. Checkpoint.
 
