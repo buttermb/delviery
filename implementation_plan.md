@@ -30,7 +30,7 @@
 
 - [x] Task 14: Apply FeatureGate to remaining advanced routes — Purchase Orders → 'purchase_orders', Vendor pages → 'vendor_management', QC → 'quality_control', Live Chat → 'live_chat', Fleet → 'fleet_management'.
 
-- [ ] Task 15: Add feature flag count to sidebar footer — Below sidebar nav, show small text: "X features enabled • Manage" where "Manage" links to Settings → Features tab.
+- [x] Task 15: Add feature flag count to sidebar footer — Below sidebar nav, show small text: "X features enabled • Manage" where "Manage" links to Settings → Features tab.
 
 - [ ] Task 16: Add "Enable Feature" inline prompts — When a core page references a disabled feature (e.g. Orders page has "Assign Courier" but delivery_tracking is off), show the button as disabled with tooltip "Enable Delivery Tracking in Settings".
 

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Menu, X, Zap } from 'lucide-react';
+import { ChevronRight, Menu, Settings2, X, Zap } from 'lucide-react';
 import { navigationSections } from './sidebar-navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
@@ -23,7 +23,7 @@ export function Sidebar() {
   const location = useLocation();
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { isEnabled } = useTenantFeatureToggles();
+  const { isEnabled, flags } = useTenantFeatureToggles();
 
   const getFullPath = (href: string) => {
     if (!tenantSlug) return href;
@@ -260,6 +260,21 @@ export function Sidebar() {
               ))}
             </div>
           </ScrollArea>
+
+          {/* Feature flag count */}
+          <div className="px-4 py-2 border-t">
+            <Link
+              to={getFullPath('/admin/settings?tab=features')}
+              className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Settings2 className="h-3 w-3" />
+              <span>
+                {Object.values(flags).filter(Boolean).length} features enabled
+                {' · '}
+                <span className="underline underline-offset-2">Manage</span>
+              </span>
+            </Link>
+          </div>
 
           {/* Footer */}
           <div className="border-t p-4">
