@@ -100,7 +100,7 @@
 
 - [x] Task 46: Add overdue auto-detection to InvoiceDetailPage — Compute: isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent','partial'].includes(invoice.status). If true: render red "Overdue" Badge next to status badge. Show days overdue count.
 
-- [ ] Task 47: Add overdue badges to InvoicesPage list — In InvoicesPage.tsx table, add same overdue computation per row. Show red "Overdue" badge in status column for qualifying invoices. Add "Overdue" as a filter option.
+- [x] Task 47: Add overdue badges to InvoicesPage list — In InvoicesPage.tsx table, add same overdue computation per row. Show red "Overdue" badge in status column for qualifying invoices. Add "Overdue" as a filter option.
 
 - [ ] Task 48: Add payment columns to InvoicesPage list — Ensure columns show: Amount (total), Paid, Balance. Color code: green if fully paid, yellow if partial, red if overdue. Add sort by balance.
 

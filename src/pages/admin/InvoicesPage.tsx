@@ -444,7 +444,13 @@ export function InvoicesPage() {
             invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (invoice.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = statusFilter ? invoice.status === statusFilter : true;
+        const isOverdue = invoice.due_date
+            && new Date(invoice.due_date) < new Date()
+            && ['sent', 'partially_paid'].includes(invoice.status);
+
+        const matchesStatus = statusFilter
+            ? (statusFilter === 'overdue' ? isOverdue : invoice.status === statusFilter)
+            : true;
 
         return matchesSearch && matchesStatus;
     }) || [];
@@ -801,7 +807,9 @@ export function InvoicesPage() {
                                         <div className="flex items-center gap-1.5">
                                             {getStatusBadge(invoice.status)}
                                             {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
-                                                <Badge variant="destructive">Overdue</Badge>
+                                                <Badge variant="destructive">
+                                                    Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
+                                                </Badge>
                                             )}
                                         </div>
                                     </div>
@@ -1035,7 +1043,9 @@ export function InvoicesPage() {
                                             <div className="flex items-center gap-1.5">
                                                 {getStatusBadge(invoice.status)}
                                                 {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
-                                                    <Badge variant="destructive">Overdue</Badge>
+                                                    <Badge variant="destructive">
+                                                        Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
+                                                    </Badge>
                                                 )}
                                             </div>
                                         </TableCell>
