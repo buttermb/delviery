@@ -25,6 +25,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCreateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
 import { useAccount } from '@/contexts/AccountContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Plus, Loader2, AlertTriangle } from 'lucide-react';
@@ -80,6 +81,23 @@ export function CreateClientDialog({
         }
 
         try {
+            // Check for duplicate client name within account
+            const { data: existingClient, error: dupCheckError } = await supabase
+                .from('crm_clients')
+                .select('id')
+                .eq('account_id', accountId)
+                .eq('name', values.name.trim())
+                .maybeSingle();
+
+            if (dupCheckError) {
+                logger.error('Error checking duplicate client', dupCheckError, { component: 'CreateClientDialog' });
+            }
+
+            if (existingClient) {
+                toast.error('A client with this name already exists');
+                return;
+            }
+
             const client = await createClient.mutateAsync({
                 account_id: accountId,
                 name: values.name,
