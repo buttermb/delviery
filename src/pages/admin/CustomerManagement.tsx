@@ -697,7 +697,7 @@ export function CustomerManagement() {
           />
         ) : (
           <AnimatePresence>
-            {filteredCustomers.map((customer) => (
+            {paginatedCustomers.map((customer) => (
               <SwipeableItem
                 key={customer.id}
                 leftAction={{

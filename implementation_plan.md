@@ -204,7 +204,7 @@
 
 - [x] Task 95: Verify pagination on Products page — Same pagination check.
 
-- [ ] Task 96: Verify pagination on Customers page — Same pagination check.
+- [x] Task 96: Verify pagination on Customers page — Same pagination check.
 
 - [ ] Task 97: Add row count display to all tables — Show "Showing X-Y of Z results" below each table. Use total count from query.
 
