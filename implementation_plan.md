@@ -354,7 +354,7 @@
 ## Phase B2: Search Sanitization (12 tasks)
 
 - [x] Task 169: Create sanitizeSearchInput — src/lib/sanitizeSearch.ts. Escape %, _, \. Limit 100 chars. sanitizeForIlike(). Already exists with full implementation.
-- [ ] Task 170: Sanitize search in Orders.tsx
+- [x] Task 170: Sanitize search in Orders.tsx — No .ilike() calls found; search is client-side via JS .filter()/.includes(). OrderSearchBar and OrderFilters already use escapePostgresLike(). No changes needed.
 - [ ] Task 171: Sanitize search in WholesaleClients.tsx
 - [ ] Task 172: Sanitize search in CustomerManagement.tsx
 - [ ] Task 173: Sanitize search in InvoicesPage.tsx
