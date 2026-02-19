@@ -368,7 +368,7 @@
 
 ## Phase B3: POS Refunds and Receipt (10 tasks)
 
-- [ ] Task 181: Create POSRefundDialog � src/components/admin/pos/POSRefundDialog.tsx. RHF + Zod. Search transaction, select items, amount, method.
+- [x] Task 181: Create POSRefundDialog — Already exists from Part A with full implementation: RHF + Zod, order search, item selection, refund amount, method, mutation with stock restore, tenant_id filtering, wired to CashRegister.
 - [ ] Task 182: Wire POSRefundDialog to CashRegister
 - [ ] Task 183: Create POS refund mutation � Negative record, restore stock, link original.
 - [ ] Task 184: Add refund totals to Z-Report
