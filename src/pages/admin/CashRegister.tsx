@@ -798,46 +798,57 @@ function CashRegisterContent() {
         return;
       }
 
-      // F2 - Focus search
+      // F2 - New Sale (reset transaction)
       if (e.key === 'F2') {
+        e.preventDefault();
+        resetTransaction();
+        toast.success('New sale started');
+      }
+
+      // F3 - Search Product
+      if (e.key === 'F3') {
         e.preventDefault();
         setProductDialogOpen(true);
         setTimeout(() => searchInputRef.current?.focus(), 100);
       }
 
-      // F4 - Clear cart
-      if (e.key === 'F4' && cart.length > 0) {
+      // F4 - Refund
+      if (e.key === 'F4') {
         e.preventDefault();
-        handleClearCart();
+        setRefundDialogOpen(true);
       }
 
-      // F8 - Add discount
-      if (e.key === 'F8' && cart.length > 0) {
+      // F8 - Pay Cash
+      if (e.key === 'F8' && cart.length > 0 && !processPayment.isPending) {
         e.preventDefault();
-        setDiscountDialogOpen(true);
-      }
-
-      // F10 - Select customer
-      if (e.key === 'F10') {
-        e.preventDefault();
-        setCustomerDialogOpen(true);
-      }
-
-      // F12 - Complete transaction
-      if (e.key === 'F12' && cart.length > 0 && !processPayment.isPending) {
-        e.preventDefault();
+        setPaymentMethod('cash');
         executeCreditAction('pos_process_sale', async () => {
           await processPayment.mutateAsync();
         });
       }
 
-      // Escape - Close modals
+      // F9 - Pay Card
+      if (e.key === 'F9' && cart.length > 0 && !processPayment.isPending) {
+        e.preventDefault();
+        setPaymentMethod('credit');
+        executeCreditAction('pos_process_sale', async () => {
+          await processPayment.mutateAsync();
+        });
+      }
+
+      // Escape - Clear cart or close dialogs
       if (e.key === 'Escape') {
-        setProductDialogOpen(false);
-        setCustomerDialogOpen(false);
-        setDiscountDialogOpen(false);
-        setReceiptDialogOpen(false);
-        setKeyboardHelpOpen(false);
+        const anyDialogOpen = productDialogOpen || customerDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
+        if (anyDialogOpen) {
+          setProductDialogOpen(false);
+          setCustomerDialogOpen(false);
+          setDiscountDialogOpen(false);
+          setReceiptDialogOpen(false);
+          setKeyboardHelpOpen(false);
+          setRefundDialogOpen(false);
+        } else if (cart.length > 0) {
+          handleClearCart();
+        }
       }
 
       // ? - Show keyboard help
@@ -850,7 +861,7 @@ function CashRegisterContent() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- processPayment.mutateAsync is stable
-  }, [cart, processPayment.isPending, executeCreditAction]);
+  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, customerDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
 
   // Barcode scanner support
   useEffect(() => {
@@ -990,6 +1001,7 @@ function CashRegisterContent() {
           >
             <RotateCcw className="h-4 w-4 mr-1" />
             Refund/Return
+            <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F4</kbd>
           </Button>
           <Button
             variant="outline"
@@ -1068,6 +1080,7 @@ function CashRegisterContent() {
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Clear
+                  <kbd className="ml-1 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">Esc</kbd>
                 </Button>
               )}
             </CardTitle>
@@ -1239,6 +1252,7 @@ function CashRegisterContent() {
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Add Item
+                <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F3</kbd>
               </Button>
               <Button
                 className="flex-1"
@@ -1258,7 +1272,8 @@ function CashRegisterContent() {
                 ) : (
                   <>
                     <DollarSign className="h-4 w-4 mr-2" />
-                    {!isOnline ? 'Queue Payment' : 'Process Payment'}
+                    {!isOnline ? 'Queue Payment' : 'Pay'}
+                    <span className="ml-1.5 hidden sm:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
                   </>
                 )}
               </Button>
@@ -1668,27 +1683,27 @@ function CashRegisterContent() {
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F2</kbd>
-                <span>Search Products</span>
+                <span>New Sale</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F3</kbd>
+                <span>Search Product</span>
               </div>
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F4</kbd>
-                <span>Clear Cart</span>
+                <span>Refund</span>
               </div>
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F8</kbd>
-                <span>Add Discount</span>
+                <span>Pay Cash</span>
               </div>
               <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F10</kbd>
-                <span>Select Customer</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F12</kbd>
-                <span>Process Payment</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F9</kbd>
+                <span>Pay Card</span>
               </div>
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Esc</kbd>
-                <span>Close Dialogs</span>
+                <span>Clear / Close</span>
               </div>
             </div>
             <Separator />
