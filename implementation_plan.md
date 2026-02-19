@@ -497,7 +497,7 @@
 ## Phase B11: Mobile Responsiveness (12 tasks)
 
 - [x] Task 285: Admin sidebar mobile hamburger — Already implemented from Part A (Task 135): useIsMobile hook uses 768px breakpoint, Sidebar component renders as Sheet overlay on mobile, SidebarTrigger shows Menu (hamburger) icon on mobile with 48px touch target, MobileSidebarCloser auto-closes on route change, swipe-to-close gesture enabled, MobileBottomNav "More" drawer provides full sidebar access. No changes needed.
-- [ ] Task 286: Dashboard mobile stacking
+- [x] Task 286: Dashboard mobile stacking — Added overflow-x-hidden to tenant-admin DashboardPage root, made UnifiedAnalyticsDashboard chart grid responsive (grid-cols-1 md:grid-cols-2 lg:grid-cols-7, md:col-span-2/lg:col-span-4 for chart, md:col-span-2/lg:col-span-3 for transactions), made summary cards grid responsive (grid-cols-1 sm:grid-cols-2 md:grid-cols-3), and heading responsive (text-xl sm:text-2xl). Admin DashboardPage already had overflow-x-hidden and responsive grids (grid-cols-2 lg:grid-cols-4 for KPIs). No horizontal scrolling on mobile.
 - [ ] Task 287: Tables mobile (card view or scroll)
 - [ ] Task 288: Modals mobile full-screen
 - [ ] Task 289: CashRegister tablet layout

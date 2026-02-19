@@ -114,10 +114,10 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight">Unified Analytics</h2>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Unified Analytics</h2>
 
             {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -149,9 +149,9 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
                 </Card>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
                 {/* Revenue by Source Chart */}
-                <Card className="col-span-4">
+                <Card className="md:col-span-2 lg:col-span-4">
                     <CardHeader>
                         <CardTitle>Revenue by Source</CardTitle>
                     </CardHeader>
@@ -188,7 +188,7 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
                 </Card>
 
                 {/* Recent Transactions List */}
-                <Card className="col-span-3">
+                <Card className="md:col-span-2 lg:col-span-3">
                     <CardHeader>
                         <CardTitle>Recent Transactions</CardTitle>
                     </CardHeader>
