@@ -422,7 +422,7 @@
 - [x] Task 223: Fix checkout flow
 - [x] Task 224: Fix order confirmation — Fixed OrderConfirmationPage to accept orderId from SinglePageCheckout state (was redirecting back to store). Added Delivery Details card with customer name, delivery address, and estimated delivery time. Fetches delivery_address and customer_name from storefront_orders.
 - [x] Task 225: Fix customer order tracking — Fixed UnifiedOrdersPage: replaced useToast with sonner, removed duplicate useState import, added storefront orders query (marketplace_orders by customer_email + seller_tenant_id). Fixed OrderTrackingPage: added fallback query to marketplace_orders when order not found in orders table, mapping storefront order fields to OrderWithDetails. Fixed CustomerPortal: replaced hardcoded /willysbo/ paths with dynamic tenantSlug from useParams, changed Track Order link to navigate to order detail page.
-- [ ] Task 226: Fix customer profile page
+- [x] Task 226: Fix customer profile page — Fixed CustomerPortal.tsx profile tab: replaced non-functional read-only display + dead "Edit Profile" button with full editable form (first/last name, phone, street address, city, state, zip). Added Supabase query to fetch customer profile by customer_id/email + tenant_id, useMutation to update, loading/error/not-found states, edit/cancel/save flow, isPending on save, localStorage sync on name change. Uses toast from sonner, logger, @/ imports, .maybeSingle(), tenant_id filtering.
 - [ ] Task 227: Fix disposable menu customer flow
 - [ ] Task 228: Fix menu link expiry
 - [ ] Task 229: Fix mobile shop layout

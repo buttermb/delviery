@@ -1,20 +1,25 @@
 import { logger } from '@/lib/logger';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccount } from '@/contexts/AccountContext';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-  Package, FileText,
+  Package, FileText, User, UserPen, Loader2,
   MapPin, Clock, ChevronRight, RefreshCw
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useCustomerPortalOrders } from '@/hooks/useCustomerPortalOrders';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 interface CustomerUser {
@@ -248,31 +253,343 @@ export default function CustomerPortal() {
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium">
-                      {customerUser?.first_name && customerUser?.last_name
-                        ? `${customerUser.first_name} ${customerUser.last_name}`
-                        : customerUser?.first_name || userProfile?.full_name || 'Not set'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{customerUser?.email || userProfile?.email || user?.email}</p>
-                  </div>
-                  <Button>Edit Profile</Button>
-                </div>
-              </CardContent>
-            </Card>
+            {customerUser && (
+              <PortalProfileSection customerUser={customerUser} />
+            )}
           </TabsContent>
         </Tabs>
       </div>
     </div>
+  );
+}
+
+// Editable profile section for the customer portal
+function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) {
+  const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip_code: '',
+  });
+
+  // Fetch customer profile from customers table
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['customer-portal-profile', customerUser.customer_id, customerUser.tenant_id],
+    queryFn: async () => {
+      let query = supabase
+        .from('customers')
+        .select('id, first_name, last_name, phone, address, city, state, zip_code, email')
+        .eq('tenant_id', customerUser.tenant_id);
+
+      if (customerUser.customer_id) {
+        query = query.eq('id', customerUser.customer_id);
+      } else {
+        query = query.eq('email', customerUser.email);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error) {
+        logger.error('Failed to fetch customer profile', error, { component: 'PortalProfileSection' });
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!customerUser.tenant_id,
+  });
+
+  // Populate form when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip_code: profile.zip_code || '',
+      });
+    }
+  }, [profile]);
+
+  // Update profile mutation
+  const updateMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      if (!profile?.id) throw new Error('No customer profile found');
+
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          first_name: data.first_name.trim(),
+          last_name: data.last_name.trim(),
+          phone: data.phone.trim() || null,
+          address: data.address.trim() || null,
+          city: data.city.trim() || null,
+          state: data.state.trim() || null,
+          zip_code: data.zip_code.trim() || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', profile.id)
+        .eq('tenant_id', customerUser.tenant_id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Profile updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['customer-portal-profile', customerUser.customer_id, customerUser.tenant_id] });
+      setIsEditing(false);
+
+      // Update localStorage with new name
+      const saved = localStorage.getItem(STORAGE_KEYS.CUSTOMER_USER);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          parsed.first_name = formData.first_name.trim();
+          parsed.last_name = formData.last_name.trim();
+          localStorage.setItem(STORAGE_KEYS.CUSTOMER_USER, JSON.stringify(parsed));
+        } catch { /* ignore */ }
+      }
+    },
+    onError: (error) => {
+      logger.error('Failed to update profile', error, { component: 'PortalProfileSection' });
+      toast.error('Failed to update profile', { description: 'Please try again.' });
+    },
+  });
+
+  const handleSave = () => {
+    if (!formData.first_name.trim()) {
+      toast.error('First name is required');
+      return;
+    }
+    updateMutation.mutate(formData);
+  };
+
+  const handleCancel = () => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip_code: profile.zip_code || '',
+      });
+    }
+    setIsEditing(false);
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader><CardTitle>Profile Information</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-12 bg-muted animate-pulse rounded-lg" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <Card>
+        <CardHeader><CardTitle>Profile Information</CardTitle></CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <User className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground">Profile not found. Place an order to create your profile.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Profile Information</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage your personal information and delivery address
+            </p>
+          </div>
+          {!isEditing && (
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+              <UserPen className="w-4 h-4 mr-2" />
+              Edit Profile
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="max-w-lg space-y-6">
+          {/* Name */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="portal_first_name">First Name</Label>
+              {isEditing ? (
+                <Input
+                  id="portal_first_name"
+                  value={formData.first_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                  placeholder="First name"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                  {profile.first_name || '\u2014'}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="portal_last_name">Last Name</Label>
+              {isEditing ? (
+                <Input
+                  id="portal_last_name"
+                  value={formData.last_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                  placeholder="Last name"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                  {profile.last_name || '\u2014'}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email (read-only) */}
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center text-muted-foreground">
+              {profile.email || customerUser.email}
+            </p>
+          </div>
+
+          {/* Phone */}
+          <div className="space-y-2">
+            <Label htmlFor="portal_phone">Phone</Label>
+            {isEditing ? (
+              <Input
+                id="portal_phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="(555) 123-4567"
+              />
+            ) : (
+              <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                {profile.phone || '\u2014'}
+              </p>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Delivery Address */}
+          <div className="space-y-4">
+            <h3 className="font-semibold">Delivery Address</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="portal_address">Street Address</Label>
+              {isEditing ? (
+                <Input
+                  id="portal_address"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  placeholder="123 Main St"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                  {profile.address || '\u2014'}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="portal_city">City</Label>
+                {isEditing ? (
+                  <Input
+                    id="portal_city"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="City"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                    {profile.city || '\u2014'}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="portal_state">State</Label>
+                {isEditing ? (
+                  <Input
+                    id="portal_state"
+                    value={formData.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    placeholder="State"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                    {profile.state || '\u2014'}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="portal_zip">ZIP Code</Label>
+                {isEditing ? (
+                  <Input
+                    id="portal_zip"
+                    value={formData.zip_code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, zip_code: e.target.value }))}
+                    placeholder="12345"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
+                    {profile.zip_code || '\u2014'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          {isEditing && (
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleSave}
+                disabled={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                disabled={updateMutation.isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
