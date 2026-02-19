@@ -511,7 +511,7 @@
 
 ## Phase B12: Final Cleanup (4 tasks)
 
-- [ ] Task 297: Remove all console.log � replace with logger or remove
+- [x] Task 297: Remove all console.log — No console.log/warn/error calls found in source files (only in logger.ts implementation itself and test files which are excluded). All were already replaced with logger in Part A Task 147.
 - [ ] Task 298: Remove all ts-ignore and ts-nocheck
 - [ ] Task 299: Full TypeScript check � npx tsc --noEmit, zero errors
 - [ ] Task 300: Production build � npx vite build, zero errors
