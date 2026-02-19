@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { usePagination } from '@/hooks/usePagination';
+import { StandardPagination } from '@/components/shared/StandardPagination';
 import { format } from 'date-fns';
 import {
   ShoppingBag,
@@ -58,6 +60,21 @@ const DisposableMenuOrders = () => {
 
     return matchesSearch && matchesStatus;
   }) || [];
+
+  // Pagination
+  const {
+    paginatedItems: paginatedOrders,
+    currentPage,
+    totalPages,
+    pageSize,
+    totalItems,
+    goToPage,
+    changePageSize,
+  } = usePagination(filteredOrders, {
+    defaultPageSize: 25,
+    persistInUrl: true,
+    urlKey: 'menuOrders',
+  });
 
   // Calculate stats - Fixed: processing should use 'processing', completed should use 'completed'/'delivered'
   const stats = {
@@ -304,7 +321,7 @@ const DisposableMenuOrders = () => {
               />
             ) : (
               <div className="space-y-3">
-                {filteredOrders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <div
                     key={order.id}
                     className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -391,6 +408,14 @@ const DisposableMenuOrders = () => {
               </div>
             )}
           </ScrollArea>
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+          />
         </CardContent>
       </Card>
       </>

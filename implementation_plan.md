@@ -206,7 +206,7 @@
 
 - [x] Task 96: Verify pagination on Customers page — Same pagination check.
 
-- [ ] Task 97: Add row count display to all tables — Show "Showing X-Y of Z results" below each table. Use total count from query.
+- [x] Task 97: Add row count display to all tables — Show "Showing X-Y of Z results" below each table. Use total count from query.
 
 - [ ] Task 98: Run npx tsc --noEmit — Fix all TS errors from Phase 7. Checkpoint.
 
