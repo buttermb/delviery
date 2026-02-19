@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight, Menu, X, Zap } from 'lucide-react';
 import { navigationSections } from './sidebar-navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { isFeatureAvailable, featureTableRequirements } from '@/utils/featureAvailability';
 import { AttentionBadge } from './hotbox/AttentionBadge';
@@ -22,6 +23,7 @@ export function Sidebar() {
   const location = useLocation();
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const { isEnabled } = useTenantFeatureToggles();
 
   const getFullPath = (href: string) => {
     if (!tenantSlug) return href;
@@ -193,6 +195,10 @@ export function Sidebar() {
                         <div className="mt-1 space-y-0.5">
                           {section.items
                             .filter((item) => {
+                              // Hide items whose feature flag is disabled
+                              if (item.featureFlag && !isEnabled(item.featureFlag)) {
+                                return false;
+                              }
                               // Hide features that require tables that don't exist
                               // If availableFeatures is empty, show all (still loading)
                               if (availableFeatures.size === 0) return true;

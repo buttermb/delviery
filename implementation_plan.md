@@ -14,7 +14,7 @@
 
 - [x] Task 6: Map sidebar items to feature flags — Find sidebar config (src/lib/constants/navigation.ts or sidebarConfigs.ts). Add featureFlag?: FeatureFlag property to each nav item. Map: POS items → 'pos', Delivery items → 'delivery_tracking', CRM Hub → 'crm_advanced', Analytics → 'analytics_advanced', Marketing/Coupons → 'marketing_hub', Purchase Orders → 'purchase_orders', Vendor Management → 'vendor_management', Quality Control → 'quality_control'.
 
-- [ ] Task 7: Filter sidebar by feature flags — In the sidebar rendering component, import useTenantFeatureToggles. Filter nav items: if item.featureFlag exists and !isEnabled(item.featureFlag), hide the item. Core items (no featureFlag) always show.
+- [x] Task 7: Filter sidebar by feature flags — In the sidebar rendering component, import useTenantFeatureToggles. Filter nav items: if item.featureFlag exists and !isEnabled(item.featureFlag), hide the item. Core items (no featureFlag) always show.
 
 - [ ] Task 8: Create FeatureProtectedRoute wrapper — File: src/components/admin/FeatureProtectedRoute.tsx. Wraps route content. Checks useTenantFeatureToggles.isEnabled(featureId). If disabled: show card with lock icon, "This feature is not enabled", "Enable it in Settings → Features" with link to settings page. Don't redirect — let them see where they are.
 
