@@ -182,6 +182,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
                   <SelectItem value="yearly">Yearly</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.frequency && <p className="text-sm text-destructive">{errors.frequency.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>First Invoice Date <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
@@ -274,6 +275,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
             <div className="space-y-2">
               <Label>Notes (optional)</Label>
               <Textarea {...register("notes")} placeholder="Internal notes about this schedule..." maxLength={1000} />
+              {errors.notes && <p className="text-sm text-destructive">{errors.notes.message}</p>}
             </div>
           </div>
 

@@ -675,6 +675,9 @@ export default function DeliveryZones() {
                 placeholder="Optional description for this zone..."
                 rows={2}
               />
+              {form.formState.errors.description && (
+                <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
+              )}
             </div>
 
             {/* Color */}
@@ -689,6 +692,9 @@ export default function DeliveryZones() {
                 />
                 <Input {...form.register('color')} className="flex-1" />
               </div>
+              {form.formState.errors.color && (
+                <p className="text-sm text-destructive">{form.formState.errors.color.message}</p>
+              )}
             </div>
 
             {/* ZIP Codes */}
@@ -719,6 +725,9 @@ export default function DeliveryZones() {
                   id="delivery_fee"
                   {...form.register('delivery_fee', { valueAsNumber: true })}
                 />
+                {form.formState.errors.delivery_fee && (
+                  <p className="text-sm text-destructive">{form.formState.errors.delivery_fee.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="minimum_order">Minimum Order ($)</Label>
@@ -728,6 +737,9 @@ export default function DeliveryZones() {
                   id="minimum_order"
                   {...form.register('minimum_order', { valueAsNumber: true })}
                 />
+                {form.formState.errors.minimum_order && (
+                  <p className="text-sm text-destructive">{form.formState.errors.minimum_order.message}</p>
+                )}
               </div>
             </div>
 
@@ -740,6 +752,9 @@ export default function DeliveryZones() {
                   id="estimated_time_min"
                   {...form.register('estimated_time_min', { valueAsNumber: true })}
                 />
+                {form.formState.errors.estimated_time_min && (
+                  <p className="text-sm text-destructive">{form.formState.errors.estimated_time_min.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estimated_time_max">Est. Time Max (mins)</Label>
@@ -748,6 +763,9 @@ export default function DeliveryZones() {
                   id="estimated_time_max"
                   {...form.register('estimated_time_max', { valueAsNumber: true })}
                 />
+                {form.formState.errors.estimated_time_max && (
+                  <p className="text-sm text-destructive">{form.formState.errors.estimated_time_max.message}</p>
+                )}
               </div>
             </div>
 
@@ -797,6 +815,9 @@ export default function DeliveryZones() {
                 id="priority"
                 {...form.register('priority', { valueAsNumber: true })}
               />
+              {form.formState.errors.priority && (
+                <p className="text-sm text-destructive">{form.formState.errors.priority.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Higher priority zones are matched first when areas overlap
               </p>

@@ -230,7 +230,7 @@
 
 - [x] Task 107: Add required field indicators — All required form fields should show red asterisk (*) after label. Check: product name, price, customer name, client business_name, invoice amount. Add to any missing.
 
-- [ ] Task 108: Fix form error messages visibility — All Zod validation errors should show below the field in red text. Check forms use FormMessage or ErrorMessage component. Fix any that don't show errors.
+- [x] Task 108: Fix form error messages visibility — All Zod validation errors should show below the field in red text. Check forms use FormMessage or ErrorMessage component. Fix any that don't show errors.
 
 - [ ] Task 109: Add confirmation dialog to all delete actions — Every delete button across the app must show ConfirmDeleteDialog before executing. Check: products, orders, customers, clients, invoices, menus, team members. Add missing ones.
 

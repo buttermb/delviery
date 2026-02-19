@@ -222,12 +222,12 @@ export function InvoicePaymentDialog({
                   placeholder="0.00"
                   value={field.value !== undefined ? String(field.value) : ''}
                   onValueChange={(val) => field.onChange(val)}
-                  className={errors.amount ? 'border-red-500' : ''}
+                  className={errors.amount ? 'border-destructive' : ''}
                 />
               )}
             />
             {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount.message}</p>
+              <p className="text-sm text-destructive">{errors.amount.message}</p>
             )}
             {remaining > 0 && (
               <Button
@@ -253,7 +253,7 @@ export function InvoicePaymentDialog({
                   value={field.value || ''}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger className={errors.payment_method ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.payment_method ? 'border-destructive' : ''}>
                     <SelectValue placeholder="Select method" />
                   </SelectTrigger>
                   <SelectContent>
@@ -267,7 +267,7 @@ export function InvoicePaymentDialog({
               )}
             />
             {errors.payment_method && (
-              <p className="text-sm text-red-500">{errors.payment_method.message}</p>
+              <p className="text-sm text-destructive">{errors.payment_method.message}</p>
             )}
           </div>
 
@@ -287,7 +287,7 @@ export function InvoicePaymentDialog({
               )}
             />
             {errors.payment_date && (
-              <p className="text-sm text-red-500">{errors.payment_date.message}</p>
+              <p className="text-sm text-destructive">{errors.payment_date.message}</p>
             )}
           </div>
 

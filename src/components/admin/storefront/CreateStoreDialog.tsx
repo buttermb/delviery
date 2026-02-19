@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -41,6 +41,7 @@ export function CreateStoreDialog({
   const [slug, setSlug] = useState(generateSlug(defaultStoreName));
   const [tagline, setTagline] = useState('');
   const [slugEdited, setSlugEdited] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleStoreNameChange = (value: string) => {
     setStoreName(value);
@@ -54,8 +55,9 @@ export function CreateStoreDialog({
     setSlugEdited(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
     if (storeName.trim() && slug.trim()) {
       onSubmit({
         storeName: storeName.trim(),
@@ -63,7 +65,7 @@ export function CreateStoreDialog({
         tagline: tagline.trim(),
       });
     }
-  };
+  }, [storeName, slug, tagline, onSubmit]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -71,6 +73,7 @@ export function CreateStoreDialog({
       setSlug(generateSlug(defaultStoreName));
       setTagline('');
       setSlugEdited(false);
+      setSubmitted(false);
     }
     onOpenChange(newOpen);
   };
@@ -89,7 +92,7 @@ export function CreateStoreDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="store-name">Store Name *</Label>
+            <Label htmlFor="store-name">Store Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="store-name"
               value={storeName}
@@ -98,9 +101,12 @@ export function CreateStoreDialog({
               disabled={isCreating}
               required
             />
+            {submitted && !storeName.trim() && (
+              <p className="text-sm text-destructive">Store name is required</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="store-slug">Store URL</Label>
+            <Label htmlFor="store-slug">Store URL <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">/shop/</span>
               <Input
@@ -112,6 +118,9 @@ export function CreateStoreDialog({
                 className="flex-1"
               />
             </div>
+            {submitted && !slug.trim() && (
+              <p className="text-sm text-destructive">Store URL is required</p>
+            )}
             <p className="text-xs text-muted-foreground">
               This will be your store's unique URL path
             </p>

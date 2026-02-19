@@ -394,6 +394,9 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Phone</Label>
                   <Input type="tel" {...generalForm.register("phone")} />
+                  {generalForm.formState.errors.phone && (
+                    <p className="text-sm text-destructive">{generalForm.formState.errors.phone.message}</p>
+                  )}
                 </div>
               </div>
             </div>
