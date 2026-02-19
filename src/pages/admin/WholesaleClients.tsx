@@ -403,11 +403,11 @@ export default function WholesaleClients() {
                           <div className="max-w-[200px] min-w-0">
                             <div className="font-semibold text-foreground flex items-center gap-2 min-w-0">
                               <CustomerQuickViewCard customer={client}>
-                                <TruncatedText text={client.business_name} className="font-semibold" />
+                                <TruncatedText text={client.business_name} className="font-semibold" maxWidthClass="max-w-[200px]" />
                               </CustomerQuickViewCard>
                               <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            <TruncatedText text={client.territory} className="text-xs text-muted-foreground" />
+                            <TruncatedText text={client.territory} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
@@ -436,17 +436,17 @@ export default function WholesaleClients() {
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm max-w-[200px]">
                           <div className="max-w-[200px] min-w-0">
-                            <TruncatedText text={client.contact_name} className="text-xs sm:text-sm text-foreground" />
+                            <TruncatedText text={client.contact_name} className="text-xs sm:text-sm text-foreground" maxWidthClass="max-w-[200px]" />
                             <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
                               {client.email && (
                                 <>
-                                  <TruncatedText text={client.email} className="text-xs text-muted-foreground" />
+                                  <TruncatedText text={client.email} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
                                   <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </>
                               )}
                             </div>
                             {client.phone && (
-                              <TruncatedText text={client.phone} className="text-xs text-muted-foreground" />
+                              <TruncatedText text={client.phone} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
                             )}
                           </div>
                         </TableCell>
@@ -645,9 +645,9 @@ export default function WholesaleClients() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <ClientStatusBadge status={client.status || 'active'} showIcon={false} className="text-[10px] px-1.5 h-5" />
-                          <h3 className="font-semibold text-base truncate">{client.business_name}</h3>
+                          <TruncatedText text={client.business_name} className="font-semibold text-base" maxWidthClass="max-w-[180px]" />
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">{client.territory}</p>
+                        <TruncatedText text={client.territory} className="text-sm text-muted-foreground" maxWidthClass="max-w-[180px]" />
                         <Badge variant="outline" className="text-xs mt-1">{getClientTypeLabel(client.client_type)}</Badge>
                       </div>
                     </div>
@@ -656,8 +656,8 @@ export default function WholesaleClients() {
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</div>
                         <div className="text-sm">
-                          <p className="truncate">{client.contact_name}</p>
-                          <p className="text-muted-foreground truncate">{client.phone}</p>
+                          <TruncatedText text={client.contact_name} className="text-sm" maxWidthClass="max-w-[180px]" />
+                          <TruncatedText text={client.phone || ''} className="text-muted-foreground text-sm" maxWidthClass="max-w-[180px]" />
                         </div>
                       </div>
 
