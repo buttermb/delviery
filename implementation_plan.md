@@ -20,7 +20,7 @@
 
 - [x] Task 9: Apply FeatureGate to POS routes — Wrap POS pages (CashRegister, POSHub, Shifts, ZReport) with FeatureProtectedRoute featureId="pos" in App.tsx.
 
-- [ ] Task 10: Apply FeatureGate to Delivery routes — Wrap DeliveryDashboard, LiveMap, FleetManagement, CourierManagement with featureId="delivery_tracking".
+- [x] Task 10: Apply FeatureGate to Delivery routes — Wrap DeliveryDashboard, LiveMap, FleetManagement, CourierManagement with featureId="delivery_tracking".
 
 - [ ] Task 11: Apply FeatureGate to Analytics routes — Wrap analytics hub/pages with featureId="analytics_advanced".
 
