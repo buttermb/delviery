@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { logger } from '@/lib/logger';
 import { MarketplaceStore } from '@/types/marketplace-extended';
@@ -24,7 +24,6 @@ import {
 
 export function useStorefrontBuilder() {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();
 
@@ -45,12 +44,11 @@ export function useStorefrontBuilder() {
     useEffect(() => {
         if (fromMenuId) {
             logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
-            toast({
-                title: 'Creating Storefront from Menu',
+            toast.info('Creating Storefront from Menu', {
                 description: `Starting with products from "${menuName || 'your menu'}"`,
             });
         }
-    }, [fromMenuId, menuName, toast]);
+    }, [fromMenuId, menuName]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('sections');
@@ -95,11 +93,10 @@ export function useStorefrontBuilder() {
                 fontFamily: theme.typography.fontFamily.split(',')[0].trim(),
             }
         }));
-        toast({
-            title: 'Theme Applied',
+        toast.success('Theme Applied', {
             description: `${theme.name} theme has been applied to your storefront`,
         });
-    }, [toast]);
+    }, []);
 
     // Sync layout_config and theme_config to marketplace_profiles so the
     // public shop RPC (get_marketplace_store_by_slug) returns fresh data.
@@ -109,12 +106,12 @@ export function useStorefrontBuilder() {
         themeCfg: ThemeConfig,
     ) => {
         try {
-            const { error } = await (supabase as any)
+            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string | undefined) => Promise<{ error: unknown }> } } })
                 .from('marketplace_profiles')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(layoutCfg)),
                     theme_config: themeCfg,
-                } as Record<string, unknown>)
+                })
                 .eq('tenant_id', tenant?.id);
             if (error) {
                 logger.warn('Failed to sync config to marketplace_profiles', error);
@@ -258,9 +255,8 @@ export function useStorefrontBuilder() {
             return newStore;
         },
         onSuccess: (newStore) => {
-            toast({
-                title: "Store created!",
-                description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`
+            toast.success('Store created!', {
+                description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`,
             });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
@@ -269,10 +265,8 @@ export function useStorefrontBuilder() {
             setNewStoreSlug('');
         },
         onError: (err) => {
-            toast({
-                title: "Creation failed",
-                description: "Could not create storefront. Please try again.",
-                variant: "destructive"
+            toast.error('Creation failed', {
+                description: 'Could not create storefront. Please try again.',
             });
             logger.error('Failed to create storefront', err);
         }
@@ -319,15 +313,13 @@ export function useStorefrontBuilder() {
             await syncToMarketplaceProfiles(layoutConfig, themeConfig);
         },
         onSuccess: () => {
-            toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
+            toast.success('Draft saved', { description: 'Your changes have been saved as a draft.' });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
-            toast({
-                title: "Save failed",
-                description: "Could not save changes. Please try again.",
-                variant: "destructive"
+            toast.error('Save failed', {
+                description: 'Could not save changes. Please try again.',
             });
             logger.error('Failed to save draft', err);
         }
@@ -353,15 +345,13 @@ export function useStorefrontBuilder() {
             await syncToMarketplaceProfiles(layoutConfig, themeConfig);
         },
         onSuccess: () => {
-            toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
+            toast.success('Store published!', { description: 'Your storefront is now live and visible to customers.' });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
-            toast({
-                title: "Publish failed",
-                description: "Could not publish storefront. Please try again.",
-                variant: "destructive"
+            toast.error('Publish failed', {
+                description: 'Could not publish storefront. Please try again.',
             });
             logger.error('Failed to publish storefront', err);
         }
@@ -381,15 +371,13 @@ export function useStorefrontBuilder() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Store unpublished", description: "Your storefront is now in draft mode." });
+            toast.success('Store unpublished', { description: 'Your storefront is now in draft mode.' });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
-            toast({
-                title: "Unpublish failed",
-                description: "Could not unpublish storefront. Please try again.",
-                variant: "destructive"
+            toast.error('Unpublish failed', {
+                description: 'Could not unpublish storefront. Please try again.',
             });
             logger.error('Failed to unpublish storefront', err);
         }
@@ -422,7 +410,7 @@ export function useStorefrontBuilder() {
         saveToHistory(newConfig);
         if (selectedSectionId === sectionToDelete) setSelectedSectionId(null);
         setSectionToDelete(null);
-        toast({ title: "Section deleted" });
+        toast.success('Section deleted');
     };
 
     const cancelRemoveSection = () => {
@@ -446,7 +434,7 @@ export function useStorefrontBuilder() {
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
         setSelectedSectionId(duplicated.id);
-        toast({ title: "Section duplicated" });
+        toast.success('Section duplicated');
     };
 
     const toggleVisibility = (id: string, e: React.MouseEvent) => {
@@ -480,7 +468,7 @@ export function useStorefrontBuilder() {
         }));
         setLayoutConfig(newSections);
         saveToHistory(newSections);
-        toast({ title: `Applied "${template.name}" template` });
+        toast.success(`Applied "${template.name}" template`);
     };
 
     const handleSelectSection = (id: string) => {
