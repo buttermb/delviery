@@ -444,7 +444,7 @@
 - [x] Task 242: Sorting — Invoices table — Already had sorting (handleSort, SortIcon, InvoiceSortState) on all columns (Invoice #, Date, Due Date, Amount, Paid, Balance, Status) with server-side query + client-side balance sort. Refactored to use SortableHeader Button pattern matching Orders.tsx and WholesaleClients.tsx for consistency.
 - [x] Task 243: Sorting — WholesaleClients table — Already implemented: SortableHeader on Client (business_name), Status, Credit Status (outstanding_balance), This Month (created_at) columns. handleSort toggles asc/desc. sortedClients useMemo with client-side sort. Matches Orders.tsx pattern. No changes needed.
 - [x] Task 244: Pagination � Orders — Already implemented: usePagination hook (default 25 items) at line 534, StandardPagination component at lines 1065-1074 with page numbers, prev/next, page size selector. No changes needed.
-- [ ] Task 245: Pagination � Products
+- [x] Task 245: Pagination — Products — Already implemented: usePagination hook (default 25 items) at line 385, StandardPagination component at lines 1011-1021 with page numbers, prev/next, page size selector. No changes needed.
 - [ ] Task 246: Pagination � Customers
 - [ ] Task 247: Row count display on all tables
 - [ ] Task 248: Run npx tsc --noEmit � Checkpoint.
