@@ -65,6 +65,15 @@ function getFieldError(
       if (isNaN(num) || num < 0) return "Retail price cannot be negative";
       return null;
     }
+    case "low_stock_alert":
+    case "reorder_point": {
+      if (value === "" || value === undefined || value === null) return null; // Optional
+      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      if (isNaN(num)) return "Reorder point must be a valid number";
+      if (!Number.isInteger(num)) return "Reorder point must be a whole number";
+      if (num < 0) return "Reorder point cannot be negative";
+      return null;
+    }
     default:
       return null;
   }

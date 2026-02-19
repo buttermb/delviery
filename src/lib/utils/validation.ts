@@ -110,6 +110,8 @@ export const productSchema = z.object({
   wholesale_price: z.number().min(0, "Wholesale price cannot be negative").max(999999).optional(),
   cost_price: z.number().min(0, "Cost price cannot be negative").max(999999).optional(),
   sale_price: z.number().min(0, "Sale price cannot be negative").max(999999).optional(),
+  stock_quantity: z.number().int("Stock quantity must be a whole number").min(0, "Stock quantity cannot be negative").optional(),
+  reorder_point: z.number().int("Reorder point must be a whole number").min(0, "Reorder point cannot be negative").optional(),
   sku: z.string().regex(/^[A-Z0-9-]+$/).optional(),
   category: z.enum(['flower', 'edibles', 'pre-rolls', 'concentrates', 'vapes']),
   vendor_name: z.string().max(100).optional(),

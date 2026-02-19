@@ -452,7 +452,7 @@
 ## Phase B8: Form Validation (14 tasks)
 
 - [x] Task 249: Block negative prices — Updated productSchema in validation.ts with .min(0) on price, wholesale_price, cost_price, sale_price. Added wholesale_price and retail_price field-level error validation in PricingStep.tsx getFieldError(). CurrencyInput already blocks negative keystrokes. ProductForm.tsx and CreateProductForm.tsx already had manual negative blocking on submit.
-- [ ] Task 250: Block negative quantities
+- [x] Task 250: Block negative quantities
 - [ ] Task 251: Block negative invoice amounts
 - [ ] Task 252: Character limits on text fields
 - [ ] Task 253: Email validation
