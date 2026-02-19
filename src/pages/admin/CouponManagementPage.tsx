@@ -322,127 +322,211 @@ export default function CouponManagementPage() {
               compact
             />
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Discount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Usage</TableHead>
-                    <TableHead>Valid Dates</TableHead>
-                    <TableHead>Constraints</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCoupons.map((coupon) => {
-                    const StatusIcon = STATUS_ICONS[coupon.status || "inactive"] || XCircle;
-                    const expired = isExpired(coupon);
-                    const _active = isActive(coupon);
-                    const displayStatus = expired ? "expired" : (coupon.status || "inactive");
+            <>
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3">
+                {filteredCoupons.map((coupon) => {
+                  const StatusIcon = STATUS_ICONS[coupon.status || "inactive"] || XCircle;
+                  const expired = isExpired(coupon);
+                  const displayStatus = expired ? "expired" : (coupon.status || "inactive");
 
-                    return (
-                      <TableRow key={coupon.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <Tag className="h-4 w-4 text-muted-foreground" />
-                            <code className="text-sm bg-muted px-2 py-1 rounded">
-                              {coupon.code}
-                            </code>
-                            <CopyButton
-                              text={coupon.code}
-                              label="Code"
-                              size="icon"
-                              variant="ghost"
-                              showLabel={false}
-                              className="h-6 w-6"
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            {getDiscountDisplay(coupon)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`${STATUS_COLORS[displayStatus]} text-white border-0`}
-                          >
-                            <StatusIcon className="h-3 w-3 mr-1" />
-                            {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3 text-muted-foreground" />
-                            {coupon.used_count || 0}
-                            {coupon.total_usage_limit && ` / ${coupon.total_usage_limit}`}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {coupon.never_expires ? (
-                            <span className="text-sm text-muted-foreground">Never expires</span>
+                  return (
+                    <div key={coupon.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <code className="text-sm bg-muted px-2 py-1 rounded truncate">
+                            {coupon.code}
+                          </code>
+                          <CopyButton
+                            text={coupon.code}
+                            label="Code"
+                            size="icon"
+                            variant="ghost"
+                            showLabel={false}
+                            className="h-6 w-6 shrink-0"
+                          />
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`${STATUS_COLORS[displayStatus]} text-white border-0 shrink-0`}
+                        >
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{getDiscountDisplay(coupon)}</span>
+                        <span className="text-muted-foreground">
+                          {coupon.used_count || 0}{coupon.total_usage_limit ? ` / ${coupon.total_usage_limit} used` : ' used'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {coupon.never_expires ? (
+                          'Never expires'
+                        ) : coupon.start_date && coupon.end_date ? (
+                          `${new Date(coupon.start_date).toLocaleDateString()} - ${new Date(coupon.end_date).toLocaleDateString()}`
+                        ) : '-'}
+                      </div>
+                      <div className="flex items-center justify-end gap-1 pt-2 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(coupon)}
+                          className="h-9 w-9 p-0"
+                          title={coupon.status === "active" ? "Deactivate" : "Activate"}
+                        >
+                          {coupon.status === "active" ? (
+                            <XCircle className="h-4 w-4" />
                           ) : (
-                            <div className="flex items-center gap-1 text-sm">
-                              <Calendar className="h-3 w-3 text-muted-foreground" />
-                              {coupon.start_date && coupon.end_date
-                                ? `${new Date(coupon.start_date).toLocaleDateString()} - ${new Date(coupon.end_date).toLocaleDateString()}`
-                                : "-"}
-                            </div>
+                            <CheckCircle2 className="h-4 w-4" />
                           )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-xs text-muted-foreground space-y-1">
-                            {coupon.min_purchase && (
-                              <div>Min: ${coupon.min_purchase}</div>
-                            )}
-                            {coupon.per_user_limit && (
-                              <div>Per user: {coupon.per_user_limit}</div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleToggleStatus(coupon)}
-                              className="h-11 w-11 p-0"
-                              title={coupon.status === "active" ? "Deactivate" : "Activate"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(coupon)}
+                          className="h-9 w-9 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(coupon)}
+                          className="h-9 w-9 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Discount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Usage</TableHead>
+                      <TableHead>Valid Dates</TableHead>
+                      <TableHead>Constraints</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCoupons.map((coupon) => {
+                      const StatusIcon = STATUS_ICONS[coupon.status || "inactive"] || XCircle;
+                      const expired = isExpired(coupon);
+                      const _active = isActive(coupon);
+                      const displayStatus = expired ? "expired" : (coupon.status || "inactive");
+
+                      return (
+                        <TableRow key={coupon.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <Tag className="h-4 w-4 text-muted-foreground" />
+                              <code className="text-sm bg-muted px-2 py-1 rounded">
+                                {coupon.code}
+                              </code>
+                              <CopyButton
+                                text={coupon.code}
+                                label="Code"
+                                size="icon"
+                                variant="ghost"
+                                showLabel={false}
+                                className="h-6 w-6"
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 text-muted-foreground" />
+                              {getDiscountDisplay(coupon)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`${STATUS_COLORS[displayStatus]} text-white border-0`}
                             >
-                              {coupon.status === "active" ? (
-                                <XCircle className="h-4 w-4" />
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4" />
+                              <StatusIcon className="h-3 w-3 mr-1" />
+                              {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3 text-muted-foreground" />
+                              {coupon.used_count || 0}
+                              {coupon.total_usage_limit && ` / ${coupon.total_usage_limit}`}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {coupon.never_expires ? (
+                              <span className="text-sm text-muted-foreground">Never expires</span>
+                            ) : (
+                              <div className="flex items-center gap-1 text-sm">
+                                <Calendar className="h-3 w-3 text-muted-foreground" />
+                                {coupon.start_date && coupon.end_date
+                                  ? `${new Date(coupon.start_date).toLocaleDateString()} - ${new Date(coupon.end_date).toLocaleDateString()}`
+                                  : "-"}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              {coupon.min_purchase && (
+                                <div>Min: ${coupon.min_purchase}</div>
                               )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(coupon)}
-                              className="h-11 w-11 p-0"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(coupon)}
-                              className="h-11 w-11 p-0 text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                              {coupon.per_user_limit && (
+                                <div>Per user: {coupon.per_user_limit}</div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleToggleStatus(coupon)}
+                                className="h-11 w-11 p-0"
+                                title={coupon.status === "active" ? "Deactivate" : "Activate"}
+                              >
+                                {coupon.status === "active" ? (
+                                  <XCircle className="h-4 w-4" />
+                                ) : (
+                                  <CheckCircle2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(coupon)}
+                                className="h-11 w-11 p-0"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(coupon)}
+                                className="h-11 w-11 p-0 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

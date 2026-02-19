@@ -251,104 +251,164 @@ export default function PurchaseOrdersPage() {
               No purchase orders found. Create your first purchase order to get started.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>PO Number</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Vendor</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Expected Delivery</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPOs.map((po) => {
-                    const StatusIcon = STATUS_ICONS[po.status || "draft"] || FileText;
-                    return (
-                      <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            {po.po_number}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`${STATUS_COLORS[po.status || "draft"]} text-white border-0`}
-                          >
-                            <StatusIcon className="h-3 w-3 mr-1" />
-                            {(po.status || "draft").charAt(0).toUpperCase() + (po.status || "draft").slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">Vendor ID: {po.vendor_id.substring(0, 8)}...</span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            {Number(po.total || 0).toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {po.expected_delivery_date ? (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3 text-muted-foreground" />
-                              {new Date(po.expected_delivery_date).toLocaleDateString()}
+            <>
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3">
+                {filteredPOs.map((po) => {
+                  const StatusIcon = STATUS_ICONS[po.status || "draft"] || FileText;
+                  return (
+                    <div
+                      key={po.id}
+                      className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors space-y-3"
+                      onClick={() => handleView(po)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="font-semibold text-sm truncate">{po.po_number}</span>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`${STATUS_COLORS[po.status || "draft"]} text-white border-0 shrink-0`}
+                        >
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {(po.status || "draft").charAt(0).toUpperCase() + (po.status || "draft").slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground truncate">Vendor: {po.vendor_id.substring(0, 8)}...</span>
+                        <span className="font-bold">
+                          ${Number(po.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                        <span>
+                          {po.expected_delivery_date
+                            ? `Due: ${new Date(po.expected_delivery_date).toLocaleDateString()}`
+                            : 'No delivery date'}
+                        </span>
+                        <span>{po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</span>
+                      </div>
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" onClick={() => handleView(po)} className="h-9 w-9 p-0">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {po.status === "draft" && (
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(po)} className="h-9 w-9 p-0">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {(po.status === "draft" || po.status === "cancelled") && (
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(po)} className="h-9 w-9 p-0 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>PO Number</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Vendor</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Expected Delivery</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPOs.map((po) => {
+                      const StatusIcon = STATUS_ICONS[po.status || "draft"] || FileText;
+                      return (
+                        <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              {po.po_number}
                             </div>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {po.created_at
-                            ? new Date(po.created_at).toLocaleDateString()
-                            : "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleView(po)}
-                              className="h-11 w-11 p-0"
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`${STATUS_COLORS[po.status || "draft"]} text-white border-0`}
                             >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {po.status === "draft" && (
+                              <StatusIcon className="h-3 w-3 mr-1" />
+                              {(po.status || "draft").charAt(0).toUpperCase() + (po.status || "draft").slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">Vendor ID: {po.vendor_id.substring(0, 8)}...</span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 text-muted-foreground" />
+                              {Number(po.total || 0).toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {po.expected_delivery_date ? (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-muted-foreground" />
+                                {new Date(po.expected_delivery_date).toLocaleDateString()}
+                              </div>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {po.created_at
+                              ? new Date(po.created_at).toLocaleDateString()
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEdit(po)}
+                                onClick={() => handleView(po)}
                                 className="h-11 w-11 p-0"
                               >
-                                <Edit className="h-4 w-4" />
+                                <Eye className="h-4 w-4" />
                               </Button>
-                            )}
-                            {(po.status === "draft" || po.status === "cancelled") && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(po)}
-                                className="h-11 w-11 p-0 text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                              {po.status === "draft" && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEdit(po)}
+                                  className="h-11 w-11 p-0"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {(po.status === "draft" || po.status === "cancelled") && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDelete(po)}
+                                  className="h-11 w-11 p-0 text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
