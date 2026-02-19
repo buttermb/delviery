@@ -242,7 +242,7 @@
 
 ## Phase 9: Error Handling & Loading States (12 tasks)
 
-- [ ] Task 113: Add error boundaries to hub pages — Create or verify ErrorBoundary component exists. Wrap each Hub page's lazy-loaded tabs with ErrorBoundary that shows "Something went wrong" + "Try Again" button instead of white screen of death.
+- [x] Task 113: Add error boundaries to hub pages — Create or verify ErrorBoundary component exists. Wrap each Hub page's lazy-loaded tabs with ErrorBoundary that shows "Something went wrong" + "Try Again" button instead of white screen of death.
 
 - [ ] Task 114: Add error state to Dashboard — If dashboard queries fail, show error card with retry button instead of broken KPI cards with NaN/undefined.
 

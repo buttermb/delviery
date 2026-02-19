@@ -25,6 +25,7 @@ import {
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -126,28 +127,28 @@ export default function FinanceHubPage() {
                 </div>
 
                 <TabsContent value="overview" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><FinancialCenter /></Suspense>
+                    <ModuleErrorBoundary moduleName="Financial Dashboard"><Suspense fallback={<TabSkeleton />}><FinancialCenter /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="invoices" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><InvoicesPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Invoices"><Suspense fallback={<TabSkeleton />}><InvoicesPage /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="builder" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><AdvancedInvoicePage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Invoice Builder"><Suspense fallback={<TabSkeleton />}><AdvancedInvoicePage /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="expenses" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><ExpenseTracking /></Suspense>
+                    <ModuleErrorBoundary moduleName="Expenses"><Suspense fallback={<TabSkeleton />}><ExpenseTracking /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="revenue" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><RevenueReportsPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Revenue Reports"><Suspense fallback={<TabSkeleton />}><RevenueReportsPage /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="tax" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><TaxManagementPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Tax Management"><Suspense fallback={<TabSkeleton />}><TaxManagementPage /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="collections" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><CollectionMode embedded /></Suspense>
+                    <ModuleErrorBoundary moduleName="Payment Collection"><Suspense fallback={<TabSkeleton />}><CollectionMode embedded /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="payouts" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><PayoutsPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Payouts"><Suspense fallback={<TabSkeleton />}><PayoutsPage /></Suspense></ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

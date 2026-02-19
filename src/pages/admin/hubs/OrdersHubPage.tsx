@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Fragment, lazy, Suspense, useMemo, useCallback, useState } from 'react';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { QuickActions } from '@/components/admin/ui/QuickActions';
@@ -243,51 +244,65 @@ export default function OrdersHubPage() {
 
                 {/* Menu Orders Tab */}
                 <TabsContent value="menu" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DisposableMenuOrders />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Menu Orders">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <DisposableMenuOrders />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Wholesale Orders Tab */}
                 <TabsContent value="wholesale" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <WholesaleOrdersPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Wholesale Orders">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <WholesaleOrdersPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Storefront Orders Tab */}
                 <TabsContent value="storefront" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <StorefrontOrders />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Storefront Orders">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <StorefrontOrders />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Pre-Orders Tab */}
                 <TabsContent value="preorders" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <PreOrdersPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Pre-Orders">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <PreOrdersPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Live Orders Tab */}
                 <TabsContent value="live" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Live Orders">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LiveOrders />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Pipeline Tab */}
                 <TabsContent value="pipeline" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <OrderPipelinePage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Pipeline">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <OrderPipelinePage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* History Tab */}
                 <TabsContent value="history" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <Orders />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Order History">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <Orders />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

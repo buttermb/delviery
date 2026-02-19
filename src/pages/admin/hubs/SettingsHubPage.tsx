@@ -2,7 +2,7 @@
  * Settings Hub Page
  * Consolidated settings with tabs:
  * - General: General settings
- * - Billing: Billing and subscription  
+ * - Billing: Billing and subscription
  * - Integrations: API, webhooks, automation
  * - Security: Security settings
  * - Support: Help and support
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -100,26 +101,38 @@ export default function SettingsHubPage() {
                 </div>
 
                 <TabsContent value="general" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><SettingsPage embedded /></Suspense>
+                    <ModuleErrorBoundary moduleName="General Settings">
+                        <Suspense fallback={<TabSkeleton />}><SettingsPage embedded /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="features" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <div className="p-2 sm:p-6">
-                            <FeatureTogglesPanel />
-                        </div>
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Feature Toggles">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <div className="p-2 sm:p-6">
+                                <FeatureTogglesPanel />
+                            </div>
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="billing" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><BillingPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Billing">
+                        <Suspense fallback={<TabSkeleton />}><BillingPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="integrations" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><APIAccessPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Integrations">
+                        <Suspense fallback={<TabSkeleton />}><APIAccessPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="security" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><TenantSecuritySettings /></Suspense>
+                    <ModuleErrorBoundary moduleName="Security">
+                        <Suspense fallback={<TabSkeleton />}><TenantSecuritySettings /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="support" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><HelpPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Support">
+                        <Suspense fallback={<TabSkeleton />}><HelpPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

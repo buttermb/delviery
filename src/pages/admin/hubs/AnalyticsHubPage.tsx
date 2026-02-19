@@ -29,6 +29,7 @@ import {
 import { Fragment, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -210,33 +211,43 @@ export default function AnalyticsHubPage() {
                             </TabsList>
                         </div>
                         <TabsContent value="overview" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <AnalyticsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Analytics Overview">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <AnalyticsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="orders" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <OrderAnalyticsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Order Analytics">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <OrderAnalyticsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="menu" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <MenuAnalytics />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Menu Analytics">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <MenuAnalytics />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="delivery" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <DeliveryAnalyticsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Delivery Analytics">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <DeliveryAnalyticsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                     </Tabs>
                 </TabsContent>
 
                 {/* Storefront Tab */}
                 <TabsContent value="storefront" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <StorefrontAnalytics />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Storefront Analytics">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <StorefrontAnalytics />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Insights Tab (grouped: Forecasting, Advanced, Strategy) */}
@@ -261,19 +272,25 @@ export default function AnalyticsHubPage() {
                             </TabsList>
                         </div>
                         <TabsContent value="forecasting" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <PredictiveAnalyticsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Forecasting">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <PredictiveAnalyticsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="advanced" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <AdvancedAnalyticsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Advanced Analytics">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <AdvancedAnalyticsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="strategy" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <StrategicDashboardPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Strategic Dashboard">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <StrategicDashboardPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                     </Tabs>
                 </TabsContent>
@@ -300,28 +317,36 @@ export default function AnalyticsHubPage() {
                             </TabsList>
                         </div>
                         <TabsContent value="standard" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <ReportsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Reports">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <ReportsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="custom" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <CustomReportsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Custom Reports">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <CustomReportsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="export" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <DataExportPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Data Export">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <DataExportPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                     </Tabs>
                 </TabsContent>
 
                 {/* Board Report Tab (Enterprise) */}
                 <TabsContent value="board" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <BoardReportPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Board Report">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <BoardReportPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>
