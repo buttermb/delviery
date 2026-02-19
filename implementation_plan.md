@@ -370,7 +370,7 @@
 
 - [x] Task 181: Create POSRefundDialog — Already exists from Part A with full implementation: RHF + Zod, order search, item selection, refund amount, method, mutation with stock restore, tenant_id filtering, wired to CashRegister.
 - [x] Task 182: Wire POSRefundDialog to CashRegister — Already exists from Part A: imported at line 49, refundDialogOpen state at line 210, "Refund/Return" button at line 1040, dialog rendered at lines 1740-1755 with onSuccess (invalidates queries) and onRefundComplete (stores data for receipt). F4 shortcut at line 859. No changes needed.
-- [ ] Task 183: Create POS refund mutation � Negative record, restore stock, link original.
+- [x] Task 183: Create POS refund mutation — Already exists from Part A in POSRefundDialog.tsx (lines 231-340): creates negative pos_transactions record with transaction_type='refund', restores stock for returned items, links to original order via order_id, updates order status for full refunds. All tenant_id filtering in place. No changes needed.
 - [ ] Task 184: Add refund totals to Z-Report
 - [ ] Task 185: Add refund totals to shift summary
 - [ ] Task 186: Improve POS receipt layout � 80mm thermal, REFUND header for refunds.
