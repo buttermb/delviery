@@ -8,7 +8,7 @@
 
 - [x] Task 3: Create FeatureGate component — New file: src/components/admin/FeatureGate.tsx. Props: feature: FeatureFlag, children: ReactNode, fallback?: ReactNode. Renders children only if isEnabled(feature) returns true. Otherwise renders fallback or null. Simple and lightweight.
 
-- [ ] Task 4: Create FeatureTogglesPanel — New file: src/components/admin/settings/FeatureTogglesPanel.tsx. Card-based grid showing all feature flags. Each card: icon, title, description, Switch toggle. Group into sections: "Core Features" (always on, switches disabled), "Advanced Features" (toggleable). Uses useTenantFeatureToggles().toggleFeature on switch change. Shows toast on toggle.
+- [x] Task 4: Create FeatureTogglesPanel — New file: src/components/admin/settings/FeatureTogglesPanel.tsx. Card-based grid showing all feature flags. Each card: icon, title, description, Switch toggle. Group into sections: "Core Features" (always on, switches disabled), "Advanced Features" (toggleable). Uses useTenantFeatureToggles().toggleFeature on switch change. Shows toast on toggle.
 
 - [ ] Task 5: Wire FeatureTogglesPanel to Settings page — In SettingsPage.tsx or SettingsHubPage.tsx, add a "Features" tab. Import and render FeatureTogglesPanel. Place logically after General/Billing tabs.
 
