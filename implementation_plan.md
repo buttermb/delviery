@@ -102,7 +102,7 @@
 
 - [x] Task 47: Add overdue badges to InvoicesPage list — In InvoicesPage.tsx table, add same overdue computation per row. Show red "Overdue" badge in status column for qualifying invoices. Add "Overdue" as a filter option.
 
-- [ ] Task 48: Add payment columns to InvoicesPage list — Ensure columns show: Amount (total), Paid, Balance. Color code: green if fully paid, yellow if partial, red if overdue. Add sort by balance.
+- [x] Task 48: Add payment columns to InvoicesPage list — Ensure columns show: Amount (total), Paid, Balance. Color code: green if fully paid, yellow if partial, red if overdue. Add sort by balance.
 
 - [ ] Task 49: Add isPending to all InvoiceDetailPage action buttons — Every button (Record Payment, Void, Send, Print, Edit, Delete) must have disabled={isPending} during mutations. Check each and fix missing ones.
 

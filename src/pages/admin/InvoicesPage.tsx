@@ -439,21 +439,34 @@ export function InvoicesPage() {
     const duplicateInvoice = useDuplicateInvoice();
     const { data: crmSettings } = useCRMSettings();
 
-    const filteredInvoices = invoices?.filter((invoice) => {
-        const matchesSearch =
-            invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (invoice.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredInvoices = (() => {
+        const filtered = invoices?.filter((invoice) => {
+            const matchesSearch =
+                invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (invoice.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
-        const isOverdue = invoice.due_date
-            && new Date(invoice.due_date) < new Date()
-            && ['sent', 'partially_paid'].includes(invoice.status);
+            const isOverdue = invoice.due_date
+                && new Date(invoice.due_date) < new Date()
+                && ['sent', 'partially_paid'].includes(invoice.status);
 
-        const matchesStatus = statusFilter
-            ? (statusFilter === 'overdue' ? isOverdue : invoice.status === statusFilter)
-            : true;
+            const matchesStatus = statusFilter
+                ? (statusFilter === 'overdue' ? isOverdue : invoice.status === statusFilter)
+                : true;
 
-        return matchesSearch && matchesStatus;
-    }) || [];
+            return matchesSearch && matchesStatus;
+        }) || [];
+
+        // Client-side sort for computed 'balance' column
+        if (sort?.column === 'balance') {
+            return [...filtered].sort((a, b) => {
+                const balanceA = a.total - (a.amount_paid ?? 0);
+                const balanceB = b.total - (b.amount_paid ?? 0);
+                return sort.ascending ? balanceA - balanceB : balanceB - balanceA;
+            });
+        }
+
+        return filtered;
+    })();
 
     // Pagination
     const {
@@ -945,7 +958,7 @@ export function InvoicesPage() {
                                     className="text-right cursor-pointer select-none hover:bg-muted/50"
                                     onClick={() => handleSort('total')}
                                 >
-                                    <span className="inline-flex items-center justify-end w-full">Amount Due <SortIcon column="total" /></span>
+                                    <span className="inline-flex items-center justify-end w-full">Amount <SortIcon column="total" /></span>
                                 </TableHead>
                                 <TableHead
                                     className="text-right cursor-pointer select-none hover:bg-muted/50"
@@ -953,7 +966,12 @@ export function InvoicesPage() {
                                 >
                                     <span className="inline-flex items-center justify-end w-full">Amount Paid <SortIcon column="amount_paid" /></span>
                                 </TableHead>
-                                <TableHead className="text-right">Balance</TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
+                                    onClick={() => handleSort('balance')}
+                                >
+                                    <span className="inline-flex items-center justify-end w-full">Balance <SortIcon column="balance" /></span>
+                                </TableHead>
                                 <TableHead
                                     className="cursor-pointer select-none hover:bg-muted/50"
                                     onClick={() => handleSort('status')}
