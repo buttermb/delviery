@@ -11,6 +11,7 @@ import {
   Download, MapPin, Key, LineChart,
   Building2, CheckCircle, Eye, type LucideIcon
 } from 'lucide-react';
+import type { FeatureFlag } from '@/lib/featureFlags';
 
 export interface NavItem {
   name: string;
@@ -19,6 +20,7 @@ export interface NavItem {
   iconSize?: string;
   roles?: string[];
   children?: NavItem[];
+  featureFlag?: FeatureFlag;
 }
 
 export const navigation: NavItem[] = [
@@ -48,6 +50,7 @@ export const navigation: NavItem[] = [
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'runner', 'warehouse'],
+        featureFlag: 'delivery_tracking',
       },
       {
         name: 'Inventory',
@@ -112,6 +115,7 @@ export const navigation: NavItem[] = [
         icon: Eye,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'crm_advanced',
       },
       {
         name: 'Pricing & Deals',
@@ -126,6 +130,7 @@ export const navigation: NavItem[] = [
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
     ],
   },
@@ -184,6 +189,7 @@ export const navigation: NavItem[] = [
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager', 'runner'],
+        featureFlag: 'delivery_tracking',
       },
       {
         name: 'Location Analytics',
@@ -191,6 +197,7 @@ export const navigation: NavItem[] = [
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
     ],
   },
@@ -241,6 +248,7 @@ export const navigation: NavItem[] = [
         icon: Building2,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'pos',
       },
       {
         name: 'POS Shifts',
@@ -248,6 +256,7 @@ export const navigation: NavItem[] = [
         icon: Clock,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'pos',
       },
       {
         name: 'Z-Reports',
@@ -255,6 +264,7 @@ export const navigation: NavItem[] = [
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'pos',
       },
     ],
   },
@@ -313,6 +323,7 @@ export const navigation: NavItem[] = [
     icon: TrendingUp,
     iconSize: 'h-5 w-5',
     roles: ['owner', 'manager'],
+    featureFlag: 'analytics_advanced',
     children: [
       {
         name: 'Sales Dashboard',
@@ -320,6 +331,7 @@ export const navigation: NavItem[] = [
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
       {
         name: 'Order Analytics',
@@ -327,6 +339,7 @@ export const navigation: NavItem[] = [
         icon: LineChart,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
       {
         name: 'Customer Analytics',
@@ -334,6 +347,7 @@ export const navigation: NavItem[] = [
         icon: Users,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'crm_advanced',
       },
       {
         name: 'Delivery Analytics',
@@ -341,6 +355,7 @@ export const navigation: NavItem[] = [
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'delivery_tracking',
       },
       {
         name: 'Location Analytics',
@@ -348,6 +363,7 @@ export const navigation: NavItem[] = [
         icon: MapPin,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
       {
         name: 'POS Analytics',
@@ -355,6 +371,7 @@ export const navigation: NavItem[] = [
         icon: BarChart3,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
       {
         name: 'Advanced Analytics',
@@ -362,6 +379,7 @@ export const navigation: NavItem[] = [
         icon: TrendingUp,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
+        featureFlag: 'analytics_advanced',
       },
       {
         name: 'Real-Time Dashboard',
@@ -369,6 +387,7 @@ export const navigation: NavItem[] = [
         icon: Activity,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
+        featureFlag: 'analytics_advanced',
       },
     ],
   },
@@ -491,6 +510,7 @@ export const navigation: NavItem[] = [
         icon: Truck,
         iconSize: 'h-4 w-4',
         roles: ['owner'],
+        featureFlag: 'delivery_tracking',
       },
       {
         name: 'API Access',
@@ -550,6 +570,7 @@ export function getNavigationForRole(role: string | null | undefined): NavItem[]
         icon: item.icon, // Preserve icon component reference
         iconSize: item.iconSize,
         roles: item.roles,
+        featureFlag: item.featureFlag,
         children: filteredChildren,
       };
     });

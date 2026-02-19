@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import type { FeatureFlag } from '@/lib/featureFlags';
 import {
   LayoutDashboard,
   Package,
@@ -75,6 +76,7 @@ export interface NavItem {
   icon: LucideIcon;
   badge?: string | number;
   tier?: 'free' | 'professional' | 'enterprise' | 'ultimate';
+  featureFlag?: FeatureFlag;
 }
 
 export interface NavSection {
@@ -137,13 +139,15 @@ export const navigationSections: NavSection[] = [
         href: '/admin/live-map',
         icon: Map,
         badge: 'LIVE',
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'live_map'
       },
       {
         title: 'POS',
         href: '/admin/pos-system',
         icon: Store,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'pos'
       }
     ]
   },
@@ -217,13 +221,15 @@ export const navigationSections: NavSection[] = [
         title: 'Delivery Tracking',
         href: '/admin/delivery-tracking',
         icon: Map,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'delivery_tracking'
       },
       {
         title: 'Delivery Management',
         href: '/admin/delivery-management',
         icon: Truck,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'delivery_tracking'
       },
       {
         title: 'Bulk Operations',
@@ -353,7 +359,8 @@ export const navigationSections: NavSection[] = [
         title: 'CRM',
         href: '/admin/crm/clients',
         icon: UsersRound,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'crm_advanced'
       },
       {
         title: 'Invoices',
@@ -365,7 +372,8 @@ export const navigationSections: NavSection[] = [
         title: 'Customer Insights',
         href: '/admin/customer-hub?tab=insights',
         icon: Target,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'crm_advanced'
       },
       {
         title: 'Customer Reports',
@@ -413,7 +421,8 @@ export const navigationSections: NavSection[] = [
         title: 'Loyalty',
         href: '/admin/loyalty-program',
         icon: Award,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'marketing_hub'
       }
     ]
   },
@@ -426,29 +435,34 @@ export const navigationSections: NavSection[] = [
         title: 'Marketing Hub',
         href: '/admin/marketing-hub',
         icon: Target,
-        badge: 'NEW'
+        badge: 'NEW',
+        featureFlag: 'marketing_hub'
       },
       {
         title: 'Loyalty Program',
         href: '/admin/marketing-hub?tab=loyalty',
-        icon: Star
+        icon: Star,
+        featureFlag: 'marketing_hub'
       },
       {
         title: 'Coupons',
         href: '/admin/storefront-hub?tab=coupons',
-        icon: Tags
+        icon: Tags,
+        featureFlag: 'marketing_hub'
       },
       {
         title: 'Campaigns',
         href: '/admin/marketing-hub?tab=campaigns',
         icon: Rocket,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'marketing_hub'
       },
       {
         title: 'Live Chat',
         href: '/admin/marketing-hub?tab=live-chat',
         icon: MessageSquare,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'live_chat'
       },
       {
         title: 'Reviews',
@@ -614,26 +628,30 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Couriers',
         href: '/admin/couriers',
-        icon: UserCog
+        icon: UserCog,
+        featureFlag: 'courier_portal'
       },
       {
         title: 'Live Map',
         href: '/admin/live-map',
         icon: Map,
         badge: 'LIVE',
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'live_map'
       },
       {
         title: 'Fleet Management',
         href: '/admin/fulfillment-hub?tab=fleet',
         icon: Truck,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'fleet_management'
       },
       {
         title: 'Route Optimization',
         href: '/admin/route-optimizer',
         icon: Route,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'delivery_tracking'
       },
     ]
   },
@@ -713,25 +731,29 @@ export const navigationSections: NavSection[] = [
         title: 'Cash Register',
         href: '/admin/cash-register',
         icon: DollarSign,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'pos'
       },
       {
         title: 'Point of Sale',
         href: '/admin/pos-system',
         icon: Store,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'pos'
       },
       {
         title: 'POS Shifts',
         href: '/admin/pos-shifts',
         icon: Timer,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'pos'
       },
       {
         title: 'Z-Reports',
         href: '/admin/z-reports',
         icon: FileCheck,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'pos'
       },
       {
         title: 'Collections',
@@ -787,56 +809,65 @@ export const navigationSections: NavSection[] = [
         title: 'Analytics Hub',
         href: '/admin/analytics-hub',
         icon: BarChart3,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Analytics Dashboard',
         href: '/admin/analytics-dashboard',
         icon: BarChart3,
         tier: 'professional',
-        badge: 'NEW'
+        badge: 'NEW',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Sales Dashboard',
         href: '/admin/sales-dashboard',
         icon: BarChart3,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Order Analytics',
         href: '/admin/order-analytics',
         icon: PieChart,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Customer Analytics',
         href: '/admin/customer-hub?tab=analytics',
         icon: Users,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'crm_advanced'
       },
       {
         title: 'Delivery Analytics',
         href: '/admin/delivery-analytics',
         icon: Truck,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'delivery_tracking'
       },
       {
         title: 'Location Analytics',
         href: '/admin/location-analytics',
         icon: MapPin,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'POS Analytics',
         href: '/admin/pos-analytics',
         icon: BarChart2,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Advanced Analytics',
         href: '/admin/advanced-analytics',
         icon: BarChart4,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'analytics_advanced'
       },
       {
         title: 'Strategic Dashboard',
@@ -909,7 +940,8 @@ export const navigationSections: NavSection[] = [
         title: 'Live Chat',
         href: '/admin/live-chat',
         icon: MessageSquare,
-        tier: 'professional'
+        tier: 'professional',
+        featureFlag: 'live_chat'
       },
       {
         title: 'Notifications',
@@ -955,7 +987,8 @@ export const navigationSections: NavSection[] = [
         title: 'Vendor Management',
         href: '/admin/vendor-management',
         icon: Building2,
-        tier: 'enterprise'
+        tier: 'enterprise',
+        featureFlag: 'vendor_management'
       },
       {
         title: 'Help Center',
