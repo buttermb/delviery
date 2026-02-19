@@ -252,7 +252,7 @@
 
 - [x] Task 117: Add loading skeletons to Dashboard — Replace loading spinners with skeleton placeholders (Skeleton component from shadcn) that match KPI card shapes. Feels faster.
 
-- [ ] Task 118: Add loading skeletons to table pages — Orders, Products, Customers, Invoices: show skeleton rows (5-8 rows of gray bars) while loading instead of spinner or blank.
+- [x] Task 118: Add loading skeletons to table pages — Orders, Products, Customers, Invoices: show skeleton rows (5-8 rows of gray bars) while loading instead of spinner or blank.
 
 - [ ] Task 119: Fix 404 page for admin routes — Navigate to /{tenantSlug}/admin/nonexistent-page. Should show "Page not found" with link back to dashboard. If shows white screen, add catch-all route.
 
