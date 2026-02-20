@@ -1,14 +1,14 @@
 ## Ralph Wiggum R5 - FloraIQ Feature Build + Hardening
-## 150 tasks | Overnight autonomous run
+## 400 tasks | Overnight autonomous run
 ## Usage: powershell -ExecutionPolicy Bypass -File .\ralph-r5.ps1
 
-$MAX_LOOPS = 170
+$MAX_LOOPS = 450
 $iteration = 0
 
 Write-Host ""
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "  RALPH WIGGUM R5 - FloraIQ" -ForegroundColor Cyan
-Write-Host "  150 tasks | Max iterations: $MAX_LOOPS" -ForegroundColor Cyan
+Write-Host "  400 tasks | Max iterations: $MAX_LOOPS" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
 while ($iteration -lt $MAX_LOOPS) {
