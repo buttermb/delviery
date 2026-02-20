@@ -629,7 +629,7 @@
 - [x] Task 379: Fix session expiry handling � redirect to login with 'Session expired' message, not white screen
 - [x] Task 380: Fix login error messages � 'Invalid email or password' not raw Supabase error
 - [x] Task 381: Fix forgot password flow — success message even if email doesn't exist (security) — Fixed 3 files: CustomerForgotPasswordPage.tsx (replaced error display with fire-and-forget pattern, always shows success), ForgotPasswordDialog.tsx (replaced success/failure branching with fire-and-forget, always shows generic success toast), usePasswordReset.ts (removed toast.error from requestResetMutation onError to prevent leaking email existence). Replaced useToast from use-toast with sonner in both customer page and dialog. Auth ForgotPasswordPage.tsx already had correct pattern.
-- [ ] Task 382: Fix register validation � inline errors, password strength indicator
+- [x] Task 382: Fix register validation — inline errors, password strength indicator — Added per-field inline validation errors with onBlur/touched state to CustomerSignUpPage (firstName, lastName, email, password, confirmPassword). Fixed toast imports from useToast (use-toast) to sonner in all 3 signup pages: CustomerSignUpPage, auth SignupPage, SaaS SignUpPage. All pages already had PasswordStrengthIndicator.
 - [ ] Task 383: Fix auth loading state � show spinner during session check, not flash of login page
 - [ ] Task 384: Fix role-based UI � hide buttons/actions the user's role cannot perform
 - [ ] Task 385: Fix unauthorized access � show 'Access Denied' page, not blank or error

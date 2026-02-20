@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 import { RateLimitWarning } from "@/components/auth/RateLimitWarning";
@@ -36,13 +36,12 @@ export default function CustomerSignUpPage() {
     businessName: "",
     businessLicenseNumber: "",
   });
-  const [_phoneValidating, _setPhoneValidating] = useState(false);
-  const [_phoneError, _setPhoneError] = useState<string | null>(null);
-  const [_ageError, _setAgeError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
   const [signupError, setSignupError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const { isLocked, remainingSeconds, recordAttempt, resetOnSuccess } = useAuthRateLimit({
     storageKey: 'floraiq_customer_signup_rate_limit',
   });
@@ -50,6 +49,60 @@ export default function CustomerSignUpPage() {
 
   // Password breach checking
   const { checking: breachChecking, result: breachResult, suggestPassword } = usePasswordBreachCheck(formData.password);
+
+  const validateField = (field: string, value: string): string | undefined => {
+    switch (field) {
+      case 'firstName':
+        if (!value.trim()) return 'First name is required';
+        if (value.trim().length < 2) return 'First name must be at least 2 characters';
+        return undefined;
+      case 'lastName':
+        if (!value.trim()) return 'Last name is required';
+        if (value.trim().length < 2) return 'Last name must be at least 2 characters';
+        return undefined;
+      case 'email':
+        if (!value.trim()) return 'Email is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address';
+        return undefined;
+      case 'password':
+        if (!value) return 'Password is required';
+        if (value.length < 8) return 'Password must be at least 8 characters';
+        if (!/[a-zA-Z]/.test(value)) return 'Password must contain at least one letter';
+        if (!/\d/.test(value)) return 'Password must contain at least one number';
+        return undefined;
+      case 'confirmPassword':
+        if (!value) return 'Please confirm your password';
+        if (value !== formData.password) return 'Passwords do not match';
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const value = formData[field as keyof typeof formData] as string;
+    const error = validateField(field, value);
+    setFieldErrors(prev => {
+      if (error) return { ...prev, [field]: error };
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const validateAllFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    const fields = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'] as const;
+    for (const field of fields) {
+      const value = formData[field];
+      const error = validateField(field, value);
+      if (error) errors[field] = error;
+    }
+    setFieldErrors(errors);
+    setTouched({ firstName: true, lastName: true, email: true, password: true, confirmPassword: true });
+    return Object.keys(errors).length === 0;
+  };
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -76,6 +129,10 @@ export default function CustomerSignUpPage() {
     e.preventDefault();
     setSignupError(null);
 
+    if (!validateAllFields()) {
+      return;
+    }
+
     if (!validateToken()) {
       setSignupError("Invalid security token. Please refresh the page and try again.");
       return;
@@ -87,16 +144,6 @@ export default function CustomerSignUpPage() {
 
     if (!tenantSlug) {
       setSignupError("Store information is missing. Please check the URL and try again.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setSignupError("Passwords do not match. Please ensure both password fields are identical.");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setSignupError("Password must be at least 8 characters long.");
       return;
     }
 
@@ -135,8 +182,7 @@ export default function CustomerSignUpPage() {
 
       resetOnSuccess();
 
-      toast({
-        title: "Account created!",
+      toast.success("Account created!", {
         description: result.message || "Please check your email to verify your account",
       });
 
@@ -243,11 +289,16 @@ export default function CustomerSignUpPage() {
                   placeholder="John"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  onBlur={() => handleBlur('firstName')}
                   required
                   disabled={loading}
                   autoComplete="given-name"
+                  aria-invalid={!!(touched.firstName && fieldErrors.firstName)}
                   className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
+                {touched.firstName && fieldErrors.firstName && (
+                  <p className="text-sm text-red-400" role="alert">{fieldErrors.firstName}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -260,11 +311,16 @@ export default function CustomerSignUpPage() {
                   placeholder="Doe"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  onBlur={() => handleBlur('lastName')}
                   required
                   disabled={loading}
                   autoComplete="family-name"
+                  aria-invalid={!!(touched.lastName && fieldErrors.lastName)}
                   className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
+                {touched.lastName && fieldErrors.lastName && (
+                  <p className="text-sm text-red-400" role="alert">{fieldErrors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -278,13 +334,18 @@ export default function CustomerSignUpPage() {
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onBlur={() => handleBlur('email')}
                 required
                 disabled={loading}
                 inputMode="email"
                 enterKeyHint="next"
                 autoComplete="email"
+                aria-invalid={!!(touched.email && fieldErrors.email)}
                 className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
+              {touched.email && fieldErrors.email && (
+                <p className="text-sm text-red-400" role="alert">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -326,14 +387,31 @@ export default function CustomerSignUpPage() {
                 id="password"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  const newPassword = e.target.value;
+                  setFormData({ ...formData, password: newPassword });
+                  if (touched.confirmPassword && formData.confirmPassword) {
+                    const confirmError = newPassword !== formData.confirmPassword ? 'Passwords do not match' : undefined;
+                    setFieldErrors(prev => {
+                      if (confirmError) return { ...prev, confirmPassword: confirmError };
+                      const next = { ...prev };
+                      delete next.confirmPassword;
+                      return next;
+                    });
+                  }
+                }}
+                onBlur={() => handleBlur('password')}
                 required
                 disabled={loading}
                 autoComplete="new-password"
                 enterKeyHint="next"
+                aria-invalid={!!(touched.password && fieldErrors.password)}
                 className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               <PasswordStrengthIndicator password={formData.password} />
+              {touched.password && fieldErrors.password && (
+                <p className="text-sm text-red-400" role="alert">{fieldErrors.password}</p>
+              )}
               {formData.password.length >= 8 && (
                 <PasswordBreachWarning
                   checking={breachChecking}
@@ -353,12 +431,17 @@ export default function CustomerSignUpPage() {
                 placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                onBlur={() => handleBlur('confirmPassword')}
                 required
                 disabled={loading}
                 autoComplete="new-password"
                 enterKeyHint="done"
+                aria-invalid={!!(touched.confirmPassword && fieldErrors.confirmPassword)}
                 className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
+              {touched.confirmPassword && fieldErrors.confirmPassword && (
+                <p className="text-sm text-red-400" role="alert">{fieldErrors.confirmPassword}</p>
+              )}
             </div>
 
             <Button
