@@ -200,6 +200,7 @@ export function OrganizationList({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search organizations..."
+              aria-label="Search organizations"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -209,7 +210,7 @@ export function OrganizationList({
             value={statusFilter}
             onValueChange={(v) => setStatusFilter(v as OrganizationStatus | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full sm:w-40" aria-label="Filter by status">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -226,7 +227,7 @@ export function OrganizationList({
             value={typeFilter}
             onValueChange={(v) => setTypeFilter(v as OrganizationType | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full sm:w-40" aria-label="Filter by type">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Type" />
             </SelectTrigger>

@@ -751,6 +751,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
                       placeholder="Search by name or SKU..."
+                      aria-label="Search by name or SKU"
                       value={searchTerm}
                       onChange={(e) => {
                         setSearchTerm(e.target.value);
@@ -767,7 +768,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]" aria-label="Filter items">
                     <SelectValue placeholder="Filter..." />
                   </SelectTrigger>
                   <SelectContent>

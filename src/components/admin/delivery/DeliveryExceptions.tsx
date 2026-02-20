@@ -1055,6 +1055,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search by order ID or customer..."
+                      aria-label="Search by order ID or customer"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-9"
@@ -1066,7 +1067,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                     value={filterReason}
                     onValueChange={(v) => setFilterReason(v as ExceptionReason | 'all')}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px]" aria-label="Filter by reason">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Filter by reason" />
                     </SelectTrigger>
@@ -1083,7 +1084,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                     value={filterResolution}
                     onValueChange={(v) => setFilterResolution(v as ExceptionResolution | 'all')}
                   >
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-[160px]" aria-label="Filter by status">
                       <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
                     <SelectContent>

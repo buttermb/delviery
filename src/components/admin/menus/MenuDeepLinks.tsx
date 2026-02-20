@@ -518,6 +518,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search products..."
+                        aria-label="Search products"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9 w-48"

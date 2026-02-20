@@ -131,7 +131,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
       {isAdding && (
         <div className="mb-4 p-4 border rounded-lg bg-muted/30 space-y-3">
           <Select value={noteType} onValueChange={setNoteType}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Note type">
               <SelectValue placeholder="Note type" />
             </SelectTrigger>
             <SelectContent>
@@ -144,6 +144,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
 
           <Textarea
             placeholder="Add internal note about this client..."
+            aria-label="Add internal note about this client"
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
             maxLength={1000}

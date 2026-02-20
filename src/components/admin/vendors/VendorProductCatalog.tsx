@@ -266,6 +266,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search by name or SKU..."
+                  aria-label="Search by name or SKU"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -273,7 +274,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
               </div>
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]" aria-label="Filter by category">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>

@@ -555,6 +555,7 @@ export function MenuBuilderProductSelector({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           placeholder="Search products by name, SKU, or category..."
+          aria-label="Search products"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9 pr-9"

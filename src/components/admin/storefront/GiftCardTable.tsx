@@ -218,6 +218,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by code, email, or name..."
+                aria-label="Search gift cards"
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -233,7 +234,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
                 goToPage(0);
               }}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px]" aria-label="Filter by status">
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>
               <SelectContent>

@@ -286,6 +286,7 @@ export function ConvertToInvoiceDialog({
                 <Input
                   id="client-search"
                   placeholder="Search clients by name, email, or phone..."
+                  aria-label="Search clients"
                   value={clientSearchQuery}
                   onChange={(e) => setClientSearchQuery(e.target.value)}
                   className="pl-10"

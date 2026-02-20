@@ -259,6 +259,7 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               className="resize-none"
               maxLength={1000}
               autoFocus
+              aria-label="Edit note"
             />
             <div className="flex items-center gap-2">
               <Select value={editedType} onValueChange={(v) => setEditedType(v as NoteType)}>
@@ -430,6 +431,7 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               placeholder="Add a note about this customer..."
+              aria-label="Add a note about this customer"
               rows={3}
               className="resize-none"
               maxLength={1000}
@@ -478,6 +480,7 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
+                aria-label="Search notes"
                 className="pl-9"
               />
               {searchQuery && (

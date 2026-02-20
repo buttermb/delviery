@@ -87,6 +87,7 @@ export function OrderFilters({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search customers..."
+            aria-label="Search customers"
             value={filters.customerSearch || ''}
             onChange={(e) => onFilterChange({ customerSearch: e.target.value })}
             className="pl-9"
@@ -98,6 +99,7 @@ export function OrderFilters({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
+            aria-label="Search products"
             value={filters.productSearch || ''}
             onChange={(e) => onFilterChange({ productSearch: e.target.value })}
             className="pl-9"

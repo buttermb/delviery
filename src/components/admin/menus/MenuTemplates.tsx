@@ -1274,6 +1274,7 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search templates..."
+            aria-label="Search templates"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -1283,7 +1284,7 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
           value={categoryFilter}
           onValueChange={(val) => setCategoryFilter(val as MenuTemplate['category'] | 'all')}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px]" aria-label="Filter by category">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>

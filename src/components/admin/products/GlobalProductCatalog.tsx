@@ -165,13 +165,14 @@ export function GlobalProductCatalog() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search products..."
+                                aria-label="Search products"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-9"
                             />
                         </div>
                         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-[150px]">
+                            <SelectTrigger className="w-[150px]" aria-label="Filter by category">
                                 <Filter className="h-4 w-4 mr-2" />
                                 <SelectValue placeholder="Category" />
                             </SelectTrigger>

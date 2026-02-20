@@ -264,6 +264,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
         <Checkbox
           checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
           onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+          aria-label="Select all orders"
         />
       ) as unknown as string,
       className: 'w-[40px]',
@@ -272,6 +273,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
           <Checkbox
             checked={selectedOrders.includes(order.id)}
             onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+            aria-label="Select order"
           />
         </div>
       ),

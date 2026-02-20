@@ -72,6 +72,7 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
           <Switch
             checked={config.enabled}
             onCheckedChange={(checked) => updateConfig({ enabled: checked })}
+            aria-label="Enable auto-burn system"
           />
         </div>
 

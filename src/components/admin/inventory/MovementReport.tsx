@@ -551,6 +551,7 @@ export function MovementReport({ className }: MovementReportProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products, reasons, notes..."
+                aria-label="Search products, reasons, notes"
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                 className="pl-9"

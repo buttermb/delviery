@@ -672,6 +672,7 @@ export function ProductQR({
 
             <Input
               placeholder="Search products by name, SKU, or category..."
+              aria-label="Search products"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

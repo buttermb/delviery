@@ -148,12 +148,13 @@ export function DeadLetterQueue() {
           <div className="flex gap-4">
             <Input
               placeholder="Search workflows..."
+              aria-label="Search workflows"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="max-w-sm"
             />
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" aria-label="Filter by status">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
