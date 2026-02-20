@@ -6,6 +6,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { hasPermission } from '@/lib/permissions/checkPermissions';
 import { ROLES, Role, Permission, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
 import { queryKeys } from '@/lib/queryKeys';
+import { SETTINGS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 
 /**
@@ -239,7 +240,7 @@ export function usePermissions() {
       }
     },
     enabled: !!admin?.userId && !!tenant?.id,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    ...SETTINGS_QUERY_CONFIG,
     retry: 1,
   });
 

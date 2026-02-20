@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { queryKeys } from '@/lib/queryKeys';
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { TruncatedText } from '@/components/shared/TruncatedText';
 
@@ -67,6 +68,7 @@ export function TopSellingProducts({ storeId, dateRange, className }: TopSelling
         .slice(0, 10);
     },
     enabled: !!storeId,
+    ...ANALYTICS_QUERY_CONFIG,
   });
 
   if (isLoading) {

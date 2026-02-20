@@ -34,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { queryKeys } from "@/lib/queryKeys";
+import { ADMIN_PANEL_QUERY_CONFIG } from '@/lib/react-query-config';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
@@ -86,6 +87,7 @@ export function RewardCatalog() {
       }
     },
     enabled: !!tenant?.id,
+    ...ADMIN_PANEL_QUERY_CONFIG,
   });
 
   const createMutation = useMutation({

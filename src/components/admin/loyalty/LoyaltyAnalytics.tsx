@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 
 export function LoyaltyAnalytics() {
   const { tenant } = useTenantAdminAuth();
@@ -55,6 +56,7 @@ export function LoyaltyAnalytics() {
       }
     },
     enabled: !!tenant?.id,
+    ...ANALYTICS_QUERY_CONFIG,
   });
 
   if (isLoading) {

@@ -9,6 +9,7 @@ import { TrendingUp, DollarSign, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
+import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatPercentage } from '@/lib/utils/formatPercentage';
 import { format, subDays, startOfDay } from 'date-fns';
@@ -95,6 +96,7 @@ export function RevenueChartWidget() {
       };
     },
     enabled: !!account?.id,
+    ...DASHBOARD_QUERY_CONFIG,
   });
 
   return (

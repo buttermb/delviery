@@ -10,6 +10,7 @@ import { Package, TrendingUp, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
+import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
 import { formatWeight } from '@/lib/utils/formatWeight';
 import { useNavigate, useParams } from 'react-router-dom';
 import { subDays } from 'date-fns';
@@ -123,6 +124,7 @@ export function TopProductsWidget() {
         .slice(0, 5);
     },
     enabled: !!account?.id,
+    ...DASHBOARD_QUERY_CONFIG,
   });
 
   return (

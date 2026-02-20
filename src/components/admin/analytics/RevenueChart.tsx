@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
@@ -97,6 +98,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
       return { data: grouped, totalRevenue: Math.round(totalRevenue * 100) / 100 };
     },
     enabled: !!storeId,
+    ...ANALYTICS_QUERY_CONFIG,
   });
 
   if (isLoading) {

@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -81,6 +82,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
             return { data: result, currentAOV: Math.round(currentAOV * 100) / 100, trend: 0 };
         },
         enabled: !!storeId,
+        ...ANALYTICS_QUERY_CONFIG,
     });
 
     if (isLoading) {
