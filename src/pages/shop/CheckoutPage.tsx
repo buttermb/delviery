@@ -696,6 +696,7 @@ export function CheckoutPage() {
         },
       }).catch((err) => {
         logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
+        toast.warning('Order placed, but confirmation email could not be sent');
       });
 
       // Navigate to confirmation

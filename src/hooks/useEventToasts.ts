@@ -89,7 +89,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
 
     // Clean up existing channels
     channelsRef.current.forEach((ch) => {
-      supabase.removeChannel(ch).catch(() => {});
+      supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventToasts' }));
     });
     channelsRef.current = [];
 
@@ -244,7 +244,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
     const channels = channelsRef.current;
     return () => {
       channels.forEach((ch) => {
-        supabase.removeChannel(ch).catch(() => {});
+        supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventToasts' }));
       });
       channelsRef.current = [];
     };

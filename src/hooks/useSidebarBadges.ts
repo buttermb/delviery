@@ -363,8 +363,8 @@ export function useSidebarBadges(): UseSidebarBadgesResult {
     // Cleanup on unmount
     return () => {
       channelsRef.current.forEach((channel) => {
-        supabase.removeChannel(channel).catch(() => {
-          // Silently ignore cleanup errors
+        supabase.removeChannel(channel).catch((err) => {
+          logger.warn('Error removing realtime channel', { error: err, component: 'useSidebarBadges' });
         });
       });
       channelsRef.current = [];

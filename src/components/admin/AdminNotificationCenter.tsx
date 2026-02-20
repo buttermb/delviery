@@ -191,7 +191,7 @@ export const AdminNotificationCenter = () => {
 
     // Cleanup previous channels
     channelsRef.current.forEach((ch) => {
-      supabase.removeChannel(ch).catch(() => {});
+      supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'AdminNotificationCenter' }));
     });
     channelsRef.current = [];
 
@@ -410,7 +410,7 @@ export const AdminNotificationCenter = () => {
     const channels = channelsRef.current;
     return () => {
       channels.forEach((ch) => {
-        supabase.removeChannel(ch).catch(() => {});
+        supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'AdminNotificationCenter' }));
       });
       channelsRef.current = [];
     };

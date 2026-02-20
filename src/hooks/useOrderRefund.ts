@@ -6,6 +6,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -455,6 +456,7 @@ export function useOrderRefund(): UseOrderRefundResult {
           component: 'useOrderRefund',
           orderId,
         });
+        toast.warning('Refund processed, but admin notification could not be created');
       }
 
       // Create notification for customer if they have an ID
@@ -478,6 +480,7 @@ export function useOrderRefund(): UseOrderRefundResult {
             orderId,
             customerId: orderData.customer_id,
           });
+          toast.warning('Refund processed, but customer notification could not be sent');
         }
       }
 

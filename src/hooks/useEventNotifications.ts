@@ -301,7 +301,7 @@ export function useEventNotifications({
 
     // Clean up existing channels
     channelsRef.current.forEach((channel) => {
-      supabase.removeChannel(channel).catch(() => {});
+      supabase.removeChannel(channel).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventNotifications' }));
     });
     channelsRef.current = [];
 
@@ -387,7 +387,7 @@ export function useEventNotifications({
     // Cleanup
     return () => {
       channels.forEach((channel) => {
-        supabase.removeChannel(channel).catch(() => {});
+        supabase.removeChannel(channel).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventNotifications' }));
       });
       channelsRef.current = [];
       stockCache.clear();

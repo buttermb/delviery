@@ -58,6 +58,8 @@ export function useAdminOrdersRealtime({
       if (Notification.permission === 'default') {
         Notification.requestPermission().then((permission) => {
           notificationPermissionRef.current = permission;
+        }).catch((err) => {
+          logger.warn('Failed to request notification permission', { error: err });
         });
       } else {
         notificationPermissionRef.current = Notification.permission;
@@ -300,8 +302,8 @@ export function useAdminOrdersRealtime({
 
     return () => {
       channelsRef.current.forEach((channel) => {
-        supabase.removeChannel(channel).catch(() => {
-          // Silently ignore cleanup errors
+        supabase.removeChannel(channel).catch((err) => {
+          logger.warn('Error removing realtime channel', { error: err, component: 'useAdminOrdersRealtime' });
         });
       });
       channelsRef.current = [];

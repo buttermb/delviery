@@ -354,8 +354,8 @@ export function useAdminBadgeCounts() {
 
       // Cleanup all channels
       channelsRef.current.forEach((channel) => {
-        supabase.removeChannel(channel).catch(() => {
-          // Silently ignore cleanup errors
+        supabase.removeChannel(channel).catch((err) => {
+          logger.warn('Error removing realtime channel', { error: err, component: 'useAdminBadgeCounts' });
         });
       });
       channelsRef.current = [];

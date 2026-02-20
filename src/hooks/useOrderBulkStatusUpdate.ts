@@ -508,6 +508,7 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
             tenantId,
             count: activityEntries.length,
           });
+          toast.warning('Status updated, but activity log could not be saved');
         });
       }
 
@@ -517,6 +518,7 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
           component: 'useOrderBulkStatusUpdate',
           tenantId,
         });
+        toast.warning('Status updated, but notification could not be sent');
       });
 
       // 3. Restore inventory for cancelled orders
@@ -529,12 +531,14 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
               success: result.success,
               failed: result.failed,
             });
+            toast.warning(`${result.failed} inventory restore(s) failed during cancellation`);
           }
         }).catch(err => {
           logger.error('Failed to restore inventory for cancelled orders', err, {
             component: 'useOrderBulkStatusUpdate',
             tenantId,
           });
+          toast.error('Failed to restore inventory for cancelled orders');
         });
       }
 
@@ -548,12 +552,14 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
               success: result.success,
               failed: result.failed,
             });
+            toast.warning(`${result.failed} inventory decrement(s) failed during delivery`);
           }
         }).catch(err => {
           logger.error('Failed to decrement inventory for delivered orders', err, {
             component: 'useOrderBulkStatusUpdate',
             tenantId,
           });
+          toast.error('Failed to update inventory for delivered orders');
         });
       }
 

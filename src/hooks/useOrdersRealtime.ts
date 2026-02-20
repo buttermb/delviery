@@ -91,6 +91,8 @@ export function useOrdersRealtime({
       if (Notification.permission === 'default') {
         Notification.requestPermission().then((permission) => {
           notificationPermissionRef.current = permission;
+        }).catch((err) => {
+          logger.warn('Failed to request notification permission', { error: err });
         });
       } else {
         notificationPermissionRef.current = Notification.permission;
@@ -213,8 +215,8 @@ export function useOrdersRealtime({
 
     return () => {
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current).catch(() => {
-          // Silently ignore cleanup errors
+        supabase.removeChannel(channelRef.current).catch((err) => {
+          logger.warn('Error removing realtime channel', { error: err, component: 'useOrdersRealtime' });
         });
         channelRef.current = null;
       }

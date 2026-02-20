@@ -221,8 +221,8 @@ export function useLiveOrdersCount({
     return () => {
       // Cleanup subscriptions
       channelsRef.current.forEach((channel) => {
-        supabase.removeChannel(channel).catch(() => {
-          // Silently ignore cleanup errors
+        supabase.removeChannel(channel).catch((err) => {
+          logger.warn('Error removing realtime channel', { error: err, component: 'useLiveOrdersCount' });
         });
       });
       channelsRef.current = [];
