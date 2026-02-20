@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -276,7 +276,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
@@ -284,7 +284,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Save Changes
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>

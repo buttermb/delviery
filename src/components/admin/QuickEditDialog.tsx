@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -145,7 +146,7 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
             </Select>
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
@@ -163,7 +164,7 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
                 'Save Changes'
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -583,7 +584,7 @@ export function POSRefundDialog({
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-2 pt-2">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -607,7 +608,7 @@ export function POSRefundDialog({
                   `Process Refund ($${currentRefundAmount.toFixed(2)})`
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>

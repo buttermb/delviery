@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -296,7 +296,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -304,7 +304,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               {(loading || tenantLoading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {tenantLoading ? 'Loading...' : 'Create Client'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -220,7 +221,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -242,7 +243,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
                   </>
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

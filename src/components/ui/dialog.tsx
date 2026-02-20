@@ -146,10 +146,9 @@ DialogHeader.displayName = "DialogHeader";
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0",
-      // Mobile: sticky footer so submit button stays visible without scrolling
-      "sticky -bottom-4 z-10 bg-background pt-3 pb-4 -mx-4 px-4 border-t",
-      "sm:static sm:bottom-auto sm:z-auto sm:bg-transparent sm:pt-0 sm:pb-0 sm:mx-0 sm:px-0 sm:border-t-0",
+      "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2",
+      // Sticky footer on all screen sizes — stays visible while form body scrolls
+      "sticky -bottom-4 sm:-bottom-6 z-10 bg-background pt-3 pb-4 sm:pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6 border-t",
       className,
     )}
     {...props}

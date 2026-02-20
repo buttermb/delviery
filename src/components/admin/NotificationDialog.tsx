@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -311,7 +312,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
               )}
             />
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
@@ -319,7 +320,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
                 <Globe className="h-4 w-4 mr-2" />
                 Send Notification
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

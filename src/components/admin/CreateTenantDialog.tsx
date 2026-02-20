@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -387,7 +388,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -396,7 +397,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 Cancel
               </Button>
               <Button type="submit">Create Tenant</Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

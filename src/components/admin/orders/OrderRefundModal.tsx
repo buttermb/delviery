@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -367,7 +368,7 @@ export function OrderRefundModal({
           </Alert>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -386,7 +387,7 @@ export function OrderRefundModal({
                 ? 'Processing...'
                 : `Process ${refundType === 'full' ? 'Full' : 'Partial'} Refund`}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

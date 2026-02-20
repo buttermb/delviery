@@ -547,7 +547,7 @@
 - [x] Task 318: Wire RefundModal to Orders list � action dropdown includes refund option
 - [x] Task 319: Fix modal data not refreshing — ensure modal receives fresh data on open, not stale
 - [x] Task 320: Fix modal form reset on close � clear form state when dialog closes
-- [ ] Task 321: Fix modal scroll on long forms � scrollable body, sticky footer with actions
+- [x] Task 321: Fix modal scroll on long forms � scrollable body, sticky footer with actions
 - [ ] Task 322: Fix modal backdrop click � confirm discard if form is dirty
 - [ ] Task 323: Fix modal Escape key � same discard logic as backdrop click
 - [ ] Task 324: Fix all modals invalidate correct queries on success � data refreshes after save

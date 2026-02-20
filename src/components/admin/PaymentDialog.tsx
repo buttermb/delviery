@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
@@ -170,7 +170,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             />
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
@@ -181,7 +181,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             >
               {processPayment.isPending ? "Processing..." : "Process Payment"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
