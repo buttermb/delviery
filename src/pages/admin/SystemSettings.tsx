@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SaveButton } from "@/components/ui/SaveButton";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -494,13 +495,14 @@ const SystemSettings = () => {
                 )}
               </div>
 
-              <Button
+              <SaveButton
                 onClick={() => saveFraudRules.mutate(fraudRules)}
-                disabled={saveFraudRules.isPending}
+                isPending={saveFraudRules.isPending}
+                isSuccess={saveFraudRules.isSuccess}
                 className="w-full"
               >
-                {saveFraudRules.isPending ? "Saving..." : "Save Fraud Rules"}
-              </Button>
+                Save Fraud Rules
+              </SaveButton>
             </CardContent>
           </Card>
         </TabsContent>

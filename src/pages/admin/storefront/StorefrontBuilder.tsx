@@ -15,6 +15,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -875,14 +876,16 @@ export function StorefrontBuilder({
                         </Button>
                     </div>
 
-                    <Button
-                        disabled={saveDraftMutation.isPending || publishMutation.isPending}
+                    <SaveButton
+                        isPending={saveDraftMutation.isPending}
+                        isSuccess={saveDraftMutation.isSuccess}
+                        disabled={publishMutation.isPending}
                         onClick={() => saveDraftMutation.mutate()}
                         variant="outline"
                         size="sm"
                     >
-                        {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
-                    </Button>
+                        Save Draft
+                    </SaveButton>
                     <Button
                         disabled={publishMutation.isPending}
                         onClick={() => publishMutation.mutate()}

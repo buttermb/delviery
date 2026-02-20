@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DataTable } from '@/components/shared/DataTable';
@@ -308,10 +309,13 @@ export default function PricingPage() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={updatePricing.isPending}>
-                <DollarSign className="h-4 w-4 mr-2" />
+              <SaveButton
+                onClick={handleSave}
+                isPending={updatePricing.isPending}
+                isSuccess={updatePricing.isSuccess}
+              >
                 Save Pricing
-              </Button>
+              </SaveButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

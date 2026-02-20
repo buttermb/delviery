@@ -4,11 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Save } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function WhiteLabel() {
@@ -118,10 +119,13 @@ export default function WhiteLabel() {
           <h1 className="text-3xl font-bold">White Label Branding</h1>
           <p className="text-muted-foreground">Customize your platform's appearance</p>
         </div>
-        <Button onClick={handleSave} disabled={updateBrandingMutation.isPending}>
-          <Save className="h-4 w-4 mr-2" />
+        <SaveButton
+          onClick={handleSave}
+          isPending={updateBrandingMutation.isPending}
+          isSuccess={updateBrandingMutation.isSuccess}
+        >
           Save Changes
-        </Button>
+        </SaveButton>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

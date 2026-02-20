@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -664,16 +665,14 @@ export default function StorefrontBundles() {
             <Button variant="outline" onClick={() => setEditingBundle(null)}>
               Cancel
             </Button>
-            <Button
+            <SaveButton
               onClick={() => editingBundle && updateBundleMutation.mutate(editingBundle)}
-              disabled={
-                updateBundleMutation.isPending ||
-                !formData.name ||
-                formData.products.length < 2
-              }
+              isPending={updateBundleMutation.isPending}
+              isSuccess={updateBundleMutation.isSuccess}
+              disabled={!formData.name || formData.products.length < 2}
             >
-              {updateBundleMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
+              Save Changes
+            </SaveButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

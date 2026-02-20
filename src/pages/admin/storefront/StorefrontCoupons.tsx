@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -418,9 +419,13 @@ export default function StorefrontCoupons() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={saveCouponMutation.isPending}>
-                  {saveCouponMutation.isPending ? 'Saving...' : 'Save Coupon'}
-                </Button>
+                <SaveButton
+                  type="submit"
+                  isPending={saveCouponMutation.isPending}
+                  isSuccess={saveCouponMutation.isSuccess}
+                >
+                  Save Coupon
+                </SaveButton>
               </DialogFooter>
             </form>
           </DialogContent>
