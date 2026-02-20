@@ -517,3 +517,145 @@
 - [x] Task 300: Production build — npx vite build, zero errors. 6800 modules transformed, all chunks generated, PWA service worker created. Zero build errors.
 
 ## Checkpoint: All 300 tasks complete. Clean build.
+
+# ================================================================
+# PART C: USABILITY & POLISH (Tasks 301-400)
+# ================================================================
+
+## Phase C1: Dropdown & Select Fixes (13 tasks)
+
+- [x] Task 301: Audit every Select/Combobox component — 23 data-fetching selects found. 6 reusable selectors (ProductCategorySelect x2, VendorSelector, ClientSelector, POSCustomerSelector, VariantSelector) all well-built. Critical issues: AssignRunnerDialog, AssignRouteDialog, POCreateForm (vendor+product), RACreateForm missing tenant_id filter. RecurringInvoiceForm, RACreateForm, QuickReceiving, CreateMenuSimpleDialog missing loading/error states. BulkAssignRunnerDialog (useAvailableRunners) confirmed tenant_id filtered. CRM ClientSelector uses account_id (correct for crm_clients table).
+- [ ] Task 302: Fix product category dropdown � ensure categories load with tenant_id filter
+- [ ] Task 303: Fix client selector dropdown � in order creation, invoice creation
+- [ ] Task 304: Fix customer selector dropdown � in POS, order creation
+- [ ] Task 305: Fix status filter dropdowns � Orders, Invoices, Delivery pages
+- [ ] Task 306: Fix product selector in order line items � search + select working
+- [ ] Task 307: Fix courier selector dropdown in delivery assignment
+- [ ] Task 308: Fix role selector dropdown in user management
+- [ ] Task 309: Fix payment method dropdown in POS and invoices
+- [ ] Task 310: Fix location/warehouse dropdown if multi-location exists
+- [ ] Task 311: Add loading spinners to all async dropdowns while data fetches
+- [ ] Task 312: Add 'No results' message to all dropdowns when query returns empty
+- [ ] Task 313: Run npx tsc --noEmit � Checkpoint
+
+## Phase C2: Modal Wiring & Fixes (12 tasks)
+
+- [ ] Task 314: Audit every modal/dialog component � list all and their trigger locations
+- [ ] Task 315: Wire OrderEditModal to Orders page � edit button opens with correct order data
+- [ ] Task 316: Wire OrderEditModal to OrderDetailPage � same modal, pre-filled
+- [ ] Task 317: Wire RefundModal to OrderDetailPage � refund button triggers with order context
+- [ ] Task 318: Wire RefundModal to Orders list � action dropdown includes refund option
+- [ ] Task 319: Fix modal data not refreshing � ensure modal receives fresh data on open, not stale
+- [ ] Task 320: Fix modal form reset on close � clear form state when dialog closes
+- [ ] Task 321: Fix modal scroll on long forms � scrollable body, sticky footer with actions
+- [ ] Task 322: Fix modal backdrop click � confirm discard if form is dirty
+- [ ] Task 323: Fix modal Escape key � same discard logic as backdrop click
+- [ ] Task 324: Fix all modals invalidate correct queries on success � data refreshes after save
+- [ ] Task 325: Run npx tsc --noEmit � Checkpoint
+
+## Phase C3: Navigation & Routing Fixes (9 tasks)
+
+- [ ] Task 326: Fix breadcrumb trail on all detail pages � Dashboard > Orders > Order #123
+- [ ] Task 327: Fix back button behavior � go to parent list, not browser back
+- [ ] Task 328: Fix sidebar active state highlighting � correct item highlighted on all routes
+- [ ] Task 329: Fix sidebar collapse state persistence � remember collapsed/expanded across navigation
+- [ ] Task 330: Fix deep link routing � direct URL to /admin/orders/123 works after login
+- [ ] Task 331: Fix redirect after login � go to intended page, not always dashboard
+- [ ] Task 332: Fix tenant slug in URL consistency � no double-slug or missing-slug bugs
+- [ ] Task 333: Add page titles � document.title updates on every route change
+- [ ] Task 334: Run npx tsc --noEmit � Checkpoint
+
+## Phase C4: Toast & Feedback Consistency (8 tasks)
+
+- [ ] Task 335: Audit all mutations � ensure every mutation shows success OR error toast
+- [ ] Task 336: Fix silent failures � no mutation should fail without user-visible feedback
+- [ ] Task 337: Standardize toast messages � 'Order created successfully' not 'Success!' or raw errors
+- [ ] Task 338: Add toast on copy-to-clipboard actions � menu links, invoice numbers, etc.
+- [ ] Task 339: Add optimistic UI for status toggles � switch flips immediately, reverts on error
+- [ ] Task 340: Add inline success indicators � checkmark flash on save, not just toast
+- [ ] Task 341: Fix error toast messages � show human-readable message, not raw Supabase error
+- [ ] Task 342: Run npx tsc --noEmit � Checkpoint
+
+## Phase C5: Data Display & Formatting Fixes (10 tasks)
+
+- [ ] Task 343: Fix all currency displays � consistent ,XXX.XX format everywhere
+- [ ] Task 344: Fix all date displays � consistent MMM dd, yyyy or relative ('2 hours ago')
+- [ ] Task 345: Fix phone number displays � formatted (XXX) XXX-XXXX
+- [ ] Task 346: Fix long text truncation � ellipsis with tooltip on hover for names, descriptions
+- [ ] Task 347: Fix order status badge colors � consistent: pending=yellow, confirmed=blue, shipped=purple, delivered=green, cancelled=red
+- [ ] Task 348: Fix invoice status badge colors � draft=gray, sent=blue, paid=green, partial=yellow, overdue=red, void=black
+- [ ] Task 349: Fix null/undefined displays � show dash or 'N/A' instead of blank or 'undefined'
+- [ ] Task 350: Fix zero-state numbers � show '.00' not blank for zero amounts
+- [ ] Task 351: Fix pluralization � '1 item' not '1 items', '0 orders' not '0 order'
+- [ ] Task 352: Run npx tsc --noEmit � Checkpoint
+
+## Phase C6: Button & Action Usability (8 tasks)
+
+- [ ] Task 353: Disable submit buttons during pending mutations � prevent double-submit everywhere
+- [ ] Task 354: Add loading spinners to all submit buttons during save
+- [ ] Task 355: Fix delete confirmations � every destructive action has confirm dialog with item name
+- [ ] Task 356: Fix action dropdown menus on tables � Edit, View, Delete, status changes all wired
+- [ ] Task 357: Fix disabled button states � visually distinct, cursor not-allowed, tooltip explaining why
+- [ ] Task 358: Add keyboard shortcut hints � Cmd+S to save, Cmd+N for new, Escape to cancel
+- [ ] Task 359: Fix floating action buttons � consistent position bottom-right on mobile
+- [ ] Task 360: Run npx tsc --noEmit � Checkpoint
+
+## Phase C7: Responsive & Layout Fixes (9 tasks)
+
+- [ ] Task 361: Fix sidebar overlap on tablet (768-1024px) � collapse by default
+- [ ] Task 362: Fix card grid responsiveness � 1 col mobile, 2 col tablet, 3-4 col desktop
+- [ ] Task 363: Fix dashboard stat cards � stack vertically on mobile, no horizontal scroll
+- [ ] Task 364: Fix form layouts on mobile � full-width inputs, no side-by-side on small screens
+- [ ] Task 365: Fix table horizontal scroll � add shadow indicators showing more content
+- [ ] Task 366: Fix header/toolbar wrapping � actions wrap gracefully, no overflow hidden
+- [ ] Task 367: Fix print stylesheets � invoices, receipts, reports print clean with no nav/sidebar
+- [ ] Task 368: Fix viewport height issues � no content hidden behind fixed headers/footers on iOS
+- [ ] Task 369: Run npx tsc --noEmit � Checkpoint
+
+## Phase C8: Search & Filter UX (9 tasks)
+
+- [ ] Task 370: Fix search clear button � X button resets search and shows all results
+- [ ] Task 371: Fix filter persistence � filters survive page navigation and back button
+- [ ] Task 372: Fix combined filters � search + status + date range all work together
+- [ ] Task 373: Add active filter indicators � badge count showing how many filters active
+- [ ] Task 374: Add 'Clear all filters' button when any filter is active
+- [ ] Task 375: Fix date range picker � presets (Today, This Week, This Month, Custom)
+- [ ] Task 376: Fix search results count � 'Showing 12 of 145 orders' below table
+- [ ] Task 377: Fix empty search results � helpful message 'No orders match your search'
+- [ ] Task 378: Run npx tsc --noEmit � Checkpoint
+
+## Phase C9: Auth & Session UX (8 tasks)
+
+- [ ] Task 379: Fix session expiry handling � redirect to login with 'Session expired' message, not white screen
+- [ ] Task 380: Fix login error messages � 'Invalid email or password' not raw Supabase error
+- [ ] Task 381: Fix forgot password flow � success message even if email doesn't exist (security)
+- [ ] Task 382: Fix register validation � inline errors, password strength indicator
+- [ ] Task 383: Fix auth loading state � show spinner during session check, not flash of login page
+- [ ] Task 384: Fix role-based UI � hide buttons/actions the user's role cannot perform
+- [ ] Task 385: Fix unauthorized access � show 'Access Denied' page, not blank or error
+- [ ] Task 386: Run npx tsc --noEmit � Checkpoint
+
+## Phase C10: Accessibility Quick Wins (8 tasks)
+
+- [ ] Task 387: Fix focus ring visibility � visible outline on all interactive elements when focused
+- [ ] Task 388: Fix color contrast � all text meets WCAG AA 4.5:1 ratio
+- [ ] Task 389: Fix focus trap in modals � Tab stays within modal, returns focus on close
+- [ ] Task 390: Fix form label associations � every input has a linked label
+- [ ] Task 391: Fix table header scope � th scope='col' on all table headers
+- [ ] Task 392: Fix skip-to-content link � hidden until focused, jumps to main content
+- [ ] Task 393: Fix image alt text � all img tags have meaningful alt or role='presentation'
+- [ ] Task 394: Run npx tsc --noEmit � Checkpoint
+
+## Phase C11: Performance & Perceived Speed (4 tasks)
+
+- [ ] Task 395: Add skeleton loaders to all pages that show blank while loading
+- [ ] Task 396: Fix flash of unstyled content � ensure layout doesn't jump when data loads
+- [ ] Task 397: Fix unnecessary refetches � add proper staleTime to queries that don't need real-time
+- [ ] Task 398: Fix slow navigation � prefetch data on sidebar link hover
+
+## Phase C12: Final Build (2 tasks)
+
+- [ ] Task 399: Full TypeScript check � npx tsc --noEmit, zero errors
+- [ ] Task 400: Production build � npx vite build, zero errors. Click every page manually. Ship it.
+
+## Checkpoint: All 400 tasks complete. Every dropdown works. Every modal wired. Ship it.
