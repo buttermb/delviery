@@ -47,11 +47,11 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
   const [accessType, setAccessType] = useState<'specific_customers' | 'public_link'>('specific_customers');
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
-  const { data: inventory } = useWholesaleInventory(tenant?.id);
+  const { data: inventory, isLoading: isLoadingInventory } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
 
   // Fetch customers for this tenant  
-  const { data: customers } = useQuery({
+  const { data: customers, isLoading: isLoadingCustomers } = useQuery({
     queryKey: ['tenant-customers', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -314,41 +314,52 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
-                {inventory?.map((product) => {
-                  const isSelected = selectedProducts.includes(product.id);
-                  return (
-                    <Card
-                      key={product.id}
-                      className={`cursor-pointer transition-all ${isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
-                        }`}
-                      onClick={() => toggleProduct(product.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleProduct(product.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-medium">{(product as { strain_name?: string; name?: string }).strain_name || (product as { strain_name?: string; name?: string }).name || 'Product'}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {product.category || 'Product'}
-                            </p>
-                            <p className="text-sm font-semibold mt-1">
-                              {formatCurrency((product as any).base_price || product.price_per_lb || 0)}/unit
-                            </p>
-                            {(product as { available_weight?: number }).available_weight && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Stock: {Number((product as { available_weight?: number }).available_weight).toFixed(2)} lbs
+                {isLoadingInventory ? (
+                  <div className="col-span-full flex items-center justify-center py-8 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Loading products...</span>
+                  </div>
+                ) : !inventory || inventory.length === 0 ? (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    No products available
+                  </div>
+                ) : (
+                  inventory.map((product) => {
+                    const isSelected = selectedProducts.includes(product.id);
+                    return (
+                      <Card
+                        key={product.id}
+                        className={`cursor-pointer transition-all ${isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                          }`}
+                        onClick={() => toggleProduct(product.id)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleProduct(product.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-medium">{(product as { strain_name?: string; name?: string }).strain_name || (product as { strain_name?: string; name?: string }).name || 'Product'}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {product.category || 'Product'}
                               </p>
-                            )}
+                              <p className="text-sm font-semibold mt-1">
+                                {formatCurrency((product as unknown as { base_price?: number }).base_price || product.price_per_lb || 0)}/unit
+                              </p>
+                              {(product as { available_weight?: number }).available_weight && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Stock: {Number((product as { available_weight?: number }).available_weight).toFixed(2)} lbs
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -382,7 +393,12 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                     <Badge variant="secondary">{selectedCustomers.length} selected</Badge>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-2">
-                    {customers && customers.length > 0 ? (
+                    {isLoadingCustomers ? (
+                      <div className="flex items-center justify-center py-6 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        <span>Loading customers...</span>
+                      </div>
+                    ) : customers && customers.length > 0 ? (
                       customers.map((customer: { id: string; first_name?: string; last_name?: string; business_name?: string; email?: string }) => {
                         const isSelected = selectedCustomers.includes(customer.id);
                         const displayName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unnamed Customer';

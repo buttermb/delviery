@@ -292,23 +292,29 @@ export default function DeliveryManagement() {
                     <DialogTitle>Assign Courier</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-3">
-                    {couriers.map(courier => (
-                      <div
-                        key={courier.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
-                        onClick={() => assignCourier(d.id, courier.id)}
-                      >
-                        <div>
-                          <p className="font-medium">{courier.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {courier.vehicle_type} • {courier.phone}
-                          </p>
-                        </div>
-                        {courier.is_online && (
-                          <Badge variant="default">Online</Badge>
-                        )}
+                    {couriers.length === 0 ? (
+                      <div className="text-center py-6 text-muted-foreground">
+                        No couriers available
                       </div>
-                    ))}
+                    ) : (
+                      couriers.map(courier => (
+                        <div
+                          key={courier.id}
+                          className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
+                          onClick={() => assignCourier(d.id, courier.id)}
+                        >
+                          <div>
+                            <p className="font-medium">{courier.full_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {courier.vehicle_type} • {courier.phone}
+                            </p>
+                          </div>
+                          {courier.is_online && (
+                            <Badge variant="default">Online</Badge>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>

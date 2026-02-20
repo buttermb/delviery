@@ -346,6 +346,11 @@ export function EditWholesaleOrderDialog({
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="text-sm">Loading couriers...</span>
                     </div>
+                  ) : couriers.length === 0 ? (
+                    <>
+                      <SelectItem value="__none__">Unassigned</SelectItem>
+                      <div className="p-2 text-center text-sm text-muted-foreground">No couriers available</div>
+                    </>
                   ) : (
                     <>
                       <SelectItem value="__none__">Unassigned</SelectItem>

@@ -541,14 +541,23 @@ export function StockTransfer({ className }: StockTransferProps) {
                     <SelectValue placeholder={isLoadingLocations ? "Loading locations..." : "Select source location"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations
-                      .filter(loc => loc.id !== destinationLocationId)
-                      .map(location => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                          {location.city && ` - ${location.city}`}
-                        </SelectItem>
-                      ))}
+                    {isLoadingLocations ? (
+                      <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Loading locations...</span>
+                      </div>
+                    ) : locations.filter(loc => loc.id !== destinationLocationId).length === 0 ? (
+                      <div className="p-2 text-center text-sm text-muted-foreground">No locations available</div>
+                    ) : (
+                      locations
+                        .filter(loc => loc.id !== destinationLocationId)
+                        .map(location => (
+                          <SelectItem key={location.id} value={location.id}>
+                            {location.name}
+                            {location.city && ` - ${location.city}`}
+                          </SelectItem>
+                        ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -560,14 +569,23 @@ export function StockTransfer({ className }: StockTransferProps) {
                     <SelectValue placeholder={isLoadingLocations ? "Loading locations..." : "Select destination location"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations
-                      .filter(loc => loc.id !== sourceLocationId)
-                      .map(location => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                          {location.city && ` - ${location.city}`}
-                        </SelectItem>
-                      ))}
+                    {isLoadingLocations ? (
+                      <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Loading locations...</span>
+                      </div>
+                    ) : locations.filter(loc => loc.id !== sourceLocationId).length === 0 ? (
+                      <div className="p-2 text-center text-sm text-muted-foreground">No locations available</div>
+                    ) : (
+                      locations
+                        .filter(loc => loc.id !== sourceLocationId)
+                        .map(location => (
+                          <SelectItem key={location.id} value={location.id}>
+                            {location.name}
+                            {location.city && ` - ${location.city}`}
+                          </SelectItem>
+                        ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -588,15 +606,26 @@ export function StockTransfer({ className }: StockTransferProps) {
                         <SelectValue placeholder="Select product to transfer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableProducts.map(product => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.name}
-                            {product.sku && ` (${product.sku})`}
-                            <span className="ml-2 text-muted-foreground">
-                              — {product.stock_quantity} available
-                            </span>
-                          </SelectItem>
-                        ))}
+                        {isLoadingProducts ? (
+                          <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm">Loading products...</span>
+                          </div>
+                        ) : availableProducts.length === 0 ? (
+                          <div className="p-2 text-center text-sm text-muted-foreground">
+                            {products.length === 0 ? 'No products with stock available' : 'All products already added'}
+                          </div>
+                        ) : (
+                          availableProducts.map(product => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.name}
+                              {product.sku && ` (${product.sku})`}
+                              <span className="ml-2 text-muted-foreground">
+                                — {product.stock_quantity} available
+                              </span>
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
