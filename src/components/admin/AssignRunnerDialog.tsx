@@ -10,6 +10,7 @@ import { useAssignDelivery } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import { formatPhoneNumber } from "@/lib/formatters";
 
 interface AssignRunnerDialogProps {
   orderId: string;
@@ -109,7 +110,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
                   <>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Phone:</span>
-                      <span className="font-medium">{runner.phone}</span>
+                      <span className="font-medium">{formatPhoneNumber(runner.phone)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Deliveries:</span>

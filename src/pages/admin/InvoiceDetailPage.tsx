@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
+import { formatPhoneNumber } from "@/lib/formatters";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -318,7 +319,7 @@ export default function InvoiceDetailPage() {
                                         <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
                                             {tenant?.address && <p>{tenant.address}</p>}
                                             {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
-                                            {tenant?.phone && <p>{tenant.phone}</p>}
+                                            {tenant?.phone && <p>{formatPhoneNumber(tenant.phone)}</p>}
                                             {tenant?.owner_email && <p>{tenant.owner_email}</p>}
                                             {tenant?.tax_id && <p>Tax ID: {tenant.tax_id}</p>}
                                         </div>
@@ -340,7 +341,7 @@ export default function InvoiceDetailPage() {
                                                 />
                                             </p>
                                             {invoice.client?.email && <p>{invoice.client.email}</p>}
-                                            {invoice.client?.phone && <p>{invoice.client.phone}</p>}
+                                            {invoice.client?.phone && <p>{formatPhoneNumber(invoice.client.phone)}</p>}
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -480,7 +481,7 @@ export default function InvoiceDetailPage() {
                                         <p className="font-medium">{tenant?.business_name}</p>
                                         {tenant?.address && <p>{tenant.address}</p>}
                                         {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
-                                        {tenant?.phone && <p>Phone: {tenant.phone}</p>}
+                                        {tenant?.phone && <p>Phone: {formatPhoneNumber(tenant.phone)}</p>}
                                         {tenant?.owner_email && <p>Email: {tenant.owner_email}</p>}
                                         <p className="mt-2">Thank you for your business!</p>
                                     </div>

@@ -22,7 +22,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
 import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
 
 interface DeliveryRow {
   id: string;
@@ -255,7 +255,7 @@ export default function DeliveryManagement() {
       cell: (d) => d.couriers ? (
         <div className="flex flex-col text-sm">
           <span>{d.couriers.full_name}</span>
-          <span className="text-muted-foreground text-xs">{d.couriers.phone}</span>
+          <span className="text-muted-foreground text-xs">{formatPhoneNumber(d.couriers.phone)}</span>
         </div>
       ) : <span className="text-muted-foreground italic">Unassigned</span>
     },
@@ -307,7 +307,7 @@ export default function DeliveryManagement() {
                           <div>
                             <p className="font-medium">{courier.full_name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {courier.vehicle_type} • {courier.phone}
+                              {courier.vehicle_type} • {formatPhoneNumber(courier.phone)}
                             </p>
                           </div>
                           {courier.is_online && (
@@ -340,7 +340,7 @@ export default function DeliveryManagement() {
       cell: (d) => d.couriers ? (
         <div className="flex flex-col text-sm">
           <span>{d.couriers.full_name}</span>
-          <span className="text-muted-foreground text-xs">{d.couriers.phone}</span>
+          <span className="text-muted-foreground text-xs">{formatPhoneNumber(d.couriers.phone)}</span>
         </div>
       ) : '-'
     },

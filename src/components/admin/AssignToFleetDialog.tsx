@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAvailableRunners, type AvailableRunner } from '@/hooks/useAvailableRunners';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface AssignToFleetDialogProps {
   open: boolean;
@@ -185,7 +186,7 @@ export function AssignToFleetDialog({
                         <div className="font-semibold text-foreground">{runner.full_name}</div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Phone className="h-3 w-3" />
-                          {runner.phone}
+                          {formatPhoneNumber(runner.phone)}
                         </div>
                       </div>
                     </div>

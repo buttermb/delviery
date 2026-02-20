@@ -16,7 +16,7 @@ import {
   Pause,
 } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, formatPhoneNumber } from "@/lib/formatters";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { getStatusColor, getStatusVariant } from "@/lib/utils/statusColors";
 import { toast } from "@/hooks/use-toast";
@@ -427,7 +427,7 @@ export default function TenantDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Phone</p>
-                    <p className="text-base text-[hsl(var(--super-admin-text))]">{tenant.phone || "N/A"}</p>
+                    <p className="text-base text-[hsl(var(--super-admin-text))]">{formatPhoneNumber(tenant.phone, { fallback: 'N/A' })}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Stripe Customer ID</p>

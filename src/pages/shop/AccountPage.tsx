@@ -43,6 +43,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface CustomerOrder {
   id: string;
@@ -1361,7 +1362,7 @@ function ProfileSection({
               />
             ) : (
               <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
-                {profile.phone || '—'}
+                {formatPhoneNumber(profile.phone)}
               </p>
             )}
           </div>

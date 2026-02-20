@@ -58,7 +58,7 @@ import { useActivityLog } from '@/hooks/useActivityLog';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import { formatSmartDate } from '@/lib/formatters';
+import { formatSmartDate, formatPhoneNumber } from '@/lib/formatters';
 
 interface CustomerMergeProps {
   open: boolean;
@@ -461,7 +461,7 @@ export function CustomerMerge({
             {customer.first_name} {customer.last_name}
           </CardTitle>
           <CardDescription>
-            {customer.email || customer.phone || 'No contact info'}
+            {customer.email || formatPhoneNumber(customer.phone, { fallback: '' }) || 'No contact info'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
@@ -681,7 +681,7 @@ export function CustomerMerge({
                                   {customer.first_name} {customer.last_name}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                  {customer.email || customer.phone || 'No contact info'}
+                                  {customer.email || formatPhoneNumber(customer.phone, { fallback: '' }) || 'No contact info'}
                                 </p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />

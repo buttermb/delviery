@@ -26,6 +26,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -503,7 +504,7 @@ export default function DeliveryDashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{runner.full_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {runner.vehicle_type} • {runner.phone}
+                          {runner.vehicle_type} • {formatPhoneNumber(runner.phone)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

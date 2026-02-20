@@ -21,6 +21,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { useCustomerPortalOrders } from '@/hooks/useCustomerPortalOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface CustomerUser {
   id: string;
@@ -487,7 +488,7 @@ function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) 
               />
             ) : (
               <p className="text-sm py-2 px-3 bg-muted rounded-lg min-h-[40px] flex items-center">
-                {profile.phone || '\u2014'}
+                {formatPhoneNumber(profile.phone)}
               </p>
             )}
           </div>

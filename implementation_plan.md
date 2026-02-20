@@ -580,7 +580,7 @@
 
 - [x] Task 343: Fix all currency displays � consistent ,XXX.XX format everywhere
 - [x] Task 344: Fix all date displays � consistent MMM dd, yyyy or relative ('2 hours ago')
-- [ ] Task 345: Fix phone number displays � formatted (XXX) XXX-XXXX
+- [x] Task 345: Fix phone number displays � formatted (XXX) XXX-XXXX
 - [ ] Task 346: Fix long text truncation � ellipsis with tooltip on hover for names, descriptions
 - [ ] Task 347: Fix order status badge colors � consistent: pending=yellow, confirmed=blue, shipped=purple, delivered=green, cancelled=red
 - [ ] Task 348: Fix invoice status badge colors � draft=gray, sent=blue, paid=green, partial=yellow, overdue=red, void=black

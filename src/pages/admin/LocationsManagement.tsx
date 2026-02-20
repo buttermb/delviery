@@ -19,6 +19,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -361,7 +362,7 @@ export default function LocationsManagement() {
                   {location.phone && (
                     <div>
                       <span className="text-muted-foreground">Phone:</span>
-                      <p className="font-medium">{location.phone}</p>
+                      <p className="font-medium">{formatPhoneNumber(location.phone)}</p>
                     </div>
                   )}
                   {location.license_number && (

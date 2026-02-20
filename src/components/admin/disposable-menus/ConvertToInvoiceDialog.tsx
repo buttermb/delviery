@@ -16,6 +16,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 export interface ConvertToInvoiceDialogProps {
   open: boolean;
@@ -321,7 +322,7 @@ export function ConvertToInvoiceDialog({
                           <div className="flex flex-col">
                             <span className="font-medium">{client.business_name}</span>
                             <span className="text-xs text-muted-foreground">
-                              {client.contact_name} • {client.phone}
+                              {client.contact_name} • {formatPhoneNumber(client.phone)}
                             </span>
                           </div>
                         </SelectItem>
@@ -341,7 +342,7 @@ export function ConvertToInvoiceDialog({
                   <div className="text-sm text-muted-foreground space-y-1">
                     <div>Contact: {selectedClient.contact_name}</div>
                     {selectedClient.email && <div>Email: {selectedClient.email}</div>}
-                    <div>Phone: {selectedClient.phone}</div>
+                    <div>Phone: {formatPhoneNumber(selectedClient.phone)}</div>
                   </div>
                 </div>
               )}

@@ -29,6 +29,9 @@ export {
   formatFileSize,
 } from './utils/formatNumber';
 
+// Phone formatting
+export { formatPhoneNumber } from './utils/formatPhone';
+
 // Time validation
 export {
   isValidTime,
@@ -77,6 +80,10 @@ export {
  * - formatDuration(90) → "1 hour 30 min"
  * - formatFileSize(1024) → "1 KB"
  * 
+ * PHONE:
+ * - formatPhoneNumber('5551234567') → "(555) 123-4567"
+ * - formatPhoneNumber(null) → "—"
+ *
  * STATUS:
  * - getStatusColors('pending') → { bg: '...', text: '...', ... }
  * - getStatusBadgeClasses('success') → "bg-green-100 text-green-800 ..."

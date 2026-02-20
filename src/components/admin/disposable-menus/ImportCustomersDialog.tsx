@@ -16,6 +16,7 @@ import { Search, Users, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface ImportCustomersDialogProps {
   menuId: string;
@@ -210,7 +211,7 @@ export const ImportCustomersDialog = ({
                         {client.contact_name && client.business_name && (
                           <p>Contact: {client.contact_name}</p>
                         )}
-                        <p>Phone: {client.phone}</p>
+                        <p>Phone: {formatPhoneNumber(client.phone)}</p>
                         {client.email && <p>Email: {client.email}</p>}
                       </div>
                     </div>

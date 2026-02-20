@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Search, User, Package, ShoppingCart, MapPin, Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatStatus } from "@/utils/stringHelpers";
-import { formatSmartDate } from "@/lib/formatters";
+import { formatSmartDate, formatPhoneNumber } from "@/lib/formatters";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface UserSearchResult {
@@ -213,7 +213,7 @@ const GlobalSearch = () => {
                             {user.phone && (
                               <div className="flex items-center gap-1">
                                 <Phone className="h-3 w-3" />
-                                {user.phone}
+                                {formatPhoneNumber(user.phone)}
                               </div>
                             )}
                           </div>
