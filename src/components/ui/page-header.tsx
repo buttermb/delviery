@@ -360,7 +360,7 @@ function SubHeader({
         )}
       </div>
       {actions && actions.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {actions.map((action, index) => (
             <ActionButton key={index} {...action} />
           ))}

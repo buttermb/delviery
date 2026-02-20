@@ -153,7 +153,7 @@ export default function AnalyticsHubPage() {
                         hubHref="analytics-hub"
                         currentTab={activeTabLabel}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Analytics</h1>
                             <p className="text-muted-foreground text-sm">

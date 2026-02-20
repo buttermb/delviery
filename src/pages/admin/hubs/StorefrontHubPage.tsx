@@ -95,7 +95,7 @@ export default function StorefrontHubPage() {
                         hubHref="storefront-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Storefront</h1>
                             <p className="text-muted-foreground text-sm">
@@ -103,7 +103,7 @@ export default function StorefrontHubPage() {
                             </p>
                         </div>
                         {/* Quick Actions - Always Visible */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"

@@ -83,7 +83,7 @@ export default function FulfillmentHubPage() {
                         hubHref="fulfillment-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Fulfillment & Delivery</h1>
                             <p className="text-muted-foreground text-sm">

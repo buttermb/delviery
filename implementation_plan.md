@@ -607,7 +607,7 @@
 - [x] Task 363: Fix dashboard stat cards — stack vertically on mobile, no horizontal scroll
 - [x] Task 364: Fix form layouts on mobile — full-width inputs, no side-by-side on small screens — Fixed 13 form grid layouts across: DocumentDetail, BulkCouponGenerator, CreateTenantDialog (3), CustomerImportDialog, CustomerDeliveryAddressesTab, CustomerQuickView, SpecialPricing, DeliveryScheduler, CreateMenuDialog, InvoiceTemplateEditor, EarningRulesConfig
 - [x] Task 365: Fix table horizontal scroll � add shadow indicators showing more content
-- [ ] Task 366: Fix header/toolbar wrapping � actions wrap gracefully, no overflow hidden
+- [x] Task 366: Fix header/toolbar wrapping � actions wrap gracefully, no overflow hidden
 - [ ] Task 367: Fix print stylesheets � invoices, receipts, reports print clean with no nav/sidebar
 - [ ] Task 368: Fix viewport height issues � no content hidden behind fixed headers/footers on iOS
 - [ ] Task 369: Run npx tsc --noEmit � Checkpoint
