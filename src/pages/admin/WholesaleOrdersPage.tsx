@@ -28,7 +28,9 @@ import {
   RefreshCw,
   DollarSign,
   FileText,
-  Warehouse
+  Warehouse,
+  Filter,
+  X
 } from 'lucide-react';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
@@ -141,6 +143,19 @@ export default function WholesaleOrdersPage() {
   const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
   const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
   const handleViewModeChange = useCallback((v: 'selling' | 'buying') => setFilters({ view: v }), [setFilters]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (statusFilter !== 'all') count++;
+    return count;
+  }, [searchQuery, statusFilter]);
+
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const handleClearFilters = useCallback(() => {
+    clearUrlFilters();
+  }, [clearUrlFilters]);
 
   // UI state
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
@@ -846,12 +861,22 @@ export default function WholesaleOrdersPage() {
         {/* Filters & Search */}
         <Card className="p-4">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
-            <div className="w-full sm:w-80">
-              <SearchInput
-                placeholder="Search by order #, client, runner..."
-                defaultValue={searchQuery}
-                onSearch={handleSearchChange}
-              />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              {activeFilterCount > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Badge variant="secondary" className="h-5 px-1.5 text-xs font-medium">
+                    {activeFilterCount}
+                  </Badge>
+                </div>
+              )}
+              <div className="w-full sm:w-80">
+                <SearchInput
+                  placeholder="Search by order #, client, runner..."
+                  defaultValue={searchQuery}
+                  onSearch={handleSearchChange}
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
               <div className="flex bg-muted/20 p-1 rounded-lg">
@@ -870,6 +895,17 @@ export default function WholesaleOrdersPage() {
                   </Button>
                 ))}
               </div>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 px-2"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Clear
+                </Button>
+              )}
             </div>
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t">

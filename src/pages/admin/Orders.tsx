@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit, RotateCcw } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit, RotateCcw, Filter } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -480,6 +480,14 @@ export default function Orders() {
   }, [setFilters]);
 
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (statusFilter !== 'all') count++;
+    if (dateRange.from || dateRange.to) count++;
+    return count;
+  }, [searchQuery, statusFilter, dateRange.from, dateRange.to]);
 
   const handleSort = (field: OrderSortField) => {
     if (sortField === field) {
@@ -1032,6 +1040,14 @@ export default function Orders() {
           <Card className="p-3 sm:p-4 border-none shadow-sm">
             <div className="flex flex-col gap-3 sm:gap-4 mb-4">
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {activeFilterCount > 0 && (
+                  <div className="flex items-center gap-1.5 self-center">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs font-medium">
+                      {activeFilterCount}
+                    </Badge>
+                  </div>
+                )}
                 <div className="relative flex-1">
                   <SearchInput
                     defaultValue={searchQuery}
