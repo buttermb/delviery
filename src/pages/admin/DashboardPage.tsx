@@ -143,7 +143,7 @@ export function DashboardPage() {
     return (
       <div className="p-4 sm:p-6 space-y-6">
         <Skeleton className="h-8 w-48" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <KPICardSkeleton key={i} />
           ))}
@@ -337,7 +337,7 @@ export function DashboardPage() {
               <ShoppingCart className="h-5 w-5 text-blue-600" />
               Orders
             </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
@@ -425,7 +425,7 @@ export function DashboardPage() {
               <Package className="h-5 w-5 text-purple-600" />
               Inventory
             </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (

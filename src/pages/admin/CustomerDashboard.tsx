@@ -252,7 +252,7 @@ function StatsCard({ title, value, icon: Icon, trend, trendUp, color, bg, delay 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="min-w-[280px] sm:min-w-0 snap-center"
+      className=""
     >
       <Card className="border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -385,7 +385,7 @@ export default function CustomerDashboard() {
           <div className="h-8 w-48 bg-muted animate-pulse rounded" />
           <div className="h-8 w-32 bg-muted animate-pulse rounded" />
         </div>
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           {[1, 2, 3, 4, 5].map(i => (
             <StatsCardSkeleton key={i} />
           ))}
@@ -482,8 +482,8 @@ export default function CustomerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
-      <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 gap-4 snap-x snap-mandatory hide-scrollbar">
+      {/* Stats Cards - Stack on mobile, grid on larger screens */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
         {statsCards.map((stat, index) => (
           <StatsCard
             key={stat.title}
