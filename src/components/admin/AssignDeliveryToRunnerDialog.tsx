@@ -1,7 +1,7 @@
-import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { MapPin, DollarSign, Package, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MapPin, DollarSign, Package, Loader2 } from "lucide-react";
-import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
 
 interface AssignDeliveryToRunnerDialogProps {
   open: boolean;
@@ -29,40 +31,39 @@ export const AssignDeliveryToRunnerDialog = ({
   runnerName,
 }: AssignDeliveryToRunnerDialogProps) => {
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
-  const [assigning, setAssigning] = useState(false);
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   // Fetch pending orders (orders without delivery assignments)
   const { data: pendingOrders, isLoading } = useQuery({
-    queryKey: ["pending-orders-for-assignment"],
+    queryKey: [...queryKeys.wholesaleOrders.lists(), 'pending-unassigned', tenant?.id],
     queryFn: async () => {
+      if (!tenant?.id) throw new Error('No tenant context');
       const { data, error } = await supabase
         .from("wholesale_orders")
         .select("*")
+        .eq("tenant_id", tenant.id)
         .eq("status", "pending")
         .is("assigned_runner_id", null)
         .order("created_at", { ascending: false })
         .limit(20);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Failed to load pending orders', error, { component: 'AssignDeliveryToRunnerDialog' });
+        throw error;
+      }
       return data || [];
     },
-    enabled: open,
+    enabled: open && !!tenant?.id,
   });
 
-  const handleAssign = async () => {
-    if (!selectedOrderId) {
-      showErrorToast("Please select an order");
-      return;
-    }
-
-    setAssigning(true);
-    try {
+  const assignMutation = useMutation({
+    mutationFn: async (orderId: string) => {
       const { data, error } = await supabase.functions.invoke(
         "wholesale-delivery-assign",
         {
           body: {
-            order_id: selectedOrderId,
+            order_id: orderId,
             runner_id: runnerId,
           },
         }
@@ -76,27 +77,34 @@ export const AssignDeliveryToRunnerDialog = ({
         throw new Error(errorMessage);
       }
 
-      showSuccessToast(
-        "Delivery Assigned",
-        `Order has been assigned to ${runnerName}`
-      );
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Delivery Assigned", {
+        description: `Order has been assigned to ${runnerName}`,
+      });
 
-      // Refresh queries
-      queryClient.invalidateQueries({ queryKey: ["active-deliveries"] });
-      queryClient.invalidateQueries({ queryKey: ["pending-orders-for-assignment"] });
-      queryClient.invalidateQueries({ queryKey: ["runners"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runners.all });
 
       onOpenChange(false);
       setSelectedOrderId("");
-    } catch (error: unknown) {
+    },
+    onError: (error: unknown) => {
       logger.error("Assignment error", error instanceof Error ? error : new Error(String(error)), { component: 'AssignDeliveryToRunnerDialog', runnerId, orderId: selectedOrderId });
-      showErrorToast(
-        "Assignment Failed",
-        error instanceof Error ? error.message : "Unable to assign delivery to runner"
-      );
-    } finally {
-      setAssigning(false);
+      toast.error("Assignment Failed", {
+        description: error instanceof Error ? error.message : "Unable to assign delivery to runner",
+      });
+    },
+  });
+
+  const handleAssign = () => {
+    if (!selectedOrderId) {
+      toast.error("Please select an order");
+      return;
     }
+    assignMutation.mutate(selectedOrderId);
   };
 
   return (
@@ -182,17 +190,17 @@ export const AssignDeliveryToRunnerDialog = ({
               onOpenChange(false);
               setSelectedOrderId("");
             }}
-            disabled={assigning}
+            disabled={assignMutation.isPending}
             className="flex-1"
           >
             Cancel
           </Button>
           <Button
             type="submit"
-            disabled={!selectedOrderId || assigning}
+            disabled={!selectedOrderId || assignMutation.isPending}
             className="flex-1 bg-emerald-500 hover:bg-emerald-600"
           >
-            {assigning ? (
+            {assignMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Assigning...
