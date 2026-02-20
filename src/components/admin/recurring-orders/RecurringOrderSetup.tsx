@@ -89,7 +89,7 @@ function RecurringOrderSetupComponent({
   const { createSchedule, updateSchedule } = useRecurringOrders();
   const { data: clients = [], isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useWholesaleClients();
   const { data: couriers = [] } = useWholesaleCouriers();
-  const { data: products = [] } = useProductsForWholesale();
+  const { data: products = [], isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useProductsForWholesale();
 
   const [orderItems, setOrderItems] = useState<RecurringOrderItem[]>(
     editSchedule?.order_items || [{ product_name: "", quantity: 1, unit_price: 0 }]
@@ -465,26 +465,43 @@ function RecurringOrderSetupComponent({
                 <CardContent className="p-3">
                   <div className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-5">
-                      <Select
-                        value={item.product_name}
-                        onValueChange={(v) => handleProductSelect(index, v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select product" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((product: { id: string; product_name: string; base_price: number }) => (
-                            <SelectItem key={product.id} value={product.product_name}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{product.product_name}</span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  {formatCurrency(product.base_price)}/unit
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {productsLoading ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Loading products...</span>
+                        </div>
+                      ) : productsError ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <AlertTriangle className="h-4 w-4 text-destructive" />
+                          <span className="text-sm text-destructive">Failed to load products</span>
+                          <Button type="button" variant="outline" size="sm" onClick={() => refetchProducts()}>
+                            <RefreshCw className="mr-1 h-3 w-3" /> Retry
+                          </Button>
+                        </div>
+                      ) : products.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-2">No products available.</p>
+                      ) : (
+                        <Select
+                          value={item.product_name}
+                          onValueChange={(v) => handleProductSelect(index, v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select product" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {products.map((product: { id: string; product_name: string; base_price: number }) => (
+                              <SelectItem key={product.id} value={product.product_name}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{product.product_name}</span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {formatCurrency(product.base_price)}/unit
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                     <div className="col-span-2">
                       <Input

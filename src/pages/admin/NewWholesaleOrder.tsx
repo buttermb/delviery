@@ -102,7 +102,7 @@ export default function NewWholesaleOrder() {
   });
 
   // Products catalog for wholesale orders
-  const { data: inventory = [], isLoading: isInventoryLoading } = useProductsForWholesale();
+  const { data: inventory = [], isLoading: isInventoryLoading, isError: isInventoryError, refetch: refetchInventory } = useProductsForWholesale();
   const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
 
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
@@ -613,6 +613,14 @@ export default function NewWholesaleOrder() {
                   {isInventoryLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : isInventoryError ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-3">
+                      <AlertTriangle className="h-6 w-6 text-destructive" />
+                      <p className="text-sm text-destructive">Failed to load products</p>
+                      <Button variant="outline" size="sm" onClick={() => refetchInventory()}>
+                        Retry
+                      </Button>
                     </div>
                   ) : (
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
