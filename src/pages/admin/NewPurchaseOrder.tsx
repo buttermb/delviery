@@ -19,6 +19,7 @@ import {
     ShoppingCart,
     Search
 } from 'lucide-react';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { SmartVendorPicker } from '@/components/wholesale/SmartVendorPicker';
 import { Vendor } from '@/hooks/useVendors';
 import { format } from 'date-fns';
@@ -246,12 +247,14 @@ export default function NewPurchaseOrder() {
                                 onClear={() => setPoData(prev => ({ ...prev, vendor: null }))}
                             />
                             <div className="mt-6 flex justify-end">
-                                <Button
-                                    onClick={handleNext}
-                                    disabled={!poData.vendor}
-                                >
-                                    Next Step <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
+                                <DisabledTooltip disabled={!poData.vendor} reason="Select a vendor to continue">
+                                    <Button
+                                        onClick={handleNext}
+                                        disabled={!poData.vendor}
+                                    >
+                                        Next Step <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DisabledTooltip>
                             </div>
                         </Card>
                     )}
@@ -390,14 +393,19 @@ export default function NewPurchaseOrder() {
                         </div>
 
                         {step === 2 && (
-                            <Button
-                                className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700"
-                                size="lg"
-                                onClick={handleSubmit}
-                                disabled={isSubmitting || poData.items.length === 0}
+                            <DisabledTooltip
+                                disabled={!isSubmitting && poData.items.length === 0}
+                                reason="Add at least one item to create a purchase order"
                             >
-                                {isSubmitting ? 'Creating...' : 'Create Purchase Order'}
-                            </Button>
+                                <Button
+                                    className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700"
+                                    size="lg"
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting || poData.items.length === 0}
+                                >
+                                    {isSubmitting ? 'Creating...' : 'Create Purchase Order'}
+                                </Button>
+                            </DisabledTooltip>
                         )}
                     </Card>
                 </div>

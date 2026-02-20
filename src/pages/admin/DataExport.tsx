@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { formatSmartDate } from '@/lib/formatters';
 import { Download } from 'lucide-react';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { humanizeError } from '@/lib/humanizeError';
@@ -191,11 +192,13 @@ export default function DataExport() {
               <CreditCostIndicator actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} />
             )}
 
-            <Button onClick={triggerExport} className="w-full" disabled={!exportType}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Data
-              {isFreeTier && <CreditCostBadge actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} className="ml-2" />}
-            </Button>
+            <DisabledTooltip disabled={!exportType} reason="Select a data type to export">
+              <Button onClick={triggerExport} className="w-full" disabled={!exportType}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+                {isFreeTier && <CreditCostBadge actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} className="ml-2" />}
+              </Button>
+            </DisabledTooltip>
           </CardContent>
         </Card>
 

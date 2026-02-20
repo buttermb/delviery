@@ -595,7 +595,7 @@
 - [x] Task 354: Add loading spinners to all submit buttons during save — Added Loader2 animate-spin spinners to 24+ submit buttons across 20 files: TenantSecuritySettings, ConfirmDialog, OrderBulkStatusConfirmDialog, OrganizationForm, SmartVendorPicker, AutomatedSecuritySettings, CustomPresetBuilder, SimpleStorefrontEditor, DeliveryStatusDialog, PaymentDialog, OrderAssignCourier, CashCountDialog, CashDrawerEventDialog, StockAlertSettings, SettingsPage (3 forms), WarehousesPage, Notifications, StorefrontBuilder, StorefrontDashboard, AdminUsersPage, CreateTenantPage, PromoCodeManagementPage, WorkflowVersionHistory, DeadLetterQueue. All buttons now show spinning Loader2 icon during pending state, replacing static icons or adding spinner alongside text-only fallbacks.
 - [x] Task 355: Fix delete confirmations � every destructive action has confirm dialog with item name
 - [x] Task 356: Fix action dropdown menus on tables � Edit, View, Delete, status changes all wired
-- [ ] Task 357: Fix disabled button states � visually distinct, cursor not-allowed, tooltip explaining why
+- [x] Task 357: Fix disabled button states � visually distinct, cursor not-allowed, tooltip explaining why
 - [ ] Task 358: Add keyboard shortcut hints � Cmd+S to save, Cmd+N for new, Escape to cancel
 - [ ] Task 359: Fix floating action buttons � consistent position bottom-right on mobile
 - [ ] Task 360: Run npx tsc --noEmit � Checkpoint

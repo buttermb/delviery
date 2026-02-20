@@ -42,6 +42,7 @@ import { logger } from '@/lib/logger';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { ClientSelector } from "@/components/crm/ClientSelector";
+import { DisabledTooltip } from "@/components/shared/DisabledTooltip";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
@@ -377,11 +378,13 @@ export default function CreateInvoicePage() {
                         <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/invoices')}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
-                            {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            {accountLoading ? 'Loading...' : 'Create Invoice'}
-                        </Button>
+                        <DisabledTooltip disabled={!isAccountReady && !accountLoading && !createInvoice.isPending} reason="Account context not available">
+                            <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
+                                {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                {accountLoading ? 'Loading...' : 'Create Invoice'}
+                            </Button>
+                        </DisabledTooltip>
                     </div>
                 </form>
             </Form>

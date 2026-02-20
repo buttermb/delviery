@@ -13,6 +13,7 @@ import { ChevronLeft, ChevronRight, Settings2, Bell } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BrowserNotificationToggle } from '@/components/admin/BrowserNotificationToggle';
 import { SoundAlertToggle } from '@/components/admin/SoundAlertToggle';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import {
   Collapsible,
   CollapsibleContent,
@@ -112,24 +113,28 @@ export function ActivityLogs() {
                 Page {currentPage} of {totalPages} ({totalCount} total entries)
               </span>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={prevPage}
-                  disabled={!hasPrevPage || isLoading}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={nextPage}
-                  disabled={!hasNextPage || isLoading}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
+                <DisabledTooltip disabled={!hasPrevPage && !isLoading} reason="No previous pages">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={prevPage}
+                    disabled={!hasPrevPage || isLoading}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+                </DisabledTooltip>
+                <DisabledTooltip disabled={!hasNextPage && !isLoading} reason="No more pages">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={nextPage}
+                    disabled={!hasNextPage || isLoading}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </DisabledTooltip>
               </div>
             </div>
           )}

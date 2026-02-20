@@ -35,6 +35,7 @@ import { CustomerDeliveryMap } from '@/components/admin/customers/CustomerDelive
 import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
 import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/CustomerRelatedEntitiesPanel';
 import { CustomerComplianceVerification } from '@/components/admin/customers/CustomerComplianceVerification';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { displayName, displayValue } from '@/lib/formatters';
 
@@ -767,29 +768,34 @@ export default function CustomerDetails() {
               }}>
                 Cancel
               </Button>
-              <Button
-                onClick={async () => {
-                  if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
-                    const result = await addCredit({
-                      customerId: id,
-                      amount: parseFloat(storeCreditAmount),
-                      reason: 'Manual credit issued by admin',
-                      transactionType: 'issued',
-                    });
-                    if (result) {
-                      toast.success(`$${storeCreditAmount} store credit added`);
-                      setStoreCreditDialogOpen(false);
-                      setStoreCreditAmount('');
-                      refetchCredit();
-                    } else {
-                      toast.error('Failed to add store credit');
-                    }
-                  }
-                }}
-                disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
+              <DisabledTooltip
+                disabled={!isAddingCredit && (!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)))}
+                reason="Enter a valid credit amount"
               >
-                {isAddingCredit ? 'Adding...' : 'Add Credit'}
-              </Button>
+                <Button
+                  onClick={async () => {
+                    if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
+                      const result = await addCredit({
+                        customerId: id,
+                        amount: parseFloat(storeCreditAmount),
+                        reason: 'Manual credit issued by admin',
+                        transactionType: 'issued',
+                      });
+                      if (result) {
+                        toast.success(`$${storeCreditAmount} store credit added`);
+                        setStoreCreditDialogOpen(false);
+                        setStoreCreditAmount('');
+                        refetchCredit();
+                      } else {
+                        toast.error('Failed to add store credit');
+                      }
+                    }
+                  }}
+                  disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
+                >
+                  {isAddingCredit ? 'Adding...' : 'Add Credit'}
+                </Button>
+              </DisabledTooltip>
             </div>
           </div>
         </DialogContent>

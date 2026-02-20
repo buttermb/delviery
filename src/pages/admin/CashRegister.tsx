@@ -46,6 +46,7 @@ import {
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
@@ -1050,38 +1051,39 @@ function CashRegisterContent() {
               {topProducts.map((product) => {
                 const outOfStock = (product.stock_quantity ?? 0) <= 0;
                 return (
-                  <Button
-                    key={product.id}
-                    variant="outline"
-                    onClick={() => addToCart(product)}
-                    disabled={outOfStock || isAddingToCart === product.id}
-                    className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
-                  >
-                    {isAddingToCart === product.id ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="h-10 w-10 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 bg-muted rounded flex items-center justify-center">
-                            <Tag className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                        <span className="font-medium text-xs truncate w-full text-center">{product.name}</span>
-                        <span className="text-xs text-muted-foreground">{formatCurrency(product.price)}</span>
-                        {outOfStock && (
-                          <Badge variant="destructive" className="text-[10px] px-1 py-0 absolute top-1 right-1">
-                            Out
-                          </Badge>
-                        )}
-                      </>
-                    )}
-                  </Button>
+                  <DisabledTooltip key={product.id} disabled={outOfStock} reason="Out of stock">
+                    <Button
+                      variant="outline"
+                      onClick={() => addToCart(product)}
+                      disabled={outOfStock || isAddingToCart === product.id}
+                      className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
+                    >
+                      {isAddingToCart === product.id ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          {product.image_url ? (
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                              className="h-10 w-10 object-cover rounded"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 bg-muted rounded flex items-center justify-center">
+                              <Tag className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <span className="font-medium text-xs truncate w-full text-center">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">{formatCurrency(product.price)}</span>
+                          {outOfStock && (
+                            <Badge variant="destructive" className="text-[10px] px-1 py-0 absolute top-1 right-1">
+                              Out
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                    </Button>
+                  </DisabledTooltip>
                 );
               })}
             </div>
@@ -1157,25 +1159,29 @@ function CashRegisterContent() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-10 w-10 lg:h-11 lg:w-11"
-                        onClick={() => updateQuantity(item.id, -1)}
-                        disabled={item.quantity <= 1}
-                      >
-                        <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                      </Button>
+                      <DisabledTooltip disabled={item.quantity <= 1} reason="Minimum quantity is 1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10 lg:h-11 lg:w-11"
+                          onClick={() => updateQuantity(item.id, -1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3 md:h-4 md:w-4" />
+                        </Button>
+                      </DisabledTooltip>
                       <span className="w-8 text-center text-sm md:text-base">{item.quantity}</span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-10 w-10 lg:h-11 lg:w-11"
-                        onClick={() => updateQuantity(item.id, 1)}
-                        disabled={item.quantity >= item.stock_quantity}
-                      >
-                        <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                      </Button>
+                      <DisabledTooltip disabled={item.quantity >= item.stock_quantity} reason="Maximum stock reached">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10 lg:h-11 lg:w-11"
+                          onClick={() => updateQuantity(item.id, 1)}
+                          disabled={item.quantity >= item.stock_quantity}
+                        >
+                          <Plus className="h-3 w-3 md:h-4 md:w-4" />
+                        </Button>
+                      </DisabledTooltip>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -1279,29 +1285,31 @@ function CashRegisterContent() {
                 Add Item
                 <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F3</kbd>
               </Button>
-              <Button
-                className="flex-1 md:min-h-[44px]"
-                variant="default"
-                onClick={async () => {
-                  await executeCreditAction('pos_process_sale', async () => {
-                    await processPayment.mutateAsync();
-                  });
-                }}
-                disabled={cart.length === 0 || processPayment.isPending}
-              >
-                {processPayment.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    {!isOnline ? 'Queue Payment' : 'Pay'}
-                    <span className="ml-1.5 hidden sm:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
-                  </>
-                )}
-              </Button>
+              <DisabledTooltip disabled={cart.length === 0 && !processPayment.isPending} reason="Add items to cart before processing payment">
+                <Button
+                  className="flex-1 md:min-h-[44px]"
+                  variant="default"
+                  onClick={async () => {
+                    await executeCreditAction('pos_process_sale', async () => {
+                      await processPayment.mutateAsync();
+                    });
+                  }}
+                  disabled={cart.length === 0 || processPayment.isPending}
+                >
+                  {processPayment.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      {!isOnline ? 'Queue Payment' : 'Pay'}
+                      <span className="ml-1.5 hidden sm:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
+                    </>
+                  )}
+                </Button>
+              </DisabledTooltip>
             </div>
           </CardContent>
         </Card>

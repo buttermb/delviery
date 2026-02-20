@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
+import { DisabledTooltip } from "@/components/shared/DisabledTooltip";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function FinancialCenter() {
@@ -400,14 +401,19 @@ export default function FinancialCenter() {
                 rows={3}
               />
             </div>
-            <Button 
-              className="w-full"
-              onClick={submitSchedule}
+            <DisabledTooltip
               disabled={!scheduleData.amount || !scheduleData.due_date}
+              reason="Enter both amount and due date to schedule"
             >
-              <Calendar className="h-4 w-4 mr-2" />
-              Schedule Payment
-            </Button>
+              <Button
+                className="w-full"
+                onClick={submitSchedule}
+                disabled={!scheduleData.amount || !scheduleData.due_date}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Schedule Payment
+              </Button>
+            </DisabledTooltip>
           </div>
         </DialogContent>
       </Dialog>
