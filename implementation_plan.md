@@ -555,7 +555,7 @@
 
 ## Phase C3: Navigation & Routing Fixes (9 tasks)
 
-- [ ] Task 326: Fix breadcrumb trail on all detail pages � Dashboard > Orders > Order #123
+- [x] Task 326: Fix breadcrumb trail on all detail pages — Added useBreadcrumbLabel() to 5 detail pages missing entity-specific breadcrumb labels: PreOrderDetailPage (Pre-Order #N), FrontedInventoryDetails (Fronted #ID), marketplace/OrderDetailPage (Order #N), CustomerInsights (customer name), DeliveryTracking (Delivery #N). All other detail pages already had proper breadcrumb labels.
 - [ ] Task 327: Fix back button behavior � go to parent list, not browser back
 - [ ] Task 328: Fix sidebar active state highlighting � correct item highlighted on all routes
 - [ ] Task 329: Fix sidebar collapse state persistence � remember collapsed/expanded across navigation

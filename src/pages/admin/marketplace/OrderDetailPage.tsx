@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/dialog';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -83,6 +84,8 @@ export default function OrderDetailPage() {
         },
         enabled: !!orderId,
     });
+
+    useBreadcrumbLabel(order ? `Order #${order.order_number}` : null);
 
     // Update order status
     const updateStatusMutation = useMutation({

@@ -9,6 +9,7 @@ import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { SEOHead } from "@/components/SEOHead";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 
 export default function DeliveryTracking() {
   const { id } = useParams();
@@ -38,6 +39,9 @@ export default function DeliveryTracking() {
     enabled: !!id && !!tenant,
     refetchInterval: 10000 // Refresh every 10 seconds
   });
+
+  const deliveryOrders = delivery?.orders as Record<string, unknown> | null;
+  useBreadcrumbLabel(delivery ? `Delivery #${deliveryOrders?.order_number ?? (id?.slice(0, 8) ?? '')}` : null);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {

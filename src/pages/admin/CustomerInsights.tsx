@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -36,6 +37,9 @@ export default function CustomerInsights() {
     },
     enabled: !!id && !!tenantId,
   });
+
+  const customerRecord = customer as Record<string, unknown> | null;
+  useBreadcrumbLabel(customerRecord ? `${customerRecord.first_name ?? ''} ${customerRecord.last_name ?? ''}`.trim() || null : null);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['customer-orders', id, tenantId],

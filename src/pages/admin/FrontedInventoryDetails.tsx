@@ -22,6 +22,7 @@ import {
 import { format } from "date-fns";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function FrontedInventoryDetails() {
@@ -33,6 +34,8 @@ export default function FrontedInventoryDetails() {
   const [product, setProduct] = useState<any>(null);
   const [scans, setScans] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+
+  useBreadcrumbLabel(front ? `Fronted #${(front.id as string).slice(0, 8)}` : null);
 
   useEffect(() => {
     if (tenant) {
