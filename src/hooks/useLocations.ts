@@ -310,7 +310,7 @@ export const useLocations = (filters?: { status?: string }) => {
 
 // Hook to get locations for dropdown/select components
 export const useLocationOptions = () => {
-  const { locations, isLoading } = useLocations({ status: 'active' });
+  const { locations, isLoading, error, refetch } = useLocations({ status: 'active' });
 
   const options = locations.map((loc) => ({
     value: loc.id,
@@ -321,5 +321,8 @@ export const useLocationOptions = () => {
   return {
     options,
     isLoading,
+    isError: !!error,
+    error,
+    refetch,
   };
 };
