@@ -28,7 +28,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { wholesaleOrderFlowManager, WholesaleOrderStatus } from '@/lib/orders/wholesaleOrderFlowManager';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { LastUpdated } from '@/components/ui/last-updated';
 import { toast } from 'sonner';
 import {
@@ -61,7 +62,7 @@ interface ColumnProps {
 }
 
 function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: ColumnProps) {
-    const navigate = useNavigate();
+    const navigate = useTenantNavigate();
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const handleCopyId = (e: React.MouseEvent, id: string) => {

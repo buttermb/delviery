@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -51,7 +51,7 @@ interface ConvertPreOrderDialogProps {
 
 export function ConvertPreOrderDialog({ preOrder, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: ConvertPreOrderDialogProps) {
     const [internalOpen, setInternalOpen] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useTenantNavigate();
     const convertPreOrder = useConvertPreOrderToInvoice();
     const logActivity = useLogActivity();
 

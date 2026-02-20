@@ -36,6 +36,7 @@ import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
+import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import type { Json } from '@/integrations/supabase/types';
 
 // Extended Menu type with computed/joined fields from queries
@@ -71,6 +72,7 @@ interface MenuCardProps {
 }
 
 export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
+  const navigate = useTenantNavigate();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [burnDialogOpen, setBurnDialogOpen] = useState(false);
   const [manageAccessOpen, setManageAccessOpen] = useState(false);
@@ -340,7 +342,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                             from_menu: menu.id,
                             menu_name: menu.name || 'My Storefront',
                           });
-                          window.location.href = `/admin/storefront/builder?${params.toString()}`;
+                          navigate(`/admin/storefront/builder?${params.toString()}`);
                         }}
                         className="text-violet-600 focus:text-violet-700 focus:bg-violet-50"
                       >
