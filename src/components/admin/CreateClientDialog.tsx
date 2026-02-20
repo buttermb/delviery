@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,18 @@ interface ClientFormData {
   notes: string;
 }
 
+const defaultFormData: ClientFormData = {
+  business_name: "",
+  contact_name: "",
+  email: "",
+  phone: "",
+  address: "",
+  client_type: "sub_dealer",
+  credit_limit: "50000",
+  payment_terms: "7",
+  notes: ""
+};
+
 export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClientDialogProps) {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
@@ -46,17 +58,14 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   const contextError = !tenantLoading && !tenant?.id
     ? 'Tenant context not available. Please refresh the page or contact support.'
     : null;
-  const [formData, setFormData] = useState<ClientFormData>({
-    business_name: "",
-    contact_name: "",
-    email: "",
-    phone: "",
-    address: "",
-    client_type: "sub_dealer",
-    credit_limit: "50000",
-    payment_terms: "7",
-    notes: ""
-  });
+  const [formData, setFormData] = useState<ClientFormData>(defaultFormData);
+
+  // Reset form state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setFormData(defaultFormData);
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,17 +142,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.lists() });
       
       // Reset form
-      setFormData({
-        business_name: "",
-        contact_name: "",
-        email: "",
-        phone: "",
-        address: "",
-        client_type: "sub_dealer",
-        credit_limit: "50000",
-        payment_terms: "7",
-        notes: ""
-      });
+      setFormData(defaultFormData);
       
       onOpenChange(false);
       if (onSuccess) onSuccess();

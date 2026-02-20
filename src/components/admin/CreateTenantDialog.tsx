@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Allows super admin to create new tenants manually
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -96,6 +96,13 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
       state: '',
     },
   });
+
+  // Reset form state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
 
   const onSubmit = async (data: CreateTenantForm) => {
     try {

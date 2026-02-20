@@ -244,6 +244,58 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     menuName: string;
   } | null>(null);
 
+  // Reset all form state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setCurrentStep(1);
+      setName('');
+      setDescription('');
+      setSelectedProducts([]);
+      setProductSearch('');
+      setMinOrder('5');
+      setMaxOrder('50');
+      setCustomPrices({});
+      setApplyDiscount(false);
+      setDiscountPercent(10);
+      setExpirationHours(168);
+      setMaxViews(100);
+      setNeverExpires(false);
+      setAccessType('invite_only');
+      setRequireAccessCode(true);
+      setAccessCode(generateAccessCode());
+      setRequireGeofence(false);
+      setGeofenceLat('40.7128');
+      setGeofenceLng('-74.0060');
+      setGeofenceRadius('25');
+      setGeofenceLocation('New York City');
+      setTimeRestrictions(false);
+      setAllowedHoursStart('9');
+      setAllowedHoursEnd('21');
+      setScreenshotProtection(true);
+      setScreenshotWatermark(true);
+      setDeviceLocking(false);
+      setAutoBurnHours('never');
+      setWhitelistEnabled(false);
+      setWhitelistedEmails([]);
+      setWhitelistedPhones([]);
+      setNewEmail('');
+      setNewPhone('');
+      setNotifyOnSuspiciousIp(true);
+      setNotifyOnFailedCode(true);
+      setNotifyOnHighViews(true);
+      setNotifyOnShareAttempt(true);
+      setNotifyOnGeofenceViolation(true);
+      setShowBranding(true);
+      setAppearanceStyle('professional');
+      setShowProductImages(true);
+      setShowAvailability(true);
+      setShowContactInfo(false);
+      setCustomMessage('');
+      setHeaderImage('');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   const { data: inventory } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
   const bulkGenerateImages = useBulkGenerateImages();
