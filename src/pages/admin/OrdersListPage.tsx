@@ -473,7 +473,10 @@ export function OrdersListPage() {
               <Printer className="mr-2 h-4 w-4" />
               Print Order
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => toast.success('Invoice generated')}>
+            <DropdownMenuItem onClick={() => {
+              navigate(`crm/invoices/new?order_id=${original.id}`);
+              toast.success(`Creating invoice for order #${original.order_number || original.id.slice(0, 8)}`);
+            }}>
               <FileText className="mr-2 h-4 w-4" />
               Generate Invoice
             </DropdownMenuItem>

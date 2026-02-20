@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ import {
 export default function ProductVisibilityManager() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
+    const navigateTenant = useTenantNavigate();
     const [searchTerm, setSearchTerm] = useState("");
 
     // Fetch listings
@@ -215,8 +217,8 @@ export default function ProductVisibilityManager() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Edit Details</DropdownMenuItem>
-                                                    <DropdownMenuItem>Manage Bulk Pricing</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => navigateTenant(`/admin/marketplace/listings/${listing.id}/edit`)}>Edit Details</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => navigateTenant(`/admin/marketplace/listings/${listing.id}`)}>Manage Bulk Pricing</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
                                                         onClick={() => toggleStatus.mutate({

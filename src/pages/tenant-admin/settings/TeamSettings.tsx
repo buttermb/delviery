@@ -325,6 +325,51 @@ export default function TeamSettings() {
     }
   ];
 
+  const resendInviteMutation = useMutation({
+    mutationFn: async (member: TenantUser) => {
+      if (!tenant?.id) throw new Error('No tenant');
+      const { data: response, error } = await supabase.functions.invoke('tenant-invite', {
+        body: {
+          action: 'send_invitation',
+          tenantId: tenant.id,
+          email: member.email,
+          role: member.role,
+        },
+      });
+      if (error) throw error;
+      if (response?.error) throw new Error(response.error);
+      return response;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(`Invitation resent to ${variables.email}`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to resend invitation', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to resend invitation'));
+    },
+  });
+
+  const cancelInviteMutation = useMutation({
+    mutationFn: async (memberId: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
+      const { error } = await supabase
+        .from('tenant_users')
+        .delete()
+        .eq('id', memberId)
+        .eq('tenant_id', tenant.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Invitation cancelled');
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to cancel invitation', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to cancel invitation'));
+    },
+  });
+
   const pendingColumns: ResponsiveColumn<TenantUser>[] = [
     {
       header: "Email",
@@ -341,10 +386,26 @@ export default function TeamSettings() {
     },
     {
       header: "Actions",
-      cell: () => (
+      cell: (member) => (
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-11 w-11"><RefreshCw className="h-3 w-3" /></Button>
-          <Button variant="ghost" size="icon" className="h-11 w-11 text-destructive"><XCircle className="h-3 w-3" /></Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11"
+            onClick={() => resendInviteMutation.mutate(member)}
+            disabled={resendInviteMutation.isPending}
+          >
+            {resendInviteMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11 text-destructive"
+            onClick={() => cancelInviteMutation.mutate(member.id)}
+            disabled={cancelInviteMutation.isPending}
+          >
+            {cancelInviteMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
+          </Button>
         </div>
       )
     }

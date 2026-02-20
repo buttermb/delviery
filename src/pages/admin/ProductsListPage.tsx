@@ -621,10 +621,29 @@ export function ProductsListPage() {
             <DropdownMenuItem onClick={() => handleEdit(product.id)}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              const printWindow = window.open('', '_blank');
+              if (printWindow) {
+                printWindow.document.write(`
+                  <html><head><title>Label: ${product.name}</title>
+                  <style>body{font-family:Arial,sans-serif;padding:20px;text-align:center}
+                  .label{border:2px solid #000;padding:20px;max-width:300px;margin:0 auto}
+                  .name{font-size:18px;font-weight:bold;margin-bottom:8px}
+                  .sku{font-size:14px;color:#555;margin-bottom:4px}
+                  .price{font-size:16px;font-weight:bold;margin-top:8px}</style></head>
+                  <body><div class="label">
+                  <div class="name">${product.name}</div>
+                  ${product.sku ? `<div class="sku">SKU: ${product.sku}</div>` : ''}
+                  ${product.category ? `<div class="sku">${product.category}</div>` : ''}
+                  <div class="price">${product.wholesale_price ? `$${product.wholesale_price}` : ''}</div>
+                  </div></body></html>`);
+                printWindow.document.close();
+                printWindow.print();
+              }
+            }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigateTenant(`/admin/inventory-hub?tab=products&edit=${product.id}`)}>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
             </DropdownMenuItem>
             {product.archived_at ? (

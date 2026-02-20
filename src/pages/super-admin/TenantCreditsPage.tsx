@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -72,6 +72,7 @@ type CreditStatus = 'all' | 'healthy' | 'warning' | 'critical' | 'depleted' | 'u
 export default function TenantCreditsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // State
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -378,7 +379,10 @@ export default function TenantCreditsPage() {
                             <Edit className="h-4 w-4 mr-2" />
                             Adjust Credits
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            navigate(`/${tenant.tenantSlug}/admin/dashboard`);
+                            toast.success(`Viewing as ${tenant.tenantName}`);
+                          }}>
                             <UserCog className="h-4 w-4 mr-2" />
                             Impersonate
                           </DropdownMenuItem>
