@@ -139,18 +139,90 @@ export function getAuthErrorType(message: string): AuthErrorType {
   return 'general';
 }
 
+/** Known Supabase auth error patterns mapped to user-friendly messages */
+const AUTH_ERROR_MAP: ReadonlyArray<{ pattern: string; message: string }> = [
+  // Credential errors — never reveal which field is wrong
+  { pattern: 'invalid login credentials', message: 'Invalid email or password. Please check your credentials and try again.' },
+  { pattern: 'invalid credentials', message: 'Invalid email or password. Please check your credentials and try again.' },
+  { pattern: 'wrong password', message: 'Invalid email or password. Please check your credentials and try again.' },
+  { pattern: 'user not found', message: 'Invalid email or password. Please check your credentials and try again.' },
+  { pattern: 'no user found', message: 'Invalid email or password. Please check your credentials and try again.' },
+
+  // Email confirmation
+  { pattern: 'email not confirmed', message: 'Please verify your email address before signing in. Check your inbox for a verification link.' },
+
+  // Account state
+  { pattern: 'user already registered', message: 'An account with this email already exists. Please sign in instead.' },
+  { pattern: 'user banned', message: 'Your account has been suspended. Please contact support for assistance.' },
+  { pattern: 'user disabled', message: 'Your account has been disabled. Please contact your administrator.' },
+
+  // Rate limiting
+  { pattern: 'too many requests', message: 'Too many login attempts. Please wait a moment and try again.' },
+  { pattern: 'rate limit', message: 'Too many login attempts. Please wait a moment and try again.' },
+
+  // Session / token
+  { pattern: 'jwt expired', message: 'Your session has expired. Please sign in again.' },
+  { pattern: 'token expired', message: 'Your session has expired. Please sign in again.' },
+  { pattern: 'refresh_token_not_found', message: 'Your session has expired. Please sign in again.' },
+  { pattern: 'invalid jwt', message: 'Your session is invalid. Please sign in again.' },
+
+  // Network
+  { pattern: 'failed to fetch', message: 'Unable to connect to the server. Please check your connection and try again.' },
+  { pattern: 'network error', message: 'A network error occurred. Please check your connection and try again.' },
+  { pattern: 'load failed', message: 'Unable to connect to the server. Please try again.' },
+];
+
 /**
- * Helper function to get a user-friendly error message
+ * Helper function to get a user-friendly error message.
+ * Maps known Supabase auth errors to human-readable text so raw
+ * technical messages are never shown to users.
  */
 export function getAuthErrorMessage(error: unknown, fallback = 'An unexpected error occurred'): string {
-  if (error instanceof Error) {
-    return error.message || fallback;
+  const rawMessage = extractAuthErrorMessage(error);
+
+  if (!rawMessage) {
+    return fallback;
   }
+
+  const lowerMessage = rawMessage.toLowerCase();
+
+  for (const { pattern, message } of AUTH_ERROR_MAP) {
+    if (lowerMessage.includes(pattern)) {
+      return message;
+    }
+  }
+
+  // If the message looks user-friendly (no technical jargon), allow it through
+  if (isUserFriendlyAuthMessage(rawMessage)) {
+    return rawMessage;
+  }
+
+  return fallback;
+}
+
+/** Extract the raw message string from various error shapes */
+function extractAuthErrorMessage(error: unknown): string | undefined {
   if (typeof error === 'string') {
-    return error || fallback;
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.message;
   }
   if (error && typeof error === 'object' && 'message' in error) {
-    return String((error as { message: unknown }).message) || fallback;
+    const msg = (error as { message: unknown }).message;
+    return typeof msg === 'string' ? msg : undefined;
   }
-  return fallback;
+  return undefined;
+}
+
+/** Heuristic: message is user-friendly if it lacks technical indicators */
+function isUserFriendlyAuthMessage(message: string): boolean {
+  const technicalIndicators = [
+    'supabase', 'postgrest', 'pgrst', 'postgresql',
+    'jwt', 'token', 'schema', 'relation', 'column',
+    'constraint', 'syntax', 'stack trace', 'SQLSTATE',
+    'AuthApiError', 'AuthRetryableFetchError',
+  ];
+  const lower = message.toLowerCase();
+  return !technicalIndicators.some(indicator => lower.includes(indicator));
 }
