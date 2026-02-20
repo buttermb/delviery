@@ -175,7 +175,7 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
         throw new Error('No tenant context');
       }
 
-      const { data: newCustomer, error: createError } = await (supabase as any)
+      const { data: newCustomer, error: createError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('customers')
         .insert({
           tenant_id: tenant.id,
@@ -184,7 +184,7 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
           email: data.email || null,
           phone: data.phone || null,
           delivery_address: data.delivery_address || null,
-        })
+        } as Record<string, unknown>)
         .select('id, first_name, last_name, email, phone, created_at')
         .single();
 

@@ -74,20 +74,24 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
   });
 
   // Fetch orders for selection
-  const { data: orders } = useQuery({
-    queryKey: ["orders", "for-returns"],
+  const { data: orders, isLoading: ordersLoading, isError: ordersError } = useQuery({
+    queryKey: queryKeys.orders.list(tenant?.id),
     queryFn: async () => {
+      if (!tenant?.id) return [];
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("orders")
           .select("id, order_number, customer_id, total_amount")
+          .eq("tenant_id", tenant.id)
           .order("created_at", { ascending: false })
           .limit(100);
+        if (error) throw error;
         return data || [];
       } catch {
         return [];
       }
     },
+    enabled: !!tenant?.id,
   });
 
   useEffect(() => {
@@ -262,11 +266,28 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
                   <SelectValue placeholder="Select an order" />
                 </SelectTrigger>
                 <SelectContent>
-                  {orders?.map((order: { id: string; order_number?: string; created_at?: string; total_amount?: number }) => (
-                    <SelectItem key={order.id} value={order.id}>
-                      {order.order_number || order.id.substring(0, 8)}
+                  {ordersLoading ? (
+                    <SelectItem value="_loading" disabled>
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Loading orders...
+                      </span>
                     </SelectItem>
-                  ))}
+                  ) : ordersError ? (
+                    <SelectItem value="_error" disabled>
+                      <span className="text-destructive">Failed to load orders</span>
+                    </SelectItem>
+                  ) : !orders || orders.length === 0 ? (
+                    <SelectItem value="_empty" disabled>
+                      <span className="text-muted-foreground">No orders found</span>
+                    </SelectItem>
+                  ) : (
+                    orders.map((order: { id: string; order_number?: string; created_at?: string; total_amount?: number }) => (
+                      <SelectItem key={order.id} value={order.id}>
+                        {order.order_number || order.id.substring(0, 8)}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
