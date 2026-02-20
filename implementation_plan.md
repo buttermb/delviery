@@ -655,7 +655,7 @@
 
 ## Phase C12: Final Build (2 tasks)
 
-- [ ] Task 399: Full TypeScript check � npx tsc --noEmit, zero errors
+- [x] Task 399: Full TypeScript check — npx tsc --noEmit, zero errors. Verified: passes with exit code 0, zero errors.
 - [ ] Task 400: Production build � npx vite build, zero errors. Click every page manually. Ship it.
 
 ## Checkpoint: All 400 tasks complete. Every dropdown works. Every modal wired. Ship it.
