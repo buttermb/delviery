@@ -1,4 +1,4 @@
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2, X } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -22,8 +22,14 @@ export function SearchInput({
     isLoading = false,
 }: SearchInputProps) {
     const inputId = useId();
+    const inputRef = useRef<HTMLInputElement>(null);
     const [value, setValue] = useState(defaultValue);
     const debouncedValue = useDebounce(value, delay);
+
+    // Sync internal state when parent resets defaultValue (e.g. "Clear all filters")
+    useEffect(() => {
+        setValue(defaultValue);
+    }, [defaultValue]);
 
     useEffect(() => {
         if (typeof onSearch === 'function') {
@@ -36,6 +42,8 @@ export function SearchInput({
         if (typeof onSearch === 'function') {
             onSearch("");
         }
+        // Return focus to input after clearing
+        inputRef.current?.focus();
     };
 
     return (
@@ -43,6 +51,7 @@ export function SearchInput({
             <label htmlFor={inputId} className="sr-only">{placeholder}</label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+                ref={inputRef}
                 id={inputId}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -57,8 +66,10 @@ export function SearchInput({
 
                 {!isLoading && value && (
                     <button
+                        type="button"
+                        aria-label="Clear search"
                         onClick={handleClear}
-                        className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+                        className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                     >
                         <X className="h-4 w-4" />
                     </button>

@@ -614,7 +614,7 @@
 
 ## Phase C8: Search & Filter UX (9 tasks)
 
-- [ ] Task 370: Fix search clear button � X button resets search and shows all results
+- [x] Task 370: Fix search clear button � X button resets search and shows all results
 - [ ] Task 371: Fix filter persistence � filters survive page navigation and back button
 - [ ] Task 372: Fix combined filters � search + status + date range all work together
 - [ ] Task 373: Add active filter indicators � badge count showing how many filters active
