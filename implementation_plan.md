@@ -592,7 +592,7 @@
 ## Phase C6: Button & Action Usability (8 tasks)
 
 - [x] Task 353: Disable submit buttons during pending mutations � prevent double-submit everywhere
-- [ ] Task 354: Add loading spinners to all submit buttons during save
+- [x] Task 354: Add loading spinners to all submit buttons during save — Added Loader2 animate-spin spinners to 24+ submit buttons across 20 files: TenantSecuritySettings, ConfirmDialog, OrderBulkStatusConfirmDialog, OrganizationForm, SmartVendorPicker, AutomatedSecuritySettings, CustomPresetBuilder, SimpleStorefrontEditor, DeliveryStatusDialog, PaymentDialog, OrderAssignCourier, CashCountDialog, CashDrawerEventDialog, StockAlertSettings, SettingsPage (3 forms), WarehousesPage, Notifications, StorefrontBuilder, StorefrontDashboard, AdminUsersPage, CreateTenantPage, PromoCodeManagementPage, WorkflowVersionHistory, DeadLetterQueue. All buttons now show spinning Loader2 icon during pending state, replacing static icons or adding spinner alongside text-only fallbacks.
 - [ ] Task 355: Fix delete confirmations � every destructive action has confirm dialog with item name
 - [ ] Task 356: Fix action dropdown menus on tables � Edit, View, Delete, status changes all wired
 - [ ] Task 357: Fix disabled button states � visually distinct, cursor not-allowed, tooltip explaining why

@@ -30,7 +30,8 @@ import {
   FileText,
   ClipboardList,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -524,7 +525,7 @@ export default function StorefrontDashboard() {
               disabled={toggleStoreMutation.isPending}
               className="bg-green-600 hover:bg-green-700 gap-2"
             >
-              <Globe className="w-4 h-4" />
+              {toggleStoreMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
               Launch Store
             </Button>
           ) : (
@@ -533,6 +534,7 @@ export default function StorefrontDashboard() {
               onClick={() => toggleStoreMutation.mutate(false)}
               disabled={toggleStoreMutation.isPending}
             >
+              {toggleStoreMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Pause Store
             </Button>
           )}

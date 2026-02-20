@@ -18,6 +18,7 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -514,6 +515,7 @@ function CreatePromoCodeDialog({
             Cancel
           </Button>
           <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
+            {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {createMutation.isPending ? 'Creating...' : 'Create Code'}
           </Button>
         </DialogFooter>

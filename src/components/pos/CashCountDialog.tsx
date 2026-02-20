@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calculator, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Calculator, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useCashDrawer, calculateCashCountTotal, type CashCount } from '@/hooks/useCashDrawer';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -256,6 +256,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isPending || total === 0}>
+            {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isPending ? 'Saving...' : 'Confirm Count'}
           </Button>
         </DialogFooter>

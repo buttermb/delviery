@@ -20,6 +20,7 @@ import {
   Percent,
   Save,
   X,
+  Loader2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -763,7 +764,7 @@ export function OrganizationForm({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                <Save className="h-4 w-4 mr-2" />
+                {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Organization'}
               </Button>
             </DialogFooter>

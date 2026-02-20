@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Loader2 } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -121,6 +122,7 @@ export function ConfirmDialog({
                 buttonVariants({ variant: 'destructive' })
             )}
           >
+            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {loading ? 'Processing...' : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

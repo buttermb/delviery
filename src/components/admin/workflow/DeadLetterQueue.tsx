@@ -32,6 +32,7 @@ import {
   Eye,
   Clock,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useDeadLetterQueue } from '@/hooks/useDeadLetterQueue';
@@ -217,7 +218,7 @@ export function DeadLetterQueue() {
                           onClick={() => handleRetry(entry as DeadLetterEntry)}
                           disabled={retryExecution.isPending}
                         >
-                          <RefreshCw className="h-4 w-4 mr-2" />
+                          {retryExecution.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
                           Retry
                         </Button>
                       )}

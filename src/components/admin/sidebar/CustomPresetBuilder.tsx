@@ -25,7 +25,7 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import type { CustomPreset } from '@/types/sidebar';
-import { Plus, Save, Trash2, Edit, Check } from 'lucide-react';
+import { Plus, Save, Trash2, Edit, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CustomPresetBuilder() {
@@ -280,7 +280,7 @@ export function CustomPresetBuilder() {
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 {editingPresetId ? 'Update' : 'Create'} Preset
               </Button>
             </DialogFooter>

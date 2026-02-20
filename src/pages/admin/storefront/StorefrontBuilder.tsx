@@ -24,7 +24,7 @@ import {
     GripVertical, Trash2, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
     Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2
+    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
@@ -892,6 +892,7 @@ export function StorefrontBuilder({
                         size="sm"
                         className="bg-green-600 hover:bg-green-700"
                     >
+                        {publishMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Publish
                     </Button>
                 </div>

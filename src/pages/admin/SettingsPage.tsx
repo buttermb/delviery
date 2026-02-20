@@ -15,7 +15,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Settings, Shield, Bell, Printer, Plug, Save,
+  Settings, Shield, Bell, Printer, Plug, Save, Loader2,
   Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload, ToggleRight
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
@@ -430,7 +430,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
               </div>
             </div>
             <Button type="submit" disabled={loading}>
-              <Save className="h-4 w-4 mr-2" />
+              {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               Save General Settings
             </Button>
           </form>
@@ -591,7 +591,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   )}
                 </div>
                 <Button type="submit" disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
+                  {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                   Save Security Settings
                 </Button>
               </form>
@@ -654,7 +654,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   </div>
                 </div>
                 <Button type="submit" disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
+                  {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                   Save Notification Settings
                 </Button>
               </form>

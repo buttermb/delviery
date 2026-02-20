@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -121,6 +122,7 @@ export function DeliveryStatusDialog({
               disabled={newStatus === validCurrentStatus || updateStatus.isPending}
               className="flex-1"
             >
+              {updateStatus.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {updateStatus.isPending ? "Updating..." : "Update Status"}
             </Button>
           </DialogFooter>

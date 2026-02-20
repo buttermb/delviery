@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { INVOICE_PAYMENT_METHODS } from "@/lib/constants/paymentMethods";
@@ -180,6 +180,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
               disabled={!paymentValidation.valid || processPayment.isPending}
               className="flex-1"
             >
+              {processPayment.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {processPayment.isPending ? "Processing..." : "Process Payment"}
             </Button>
           </DialogFooter>

@@ -27,6 +27,7 @@ import Zap from "lucide-react/dist/esm/icons/zap";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import User from "lucide-react/dist/esm/icons/user";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { cn } from '@/lib/utils';
 
 interface Courier {
@@ -185,7 +186,7 @@ export function OrderAssignCourier({
               onClick={handleAutoAssign}
               disabled={assignCourierMutation.isPending}
             >
-              <Zap className="h-4 w-4 text-warning" />
+              {assignCourierMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 text-warning" />}
               Auto-assign nearest available courier
             </Button>
           )}

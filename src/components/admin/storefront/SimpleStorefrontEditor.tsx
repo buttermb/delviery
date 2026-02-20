@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Palette, ImageIcon, Layout, Box, Sparkles } from "lucide-react";
+import { Palette, ImageIcon, Layout, Box, Sparkles, Loader2 } from "lucide-react";
 import { ThemePresetStrip } from "@/components/admin/storefront/ThemePresetSelector";
 import { type ThemePreset } from "@/lib/storefrontThemes";
 import { useToast } from "@/hooks/use-toast";
@@ -234,10 +234,11 @@ export function SimpleStorefrontEditor({
             {/* 4. Actions */}
             <div className="flex justify-end gap-3 pt-4 sticky bottom-0 bg-background/80 backdrop-blur p-4 border-t z-10">
                 <Button variant="outline" onClick={onSave} disabled={isSaving}>
+                    {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Save Draft
                 </Button>
                 <Button onClick={onPublish} disabled={isSaving} className="bg-green-600 hover:bg-green-700">
-                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
                     Publish Store
                 </Button>
             </div>
