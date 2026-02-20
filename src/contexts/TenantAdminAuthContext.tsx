@@ -172,6 +172,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Allow re-initialization after logout (e.g., switching tenants)
     authInitializedRef.current = false;
   }, []);
+
+  // Helper: redirect to login page with session expired message
+  // Extracts tenant slug from URL path since state may already be cleared
+  const redirectToLoginExpired = useCallback(() => {
+    const pathMatch = location.pathname.match(/^\/([^/]+)\/admin/);
+    const slug = tenant?.slug || pathMatch?.[1];
+    if (slug) {
+      navigate(`/${slug}/admin/login?expired=1`, { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
+  }, [tenant?.slug, location.pathname, navigate]);
+
   useEffect(() => {
     const unsubscribe = onConnectionStatusChange((status) => {
       setConnectionStatus(status);
@@ -511,14 +524,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
             // Handle 401 Unauthorized - invalid or expired token
             if (verifyResponse.status === 401) {
-              // Clear auth state
+              // Clear auth state and redirect to login
               clearAuthState();
               setLoading(false);
-
-              // Show user-friendly message
-              toast.error("Your session has expired. Please log in again.", {
-                duration: 5000,
-              });
+              redirectToLoginExpired();
 
               return;
             }
@@ -555,12 +564,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             clearAuthState();
             setLoading(false);
 
-            // Show user-friendly message
-            toast.error("Your session has expired. Please log in again.", {
-              duration: 5000,
-            });
-
             logger.warn('[AUTH] Session expired - cleared all stored credentials');
+            redirectToLoginExpired();
             return;
           }
 
@@ -677,11 +682,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             clearAuthState();
             setLoading(false);
 
-            toast.error("Your session has expired. Please log in again.", {
-              duration: 5000,
-            });
-
             logger.warn('[AUTH] Background verification failed with 401 - cleared credentials');
+            redirectToLoginExpired();
             return;
           }
 
@@ -710,11 +712,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             clearAuthState();
             setLoading(false);
 
-            toast.error("Your session has expired. Please log in again.", {
-              duration: 5000,
-            });
-
             logger.warn('[AUTH] Background verification error 401 - cleared credentials');
+            redirectToLoginExpired();
             return;
           }
 
@@ -789,7 +788,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     if (!isValidRefreshToken(currentRefreshToken)) {
       logger.warn('[AUTH] Cannot refresh token - no valid refresh token available');
       clearAuthState();
-      toast.error('Your session has expired. Please log in again.', { duration: 5000 });
+      redirectToLoginExpired();
       return false;
     }
 
@@ -880,9 +879,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             logger.error('[AUTH] Supabase native refresh also failed', fallbackError);
           }
 
-          // All refresh attempts failed, clear auth state
+          // All refresh attempts failed, clear auth state and redirect
           clearAuthState();
-          toast.error('Your session has expired. Please log in again.', { duration: 5000 });
+          redirectToLoginExpired();
           return false;
         }
 

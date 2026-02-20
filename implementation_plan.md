@@ -626,7 +626,7 @@
 
 ## Phase C9: Auth & Session UX (8 tasks)
 
-- [ ] Task 379: Fix session expiry handling � redirect to login with 'Session expired' message, not white screen
+- [x] Task 379: Fix session expiry handling � redirect to login with 'Session expired' message, not white screen
 - [ ] Task 380: Fix login error messages � 'Invalid email or password' not raw Supabase error
 - [ ] Task 381: Fix forgot password flow � success message even if email doesn't exist (security)
 - [ ] Task 382: Fix register validation � inline errors, password strength indicator
