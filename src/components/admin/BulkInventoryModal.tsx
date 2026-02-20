@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { Loader2, AlertTriangle, ArrowUp, ArrowDown, Replace, Package } from "lucide-react";
 
@@ -184,9 +185,9 @@ export function BulkInventoryModal({
         toast.success(`Successfully adjusted ${successCount} products`);
       }
 
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
-      queryClient.invalidateQueries({ queryKey: ["products-for-wholesale"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
 
       resetForm();
       onOpenChange(false);

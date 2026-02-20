@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { useDirtyFormGuard } from "@/hooks/useDirtyFormGuard";
 import { Loader2 } from "lucide-react";
 import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
@@ -33,6 +35,7 @@ interface ClientFormData {
 }
 
 export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: EditClientDialogProps) {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [formData, setFormData] = useState<ClientFormData>({
@@ -137,6 +140,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       if (error) throw error;
 
       showSuccessToast("Client Updated", `${formData.business_name} updated successfully`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch (error) {

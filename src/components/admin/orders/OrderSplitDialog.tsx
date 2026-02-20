@@ -319,11 +319,13 @@ export function OrderSplitDialog({
       };
     },
     onSuccess: (result) => {
-      // Invalidate queries
+      // Invalidate queries — both original and new order, plus related data
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(order.id) });
+      queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(result.newOrderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
 
       toast.success('Order split successfully', {
         description: `Created new order #${result.newOrderNumber}`,
