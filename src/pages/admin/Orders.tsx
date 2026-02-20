@@ -172,27 +172,22 @@ export default function Orders() {
 
   // Data Fetching - includes both regular orders and POS orders from unified_orders
   const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: ['orders', tenant?.id, statusFilter],
+    queryKey: ['orders', tenant?.id],
     queryFn: async () => {
       if (!tenant) return [];
 
       logOrderQuery('Fetching admin orders', {
         tenantId: tenant.id,
-        statusFilter,
         source: 'Orders'
       });
 
-      // Fetch regular orders
-      let regularQuery = supabase
+      // Fetch regular orders (all statuses — status filtering is client-side for combined filter support)
+      const regularQuery = supabase
         .from('orders')
         .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, accepted_at, courier_assigned_at, courier_accepted_at, delivered_at, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(100);
-
-      if (statusFilter !== 'all') {
-        regularQuery = regularQuery.eq('status', statusFilter);
-      }
 
       const { data: ordersData, error: ordersError } = await regularQuery;
 
@@ -205,20 +200,16 @@ export default function Orders() {
         throw ordersError;
       }
 
-      logSelectQuery('orders', { tenant_id: tenant.id, status: statusFilter }, ordersData, 'Orders');
+      logSelectQuery('orders', { tenant_id: tenant.id }, ordersData, 'Orders');
 
-      // Fetch POS orders from unified_orders
-      let posQuery = supabase
+      // Fetch POS orders from unified_orders (all statuses — status filtering is client-side)
+      const posQuery = supabase
         .from('unified_orders')
         .select('id, order_number, created_at, status, total_amount, payment_method, customer_id, shift_id, metadata')
         .eq('tenant_id', tenant.id)
         .eq('order_type', 'pos')
         .order('created_at', { ascending: false })
         .limit(50);
-
-      if (statusFilter !== 'all') {
-        posQuery = posQuery.eq('status', statusFilter);
-      }
 
       const { data: posOrdersData, error: posError } = await posQuery;
 
@@ -313,7 +304,7 @@ export default function Orders() {
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
       // Optimistic local update for immediate UI feedback
-      queryClient.setQueryData(['orders', tenant?.id, statusFilter], (old: Order[] = []) =>
+      queryClient.setQueryData(['orders', tenant?.id], (old: Order[] = []) =>
         old.map(o => o.id === data.id ? { ...o, status: data.status } : o)
       );
       // Cross-panel invalidation for dashboard, analytics, badges, fulfillment
@@ -346,11 +337,16 @@ export default function Orders() {
     }
   });
 
-  // Filter Logic
+  // Filter Logic — all filters applied client-side so they compose as AND conditions
   const filteredOrders = useMemo(() => {
     let result = orders;
 
-    // Search filter (debounced)
+    // Status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(order => order.status === statusFilter);
+    }
+
+    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(order =>
@@ -384,7 +380,7 @@ export default function Orders() {
     }
 
     return result;
-  }, [orders, searchQuery, dateRange]);
+  }, [orders, statusFilter, searchQuery, dateRange]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -420,7 +416,7 @@ export default function Orders() {
     const previousOrders = orders;
 
     // Optimistically update the UI
-    queryClient.setQueryData(['orders', tenant.id, statusFilter], (old: Order[] = []) =>
+    queryClient.setQueryData(['orders', tenant.id], (old: Order[] = []) =>
       old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
     );
 
@@ -450,7 +446,7 @@ export default function Orders() {
       setSelectedOrders([]);
     } catch (error) {
       // Rollback on error
-      queryClient.setQueryData(['orders', tenant.id, statusFilter], previousOrders);
+      queryClient.setQueryData(['orders', tenant.id], previousOrders);
       logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update orders");
     }

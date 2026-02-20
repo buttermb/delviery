@@ -160,12 +160,12 @@ export default function WholesaleOrdersPage() {
 
   // Fetch orders (Wholesale or Purchase based on viewMode)
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['orders', viewMode, tenant?.id, statusFilter],
+    queryKey: ['orders', viewMode, tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
       if (viewMode === 'selling') {
-        let query = supabase
+        const query = supabase
           .from('wholesale_orders')
           .select(`
             *,
@@ -174,10 +174,6 @@ export default function WholesaleOrdersPage() {
           `)
           .eq('tenant_id', tenant.id)
           .order('created_at', { ascending: false });
-
-        if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
-        }
 
         const { data: ordersData, error: ordersError } = await query;
 
@@ -206,8 +202,8 @@ export default function WholesaleOrdersPage() {
           type: 'selling'
         })) as unknown as WholesaleOrder[];
       } else {
-        // Buying Mode
-        let query = supabase
+        // Buying Mode (all statuses — status filtering is client-side)
+        const query = supabase
           .from('purchase_orders')
           .select(`
             *,
@@ -216,17 +212,6 @@ export default function WholesaleOrdersPage() {
           `)
           .eq('account_id', tenant.id)
           .order('created_at', { ascending: false });
-
-        if (statusFilter !== 'all') {
-          const statusMap: Record<string, string> = {
-            'pending': 'pending',
-            'ordered': 'ordered',
-            'received': 'received',
-            'cancelled': 'cancelled'
-          };
-          // Only apply filter if status is valid for POs
-          if (statusMap[statusFilter]) query = query.eq('status', statusFilter);
-        }
 
         const { data: poData, error: poError } = await query;
 
@@ -245,27 +230,38 @@ export default function WholesaleOrdersPage() {
   });
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      if (!searchQuery) return true;
+    let result = orders;
+
+    // Status filter (client-side for consistent combined filtering)
+    if (statusFilter !== 'all') {
+      result = result.filter(order => order.status === statusFilter);
+    }
+
+    // Search filter
+    if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      if (viewMode === 'selling') {
-        const o = order as WholesaleOrder;
-        return (
-          o.order_number?.toLowerCase().includes(query) ||
-          o.client?.business_name?.toLowerCase().includes(query) ||
-          o.client?.contact_name?.toLowerCase().includes(query) ||
-          o.courier?.full_name?.toLowerCase().includes(query)
-        );
-      } else {
-        const p = order as PurchaseOrder;
-        return (
-          p.po_number?.toLowerCase().includes(query) ||
-          p.vendor?.name?.toLowerCase().includes(query) ||
-          p.vendor?.contact_name?.toLowerCase().includes(query)
-        );
-      }
-    });
-  }, [orders, searchQuery, viewMode]);
+      result = result.filter((order) => {
+        if (viewMode === 'selling') {
+          const o = order as WholesaleOrder;
+          return (
+            o.order_number?.toLowerCase().includes(query) ||
+            o.client?.business_name?.toLowerCase().includes(query) ||
+            o.client?.contact_name?.toLowerCase().includes(query) ||
+            o.courier?.full_name?.toLowerCase().includes(query)
+          );
+        } else {
+          const p = order as PurchaseOrder;
+          return (
+            p.po_number?.toLowerCase().includes(query) ||
+            p.vendor?.name?.toLowerCase().includes(query) ||
+            p.vendor?.contact_name?.toLowerCase().includes(query)
+          );
+        }
+      });
+    }
+
+    return result;
+  }, [orders, statusFilter, searchQuery, viewMode]);
 
   // Handlers
   const handleRefresh = async () => {
