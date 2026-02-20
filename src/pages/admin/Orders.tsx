@@ -1077,16 +1077,59 @@ export default function Orders() {
                 />
                 {hasActiveFilters && (
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={handleClearFilters}
-                    className="h-10 px-3"
+                    className="h-10 px-3 text-muted-foreground hover:text-destructive hover:border-destructive/50"
                   >
                     <X className="mr-1 h-4 w-4" />
-                    Clear
+                    Clear all filters
                   </Button>
                 )}
               </div>
+
+              {/* Active filter badges */}
+              {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Active filters:</span>
+                  {searchQuery && (
+                    <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                      Search: &quot;{searchQuery}&quot;
+                      <button
+                        onClick={() => handleSearchChange('')}
+                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                        aria-label="Remove search filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {statusFilter !== 'all' && (
+                    <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                      Status: {statusFilter.replace('_', ' ')}
+                      <button
+                        onClick={() => handleStatusFilterChange('all')}
+                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                        aria-label="Remove status filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {(dateRange.from || dateRange.to) && (
+                    <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                      Date: {dateRange.from ? format(dateRange.from, 'MMM d') : '...'} – {dateRange.to ? format(dateRange.to, 'MMM d') : '...'}
+                      <button
+                        onClick={() => handleDateRangeChange({ from: undefined, to: undefined })}
+                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                        aria-label="Remove date filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Bulk Actions - handled by floating BulkActionsBar below */}
