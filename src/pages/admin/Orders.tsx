@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -34,6 +34,8 @@ import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
+import { OrderEditModal } from "@/components/admin/OrderEditModal";
+import { isOrderEditable } from "@/lib/utils/orderEditability";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
@@ -143,6 +145,8 @@ export default function Orders() {
   }>({ open: false, targetStatus: '' });
   const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [sortField, setSortField] = useState<OrderSortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -890,6 +894,15 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
+              {isOrderEditable(order.status) && (
+                <DropdownMenuItem onClick={() => {
+                  setEditOrder(order);
+                  setEditModalOpen(true);
+                }}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Order
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Print Order
@@ -1299,6 +1312,21 @@ export default function Orders() {
           setSelectedOrders([]);
           refetch();
         }}
+      />
+
+      <OrderEditModal
+        order={editOrder}
+        open={editModalOpen}
+        onOpenChange={(open) => {
+          setEditModalOpen(open);
+          if (!open) setEditOrder(null);
+        }}
+        onSuccess={() => {
+          setEditModalOpen(false);
+          setEditOrder(null);
+          refetch();
+        }}
+        orderTable="orders"
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
