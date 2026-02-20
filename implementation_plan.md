@@ -587,7 +587,7 @@
 - [x] Task 349: Fix null/undefined displays — show dash or 'N/A' instead of blank or 'undefined' — Created displayValue() and displayName() utilities in src/lib/utils/displayValue.ts. Applied across 12 files: CustomerCRMPage, CustomerManagement, CustomerDetails, CustomerInvoices, CashRegister, CustomerDashboard, ClientDetail, Orders, StorefrontCustomers, ContactCard, CustomerQuickViewModal, CustomerRow, POSCustomerSelector. Fixed template literal name concatenation that produced 'null null', empty avatar initials, empty customer name fallbacks, and nullable field rendering without dashes.
 - [x] Task 350: Fix zero-state numbers � show '.00' not blank for zero amounts
 - [x] Task 351: Fix pluralization � '1 item' not '1 items', '0 orders' not '0 order'
-- [ ] Task 352: Run npx tsc --noEmit � Checkpoint
+- [x] Task 352: Run npx tsc --noEmit � Checkpoint
 
 ## Phase C6: Button & Action Usability (8 tasks)
 
