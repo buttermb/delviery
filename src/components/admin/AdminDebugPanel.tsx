@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Bug, Download, Trash2, AlertCircle, Info, AlertTriangle, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 
 const CATEGORIES: Array<LogCategory | 'all'> = [
   'all',
@@ -167,7 +168,7 @@ function SimplifiedDebugPanel() {
                         {levelIcons[log.level]}
                         <span className="font-bold text-gray-200">[{log.category}]</span>
                       </div>
-                      <span className="text-gray-500 text-[10px]">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className="text-gray-500 text-[10px]">{formatSmartDate(log.timestamp, { includeTime: true })}</span>
                     </div>
                     <div className="text-gray-300 mb-1">{log.message}</div>
                     {log.data && Object.keys(log.data).length > 0 && (
@@ -337,7 +338,7 @@ function FullAdminDebugPanel() {
                         {levelIcons[log.level]}
                         <span className="font-bold text-gray-200">[{log.category}]</span>
                       </div>
-                      <span className="text-gray-500 text-[10px]">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className="text-gray-500 text-[10px]">{formatSmartDate(log.timestamp, { includeTime: true })}</span>
                     </div>
                     <div className="text-gray-300 mb-1">{log.message}</div>
                     {log.data && Object.keys(log.data).length > 0 && (

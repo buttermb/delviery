@@ -23,6 +23,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils/formatDate';
+import { formatSmartDate } from '@/lib/formatters';
 import type { ActivityLogEntry } from '@/hooks/useActivityFeed';
 
 interface ActivityFeedTimelineProps {
@@ -63,7 +64,7 @@ export function ActivityFeedTimeline({ entries, isLoading, maxHeight = '600px' }
     const groups: Record<string, ActivityLogEntry[]> = {};
 
     for (const entry of entries) {
-      const dateKey = new Date(entry.created_at).toLocaleDateString();
+      const dateKey = formatSmartDate(entry.created_at);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -106,7 +107,7 @@ export function ActivityFeedTimeline({ entries, isLoading, maxHeight = '600px' }
           <div key={dateKey}>
             <div className="ml-6 pt-4 pb-2">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {dateKey}
+                {formatSmartDate(dateKey)}
               </span>
             </div>
             {dateEntries.map((entry) => {

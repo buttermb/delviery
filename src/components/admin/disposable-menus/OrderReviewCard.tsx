@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { User, Phone, MapPin, Package, Calendar, DollarSign, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cleanProductName } from '@/utils/productName';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface OrderItem {
   product_name?: string;
@@ -119,7 +120,7 @@ export const OrderReviewCard = ({ order, onReview }: OrderReviewCardProps) => {
             {order.specific_date && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{new Date(order.specific_date).toLocaleDateString()}</span>
+                <span>{formatSmartDate(order.specific_date)}</span>
               </div>
             )}
           </div>

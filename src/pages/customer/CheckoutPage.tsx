@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
+import { formatSmartDate } from "@/lib/formatters";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { toast } from "@/hooks/use-toast";
 import { SuccessState } from "@/components/shared/SuccessState";
@@ -726,7 +727,7 @@ export default function CheckoutPage() {
                         </p>
                         {deliveryInfo.preferredDate && (
                           <p className="text-sm text-[hsl(var(--customer-text-light))] mt-2">
-                            Preferred date: {new Date(deliveryInfo.preferredDate).toLocaleDateString()}
+                            Preferred date: {formatSmartDate(deliveryInfo.preferredDate)}
                           </p>
                         )}
                       </div>

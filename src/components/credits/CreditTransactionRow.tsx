@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 import { Badge } from '@/components/ui/badge';
 import {
   Collapsible,
@@ -59,11 +60,7 @@ function getRelativeDate(dateString: string): string {
   if (diffDays < 7) return `${diffDays}d ago`;
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
 
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: now.getFullYear() !== date.getFullYear() ? 'numeric' : undefined,
-  });
+  return formatSmartDate(date);
 }
 
 function getTransactionIcon(type: CreditTransactionRowTransaction['transaction_type']) {

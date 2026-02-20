@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { User, Mail, Key, MonitorSmartphone, Trash2 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface SessionInfo {
   id: string;
@@ -509,7 +510,7 @@ function SessionsTab() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {session.ip} &middot; Last active{' '}
-                    {new Date(session.updated_at).toLocaleDateString()}
+                    {formatSmartDate(session.updated_at)}
                   </p>
                 </div>
               </div>

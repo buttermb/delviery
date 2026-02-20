@@ -60,6 +60,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/utils/formatters';
+import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import { usePagination } from '@/hooks/usePagination';
@@ -278,11 +279,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatSmartDate(dateString);
   };
 
   const getPaymentMethodLabel = (method: string) => {

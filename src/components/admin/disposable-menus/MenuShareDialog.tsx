@@ -15,6 +15,7 @@ import { showSuccessToast } from '@/utils/toastHelpers';
 import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
 import { Badge } from '@/components/ui/badge';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Menu {
   encrypted_url_token: string;
@@ -75,7 +76,7 @@ export const MenuShareDialog = ({
       `You've been granted access to our wholesale catalog.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `Access Code: ${accessCode}\n\n` +
-      `Important: This link is confidential and expires ${menu.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+      `Important: This link is confidential and expires ${menu.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
       `Best regards`
     );
     window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${body}`, '_blank');
@@ -149,7 +150,7 @@ export const MenuShareDialog = ({
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Expires:</span>
                 <span className="font-medium">
-                  {new Date(String(jsonToStringOrNumber(menu.expiration_date as any))).toLocaleDateString()}
+                  {formatSmartDate(String(jsonToStringOrNumber(menu.expiration_date as any)))}
                 </span>
               </div>
             )}

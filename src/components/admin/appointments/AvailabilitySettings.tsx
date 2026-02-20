@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Clock, Calendar, X } from "lucide-react";
 import { useState } from "react";
 import { showSuccessToast } from "@/lib/toastUtils";
+import { formatSmartDate } from "@/lib/formatters";
 
 interface AvailabilitySettingsProps {
   open: boolean;
@@ -148,12 +149,7 @@ export function AvailabilitySettings({
                 {blockedDates.map((date) => (
                   <Card key={date} className="p-2 flex items-center justify-between">
                     <span className="text-sm">
-                      {new Date(date).toLocaleDateString("en-US", { 
-                        weekday: "long", 
-                        year: "numeric", 
-                        month: "long", 
-                        day: "numeric" 
-                      })}
+                      {formatSmartDate(date)}
                     </span>
                     <Button
                       variant="ghost"

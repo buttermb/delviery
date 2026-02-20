@@ -33,6 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useLocations } from '@/hooks/useLocations';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface CustomerDeliveryMapProps {
   customerId: string;
@@ -625,7 +626,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
                         {delivery.status}
                       </Badge>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(delivery.delivery_date).toLocaleDateString()}
+                        {formatSmartDate(delivery.delivery_date)}
                       </p>
                     </div>
                   </div>

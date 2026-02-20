@@ -26,6 +26,7 @@ import { generateProductLabelPDF, type ProductLabelData, type LabelSize } from '
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
+import { formatSmartDate } from '@/lib/formatters';
 import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 
@@ -522,7 +523,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
               <div className="pt-3 border-t border-border text-xs text-muted-foreground space-y-1">
                 <p>⚠️ For adult use only (21+)</p>
                 <p>🚫 Keep out of reach of children</p>
-                <p>📅 Packaged: {new Date().toLocaleDateString()}</p>
+                <p>📅 Packaged: {formatSmartDate(new Date())}</p>
               </div>
             )}
             </div>

@@ -27,6 +27,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { type TenantCreditDetail, FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface TenantCreditDetailPanelProps {
   detail: TenantCreditDetail;
@@ -50,11 +51,7 @@ export function TenantCreditDetailPanel({
   // Format date
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    return formatSmartDate(dateStr);
   };
 
   // Format time

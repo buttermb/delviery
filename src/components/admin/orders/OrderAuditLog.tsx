@@ -263,7 +263,7 @@ export function OrderAuditLog({
     const groups: Record<string, OrderAuditLogEntry[]> = {};
 
     for (const entry of entries) {
-      const dateKey = new Date(entry.created_at).toLocaleDateString();
+      const dateKey = formatSmartDate(entry.created_at);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -368,7 +368,7 @@ export function OrderAuditLog({
               <div key={dateKey}>
                 <div className="ml-6 pt-4 pb-2">
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {dateKey === new Date().toLocaleDateString() ? 'Today' : dateKey}
+                    {dateKey}
                   </span>
                 </div>
                 {dateEntries.map((entry) => (

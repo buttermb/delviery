@@ -35,6 +35,7 @@ import { COAUpload } from "@/components/admin/quality/COAUpload";
 import { TestResultsViewer } from "@/components/admin/quality/TestResultsViewer";
 import { QuarantineManager } from "@/components/admin/quality/QuarantineManager";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface Batch {
@@ -220,7 +221,7 @@ export default function QualityControlPage() {
                       <TableCell>{batch.lab_name || "-"}</TableCell>
                       <TableCell>
                         {batch.test_date
-                          ? new Date(batch.test_date).toLocaleDateString()
+                          ? formatSmartDate(batch.test_date)
                           : "-"}
                       </TableCell>
                       <TableCell>

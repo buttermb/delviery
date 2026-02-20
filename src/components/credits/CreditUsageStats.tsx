@@ -31,6 +31,7 @@ import {
   getCategoryDisplayName,
   type CreditCategory,
 } from '@/lib/credits';
+import { formatSmartDate } from '@/lib/formatters';
 
 export interface CreditUsageStatsProps {
   className?: string;
@@ -384,10 +385,7 @@ export function CreditUsageStats({
               <Sparkles className="h-4 w-4" />
               <span>
                 Credits refresh on{' '}
-                {nextFreeGrantAt.toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {formatSmartDate(nextFreeGrantAt)}
               </span>
             </div>
           )}

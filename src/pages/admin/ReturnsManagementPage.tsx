@@ -39,6 +39,7 @@ import {
 import { RACreateForm } from "@/components/admin/returns/RACreateForm";
 import { RADetail } from "@/components/admin/returns/RADetail";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatSmartDate } from '@/lib/formatters';
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
@@ -350,7 +351,7 @@ export default function ReturnsManagementPage() {
                         </TableCell>
                         <TableCell>
                           {ra.created_at
-                            ? new Date(ra.created_at).toLocaleDateString()
+                            ? formatSmartDate(ra.created_at)
                             : "-"}
                         </TableCell>
                         <TableCell className="text-right">

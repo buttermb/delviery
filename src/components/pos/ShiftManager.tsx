@@ -14,6 +14,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { queryKeys } from '@/lib/queryKeys';
 import { ZReport } from './ZReport';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Shift {
   id: string;
@@ -454,7 +455,7 @@ export function ShiftManager() {
                       <div>
                         <span className="font-medium">{transaction.transaction_number}</span>
                         <span className="text-muted-foreground ml-2">
-                          {new Date(transaction.created_at).toLocaleTimeString()}
+                          {formatSmartDate(transaction.created_at, { includeTime: true })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -512,7 +513,7 @@ export function ShiftManager() {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {shift.cashier_name} • {new Date(shift.ended_at!).toLocaleDateString()}
+                        {shift.cashier_name} • {formatSmartDate(shift.ended_at!)}
                       </p>
                     </div>
                     <div className="text-right mr-4">

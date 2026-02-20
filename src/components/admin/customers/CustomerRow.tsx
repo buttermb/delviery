@@ -16,6 +16,7 @@ import Lock from "lucide-react/dist/esm/icons/lock";
 import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
 import Trash from "lucide-react/dist/esm/icons/trash";
 import CopyButton from "@/components/CopyButton";
+import { formatSmartDate } from "@/lib/formatters";
 
 interface Customer {
   id: string;
@@ -116,7 +117,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       </td>
       <td className="px-6 py-4 text-sm text-muted-foreground">
         {customer.last_purchase_at
-          ? new Date(customer.last_purchase_at).toLocaleDateString()
+          ? formatSmartDate(customer.last_purchase_at)
           : 'Never'}
       </td>
       <td className="px-6 py-4">

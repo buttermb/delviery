@@ -28,6 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/lib/queryKeys';
 import { Loader2 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function ImagesPage() {
   const { navigateToAdmin } = useTenantNavigation();
@@ -330,7 +331,7 @@ export default function ImagesPage() {
                 <div className="p-3">
                   <p className="text-sm font-medium truncate">{image.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(image.created_at).toLocaleDateString()}
+                    {formatSmartDate(image.created_at)}
                   </p>
                 </div>
               </CardContent>
@@ -357,7 +358,7 @@ export default function ImagesPage() {
                   <div className="flex-1">
                     <p className="font-medium">{image.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      Uploaded {new Date(image.created_at).toLocaleDateString()}
+                      Uploaded {formatSmartDate(image.created_at)}
                     </p>
                   </div>
                   <Button
@@ -439,7 +440,7 @@ export default function ImagesPage() {
               <div>
                 <p className="text-muted-foreground">Uploaded</p>
                 <p className="font-medium">
-                  {selectedImage && new Date(selectedImage.created_at).toLocaleDateString()}
+                  {selectedImage && formatSmartDate(selectedImage.created_at)}
                 </p>
               </div>
               <div className="col-span-2">

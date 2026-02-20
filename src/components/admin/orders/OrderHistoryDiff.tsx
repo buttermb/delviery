@@ -423,7 +423,7 @@ export function OrderHistoryDiff({
     const groups: Record<string, ParsedDiff[]> = {};
 
     for (const parsed of parsedDiffs) {
-      const dateKey = new Date(parsed.entry.created_at).toLocaleDateString();
+      const dateKey = formatSmartDate(parsed.entry.created_at);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -526,7 +526,7 @@ export function OrderHistoryDiff({
                 <div className="flex items-center gap-2 mb-3">
                   <div className="h-px flex-1 bg-border" />
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2">
-                    {dateKey === new Date().toLocaleDateString() ? 'Today' : dateKey}
+                    {dateKey}
                   </span>
                   <div className="h-px flex-1 bg-border" />
                 </div>

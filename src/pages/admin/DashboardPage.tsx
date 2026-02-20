@@ -34,7 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -153,7 +153,7 @@ export function DashboardPage() {
   }
 
   const lastUpdated = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString()
+    ? formatSmartDate(new Date(dataUpdatedAt), { includeTime: true })
     : null;
 
   return (

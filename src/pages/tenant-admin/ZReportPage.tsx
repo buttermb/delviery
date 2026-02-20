@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeShifts } from '@/hooks/useRealtimePOS';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function ZReportPage() {
   const { tenant } = useTenantAdminAuth();
@@ -67,7 +68,7 @@ export default function ZReportPage() {
                       {shift.shift_number} - {shift.cashier_name}
                     </span>
                     <span className="text-muted-foreground">
-                      {new Date(shift.ended_at).toLocaleDateString()}
+                      {formatSmartDate(shift.ended_at)}
                     </span>
                     <Badge variant="outline">${shift.total_sales.toFixed(2)}</Badge>
                   </div>

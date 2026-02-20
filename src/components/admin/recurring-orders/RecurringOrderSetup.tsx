@@ -37,6 +37,7 @@ import {
 import { useWholesaleClients, useWholesaleCouriers, useProductsForWholesale } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
+import { formatSmartDate } from '@/lib/formatters';
 
 const schema = z.object({
   name: z.string().min(1, "Schedule name is required"),
@@ -709,13 +710,13 @@ function RecurringOrderSetupComponent({
                   )}
                   , starting from{" "}
                   <span className="font-medium">
-                    {new Date(watch("next_order_date") || "").toLocaleDateString()}
+                    {formatSmartDate(watch("next_order_date") || "")}
                   </span>
                   {watch("end_date") && (
                     <>
                       {" "}until{" "}
                       <span className="font-medium">
-                        {new Date(watch("end_date") || "").toLocaleDateString()}
+                        {formatSmartDate(watch("end_date") || "")}
                       </span>
                     </>
                   )}

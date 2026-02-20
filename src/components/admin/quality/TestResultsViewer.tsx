@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, FileText, Calendar, Building2 } from "lucide-react";
 import { getStatusColor } from "@/lib/utils/statusColors";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Batch {
   id: string;
@@ -66,7 +67,7 @@ export function TestResultsViewer({ open, onOpenChange, batch }: TestResultsView
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Test Date:</span>
-                  <span>{new Date(batch.test_date).toLocaleDateString()}</span>
+                  <span>{formatSmartDate(batch.test_date)}</span>
                 </div>
               )}
             </CardContent>

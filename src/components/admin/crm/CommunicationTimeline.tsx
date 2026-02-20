@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, ShoppingCart, Calendar, MessageSquare } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import { formatSmartDate } from "@/lib/formatters";
 
 interface Customer {
   id: string;
@@ -130,7 +131,7 @@ export function CommunicationTimeline({ customers }: CommunicationTimelineProps)
                       <div className="flex-1">
                         <div className="font-medium">{event.description}</div>
                         <div className="text-sm text-muted-foreground">
-                          {new Date(event.date).toLocaleString()}
+                          {formatSmartDate(event.date, { includeTime: true })}
                         </div>
                       </div>
                       <Badge variant="outline">{event.type}</Badge>

@@ -58,6 +58,7 @@ import { useActivityLog } from '@/hooks/useActivityLog';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface CustomerMergeProps {
   open: boolean;
@@ -99,11 +100,7 @@ function formatCurrency(amount: number): string {
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatSmartDate(dateString);
 }
 
 export function CustomerMerge({

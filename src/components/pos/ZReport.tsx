@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Printer, Download } from 'lucide-react';
 import { useRealtimeTransactions } from '@/hooks/useRealtimePOS';
 import { queryKeys } from '@/lib/queryKeys';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 interface ZReportProps {
   shiftId: string;
@@ -138,14 +138,14 @@ Difference: ${formatCurrency(shift.cash_difference || 0)}
 
 ${transactions?.map((t, i) => `
 ${i + 1}. ${t.transaction_number}
-   Time: ${new Date(t.created_at).toLocaleTimeString()}
+   Time: ${formatSmartDate(t.created_at, { includeTime: true })}
    Amount: ${formatCurrency(t.total_amount)}
    Payment: ${t.payment_method}
    Status: ${t.payment_status}
 `).join('\n') || 'No transactions'}
 
 ========================================
-    Generated: ${new Date().toLocaleString()}
+    Generated: ${formatSmartDate(new Date(), { includeTime: true })}
 ========================================
     `;
   };
@@ -374,7 +374,7 @@ ${i + 1}. ${t.transaction_number}
                       <span className="font-semibold">{formatCurrency(transaction.total_amount)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>{new Date(transaction.created_at).toLocaleTimeString()}</span>
+                      <span>{formatSmartDate(transaction.created_at, { includeTime: true })}</span>
                       <span>
                         {transaction.payment_method} • {transaction.payment_status}
                       </span>

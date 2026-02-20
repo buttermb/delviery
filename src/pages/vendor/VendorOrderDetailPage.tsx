@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
 import { Separator } from '@/components/ui/separator';
 import type { Tables } from '@/integrations/supabase/types';
+import { formatSmartDate } from '@/lib/formatters';
 
 // Extended order type - buyer_business_name exists in DB but not in generated types yet
 interface ShippingAddress {
@@ -110,7 +111,7 @@ export function VendorOrderDetailPage() {
                         </Badge>
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Placed on {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'} at {order.created_at ? new Date(order.created_at).toLocaleTimeString() : 'N/A'}
+                        Placed on {order.created_at ? formatSmartDate(order.created_at, { includeTime: true }) : 'N/A'}
                     </p>
                 </div>
                 <div className="ml-auto flex gap-2">

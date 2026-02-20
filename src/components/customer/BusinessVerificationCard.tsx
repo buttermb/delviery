@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatSmartDate } from '@/lib/formatters';
 
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -467,7 +468,7 @@ export function BusinessVerificationCard() {
                 </p>
                 {profile.license_verified_at && (
                   <p className="text-xs text-green-600 mt-2">
-                    Verified on: {new Date(profile.license_verified_at).toLocaleDateString()}
+                    Verified on: {formatSmartDate(profile.license_verified_at)}
                   </p>
                 )}
               </div>

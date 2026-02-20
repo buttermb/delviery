@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface OrderSearchResult {
   id: string;
@@ -409,7 +410,7 @@ export function OrderSearchBar({
                             ${order.total_amount?.toFixed(2)}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {new Date(order.created_at).toLocaleDateString()}
+                            {formatSmartDate(order.created_at)}
                           </div>
                         </div>
                       </div>

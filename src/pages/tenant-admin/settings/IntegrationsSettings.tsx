@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Integration {
   id: string;
@@ -154,7 +155,7 @@ export default function IntegrationsSettings() {
         url: (item.config as any)?.url || '',
         events: (item.config as any)?.events || ['order.created'],
         active: item.status === 'active',
-        lastTriggered: item.updated_at ? new Date(item.updated_at).toLocaleString() : undefined,
+        lastTriggered: item.updated_at ? formatSmartDate(item.updated_at, { includeTime: true }) : undefined,
       })) as WebhookEndpoint[];
     },
     enabled: !!tenant?.id,

@@ -34,6 +34,7 @@ import {
 import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -399,7 +400,7 @@ export default function TeamManagement() {
       {
         header: 'Joined',
         accessorKey: 'created_at',
-        cell: (row) => (row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'),
+        cell: (row) => (row.created_at ? formatSmartDate(row.created_at) : 'N/A'),
       },
       {
         header: 'Actions',

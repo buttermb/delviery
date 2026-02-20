@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
+import { formatSmartDate } from "@/lib/formatters";
 import { Link, useNavigate } from "react-router-dom";
 import { MenuList } from "@/components/customer/MenuList";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
@@ -361,7 +362,7 @@ export default function CustomerDashboardPage() {
                     <div>
                       <p className="font-medium text-[hsl(var(--customer-text))]">#{order.order_number || order.id.slice(0, 8)}</p>
                       <p className="text-sm text-[hsl(var(--customer-text-light))]">
-                        {new Date(order.created_at).toLocaleDateString()}
+                        {formatSmartDate(order.created_at)}
                       </p>
                     </div>
                     <div className="text-right">

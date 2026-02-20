@@ -33,6 +33,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useToast } from '@/hooks/use-toast';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import type { StorefrontHotItem } from '@/types/storefront-hot-items';
+import { formatSmartDate } from '@/lib/formatters';
 
 export interface HotItemsSectionProps {
   content?: {
@@ -135,11 +136,7 @@ export function HotItemsSection({
   // Format current time for display
   const formatCurrentTime = () => {
     const now = new Date();
-    return now.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    return formatSmartDate(now, { includeTime: true });
   };
 
   // Loading state

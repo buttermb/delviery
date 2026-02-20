@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface ComparisonItem {
   id: string;
@@ -104,9 +105,9 @@ export function ComparisonView({
       case 'boolean':
         return value ? 'Yes' : 'No';
       case 'date':
-        return value instanceof Date 
-          ? value.toLocaleDateString() 
-          : typeof value === 'string' ? new Date(value).toLocaleDateString() : String(value);
+        return value instanceof Date
+          ? formatSmartDate(value)
+          : typeof value === 'string' ? formatSmartDate(value) : String(value);
       case 'array':
         return Array.isArray(value) ? value.join(', ') : String(value);
       default:

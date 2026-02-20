@@ -15,6 +15,7 @@ import { useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { showInfoToast, showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function BoardReportPage() {
     const { tenant } = useTenantAdminAuth();
@@ -154,7 +155,7 @@ export default function BoardReportPage() {
                         Board Report
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Executive summary for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        Executive summary for {formatSmartDate(new Date(), { relative: false })}
                     </p>
                 </div>
                 <Button onClick={handleExport} className="flex items-center gap-2">
@@ -261,7 +262,7 @@ export default function BoardReportPage() {
             <Card>
                 <CardContent className="pt-6">
                     <p className="text-sm text-muted-foreground text-center">
-                        Generated on {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        Generated on {formatSmartDate(new Date(), { relative: false })}
                     </p>
                 </CardContent>
             </Card>

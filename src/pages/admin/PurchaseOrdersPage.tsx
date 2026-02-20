@@ -45,6 +45,7 @@ import {
 import { POCreateForm } from "@/components/admin/purchase-orders/POCreateForm";
 import { PODetail } from "@/components/admin/purchase-orders/PODetail";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatSmartDate } from '@/lib/formatters';
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
@@ -284,10 +285,10 @@ export default function PurchaseOrdersPage() {
                       <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                         <span>
                           {po.expected_delivery_date
-                            ? `Due: ${new Date(po.expected_delivery_date).toLocaleDateString()}`
+                            ? `Due: ${formatSmartDate(po.expected_delivery_date)}`
                             : 'No delivery date'}
                         </span>
-                        <span>{po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</span>
+                        <span>{po.created_at ? formatSmartDate(po.created_at) : '-'}</span>
                       </div>
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" onClick={() => handleView(po)} className="h-9 w-9 p-0">
@@ -359,7 +360,7 @@ export default function PurchaseOrdersPage() {
                             {po.expected_delivery_date ? (
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3 text-muted-foreground" />
-                                {new Date(po.expected_delivery_date).toLocaleDateString()}
+                                {formatSmartDate(po.expected_delivery_date)}
                               </div>
                             ) : (
                               "-"
@@ -367,7 +368,7 @@ export default function PurchaseOrdersPage() {
                           </TableCell>
                           <TableCell>
                             {po.created_at
-                              ? new Date(po.created_at).toLocaleDateString()
+                              ? formatSmartDate(po.created_at)
                               : "-"}
                           </TableCell>
                           <TableCell className="text-right">

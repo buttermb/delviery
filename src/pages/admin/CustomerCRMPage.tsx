@@ -30,6 +30,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
+import { formatSmartDate } from '@/lib/formatters';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -392,7 +393,7 @@ export default function CustomerCRMPage() {
                 header: 'Last Purchase',
                 accessorKey: 'last_purchase_at',
                 cell: (customer: any) => customer.last_purchase_at
-                  ? new Date(customer.last_purchase_at).toLocaleDateString()
+                  ? formatSmartDate(customer.last_purchase_at)
                   : "Never"
               }
             ]}
@@ -466,7 +467,7 @@ export default function CustomerCRMPage() {
                     <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
                     <p className="text-sm font-medium">
                       {customer.last_purchase_at
-                        ? new Date(customer.last_purchase_at).toLocaleDateString()
+                        ? formatSmartDate(customer.last_purchase_at)
                         : "Never"}
                     </p>
                   </div>

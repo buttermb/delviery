@@ -776,9 +776,9 @@ export default function TenantDetailPage() {
                                               </div>
                                               <div class="invoice-info">
                                                 <div>
-                                                  <p><strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}</p>
-                                                  <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
-                                                  ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${new Date(invoice.billing_period_start).toLocaleDateString()} - ${new Date(invoice.billing_period_end).toLocaleDateString()}</p>` : ''}
+                                                  <p><strong>Issue Date:</strong> ${formatSmartDate(invoice.issue_date)}</p>
+                                                  <p><strong>Due Date:</strong> ${formatSmartDate(invoice.due_date)}</p>
+                                                  ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${formatSmartDate(invoice.billing_period_start)} - ${formatSmartDate(invoice.billing_period_end)}</p>` : ''}
                                                 </div>
                                                 <div>
                                                   <p><strong>Status:</strong> ${invoice.status?.toUpperCase() || 'PENDING'}</p>
@@ -873,9 +873,9 @@ export default function TenantDetailPage() {
                                             </div>
                                             <div class="invoice-info">
                                               <div>
-                                                <p><strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}</p>
-                                                <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
-                                                ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${new Date(invoice.billing_period_start).toLocaleDateString()} - ${new Date(invoice.billing_period_end).toLocaleDateString()}</p>` : ''}
+                                                <p><strong>Issue Date:</strong> ${formatSmartDate(invoice.issue_date)}</p>
+                                                <p><strong>Due Date:</strong> ${formatSmartDate(invoice.due_date)}</p>
+                                                ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${formatSmartDate(invoice.billing_period_start)} - ${formatSmartDate(invoice.billing_period_end)}</p>` : ''}
                                               </div>
                                               <div>
                                                 <p><strong>Status:</strong> ${invoice.status?.toUpperCase() || 'PENDING'}</p>

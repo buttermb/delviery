@@ -8,7 +8,7 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { queryKeys } from "@/lib/queryKeys";
 import { invalidateOnEvent } from "@/lib/invalidation";
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -685,7 +685,7 @@ export function CustomerManagement() {
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
                       {customer.last_purchase_at
-                        ? new Date(customer.last_purchase_at).toLocaleDateString()
+                        ? formatSmartDate(customer.last_purchase_at)
                         : 'Never'}
                     </td>
                     <td className="px-6 py-4">

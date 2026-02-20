@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Review {
   id: string;
@@ -267,7 +268,7 @@ export function ReviewSection() {
                       {review.profiles?.full_name || 'Anonymous'}
                     </div>
                     <div className="text-xs text-white/40 font-light">
-                      {new Date(review.created_at).toLocaleDateString()}
+                      {formatSmartDate(review.created_at)}
                     </div>
                   </div>
                 </div>

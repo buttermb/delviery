@@ -51,7 +51,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
-import { formatSmartDate } from '@/lib/utils/formatDate';
+import { formatSmartDate } from '@/lib/formatters';
 import { useToast } from '@/hooks/use-toast';
 import { humanizeError } from '@/lib/humanizeError';
 import { TIER_PRICES, TIER_NAMES, getFeaturesByCategory, type SubscriptionTier } from '@/lib/featureConfig';
@@ -421,8 +421,8 @@ export default function BillingSettings() {
   </div>
   <div class="section">
     <div class="row"><strong>Invoice #:</strong> ${invoiceData.invoiceNumber}</div>
-    <div class="row"><strong>Date:</strong> ${new Date(invoiceData.issueDate).toLocaleDateString()}</div>
-    <div class="row"><strong>Due:</strong> ${new Date(invoiceData.dueDate).toLocaleDateString()}</div>
+    <div class="row"><strong>Date:</strong> ${formatSmartDate(invoiceData.issueDate)}</div>
+    <div class="row"><strong>Due:</strong> ${formatSmartDate(invoiceData.dueDate)}</div>
   </div>
   <div class="section">
     <strong>Bill To:</strong><br/>
@@ -643,7 +643,7 @@ export default function BillingSettings() {
                     {nextFreeGrantAt && (
                       <p className="text-sm text-muted-foreground mt-1">
                         <Sparkles className="h-3 w-3 inline mr-1" />
-                        Refreshes on {nextFreeGrantAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                        Refreshes on {formatSmartDate(nextFreeGrantAt)}
                       </p>
                     )}
                   </div>
@@ -741,7 +741,7 @@ export default function BillingSettings() {
               )}
               {!isTrial && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Next billing: {nextBillingDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  Next billing: {formatSmartDate(nextBillingDate)}
                 </p>
               )}
               {tenant?.mrr && (

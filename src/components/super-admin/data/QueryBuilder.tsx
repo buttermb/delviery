@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Database, Play, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface SavedQuery {
   id: string;
@@ -259,7 +260,7 @@ export function QueryBuilder() {
                     <div className="flex items-center justify-between mb-2">
                       <p className="font-medium">{saved.name}</p>
                       <Badge variant="outline" className="text-xs">
-                        {new Date(saved.created_at).toLocaleDateString()}
+                        {formatSmartDate(saved.created_at)}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground font-mono line-clamp-2">

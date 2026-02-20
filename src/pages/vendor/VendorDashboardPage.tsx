@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import type { Database } from '@/integrations/supabase/types';
+import { formatSmartDate } from '@/lib/formatters';
 
 type MarketplaceOrderRow = Database['public']['Tables']['marketplace_orders']['Row'];
 
@@ -171,7 +172,7 @@ export default function VendorDashboardPage() {
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {order.buyer_business_name || 'Unknown Buyer'} • {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}
+                        {order.buyer_business_name || 'Unknown Buyer'} • {order.created_at ? formatSmartDate(order.created_at) : 'N/A'}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">

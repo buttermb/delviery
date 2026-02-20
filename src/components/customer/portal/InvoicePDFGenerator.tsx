@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import jsPDF from 'jspdf';
 import { logger } from '@/lib/logger';
 import type { PortalInvoice } from '@/types/portal';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 export interface InvoicePDFGeneratorProps {
   invoice: PortalInvoice;
@@ -64,9 +64,9 @@ export function generateInvoicePDF({
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Invoice #: ${invoice.invoice_number}`, margin, yPosition);
     yPosition += 6;
-    pdf.text(`Issue Date: ${new Date(invoice.issue_date).toLocaleDateString()}`, margin, yPosition);
+    pdf.text(`Issue Date: ${formatSmartDate(invoice.issue_date)}`, margin, yPosition);
     yPosition += 6;
-    pdf.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, margin, yPosition);
+    pdf.text(`Due Date: ${formatSmartDate(invoice.due_date)}`, margin, yPosition);
     yPosition += 10;
 
     // Bill To

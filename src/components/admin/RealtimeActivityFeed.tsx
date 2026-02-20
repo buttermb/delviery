@@ -5,6 +5,7 @@ import { Activity, ShoppingCart, AlertTriangle, CheckCircle } from "lucide-react
 import { motion, AnimatePresence } from "framer-motion";
 import { formatActionType } from "@/utils/stringHelpers";
 import { isValidActivity } from "@/utils/typeGuards";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface ActivityItem {
   type: string;
@@ -69,7 +70,7 @@ export function RealtimeActivityFeed({ activities }: RealtimeActivityFeedProps) 
                     <div>
                       <p className="text-sm font-medium">{activity.message}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(activity.timestamp).toLocaleTimeString()}
+                        {formatSmartDate(activity.timestamp, { includeTime: true })}
                       </p>
                     </div>
                   </div>

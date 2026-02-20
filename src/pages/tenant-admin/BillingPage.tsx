@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
-import { formatSmartDate } from "@/lib/utils/formatDate";
+import { formatSmartDate } from "@/lib/formatters";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { TIER_NAMES, TIER_PRICES, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -451,7 +451,7 @@ export default function TenantAdminBillingPage() {
                 </p>
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
                   Add a payment method to avoid service interruption when your trial ends
-                  {tenant?.trial_ends_at && ` on ${new Date(tenant.trial_ends_at).toLocaleDateString()}`}.
+                  {tenant?.trial_ends_at && ` on ${formatSmartDate(tenant.trial_ends_at)}`}.
                 </p>
               </div>
               <Button
@@ -564,10 +564,7 @@ export default function TenantAdminBillingPage() {
                         <Sparkles className="h-4 w-4 inline mr-1" />
                         Credits refresh on{' '}
                         <strong>
-                          {nextFreeGrantAt.toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                          {formatSmartDate(nextFreeGrantAt)}
                         </strong>
                       </p>
                     </div>

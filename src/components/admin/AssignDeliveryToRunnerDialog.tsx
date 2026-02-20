@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import { formatSmartDate } from "@/lib/formatters";
 
 interface AssignDeliveryToRunnerDialogProps {
   open: boolean;
@@ -151,7 +152,7 @@ export const AssignDeliveryToRunnerDialog = ({
                         {Number(order.total_amount).toFixed(2)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(order.created_at).toLocaleDateString()}
+                        {formatSmartDate(order.created_at)}
                       </div>
                     </div>
                   </div>

@@ -34,6 +34,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { supabase } from '@/integrations/supabase/client';
 import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
 import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Session {
   id: string;
@@ -137,7 +138,7 @@ export default function SecuritySettings() {
           browser,
           location: 'Unknown Location', // IP geolocation would require external service
           ip: session.ip_address || 'Unknown',
-          lastActive: isCurrent ? 'Now' : new Date(session.created_at).toLocaleString(),
+          lastActive: isCurrent ? 'Now' : formatSmartDate(session.created_at, { includeTime: true }),
           current: isCurrent,
         } as Session;
       });

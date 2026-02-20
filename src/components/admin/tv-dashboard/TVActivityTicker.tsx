@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 import { ShoppingBag, CheckCircle2, AlertTriangle, Clock, User } from 'lucide-react';
 
 export interface ActivityEvent {
@@ -39,11 +40,7 @@ function getEventIcon(type: ActivityEvent['type']) {
 }
 
 function formatTime(date: Date): string {
-    return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-    });
+    return formatSmartDate(date, { includeTime: true });
 }
 
 export function TVActivityTicker({ events }: TVActivityTickerProps) {

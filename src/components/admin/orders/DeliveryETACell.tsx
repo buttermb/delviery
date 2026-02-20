@@ -12,6 +12,7 @@
 
 import { useState } from 'react';
 import { Clock, Truck, MapPin, Phone, AlertTriangle, ExternalLink } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 import type { DeliveryETA } from '@/hooks/useDeliveryETA';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +37,7 @@ function formatETA(minutes: number): string {
 }
 
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return formatSmartDate(date, { includeTime: true });
 }
 
 function getDeliveryStatusLabel(status: string): string {

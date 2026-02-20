@@ -15,7 +15,7 @@ import { BetterEmptyState } from '@/components/BetterEmptyState';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 export default function CommissionTracking() {
   const { tenant } = useTenantAdminAuth();
@@ -107,7 +107,7 @@ export default function CommissionTracking() {
           c.order_id || 'N/A',
           formatCurrency(c.amount || 0),
           c.status || 'pending',
-          new Date(c.created_at).toLocaleDateString()
+          formatSmartDate(c.created_at)
         ].join(','))
       ];
 
@@ -231,7 +231,7 @@ export default function CommissionTracking() {
                     <div className="font-medium">Order #{commission.order_id?.slice(0, 8) || 'N/A'}</div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(commission.created_at).toLocaleDateString()}
+                      {formatSmartDate(commission.created_at)}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

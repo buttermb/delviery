@@ -7,6 +7,7 @@ import { AlertTriangle, AlertCircle, CheckCircle } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import { formatSmartDate } from "@/lib/formatters";
 
 interface StockAlertRow {
   id: string;
@@ -158,7 +159,7 @@ export default function StockAlertsPage() {
                       {alert.severity}
                     </Badge>
                   </TableCell>
-                  <TableCell>{new Date(alert.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatSmartDate(alert.created_at)}</TableCell>
                 </TableRow>
               ))
             )}

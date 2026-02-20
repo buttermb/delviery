@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { formatSmartDate } from '@/lib/formatters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useARCommand, useCollectionActions, type ARClient } from '@/hooks/useFinancialCommandCenter';
@@ -58,7 +59,7 @@ function ClientCard({ client, onCall, onText, onInvoice, onRemind }: ClientCardP
 
       {client.lastContact && (
         <div className="text-[10px] text-zinc-500 mb-3">
-          Last contact: {client.lastContact.toLocaleDateString()}
+          Last contact: {formatSmartDate(client.lastContact)}
         </div>
       )}
 

@@ -33,7 +33,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 const EXPENSE_CATEGORIES = [
   'Supplies',
@@ -310,7 +310,7 @@ export default function ExpenseTracking() {
                           {expense.category || 'Uncategorized'}
                         </Badge>
                         <span className="text-xs">
-                          {new Date(expense.created_at).toLocaleDateString()}
+                          {formatSmartDate(expense.created_at)}
                         </span>
                       </div>
                     </div>

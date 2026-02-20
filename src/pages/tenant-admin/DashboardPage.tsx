@@ -46,7 +46,7 @@ import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBann
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { toast } from "sonner";
-import { formatSmartDate } from "@/lib/utils/formatDate";
+import { formatSmartDate } from "@/lib/formatters";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -761,7 +761,7 @@ export default function TenantAdminDashboardPage() {
                     <p className="text-sm text-muted-foreground">
                       of {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits this month
                       {nextFreeGrantAt && (
-                        <> · Refresh on {nextFreeGrantAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</>
+                        <> · Refresh on {formatSmartDate(nextFreeGrantAt)}</>
                       )}
                     </p>
                   </div>

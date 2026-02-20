@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Key, Plus, Copy, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function ApiAccess() {
   const { tenant } = useTenantAdminAuth();
@@ -121,7 +122,7 @@ export default function ApiAccess() {
                   </div>
                 </div>
                 <CardDescription>
-                  Created {new Date(key.created_at).toLocaleDateString()}
+                  Created {formatSmartDate(key.created_at)}
                 </CardDescription>
               </CardHeader>
               <CardContent>

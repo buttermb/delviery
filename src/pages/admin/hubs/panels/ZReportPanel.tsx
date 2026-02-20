@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BarChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { formatSmartDate } from '@/lib/formatters';
 import { ZReport } from '@/components/pos/ZReport';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,7 +68,7 @@ export default function ZReportPanel() {
                                             {shift.shift_number} - {shift.cashier_name}
                                         </span>
                                         <span className="text-muted-foreground">
-                                            {new Date(shift.ended_at).toLocaleDateString()}
+                                            {formatSmartDate(shift.ended_at)}
                                         </span>
                                         <Badge variant="outline">${shift.total_sales.toFixed(2)}</Badge>
                                     </div>

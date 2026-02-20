@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 import { Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
@@ -226,7 +227,7 @@ export default function DataExport() {
                     <div>
                       <div className="font-medium">{exportItem.data_type || 'Unknown'}</div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(exportItem.created_at).toLocaleString()}
+                        {formatSmartDate(exportItem.created_at, { includeTime: true })}
                       </div>
                     </div>
                     <Badge>{exportItem.format || 'csv'}</Badge>

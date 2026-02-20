@@ -42,6 +42,7 @@ import {
     XCircle,
     X,
 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -218,7 +219,7 @@ function VendorDetailDialog({ open, onOpenChange, vendor }: VendorDetailDialogPr
                                                             {order.expected_delivery_date ? (
                                                                 <div className="flex items-center gap-1">
                                                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                                                    {new Date(order.expected_delivery_date).toLocaleDateString()}
+                                                                    {formatSmartDate(order.expected_delivery_date)}
                                                                 </div>
                                                             ) : (
                                                                 '-'
@@ -226,7 +227,7 @@ function VendorDetailDialog({ open, onOpenChange, vendor }: VendorDetailDialogPr
                                                         </TableCell>
                                                         <TableCell>
                                                             {order.created_at
-                                                                ? new Date(order.created_at).toLocaleDateString()
+                                                                ? formatSmartDate(order.created_at)
                                                                 : '-'}
                                                         </TableCell>
                                                     </TableRow>
@@ -492,7 +493,7 @@ export default function VendorOperationsPage() {
                                                 {vendor.last_order_date ? (
                                                     <div className="flex items-center gap-1">
                                                         <Calendar className="h-3 w-3 text-muted-foreground" />
-                                                        {new Date(vendor.last_order_date).toLocaleDateString()}
+                                                        {formatSmartDate(vendor.last_order_date)}
                                                     </div>
                                                 ) : (
                                                     <span className="text-muted-foreground">-</span>

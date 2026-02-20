@@ -32,6 +32,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Review {
   id: string;
@@ -872,7 +873,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                           </div>
                         </div>
                         <span className="text-sm text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString()}
+                          {formatSmartDate(review.created_at)}
                         </span>
                       </div>
                       {review.comment && (

@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playNotificationSound } from '@/utils/notificationSound';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Order {
   id: string;
@@ -180,7 +181,7 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
                   <div>
                     <div className="font-semibold text-foreground">Order #{order.order_number}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(order.created_at).toLocaleTimeString()}
+                      {formatSmartDate(order.created_at, { includeTime: true })}
                     </div>
                   </div>
                   <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">

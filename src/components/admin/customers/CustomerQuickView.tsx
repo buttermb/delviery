@@ -41,6 +41,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatSmartDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -106,12 +107,7 @@ function getCustomerName(customer: CustomerData): string {
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return 'Never';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return formatSmartDate(dateString);
 }
 
 function formatAddress(address: DeliveryAddress): string {

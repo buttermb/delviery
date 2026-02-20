@@ -46,6 +46,7 @@ import { BulkCouponGenerator } from "@/components/admin/coupons/BulkCouponGenera
 import { CouponUsageStats } from "@/components/admin/coupons/CouponUsageStats";
 import { CouponRedemptionTable } from "@/components/admin/coupons/CouponRedemptionTable";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatSmartDate } from "@/lib/formatters";
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -365,7 +366,7 @@ export default function CouponManagementPage() {
                         {coupon.never_expires ? (
                           'Never expires'
                         ) : coupon.start_date && coupon.end_date ? (
-                          `${new Date(coupon.start_date).toLocaleDateString()} - ${new Date(coupon.end_date).toLocaleDateString()}`
+                          `${formatSmartDate(coupon.start_date)} - ${formatSmartDate(coupon.end_date)}`
                         ) : '-'}
                       </div>
                       <div className="flex items-center justify-end gap-1 pt-2 border-t">
@@ -472,7 +473,7 @@ export default function CouponManagementPage() {
                               <div className="flex items-center gap-1 text-sm">
                                 <Calendar className="h-3 w-3 text-muted-foreground" />
                                 {coupon.start_date && coupon.end_date
-                                  ? `${new Date(coupon.start_date).toLocaleDateString()} - ${new Date(coupon.end_date).toLocaleDateString()}`
+                                  ? `${formatSmartDate(coupon.start_date)} - ${formatSmartDate(coupon.end_date)}`
                                   : "-"}
                               </div>
                             )}

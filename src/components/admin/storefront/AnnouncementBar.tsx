@@ -45,6 +45,7 @@ import {
   ExternalLink,
   AlertCircle,
 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Announcement {
   id: string;
@@ -434,9 +435,9 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
                         {(announcement.start_date || announcement.end_date) && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {announcement.start_date && `From ${new Date(announcement.start_date).toLocaleDateString()}`}
+                            {announcement.start_date && `From ${formatSmartDate(announcement.start_date)}`}
                             {announcement.start_date && announcement.end_date && ' - '}
-                            {announcement.end_date && `Until ${new Date(announcement.end_date).toLocaleDateString()}`}
+                            {announcement.end_date && `Until ${formatSmartDate(announcement.end_date)}`}
                           </span>
                         )}
                         {scheduleStatus === 'scheduled' && (

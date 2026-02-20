@@ -20,6 +20,7 @@ import {
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { useNavigate, useParams } from "react-router-dom";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface CustomerQuickViewCardProps {
     children: React.ReactNode;
@@ -83,7 +84,7 @@ export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewC
                         <div className="flex flex-col gap-1">
                             <span className="text-xs text-muted-foreground">Customer Since</span>
                             <span className="font-medium">
-                                {new Date(customer.created_at).toLocaleDateString()}
+                                {formatSmartDate(customer.created_at)}
                             </span>
                         </div>
                     </div>

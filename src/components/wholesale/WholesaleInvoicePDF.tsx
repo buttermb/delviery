@@ -6,6 +6,7 @@
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface WholesaleOrderItem {
   id: string;
@@ -257,11 +258,7 @@ function formatCurrency(amount: number): string {
 }
 
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  return formatSmartDate(dateString);
 }
 
 export function WholesaleInvoicePDF({ invoice }: { invoice: WholesaleInvoiceData }) {

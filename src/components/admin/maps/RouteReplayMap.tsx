@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Navigation, TrendingUp } from 'lucide-react';
 import { LocationPoint, RouteStatistics } from '@/hooks/useRunnerLocationHistory';
 import { RouteReplayControls } from './RouteReplayControls';
+import { formatSmartDate } from '@/lib/formatters';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
@@ -178,7 +179,7 @@ export function RouteReplayMap({
       <div style="padding: 8px;">
         <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
         <p style="font-size: 12px; color: #666;">
-          ${new Date(currentLocation.recorded_at).toLocaleTimeString()}
+          ${formatSmartDate(currentLocation.recorded_at, { includeTime: true })}
         </p>
         ${currentLocation.speed ? `
           <p style="font-size: 12px; margin-top: 4px;">

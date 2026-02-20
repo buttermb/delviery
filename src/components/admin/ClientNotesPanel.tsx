@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, AlertCircle, DollarSign, Package, Plus } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { formatSmartDate } from "@/lib/formatters";
 import {
   Select,
   SelectContent,
@@ -194,7 +195,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
                   <span className="ml-1 capitalize">{note.note_type}</span>
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {formatSmartDate(note.created_at, { includeTime: true })}
                 </span>
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap">

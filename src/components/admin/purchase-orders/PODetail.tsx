@@ -32,6 +32,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { POReceiveDialog } from "./POReceiveDialog";
 import type { Database } from "@/integrations/supabase/types";
+import { formatSmartDate } from '@/lib/formatters';
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row'];
@@ -177,7 +178,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                     <div className="flex items-center gap-2 mt-1">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>
-                        {new Date(purchaseOrder.expected_delivery_date).toLocaleDateString()}
+                        {formatSmartDate(purchaseOrder.expected_delivery_date)}
                       </span>
                     </div>
                   </div>
@@ -295,7 +296,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                 <span className="text-muted-foreground">Created:</span>
                 <span>
                   {purchaseOrder.created_at
-                    ? new Date(purchaseOrder.created_at).toLocaleDateString()
+                    ? formatSmartDate(purchaseOrder.created_at)
                     : "N/A"}
                 </span>
               </div>
@@ -304,14 +305,14 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Last Updated:</span>
-                    <span>{new Date(purchaseOrder.updated_at).toLocaleDateString()}</span>
+                    <span>{formatSmartDate(purchaseOrder.updated_at)}</span>
                   </div>
                 )}
               {purchaseOrder.received_date && (
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                   <span className="text-muted-foreground">Received:</span>
-                  <span>{new Date(purchaseOrder.received_date).toLocaleDateString()}</span>
+                  <span>{formatSmartDate(purchaseOrder.received_date)}</span>
                 </div>
               )}
             </CardContent>

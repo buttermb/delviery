@@ -38,6 +38,7 @@ import {
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 import { z } from 'zod';
 import { FormFactory } from '@/components/shared/FormFactory';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -336,7 +337,7 @@ export default function TeamSettings() {
     },
     {
       header: "Invited",
-      cell: (member) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(member.created_at).toLocaleDateString()}</span>
+      cell: (member) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatSmartDate(member.created_at)}</span>
     },
     {
       header: "Actions",

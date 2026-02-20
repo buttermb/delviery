@@ -47,6 +47,7 @@ import {
 import { POCreateForm } from "@/components/admin/purchase-orders/POCreateForm";
 import { PODetail } from "@/components/admin/purchase-orders/PODetail";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatSmartDate } from '@/lib/formatters';
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
@@ -446,7 +447,7 @@ export default function PurchaseOrders() {
                           {po.expected_delivery_date ? (
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
-                              {new Date(po.expected_delivery_date).toLocaleDateString()}
+                              {formatSmartDate(po.expected_delivery_date)}
                             </div>
                           ) : (
                             <span className="text-muted-foreground">-</span>
@@ -454,7 +455,7 @@ export default function PurchaseOrders() {
                         </TableCell>
                         <TableCell>
                           {po.created_at
-                            ? new Date(po.created_at).toLocaleDateString()
+                            ? formatSmartDate(po.created_at)
                             : "-"}
                         </TableCell>
                         <TableCell className="text-right">

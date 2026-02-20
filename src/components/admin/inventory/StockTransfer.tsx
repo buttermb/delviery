@@ -44,6 +44,7 @@ import { logger } from '@/lib/logger';
 import { logActivity, EntityType, ActivityAction } from '@/lib/activityLog';
 import { cn } from '@/lib/utils';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface TransferItem {
   product_id: string;
@@ -778,7 +779,7 @@ export function StockTransfer({ className }: StockTransferProps) {
                           {transfer.items?.length || 0} item(s)
                         </span>
                         <span>
-                          {new Date(transfer.created_at).toLocaleDateString()}
+                          {formatSmartDate(transfer.created_at)}
                         </span>
                       </div>
                     </div>

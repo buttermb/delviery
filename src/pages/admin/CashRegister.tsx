@@ -54,7 +54,7 @@ import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
 import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useCategories } from '@/hooks/useCategories';
 import { POS_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -611,9 +611,9 @@ function CashRegisterContent() {
         const businessName = tenant?.business_name || 'Store';
         const isRefund = !!lastRefundData;
         const now = new Date();
-        const txDate = lastTransaction ? new Date(lastTransaction.created_at || '') : now;
-        const dateStr = txDate.toLocaleDateString();
-        const timeStr = txDate.toLocaleTimeString();
+        const txDate = lastTransaction ? lastTransaction.created_at || now : now;
+        const dateStr = formatSmartDate(txDate, { includeTime: false });
+        const timeStr = formatSmartDate(txDate, { includeTime: true });
         const receipt = lastReceiptData;
 
         // Build item rows from receipt data or refund data
@@ -1319,7 +1319,7 @@ function CashRegisterContent() {
                     <div>
                       <div className="font-medium">Transaction #{transaction.id.slice(0, 8)}</div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(transaction.created_at).toLocaleString()}
+                        {formatSmartDate(transaction.created_at, { includeTime: true })}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -1578,7 +1578,7 @@ function CashRegisterContent() {
                 </div>
                 <div className="flex justify-between">
                   <span>Date</span>
-                  <span>{new Date().toLocaleString()}</span>
+                  <span>{formatSmartDate(new Date(), { includeTime: true })}</span>
                 </div>
               </div>
             </div>
@@ -1603,7 +1603,7 @@ function CashRegisterContent() {
                 </div>
                 <div className="flex justify-between">
                   <span>Date</span>
-                  <span>{new Date(lastTransaction.created_at || '').toLocaleString()}</span>
+                  <span>{formatSmartDate(lastTransaction.created_at, { includeTime: true })}</span>
                 </div>
               </div>
             </div>

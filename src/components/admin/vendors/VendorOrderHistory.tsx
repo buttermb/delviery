@@ -46,6 +46,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import { usePagination } from '@/hooks/usePagination';
+import { formatSmartDate } from '@/lib/formatters';
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row'];
@@ -216,11 +217,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatSmartDate(dateString);
   };
 
   const handlePOClick = (poId: string) => {

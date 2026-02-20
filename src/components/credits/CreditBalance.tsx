@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface CreditBalanceProps {
   className?: string;
@@ -86,7 +87,7 @@ export function CreditBalance({
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="w-3 h-3" />
           <span>
-            Depletes ~{usageStats.depletionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            Depletes ~{formatSmartDate(usageStats.depletionDate)}
             {' '}({usageStats.daysUntilDepletion} days)
           </span>
         </div>

@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import bugFinder, { BugReport, BugScanResult } from '@/utils/bugFinder';
 import { AlertTriangle, RefreshCw, Download, Trash2, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function BugScanner() {
   const [scanResult, setScanResult] = useState<BugScanResult | null>(null);
@@ -312,7 +313,7 @@ export default function BugScanner() {
                 </div>
               )}
               <div>
-                <strong>Timestamp:</strong> {new Date(selectedBug.timestamp).toLocaleString()}
+                <strong>Timestamp:</strong> {formatSmartDate(selectedBug.timestamp, { includeTime: true })}
               </div>
             </div>
           </CardContent>
@@ -385,7 +386,7 @@ function BugList({
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(bug.timestamp).toLocaleString()}
+                    {formatSmartDate(bug.timestamp, { includeTime: true })}
                   </div>
                 </div>
               </div>

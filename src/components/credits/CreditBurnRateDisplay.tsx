@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
+import { formatSmartDate } from '@/lib/formatters';
 import { projectDepletion } from '@/lib/credits/creditProjection';
 
 export interface CreditBurnRateDisplayProps {
@@ -236,11 +237,7 @@ export function CreditBurnRateDisplay({
             
             {projection.depletionDate && (
               <p className="text-xs text-muted-foreground mt-1">
-                Around {projection.depletionDate.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                })}
+                Around {formatSmartDate(projection.depletionDate)}
               </p>
             )}
           </div>

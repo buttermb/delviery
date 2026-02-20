@@ -5,6 +5,7 @@
  */
 
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface InvoiceLineItem {
   description: string;
@@ -137,11 +138,11 @@ export function InvoicePDF({ invoice }: { invoice: InvoiceData }) {
           <Text style={styles.title}>Invoice #{invoice.invoiceNumber}</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Issue Date:</Text>
-            <Text style={styles.value}>{new Date(invoice.issueDate).toLocaleDateString()}</Text>
+            <Text style={styles.value}>{formatSmartDate(invoice.issueDate)}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Due Date:</Text>
-            <Text style={styles.value}>{new Date(invoice.dueDate).toLocaleDateString()}</Text>
+            <Text style={styles.value}>{formatSmartDate(invoice.dueDate)}</Text>
           </View>
         </View>
 

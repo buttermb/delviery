@@ -11,6 +11,7 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 import Award from 'lucide-react/dist/esm/icons/award';
 import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
@@ -139,7 +140,7 @@ export function MenuComplianceBadge({
           ? 'Test date required'
           : isExpired
             ? 'Lab test expired'
-            : `Tested: ${new Date(product.test_date!).toLocaleDateString()}`,
+            : `Tested: ${formatSmartDate(product.test_date!)}`,
       });
     }
 

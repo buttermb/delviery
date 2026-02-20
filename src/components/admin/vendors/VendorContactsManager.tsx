@@ -81,6 +81,7 @@ import {
 } from '@/hooks/useVendorContacts';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { formatSmartDate } from '@/lib/formatters';
 
 // ============================================================================
 // Types & Schema
@@ -852,11 +853,7 @@ function ContactHistoryDialog({
                           {HISTORY_ACTION_LABELS[item.action as ContactHistoryAction]}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(item.created_at).toLocaleDateString()}{' '}
-                          {new Date(item.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {formatSmartDate(item.created_at, { includeTime: true })}
                         </span>
                       </div>
                       {item.summary && (

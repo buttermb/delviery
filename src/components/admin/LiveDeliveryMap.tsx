@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
+import { formatSmartDate } from '@/lib/formatters';
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { showErrorToast } from "@/utils/toastHelpers";
 import { cn } from "@/lib/utils";
@@ -292,7 +293,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
                     <div style="background: #f0fdf4; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
                       <div style="font-size: 11px; color: #6b7280; text-transform: uppercase;">Estimated Arrival</div>
                       <div style="font-size: 18px; font-weight: 700; color: #059669;">${result.formatted}</div>
-                      <div style="font-size: 11px; color: #6b7280;">at ${result.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      <div style="font-size: 11px; color: #6b7280;">at ${formatSmartDate(result.eta, { includeTime: true })}</div>
                     </div>
                     <div style="display: flex; gap: 8px;">
                       <button 
