@@ -2357,7 +2357,10 @@ body.keyboard-open [data-radix-dialog-content] {
   .no-print,
   .print\\:hidden,
   [data-radix-popper-content-wrapper],
+  [data-radix-dialog-overlay],
+  [role="dialog"],
   [data-sonner-toaster],
+  [data-toaster],
   #nprogress {
     display: none !important;
   }
@@ -2461,6 +2464,16 @@ body.keyboard-open [data-radix-dialog-content] {
     padding: 0 !important;
     overflow: visible !important;
     flex: none !important;
+  }
+
+  /* Reset layout padding that compensates for fixed nav/sidebar */
+  .pt-16,
+  .pt-28 {
+    padding-top: 0 !important;
+  }
+
+  .pl-64 {
+    padding-left: 0 !important;
   }
 
   /* Ensure links show URL in print if useful */

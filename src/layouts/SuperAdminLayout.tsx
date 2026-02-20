@@ -183,38 +183,42 @@ export function SuperAdminLayout() {
 
   return (
     <div className="min-h-dvh bg-background">
-      {/* Top Navigation */}
-      <TopNav
-        onCommandPaletteOpen={() => setCommandPaletteOpen(true)}
-        onNotificationsOpen={() => setNotificationsOpen(true)}
-        unreadNotifications={unreadNotifications}
-        atRiskCount={atRiskCount}
-        securityAlerts={securityAlerts}
-        systemStatus={systemStatus}
-      />
+      {/* Top Navigation — hidden on print */}
+      <div className="print:hidden">
+        <TopNav
+          onCommandPaletteOpen={() => setCommandPaletteOpen(true)}
+          onNotificationsOpen={() => setNotificationsOpen(true)}
+          unreadNotifications={unreadNotifications}
+          atRiskCount={atRiskCount}
+          securityAlerts={securityAlerts}
+          systemStatus={systemStatus}
+        />
+      </div>
 
       {/* Impersonation Banner */}
       {isImpersonating && impersonatedTenant && (
-        <ImpersonationBanner
-          tenantName={impersonatedTenant.name}
-          sessionStartTime={impersonatedTenant.startTime}
-          onStop={() => {
-            setIsImpersonating(false);
-            setImpersonatedTenant(null);
-            // Clear impersonation from localStorage
-            safeStorage.removeItem('impersonating_tenant_id');
-            safeStorage.removeItem('impersonating_tenant_name');
-            safeStorage.removeItem('impersonation_start_time');
-            // Redirect to dashboard
-            navigate('/super-admin/dashboard');
-          }}
-          onOpenInNewTab={() => {
-            const tenantId = safeStorage.getItem('impersonating_tenant_id');
-            if (tenantId) {
-              window.open(`/super-admin/tenants/${tenantId}`, '_blank');
-            }
-          }}
-        />
+        <div className="print:hidden">
+          <ImpersonationBanner
+            tenantName={impersonatedTenant.name}
+            sessionStartTime={impersonatedTenant.startTime}
+            onStop={() => {
+              setIsImpersonating(false);
+              setImpersonatedTenant(null);
+              // Clear impersonation from localStorage
+              safeStorage.removeItem('impersonating_tenant_id');
+              safeStorage.removeItem('impersonating_tenant_name');
+              safeStorage.removeItem('impersonation_start_time');
+              // Redirect to dashboard
+              navigate('/super-admin/dashboard');
+            }}
+            onOpenInNewTab={() => {
+              const tenantId = safeStorage.getItem('impersonating_tenant_id');
+              if (tenantId) {
+                window.open(`/super-admin/tenants/${tenantId}`, '_blank');
+              }
+            }}
+          />
+        </div>
       )}
 
       {/* Main Content Area */}
@@ -224,7 +228,7 @@ export function SuperAdminLayout() {
         className={cn(
           isImpersonating ? 'pt-28' : 'pt-16', // Extra offset if impersonation banner is shown
           'min-h-[calc(100vh-4rem)]',
-          'px-4 md:px-6',
+          'px-4 md:px-6 print:px-0 print:pt-0',
           'focus:outline-none'
         )}
       >

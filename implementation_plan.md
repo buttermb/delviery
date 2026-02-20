@@ -608,7 +608,7 @@
 - [x] Task 364: Fix form layouts on mobile — full-width inputs, no side-by-side on small screens — Fixed 13 form grid layouts across: DocumentDetail, BulkCouponGenerator, CreateTenantDialog (3), CustomerImportDialog, CustomerDeliveryAddressesTab, CustomerQuickView, SpecialPricing, DeliveryScheduler, CreateMenuDialog, InvoiceTemplateEditor, EarningRulesConfig
 - [x] Task 365: Fix table horizontal scroll � add shadow indicators showing more content
 - [x] Task 366: Fix header/toolbar wrapping � actions wrap gracefully, no overflow hidden
-- [ ] Task 367: Fix print stylesheets � invoices, receipts, reports print clean with no nav/sidebar
+- [x] Task 367: Fix print stylesheets — invoices, receipts, reports print clean with no nav/sidebar — Enhanced global @media print in index.css: added [data-radix-dialog-overlay], [role="dialog"], [data-toaster] to hide list, added pt-16/pt-28/pl-64 padding resets for layout offsets. Fixed SuperAdminLayout.tsx: wrapped TopNav and ImpersonationBanner in print:hidden, added print:px-0 print:pt-0 to main content. Fixed PlatformAdminLayout.tsx: wrapped PlatformSidebar and Toaster in print:hidden, added print:pl-0 to content wrapper, added print:p-0 to inner padding. AdminLayout already had comprehensive print:hidden coverage (header, sidebar, mobile nav, FAB, PWA, credit toasts). All printable pages (InvoiceDetailPage, OrderDetailsPage, ZReport, InvoicePublicPage, ExecutiveDashboardPage, GenerateBarcodes, AdvancedInvoice) already had print:hidden on action buttons and non-content elements.
 - [ ] Task 368: Fix viewport height issues � no content hidden behind fixed headers/footers on iOS
 - [ ] Task 369: Run npx tsc --noEmit � Checkpoint
 

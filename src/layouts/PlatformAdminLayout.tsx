@@ -23,18 +23,22 @@ export default function PlatformAdminLayout() {
     return (
         <SidebarProvider>
             <div className="flex min-h-dvh w-full bg-muted/40 animate-in fade-in duration-300">
-                <PlatformSidebar />
+                <div className="print:hidden">
+                    <PlatformSidebar />
+                </div>
                 {/* Main content offset matching sidebar width */}
-                <div className="pl-64 flex-1 flex flex-col min-h-dvh">
+                <div className="pl-64 print:pl-0 flex-1 flex flex-col min-h-dvh">
                     <main id="main-content" tabIndex={-1} className="flex-1 overflow-visible focus:outline-none">
-                        <div className="p-8">
+                        <div className="p-8 print:p-0">
                             <div className="max-w-7xl mx-auto w-full">
                                 <Outlet />
                             </div>
                         </div>
                     </main>
                 </div>
-                <Toaster />
+                <div className="print:hidden">
+                    <Toaster />
+                </div>
             </div>
         </SidebarProvider>
     );
