@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 import {
   Dialog,
@@ -132,6 +132,13 @@ export function OrderRefundModal({
     setNotes('');
     setRestoreInventory(true);
   };
+
+  // Reset form when modal opens with fresh data or order changes
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open, order?.id]);
 
   // Handle modal close
   const handleOpenChange = (newOpen: boolean) => {
