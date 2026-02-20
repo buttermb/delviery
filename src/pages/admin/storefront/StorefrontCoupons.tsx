@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -245,7 +246,7 @@ export default function StorefrontCoupons() {
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: 'Code copied!' });
+    showCopyToast('Coupon code');
   };
 
   const generateCode = () => {

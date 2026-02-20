@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import {
   Copy,
@@ -103,7 +104,7 @@ export function StoreShareDialog({
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    toast({ title: 'Link copied!' });
+    showCopyToast('Link');
     setTimeout(() => setCopied(false), 2000);
   };
 

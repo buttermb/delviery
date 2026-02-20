@@ -37,6 +37,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast } from '@/utils/toastHelpers';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import {
@@ -154,7 +155,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: 'Code copied!' });
+    showCopyToast('Gift card code');
   };
 
   const toggleSelection = (id: string) => {

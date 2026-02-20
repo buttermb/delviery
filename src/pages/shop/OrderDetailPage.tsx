@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast, showErrorToast } from '@/utils/toastHelpers';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -219,10 +220,10 @@ export function OrderDetailPage() {
     try {
       await navigator.clipboard.writeText(trackingUrl);
       setCopied(true);
-      toast({ title: 'Tracking link copied!' });
+      showCopyToast('Tracking link');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast({ title: 'Failed to copy', variant: 'destructive' });
+      showErrorToast('Failed to copy tracking link');
     }
   };
 

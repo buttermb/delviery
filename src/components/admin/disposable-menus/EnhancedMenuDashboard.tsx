@@ -19,6 +19,7 @@ import { CreateMenuDialog } from './CreateMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { showCopyToast } from '@/utils/toastHelpers';
 import type { DisposableMenu } from '@/types/admin';
 
 interface SecurityAlert {
@@ -258,7 +259,7 @@ export function EnhancedMenuDashboard() {
                             variant="ghost"
                             size="sm"
                             className="ml-2 h-auto p-1"
-                            onClick={() => navigator.clipboard.writeText(fullMenuUrl)}
+                            onClick={() => { navigator.clipboard.writeText(fullMenuUrl); showCopyToast('Menu link'); }}
                           >
                             <ExternalLink className="h-3 w-3" />
                           </Button>

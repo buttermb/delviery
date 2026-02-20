@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { AlertTriangle, ShieldCheck, ShieldX, Loader2, Copy, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { showCopyToast } from '@/utils/toastHelpers';
 import type { BreachCheckResult } from '@/lib/security/passwordBreach';
 
 interface PasswordBreachWarningProps {
@@ -50,6 +51,7 @@ export function PasswordBreachWarning({
     if (suggestedPassword) {
       await navigator.clipboard.writeText(suggestedPassword);
       setCopied(true);
+      showCopyToast('Password');
       setTimeout(() => setCopied(false), 2000);
     }
   };

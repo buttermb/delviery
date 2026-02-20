@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import {
   Store,
@@ -786,7 +787,7 @@ export default function StorefrontDashboard() {
                   size="sm"
                   onClick={() => {
                     navigator.clipboard.writeText(storeUrl);
-                    toast({ title: 'URL copied!' });
+                    showCopyToast('Store URL');
                   }}
                 >
                   Copy URL
