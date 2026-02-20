@@ -95,14 +95,14 @@ export function WorkflowCanvas() {
 
   const loadWorkflows = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('workflow_definitions')
         .select('*')
         .eq('tenant_id', tenant?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setWorkflows((data as Workflow[]) || []);
+      setWorkflows((data as unknown as Workflow[]) || []);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error loading workflows';
       toast({
@@ -182,16 +182,16 @@ export function WorkflowCanvas() {
     if (!selectedWorkflow || !tenant?.id) return;
 
     try {
-      const workflowData: Omit<Workflow, 'id'> & { tenant_id: string } = {
+      const workflowData = {
         ...selectedWorkflow,
         tenant_id: tenant.id,
         actions: selectedWorkflow.actions,
         trigger_config: selectedWorkflow.trigger_config,
-      };
+      } as Record<string, unknown>;
 
       if (selectedWorkflow.id) {
         // Update existing
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('workflow_definitions')
           .update(workflowData)
           .eq('id', selectedWorkflow.id);
@@ -199,19 +199,19 @@ export function WorkflowCanvas() {
         if (error) throw error;
       } else {
         // Create new
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('workflow_definitions')
           .insert([workflowData])
           .select()
           .maybeSingle();
 
         if (error) throw error;
-        setSelectedWorkflow(data as Workflow);
+        setSelectedWorkflow(data as unknown as Workflow);
       }
 
       // If trigger is database_event, create trigger record
       if (selectedWorkflow.trigger_type === 'database_event' && selectedWorkflow.id) {
-        await supabase
+        await (supabase as any)
           .from('workflow_triggers')
           .upsert({
             workflow_id: selectedWorkflow.id,

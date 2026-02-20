@@ -131,7 +131,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
 
           {/* Route line */}
           {route && (
-            <Source type="geojson" data={route.geometry}>
+            <Source type="geojson" data={route.geometry as unknown as GeoJSON.GeoJSON}>
               <Layer
                 type="line"
                 paint={{

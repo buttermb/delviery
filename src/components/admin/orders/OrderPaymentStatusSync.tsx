@@ -50,7 +50,7 @@ import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Receipt from 'lucide-react/dist/esm/icons/receipt';
-import { ORDER_ORDER_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
+import { ORDER_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
 
 /** Payment record type */
 interface PaymentRecord {

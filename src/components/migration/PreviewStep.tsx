@@ -31,12 +31,12 @@ interface PreviewStepProps {
   onBack: () => void;
 }
 
-const CATEGORIES: CannabisCategory[] = [
+const CATEGORIES: string[] = [
   'flower', 'preroll', 'concentrate', 'edible', 'vape', 
   'tincture', 'topical', 'accessory', 'other'
 ];
 
-const STRAIN_TYPES: StrainType[] = ['indica', 'sativa', 'hybrid', 'cbd'];
+const STRAIN_TYPES: string[] = ['indica', 'sativa', 'hybrid', 'cbd'];
 
 const QUALITY_TIERS: QualityTier[] = ['exotic', 'indoor', 'greenhouse', 'outdoor', 'mixed_light'];
 

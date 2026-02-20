@@ -96,7 +96,8 @@ export function useMigration() {
     try {
       setState(prev => ({ ...prev, error: null }));
       
-      const format = detectFormat(file);
+      const formatResult = await detectFormat(file);
+      const format = formatResult.format;
       
       if (format === 'excel' || format === 'csv') {
         const arrayBuffer = await file.arrayBuffer();

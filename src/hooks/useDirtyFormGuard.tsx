@@ -48,13 +48,13 @@ export function useDirtyFormGuard(
   );
 
   const dialogContentProps = {
-    onPointerDownOutside: (e: React.PointerEvent) => {
+    onPointerDownOutside: (e: Event) => {
       if (isDirty) {
         e.preventDefault();
         setShowConfirm(true);
       }
     },
-    onEscapeKeyDown: (e: KeyboardEvent) => {
+    onEscapeKeyDown: (e: Event) => {
       if (isDirty) {
         e.preventDefault();
         setShowConfirm(true);

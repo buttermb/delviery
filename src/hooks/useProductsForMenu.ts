@@ -9,6 +9,7 @@ export interface ProductForMenu {
   image_url?: string;
   category?: string;
   stock_quantity?: number;
+  sku?: string;
 }
 
 export const useProductsForMenu = (tenantId?: string) => {

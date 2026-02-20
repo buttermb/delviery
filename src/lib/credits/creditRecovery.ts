@@ -86,7 +86,7 @@ export async function refundCredits(request: RefundRequest): Promise<RefundResul
     }
 
     // Check if already refunded
-    const { data: existingRefund } = await supabase
+    const { data: existingRefund } = await (supabase as any)
       .from('credit_transactions')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -447,7 +447,7 @@ export async function isTransactionRefunded(
   tenantId: string,
   transactionId: string
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data } = await (supabase as any)
     .from('credit_transactions')
     .select('id')
     .eq('tenant_id', tenantId)

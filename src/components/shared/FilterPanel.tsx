@@ -82,7 +82,7 @@ export function FilterPanel({
                     variant="secondary"
                     className="gap-1"
                   >
-                    {filter.label as React.ReactNode}: {values[key]}
+                    {filter.label as string}: {values[key] as string}
                     <button
                       onClick={() => removeFilter(key)}
                       className="ml-1 hover:bg-muted rounded-full p-0.5"

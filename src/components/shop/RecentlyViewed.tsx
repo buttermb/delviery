@@ -61,7 +61,7 @@ export function RecentlyViewed({
       if (error) throw error;
       
       // Filter and order by recently viewed
-      const productMap = new Map((data as Product[]).map((p) => [p.product_id, p]));
+      const productMap = new Map((data as unknown as Product[]).map((p) => [p.product_id, p]));
       return recentIds
         .map((id: string) => productMap.get(id))
         .filter(Boolean) as Product[];
