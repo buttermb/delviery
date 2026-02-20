@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
@@ -333,13 +334,7 @@ export default function SuperAdminEnhanced() {
   };
 
   if (statsLoading || tenantsLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Loading platform data...</p>
-        </Card>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading platform data..." />;
   }
 
   const platformStats = stats || defaultStats();
@@ -809,7 +804,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
   });
 
   if (!tenant) {
-    return <div>Loading...</div>;
+    return <EnhancedLoadingState variant="card" message="Loading tenant details..." />;
   }
 
   const health = calculateHealthScore(tenant as any);

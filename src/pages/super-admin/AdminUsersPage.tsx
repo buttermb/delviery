@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 /**
  * Admin Users Management Page
  * Manage super admin users
@@ -183,7 +184,7 @@ export default function AdminUsersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <EnhancedLoadingState variant="table" count={3} message="Loading admin users..." />
           ) : !adminUsers?.length ? (
             <div className="text-center py-8 text-muted-foreground">
               No admin users found

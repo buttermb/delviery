@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -300,7 +301,7 @@ export default function ImagesPage() {
 
       {/* Images Grid/List */}
       {isLoading ? (
-        <div className="text-center py-12">Loading images...</div>
+        <EnhancedLoadingState variant="grid" count={6} message="Loading images..." />
       ) : filteredImages?.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">

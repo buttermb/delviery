@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -265,7 +266,7 @@ export default function FrontedInventoryAnalytics() {
     toast.success("Report exported");
   };
 
-  if (loading) return <div className="p-6">Loading analytics...</div>;
+  if (loading) return <EnhancedLoadingState variant="dashboard" message="Loading analytics..." />;
 
   return (
     <div className="container mx-auto p-6 space-y-6">

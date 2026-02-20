@@ -3,6 +3,7 @@
  * Main page for managing product reviews
  */
 
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ReviewModerationQueue } from '@/components/reviews/ReviewModerationQueue';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,11 +14,7 @@ export default function ReviewsPage() {
     const { tenant } = useTenantAdminAuth();
 
     if (!tenant) {
-        return (
-            <div className="p-8">
-                <p className="text-muted-foreground">Loading...</p>
-            </div>
-        );
+        return <EnhancedLoadingState variant="card" message="Loading reviews..." />;
     }
 
     return (

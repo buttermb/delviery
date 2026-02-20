@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -315,11 +316,7 @@ export default function GenerateBarcodes() {
   };
 
   if (tenantLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading barcode generator..." />;
   }
 
   if (!tenant) {

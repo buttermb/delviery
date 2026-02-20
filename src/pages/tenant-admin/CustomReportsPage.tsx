@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -83,7 +84,7 @@ export default function CustomReportsPage() {
   });
 
   if (isLoading) {
-    return <div className="p-6 text-center">Loading reports...</div>;
+    return <EnhancedLoadingState variant="table" message="Loading reports..." />;
   }
 
   return (

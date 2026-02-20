@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -289,7 +290,7 @@ export default function BatchesPage() {
 
       {/* Batches Table */}
       {isLoading ? (
-        <div className="text-center py-12">Loading batches...</div>
+        <EnhancedLoadingState variant="table" count={5} message="Loading batches..." />
       ) : tableMissing ? (
         <Card>
           <CardContent className="py-12 text-center">

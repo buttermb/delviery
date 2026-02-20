@@ -3,6 +3,7 @@
  * Extracted from ZReportPage.tsx for use in POSHubPage
  */
 
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart } from 'lucide-react';
@@ -45,7 +46,7 @@ export default function ZReportPanel() {
     });
 
     if (isLoading) {
-        return <div className="p-6 text-center">Loading shifts...</div>;
+        return <EnhancedLoadingState variant="table" message="Loading shifts..." />;
     }
 
     return (

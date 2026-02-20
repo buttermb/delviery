@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +41,7 @@ export default function ZReportPage() {
   });
 
   if (isLoading) {
-    return <div className="p-6 text-center">Loading shifts...</div>;
+    return <EnhancedLoadingState variant="table" message="Loading shifts..." />;
   }
 
   return (

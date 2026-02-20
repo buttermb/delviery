@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -66,11 +67,7 @@ export default function CustomerInsights() {
   });
 
   if (customerLoading || ordersLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading customer insights...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading customer insights..." />;
   }
 
   if (!customer) {

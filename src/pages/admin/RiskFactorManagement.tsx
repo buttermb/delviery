@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,7 +80,7 @@ export default function RiskFactorManagement() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <EnhancedLoadingState variant="table" message="Loading risk factors..." />;
   }
 
   return (

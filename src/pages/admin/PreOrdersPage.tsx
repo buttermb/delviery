@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PreOrdersPage() {
     const { navigateToAdmin } = useTenantNavigation();
@@ -208,11 +209,15 @@ export default function PreOrdersPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        Loading pre-orders...
-                                    </TableCell>
-                                </TableRow>
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {Array.from({ length: 7 }).map((_, j) => (
+                                            <TableCell key={j} className="h-14">
+                                                <Skeleton className={j === 0 ? "h-4 w-3/4" : "h-4 w-full max-w-[120px]"} />
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
                             ) : filteredPreOrders?.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-24 text-center">

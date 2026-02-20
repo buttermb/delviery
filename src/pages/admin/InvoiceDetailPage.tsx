@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useTenant } from "@/contexts/TenantContext";
 import { CustomerLink } from "@/components/admin/cross-links";
@@ -85,7 +86,7 @@ export default function InvoiceDetailPage() {
     useBreadcrumbLabel(invoice ? `Invoice #${invoice.invoice_number}` : null);
 
     if (isLoading) {
-        return <div className="p-8 text-center">Loading invoice details...</div>;
+        return <EnhancedLoadingState variant="card" message="Loading invoice details..." />;
     }
 
     if (error || !invoice) {

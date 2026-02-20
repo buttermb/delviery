@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -222,7 +223,7 @@ export default function NotificationSettings() {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading preferences...</div>;
+    return <EnhancedLoadingState variant="card" message="Loading preferences..." />;
   }
 
   return (

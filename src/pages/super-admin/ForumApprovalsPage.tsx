@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 /**
  * Forum Approvals Management Page
  * Super admin page to manage forum user approval requests
@@ -228,7 +229,7 @@ export default function ForumApprovalsPage() {
 
             <TabsContent value={activeTab} className="mt-4">
               {isLoading ? (
-                <div className="text-center py-8">Loading...</div>
+                <EnhancedLoadingState variant="table" count={3} message="Loading approvals..." />
               ) : filteredApprovals && filteredApprovals.length > 0 ? (
                 <Table>
                   <TableHeader>

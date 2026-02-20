@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useState, useEffect } from 'react';
 import { useCourier } from '@/contexts/CourierContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -192,7 +193,7 @@ export default function CourierHistoryPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-center py-8 text-muted-foreground">Loading history...</p>
+              <EnhancedLoadingState variant="list" count={5} message="Loading history..." />
             ) : records.length === 0 ? (
               <div className="text-center py-8 space-y-2">
                 {role === 'courier' ? (

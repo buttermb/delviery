@@ -649,7 +649,7 @@
 ## Phase C11: Performance & Perceived Speed (4 tasks)
 
 - [x] Task 395: Add skeleton loaders to all pages that show blank while loading — Replaced bare Loader2 spinners, plain "Loading..." text, and raw CSS spinners with proper skeleton components (EnhancedLoadingState with dashboard/table/card/list variants, DetailPageSkeleton for detail pages) across 35+ pages including VendorDetailPage, ProductDetailsPage, ClientDetailPage, all analytics pages, marketplace pages, super-admin pages, and more. Zero TS errors.
-- [ ] Task 396: Fix flash of unstyled content � ensure layout doesn't jump when data loads
+- [x] Task 396: Fix flash of unstyled content — ensure layout doesn't jump when data loads — Replaced bare text "Loading..." states with EnhancedLoadingState skeleton components across 25+ pages: catalog/ImagesPage (grid), catalog/BatchesPage (table), PreOrdersPage (skeleton table rows), InvoiceDetailPage, PreOrderDetailPage, FrontedInventoryAnalytics (dashboard), RiskFactorManagement, RecordFrontedReturn, ReviewsPage, CustomerInsights (dashboard), BugScanner, PrioritySupport, CustomIntegrations, ZReportPage, CustomReportsPage, CompliancePage, BulkOperationsPage, TeamSettings, NotificationSettings, SuperAdminEnhanced (2 states), super-admin DashboardPage, ForumApprovalsPage, AdminUsersPage, ZReportPanel, ReceivingPage, InventoryManagement, GenerateBarcodes, courier HistoryPage, courier EarningsPage. All loading states now render proper skeletons matching loaded content layout to prevent layout shift. Zero TS errors.
 - [ ] Task 397: Fix unnecessary refetches � add proper staleTime to queries that don't need real-time
 - [ ] Task 398: Fix slow navigation � prefetch data on sidebar link hover
 

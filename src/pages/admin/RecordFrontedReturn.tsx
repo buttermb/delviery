@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -225,7 +226,7 @@ export default function RecordFrontedReturn() {
     });
   };
 
-  if (!front) return <div>Loading...</div>;
+  if (!front) return <EnhancedLoadingState variant="card" message="Loading return details..." />;
 
   const goodReturns = scannedReturns.filter((r) => r.condition === "good").length;
   const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;

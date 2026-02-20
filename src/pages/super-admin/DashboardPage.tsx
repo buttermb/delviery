@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { isCancelled } from '@/utils/subscriptionStatus';
 /**
  * Super Admin Dashboard Page
@@ -375,11 +376,7 @@ export default function SuperAdminDashboardPage() {
   }).length;
 
   if (statsLoading) {
-    return (
-      <div className="p-3 sm:p-4 md:p-6">
-        <div className="text-center py-12">Loading dashboard...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading dashboard..." />;
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -195,14 +196,7 @@ export default function CustomIntegrations() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          Loading integrations...
-        </div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading integrations..." />;
   }
 
   // Detail view for selected integration
