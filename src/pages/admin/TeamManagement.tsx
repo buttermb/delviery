@@ -92,7 +92,7 @@ export default function TeamManagement() {
     isLoading: loadingMembers,
     error: membersError,
   } = useQuery({
-    queryKey: ['team', 'members', tenant?.id],
+    queryKey: queryKeys.team.members(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
@@ -146,7 +146,7 @@ export default function TeamManagement() {
     data: pendingInvitations = [],
     isLoading: loadingInvitations,
   } = useQuery({
-    queryKey: ['team', 'invitations', 'pending', tenant?.id],
+    queryKey: queryKeys.team.invitations(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -191,8 +191,8 @@ export default function TeamManagement() {
       setIsDialogOpen(false);
       setFormData(initialFormData);
       setFormErrors({});
-      queryClient.invalidateQueries({ queryKey: ['team', 'members'] });
-      queryClient.invalidateQueries({ queryKey: ['team', 'invitations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to send invitation', error, { component: 'TeamManagement' });
