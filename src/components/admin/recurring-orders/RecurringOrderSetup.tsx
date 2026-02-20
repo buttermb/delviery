@@ -8,6 +8,8 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Repeat from "lucide-react/dist/esm/icons/repeat";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +87,7 @@ function RecurringOrderSetupComponent({
 }: RecurringOrderSetupProps) {
   const { tenant: _tenant } = useTenantAdminAuth();
   const { createSchedule, updateSchedule } = useRecurringOrders();
-  const { data: clients = [] } = useWholesaleClients();
+  const { data: clients = [], isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useWholesaleClients();
   const { data: couriers = [] } = useWholesaleCouriers();
   const { data: products = [] } = useProductsForWholesale();
 
@@ -147,7 +149,7 @@ function RecurringOrderSetupComponent({
   // Update delivery address when client changes
   const handleClientChange = (id: string) => {
     setValue("client_id", id);
-    const client = clients.find((c) => c.id === id) as any;
+    const client = clients.find((c) => c.id === id);
     // Use email as fallback since address may not exist on wholesale_clients
     if (!watch("delivery_address") && client) {
       setValue("delivery_address", client.email || '');
@@ -266,25 +268,42 @@ function RecurringOrderSetupComponent({
             <Label>
               Client <span className="text-destructive">*</span>
             </Label>
-            <Select value={clientId} onValueChange={handleClientChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select client" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    <div className="flex items-center gap-2">
-                      <span>{client.business_name}</span>
-                      {client.outstanding_balance > 0 && (
-                        <Badge variant="outline" className="text-xs text-yellow-600">
-                          {formatCurrency(client.outstanding_balance)} owed
-                        </Badge>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {clientsLoading ? (
+              <div className="flex items-center gap-2 py-2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Loading clients...</span>
+              </div>
+            ) : clientsError ? (
+              <div className="flex items-center gap-2 py-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <span className="text-sm text-destructive">Failed to load clients</span>
+                <Button type="button" variant="outline" size="sm" onClick={() => refetchClients()}>
+                  <RefreshCw className="mr-1 h-3 w-3" /> Retry
+                </Button>
+              </div>
+            ) : clients.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">No clients found. Create a wholesale client first.</p>
+            ) : (
+              <Select value={clientId} onValueChange={handleClientChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{client.business_name}</span>
+                        {client.outstanding_balance > 0 && (
+                          <Badge variant="outline" className="text-xs text-yellow-600">
+                            {formatCurrency(client.outstanding_balance)} owed
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {errors.client_id && (
               <p className="text-sm text-destructive">{errors.client_id.message}</p>
             )}
@@ -544,15 +563,15 @@ function RecurringOrderSetupComponent({
               {...register("delivery_address")}
               placeholder="Enter delivery address or use client's default"
             />
-            {(selectedClient as any)?.email && (
+            {selectedClient?.email && (
               <Button
                 type="button"
                 variant="link"
                 size="sm"
                 className="h-auto p-0 text-xs"
-                onClick={() => setValue("delivery_address", (selectedClient as any).email)}
+                onClick={() => setValue("delivery_address", selectedClient.email || '')}
               >
-                Use client's email: {(selectedClient as any).email}
+                Use client's email: {selectedClient.email}
               </Button>
             )}
           </div>

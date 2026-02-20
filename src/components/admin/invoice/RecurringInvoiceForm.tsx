@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,10 +18,8 @@ import {
 import { SafeModal } from "@/components/ui/safe-modal";
 import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRecurringInvoices, RecurringLineItem, CreateScheduleInput } from "@/hooks/useRecurringInvoices";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useRecurringInvoices, RecurringLineItem, RecurringSchedule, CreateScheduleInput } from "@/hooks/useRecurringInvoices";
+import { useClients } from "@/hooks/crm/useClients";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 const schema = z.object({
@@ -39,28 +37,16 @@ type FormData = z.infer<typeof schema>;
 interface RecurringInvoiceFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  editSchedule?: any;
+  editSchedule?: RecurringSchedule;
 }
 
 export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: RecurringInvoiceFormProps) {
-  const { tenant } = useTenantAdminAuth();
   const { createSchedule, updateSchedule } = useRecurringInvoices();
   const [lineItems, setLineItems] = useState<RecurringLineItem[]>(
     editSchedule?.line_items || [{ description: "", quantity: 1, unit_price: 0 }]
   );
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ["crm-clients", tenant?.id],
-    queryFn: async () => {
-      if (!tenant?.id) return [];
-      const { data } = await supabase
-        .from("crm_clients")
-        .select("id, name, email")
-        .eq("account_id", tenant.id);
-      return data || [];
-    },
-    enabled: !!tenant?.id
-  });
+  const { data: clients = [], isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useClients();
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -144,21 +130,38 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
             </div>
             <div className="space-y-2">
               <Label>Client <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Select
-                value={watch("client_id")}
-                onValueChange={(v) => setValue("client_id", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select client" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {clientsLoading ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Loading clients...</span>
+                </div>
+              ) : clientsError ? (
+                <div className="flex items-center gap-2 py-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <span className="text-sm text-destructive">Failed to load clients</span>
+                  <Button variant="outline" size="sm" onClick={() => refetchClients()}>
+                    <RefreshCw className="mr-1 h-3 w-3" /> Retry
+                  </Button>
+                </div>
+              ) : clients.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No clients found. Create a client first.</p>
+              ) : (
+                <Select
+                  value={watch("client_id")}
+                  onValueChange={(v) => setValue("client_id", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {errors.client_id && <p className="text-sm text-destructive">{errors.client_id.message}</p>}
             </div>
           </div>
@@ -169,7 +172,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
               <Label>Frequency <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Select
                 value={frequency}
-                onValueChange={(v: any) => setValue("frequency", v)}
+                onValueChange={(v) => setValue("frequency", v as FormData["frequency"])}
               >
                 <SelectTrigger>
                   <SelectValue />
