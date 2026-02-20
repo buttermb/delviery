@@ -53,6 +53,7 @@ import {
 } from '@/hooks/useCustomerLTV';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { displayName } from '@/lib/formatters';
 
 // Segment color palette for charts
 const SEGMENT_COLORS: Record<CustomerSegment, string> = {
@@ -203,7 +204,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
         .in('id', customerIds);
 
       const customerNameMap = new Map(
-        (customers ?? []).map((c: any) => [c.id, { name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unknown', email: c.email }])
+        (customers ?? []).map((c: any) => [c.id, { name: c.name || displayName(c.first_name, c.last_name), email: c.email }])
       );
 
       return Array.from(customerMap.values())

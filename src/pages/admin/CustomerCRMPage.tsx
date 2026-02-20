@@ -30,7 +30,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
-import { formatSmartDate } from '@/lib/formatters';
+import { formatSmartDate, displayName } from '@/lib/formatters';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -163,7 +163,7 @@ export default function CustomerCRMPage() {
     segment: getSegment(customer),
   })).filter((customer) => {
     const matchesSearch =
-      `${customer.first_name} ${customer.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      displayName(customer.first_name, customer.last_name).toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesLifecycle = lifecycleFilter === "all" || customer.lifecycle === lifecycleFilter;
@@ -337,7 +337,7 @@ export default function CustomerCRMPage() {
                 header: 'Customer',
                 cell: (customer: any) => (
                   <div className="font-medium">
-                    {customer.first_name} {customer.last_name}
+                    {displayName(customer.first_name, customer.last_name)}
                     {customer.email && (
                       <div className="text-xs text-muted-foreground">
                         {customer.email}
@@ -416,7 +416,7 @@ export default function CustomerCRMPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-base">
-                      {customer.first_name} {customer.last_name}
+                      {displayName(customer.first_name, customer.last_name)}
                     </h3>
                     {customer.email && (
                       <p className="text-sm text-muted-foreground truncate mt-1">

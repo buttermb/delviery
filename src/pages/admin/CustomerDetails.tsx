@@ -36,6 +36,7 @@ import { CustomerPreferredProducts } from '@/components/admin/customers/Customer
 import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/CustomerRelatedEntitiesPanel';
 import { CustomerComplianceVerification } from '@/components/admin/customers/CustomerComplianceVerification';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { displayName, displayValue } from '@/lib/formatters';
 
 interface Customer {
   id: string;
@@ -79,7 +80,7 @@ export default function CustomerDetails() {
 
   // Set breadcrumb label to show customer name
   useBreadcrumbLabel(
-    customer ? `${customer.first_name} ${customer.last_name}` : null
+    customer ? displayName(customer.first_name, customer.last_name) : null
   );
 
   // Use the customer credit hook for credit balance management
@@ -231,7 +232,7 @@ export default function CustomerDetails() {
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
       <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
-        <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
+        <SEOHead title={`${displayName(customer.first_name, customer.last_name)} | Customer Details`} />
 
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
@@ -249,7 +250,7 @@ export default function CustomerDetails() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {customer.first_name} {customer.last_name}
+                      {displayName(customer.first_name, customer.last_name)}
                     </h1>
                     <Badge
                       className={customer.customer_type === 'medical'
@@ -263,11 +264,11 @@ export default function CustomerDetails() {
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4" />
-                      {customer.email}
+                      {displayValue(customer.email)}
                     </div>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4" />
-                      {customer.phone}
+                      {displayValue(customer.phone)}
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
@@ -405,7 +406,7 @@ export default function CustomerDetails() {
                   {customer && (
                     <CustomerComplianceVerification
                       customerId={customer.id}
-                      customerName={`${customer.first_name} ${customer.last_name}`}
+                      customerName={displayName(customer.first_name, customer.last_name)}
                       compact
                       showBlockWarning
                     />
@@ -501,7 +502,7 @@ export default function CustomerDetails() {
               <TabsContent value="compliance" className="space-y-6">
                 <CustomerComplianceVerification
                   customerId={customer.id}
-                  customerName={`${customer.first_name} ${customer.last_name}`}
+                  customerName={displayName(customer.first_name, customer.last_name)}
                   showBlockWarning
                 />
               </TabsContent>
@@ -512,7 +513,7 @@ export default function CustomerDetails() {
               <TabsContent value="addresses" className="space-y-6">
                 <CustomerDeliveryMap
                   customerId={customer.id}
-                  customerName={`${customer.first_name} ${customer.last_name}`}
+                  customerName={displayName(customer.first_name, customer.last_name)}
                 />
                 <CustomerDeliveryAddressesTab customerId={customer.id} />
               </TabsContent>

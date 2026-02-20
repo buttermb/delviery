@@ -51,6 +51,9 @@ export {
   ExportColumnHelpers,
 } from './utils/exportUtils';
 
+// Display value (null/undefined handling)
+export { displayValue, displayName } from './utils/displayValue';
+
 // Status colors
 export {
   getStatusColors,
@@ -83,6 +86,12 @@ export {
  * PHONE:
  * - formatPhoneNumber('5551234567') → "(555) 123-4567"
  * - formatPhoneNumber(null) → "—"
+ *
+ * DISPLAY VALUE:
+ * - displayValue(null) → "—"
+ * - displayValue('hello') → "hello"
+ * - displayName('John', 'Doe') → "John Doe"
+ * - displayName(null, null) → "Unknown"
  *
  * STATUS:
  * - getStatusColors('pending') → { bg: '...', text: '...', ... }

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { QuickCreateCustomerDialog } from './QuickCreateCustomerDialog';
+import { displayName } from '@/lib/formatters';
 
 export interface POSCustomer {
   id: string;
@@ -61,7 +62,7 @@ export function POSCustomerSelector({
 
     const query = searchQuery.toLowerCase().trim();
     return customers.filter((customer) => {
-      const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
+      const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
       const phone = (customer.phone || '').toLowerCase();
       const email = (customer.email || '').toLowerCase();
 
@@ -92,8 +93,8 @@ export function POSCustomerSelector({
     setSearchQuery('');
   };
 
-  const displayValue = selectedCustomer
-    ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
+  const selectedLabel = selectedCustomer
+    ? displayName(selectedCustomer.first_name, selectedCustomer.last_name)
     : 'Walk-in Customer';
 
   return (
@@ -111,7 +112,7 @@ export function POSCustomerSelector({
           >
             <div className="flex items-center gap-2 min-w-0">
               <User className="h-4 w-4 shrink-0" />
-              <span className="truncate">{displayValue}</span>
+              <span className="truncate">{selectedLabel}</span>
               {selectedCustomer?.customer_type === 'medical' && (
                 <Badge variant="secondary" className="ml-1 shrink-0">Med</Badge>
               )}
@@ -194,7 +195,7 @@ export function POSCustomerSelector({
                       <div className="flex flex-col flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {customer.first_name} {customer.last_name}
+                            {displayName(customer.first_name, customer.last_name)}
                           </span>
                           {customer.customer_type === 'medical' && (
                             <Badge variant="secondary" className="text-xs px-1.5 py-0">

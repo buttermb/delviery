@@ -8,7 +8,7 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { queryKeys } from "@/lib/queryKeys";
 import { invalidateOnEvent } from "@/lib/invalidation";
-import { formatCurrency, formatSmartDate } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -258,7 +258,7 @@ export function CustomerManagement() {
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
-        `${c.first_name} ${c.last_name}`,
+        displayName(c.first_name, c.last_name),
         c.email || '',
         c.phone || '',
         c.customer_type,
@@ -278,7 +278,7 @@ export function CustomerManagement() {
   };
 
   const filteredCustomers = customers.filter((customer) => {
-    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
+    const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
     const search = debouncedSearchTerm.toLowerCase();
     const matchesSearch =
       fullName.includes(search) ||
@@ -637,11 +637,11 @@ export function CustomerManagement() {
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                          {customer.first_name?.[0]}{customer.last_name?.[0]}
+                          {customer.first_name?.[0] || ''}{customer.last_name?.[0] || '?'}
                         </div>
                         <div className="ml-4">
                           <TruncatedText
-                            text={`${customer.first_name} ${customer.last_name}`}
+                            text={displayName(customer.first_name, customer.last_name)}
                             className="text-sm font-medium"
                             maxWidthClass="max-w-[200px]"
                             as="div"
@@ -720,7 +720,7 @@ export function CustomerManagement() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600"
-                            onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                            onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
                           >
                             <Trash className="w-4 h-4 mr-2" />
                             Delete
@@ -779,7 +779,7 @@ export function CustomerManagement() {
                   icon: <Trash className="h-5 w-5" />,
                   color: 'bg-red-500',
                   label: 'Delete',
-                  onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
+                  onClick: () => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))
                 }}
                 rightAction={{
                   icon: <Eye className="h-5 w-5" />,

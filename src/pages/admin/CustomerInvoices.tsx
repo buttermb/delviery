@@ -26,6 +26,7 @@ import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { displayName, displayValue } from '@/lib/formatters';
 
 const PAGE_SIZE = 25;
 
@@ -436,7 +437,7 @@ export default function CustomerInvoices() {
                     <option value="">Select customer</option>
                     {customers.map((customer: Customer) => (
                       <option key={customer.id} value={customer.id}>
-                        {customer.first_name} {customer.last_name} ({customer.email})
+                        {displayName(customer.first_name, customer.last_name)} ({displayValue(customer.email, 'No email')})
                       </option>
                     ))}
                   </select>

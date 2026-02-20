@@ -48,7 +48,7 @@ import { useDeliveryETA } from "@/hooks/useDeliveryETA";
 import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, displayValue } from "@/lib/formatters";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
@@ -787,7 +787,7 @@ export default function Orders() {
           <div className="min-w-0 truncate">
             <CustomerLink
               customerId={order.user_id}
-              customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+              customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}
               customerEmail={order.user?.email}
               className="font-medium"
             />
@@ -1177,12 +1177,12 @@ export default function Orders() {
                       <p className="text-sm font-medium truncate min-w-0">
                         <CustomerLink
                           customerId={order.user_id}
-                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}
                           customerEmail={order.user?.email}
                         />
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {formatSmartDate(order.created_at)} • {order.delivery_method}
+                        {formatSmartDate(order.created_at)} • {displayValue(order.delivery_method, 'N/A')}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">

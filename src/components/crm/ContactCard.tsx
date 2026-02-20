@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { displayName } from '@/lib/formatters';
 
 interface ContactCardProps {
   customerId: string;
@@ -81,7 +82,7 @@ export function ContactCard({
     enabled: !!customerId,
   });
 
-  const fullName = `${customer.first_name} ${customer.last_name}`;
+  const fullName = displayName(customer.first_name, customer.last_name);
 
   return (
     <Card>

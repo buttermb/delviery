@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, displayValue } from '@/lib/formatters';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 export default function ClientDetail() {
@@ -365,7 +365,7 @@ export default function ClientDetail() {
           </Card>
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Payment Terms</div>
-            <div className="text-2xl font-bold">{displayClient.payment_terms.replace('net_', '')} days</div>
+            <div className="text-2xl font-bold">{displayClient.payment_terms ? displayClient.payment_terms.replace('net_', '') : '—'} days</div>
             <div className="text-xs text-muted-foreground">Net terms</div>
           </Card>
           <Card className="p-4">

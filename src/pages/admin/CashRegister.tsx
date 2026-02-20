@@ -54,7 +54,7 @@ import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
 import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useCategories } from '@/hooks/useCategories';
 import { POS_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
-import { formatCurrency, formatSmartDate } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -484,7 +484,7 @@ function CashRegisterContent() {
         discountValue,
         taxAmount,
         taxRate,
-        customerName: selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`.trim() : null,
+        customerName: selectedCustomer ? displayName(selectedCustomer.first_name, selectedCustomer.last_name) : null,
       });
 
       toast.success('Payment processed successfully!', {

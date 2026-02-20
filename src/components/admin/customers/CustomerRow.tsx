@@ -16,7 +16,7 @@ import Lock from "lucide-react/dist/esm/icons/lock";
 import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
 import Trash from "lucide-react/dist/esm/icons/trash";
 import CopyButton from "@/components/CopyButton";
-import { formatSmartDate, formatPhoneNumber } from "@/lib/formatters";
+import { formatSmartDate, formatPhoneNumber, displayName } from "@/lib/formatters";
 
 interface Customer {
   id: string;
@@ -145,7 +145,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600"
-              onClick={() => onDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
+              onClick={() => onDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
             >
               <Trash className="w-4 h-4 mr-2" />
               Delete
