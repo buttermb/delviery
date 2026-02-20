@@ -37,14 +37,19 @@ export function InvoiceTable({ invoices, clientName, clientAddress }: InvoiceTab
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'bg-green-500/10 text-green-700 dark:text-green-400';
+        return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
       case 'sent':
-        return 'bg-blue-500/10 text-blue-700 dark:text-blue-400';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'partially_paid':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
       case 'overdue':
-        return 'bg-red-500/10 text-red-700 dark:text-red-400';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'cancelled':
+      case 'void':
+        return 'bg-gray-900 text-white dark:bg-gray-100/10 dark:text-gray-300';
       case 'draft':
       default:
-        return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300';
     }
   };
 

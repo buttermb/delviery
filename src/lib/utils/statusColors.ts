@@ -69,8 +69,12 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   critical: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   high: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   
+  // Invoice states
+  draft: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border', className: 'bg-muted text-muted-foreground border-border' },
+  sent: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
+  void: { bg: 'bg-gray-900 dark:bg-gray-100/10', text: 'text-white dark:text-gray-300', border: 'border-gray-900 dark:border-gray-600', className: 'bg-gray-900 dark:bg-gray-100/10 text-white dark:text-gray-300 border-gray-900 dark:border-gray-600' },
+
   // Info states (blue semantic)
-  draft: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
   new: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
   info: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
   trial: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
@@ -187,18 +191,23 @@ export function getStatusVariant(status: string): 'default' | 'secondary' | 'des
   }
 
   // Info states (blue)
-  if (['confirmed', 'draft', 'new', 'info', 'trial', 'trialing', 'open', 'medium'].includes(normalized)) {
+  if (['confirmed', 'sent', 'new', 'info', 'trial', 'trialing', 'open', 'medium'].includes(normalized)) {
     return 'outline';
   }
 
   // Warning states
-  if (['pending', 'processing', 'preparing', 'scheduled', 'in_progress', 'low_stock', 'low', 'warning', 'soft_burned', 'partial', 'past_due', 'at_risk', 'in_transit', 'ready_for_pickup', 'shipped'].includes(normalized)) {
+  if (['pending', 'processing', 'preparing', 'scheduled', 'in_progress', 'low_stock', 'low', 'warning', 'soft_burned', 'partial', 'partially_paid', 'past_due', 'at_risk', 'in_transit', 'ready_for_pickup', 'shipped'].includes(normalized)) {
     return 'secondary';
   }
-  
+
   // Destructive states
-  if (['failed', 'cancelled', 'canceled', 'rejected', 'error', 'overdue', 'out_of_stock', 'out', 'hard_burned', 'suspended', 'blocked', 'offline', 'disabled', 'critical', 'high'].includes(normalized)) {
+  if (['failed', 'cancelled', 'canceled', 'rejected', 'error', 'overdue', 'out_of_stock', 'out', 'hard_burned', 'suspended', 'blocked', 'offline', 'disabled', 'critical', 'high', 'void'].includes(normalized)) {
     return 'destructive';
+  }
+
+  // Neutral/Muted states (gray)
+  if (['draft', 'inactive', 'expired', 'closed', 'archived', 'unknown'].includes(normalized)) {
+    return 'secondary';
   }
   
   return 'outline';

@@ -175,17 +175,18 @@ export default function InvoiceDetailPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "paid":
-                return <Badge className="bg-green-500 hover:bg-green-600">Paid</Badge>;
+                return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700">Paid</Badge>;
             case "overdue":
                 return <Badge variant="destructive">Overdue</Badge>;
             case "sent":
-                return <Badge className="bg-blue-500 hover:bg-blue-600">Sent</Badge>;
+                return <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700">Sent</Badge>;
             case "draft":
-                return <Badge variant="secondary">Draft</Badge>;
+                return <Badge className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700">Draft</Badge>;
             case "partially_paid":
-                return <Badge className="bg-yellow-500 hover:bg-yellow-600">Partially Paid</Badge>;
+                return <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">Partially Paid</Badge>;
             case "cancelled":
-                return <Badge variant="outline" className="text-muted-foreground">Cancelled</Badge>;
+            case "void":
+                return <Badge className="bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600">{status === "void" ? "Void" : "Cancelled"}</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }

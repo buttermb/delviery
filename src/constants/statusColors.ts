@@ -72,6 +72,26 @@ export const STATUS_COLORS = {
     dot: 'bg-red-500',
   },
 
+  // Invoice statuses
+  draft: {
+    bg: 'bg-gray-100 dark:bg-gray-900/30',
+    text: 'text-gray-700 dark:text-gray-300',
+    border: 'border-gray-300 dark:border-gray-700',
+    dot: 'bg-gray-500',
+  },
+  sent: {
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-800 dark:text-blue-300',
+    border: 'border-blue-300 dark:border-blue-700',
+    dot: 'bg-blue-500',
+  },
+  void: {
+    bg: 'bg-gray-900 dark:bg-gray-100/10',
+    text: 'text-white dark:text-gray-300',
+    border: 'border-gray-900 dark:border-gray-600',
+    dot: 'bg-gray-900 dark:bg-gray-300',
+  },
+
   // Payment statuses
   paid: {
     bg: 'bg-emerald-100 dark:bg-emerald-900/30',
@@ -96,6 +116,12 @@ export const STATUS_COLORS = {
     text: 'text-orange-800 dark:text-orange-300',
     border: 'border-orange-300 dark:border-orange-700',
     dot: 'bg-orange-500',
+  },
+  partially_paid: {
+    bg: 'bg-amber-100 dark:bg-amber-900/30',
+    text: 'text-amber-800 dark:text-amber-300',
+    border: 'border-amber-300 dark:border-amber-700',
+    dot: 'bg-amber-500',
   },
   refunded: {
     bg: 'bg-purple-100 dark:bg-purple-900/30',
