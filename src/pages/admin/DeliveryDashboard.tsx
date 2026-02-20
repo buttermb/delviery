@@ -37,6 +37,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { LeafletMapWidget } from '@/components/admin/dashboard/LeafletMapWidget';
 import { useAvailableRunners } from '@/hooks/useAvailableRunners';
 import { AssignRunnerDialog } from '@/components/admin/AssignRunnerDialog';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 interface DeliveryOrder {
   id: string;
@@ -502,7 +503,7 @@ export default function DeliveryDashboard() {
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{runner.full_name}</p>
+                        <TruncatedText text={runner.full_name} className="font-medium" as="p" />
                         <p className="text-xs text-muted-foreground">
                           {runner.vehicle_type} • {formatPhoneNumber(runner.phone)}
                         </p>
@@ -568,9 +569,7 @@ export default function DeliveryDashboard() {
                             {order.status.replace('_', ' ')}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {order.delivery_address || 'No address'}
-                        </p>
+                        <TruncatedText text={order.delivery_address || 'No address'} className="text-sm text-muted-foreground" as="p" />
                         <p className="text-xs text-muted-foreground mt-1">
                           ${order.total_amount?.toFixed(2) || '0.00'}
                           {order.delivery_scheduled_at && (

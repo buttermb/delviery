@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Select,
   SelectContent,
@@ -303,7 +304,7 @@ export default function ExpenseTracking() {
                 {filteredExpenses.slice(0, 20).map((expense: any) => (
                   <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{expense.description || 'No description'}</div>
+                      <TruncatedText text={expense.description || 'No description'} className="font-medium" as="div" />
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <Badge variant="outline" className="text-xs">
                           <Tag className="h-3 w-3 mr-1" />

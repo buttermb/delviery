@@ -51,6 +51,7 @@ import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 // Types
 interface CollectionClient {
@@ -344,12 +345,12 @@ function ClientCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-foreground truncate">{client.businessName}</h3>
+              <TruncatedText text={client.businessName} className="font-semibold text-foreground" />
               <Badge variant="outline" className={cn("text-xs", statusColors[client.status])}>
                 {statusLabels[client.status]}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground truncate">{client.name}</p>
+            <TruncatedText text={client.name} className="text-sm text-muted-foreground" as="p" />
 
             <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
               {client.phone && (
@@ -359,9 +360,9 @@ function ClientCard({
                 </span>
               )}
               {client.email && (
-                <span className="flex items-center gap-1 truncate max-w-[200px]">
-                  <Mail className="h-3 w-3" />
-                  {client.email}
+                <span className="flex items-center gap-1 max-w-[200px]">
+                  <Mail className="h-3 w-3 shrink-0" />
+                  <TruncatedText text={client.email} />
                 </span>
               )}
             </div>
@@ -510,7 +511,7 @@ function ClientCard({
                             </span>
                           </div>
                           {activity.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 truncate">{activity.notes}</p>
+                            <TruncatedText text={activity.notes} className="text-xs text-muted-foreground mt-1" as="p" />
                           )}
                         </div>
                       </div>

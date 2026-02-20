@@ -46,6 +46,7 @@ import { POCreateForm } from "@/components/admin/purchase-orders/POCreateForm";
 import { PODetail } from "@/components/admin/purchase-orders/PODetail";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatSmartDate } from '@/lib/formatters';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
@@ -266,7 +267,7 @@ export default function PurchaseOrdersPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="font-semibold text-sm truncate">{po.po_number}</span>
+                          <TruncatedText text={po.po_number} className="font-semibold text-sm" />
                         </div>
                         <Badge
                           variant="outline"

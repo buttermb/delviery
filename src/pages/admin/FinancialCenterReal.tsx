@@ -10,6 +10,7 @@ import { useState } from "react";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useExpenseSummary } from "@/hooks/useFinancialData";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 
 export default function FinancialCenterReal() {
   const navigate = useNavigate();
@@ -273,7 +274,7 @@ export default function FinancialCenterReal() {
               {expenseSummary.recentExpenses.map((expense) => (
                 <div key={expense.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-lg">
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium truncate">{expense.description}</div>
+                    <TruncatedText text={expense.description} className="font-medium" as="div" />
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">
                         {expense.category}

@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InventoryHistoryTimeline } from '@/components/admin/inventory/InventoryHistoryTimeline';
 import { toast } from 'sonner';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 interface InventoryStats {
   totalProducts: number;
@@ -642,7 +643,7 @@ export default function InventoryDashboard() {
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-medium truncate">{product.name}</h4>
+                            <TruncatedText text={product.name} className="font-medium" />
                             {isOutOfStock ? (
                               <Badge variant="destructive">Out of Stock</Badge>
                             ) : isCritical ? (

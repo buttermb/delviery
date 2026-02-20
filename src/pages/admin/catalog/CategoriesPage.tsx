@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Plus,
   Search,
@@ -451,7 +452,7 @@ export default function CategoriesPage() {
           {/* Category info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-medium truncate">{category.name}</p>
+              <TruncatedText text={category.name} className="font-medium" as="p" />
               {category.slug && (
                 <Badge variant="outline" className="text-xs">
                   {category.slug}
@@ -459,7 +460,7 @@ export default function CategoriesPage() {
               )}
             </div>
             {category.description && (
-              <p className="text-sm text-muted-foreground truncate">{category.description}</p>
+              <TruncatedText text={category.description} className="text-sm text-muted-foreground" as="p" />
             )}
           </div>
 

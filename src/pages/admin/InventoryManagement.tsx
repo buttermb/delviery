@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 
 interface Product {
@@ -146,7 +147,7 @@ export function InventoryManagement() {
     {
       header: 'Product',
       accessorKey: 'name',
-      cell: (item) => <div className="font-medium truncate max-w-[150px] sm:max-w-none">{item.name}</div>
+      cell: (item) => <TruncatedText text={item.name} className="font-medium" maxWidthClass="max-w-[150px] sm:max-w-none" as="div" />
     },
     {
       header: 'Weight',

@@ -20,6 +20,7 @@ import { formatCurrency } from '@/lib/formatters';
 
 import { DataTable, type SortState } from '@/components/shared/DataTable';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -415,11 +416,9 @@ export function OrdersListPage() {
       header: 'Customer',
       cell: ({ original }: { original: Order }) => (
         <div className="flex flex-col max-w-[180px]">
-          <span className="font-medium truncate">
-            {original.user?.full_name || original.user?.phone || 'Unknown'}
-          </span>
+          <TruncatedText text={original.user?.full_name || original.user?.phone || 'Unknown'} className="font-medium" />
           {original.user?.phone && original.user.full_name && (
-            <span className="text-xs text-muted-foreground truncate">{original.user.phone}</span>
+            <TruncatedText text={original.user.phone} className="text-xs text-muted-foreground" />
           )}
         </div>
       ),

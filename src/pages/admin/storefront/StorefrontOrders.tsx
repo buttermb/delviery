@@ -23,6 +23,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
   Table,
@@ -336,8 +337,8 @@ export default function StorefrontOrders() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-mono font-semibold text-sm">{order.order_number}</p>
-                        <p className="text-sm font-medium truncate">{order.customer_name || 'Guest'}</p>
-                        <p className="text-xs text-muted-foreground truncate">{order.customer_email}</p>
+                        <TruncatedText text={order.customer_name || 'Guest'} className="text-sm font-medium" as="p" />
+                        <TruncatedText text={order.customer_email || ''} className="text-xs text-muted-foreground" as="p" />
                       </div>
                       <div className="flex flex-col items-end gap-1 ml-3">
                         <span className="font-bold">{formatCurrency(order.total)}</span>

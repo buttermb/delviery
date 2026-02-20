@@ -12,6 +12,7 @@ import { DollarSign, TrendingUp, ShoppingBag, Activity } from 'lucide-react';
 import { subDays, startOfYear, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -322,7 +323,7 @@ export default function RevenueReports() {
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
                         {i + 1}
                       </div>
-                      <span className="text-sm font-medium truncate max-w-[150px]">{product.name}</span>
+                      <TruncatedText text={product.name} className="text-sm font-medium" maxWidthClass="max-w-[150px]" />
                     </div>
                     <span className="text-sm text-muted-foreground">{product.count} sold</span>
                   </div>
