@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 // ============================================================================
 // Types
@@ -251,13 +252,16 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
       return data as CustomerCreditTransaction;
     },
     onSuccess: (_data, variables) => {
-      // Invalidate balance and transactions queries
+      toast.success('Credit added successfully');
       queryClient.invalidateQueries({
         queryKey: customerCreditKeys.balance(tenantId!, variables.customerId),
       });
       queryClient.invalidateQueries({
         queryKey: customerCreditKeys.transactions(tenantId!, variables.customerId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to add credit');
     },
   });
 
@@ -306,13 +310,16 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
       return data as CustomerCreditTransaction;
     },
     onSuccess: (_data, variables) => {
-      // Invalidate balance and transactions queries
+      toast.success('Credit deducted successfully');
       queryClient.invalidateQueries({
         queryKey: customerCreditKeys.balance(tenantId!, variables.customerId),
       });
       queryClient.invalidateQueries({
         queryKey: customerCreditKeys.transactions(tenantId!, variables.customerId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to deduct credit');
     },
   });
 

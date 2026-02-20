@@ -5,6 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
@@ -170,7 +171,11 @@ export function useStorefrontOrders({
       return { orderId };
     },
     onSuccess: () => {
+      toast.success('Order cancelled successfully');
       queryClient.invalidateQueries({ queryKey: ['storefront-orders', storeId, customerId] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel order');
     },
   });
 

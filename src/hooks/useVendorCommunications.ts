@@ -8,6 +8,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { toast } from 'sonner';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
@@ -230,9 +232,13 @@ export function useVendorCommunications(vendorId: string) {
       return data as VendorCommunicationLog;
     },
     onSuccess: () => {
+      toast.success('Communication logged successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to log communication');
     },
   });
 
@@ -276,9 +282,13 @@ export function useVendorCommunications(vendorId: string) {
       return data as VendorCommunicationLog;
     },
     onSuccess: () => {
+      toast.success('Communication updated successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update communication');
     },
   });
 
@@ -305,9 +315,13 @@ export function useVendorCommunications(vendorId: string) {
       }
     },
     onSuccess: () => {
+      toast.success('Communication deleted successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete communication');
     },
   });
 

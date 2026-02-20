@@ -8,6 +8,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { toast } from 'sonner';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
@@ -301,9 +303,13 @@ export function useVendorDocuments(vendorId: string) {
       return data as VendorDocument;
     },
     onSuccess: () => {
+      toast.success('Document created successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create document');
     },
   });
 
@@ -340,9 +346,13 @@ export function useVendorDocuments(vendorId: string) {
       return data as VendorDocument;
     },
     onSuccess: () => {
+      toast.success('Document updated successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update document');
     },
   });
 
@@ -404,9 +414,13 @@ export function useVendorDocuments(vendorId: string) {
       }
     },
     onSuccess: () => {
+      toast.success('Document deleted successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete document');
     },
   });
 

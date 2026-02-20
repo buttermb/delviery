@@ -83,9 +83,13 @@ export function useAssignOrderTag() {
       return data as OrderTag;
     },
     onSuccess: (_data, variables) => {
+      toast.success('Tag assigned to order');
       queryClient.invalidateQueries({
         queryKey: queryKeys.orderTags.byOrder(variables.orderId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to assign tag');
     },
   });
 }
@@ -114,9 +118,13 @@ export function useRemoveOrderTag() {
       }
     },
     onSuccess: (_data, variables) => {
+      toast.success('Tag removed from order');
       queryClient.invalidateQueries({
         queryKey: queryKeys.orderTags.byOrder(variables.orderId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove tag');
     },
   });
 }

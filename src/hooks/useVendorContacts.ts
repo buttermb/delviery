@@ -9,6 +9,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { toast } from 'sonner';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
@@ -148,9 +150,13 @@ export function useVendorContacts(vendorId: string) {
       return data as VendorContact;
     },
     onSuccess: () => {
+      toast.success('Contact created successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create contact');
     },
   });
 
@@ -190,9 +196,13 @@ export function useVendorContacts(vendorId: string) {
       return data as VendorContact;
     },
     onSuccess: () => {
+      toast.success('Contact updated successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update contact');
     },
   });
 
@@ -219,9 +229,13 @@ export function useVendorContacts(vendorId: string) {
       }
     },
     onSuccess: () => {
+      toast.success('Contact deleted successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete contact');
     },
   });
 
@@ -252,9 +266,13 @@ export function useVendorContacts(vendorId: string) {
       return data as VendorContact;
     },
     onSuccess: () => {
+      toast.success('Primary contact updated');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to set primary contact');
     },
   });
 
@@ -289,9 +307,13 @@ export function useVendorContacts(vendorId: string) {
       return data as VendorContactHistory;
     },
     onSuccess: (_, variables) => {
+      toast.success('Interaction logged successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.contactHistory(tenantId || '', variables.vendor_contact_id),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to log interaction');
     },
   });
 

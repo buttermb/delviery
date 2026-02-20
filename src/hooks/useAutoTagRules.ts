@@ -147,6 +147,9 @@ export function useEnsureAutoTag() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create auto tag');
+    },
   });
 }
 
@@ -234,6 +237,12 @@ export function useApplyAutoTags() {
       }
 
       return appliedTags;
+    },
+    onSuccess: () => {
+      toast.success('Auto tags applied successfully');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to apply auto tags');
     },
   });
 }

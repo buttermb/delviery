@@ -19,6 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 // ============================================================================
 // Types
@@ -478,9 +479,13 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
       }
     },
     onSuccess: () => {
+      toast.success('Loyalty configuration saved successfully');
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.config(tenantId!),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to save loyalty configuration');
     },
   });
 
@@ -654,12 +659,16 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       return data as LoyaltyPointTransaction;
     },
     onSuccess: (_data, variables) => {
+      toast.success('Points awarded successfully');
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.status(tenantId!, variables.customerId),
       });
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.history(tenantId!, variables.customerId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to award points');
     },
   });
 
@@ -715,12 +724,16 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       return data as LoyaltyPointTransaction;
     },
     onSuccess: (_data, variables) => {
+      toast.success('Points redeemed successfully');
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.status(tenantId!, variables.customerId),
       });
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.history(tenantId!, variables.customerId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to redeem points');
     },
   });
 
@@ -771,12 +784,16 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       return data as LoyaltyPointTransaction;
     },
     onSuccess: (_data, variables) => {
+      toast.success('Points adjusted successfully');
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.status(tenantId!, variables.customerId),
       });
       queryClient.invalidateQueries({
         queryKey: customerLoyaltyKeys.history(tenantId!, variables.customerId),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to adjust points');
     },
   });
 

@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,12 +40,18 @@ export function NotificationDropdown() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.notifications.lists() });
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to mark notification as read');
+    },
   });
 
   const markAllAsReadMutation = useMutation({
     mutationFn: () => forumApi.markAllNotificationsAsRead(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.notifications.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to mark notifications as read');
     },
   });
 

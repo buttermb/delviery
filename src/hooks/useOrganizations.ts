@@ -17,6 +17,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
+import { toast } from 'sonner';
+
 import type {
   Organization,
   OrganizationWithStats,
@@ -379,7 +381,11 @@ export function useOrganizations({
       return created as Organization;
     },
     onSuccess: () => {
+      toast.success('Organization created successfully');
       queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create organization');
     },
   });
 
@@ -423,10 +429,14 @@ export function useOrganizations({
       return updated as Organization;
     },
     onSuccess: (_data, variables) => {
+      toast.success('Organization updated successfully');
       queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: organizationKeys.detail(tenantId!, variables.id),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update organization');
     },
   });
 
@@ -465,7 +475,11 @@ export function useOrganizations({
       });
     },
     onSuccess: () => {
+      toast.success('Organization deleted successfully');
       queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete organization');
     },
   });
 
@@ -504,10 +518,14 @@ export function useOrganizations({
       });
     },
     onSuccess: (_data, variables) => {
+      toast.success('Organization status updated successfully');
       queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: organizationKeys.detail(tenantId!, variables.id),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update organization status');
     },
   });
 
@@ -651,12 +669,16 @@ export function useOrganizationDetail({
       return member as OrganizationMember;
     },
     onSuccess: () => {
+      toast.success('Member added successfully');
       queryClient.invalidateQueries({
         queryKey: organizationKeys.members(tenantId!, organizationId!),
       });
       queryClient.invalidateQueries({
         queryKey: organizationKeys.detail(tenantId!, organizationId!),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to add member');
     },
   });
 
@@ -687,12 +709,16 @@ export function useOrganizationDetail({
       });
     },
     onSuccess: () => {
+      toast.success('Member removed successfully');
       queryClient.invalidateQueries({
         queryKey: organizationKeys.members(tenantId!, organizationId!),
       });
       queryClient.invalidateQueries({
         queryKey: organizationKeys.detail(tenantId!, organizationId!),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove member');
     },
   });
 
@@ -736,9 +762,13 @@ export function useOrganizationDetail({
       return updated as OrganizationMember;
     },
     onSuccess: () => {
+      toast.success('Member updated successfully');
       queryClient.invalidateQueries({
         queryKey: organizationKeys.members(tenantId!, organizationId!),
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update member');
     },
   });
 

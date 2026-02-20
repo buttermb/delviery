@@ -14,6 +14,8 @@ import type {
   CreateDeliveryRatingInput,
 } from '@/types/deliveryRating';
 
+import { toast } from 'sonner';
+
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -71,6 +73,7 @@ export function useSubmitDeliveryRating() {
       return data as DeliveryRating;
     },
     onSuccess: (_data: DeliveryRating, variables: CreateDeliveryRatingInput) => {
+      toast.success('Rating submitted successfully');
       if (variables.tracking_token) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.deliveryRatings.byToken(variables.tracking_token),
@@ -79,6 +82,9 @@ export function useSubmitDeliveryRating() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.deliveryRatings.all,
       });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit rating');
     },
   });
 }

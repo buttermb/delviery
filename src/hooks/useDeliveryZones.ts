@@ -4,6 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -100,7 +101,11 @@ export function useDeliveryZones() {
       return data as DeliveryZone;
     },
     onSuccess: () => {
+      toast.success('Delivery zone created successfully');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create delivery zone');
     },
   });
 
@@ -134,7 +139,11 @@ export function useDeliveryZones() {
       return data as DeliveryZone;
     },
     onSuccess: () => {
+      toast.success('Delivery zone updated successfully');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update delivery zone');
     },
   });
 
@@ -155,7 +164,11 @@ export function useDeliveryZones() {
       }
     },
     onSuccess: () => {
+      toast.success('Delivery zone deleted successfully');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete delivery zone');
     },
   });
 
@@ -175,8 +188,12 @@ export function useDeliveryZones() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      toast.success(variables.isActive ? 'Delivery zone activated' : 'Delivery zone deactivated');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to toggle delivery zone');
     },
   });
 

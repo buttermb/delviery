@@ -8,8 +8,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 import { EditorEntryCard } from '@/components/admin/storefront/EditorEntryCard';
@@ -24,7 +24,6 @@ import type { MarketplaceStore } from '@/types/marketplace-extended';
 
 export function StorefrontDesignPage() {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [showCompactMode, setShowCompactMode] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -59,9 +58,12 @@ export function StorefrontDesignPage() {
             logger.info('Save triggered from design page');
         },
         onSuccess: () => {
-            toast({ title: 'Draft saved', description: 'Your changes have been saved.' });
+            toast.success('Draft saved');
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             setHasUnsavedChanges(false);
+        },
+        onError: (error) => {
+            toast.error(error instanceof Error ? error.message : 'Failed to save draft');
         },
     });
 
