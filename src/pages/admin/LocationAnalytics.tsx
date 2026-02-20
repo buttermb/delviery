@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { MapPin, TrendingUp, DollarSign } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function LocationAnalytics() {
   const { tenant } = useTenantAdminAuth();
@@ -33,11 +34,7 @@ export default function LocationAnalytics() {
   });
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading location analytics...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading location analytics..." />;
   }
 
   const locationStats = (locations || []).map((location: any) => ({

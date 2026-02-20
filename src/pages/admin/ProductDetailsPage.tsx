@@ -25,6 +25,7 @@ import { ProductSyncStatusIndicator } from '@/components/admin/products/ProductS
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useProductArchive } from '@/hooks/useProductArchive';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 import { useStorefrontProductSync } from '@/hooks/useStorefrontProductSync';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -78,11 +79,7 @@ export default function ProductDetailsPage() {
 
     // Loading state
     if (isLoading) {
-        return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     // Error state

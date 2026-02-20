@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { humanizeError } from "@/lib/humanizeError";
 import { Loader2, Plus, Search, Filter, MoreHorizontal } from "lucide-react";
 import { MarketplaceListing } from "@/types/marketplace-extended";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import {
     Table,
     TableBody,
@@ -105,7 +106,7 @@ export default function ProductVisibilityManager() {
     ) || [];
 
     if (isLoading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+        return <EnhancedLoadingState variant="table" message="Loading products..." />;
     }
 
     return (

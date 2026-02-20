@@ -35,6 +35,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const EXPENSE_CATEGORIES = [
   'Supplies',
@@ -170,11 +171,7 @@ export default function ExpenseTracking() {
   const uniqueCategories = [...new Set((expenses || []).map((e: any) => e.category).filter(Boolean))];
 
   if (isLoading) {
-    return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading expenses..." />;
   }
 
   return (

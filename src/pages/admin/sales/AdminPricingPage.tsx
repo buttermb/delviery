@@ -11,6 +11,7 @@ import { DollarSign, Edit, Save, X } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/lib/formatters';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface Product {
   id: string;
@@ -104,11 +105,7 @@ export default function AdminPricingPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading pricing data...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading pricing data..." />;
   }
 
   return (

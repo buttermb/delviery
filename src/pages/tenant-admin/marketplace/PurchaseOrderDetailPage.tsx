@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -126,11 +127,7 @@ export default function PurchaseOrderDetailPage() {
     });
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!order) {

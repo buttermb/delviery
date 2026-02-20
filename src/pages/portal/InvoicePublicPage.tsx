@@ -2,7 +2,8 @@ import { useParams } from "react-router-dom";
 import { usePublicInvoice } from "@/hooks/crm/usePublicInvoice";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import {
@@ -20,12 +21,7 @@ export default function InvoicePublicPage() {
     const { data: invoice, isLoading, error } = usePublicInvoice(token);
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-dvh bg-gradient-to-br from-slate-50 to-slate-100">
-                <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground">Loading invoice...</p>
-            </div>
-        );
+        return <EnhancedLoadingState variant="card" message="Loading invoice..." />;
     }
 
     if (error || !invoice) {

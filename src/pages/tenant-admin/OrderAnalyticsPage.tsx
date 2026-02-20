@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Clock, Loader2 } from 'lucide-react';
 import { useUnifiedOrders } from '@/hooks/unified';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { format, subDays, parseISO, getHours } from 'date-fns';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
@@ -135,11 +136,7 @@ export default function OrderAnalyticsPage() {
   }, [filteredOrders]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh bg-background p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
   }
 
   return (

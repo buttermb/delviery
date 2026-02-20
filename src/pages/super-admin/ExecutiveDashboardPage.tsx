@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
 import { Download, TrendingUp, Users, DollarSign, Target } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function ExecutiveDashboardPage() {
   const { data: metrics, isLoading } = useQuery({
@@ -61,9 +62,7 @@ export default function ExecutiveDashboardPage() {
     return (
       <>
         <SEOHead title="Executive Dashboard - Super Admin" />
-        <div className="container mx-auto p-6">
-          <div className="h-64 bg-muted animate-pulse rounded" />
-        </div>
+        <EnhancedLoadingState variant="dashboard" message="Loading dashboard..." />
       </>
     );
   }

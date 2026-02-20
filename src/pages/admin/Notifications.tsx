@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Bell, Plus, Edit, Loader2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface NotificationTemplate {
   id: string;
@@ -184,11 +185,7 @@ export default function Notifications() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading templates...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading templates..." />;
   }
 
   return (

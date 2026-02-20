@@ -13,6 +13,7 @@ import { subDays, startOfYear, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { TruncatedText } from '@/components/shared/TruncatedText';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -154,11 +155,7 @@ export default function RevenueReports() {
   }, [rawOrders]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <Activity className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading revenue data..." />;
   }
 
   const { totalRevenue, orderCount, avgOrderValue, chartData, topProducts, statusData } = analytics || {

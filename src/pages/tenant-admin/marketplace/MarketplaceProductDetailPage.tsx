@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 
 export default function MarketplaceProductDetailPage() {
     const { productId } = useParams<{ productId: string }>();
@@ -153,11 +154,7 @@ export default function MarketplaceProductDetailPage() {
     });
 
     if (isLoading) {
-        return (
-            <div className="flex h-dvh items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!product) {

@@ -30,6 +30,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
@@ -45,11 +46,7 @@ export default function ClientDetailPage() {
     useBreadcrumbLabel(client?.name ?? null);
 
     if (isLoading) {
-        return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!client) {

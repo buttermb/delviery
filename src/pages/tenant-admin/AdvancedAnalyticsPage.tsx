@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function AdvancedAnalyticsPage() {
   const { tenant } = useTenantAdminAuth();
@@ -50,11 +51,7 @@ export default function AdvancedAnalyticsPage() {
   const productData = Object.values(productPerformance).slice(0, 10);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-dvh">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
   }
 
   return (

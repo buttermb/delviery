@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Truck, Clock, Package, TrendingUp } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function DeliveryAnalytics() {
   const { tenant } = useTenantAdminAuth();
@@ -35,11 +36,7 @@ export default function DeliveryAnalytics() {
   });
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading analytics...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading analytics..." />;
   }
 
   const deliveryStats = (deliveries || []).reduce((acc: any, delivery: any) => {

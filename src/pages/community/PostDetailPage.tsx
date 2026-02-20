@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { VoteButtons } from '@/components/community/VoteButtons';
 import { CommentThread } from '@/components/community/CommentThread';
 import { Loader2, ArrowLeft, Trash2, Package, ExternalLink } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatRelativeTime } from '@/lib/utils/formatDate';
 import { useState } from 'react';
@@ -35,11 +36,7 @@ export function PostDetailPage() {
   useForumRealtimeComments(postId);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading post..." />;
   }
 
   if (!post) {

@@ -82,6 +82,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { showInfoToast } from '@/utils/toastHelpers';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function TenantsListPage() {
   const navigate = useNavigate();
@@ -203,11 +204,7 @@ export default function TenantsListPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-12">Loading tenants...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading tenants..." />;
   }
 
   return (

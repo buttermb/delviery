@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Truck, Check, X } from "lucide-react";
+import { ArrowLeft, Truck, Check, X } from "lucide-react";
+import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
@@ -75,11 +76,7 @@ export function VendorOrderDetailPage() {
     });
 
     if (isLoading) {
-        return (
-            <div className="flex h-dvh items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!order) {

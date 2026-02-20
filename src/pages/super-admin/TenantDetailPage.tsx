@@ -28,6 +28,7 @@ import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
+import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -248,11 +249,7 @@ export default function TenantDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--super-admin-bg))]">
-        <p className="text-[hsl(var(--super-admin-text))]/70">Loading tenant details...</p>
-      </div>
-    );
+    return <DetailPageSkeleton />;
   }
 
   if (!tenant) {

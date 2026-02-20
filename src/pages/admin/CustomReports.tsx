@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Plus, Edit, Download } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface CustomReport {
   id: string;
@@ -185,11 +186,7 @@ export default function CustomReports() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading reports...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading reports..." />;
   }
 
   return (

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, UserPlus, Heart, DollarSign, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -233,11 +234,7 @@ export default function CustomerInsightsPage() {
   const isLoading = customersLoading || ordersLoading;
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh bg-background p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
   }
 
   return (

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Phone, Truck, Package } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { SEOHead } from "@/components/SEOHead";
 
@@ -54,13 +55,7 @@ export default function DeliveryTracking() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh bg-background p-6">
-        <div className="flex items-center justify-center h-96">
-          <p className="text-muted-foreground">Loading delivery details...</p>
-        </div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading delivery details..." />;
   }
 
   if (!delivery) {

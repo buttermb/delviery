@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRealtimeShifts, useRealtimeTransactions } from '@/hooks/useRealtimePOS';
 import { POSCharts } from '@/components/analytics/POSCharts';
 import { ChartExport } from '@/components/analytics/ChartExport';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface POSTransaction {
   id: string;
@@ -90,11 +91,7 @@ export default function PosAnalytics() {
   });
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading POS analytics...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading POS analytics..." />;
   }
 
   // Process daily sales data

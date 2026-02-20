@@ -648,7 +648,7 @@
 
 ## Phase C11: Performance & Perceived Speed (4 tasks)
 
-- [ ] Task 395: Add skeleton loaders to all pages that show blank while loading
+- [x] Task 395: Add skeleton loaders to all pages that show blank while loading — Replaced bare Loader2 spinners, plain "Loading..." text, and raw CSS spinners with proper skeleton components (EnhancedLoadingState with dashboard/table/card/list variants, DetailPageSkeleton for detail pages) across 35+ pages including VendorDetailPage, ProductDetailsPage, ClientDetailPage, all analytics pages, marketplace pages, super-admin pages, and more. Zero TS errors.
 - [ ] Task 396: Fix flash of unstyled content � ensure layout doesn't jump when data loads
 - [ ] Task 397: Fix unnecessary refetches � add proper staleTime to queries that don't need real-time
 - [ ] Task 398: Fix slow navigation � prefetch data on sidebar link hover

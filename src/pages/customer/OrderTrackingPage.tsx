@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, MapPin, ShoppingBag, Loader2 } from "lucide-react";
+import { ArrowLeft, Phone, MapPin, ShoppingBag } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
@@ -214,11 +215,7 @@ export default function OrderTrackingPage() {
   }, [orderId, tenantId, queryClient]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--customer-bg))]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="list" message="Loading order..." />;
   }
 
   if (!order) {

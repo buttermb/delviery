@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -105,7 +106,7 @@ export default function PlatformPayoutsPage() {
         }
     });
 
-    if (isLoading) return <Loader2 className="h-8 w-8 animate-spin" />;
+    if (isLoading) return <EnhancedLoadingState variant="table" message="Loading payouts..." />;
 
     return (
         <div className="space-y-6">

@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Upload } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function WhiteLabel() {
   const { tenant } = useTenantAdminAuth();
@@ -105,11 +106,7 @@ export default function WhiteLabel() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading branding settings...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading branding settings..." />;
   }
 
   return (

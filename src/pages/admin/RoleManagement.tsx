@@ -31,6 +31,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 import { queryKeys } from '@/lib/queryKeys';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 // Permission categories for UI organization
 const PERMISSION_CATEGORIES = [
@@ -492,14 +493,7 @@ export function RoleManagement() {
   const isSubmitting = createRoleMutation.isPending || updateRoleMutation.isPending;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Loading roles...</span>
-        </div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading roles..." />;
   }
 
   if (error) {

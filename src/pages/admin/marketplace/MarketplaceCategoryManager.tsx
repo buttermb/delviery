@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { Loader2, Plus, FolderTree, Edit2, Trash2 } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 type MarketplaceCategory = {
@@ -124,7 +125,7 @@ export default function MarketplaceCategoryManager() {
         upsertCategory.mutate(formData);
     };
 
-    if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
+    if (isLoading) return <EnhancedLoadingState variant="table" message="Loading categories..." />;
 
     return (
         <div className="space-y-6 h-full p-4 md:p-8">

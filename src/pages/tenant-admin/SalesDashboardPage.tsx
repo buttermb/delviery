@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, ShoppingBag, Percent, CreditCard, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/formatters';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -205,11 +206,7 @@ export default function SalesDashboardPage() {
   const isLoading = ordersLoading;
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh bg-background p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
   }
 
   return (
