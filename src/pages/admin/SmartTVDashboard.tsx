@@ -246,7 +246,7 @@ export default function SmartTVDashboard() {
     const itemsSold = ordersData?.metrics?.itemsSold || 0;
 
     return (
-        <div className="fixed inset-0 bg-zinc-950 text-white flex flex-col overflow-hidden">
+        <div className="fixed inset-0 bg-zinc-950 text-white flex flex-col overflow-hidden" data-dark-panel>
             {/* Header */}
             <TVHeaderBar isConnected={isConnected} lastUpdated={lastUpdated} />
 

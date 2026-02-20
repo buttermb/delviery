@@ -199,7 +199,7 @@ export function QRMenuDemo() {
           </div>
 
           {/* Mini nav */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" data-dark-panel>
             <button
               onClick={() => setActiveIndex(prev => (prev - 1 + menus.length) % menus.length)}
               className="w-7 h-7 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 flex items-center justify-center text-zinc-400 hover:text-white transition-all"

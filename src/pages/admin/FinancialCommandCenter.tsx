@@ -127,7 +127,7 @@ export default function FinancialCommandCenter() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="min-h-dvh bg-zinc-950">
+    <div className="min-h-dvh bg-zinc-950" data-dark-panel>
       <SEOHead 
         title="Financial Command Center" 
         description="Your unified financial dashboard - cash flow, AR, inventory, performance"

@@ -101,7 +101,7 @@ export default function CourierPerformanceTracker() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4" data-dark-panel>
           <div className="p-4 bg-neutral-900 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Trophy className="w-4 h-4 text-yellow-500" />

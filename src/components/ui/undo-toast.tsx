@@ -59,6 +59,7 @@ export function UndoToast({
                 'animate-in slide-in-from-bottom-5 fade-in duration-300',
                 className
             )}
+            data-dark-panel
         >
             {/* Progress bar */}
             <div className="h-1 bg-zinc-700">
