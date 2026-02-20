@@ -3,6 +3,7 @@ import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { toast } from "@/hooks/use-toast";
 import { Shield, Lock } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 
 type AuthPortal = "tenant-admin" | "super-admin" | "customer";
 
@@ -16,11 +17,19 @@ export default function MFAChallengePage({ portal }: MFAChallengePageProps) {
 
   const handleVerified = () => {
     logger.info("MFA verification successful", { portal });
-    
+
     toast({
       title: "Authentication Complete",
       description: "You have been securely signed in.",
     });
+
+    // Check for intended destination (user tried to access a protected page before login)
+    const intendedDestination = intendedDestinationUtils.consume();
+    if (intendedDestination) {
+      logger.debug('[MFAChallenge] Redirecting to intended destination', { intendedDestination, portal });
+      navigate(intendedDestination, { replace: true });
+      return;
+    }
 
     // Redirect to appropriate dashboard based on portal
     switch (portal) {

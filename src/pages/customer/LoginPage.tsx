@@ -19,6 +19,7 @@ import { useAuthRateLimit } from "@/hooks/useAuthRateLimit";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
+import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 
 
 export default function CustomerLoginPage() {
@@ -43,7 +44,10 @@ export default function CustomerLoginPage() {
         title: "Welcome!",
         description: "Logged in successfully",
       });
-      navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+      const intendedDestination = intendedDestinationUtils.consume();
+      const redirectTo = intendedDestination || `/${tenantSlug}/shop/dashboard`;
+      logger.debug('[CustomerLogin] Redirecting after queued login', { intendedDestination, redirectTo });
+      navigate(redirectTo, { replace: true });
     }
   );
 
@@ -52,7 +56,10 @@ export default function CustomerLoginPage() {
   // Redirect if already logged in with Supabase
   useEffect(() => {
     if (user && tenantSlug) {
-      navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+      const intendedDestination = intendedDestinationUtils.consume();
+      const redirectTo = intendedDestination || `/${tenantSlug}/shop/dashboard`;
+      logger.debug('[CustomerLogin] Already logged in, redirecting', { intendedDestination, redirectTo });
+      navigate(redirectTo, { replace: true });
     }
   }, [user, tenantSlug, navigate]);
 
@@ -166,7 +173,10 @@ export default function CustomerLoginPage() {
           description: `Logged in successfully`,
         });
 
-        navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+        const intendedDestination = intendedDestinationUtils.consume();
+        const redirectTo = intendedDestination || `/${tenantSlug}/shop/dashboard`;
+        logger.debug('[CustomerLogin] Redirecting after successful login', { intendedDestination, redirectTo });
+        navigate(redirectTo, { replace: true });
       }
     } catch (error: unknown) {
       logger.error("Customer login error", error);
