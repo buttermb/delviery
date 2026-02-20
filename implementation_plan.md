@@ -598,7 +598,7 @@
 - [x] Task 357: Fix disabled button states � visually distinct, cursor not-allowed, tooltip explaining why
 - [x] Task 358: Add keyboard shortcut hints � Cmd+S to save, Cmd+N for new, Escape to cancel
 - [x] Task 359: Fix floating action buttons� consistent position bottom-right on mobile
-- [ ] Task 360: Run npx tsc --noEmit � Checkpoint
+- [x] Task 360: Run npx tsc --noEmit � Checkpoint
 
 ## Phase C7: Responsive & Layout Fixes (9 tasks)
 
