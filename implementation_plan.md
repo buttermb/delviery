@@ -591,7 +591,7 @@
 
 ## Phase C6: Button & Action Usability (8 tasks)
 
-- [ ] Task 353: Disable submit buttons during pending mutations � prevent double-submit everywhere
+- [x] Task 353: Disable submit buttons during pending mutations � prevent double-submit everywhere
 - [ ] Task 354: Add loading spinners to all submit buttons during save
 - [ ] Task 355: Fix delete confirmations � every destructive action has confirm dialog with item name
 - [ ] Task 356: Fix action dropdown menus on tables � Edit, View, Delete, status changes all wired

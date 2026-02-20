@@ -38,7 +38,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 
 type TenantLimits = {
   customers: number;
@@ -82,6 +82,7 @@ interface CreateTenantDialogProps {
 
 export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -106,6 +107,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
   }, [open, form]);
 
   const onSubmit = async (data: CreateTenantForm) => {
+    setIsSaving(true);
     try {
       // Generate slug from business name
       const slug = data.business_name
@@ -244,6 +246,8 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -396,7 +400,10 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               >
                 Cancel
               </Button>
-              <Button type="submit">Create Tenant</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Create Tenant
+              </Button>
             </DialogFooter>
           </form>
         </Form>

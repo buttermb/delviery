@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { MapPin, Plus, Edit, Trash2, Building } from 'lucide-react';
+import { MapPin, Plus, Edit, Trash2, Building, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -31,6 +31,7 @@ export default function LocationsManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -71,6 +72,7 @@ export default function LocationsManagement() {
     e.preventDefault();
     if (!tenant) return;
 
+    setIsSaving(true);
     try {
       if (editingLocation) {
         const { error } = await supabase
@@ -107,6 +109,8 @@ export default function LocationsManagement() {
       loadLocations();
     } catch (error) {
       handleError(error, { component: 'LocationsManagement', toastTitle: 'Error saving location' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -300,7 +304,8 @@ export default function LocationsManagement() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {editingLocation ? 'Update' : 'Create'} Location
                 </Button>
               </div>
