@@ -54,6 +54,7 @@ import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RouteProgressManager } from "./components/RouteProgressManager";
+import { DocumentTitleManager } from "./components/DocumentTitleManager";
 import { InstallPWA } from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
@@ -531,6 +532,7 @@ const App = () => {
                                   <Suspense fallback={<SuspenseProgressFallback />}>
                                     <UrlEncodingFixer />
                                     <RouteProgressManager />
+                                    <DocumentTitleManager />
                                     <ScrollToTop />
                                     <Routes>
                                       {/* Marketing & Public Routes */}
