@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit, RotateCcw } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -35,6 +35,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
+import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
 import { isOrderEditable } from "@/lib/utils/orderEditability";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import Merge from "lucide-react/dist/esm/icons/merge";
@@ -147,6 +148,8 @@ export default function Orders() {
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundOrder, setRefundOrder] = useState<Order | null>(null);
   const [sortField, setSortField] = useState<OrderSortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -911,6 +914,15 @@ export default function Orders() {
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
+              {['delivered', 'completed'].includes(order.status) && (
+                <DropdownMenuItem onClick={() => {
+                  setRefundOrder(order);
+                  setRefundModalOpen(true);
+                }}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Refund Order
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               {order.status !== 'cancelled' && (
                 <DropdownMenuItem
@@ -1327,6 +1339,66 @@ export default function Orders() {
           refetch();
         }}
         orderTable="orders"
+      />
+
+      <OrderRefundModal
+        open={refundModalOpen}
+        onOpenChange={(open) => {
+          setRefundModalOpen(open);
+          if (!open) setRefundOrder(null);
+        }}
+        order={refundOrder ? {
+          id: refundOrder.id,
+          tenant_id: tenant?.id || '',
+          order_number: refundOrder.order_number,
+          order_type: refundOrder.order_source === 'pos' ? 'pos' : 'wholesale',
+          source: refundOrder.order_source || 'admin',
+          status: refundOrder.status as 'delivered' | 'completed',
+          subtotal: refundOrder.total_amount,
+          tax_amount: 0,
+          discount_amount: 0,
+          total_amount: refundOrder.total_amount,
+          payment_method: null,
+          payment_status: 'paid',
+          customer_id: refundOrder.user_id || null,
+          wholesale_client_id: null,
+          menu_id: null,
+          shift_id: null,
+          delivery_address: null,
+          delivery_notes: null,
+          courier_id: refundOrder.courier_id || null,
+          contact_name: null,
+          contact_phone: null,
+          metadata: {},
+          created_at: refundOrder.created_at,
+          updated_at: refundOrder.created_at,
+          cancelled_at: null,
+          cancellation_reason: null,
+          priority: 'normal',
+          priority_set_at: null,
+          priority_set_by: null,
+          priority_auto_set: false,
+          items: (refundOrder.order_items || []).map(item => ({
+            id: item.id,
+            order_id: refundOrder.id,
+            product_id: item.product_id,
+            inventory_id: null,
+            product_name: item.product_name || 'Unknown Product',
+            sku: null,
+            quantity: item.quantity,
+            quantity_unit: 'unit',
+            unit_price: item.price,
+            discount_amount: 0,
+            total_price: item.quantity * item.price,
+            metadata: {},
+          })),
+        } : null}
+        onSuccess={() => {
+          setRefundModalOpen(false);
+          setRefundOrder(null);
+          refetch();
+          toast.success('Refund processed successfully');
+        }}
       />
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>

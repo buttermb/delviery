@@ -544,7 +544,7 @@
 - [x] Task 315: Wire OrderEditModal to Orders page � edit button opens with correct order data
 - [x] Task 316: Wire OrderEditModal to OrderDetailPage — Already implemented: OrderEditModal imported (line 32), showEditModal state (line 218), Edit Order button for pending/confirmed orders (lines 692-698), modal rendered with mapped order data + query invalidation + toast (lines 1537-1564). No changes needed.
 - [x] Task 317: Wire RefundModal to OrderDetailPage — Already implemented: OrderRefundModal imported (line 33), showRefundModal state (line 221), Refund button for delivered/completed orders (lines 700-711), modal rendered with full order context mapping + query invalidation + toast (lines 1566-1623). No changes needed.
-- [ ] Task 318: Wire RefundModal to Orders list � action dropdown includes refund option
+- [x] Task 318: Wire RefundModal to Orders list � action dropdown includes refund option
 - [ ] Task 319: Fix modal data not refreshing � ensure modal receives fresh data on open, not stale
 - [ ] Task 320: Fix modal form reset on close � clear form state when dialog closes
 - [ ] Task 321: Fix modal scroll on long forms � scrollable body, sticky footer with actions
