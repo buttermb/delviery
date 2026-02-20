@@ -34,14 +34,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { Loader2, AlertCircle, DollarSign } from 'lucide-react';
-
-const PAYMENT_METHODS = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'check', label: 'Check' },
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'card', label: 'Card' },
-  { value: 'other', label: 'Other' },
-] as const;
+import { INVOICE_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
 
 interface InvoicePaymentDialogProps {
   invoiceId: string;
@@ -58,9 +51,10 @@ function createPaymentSchema(remaining: number) {
       .number({ required_error: 'Amount is required' })
       .positive('Amount must be greater than 0')
       .max(remaining, `Amount cannot exceed remaining balance of ${formatCurrency(remaining)}`),
-    payment_method: z.enum(['cash', 'check', 'bank_transfer', 'card', 'other'], {
-      required_error: 'Payment method is required',
-    }),
+    payment_method: z.enum(
+      INVOICE_PAYMENT_METHODS.map(m => m.value) as [string, ...string[]],
+      { required_error: 'Payment method is required' }
+    ),
     payment_date: z.date({ required_error: 'Payment date is required' }),
     reference: z.string().optional(),
     notes: z.string().optional(),
@@ -257,7 +251,7 @@ export function InvoicePaymentDialog({
                     <SelectValue placeholder="Select method" />
                   </SelectTrigger>
                   <SelectContent>
-                    {PAYMENT_METHODS.map((m) => (
+                    {INVOICE_PAYMENT_METHODS.map((m) => (
                       <SelectItem key={m.value} value={m.value}>
                         {m.label}
                       </SelectItem>

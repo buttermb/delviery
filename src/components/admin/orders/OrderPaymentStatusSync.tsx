@@ -50,6 +50,7 @@ import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Receipt from 'lucide-react/dist/esm/icons/receipt';
+import { ORDER_ORDER_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
 
 /** Payment record type */
 interface PaymentRecord {
@@ -78,14 +79,7 @@ interface OrderPaymentStatusSyncProps {
   onPaymentStatusChange?: (newStatus: string) => void;
 }
 
-/** Payment methods available */
-const PAYMENT_METHODS = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'card', label: 'Credit/Debit Card' },
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'check', label: 'Check' },
-  { value: 'other', label: 'Other' },
-];
+/** Payment methods available — imported from centralized constants */
 
 /**
  * Get status configuration for visual display
@@ -503,7 +497,7 @@ export function OrderPaymentStatusSync({
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
                 <SelectContent>
-                  {PAYMENT_METHODS.map((method) => (
+                  {ORDER_PAYMENT_METHODS.map((method) => (
                     <SelectItem key={method.value} value={method.value}>
                       {method.label}
                     </SelectItem>

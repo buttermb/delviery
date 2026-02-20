@@ -53,6 +53,7 @@ import { useCustomerLoyaltyStatus, useLoyaltyConfig, calculatePointsToEarn, TIER
 import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
 import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useCategories } from '@/hooks/useCategories';
+import { POS_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
 
 interface Product {
   id: string;
@@ -1253,13 +1254,14 @@ function CashRegisterContent() {
               <Label className="text-sm font-medium mb-2 block">Payment Method</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="debit">Debit Card</SelectItem>
-                  <SelectItem value="credit">Credit Card</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  {POS_PAYMENT_METHODS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

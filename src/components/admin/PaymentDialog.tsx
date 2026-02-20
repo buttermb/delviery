@@ -10,6 +10,7 @@ import { useProcessPayment } from "@/hooks/useWholesaleData";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
+import { INVOICE_PAYMENT_METHODS } from "@/lib/constants/paymentMethods";
 
 interface PaymentDialogProps {
   clientId: string;
@@ -134,14 +135,14 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             <Label htmlFor="method">Payment Method *</Label>
             <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cash">💵 Cash</SelectItem>
-                <SelectItem value="check">📄 Check</SelectItem>
-                <SelectItem value="wire_transfer">🏦 Wire Transfer</SelectItem>
-                <SelectItem value="card">💳 Card</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                {INVOICE_PAYMENT_METHODS.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>
+                    {m.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

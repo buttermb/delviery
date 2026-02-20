@@ -48,6 +48,7 @@ import {
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
+import { formatPaymentMethod } from "@/lib/constants/paymentMethods";
 
 interface PaymentHistoryEntry {
     amount: number;
@@ -62,17 +63,6 @@ function isPaymentHistoryEntry(entry: unknown): entry is PaymentHistoryEntry {
     if (typeof entry !== 'object' || entry === null) return false;
     const obj = entry as Record<string, unknown>;
     return typeof obj.amount === 'number' && typeof obj.method === 'string' && typeof obj.date === 'string';
-}
-
-function formatPaymentMethod(method: string): string {
-    const map: Record<string, string> = {
-        cash: 'Cash',
-        check: 'Check',
-        bank_transfer: 'Bank Transfer',
-        card: 'Card',
-        other: 'Other',
-    };
-    return map[method] || method;
 }
 
 export default function InvoiceDetailPage() {
