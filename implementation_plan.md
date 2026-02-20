@@ -610,7 +610,7 @@
 - [x] Task 366: Fix header/toolbar wrapping � actions wrap gracefully, no overflow hidden
 - [x] Task 367: Fix print stylesheets — invoices, receipts, reports print clean with no nav/sidebar — Enhanced global @media print in index.css: added [data-radix-dialog-overlay], [role="dialog"], [data-toaster] to hide list, added pt-16/pt-28/pl-64 padding resets for layout offsets. Fixed SuperAdminLayout.tsx: wrapped TopNav and ImpersonationBanner in print:hidden, added print:px-0 print:pt-0 to main content. Fixed PlatformAdminLayout.tsx: wrapped PlatformSidebar and Toaster in print:hidden, added print:pl-0 to content wrapper, added print:p-0 to inner padding. AdminLayout already had comprehensive print:hidden coverage (header, sidebar, mobile nav, FAB, PWA, credit toasts). All printable pages (InvoiceDetailPage, OrderDetailsPage, ZReport, InvoicePublicPage, ExecutiveDashboardPage, GenerateBarcodes, AdvancedInvoice) already had print:hidden on action buttons and non-content elements.
 - [x] Task 368: Fix viewport height issues � no content hidden behind fixed headers/footers on iOS — Changed all layout-level `100vh` to `100dvh` (dynamic viewport height) which properly accounts for iOS Safari's dynamic address bar and bottom toolbar. Fixed: index.css html/body min-height, keyboard-open dialog max-height (2 instances), SuperAdminLayout main content min-height calc, SuperAdminMobileBottomNav sheet height. Existing `-webkit-fill-available` fallback preserved for older iOS versions.
-- [ ] Task 369: Run npx tsc --noEmit � Checkpoint
+- [x] Task 369: Run npx tsc --noEmit � Checkpoint
 
 ## Phase C8: Search & Filter UX (9 tasks)
 
