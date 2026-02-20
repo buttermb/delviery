@@ -615,7 +615,7 @@
 ## Phase C8: Search & Filter UX (9 tasks)
 
 - [x] Task 370: Fix search clear button � X button resets search and shows all results
-- [ ] Task 371: Fix filter persistence � filters survive page navigation and back button
+- [x] Task 371: Fix filter persistence — filters survive page navigation and back button — Updated useUrlFilters hook to use replace:true for history management. Integrated useUrlFilters into Orders.tsx (search, status, date range, sort all persisted in URL params), WholesaleOrdersPage.tsx (search, status, view mode), and ClientsPage.tsx (search, status). Removed useTablePreferences for filter storage in favor of URL-based persistence. Filters now survive page navigation and back button via URL search params.
 - [ ] Task 372: Fix combined filters � search + status + date range all work together
 - [ ] Task 373: Add active filter indicators � badge count showing how many filters active
 - [ ] Task 374: Add 'Clear all filters' button when any filter is active

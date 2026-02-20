@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { quickExportCSV } from '@/lib/utils/exportUtils';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,8 +31,7 @@ import {
   Warehouse
 } from 'lucide-react';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useTablePreferences } from '@/hooks/useTablePreferences';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useAdminKeyboardShortcuts } from '@/hooks/useAdminKeyboardShortcuts';
 import { useExport } from '@/hooks/useExport';
 import { BulkActions } from '@/components/shared/BulkActions';
@@ -121,23 +120,33 @@ const PAYMENT_STATUS_CONFIG: Record<string, { label: string; color: string }> = 
   paid: { label: 'Paid', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
 };
 
+const WHOLESALE_FILTER_CONFIG = [
+  { key: 'q', defaultValue: '' },
+  { key: 'status', defaultValue: 'all' },
+  { key: 'view', defaultValue: 'selling' },
+];
+
 export default function WholesaleOrdersPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const { preferences, savePreferences } = useTablePreferences('wholesale-orders-table');
   const { exportCSV } = useExport();
 
-  // State
-  const [viewMode, setViewMode] = useState<'selling' | 'buying'>('selling');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
+  // Filter state — persisted in URL for back-button & navigation support
+  const [filters, setFilters, clearUrlFilters] = useUrlFilters(WHOLESALE_FILTER_CONFIG);
+  const searchQuery = filters.q;
+  const statusFilter = filters.status;
+  const viewMode = (filters.view || 'selling') as 'selling' | 'buying';
+
+  const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
+  const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
+  const handleViewModeChange = useCallback((v: 'selling' | 'buying') => setFilters({ view: v }), [setFilters]);
+
+  // UI state
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Keyboard shortcuts
   useAdminKeyboardShortcuts({
@@ -148,11 +157,6 @@ export default function WholesaleOrdersPage() {
     },
     onCreate: () => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`),
   });
-
-  // Save preferences when filter changes
-  useEffect(() => {
-    savePreferences({ customFilters: { status: statusFilter } });
-  }, [statusFilter, savePreferences]);
 
   // Fetch orders (Wholesale or Purchase based on viewMode)
   const { data: orders = [], isLoading, refetch } = useQuery({
@@ -242,8 +246,8 @@ export default function WholesaleOrdersPage() {
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      if (!debouncedSearchQuery) return true;
-      const query = debouncedSearchQuery.toLowerCase();
+      if (!searchQuery) return true;
+      const query = searchQuery.toLowerCase();
       if (viewMode === 'selling') {
         const o = order as WholesaleOrder;
         return (
@@ -261,7 +265,7 @@ export default function WholesaleOrdersPage() {
         );
       }
     });
-  }, [orders, debouncedSearchQuery, viewMode]);
+  }, [orders, searchQuery, viewMode]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -746,7 +750,7 @@ export default function WholesaleOrdersPage() {
           <div className="bg-muted p-1 rounded-lg flex self-start sm:self-center order-last sm:order-none">
             <Button
               variant={viewMode === 'selling' ? 'default' : 'ghost'}
-              onClick={() => setViewMode('selling')}
+              onClick={() => handleViewModeChange('selling')}
               size="sm"
               className="w-24"
             >
@@ -754,7 +758,7 @@ export default function WholesaleOrdersPage() {
             </Button>
             <Button
               variant={viewMode === 'buying' ? 'default' : 'ghost'}
-              onClick={() => setViewMode('buying')}
+              onClick={() => handleViewModeChange('buying')}
               size="sm"
               className="w-24"
             >
@@ -850,7 +854,7 @@ export default function WholesaleOrdersPage() {
               <SearchInput
                 placeholder="Search by order #, client, runner..."
                 defaultValue={searchQuery}
-                onSearch={setSearchQuery}
+                onSearch={handleSearchChange}
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
@@ -860,7 +864,7 @@ export default function WholesaleOrdersPage() {
                     key={filter.id}
                     variant={statusFilter === filter.id ? 'secondary' : 'ghost'}
                     size="sm"
-                    onClick={() => setStatusFilter(filter.id)}
+                    onClick={() => handleStatusFilterChange(filter.id)}
                     className="gap-2 h-7"
                   >
                     {filter.label}

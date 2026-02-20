@@ -73,7 +73,7 @@ export function useUrlFilters<T extends Record<string, any>>(
         });
 
         return updated;
-      });
+      }, { replace: true });
     },
     [setSearchParams, config]
   );
@@ -84,7 +84,7 @@ export function useUrlFilters<T extends Record<string, any>>(
       const updated = new URLSearchParams(prev);
       config.forEach(({ key }) => updated.delete(String(key)));
       return updated;
-    });
+    }, { replace: true });
   }, [setSearchParams, config]);
 
   return [filters, setFilters, clearFilters];

@@ -1,8 +1,8 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useMemo } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useState, useMemo, useCallback } from 'react';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -37,7 +37,6 @@ import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/compon
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
 import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
 import { isOrderEditable } from "@/lib/utils/orderEditability";
-import { useTablePreferences } from "@/hooks/useTablePreferences";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
@@ -58,7 +57,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import type { OrderWithSLATimestamps } from "@/types/sla";
 
 interface OrderItem {
@@ -94,10 +93,18 @@ interface Order {
 type OrderSortField = 'created_at' | 'total_amount' | 'status' | 'customer';
 type SortOrder = 'asc' | 'desc';
 
+const ORDERS_FILTER_CONFIG = [
+  { key: 'q', defaultValue: '' },
+  { key: 'status', defaultValue: 'all' },
+  { key: 'from', defaultValue: '' },
+  { key: 'to', defaultValue: '' },
+  { key: 'sort', defaultValue: 'created_at' },
+  { key: 'dir', defaultValue: 'desc' },
+];
+
 export default function Orders() {
   const navigate = useTenantNavigate();
   const { tenant, admin } = useTenantAdminAuth();
-  const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
   const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
   const deliveryEnabled = isFeatureEnabled('delivery_tracking');
@@ -125,14 +132,14 @@ export default function Orders() {
     },
   });
 
-  // State
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
-  });
+  // Filter state — persisted in URL for back-button & navigation support
+  const [filters, setFilters, clearUrlFilters] = useUrlFilters(ORDERS_FILTER_CONFIG);
+  const searchQuery = filters.q;
+  const statusFilter = filters.status;
+  const dateRange = useMemo(() => ({
+    from: filters.from ? parseISO(filters.from) : undefined,
+    to: filters.to ? parseISO(filters.to) : undefined,
+  }), [filters.from, filters.to]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -151,8 +158,8 @@ export default function Orders() {
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [refundModalOpen, setRefundModalOpen] = useState(false);
   const [refundOrder, setRefundOrder] = useState<Order | null>(null);
-  const [sortField, setSortField] = useState<OrderSortField>('created_at');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const sortField = (filters.sort || 'created_at') as OrderSortField;
+  const sortOrder = (filters.dir || 'desc') as SortOrder;
 
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -162,11 +169,6 @@ export default function Orders() {
       setSelectedOrders([]);
     },
   });
-
-  // Save preferences when filter changes
-  useEffect(() => {
-    savePreferences({ customFilters: { status: statusFilter } });
-  }, [statusFilter, savePreferences]);
 
   // Data Fetching - includes both regular orders and POS orders from unified_orders
   const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
@@ -349,8 +351,8 @@ export default function Orders() {
     let result = orders;
 
     // Search filter (debounced)
-    if (debouncedSearchQuery) {
-      const query = debouncedSearchQuery.toLowerCase();
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       result = result.filter(order =>
         order.order_number?.toLowerCase().includes(query) ||
         order.user?.full_name?.toLowerCase().includes(query) ||
@@ -382,7 +384,7 @@ export default function Orders() {
     }
 
     return result;
-  }, [orders, debouncedSearchQuery, dateRange]);
+  }, [orders, searchQuery, dateRange]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -468,20 +470,26 @@ export default function Orders() {
     await bulkStatusUpdate.executeBulkUpdate(ordersToUpdate, bulkStatusConfirm.targetStatus);
   };
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    setDateRange({ from: undefined, to: undefined });
-  };
+  const handleClearFilters = useCallback(() => {
+    clearUrlFilters();
+  }, [clearUrlFilters]);
+
+  const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
+  const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
+  const handleDateRangeChange = useCallback((range: { from: Date | undefined; to: Date | undefined }) => {
+    setFilters({
+      from: range.from ? format(range.from, 'yyyy-MM-dd') : '',
+      to: range.to ? format(range.to, 'yyyy-MM-dd') : '',
+    });
+  }, [setFilters]);
 
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
 
   const handleSort = (field: OrderSortField) => {
     if (sortField === field) {
-      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+      setFilters({ dir: sortOrder === 'asc' ? 'desc' : 'asc' });
     } else {
-      setSortField(field);
-      setSortOrder(field === 'created_at' ? 'desc' : 'asc');
+      setFilters({ sort: field, dir: field === 'created_at' ? 'desc' : 'asc' });
     }
   };
 
@@ -1031,11 +1039,11 @@ export default function Orders() {
                 <div className="relative flex-1">
                   <SearchInput
                     defaultValue={searchQuery}
-                    onSearch={setSearchQuery}
+                    onSearch={handleSearchChange}
                     placeholder="Search orders, customers, total..."
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                   <SelectTrigger className="w-full sm:w-[180px] bg-muted/30 border-transparent">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
@@ -1051,7 +1059,7 @@ export default function Orders() {
                 </Select>
                 <DateRangePickerWithPresets
                   dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
+                  onDateRangeChange={handleDateRangeChange}
                   placeholder="Filter by date"
                   className="w-full sm:w-[220px] bg-muted/30 border-transparent"
                 />
