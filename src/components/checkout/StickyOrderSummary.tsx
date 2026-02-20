@@ -73,7 +73,7 @@ export function StickyOrderSummary({
                   {item.quantity}x {item.products?.name}
                 </span>
                 <span className="font-semibold">
-                  {formatCurrency(item.quantity * (item.products?.price || 0))}
+                  {formatCurrency(item.quantity * Number(item.products?.price || 0))}
                 </span>
               </motion.div>
             ))}

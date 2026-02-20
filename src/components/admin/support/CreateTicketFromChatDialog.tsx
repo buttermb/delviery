@@ -121,6 +121,8 @@ export function CreateTicketFromChatDialog({
 
       const ticketData = {
         tenant_id: tenant.id,
+        account_id: tenant.id,
+        ticket_number: `TKT-${Date.now()}`,
         subject: sanitizeInput(formData.subject, 200),
         description: sanitizeInput(fullDescription, 10000),
         priority: formData.priority,

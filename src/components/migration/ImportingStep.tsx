@@ -35,7 +35,7 @@ export function ImportingStep({ progress, isLoading }: ImportingStepProps) {
         </h3>
         {progress && (
           <p className="text-sm text-muted-foreground">
-            Batch {progress.currentBatch} of {progress.totalBatches}
+            Processing {progress.current} of {progress.total}
           </p>
         )}
       </div>

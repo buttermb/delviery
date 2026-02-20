@@ -63,7 +63,7 @@ export interface TopUpCheckResult {
  */
 export async function getAutoTopUpConfig(tenantId: string): Promise<AutoTopUpConfig | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('credit_auto_topup')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -111,7 +111,7 @@ export async function setupAutoTopUp(request: SetupAutoTopUpRequest): Promise<Au
 
     if (existing) {
       // Update existing
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('credit_auto_topup')
         .update(configData)
         .eq('tenant_id', tenantId)
@@ -126,7 +126,7 @@ export async function setupAutoTopUp(request: SetupAutoTopUpRequest): Promise<Au
       };
     } else {
       // Insert new
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('credit_auto_topup')
         .insert({
           ...configData,
@@ -157,7 +157,7 @@ export async function setupAutoTopUp(request: SetupAutoTopUpRequest): Promise<Au
  */
 export async function disableAutoTopUp(tenantId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('credit_auto_topup')
       .update({ enabled: false, updated_at: new Date().toISOString() })
       .eq('tenant_id', tenantId);
@@ -178,7 +178,7 @@ export async function updateAutoTopUpPaymentMethod(
   stripeCustomerId?: string
 ): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('credit_auto_topup')
       .update({
         payment_method_id: paymentMethodId,

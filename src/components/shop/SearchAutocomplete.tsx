@@ -67,7 +67,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
       if (error) throw error;
 
       const searchLower = debouncedQuery.toLowerCase();
-      return (data as ProductResult[])
+      return (data as unknown as ProductResult[])
         .filter((p) =>
           p.name.toLowerCase().includes(searchLower) ||
           p.category?.toLowerCase().includes(searchLower)

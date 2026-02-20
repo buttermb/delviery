@@ -8,6 +8,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
+// Cast for tables not in auto-generated types
+const sb = supabase as any;
+
 // ============================================================================
 // Types
 // ============================================================================
