@@ -141,7 +141,7 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
           </TabsList>
 
           <TabsContent value="colors" className="space-y-4 mt-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Primary Color</Label>
                 <div className="flex gap-2">

@@ -66,7 +66,7 @@ export function DocumentDetail({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="text-xs text-muted-foreground mb-1">Created</div>
               <div className="text-sm">

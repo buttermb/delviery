@@ -217,7 +217,7 @@ function CustomerDetailPanelContent({
           Order History
         </h4>
         {stats ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-xs text-muted-foreground">Total Orders</p>
               <p className="text-2xl font-bold">{stats.order_count}</p>

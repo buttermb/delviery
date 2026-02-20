@@ -605,7 +605,7 @@
 - [x] Task 361: Fix sidebar overlap on tablet (768-1024px) � collapse by default
 - [x] Task 362: Fix card grid responsiveness — 1 col mobile, 2 col tablet, 3-4 col desktop — Fixed 30+ card grids across admin pages to follow grid-cols-1 sm:grid-cols-2 lg:grid-cols-3/4 pattern: ClientDetail, DisposableMenuAnalytics, InventoryAudit, AbandonedCartsWidget, SalesChartWidget, SLAComplianceWidget, SmartDashboard, OrderKanban, EarningsStats, TodayEarningSummary, RunnerMetricsPanel, CustomerInvoicesTab, CustomerOrderHistoryTab, CustomerPaymentHistoryTab, OrganizationDetail, ProductPriceHistoryChart, LTVCalculator, TenantsListPage, RFMAnalysis, ProductBulkImport, ProductBulkImportDialog, LiveDeliveryMap, BatchCreate, StorefrontFunnel, DashboardViews, ProductComplianceStatus, RouteOptimizationPreview, PaymentTrackingModal, CouponAnalytics, CustomerDeliveryMap, CustomerImport, OrganizationForm, SelfHostedAnalytics, LocalAIIntegration
 - [x] Task 363: Fix dashboard stat cards — stack vertically on mobile, no horizontal scroll
-- [ ] Task 364: Fix form layouts on mobile � full-width inputs, no side-by-side on small screens
+- [x] Task 364: Fix form layouts on mobile — full-width inputs, no side-by-side on small screens — Fixed 13 form grid layouts across: DocumentDetail, BulkCouponGenerator, CreateTenantDialog (3), CustomerImportDialog, CustomerDeliveryAddressesTab, CustomerQuickView, SpecialPricing, DeliveryScheduler, CreateMenuDialog, InvoiceTemplateEditor, EarningRulesConfig
 - [ ] Task 365: Fix table horizontal scroll � add shadow indicators showing more content
 - [ ] Task 366: Fix header/toolbar wrapping � actions wrap gracefully, no overflow hidden
 - [ ] Task 367: Fix print stylesheets � invoices, receipts, reports print clean with no nav/sidebar
