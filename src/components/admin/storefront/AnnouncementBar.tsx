@@ -27,6 +27,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
@@ -96,6 +97,8 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<AnnouncementFormData>(DEFAULT_FORM_DATA);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
 
   const tenantId = tenant?.id;
 
@@ -466,11 +469,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
                         variant="ghost"
                         size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => {
-                          if (confirm('Delete this announcement?')) {
-                            deleteMutation.mutate(announcement.id);
-                          }
-                        }}
+                        onClick={() => { setAnnouncementToDelete(announcement); setDeleteDialogOpen(true); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -489,6 +488,22 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (announcementToDelete) {
+            deleteMutation.mutate(announcementToDelete.id);
+            setDeleteDialogOpen(false);
+            setAnnouncementToDelete(null);
+          }
+        }}
+        itemName={announcementToDelete?.text?.substring(0, 50)}
+        itemType="announcement"
+        isLoading={deleteMutation.isPending}
+      />
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

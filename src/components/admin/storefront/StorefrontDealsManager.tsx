@@ -30,6 +30,7 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Plus,
     Trash2,
@@ -80,6 +81,8 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
     const queryClient = useQueryClient();
     const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
 
     // Form State
     const [formData, setFormData] = useState<{
@@ -371,9 +374,7 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="text-destructive hover:text-destructive"
-                                                onClick={() => {
-                                                    if (confirm('Delete this deal?')) deleteMutation.mutate(deal.id);
-                                                }}
+                                                onClick={() => { setDealToDelete(deal); setDeleteDialogOpen(true); }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -385,6 +386,21 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmDeleteDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={() => {
+                    if (dealToDelete) {
+                        deleteMutation.mutate(dealToDelete.id);
+                        setDeleteDialogOpen(false);
+                        setDealToDelete(null);
+                    }
+                }}
+                itemName={dealToDelete?.name}
+                itemType="deal"
+                isLoading={deleteMutation.isPending}
+            />
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="max-w-xl">

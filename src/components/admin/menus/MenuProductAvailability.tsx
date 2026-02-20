@@ -87,6 +87,7 @@ import {
 } from '@/lib/menus/availabilityEngine';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 // Types
 interface MenuProduct {
@@ -687,6 +688,8 @@ export function MenuProductAvailability({
   const [editingRule, setEditingRule] = useState<AvailabilityRule | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState<string | null>(null);
 
   // Data fetching
   const { data: allRules = [], isLoading } = useMenuProductAvailabilityRules(menuId, tenantId);
@@ -747,12 +750,22 @@ export function MenuProductAvailability({
     setIsFormOpen(true);
   }, []);
 
-  const handleDeleteRule = useCallback(
-    async (ruleId: string) => {
-      if (!tenantId) return;
-      await deleteRule.mutateAsync({ id: ruleId, tenantId });
+  const handleConfirmDeleteRule = useCallback(
+    async () => {
+      if (!tenantId || !ruleToDelete) return;
+      await deleteRule.mutateAsync({ id: ruleToDelete, tenantId });
+      setDeleteDialogOpen(false);
+      setRuleToDelete(null);
     },
-    [tenantId, deleteRule]
+    [tenantId, deleteRule, ruleToDelete]
+  );
+
+  const handleDeleteRule = useCallback(
+    (ruleId: string) => {
+      setRuleToDelete(ruleId);
+      setDeleteDialogOpen(true);
+    },
+    []
   );
 
   const handleToggleRule = useCallback(
@@ -949,6 +962,15 @@ export function MenuProductAvailability({
           isSaving={createRule.isPending || updateRule.isPending}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDeleteRule}
+        itemType="availability rule"
+        isLoading={deleteRule.isPending}
+      />
     </div>
   );
 }

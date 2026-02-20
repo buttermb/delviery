@@ -53,6 +53,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 // Types
 interface MenuSchedule {
@@ -630,6 +631,8 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<MenuSchedule | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState<MenuSchedule | null>(null);
 
   // Data fetching
   const { data: schedules = [], isLoading: schedulesLoading } = useMenuSchedules(tenantId);
@@ -742,11 +745,13 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
     setEditingSchedule(null);
   }, [tenantId, editingSchedule, updateSchedule]);
 
-  const handleDeleteSchedule = useCallback(async (scheduleId: string) => {
-    if (!tenantId) return;
+  const handleDeleteSchedule = useCallback(async () => {
+    if (!tenantId || !scheduleToDelete) return;
 
-    await deleteSchedule.mutateAsync({ id: scheduleId, tenantId });
-  }, [tenantId, deleteSchedule]);
+    await deleteSchedule.mutateAsync({ id: scheduleToDelete.id, tenantId });
+    setDeleteDialogOpen(false);
+    setScheduleToDelete(null);
+  }, [tenantId, deleteSchedule, scheduleToDelete]);
 
   const handleToggleActive = useCallback(async (schedule: MenuSchedule) => {
     if (!tenantId) return;
@@ -957,7 +962,7 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            onClick={() => { setScheduleToDelete(schedule); setDeleteDialogOpen(true); }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -1015,6 +1020,16 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteSchedule}
+        itemName={scheduleToDelete?.menuName}
+        itemType="schedule"
+        isLoading={deleteSchedule.isPending}
+      />
 
       {/* Day Details Dialog */}
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
