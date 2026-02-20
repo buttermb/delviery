@@ -24,7 +24,7 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   delivered: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
   paid: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
   approved: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
-  confirmed: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
+  confirmed: { bg: 'bg-info/10', text: 'text-info', border: 'border-info/20', className: 'bg-info/10 text-info border-info/20' },
   success: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
   in_stock: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
   good: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20', className: 'bg-success/10 text-success border-success/20' },
@@ -49,6 +49,9 @@ const STATUS_COLORS: Record<string, StatusColorConfig> = {
   in_transit: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
   ready_for_pickup: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20', className: 'bg-warning/10 text-warning border-warning/20' },
   
+  // Shipping/Transit states (purple)
+  shipped: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-700', className: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-700' },
+
   // Error/Destructive states (red semantic)
   failed: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
   cancelled: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20', className: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -179,12 +182,17 @@ export function getStatusVariant(status: string): 'default' | 'secondary' | 'des
   const normalized = status.toLowerCase().replace(/\s+/g, '_');
   
   // Success states
-  if (['active', 'completed', 'delivered', 'paid', 'approved', 'confirmed', 'success', 'in_stock', 'good', 'healthy', 'online', 'enabled', 'ready'].includes(normalized)) {
+  if (['active', 'completed', 'delivered', 'paid', 'approved', 'success', 'in_stock', 'good', 'healthy', 'online', 'enabled', 'ready'].includes(normalized)) {
     return 'default';
   }
-  
+
+  // Info states (blue)
+  if (['confirmed', 'draft', 'new', 'info', 'trial', 'trialing', 'open', 'medium'].includes(normalized)) {
+    return 'outline';
+  }
+
   // Warning states
-  if (['pending', 'processing', 'preparing', 'scheduled', 'in_progress', 'low_stock', 'low', 'warning', 'soft_burned', 'partial', 'past_due', 'at_risk', 'in_transit', 'ready_for_pickup'].includes(normalized)) {
+  if (['pending', 'processing', 'preparing', 'scheduled', 'in_progress', 'low_stock', 'low', 'warning', 'soft_burned', 'partial', 'past_due', 'at_risk', 'in_transit', 'ready_for_pickup', 'shipped'].includes(normalized)) {
     return 'secondary';
   }
   

@@ -17,6 +17,12 @@ export const STATUS_COLORS = {
     border: 'border-indigo-300 dark:border-indigo-700',
     dot: 'bg-indigo-500',
   },
+  confirmed: {
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-800 dark:text-blue-300',
+    border: 'border-blue-300 dark:border-blue-700',
+    dot: 'bg-blue-500',
+  },
   processing: {
     bg: 'bg-blue-100 dark:bg-blue-900/30',
     text: 'text-blue-800 dark:text-blue-300',
@@ -29,6 +35,12 @@ export const STATUS_COLORS = {
     border: 'border-emerald-300 dark:border-emerald-700',
     dot: 'bg-emerald-500',
   },
+  shipped: {
+    bg: 'bg-purple-100 dark:bg-purple-900/30',
+    text: 'text-purple-800 dark:text-purple-300',
+    border: 'border-purple-300 dark:border-purple-700',
+    dot: 'bg-purple-500',
+  },
   in_transit: {
     bg: 'bg-purple-100 dark:bg-purple-900/30',
     text: 'text-purple-800 dark:text-purple-300',
@@ -36,16 +48,16 @@ export const STATUS_COLORS = {
     dot: 'bg-purple-500',
   },
   delivered: {
-    bg: 'bg-slate-100 dark:bg-slate-900/30',
-    text: 'text-slate-700 dark:text-slate-300',
-    border: 'border-slate-300 dark:border-slate-700',
-    dot: 'bg-slate-500',
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    text: 'text-emerald-800 dark:text-emerald-300',
+    border: 'border-emerald-300 dark:border-emerald-700',
+    dot: 'bg-emerald-500',
   },
   completed: {
-    bg: 'bg-slate-100 dark:bg-slate-900/30',
-    text: 'text-slate-700 dark:text-slate-300',
-    border: 'border-slate-300 dark:border-slate-700',
-    dot: 'bg-slate-500',
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    text: 'text-emerald-800 dark:text-emerald-300',
+    border: 'border-emerald-300 dark:border-emerald-700',
+    dot: 'bg-emerald-500',
   },
   cancelled: {
     bg: 'bg-red-100 dark:bg-red-900/30',
