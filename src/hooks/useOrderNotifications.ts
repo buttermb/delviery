@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { playNotificationSound } from '@/utils/notificationSound';
+import { formatCurrency } from '@/lib/formatters';
 
 export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void) {
   const { toast } = useToast();
@@ -39,7 +40,7 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
             // Show browser notification if permission granted
             if (Notification.permission === 'granted') {
               const notification = new Notification('🚀 New Delivery Order!', {
-                body: `Order #${payload.new.order_number || 'N/A'} - $${parseFloat(String(payload.new.total_amount || 0)).toFixed(2)}`,
+                body: `Order #${payload.new.order_number || 'N/A'} - ${formatCurrency(payload.new.total_amount)}`,
                 icon: '/logo.svg',
                 badge: '/logo.svg',
                 tag: `order-${String(payload.new.id || '')}`,

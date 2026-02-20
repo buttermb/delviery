@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DollarSign, Edit, Save, X } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatCurrency } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -130,7 +131,7 @@ export default function AdminPricingPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">
-              ${(products.reduce((sum, p) => sum + p.price, 0) / products.length || 0).toFixed(2)}
+              {formatCurrency(products.reduce((sum, p) => sum + p.price, 0) / products.length || 0)}
             </div>
             <p className="text-xs text-muted-foreground">Avg Retail Price</p>
           </CardContent>
@@ -193,7 +194,7 @@ export default function AdminPricingPage() {
                           className="w-24 text-right"
                         />
                       ) : (
-                        <span className="font-bold">${product.price.toFixed(2)}</span>
+                        <span className="font-bold">{formatCurrency(product.price)}</span>
                       )}
                     </td>
                     <td className="p-3 text-right">
@@ -206,7 +207,7 @@ export default function AdminPricingPage() {
                           className="w-24 text-right"
                         />
                       ) : (
-                        <span>{product.wholesale_price ? `$${product.wholesale_price.toFixed(2)}` : '—'}</span>
+                        <span>{product.wholesale_price ? formatCurrency(product.wholesale_price) : '—'}</span>
                       )}
                     </td>
                     <td className="p-3 text-right">
@@ -219,7 +220,7 @@ export default function AdminPricingPage() {
                           className="w-24 text-right"
                         />
                       ) : (
-                        <span>{product.cost_per_unit ? `$${product.cost_per_unit.toFixed(2)}` : '—'}</span>
+                        <span>{product.cost_per_unit ? formatCurrency(product.cost_per_unit) : '—'}</span>
                       )}
                     </td>
                     <td className="p-3 text-right">

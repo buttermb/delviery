@@ -17,6 +17,7 @@ import { useTenantContext } from '@/hooks/useTenantContext';
 import { useDeliveryZones } from '@/hooks/useDeliveryZones';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -290,8 +291,8 @@ export default function DeliveryZones() {
             <strong>${zone.name}</strong>
             ${!zone.is_active ? '<span style="color: #888;"> (Inactive)</span>' : ''}
             <br/>
-            <span style="color: #666;">Fee: $${zone.delivery_fee.toFixed(2)}</span>
-            ${zone.minimum_order > 0 ? `<br/><span style="color: #666;">Min: $${zone.minimum_order.toFixed(2)}</span>` : ''}
+            <span style="color: #666;">Fee: ${formatCurrency(zone.delivery_fee)}</span>
+            ${zone.minimum_order > 0 ? `<br/><span style="color: #666;">Min: ${formatCurrency(zone.minimum_order)}</span>` : ''}
           </div>
         `);
 
@@ -576,10 +577,10 @@ export default function DeliveryZones() {
                         <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <DollarSign className="h-3 w-3" />
-                            ${zone.delivery_fee.toFixed(2)} fee
+                            {formatCurrency(zone.delivery_fee)} fee
                           </span>
                           {zone.minimum_order > 0 && (
-                            <span>${zone.minimum_order.toFixed(2)} min</span>
+                            <span>{formatCurrency(zone.minimum_order)} min</span>
                           )}
                         </div>
                         {canManageZones && (

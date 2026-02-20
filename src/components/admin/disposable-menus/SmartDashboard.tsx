@@ -24,7 +24,7 @@ import { useDisposableMenus, useMenuOrders, useUpdateOrderStatus } from '@/hooks
 import { MenuCard } from './MenuCard';
 import { PanicModeButton } from './PanicModeButton';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -88,7 +88,7 @@ function exportAnalyticsCsv(analytics: MenuAnalytics, filename: string): void {
     ...analytics.viewsByHour.map((h) => [String(h.hour), String(h.views)]),
     [],
     ['Product', 'Orders', 'Revenue'],
-    ...analytics.topProducts.map((p) => [p.name, String(p.orders), `$${p.revenue.toFixed(2)}`]),
+    ...analytics.topProducts.map((p) => [p.name, String(p.orders), formatCurrency(p.revenue)]),
   ];
 
   const csvContent = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');

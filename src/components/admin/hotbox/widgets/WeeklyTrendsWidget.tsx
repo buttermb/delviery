@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 export function WeeklyTrendsWidget() {
     const { tenant } = useTenantAdminAuth();
@@ -122,7 +123,7 @@ export function WeeklyTrendsWidget() {
             label: 'Weekly Revenue',
             current: progress.revenueCurrent,
             goal: progress.revenueGoal,
-            format: (v: number) => `$${v.toLocaleString()}`,
+            format: (v: number) => formatCurrency(v),
         },
         {
             label: 'Orders',

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -284,7 +285,7 @@ export function ProductBarcodeGenerator({
           pdf.setFontSize(7);
           pdf.setFont('helvetica', 'normal');
           const priceX = barcode.sku ? x + 1.3 : x + 0.1;
-          pdf.text(`$${barcode.price.toFixed(2)}`, priceX, y + 0.75);
+          pdf.text(formatCurrency(barcode.price), priceX, y + 0.75);
         }
 
         index++;
@@ -637,7 +638,7 @@ export function ProductBarcodeGenerator({
                     {(barcode.sku || barcode.price) && (
                       <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                         {barcode.sku && <span>SKU: {barcode.sku}</span>}
-                        {barcode.price && <span>${barcode.price.toFixed(2)}</span>}
+                        {barcode.price && <span>{formatCurrency(barcode.price)}</span>}
                       </div>
                     )}
                   </div>

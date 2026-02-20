@@ -33,6 +33,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { formatCurrency } from '@/lib/formatters';
 
 const EXPENSE_CATEGORIES = [
   'Supplies',
@@ -200,7 +201,7 @@ export default function ExpenseTracking() {
             <DollarSign className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">${totalExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-red-600">{formatCurrency(totalExpenses)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {filteredExpenses.length} transactions
             </p>
@@ -213,7 +214,7 @@ export default function ExpenseTracking() {
             <Calendar className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">${thisMonthExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-orange-600">{formatCurrency(thisMonthExpenses)}</div>
             <p className="text-xs text-muted-foreground mt-1">{currentMonth}</p>
           </CardContent>
         </Card>
@@ -259,7 +260,7 @@ export default function ExpenseTracking() {
                       <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -314,7 +315,7 @@ export default function ExpenseTracking() {
                       </div>
                     </div>
                     <div className="text-lg font-bold text-red-600 ml-4">
-                      -${parseFloat(expense.amount || 0).toFixed(2)}
+                      -{formatCurrency(parseFloat(expense.amount || 0))}
                     </div>
                   </div>
                 ))}

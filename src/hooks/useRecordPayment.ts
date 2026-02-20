@@ -29,6 +29,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // TYPES
@@ -153,7 +154,7 @@ export function useRecordPayment(): UseRecordPaymentReturn {
       }
 
       if (input.showToast !== false) {
-        showSuccessToast(result.message || `Payment of $${input.amount.toFixed(2)} recorded`);
+        showSuccessToast(result.message || `Payment of ${formatCurrency(input.amount)} recorded`);
       }
     },
     onError: (error: Error, input) => {
@@ -191,11 +192,11 @@ export function useRecordPayment(): UseRecordPaymentReturn {
       invalidatePaymentQueries();
       
       if (input.showToast !== false) {
-        const statusMsg = result.remaining > 0 
-          ? `Remaining: $${result.remaining.toFixed(2)}` 
+        const statusMsg = result.remaining > 0
+          ? `Remaining: ${formatCurrency(result.remaining)}`
           : 'Fully paid!';
         showSuccessToast(
-          `Payment of $${input.amount.toFixed(2)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${statusMsg}`
+          `Payment of ${formatCurrency(input.amount)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${statusMsg}`
         );
       }
     },

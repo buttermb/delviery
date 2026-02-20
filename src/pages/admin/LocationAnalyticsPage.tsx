@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatCurrency } from '@/lib/formatters';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--secondary))', 'hsl(var(--muted))'];
 
@@ -92,7 +93,7 @@ export default function LocationAnalyticsPage() {
             <CardContent>
               <p className="text-2xl font-bold">{locationData?.topLocation?.name || 'N/A'}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                ${locationData?.topLocation?.revenue.toFixed(2) || 0} revenue
+                {formatCurrency(locationData?.topLocation?.revenue)} revenue
               </p>
             </CardContent>
           </Card>
@@ -105,7 +106,7 @@ export default function LocationAnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${locationData?.totalRevenue.toFixed(2) || 0}</p>
+              <p className="text-2xl font-bold">{formatCurrency(locationData?.totalRevenue)}</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Across {locationData?.locations.length || 0} locations
               </p>
@@ -142,7 +143,7 @@ export default function LocationAnalyticsPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry: any) => `${entry.name}: $${entry.revenue.toFixed(0)}`}
+                      label={(entry: any) => `${entry.name}: ${formatCurrency(entry.revenue)}`}
                       outerRadius={80}
                       fill="hsl(var(--primary))"
                       dataKey="revenue"
@@ -151,7 +152,7 @@ export default function LocationAnalyticsPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: any) => `$${value.toFixed(2)}`} />
+                    <Tooltip formatter={(value: any) => formatCurrency(value)} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>

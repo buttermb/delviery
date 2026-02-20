@@ -35,7 +35,7 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
@@ -455,8 +455,8 @@ export function CheckoutPage() {
         // Check max per order limit
         if (purchaseLimits.max_per_order && total > purchaseLimits.max_per_order) {
           throw new Error(
-            `Order exceeds maximum limit of $${purchaseLimits.max_per_order} per transaction. ` +
-            `Your order total is $${total.toFixed(2)}.`
+            `Order exceeds maximum limit of ${formatCurrency(purchaseLimits.max_per_order)} per transaction. ` +
+            `Your order total is ${formatCurrency(total)}.`
           );
         }
 
@@ -490,8 +490,8 @@ export function CheckoutPage() {
             if (purchaseLimits.max_daily && (dailyTotal + total) > purchaseLimits.max_daily) {
               const remaining = Math.max(0, purchaseLimits.max_daily - dailyTotal);
               throw new Error(
-                `You've reached your daily purchase limit of $${purchaseLimits.max_daily}. ` +
-                `You can spend $${remaining.toFixed(2)} more today.`
+                `You've reached your daily purchase limit of ${formatCurrency(purchaseLimits.max_daily)}. ` +
+                `You can spend ${formatCurrency(remaining)} more today.`
               );
             }
 
@@ -499,8 +499,8 @@ export function CheckoutPage() {
             if (purchaseLimits.max_weekly && (weeklyTotal + total) > purchaseLimits.max_weekly) {
               const remaining = Math.max(0, purchaseLimits.max_weekly - weeklyTotal);
               throw new Error(
-                `You've reached your weekly purchase limit of $${purchaseLimits.max_weekly}. ` +
-                `You can spend $${remaining.toFixed(2)} more this week.`
+                `You've reached your weekly purchase limit of ${formatCurrency(purchaseLimits.max_weekly)}. ` +
+                `You can spend ${formatCurrency(remaining)} more this week.`
               );
             }
           }

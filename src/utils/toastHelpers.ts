@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 
 // Re-export enhanced toast actions
 export {
@@ -86,6 +87,6 @@ export const showCourierOfflineToast = () => {
 export const showDeliveryCompletedToast = (earnings: number) => {
   showSuccessToast(
     '🎉 Delivery Completed!',
-    `You earned $${earnings.toFixed(2)}`
+    `You earned ${formatCurrency(earnings)}`
   );
 };

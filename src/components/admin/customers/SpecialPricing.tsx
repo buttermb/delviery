@@ -73,6 +73,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // Types
@@ -612,7 +613,7 @@ export function SpecialPricing({
     if (pricing.discount_type === 'percentage') {
       return `${pricing.discount_value}% off`;
     }
-    return `$${pricing.discount_value.toFixed(2)} (fixed)`;
+    return `${formatCurrency(pricing.discount_value)} (fixed)`;
   };
 
   const getTargetLabel = (pricing: CustomerPricing) => {
@@ -944,7 +945,7 @@ export function SpecialPricing({
                       <SelectContent>
                         {products?.map((product) => (
                           <SelectItem key={product.id} value={product.id}>
-                            {product.name} (${product.price.toFixed(2)})
+                            {product.name} ({formatCurrency(product.price)})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1013,7 +1014,7 @@ export function SpecialPricing({
                     </FormControl>
                     {effectivePrice !== null && discountType === 'percentage' && (
                       <FormDescription>
-                        Effective price: ${effectivePrice.toFixed(2)}
+                        Effective price: {formatCurrency(effectivePrice)}
                       </FormDescription>
                     )}
                     <FormMessage />

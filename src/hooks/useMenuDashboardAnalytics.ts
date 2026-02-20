@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 export interface MenuDashboardAnalytics {
   totalMenus: number;
@@ -320,7 +321,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
       { Metric: 'Burned Menus', Value: analytics.burnedMenus },
       { Metric: 'Total Views', Value: analytics.totalViews },
       { Metric: 'Total Orders', Value: analytics.totalOrders },
-      { Metric: 'Total Revenue', Value: analytics.totalRevenue.toFixed(2) },
+      { Metric: 'Total Revenue', Value: formatCurrency(analytics.totalRevenue) },
       { Metric: 'Conversion Rate (%)', Value: analytics.conversionRate.toFixed(2) },
       { Metric: 'Avg Views Per Menu', Value: analytics.avgViewsPerMenu.toFixed(1) },
       { Metric: 'Avg Time to First View (min)', Value: analytics.avgTimeToFirstView.toFixed(0) },
@@ -335,7 +336,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
     analytics.topProducts.forEach((p, idx) => {
       rows.push({
         Metric: `#${idx + 1} Product: ${p.name}`,
-        Value: `${p.orders} orders / $${p.revenue.toFixed(2)}`,
+        Value: `${p.orders} orders / ${formatCurrency(p.revenue)}`,
       });
     });
 

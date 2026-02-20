@@ -54,6 +54,7 @@ import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
 import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useCategories } from '@/hooks/useCategories';
 import { POS_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
+import { formatCurrency } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -596,7 +597,7 @@ function CashRegisterContent() {
     setDiscountType(type);
     setDiscountValue(value);
     setDiscountDialogOpen(false);
-    toast.success(`Discount applied: ${type === 'percentage' ? `${value}%` : `$${value.toFixed(2)}`}`);
+    toast.success(`Discount applied: ${type === 'percentage' ? `${value}%` : formatCurrency(value)}`);
   };
 
   // Print receipt
@@ -625,9 +626,9 @@ function CashRegisterContent() {
               <td class="item-name" colspan="3">${item.name}</td>
             </tr>
             <tr>
-              <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+              <td class="item-detail">${item.quantity} x ${formatCurrency(item.price)}</td>
               <td></td>
-              <td class="item-amount">-$${item.subtotal.toFixed(2)}</td>
+              <td class="item-amount">-${formatCurrency(item.subtotal)}</td>
             </tr>`
           ).join('');
         } else if (receipt?.items) {
@@ -637,9 +638,9 @@ function CashRegisterContent() {
               <td class="item-name" colspan="3">${item.name}</td>
             </tr>
             <tr>
-              <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+              <td class="item-detail">${item.quantity} x ${formatCurrency(item.price)}</td>
               <td></td>
-              <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+              <td class="item-amount">${formatCurrency(item.subtotal)}</td>
             </tr>`
           ).join('');
         } else {
@@ -650,14 +651,14 @@ function CashRegisterContent() {
         const discountRow = !isRefund && receipt && receipt.discountAmount > 0
           ? `<tr>
               <td colspan="2">Discount${receipt.discountType === 'percentage' ? ` (${receipt.discountValue}%)` : ''}</td>
-              <td class="item-amount">-$${receipt.discountAmount.toFixed(2)}</td>
+              <td class="item-amount">-${formatCurrency(receipt.discountAmount)}</td>
             </tr>`
           : '';
 
         const taxRow = !isRefund && receipt && receipt.taxAmount > 0
           ? `<tr>
               <td colspan="2">Tax (${(receipt.taxRate * 100).toFixed(2)}%)</td>
-              <td class="item-amount">$${receipt.taxAmount.toFixed(2)}</td>
+              <td class="item-amount">${formatCurrency(receipt.taxAmount)}</td>
             </tr>`
           : '';
 
@@ -681,7 +682,7 @@ function CashRegisterContent() {
         const receiptLabel = isRefund ? '*** REFUND ***' : 'RECEIPT';
         const totalAmount = isRefund ? lastRefundData.refundAmount : (lastTransaction?.total || 0);
         const totalLabel = isRefund ? 'REFUND TOTAL' : 'TOTAL';
-        const totalFormatted = isRefund ? `-$${totalAmount.toFixed(2)}` : `$${totalAmount.toFixed(2)}`;
+        const totalFormatted = isRefund ? `-${formatCurrency(totalAmount)}` : formatCurrency(totalAmount);
         const footerText = isRefund ? 'Refund processed.' : 'Thank you for your purchase!';
         const receiptNumber = lastTransaction?.transaction_number || '';
         const titlePrefix = isRefund ? 'Refund' : 'Receipt';
@@ -757,7 +758,7 @@ function CashRegisterContent() {
   <table class="totals">
     ${!isRefund ? `<tr>
       <td colspan="2">Subtotal</td>
-      <td class="item-amount">$${(receipt?.subtotal ?? lastTransaction?.total ?? 0).toFixed(2)}</td>
+      <td class="item-amount">${formatCurrency(receipt?.subtotal ?? lastTransaction?.total ?? 0)}</td>
     </tr>` : ''}
     ${discountRow}
     ${taxRow}
@@ -995,7 +996,7 @@ function CashRegisterContent() {
           {activeShift && (
             <Badge variant="secondary" className="flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              Shift: ${((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)).toFixed(2)}
+              Shift: {formatCurrency((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0))}
             </Badge>
           )}
           <Button
@@ -1072,7 +1073,7 @@ function CashRegisterContent() {
                           </div>
                         )}
                         <span className="font-medium text-xs truncate w-full text-center">{product.name}</span>
-                        <span className="text-xs text-muted-foreground">${product.price.toFixed(2)}</span>
+                        <span className="text-xs text-muted-foreground">{formatCurrency(product.price)}</span>
                         {outOfStock && (
                           <Badge variant="destructive" className="text-[10px] px-1 py-0 absolute top-1 right-1">
                             Out
@@ -1130,7 +1131,7 @@ function CashRegisterContent() {
                   {customerCreditBalance > 0 && (
                     <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
                       <Wallet className="h-3 w-3 mr-1" />
-                      ${customerCreditBalance.toFixed(2)} credit
+                      {formatCurrency(customerCreditBalance)} credit
                     </Badge>
                   )}
                   {loyaltyActive && loyaltyStatus && (
@@ -1152,7 +1153,7 @@ function CashRegisterContent() {
                     <div className="flex-1">
                       <div className="font-medium text-sm">{item.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        ${item.price.toFixed(2)} × {item.quantity}
+                        {formatCurrency(item.price)} × {item.quantity}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -1184,7 +1185,7 @@ function CashRegisterContent() {
                         <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-destructive" />
                       </Button>
                     </div>
-                    <span className="font-bold text-sm w-16 text-right">${item.subtotal.toFixed(2)}</span>
+                    <span className="font-bold text-sm w-16 text-right">{formatCurrency(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -1201,7 +1202,7 @@ function CashRegisterContent() {
               <div className="space-y-2 pt-2 border-t">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
@@ -1209,19 +1210,19 @@ function CashRegisterContent() {
                       <Percent className="h-3 w-3" />
                       Discount ({discountType === 'percentage' ? `${discountValue}%` : 'Fixed'})
                     </span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-{formatCurrency(discountAmount)}</span>
                   </div>
                 )}
                 {taxEnabled && taxAmount > 0 && (
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Tax ({(taxRate * 100).toFixed(2)}%)</span>
-                    <span>${taxAmount.toFixed(2)}</span>
+                    <span>{formatCurrency(taxAmount)}</span>
                   </div>
                 )}
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
                 {loyaltyActive && selectedCustomer && (
                   <div className="flex justify-between text-sm text-blue-600">
@@ -1322,7 +1323,7 @@ function CashRegisterContent() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-lg font-bold">${transaction.total_amount.toFixed(2)}</div>
+                      <div className="text-lg font-bold">{formatCurrency(transaction.total_amount)}</div>
                       <Badge variant={transaction.payment_status === 'completed' ? 'default' : 'secondary'}>
                         {transaction.payment_status}
                       </Badge>
@@ -1443,7 +1444,7 @@ function CashRegisterContent() {
                         <p className="text-xs text-muted-foreground mb-1">SKU: {product.sku}</p>
                       )}
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
+                        <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
                         <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
                       </div>
                     </CardContent>
@@ -1508,7 +1509,7 @@ function CashRegisterContent() {
             </div>
             {discountValue > 0 && (
               <div className="text-sm text-muted-foreground">
-                Discount: ${(discountType === 'percentage' ? subtotal * (discountValue / 100) : discountValue).toFixed(2)}
+                Discount: {formatCurrency(discountType === 'percentage' ? subtotal * (discountValue / 100) : discountValue)}
               </div>
             )}
           </div>
@@ -1560,7 +1561,7 @@ function CashRegisterContent() {
             <div className="space-y-4">
               <div className="text-center py-4 border-b">
                 <div className="text-2xl font-bold text-red-600">
-                  -${lastRefundData.refundAmount.toFixed(2)}
+                  -{formatCurrency(lastRefundData.refundAmount)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   Refund for {lastRefundData.originalOrderNumber}
@@ -1585,7 +1586,7 @@ function CashRegisterContent() {
             <div className="space-y-4">
               <div className="text-center py-4 border-b">
                 <div className="text-2xl font-bold text-green-600">
-                  ${(lastTransaction.total || 0).toFixed(2)}
+                  {formatCurrency(lastTransaction.total || 0)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   {lastTransaction.transaction_number}

@@ -48,6 +48,7 @@ import { useDeliveryETA } from "@/hooks/useDeliveryETA";
 import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { formatCurrency } from "@/lib/formatters";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
@@ -119,7 +120,7 @@ export default function Orders() {
     onNewOrder: (event) => {
       const sourceLabel = event.source === 'storefront' ? 'Storefront' : event.source;
       toast.success(`New ${sourceLabel} order #${event.orderNumber}`, {
-        description: `${event.customerName} - $${event.totalAmount.toFixed(2)}`,
+        description: `${event.customerName} - ${formatCurrency(event.totalAmount)}`,
       });
     },
   });
@@ -658,7 +659,7 @@ export default function Orders() {
             <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
             <div class="info"><span class="label">Status:</span> ${order.status}</div>
             <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
-            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
+            <div class="info"><span class="label">Total:</span> ${formatCurrency(order.total_amount)}</div>
             <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
             <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
           </body>
@@ -864,7 +865,7 @@ export default function Orders() {
     },
     {
       header: <SortableHeader field="total_amount" label="Total" />,
-      cell: (order) => <span className="font-mono font-medium">${order.total_amount?.toFixed(2)}</span>
+      cell: (order) => <span className="font-mono font-medium">{formatCurrency(order.total_amount)}</span>
     },
     {
       header: <SortableHeader field="created_at" label="Date" />,
@@ -1186,7 +1187,7 @@ export default function Orders() {
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {getStatusBadge(order.status)}
-                      <span className="font-bold font-mono">${order.total_amount?.toFixed(2)}</span>
+                      <span className="font-bold font-mono">{formatCurrency(order.total_amount)}</span>
                     </div>
                   </div>
                 </SwipeableItem>
@@ -1419,7 +1420,7 @@ export default function Orders() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Total</span>
-                  <span className="font-mono font-bold">${selectedOrder.total_amount?.toFixed(2)}</span>
+                  <span className="font-mono font-bold">{formatCurrency(selectedOrder.total_amount)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Date</span>

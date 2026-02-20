@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Package, DollarSign, Clock, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatCurrency } from '@/lib/formatters';
 
 interface QuickStatsCardProps {
   todayDeliveries: number;
@@ -25,7 +26,7 @@ export default function QuickStatsCard({
     },
     {
       label: "Today's Earnings",
-      value: `$${todayEarnings.toFixed(2)}`,
+      value: formatCurrency(todayEarnings),
       icon: DollarSign,
       color: 'text-green-600',
       bgColor: 'bg-green-500/10',

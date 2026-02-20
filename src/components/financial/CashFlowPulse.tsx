@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useCashFlowPulse } from '@/hooks/useFinancialCommandCenter';
 import { format } from 'date-fns';
+import { formatCompactCurrency } from '@/lib/formatters';
 
 export function CashFlowPulse() {
   const { data, isLoading } = useCashFlowPulse();
@@ -27,11 +28,6 @@ export function CashFlowPulse() {
       </div>
     );
   }
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
 
   return (
     <div className="space-y-4">
@@ -52,7 +48,7 @@ export function CashFlowPulse() {
             <div className="text-center p-3 sm:p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
               <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 mx-auto mb-1.5 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">
-                {formatCurrency(data?.todayIn || 0)}
+                {formatCompactCurrency(data?.todayIn || 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">IN</div>
               <div className="text-[10px] text-emerald-400/70 mt-1">
@@ -64,7 +60,7 @@ export function CashFlowPulse() {
             <div className="text-center p-3 sm:p-4 rounded-lg bg-red-500/10 border border-red-500/20">
               <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-red-400 mx-auto mb-1.5 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold text-red-400 font-mono">
-                {formatCurrency(data?.todayOut || 0)}
+                {formatCompactCurrency(data?.todayOut || 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">OUT</div>
               <div className="text-[10px] text-red-400/70 mt-1">
@@ -82,7 +78,7 @@ export function CashFlowPulse() {
               <div className="text-xl sm:text-2xl font-bold font-mono" style={{
                 color: (data?.todayNet || 0) >= 0 ? '#34d399' : '#f87171'
               }}>
-                {(data?.todayNet || 0) >= 0 ? '+' : ''}{formatCurrency(data?.todayNet || 0)}
+                {(data?.todayNet || 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.todayNet || 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">NET</div>
               <Progress 
@@ -138,13 +134,13 @@ export function CashFlowPulse() {
             <div className="text-center">
               <div className="text-[10px] sm:text-xs text-zinc-500">Expected In</div>
               <div className="text-xs sm:text-sm font-bold text-emerald-400 font-mono">
-                {formatCurrency(data?.expectedCollections || 0)}
+                {formatCompactCurrency(data?.expectedCollections || 0)}
               </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] sm:text-xs text-zinc-500">Scheduled Out</div>
               <div className="text-xs sm:text-sm font-bold text-red-400 font-mono">
-                {formatCurrency(data?.scheduledPayouts || 0)}
+                {formatCompactCurrency(data?.scheduledPayouts || 0)}
               </div>
             </div>
             <div className="text-center">
@@ -153,7 +149,7 @@ export function CashFlowPulse() {
                 "text-xs sm:text-sm font-bold font-mono",
                 (data?.projectedNet || 0) >= 0 ? "text-emerald-400" : "text-red-400"
               )}>
-                {(data?.projectedNet || 0) >= 0 ? '+' : ''}{formatCurrency(data?.projectedNet || 0)}
+                {(data?.projectedNet || 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.projectedNet || 0)}
               </div>
             </div>
           </div>
@@ -177,7 +173,7 @@ export function CashFlowPulse() {
               RUNWAY
             </span>
             <span className="text-xs text-zinc-500">
-              Avg burn: {formatCurrency(data?.cashRunway.avgDailyBurn || 0)}/day
+              Avg burn: {formatCompactCurrency(data?.cashRunway.avgDailyBurn || 0)}/day
             </span>
           </div>
           

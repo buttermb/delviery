@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 interface AverageOrderValueChartProps {
     storeId?: string;
@@ -119,7 +120,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                 <div>
                     <CardTitle>Average Order Value</CardTitle>
                     <CardDescription className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-foreground">${aovData.currentAOV.toLocaleString()}</span>
+                        <span className="text-2xl font-bold text-foreground">{formatCurrency(aovData.currentAOV)}</span>
                         <span className={`flex items-center gap-1 text-sm ${trendColor}`}>
                             <TrendIcon className="h-4 w-4" />
                             {Math.abs(aovData.trend)}%
@@ -155,14 +156,14 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                                 axisLine={false}
                             />
                             <YAxis
-                                tickFormatter={(v) => `$${v}`}
+                                tickFormatter={(v) => formatCurrency(v)}
                                 tick={{ fontSize: 12 }}
                                 tickLine={false}
                                 axisLine={false}
                                 width={60}
                             />
                             <Tooltip
-                                formatter={(value: number) => [`$${value.toLocaleString()}`, 'AOV']}
+                                formatter={(value: number) => [formatCurrency(value), 'AOV']}
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--card))',
                                     borderColor: 'hsl(var(--border))',

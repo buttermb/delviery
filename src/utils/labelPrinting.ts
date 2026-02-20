@@ -5,6 +5,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // TYPES
@@ -332,7 +333,7 @@ export function generateShelfLabelHTML(data: ShelfLabelData, options: LabelPrint
         ${data.category ? `<div style="font-size: 8px; color: #666;">${escapeHtml(data.category)}</div>` : ''}
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 16px; font-weight: bold;">$${data.price.toFixed(2)}</div>
+        <div style="font-size: 16px; font-weight: bold;">${formatCurrency(data.price)}</div>
         <div style="font-size: 8px; color: #666;">/ ${escapeHtml(data.unit)}</div>
       </div>
     </div>

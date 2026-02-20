@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Calculator, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useCashDrawer, calculateCashCountTotal, type CashCount } from '@/hooks/useCashDrawer';
+import { formatCurrency } from '@/lib/formatters';
 
 interface CashCountDialogProps {
   open: boolean;
@@ -80,9 +81,9 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
     // Record the variance as a cash drawer event if there's a difference
     if (hasVariance && shiftId) {
       if (isOver) {
-        await addCash(variance, `Cash count: Over by $${variance.toFixed(2)}`);
+        await addCash(variance, `Cash count: Over by ${formatCurrency(variance)}`);
       } else {
-        await removeCash(Math.abs(variance), `Cash count: Short by $${Math.abs(variance).toFixed(2)}`);
+        await removeCash(Math.abs(variance), `Cash count: Short by ${formatCurrency(Math.abs(variance))}`);
       }
     }
 
@@ -113,11 +114,11 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-xs text-muted-foreground mb-1">Expected</p>
-              <p className="text-lg font-bold">${expectedAmount.toFixed(2)}</p>
+              <p className="text-lg font-bold">{formatCurrency(expectedAmount)}</p>
             </div>
             <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
               <p className="text-xs text-muted-foreground mb-1">Counted</p>
-              <p className="text-lg font-bold">${total.toFixed(2)}</p>
+              <p className="text-lg font-bold">{formatCurrency(total)}</p>
             </div>
           </div>
 
@@ -141,7 +142,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                 </span>
               </div>
               <Badge variant={hasVariance ? (isOver ? 'default' : 'destructive') : 'secondary'}>
-                {hasVariance ? `${isOver ? '+' : '-'}$${Math.abs(variance).toFixed(2)}` : 'Exact'}
+                {hasVariance ? `${isOver ? '+' : '-'}${formatCurrency(Math.abs(variance))}` : 'Exact'}
               </Badge>
             </div>
           )}
@@ -161,7 +162,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                     <div className="flex-1">
                       <Label htmlFor={key} className="text-xs font-medium">{label}</Label>
                       <p className="text-xs text-muted-foreground">
-                        = ${(cashCount[key] * value).toFixed(2)}
+                        = {formatCurrency(cashCount[key] * value)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
@@ -207,7 +208,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                     <div className="flex-1">
                       <Label htmlFor={key} className="text-xs font-medium">{label}</Label>
                       <p className="text-xs text-muted-foreground">
-                        = ${(cashCount[key] * value).toFixed(2)}
+                        = {formatCurrency(cashCount[key] * value)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">

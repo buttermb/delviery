@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { handleError } from "@/utils/errorHandling/handlers";
+import { formatCurrency } from '@/lib/formatters';
 
 export default function CustomerReports() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
@@ -114,9 +115,9 @@ export default function CustomerReports() {
       ['Active Customers', stats.activeCustomers],
       ['At Risk Customers', stats.atRiskCustomers],
       ['Medical Patients', stats.medicalPatients],
-      ['Total Revenue', `$${stats.totalRevenue.toFixed(2)}`],
-      ['Avg Order Value', `$${stats.avgOrderValue.toFixed(2)}`],
-      ['Avg Lifetime Value', `$${stats.avgLifetimeValue.toFixed(2)}`],
+      ['Total Revenue', formatCurrency(stats.totalRevenue)],
+      ['Avg Order Value', formatCurrency(stats.avgOrderValue)],
+      ['Avg Lifetime Value', formatCurrency(stats.avgLifetimeValue)],
     ].map(row => row.join(',')).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -231,7 +232,7 @@ export default function CustomerReports() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">${stats.totalRevenue.toLocaleString()}</div>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{formatCurrency(stats.totalRevenue)}</div>
               <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">Lifetime value</p>
             </CardContent>
           </Card>
@@ -244,7 +245,7 @@ export default function CustomerReports() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">${stats.avgOrderValue.toFixed(2)}</div>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{formatCurrency(stats.avgOrderValue)}</div>
               <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">Per transaction</p>
             </CardContent>
           </Card>
@@ -257,7 +258,7 @@ export default function CustomerReports() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">${stats.avgLifetimeValue.toFixed(2)}</div>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{formatCurrency(stats.avgLifetimeValue)}</div>
               <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">Per customer</p>
             </CardContent>
           </Card>
@@ -287,7 +288,7 @@ export default function CustomerReports() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">${customer.total_spent?.toFixed(2)}</p>
+                    <p className="font-bold text-lg">{formatCurrency(customer.total_spent)}</p>
                     <Badge variant="default">{customer.loyalty_tier}</Badge>
                   </div>
                 </div>

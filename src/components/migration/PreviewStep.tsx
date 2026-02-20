@@ -21,6 +21,7 @@ import {
 import type { ParsedProduct, QualityTier } from '@/types/migration';
 import { EditableCell } from './EditableCell';
 import { ConfidenceBar } from './ConfidenceBar';
+import { formatCurrency } from '@/lib/formatters';
 
 interface PreviewStepProps {
   products: ParsedProduct[];
@@ -286,10 +287,10 @@ export function PreviewStep({
                     </td>
                     
                     <td className="px-4 py-3">
-                      {product.prices?.lb 
-                        ? `$${product.prices.lb.toLocaleString()}/lb`
-                        : product.prices?.oz 
-                          ? `$${product.prices.oz}/oz`
+                      {product.prices?.lb
+                        ? `${formatCurrency(product.prices.lb)}/lb`
+                        : product.prices?.oz
+                          ? `${formatCurrency(product.prices.oz)}/oz`
                           : '-'
                       }
                     </td>

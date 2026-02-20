@@ -26,6 +26,7 @@ import { calculateExpectedProfit } from '@/utils/barcodeHelpers';
 import { useQuery } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
 import { useCreditGatedAction } from '@/hooks/useCredits';
+import { formatCurrency } from '@/lib/formatters';
 
 interface ScannedProduct {
   barcode: string;
@@ -291,7 +292,7 @@ export default function DispatchInventory() {
 
         toast({
           title: 'Success!',
-          description: `${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: $${result.total_expected_revenue.toFixed(2)}`
+          description: `${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: ${formatCurrency(result.total_expected_revenue)}`
         });
 
         navigateToAdmin('inventory/fronted');
@@ -493,12 +494,12 @@ export default function DispatchInventory() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Credit Limit:</span>
-                    <span className="ml-2">${(selectedClient.credit_limit || 0).toFixed(2)}</span>
+                    <span className="ml-2">{formatCurrency(selectedClient.credit_limit || 0)}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-muted-foreground">Current Balance:</span>
                     <span className={`ml-2 font-medium ${(selectedClient.outstanding_balance || 0) > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                      ${(selectedClient.outstanding_balance || 0).toFixed(2)}
+                      {formatCurrency(selectedClient.outstanding_balance || 0)}
                     </span>
                     {(selectedClient.outstanding_balance || 0) > (selectedClient.credit_limit || 0) && (
                       <Badge variant="destructive" className="ml-2">
@@ -581,15 +582,15 @@ export default function DispatchInventory() {
             <div className="p-4 bg-muted rounded-lg space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm">Expected Revenue:</span>
-                <span className="font-bold">${totals.totalRevenue.toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(totals.totalRevenue)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Your Cost:</span>
-                <span className="font-bold">${totals.totalCost.toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(totals.totalCost)}</span>
               </div>
               <div className="flex justify-between text-green-600">
                 <span className="text-sm">Expected Profit:</span>
-                <span className="font-bold">${totals.totalProfit.toFixed(2)} ({totals.profitMargin.toFixed(1)}%)</span>
+                <span className="font-bold">{formatCurrency(totals.totalProfit)} ({totals.profitMargin.toFixed(1)}%)</span>
               </div>
             </div>
           </CardContent>

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 interface SalesByCategoryChartProps {
     storeId?: string;
@@ -106,7 +107,7 @@ export function SalesByCategoryChart({ storeId, className }: SalesByCategoryChar
             <CardHeader>
                 <CardTitle>Sales by Category</CardTitle>
                 <CardDescription>
-                    Total: <span className="font-semibold text-foreground">${totalRevenue.toLocaleString()}</span>
+                    Total: <span className="font-semibold text-foreground">{formatCurrency(totalRevenue)}</span>
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -129,7 +130,7 @@ export function SalesByCategoryChart({ storeId, className }: SalesByCategoryChar
                                 ))}
                             </Pie>
                             <Tooltip
-                                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                                formatter={(value: number) => [formatCurrency(value), 'Revenue']}
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--card))',
                                     borderColor: 'hsl(var(--border))',

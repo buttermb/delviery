@@ -16,6 +16,7 @@ import { subscribe } from '@/lib/eventBus';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantContext } from '@/hooks/useTenantContext';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { playNotificationSound } from '@/utils/notificationSound';
 import {
   sendBrowserNotification,
@@ -163,7 +164,7 @@ export function useMenuOrderNotifications(
         `Customer: ${customerDisplay}`,
         `Phone: ${payload.customerPhone}`,
         `Items: ${itemsSummary}`,
-        `Total: $${payload.totalAmount.toFixed(2)}`,
+        `Total: ${formatCurrency(payload.totalAmount)}`,
       ];
       if (payload.deliveryAddress) {
         messageLines.push(`Delivery: ${payload.deliveryAddress}`);
@@ -212,7 +213,7 @@ export function useMenuOrderNotifications(
         const browserEnabled = isBrowserNotificationEnabled();
 
         if (browserPermission === 'granted' && browserEnabled) {
-          const shortMessage = `${customerDisplay} - $${payload.totalAmount.toFixed(2)} - ${itemsSummary}`;
+          const shortMessage = `${customerDisplay} - ${formatCurrency(payload.totalAmount)} - ${itemsSummary}`;
 
           // Try service worker notification first (works on lock screen)
           try {

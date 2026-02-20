@@ -8,6 +8,7 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { queryKeys } from "@/lib/queryKeys";
 import { invalidateOnEvent } from "@/lib/invalidation";
+import { formatCurrency } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -417,7 +418,7 @@ export function CustomerManagement() {
     },
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toLocaleString()}`,
+      value: formatCurrency(totalRevenue),
       sub: "Lifetime",
       icon: DollarSign,
       color: "text-green-500",
@@ -425,7 +426,7 @@ export function CustomerManagement() {
     },
     {
       title: "Avg LTV",
-      value: `$${avgLifetimeValue.toFixed(0)}`,
+      value: formatCurrency(avgLifetimeValue),
       sub: "Per customer",
       icon: TrendingUp,
       color: "text-amber-500",
@@ -674,7 +675,7 @@ export function CustomerManagement() {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold">
-                      ${customer.total_spent?.toFixed(2) || '0.00'}
+                      {formatCurrency(customer.total_spent)}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span className="flex items-center gap-1">
@@ -830,7 +831,7 @@ export function CustomerManagement() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
+                      <div className="font-bold">{formatCurrency(customer.total_spent)}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1">
                         <Award className="w-3 h-3 text-yellow-600" />
                         {customer.loyalty_points || 0}
@@ -898,7 +899,7 @@ export function CustomerManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted/30 p-3 rounded-lg text-center">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Spent</div>
-                    <div className="text-xl font-bold">${selectedCustomerForDrawer.total_spent?.toFixed(2) || '0.00'}</div>
+                    <div className="text-xl font-bold">{formatCurrency(selectedCustomerForDrawer.total_spent)}</div>
                   </div>
                   <div className="bg-muted/30 p-3 rounded-lg text-center">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Points</div>

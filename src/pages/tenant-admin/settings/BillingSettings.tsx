@@ -50,7 +50,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useToast } from '@/hooks/use-toast';
 import { humanizeError } from '@/lib/humanizeError';
@@ -438,16 +438,16 @@ export default function BillingSettings() {
         <tr>
           <td>${item.description}</td>
           <td>${item.quantity}</td>
-          <td>$${item.unitPrice.toFixed(2)}</td>
-          <td>$${item.total.toFixed(2)}</td>
+          <td>${formatCurrency(item.unitPrice)}</td>
+          <td>${formatCurrency(item.total)}</td>
         </tr>
       `).join('')}
     </tbody>
   </table>
   <div class="totals">
-    <div>Subtotal: $${invoiceData.subtotal.toFixed(2)}</div>
-    ${invoiceData.tax > 0 ? `<div>Tax: $${invoiceData.tax.toFixed(2)}</div>` : ''}
-    <div class="total-row">Total: $${invoiceData.total.toFixed(2)}</div>
+    <div>Subtotal: ${formatCurrency(invoiceData.subtotal)}</div>
+    ${invoiceData.tax > 0 ? `<div>Tax: ${formatCurrency(invoiceData.tax)}</div>` : ''}
+    <div class="total-row">Total: ${formatCurrency(invoiceData.total)}</div>
   </div>
 </body>
 </html>`;
@@ -597,7 +597,7 @@ export default function BillingSettings() {
                   Save 17% with Annual Billing
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Switch to yearly billing and get 2 months free - that's ${Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17)} savings!
+                  Switch to yearly billing and get 2 months free - that's ${formatCurrency(Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17))} savings!
                 </p>
               </div>
             </div>

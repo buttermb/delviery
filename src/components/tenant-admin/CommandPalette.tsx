@@ -56,6 +56,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { STORAGE_KEYS, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ─── Global State ────────────────────────────────────────────────────────────
 
@@ -484,7 +485,7 @@ export function TenantAdminCommandPalette() {
                   <div className="flex flex-col">
                     <span>Order #{order.id.slice(0, 8)}</span>
                     <span className="text-xs text-muted-foreground">
-                      {order.status || 'Unknown'} {order.total_amount != null && `• $${order.total_amount.toFixed(2)}`}
+                      {order.status || 'Unknown'} {order.total_amount != null && `• ${formatCurrency(order.total_amount)}`}
                     </span>
                   </div>
                   <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />

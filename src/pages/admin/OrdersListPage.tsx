@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 
 import { DataTable, type SortState } from '@/components/shared/DataTable';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -441,7 +442,7 @@ export function OrdersListPage() {
       header: 'Total',
       sortable: true,
       cell: ({ original }: { original: Order }) => (
-        <span className="font-mono font-medium">${original.total_amount?.toFixed(2)}</span>
+        <span className="font-mono font-medium">{formatCurrency(original.total_amount)}</span>
       ),
     },
     {
@@ -522,7 +523,7 @@ export function OrdersListPage() {
             <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
             <div class="info"><span class="label">Status:</span> ${order.status}</div>
             <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || 'Unknown'}</div>
-            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
+            <div class="info"><span class="label">Total:</span> ${formatCurrency(order.total_amount)}</div>
             <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
             <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
           </body>

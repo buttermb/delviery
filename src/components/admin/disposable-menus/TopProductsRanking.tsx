@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatCurrency } from '@/lib/formatters';
 
 interface ProductRanking {
   rank: number;
@@ -64,7 +65,7 @@ export const TopProductsRanking = ({
       case 'conversions':
         return `${product.conversion_rate.toFixed(1)}%`;
       case 'revenue':
-        return `$${(product.revenue || 0).toFixed(2)}`;
+        return formatCurrency(product.revenue || 0);
       default:
         return product.view_count.toLocaleString();
     }

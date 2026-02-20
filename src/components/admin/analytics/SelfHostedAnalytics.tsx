@@ -50,6 +50,7 @@ import {
 } from 'recharts';
 import { useAnalyticsData, type UnifiedAnalyticsData } from '@/hooks/useAnalyticsData';
 import { format } from 'date-fns';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -161,13 +162,13 @@ function OrdersTab({ data }: { data: UnifiedAnalyticsData }) {
         />
         <MetricCard
           title="Total Revenue"
-          value={`$${orders.totalRevenue.toLocaleString()}`}
+          value={formatCurrency(orders.totalRevenue)}
           icon={<DollarSign className="h-8 w-8" />}
           variant="success"
         />
         <MetricCard
           title="Avg Order Value"
-          value={`$${orders.averageOrderValue.toLocaleString()}`}
+          value={formatCurrency(orders.averageOrderValue)}
           icon={<TrendingUp className="h-8 w-8" />}
         />
       </div>
@@ -188,10 +189,10 @@ function OrdersTab({ data }: { data: UnifiedAnalyticsData }) {
                   tickFormatter={(value) => format(new Date(value), 'MMM d')}
                 />
                 <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} tickFormatter={(v) => formatCompactCurrency(v)} />
                 <Tooltip
                   formatter={(value: number, name: string) => [
-                    name === 'revenue' ? `$${value.toLocaleString()}` : value,
+                    name === 'revenue' ? formatCurrency(value) : value,
                     name === 'revenue' ? 'Revenue' : 'Orders',
                   ]}
                   labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
@@ -299,7 +300,7 @@ function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
         />
         <MetricCard
           title="Total Stock Value"
-          value={`$${inventory.totalStockValue.toLocaleString()}`}
+          value={formatCurrency(inventory.totalStockValue)}
           icon={<DollarSign className="h-8 w-8" />}
         />
       </div>
@@ -356,9 +357,9 @@ function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
               <ResponsiveContainer width="100%" height={300}>
                 <RechartsBarChart data={inventory.categoryBreakdown.slice(0, 8)} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                  <XAxis type="number" tickFormatter={(v) => formatCompactCurrency(v)} />
                   <YAxis type="category" dataKey="category" width={100} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']} />
+                  <Tooltip formatter={(value: number) => [formatCurrency(value), 'Value']} />
                   <Bar dataKey="value" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} />
                 </RechartsBarChart>
               </ResponsiveContainer>
@@ -483,7 +484,7 @@ function CustomersTab({ data }: { data: UnifiedAnalyticsData }) {
                           <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
                         </div>
                         <div className="text-right ml-2">
-                          <p className="text-sm font-medium">${customer.totalSpent.toLocaleString()}</p>
+                          <p className="text-sm font-medium">{formatCurrency(customer.totalSpent)}</p>
                           <p className="text-xs text-muted-foreground">{customer.orderCount} orders</p>
                         </div>
                       </div>
@@ -527,23 +528,23 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Today's Revenue"
-          value={`$${finance.todayRevenue.toLocaleString()}`}
+          value={formatCurrency(finance.todayRevenue)}
           icon={<DollarSign className="h-8 w-8" />}
           variant="success"
         />
         <MetricCard
           title="Week Revenue"
-          value={`$${finance.weekRevenue.toLocaleString()}`}
+          value={formatCurrency(finance.weekRevenue)}
           icon={<Calendar className="h-8 w-8" />}
         />
         <MetricCard
           title="Month Revenue"
-          value={`$${finance.monthRevenue.toLocaleString()}`}
+          value={formatCurrency(finance.monthRevenue)}
           icon={<TrendingUp className="h-8 w-8" />}
         />
         <MetricCard
           title="Outstanding Balance"
-          value={`$${finance.totalOutstanding.toLocaleString()}`}
+          value={formatCurrency(finance.totalOutstanding)}
           icon={<AlertTriangle className="h-8 w-8" />}
           variant={finance.totalOutstanding > 10000 ? 'warning' : 'default'}
         />
@@ -565,9 +566,9 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => format(new Date(value), 'MMM d')}
                   />
-                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatCompactCurrency(v)} />
                   <Tooltip
-                    formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]}
+                    formatter={(value: number, name: string) => [formatCurrency(value), name]}
                     labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
                   />
                   <Legend />
@@ -599,7 +600,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
                     <p className="text-sm text-muted-foreground">Payments received</p>
                   </div>
                 </div>
-                <p className="text-xl font-bold text-success">${finance.collectionsToday.toLocaleString()}</p>
+                <p className="text-xl font-bold text-success">{formatCurrency(finance.collectionsToday)}</p>
               </div>
 
               <div className="flex items-center justify-between p-4 rounded-lg bg-info/10">
@@ -610,7 +611,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
                     <p className="text-sm text-muted-foreground">From pending orders</p>
                   </div>
                 </div>
-                <p className="text-xl font-bold text-info">${finance.expectedThisWeek.toLocaleString()}</p>
+                <p className="text-xl font-bold text-info">{formatCurrency(finance.expectedThisWeek)}</p>
               </div>
 
               <div className="flex items-center justify-between p-4 rounded-lg bg-warning/10">
@@ -621,7 +622,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
                     <p className="text-sm text-muted-foreground">Unpaid balances</p>
                   </div>
                 </div>
-                <p className="text-xl font-bold text-warning">${finance.totalOutstanding.toLocaleString()}</p>
+                <p className="text-xl font-bold text-warning">{formatCurrency(finance.totalOutstanding)}</p>
               </div>
             </div>
           </CardContent>
@@ -652,7 +653,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
                       </p>
                     </div>
                   </div>
-                  <p className="font-bold text-warning">${account.amount.toLocaleString()}</p>
+                  <p className="font-bold text-warning">{formatCurrency(account.amount)}</p>
                 </div>
               ))}
             </div>
@@ -738,7 +739,7 @@ export function SelfHostedAnalytics() {
             rows: analytics.customers.topCustomers.map((customer) => [
               customer.name,
               customer.orderCount,
-              `$${customer.totalSpent.toLocaleString()}`,
+              formatCurrency(customer.totalSpent),
             ]),
           },
         ],
@@ -822,7 +823,7 @@ export function SelfHostedAnalytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
               title="Total Revenue"
-              value={`$${analytics.orders.totalRevenue.toLocaleString()}`}
+              value={formatCurrency(analytics.orders.totalRevenue)}
               icon={<DollarSign className="h-8 w-8" />}
               variant="success"
             />
@@ -860,10 +861,10 @@ export function SelfHostedAnalytics() {
                     />
                     <YAxis
                       tick={{ fontSize: 12 }}
-                      tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+                      tickFormatter={(v) => formatCompactCurrency(v)}
                     />
                     <Tooltip
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
                       labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
                     />
                     <Line
@@ -956,7 +957,7 @@ export function SelfHostedAnalytics() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Outstanding</span>
                     <Badge variant={analytics.finance.totalOutstanding > 10000 ? 'destructive' : 'secondary'}>
-                      ${analytics.finance.totalOutstanding.toLocaleString()}
+                      {formatCurrency(analytics.finance.totalOutstanding)}
                     </Badge>
                   </div>
                   <div className="flex justify-between">

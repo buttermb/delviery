@@ -25,6 +25,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // TYPES
@@ -304,7 +305,7 @@ class PaymentService {
         paymentId: payment?.id,
         newBalance: balanceResult.newBalance,
         previousBalance,
-        message: `Payment of $${amount.toFixed(2)} recorded for ${client.business_name}`
+        message: `Payment of ${formatCurrency(amount)} recorded for ${client.business_name}`
       };
     } catch (error) {
       logger.error('Failed to record payment', error, { clientId, amount, context });

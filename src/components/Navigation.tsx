@@ -28,6 +28,7 @@ import { haptics } from "@/utils/haptics";
 import type { DbCartItem } from "@/types/cart";
 import { toNumber } from "@/utils/productTypeGuards";
 import { toast } from "sonner";
+import { formatCurrency } from '@/lib/formatters';
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -183,7 +184,7 @@ const Navigation = () => {
                 haptics.light();
                 setShowCart(true);
               }}
-              aria-label={`Shopping cart with ${cartCount} items and total $${cartTotal.toFixed(2)}`}
+              aria-label={`Shopping cart with ${cartCount} items and total ${formatCurrency(cartTotal)}`}
             >
               <ShoppingCart className="w-4 h-4" />
               <div className="flex flex-col items-start gap-0.5">
@@ -192,7 +193,7 @@ const Navigation = () => {
                 </span>
                 {cartTotal > 0 && (
                   <span className="text-[10px] text-muted-foreground leading-none">
-                    ${cartTotal.toFixed(2)}
+                    {formatCurrency(cartTotal)}
                   </span>
                 )}
               </div>

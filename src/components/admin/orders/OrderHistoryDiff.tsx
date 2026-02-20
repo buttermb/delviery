@@ -39,6 +39,7 @@ import {
 } from '@/hooks/useOrderAuditLog';
 import { formatRelativeTime, formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderHistoryDiffProps {
   orderId: string;
@@ -112,7 +113,7 @@ function formatValue(value: unknown): string {
   if (typeof value === 'number') {
     // Format as currency if it looks like a price
     if (Number.isFinite(value) && value >= 0 && value < 1000000) {
-      return `$${value.toFixed(2)}`;
+      return formatCurrency(value);
     }
     return value.toString();
   }

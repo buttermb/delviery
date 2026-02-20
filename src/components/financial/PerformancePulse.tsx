@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { usePerformancePulse } from '@/hooks/useFinancialCommandCenter';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Button } from '@/components/ui/button';
+import { formatCompactCurrency } from '@/lib/formatters';
 
 interface TrendIndicatorProps {
   value: number;
@@ -59,12 +60,6 @@ export function PerformancePulse() {
     );
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
-
   // Find max revenue for top clients bar chart
   const maxClientRevenue = Math.max(...(data?.topClients.map(c => c.revenue) || [1]));
 
@@ -92,10 +87,10 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">Revenue</div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
-                {formatCurrency(data?.thisMonth.revenue || 0)}
+                {formatCompactCurrency(data?.thisMonth.revenue || 0)}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {formatCurrency(data?.lastMonth.revenue || 0)}
+                {formatCompactCurrency(data?.lastMonth.revenue || 0)}
               </div>
               <div className="text-right">
                 <TrendIndicator value={data?.changes.revenue || 0} />
@@ -106,10 +101,10 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">COGS</div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
-                {formatCurrency(data?.thisMonth.cost || 0)}
+                {formatCompactCurrency(data?.thisMonth.cost || 0)}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {formatCurrency(data?.lastMonth.cost || 0)}
+                {formatCompactCurrency(data?.lastMonth.cost || 0)}
               </div>
               <div className="text-right">
                 <TrendIndicator value={-(data?.changes.cost || 0)} />
@@ -120,10 +115,10 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">Profit</div>
               <div className="text-center font-mono text-xs sm:text-sm text-emerald-400 font-bold">
-                {formatCurrency(data?.thisMonth.profit || 0)}
+                {formatCompactCurrency(data?.thisMonth.profit || 0)}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {formatCurrency(data?.lastMonth.profit || 0)}
+                {formatCompactCurrency(data?.lastMonth.profit || 0)}
               </div>
               <div className="text-right">
                 <TrendIndicator value={data?.changes.profit || 0} />
@@ -198,7 +193,7 @@ export function PerformancePulse() {
                   {client.name}
                 </span>
                 <span className="text-xs sm:text-sm font-mono text-zinc-100 w-14 sm:w-20 text-right flex-shrink-0">
-                  {formatCurrency(client.revenue)}
+                  {formatCompactCurrency(client.revenue)}
                 </span>
                 <div className="w-16 sm:w-24 flex-shrink-0">
                   <Progress 

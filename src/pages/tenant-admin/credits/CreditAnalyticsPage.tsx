@@ -55,6 +55,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import {
   FREE_TIER_MONTHLY_CREDITS,
   getCreditCostInfo,
@@ -705,7 +706,7 @@ export function CreditAnalyticsPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                {pricePaid ? `$${(pricePaid / 100).toFixed(2)}` : '-'}
+                                {pricePaid ? formatCurrency(pricePaid / 100) : '-'}
                               </TableCell>
                             </TableRow>
                           );

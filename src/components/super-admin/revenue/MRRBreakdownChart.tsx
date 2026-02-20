@@ -11,6 +11,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from '@/integrations/supabase/client';
 import { DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface MRRDataPoint {
   month: string;
@@ -110,7 +111,7 @@ export function MRRBreakdownChart() {
           </CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-lg">
-              ${currentMRR.toLocaleString()}/mo
+              {formatCurrency(currentMRR)}/mo
             </Badge>
             {growth !== 0 && (
               <Badge variant={growth > 0 ? 'default' : 'destructive'}>
@@ -148,7 +149,7 @@ export function MRRBreakdownChart() {
             />
             <YAxis 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value: number) => formatCompactCurrency(value)}
               className="text-muted-foreground"
             />
             <Tooltip
@@ -157,7 +158,7 @@ export function MRRBreakdownChart() {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: number | string) => `$${typeof value === 'number' ? value.toLocaleString() : value}`}
+              formatter={(value: number | string) => formatCurrency(value)}
             />
             <Legend />
             <Area

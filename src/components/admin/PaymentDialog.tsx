@@ -11,6 +11,7 @@ import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { INVOICE_PAYMENT_METHODS } from "@/lib/constants/paymentMethods";
+import { formatCurrency } from '@/lib/formatters';
 
 interface PaymentDialogProps {
   clientId: string;
@@ -53,7 +54,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
     if (numAmount > outstandingBalance) {
       return {
         valid: false,
-        error: `Payment amount ($${numAmount.toLocaleString()}) cannot exceed outstanding balance ($${outstandingBalance.toLocaleString()})`
+        error: `Payment amount (${formatCurrency(numAmount)}) cannot exceed outstanding balance (${formatCurrency(outstandingBalance)})`
       };
     }
 
@@ -104,7 +105,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
           <div>
             <Label>Outstanding Balance</Label>
             <div className="text-2xl font-mono font-bold text-destructive">
-              ${outstandingBalance.toLocaleString()}
+              {formatCurrency(outstandingBalance)}
             </div>
           </div>
 
@@ -126,7 +127,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             )}
             {parseFloat(amount) > 0 && parseFloat(amount) <= outstandingBalance && (
               <div className="text-xs text-muted-foreground mt-1">
-                Remaining balance after payment: ${Math.max(0, outstandingBalance - parseFloat(amount)).toLocaleString()}
+                Remaining balance after payment: {formatCurrency(Math.max(0, outstandingBalance - parseFloat(amount)))}
               </div>
             )}
           </div>

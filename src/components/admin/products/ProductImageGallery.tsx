@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -635,7 +636,7 @@ function ProductPreviewCard({
 }: ProductPreviewCardProps) {
   const formatPrice = (price: number | null | undefined) => {
     if (price == null) return '-';
-    return `$${price.toFixed(2)}`;
+    return formatCurrency(price);
   };
 
   if (mode === 'menu') {

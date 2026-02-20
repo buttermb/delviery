@@ -18,6 +18,7 @@ import {
   AreaChart
 } from 'recharts';
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, DollarSign, Users } from 'lucide-react';
+import { formatCurrency } from '@/lib/formatters';
 
 interface AccessLog {
   accessed_at: string;
@@ -194,7 +195,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Revenue</p>
-              <p className="text-2xl font-bold">${totalRevenue.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
             </div>
             <DollarSign className="h-8 w-8 text-amber-600/20" />
           </div>
@@ -289,7 +290,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number | undefined) => value ? `$${value.toLocaleString()}` : ''} />
+                <Tooltip formatter={(value: number | undefined) => value ? formatCurrency(value) : ''} />
               </PieChart>
             </ResponsiveContainer>
           </Card>

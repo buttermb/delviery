@@ -33,6 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useNavigate, useParams } from 'react-router-dom';
+import { formatCurrency } from '@/lib/formatters';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -208,7 +209,7 @@ export const AdminNotificationCenter = () => {
             const orderNum = getPayloadString(payload.new, 'order_number') ||
               getPayloadString(payload.new, 'id', '').slice(0, 8);
             const amount = getPayloadNumber(payload.new, 'total_amount');
-            const amountStr = amount ? ` - $${amount.toFixed(2)}` : '';
+            const amountStr = amount ? ` - ${formatCurrency(amount)}` : '';
 
             addNotification({
               type: 'new_order',
@@ -299,7 +300,7 @@ export const AdminNotificationCenter = () => {
             type: 'payment_received',
             severity: 'success',
             title: 'Payment Received',
-            message: `$${amount.toFixed(2)} payment processed`,
+            message: `${formatCurrency(amount)} payment processed`,
             link: adminLink('finance'),
             entityId: getPayloadString(payload.new, 'id'),
           });
@@ -321,7 +322,7 @@ export const AdminNotificationCenter = () => {
             type: 'refund_processed',
             severity: 'warning',
             title: 'Refund Processed',
-            message: `$${amount.toFixed(2)} refund issued`,
+            message: `${formatCurrency(amount)} refund issued`,
             link: adminLink('finance'),
             entityId: getPayloadString(payload.new, 'id'),
           });

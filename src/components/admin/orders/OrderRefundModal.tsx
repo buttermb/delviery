@@ -39,6 +39,7 @@ import {
 } from '@/hooks/useOrderRefund';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderRefundModalProps {
   open: boolean;
@@ -113,7 +114,7 @@ export function OrderRefundModal({
       if (numAmount > order.total_amount) {
         return {
           valid: false,
-          error: `Refund amount ($${numAmount.toFixed(2)}) cannot exceed order total ($${order.total_amount.toFixed(2)})`,
+          error: `Refund amount (${formatCurrency(numAmount)}) cannot exceed order total (${formatCurrency(order.total_amount)})`,
         };
       }
     }
@@ -212,7 +213,7 @@ export function OrderRefundModal({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Order Total</span>
               <span className="text-lg font-semibold">
-                ${order.total_amount.toFixed(2)}
+                {formatCurrency(order.total_amount)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -254,7 +255,7 @@ export function OrderRefundModal({
                   <DollarSign className="mb-2 h-6 w-6" />
                   <span className="text-sm font-medium">Full Refund</span>
                   <span className="text-xs text-muted-foreground">
-                    ${order.total_amount.toFixed(2)}
+                    {formatCurrency(order.total_amount)}
                   </span>
                 </Label>
               </div>
@@ -378,7 +379,7 @@ export function OrderRefundModal({
             <AlertDescription className="flex items-center justify-between">
               <span className="font-medium">Refund Amount:</span>
               <span className="text-lg font-bold">
-                ${refundAmount.toFixed(2)}
+                {formatCurrency(refundAmount)}
               </span>
             </AlertDescription>
           </Alert>

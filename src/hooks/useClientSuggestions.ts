@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 interface WholesaleClient {
   id: string;
@@ -141,7 +142,7 @@ export function useClientSuggestions() {
         if (percentOfLimit >= 50) {
           suggestions.push({
             ...client,
-            suggestion_reason: `Outstanding balance: $${client.outstanding_balance.toLocaleString()} (${percentOfLimit.toFixed(0)}% of limit)`,
+            suggestion_reason: `Outstanding balance: ${formatCurrency(client.outstanding_balance)} (${percentOfLimit.toFixed(0)}% of limit)`,
             suggestion_type: 'overdue',
             priority: Math.min(percentOfLimit / 10, 10),
           });
@@ -152,7 +153,7 @@ export function useClientSuggestions() {
       if (client.total_order_value > 50000 || client.order_count >= 10) {
         suggestions.push({
           ...client,
-          suggestion_reason: `High-value client: ${client.order_count} orders, $${client.total_order_value.toLocaleString()} total`,
+          suggestion_reason: `High-value client: ${client.order_count} orders, ${formatCurrency(client.total_order_value)} total`,
           suggestion_type: 'high_value',
           priority: 5,
         });

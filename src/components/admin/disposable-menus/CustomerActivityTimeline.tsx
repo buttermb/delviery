@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import { formatCurrency } from '@/lib/formatters';
 
 interface CustomerActivityTimelineProps {
   whitelistId: string;
@@ -127,7 +128,7 @@ export const CustomerActivityTimeline = ({
           ? `Accessed menu successfully from ${locationStr}`
           : `Failed access attempt - incorrect code`;
       case 'order':
-        return `Placed order for $${parseFloat(String(data.total_amount || 0)).toFixed(2)}`;
+        return `Placed order for ${formatCurrency(data.total_amount)}`;
       case 'security':
         return data.event_type?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
       default:
@@ -180,7 +181,7 @@ export const CustomerActivityTimeline = ({
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs text-muted-foreground">Total Spent</span>
           </div>
-          <p className="text-2xl font-bold">${totalSpent.toFixed(0)}</p>
+          <p className="text-2xl font-bold">{formatCurrency(totalSpent)}</p>
         </Card>
 
         <Card className="p-4">

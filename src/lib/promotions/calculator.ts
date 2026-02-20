@@ -3,6 +3,8 @@
  * Calculate discounts for advanced promotion types
  */
 
+import { formatCurrency } from '@/lib/formatters';
+
 export interface CartItem {
     productId: string;
     price: number;
@@ -62,7 +64,7 @@ export function calculatePromotionDiscount(
     // Check minimum purchase for spending threshold
     if (promotion.promotion_type === 'spending_threshold') {
         if (promotion.min_purchase_amount && subtotal < promotion.min_purchase_amount) {
-            result.errorMessage = `Minimum purchase of $${promotion.min_purchase_amount.toFixed(2)} required`;
+            result.errorMessage = `Minimum purchase of ${formatCurrency(promotion.min_purchase_amount)} required`;
             return result;
         }
     }
@@ -91,14 +93,14 @@ export function calculatePromotionDiscount(
     switch (promotion.promotion_type) {
         case 'fixed_discount':
             result.discountAmount = promotion.discount_value;
-            result.message = `$${promotion.discount_value.toFixed(2)} off`;
+            result.message = `${formatCurrency(promotion.discount_value)} off`;
             break;
 
         case 'percentage_discount':
             result.discountAmount = subtotal * (promotion.discount_value / 100);
             if (promotion.max_discount_amount && result.discountAmount > promotion.max_discount_amount) {
                 result.discountAmount = promotion.max_discount_amount;
-                result.message = `${promotion.discount_value}% off (max $${promotion.max_discount_amount.toFixed(2)})`;
+                result.message = `${promotion.discount_value}% off (max ${formatCurrency(promotion.max_discount_amount)})`;
             } else {
                 result.message = `${promotion.discount_value}% off`;
             }
@@ -123,7 +125,7 @@ export function calculatePromotionDiscount(
 
         case 'spending_threshold':
             result.discountAmount = promotion.discount_value;
-            result.message = `Spend $${promotion.min_purchase_amount?.toFixed(2)}, get $${promotion.discount_value.toFixed(2)} off`;
+            result.message = `Spend ${formatCurrency(promotion.min_purchase_amount)}, get ${formatCurrency(promotion.discount_value)} off`;
             break;
 
         case 'free_shipping':

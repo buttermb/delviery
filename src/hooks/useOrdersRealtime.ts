@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { playNotificationSound } from '@/utils/notificationSound';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -128,7 +129,7 @@ export function useOrdersRealtime({
       : event.source.toUpperCase();
 
     const notification = new Notification(`New ${sourceLabel} Order`, {
-      body: `#${event.orderNumber} - ${event.customerName} - $${event.totalAmount.toFixed(2)}`,
+      body: `#${event.orderNumber} - ${event.customerName} - ${formatCurrency(event.totalAmount)}`,
       icon: '/logo.svg',
       badge: '/logo.svg',
       tag: `new-order-${event.id}`,

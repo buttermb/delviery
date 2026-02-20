@@ -10,6 +10,7 @@
  */
 
 import type { HotItem, BusinessContext } from '@/types/sidebar';
+import { formatCurrency } from '@/lib/formatters';
 import {
   AlertCircle,
   ShoppingCart,
@@ -107,7 +108,7 @@ export function generateHotItems(context: BusinessContext): HotItem[] {
   if (context.creditOwed && context.creditOwed > 1000) {
     hotItems.push({
       id: 'hot-credit-alert',
-      name: `💳 $${context.creditOwed.toLocaleString()} Credit Owed`,
+      name: `💳 ${formatCurrency(context.creditOwed)} Credit Owed`,
       path: '/admin/big-plug-clients',
       icon: AlertCircle,
       priority: context.creditOwed > 5000 ? 'urgent' : 'high',
@@ -119,7 +120,7 @@ export function generateHotItems(context: BusinessContext): HotItem[] {
   if (context.frontedTotal && context.frontedTotal > 5000) {
     hotItems.push({
       id: 'hot-fronted-alert',
-      name: `📋 $${context.frontedTotal.toLocaleString()} Fronted`,
+      name: `📋 ${formatCurrency(context.frontedTotal)} Fronted`,
       path: '/admin/fronted-inventory',
       icon: Package,
       priority: context.frontedTotal > 10000 ? 'urgent' : 'high',

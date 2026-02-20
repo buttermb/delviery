@@ -12,6 +12,7 @@ import { differenceInYears, parseISO, isAfter } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // Types
@@ -434,8 +435,8 @@ function buildPurchaseLimitCheck(
       type: 'purchase_limits',
       status: 'failed',
       label: 'Purchase Limit Exceeded',
-      description: `Monthly limit of $${monthlyLimit.toFixed(2)} has been reached`,
-      details: `Spent this month: $${monthlySpent.toFixed(2)}`,
+      description: `Monthly limit of ${formatCurrency(monthlyLimit)} has been reached`,
+      details: `Spent this month: ${formatCurrency(monthlySpent)}`,
       isRequired,
     };
   }
@@ -446,7 +447,7 @@ function buildPurchaseLimitCheck(
       status: 'pending',
       label: 'Near Purchase Limit',
       description: `${percentUsed}% of monthly limit used`,
-      details: `$${remaining.toFixed(2)} remaining of $${monthlyLimit.toFixed(2)}`,
+      details: `${formatCurrency(remaining)} remaining of ${formatCurrency(monthlyLimit)}`,
       isRequired,
     };
   }
@@ -455,8 +456,8 @@ function buildPurchaseLimitCheck(
     type: 'purchase_limits',
     status: 'passed',
     label: 'Within Purchase Limits',
-    description: `$${remaining.toFixed(2)} remaining this month`,
-    details: `${percentUsed}% of $${monthlyLimit.toFixed(2)} limit used`,
+    description: `${formatCurrency(remaining)} remaining this month`,
+    details: `${percentUsed}% of ${formatCurrency(monthlyLimit)} limit used`,
     isRequired,
   };
 }

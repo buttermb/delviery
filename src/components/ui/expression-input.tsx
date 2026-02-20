@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Calculator, Percent, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 import {
   Tooltip,
   TooltipContent,
@@ -62,7 +63,7 @@ export function ExpressionInput({
       return {
         type: 'percentage',
         result,
-        display: `${percent}% of $${baseValue.toFixed(2)} = $${result.toFixed(2)}`,
+        display: `${percent}% of ${formatCurrency(baseValue)} = ${formatCurrency(result)}`,
       };
     }
 
@@ -74,7 +75,7 @@ export function ExpressionInput({
       return {
         type: 'markup',
         result,
-        display: `$${costValue.toFixed(2)} + ${markup}% = $${result.toFixed(2)}`,
+        display: `${formatCurrency(costValue)} + ${markup}% = ${formatCurrency(result)}`,
       };
     }
 
@@ -85,7 +86,7 @@ export function ExpressionInput({
       return {
         type: 'markup',
         result,
-        display: `$${costValue.toFixed(2)} × ${multiplier} = $${result.toFixed(2)}`,
+        display: `${formatCurrency(costValue)} x ${multiplier} = ${formatCurrency(result)}`,
       };
     }
 
@@ -108,7 +109,7 @@ export function ExpressionInput({
       return {
         type: 'math',
         result,
-        display: `${a} ${op} ${b} = ${result.toFixed(2)}`,
+        display: `${a} ${op} ${b} = ${formatCurrency(result)}`,
       };
     }
 
@@ -119,7 +120,7 @@ export function ExpressionInput({
       return {
         type: 'absolute',
         result,
-        display: `$${result.toFixed(2)}`,
+        display: formatCurrency(result),
       };
     }
 

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { formatCurrency } from '@/lib/formatters';
 
 interface SalesData {
   date: string;
@@ -43,7 +44,7 @@ export function POSCharts({ dailySales, paymentMethods, hourlyData }: POSChartsP
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip 
-                  formatter={(value: number) => `$${value.toFixed(2)}`}
+                  formatter={(value: number) => formatCurrency(value)}
                   contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
                 />
                 <Legend />
@@ -124,7 +125,7 @@ export function POSCharts({ dailySales, paymentMethods, hourlyData }: POSChartsP
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => `$${value.toFixed(2)}`}
+                  formatter={(value: number) => formatCurrency(value)}
                   contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
                 />
                 <Legend />

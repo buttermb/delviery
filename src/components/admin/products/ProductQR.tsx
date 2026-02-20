@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -371,7 +372,7 @@ export function ProductQR({
           <h3>${qr.productName}</h3>
           ${qr.productSku ? `<p class="sku">SKU: ${qr.productSku}</p>` : ''}
           <div class="qr-container">${svgData}</div>
-          ${qr.priceValue ? `<p class="price">$${qr.priceValue.toFixed(2)}</p>` : ''}
+          ${qr.priceValue ? `<p class="price">${formatCurrency(qr.priceValue)}</p>` : ''}
           ${qr.labResultsUrl ? `<p class="lab-results">Lab Results Available</p>` : ''}
           <p class="url">${qr.url}</p>
         </div>
@@ -831,7 +832,7 @@ export function ProductQR({
                     <div className="flex flex-wrap items-center justify-center gap-2">
                       {qr.priceValue && (
                         <Badge variant="secondary" className="text-sm">
-                          ${qr.priceValue.toFixed(2)}
+                          {formatCurrency(qr.priceValue)}
                         </Badge>
                       )}
                       {qr.labResultsUrl && (

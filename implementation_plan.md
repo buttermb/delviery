@@ -578,7 +578,7 @@
 
 ## Phase C5: Data Display & Formatting Fixes (10 tasks)
 
-- [ ] Task 343: Fix all currency displays � consistent ,XXX.XX format everywhere
+- [x] Task 343: Fix all currency displays � consistent ,XXX.XX format everywhere
 - [ ] Task 344: Fix all date displays � consistent MMM dd, yyyy or relative ('2 hours ago')
 - [ ] Task 345: Fix phone number displays � formatted (XXX) XXX-XXXX
 - [ ] Task 346: Fix long text truncation � ellipsis with tooltip on hover for names, descriptions

@@ -22,6 +22,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
 import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
+import { formatCurrency } from '@/lib/formatters';
 
 interface DeliveryRow {
   id: string;
@@ -230,7 +231,7 @@ export default function DeliveryManagement() {
     },
     {
       header: 'Total',
-      cell: (d) => `$${d.orders.total_amount?.toFixed(2) || '0.00'}`
+      cell: (d) => formatCurrency(d.orders.total_amount)
     }
   ];
 
@@ -402,7 +403,7 @@ export default function DeliveryManagement() {
 
       <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
-          <Package className="h-3 w-3" /> ${d.orders.total_amount?.toFixed(2)}
+          <Package className="h-3 w-3" /> {formatCurrency(d.orders.total_amount)}
         </div>
         {d.couriers && (
           <div className="flex items-center gap-1">

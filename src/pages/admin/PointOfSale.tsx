@@ -30,6 +30,7 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/formatters';
 
 export interface Product {
   id: string;
@@ -412,7 +413,7 @@ export default function PointOfSale() {
       if (paymentMethod === 'cash' && cashTendered) {
         const change = parseFloat(cashTendered) - total;
         if (change >= 0) {
-          changeMsg = ` | Change Due: $${change.toFixed(2)}`;
+          changeMsg = ` | Change Due: ${formatCurrency(change)}`;
         }
       }
 
@@ -749,7 +750,7 @@ export default function PointOfSale() {
                         </Button>
                       </div>
                       <div className="font-mono font-medium min-w-[3rem] text-right pt-[0.15rem]">
-                        ${item.subtotal.toFixed(0)}
+                        {formatCurrency(item.subtotal)}
                       </div>
                     </div>
                   ))
@@ -762,22 +763,22 @@ export default function PointOfSale() {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Tax (8.875%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatCurrency(tax)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600 font-medium">
                     <span>Discount</span>
-                    <span>-${discount.toFixed(2)}</span>
+                    <span>-{formatCurrency(discount)}</span>
                   </div>
                 )}
                 <Separator className="my-2" />
                 <div className="flex justify-between text-2xl font-bold text-foreground">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
               </div>
 
@@ -812,7 +813,7 @@ export default function PointOfSale() {
                   {changeDue > 0 && (
                     <div className="flex justify-between items-center px-1">
                       <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Change Due</span>
-                      <span className="text-xl font-bold font-mono text-green-600">${changeDue.toFixed(2)}</span>
+                      <span className="text-xl font-bold font-mono text-green-600">{formatCurrency(changeDue)}</span>
                     </div>
                   )}
                 </div>
@@ -824,7 +825,7 @@ export default function PointOfSale() {
                 onClick={completeSale}
                 disabled={cart.length === 0 || loading || (paymentMethod === 'cash' && !!cashTendered && parseFloat(cashTendered) < total)}
               >
-                {loading ? 'Processing...' : `Charge $${total.toFixed(2)}`}
+                {loading ? 'Processing...' : `Charge ${formatCurrency(total)}`}
               </Button>
 
               <div className="grid grid-cols-2 gap-2">

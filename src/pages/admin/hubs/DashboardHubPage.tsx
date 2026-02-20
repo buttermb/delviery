@@ -60,7 +60,7 @@ import { useRevenueChart, useOrdersByStatus, useTopProducts } from '@/hooks/useD
 import { useDashboardActivity, getRelativeTime, type ActivityType } from '@/hooks/useDashboardActivity';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -310,7 +310,7 @@ function RevenueLineChart() {
               <XAxis dataKey="label" className="text-xs" tick={{ fontSize: 12 }} />
               <YAxis className="text-xs" tick={{ fontSize: 12 }} tickFormatter={(v: number) => `$${v}`} />
               <Tooltip
-                formatter={(value: number) => [`$${value.toFixed(2)}`, 'Revenue']}
+                formatter={(value: number) => [formatCurrency(value), 'Revenue']}
                 contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
               />
               <Line

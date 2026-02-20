@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { formatCurrency } from '@/lib/formatters';
 
 type Coupon = {
     id: string;
@@ -252,7 +253,7 @@ export default function CouponManager() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {coupon.type === 'percentage' ? `${coupon.discount_value}%` : `$${coupon.discount_value.toFixed(2)}`}
+                                        {coupon.type === 'percentage' ? `${coupon.discount_value}%` : formatCurrency(coupon.discount_value)}
                                     </TableCell>
                                     <TableCell>
                                         {coupon.used_count} / {coupon.usage_limit || '∞'}

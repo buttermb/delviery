@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatCurrency } from '@/lib/formatters';
 
 interface ComparisonMetric {
   label: string;
@@ -24,7 +25,7 @@ export const ComparisonMetricsCard = ({
   const formatValue = (value: number, format?: string) => {
     switch (format) {
       case 'currency':
-        return `$${value.toFixed(2)}`;
+        return formatCurrency(value);
       case 'percentage':
         return `${value.toFixed(1)}%`;
       default:

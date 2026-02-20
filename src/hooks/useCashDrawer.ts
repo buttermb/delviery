@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
+import { formatCurrency } from '@/lib/formatters';
 
 export type CashDrawerEventType = 'open' | 'close' | 'add' | 'remove' | 'payout' | 'deposit';
 
@@ -172,7 +173,7 @@ export function useCashDrawer(shiftId: string | undefined) {
 
       toast({
         title: 'Cash Drawer Updated',
-        description: `Drawer ${eventLabels[data.event_type]}: $${data.amount.toFixed(2)}`,
+        description: `Drawer ${eventLabels[data.event_type]}: ${formatCurrency(data.amount)}`,
       });
     },
     onError: (error: Error) => {

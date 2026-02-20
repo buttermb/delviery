@@ -40,7 +40,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
@@ -426,7 +426,7 @@ export default function NewWholesaleOrder() {
 
     // Credit limit check
     if (orderExceedsCreditLimit) {
-      errors.push(`Order total ($${totals.subtotal.toLocaleString()}) exceeds available credit ($${((orderData.client?.credit_limit ?? 0) - (orderData.client?.outstanding_balance ?? 0)).toLocaleString()})`);
+      errors.push(`Order total (${formatCurrency(totals.subtotal)}) exceeds available credit (${formatCurrency((orderData.client?.credit_limit ?? 0) - (orderData.client?.outstanding_balance ?? 0))})`);
     }
 
     // Minimum order quantity check per product

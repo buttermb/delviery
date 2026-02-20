@@ -10,6 +10,7 @@ import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from 'sonner';
 import { ShoppingCart, Search, ZoomIn, Plus, Check, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { formatCurrency } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -101,10 +102,10 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
       const prices = Object.values(product.prices);
       const min = Math.min(...prices);
       const max = Math.max(...prices);
-      if (min === max) return `$${min.toFixed(2)}`;
-      return `$${min.toFixed(2)} - $${max.toFixed(2)}`;
+      if (min === max) return formatCurrency(min);
+      return `${formatCurrency(min)} - ${formatCurrency(max)}`;
     }
-    return `$${(product.price || 0).toFixed(2)}`;
+    return formatCurrency(product.price || 0);
   };
 
   const getProductImage = (product: Product) => {
@@ -289,7 +290,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
                   ) : (
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-primary">
-                        ${product.price.toFixed(2)}
+                        {formatCurrency(product.price)}
                       </span>
                       {product.quantity_lbs && (
                         <span className="text-sm text-muted-foreground">
@@ -384,7 +385,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-3xl font-bold text-primary">
-                    ${selectedProduct.price.toFixed(2)}
+                    {formatCurrency(selectedProduct.price)}
                   </span>
                   {selectedProduct.category && (
                     <Badge className="capitalize">{selectedProduct.category}</Badge>

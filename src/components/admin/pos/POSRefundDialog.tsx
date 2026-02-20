@@ -42,6 +42,7 @@ import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Package from 'lucide-react/dist/esm/icons/package';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
+import { formatCurrency } from '@/lib/formatters';
 
 const REFUND_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -340,7 +341,7 @@ export function POSRefundDialog({
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
 
       toast.success('Refund processed', {
-        description: `$${data.refundAmount.toFixed(2)} refunded for order ${data.originalOrderNumber}`,
+        description: `${formatCurrency(data.refundAmount)} refunded for order ${data.originalOrderNumber}`,
       });
 
       onRefundComplete?.(data);
@@ -437,7 +438,7 @@ export function POSRefundDialog({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total</span>
-                <span className="font-semibold">${foundOrder.total_amount.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(foundOrder.total_amount)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Status</span>
@@ -499,10 +500,10 @@ export function POSRefundDialog({
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{item.product_name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {item.quantity} x ${item.unit_price.toFixed(2)}
+                          {item.quantity} x {formatCurrency(item.unit_price)}
                         </div>
                       </div>
-                      <span className="text-sm font-medium">${item.total_price.toFixed(2)}</span>
+                      <span className="text-sm font-medium">{formatCurrency(item.total_price)}</span>
                     </label>
                   ))}
                 </div>
@@ -534,7 +535,7 @@ export function POSRefundDialog({
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Package className="h-3 w-3" />
                   {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
-                  (${selectedRefundTotal.toFixed(2)})
+                  ({formatCurrency(selectedRefundTotal)})
                 </p>
               )}
             </div>
@@ -594,7 +595,7 @@ export function POSRefundDialog({
               <Alert>
                 <AlertDescription className="flex items-center justify-between">
                   <span className="font-medium">Refund Total:</span>
-                  <span className="text-lg font-bold">${currentRefundAmount.toFixed(2)}</span>
+                  <span className="text-lg font-bold">{formatCurrency(currentRefundAmount)}</span>
                 </AlertDescription>
               </Alert>
             )}
@@ -621,7 +622,7 @@ export function POSRefundDialog({
                     Processing...
                   </>
                 ) : (
-                  `Process Refund ($${currentRefundAmount.toFixed(2)})`
+                  `Process Refund (${formatCurrency(currentRefundAmount)})`
                 )}
               </Button>
             </DialogFooter>

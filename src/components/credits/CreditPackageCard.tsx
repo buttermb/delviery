@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Coins, Loader2, Minus, Plus, Sparkles, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getPricePerCredit } from '@/lib/credits/creditCosts';
+import { formatCurrency } from '@/lib/formatters';
 
 export interface CreditPackageCardProps {
   /** Unique package identifier */
@@ -63,7 +64,7 @@ export function CreditPackageCard({
 
   const totalCredits = credits + (bonusCredits ?? 0);
   const pricePerCredit = getPricePerCredit(priceCents, totalCredits);
-  const priceDisplay = (priceCents / 100).toFixed(2);
+  const priceDisplay = formatCurrency(priceCents / 100);
 
   // Calculate savings percentage relative to base price
   const savingsPercent = basePricePerCredit && basePricePerCredit > pricePerCredit
@@ -128,7 +129,7 @@ export function CreditPackageCard({
 
       {/* Content: price, per-credit cost, savings */}
       <CardContent className="flex-1 flex flex-col text-center pb-4">
-        <div className="text-3xl font-bold">${priceDisplay}</div>
+        <div className="text-3xl font-bold">{priceDisplay}</div>
         <p className="text-xs text-muted-foreground mt-1">
           {(pricePerCredit * 100).toFixed(1)}¢ per credit
         </p>
@@ -187,7 +188,7 @@ export function CreditPackageCard({
               disabledReason || 'Limit Reached'
             ) : (
               showQuantitySelector
-                ? `Buy ${quantity > 1 ? `${quantity}x ` : ''}— $${((priceCents * quantity) / 100).toFixed(2)}`
+                ? `Buy ${quantity > 1 ? `${quantity}x ` : ''}— ${formatCurrency((priceCents * quantity) / 100)}`
                 : 'Select Package'
             )}
           </Button>

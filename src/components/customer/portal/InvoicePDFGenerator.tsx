@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import jsPDF from 'jspdf';
 import { logger } from '@/lib/logger';
 import type { PortalInvoice } from '@/types/portal';
+import { formatCurrency } from '@/lib/formatters';
 
 export interface InvoicePDFGeneratorProps {
   invoice: PortalInvoice;
@@ -122,8 +123,8 @@ export function generateInvoicePDF({
       const itemName = pdf.splitTextToSize(item.product_name, colWidths.item - 2);
       pdf.text(itemName, margin, yPosition);
       pdf.text(String(item.quantity), margin + colWidths.item, yPosition);
-      pdf.text(`$${item.price.toFixed(2)}`, margin + colWidths.item + colWidths.qty, yPosition);
-      pdf.text(`$${item.total.toFixed(2)}`, margin + colWidths.item + colWidths.qty + colWidths.price, yPosition);
+      pdf.text(formatCurrency(item.price), margin + colWidths.item + colWidths.qty, yPosition);
+      pdf.text(formatCurrency(item.total), margin + colWidths.item + colWidths.qty + colWidths.price, yPosition);
       yPosition += itemName.length * 5 + 2;
     });
 
@@ -133,12 +134,12 @@ export function generateInvoicePDF({
     const totalsX = margin + colWidths.item + colWidths.qty;
     pdf.setFont('helvetica', 'normal');
     pdf.text('Subtotal:', totalsX, yPosition);
-    pdf.text(`$${invoice.subtotal.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+    pdf.text(formatCurrency(invoice.subtotal), pageWidth - margin, yPosition, { align: 'right' });
     yPosition += 6;
 
     if (invoice.tax > 0) {
       pdf.text('Tax:', totalsX, yPosition);
-      pdf.text(`$${invoice.tax.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      pdf.text(formatCurrency(invoice.tax), pageWidth - margin, yPosition, { align: 'right' });
       yPosition += 6;
     }
 
@@ -150,7 +151,7 @@ export function generateInvoicePDF({
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Total:', totalsX, yPosition);
-    pdf.text(`$${invoice.total.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+    pdf.text(formatCurrency(invoice.total), pageWidth - margin, yPosition, { align: 'right' });
     yPosition += 8;
 
     // Partial payment indicator
@@ -161,7 +162,7 @@ export function generateInvoicePDF({
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(34, 197, 94);
       pdf.text('Amount Paid:', totalsX, yPosition);
-      pdf.text(`$${amountPaid.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      pdf.text(formatCurrency(amountPaid), pageWidth - margin, yPosition, { align: 'right' });
       yPosition += 6;
 
       pdf.setLineWidth(0.5);
@@ -177,7 +178,7 @@ export function generateInvoicePDF({
         pdf.setTextColor(34, 197, 94);
       }
       pdf.text('Amount Due:', totalsX, yPosition);
-      pdf.text(`$${balanceDue.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      pdf.text(formatCurrency(balanceDue), pageWidth - margin, yPosition, { align: 'right' });
       yPosition += 8;
 
       pdf.setTextColor(0, 0, 0);

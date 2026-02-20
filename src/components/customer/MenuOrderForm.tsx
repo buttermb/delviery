@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, CreditCard, Truck, Package, Calendar } from 'lucide-react';
 import { CartItem } from './MenuCart';
 import { cleanProductName } from '@/utils/productName';
+import { formatCurrency } from '@/lib/formatters';
 
 interface MenuOrderFormProps {
   items: CartItem[];
@@ -83,24 +84,24 @@ export const MenuOrderForm = ({
               {items.map((item) => (
                 <div key={item.product_id} className="flex justify-between text-sm">
                   <span>{cleanProductName(item.name)} × {item.quantity} lbs</span>
-                  <span className="font-medium">${(item.price * item.quantity).toLocaleString()}</span>
+                  <span className="font-medium">{formatCurrency(item.price * item.quantity)}</span>
                 </div>
               ))}
               <Separator className="my-3" />
               <div className="flex justify-between text-sm">
                 <span>Subtotal ({totalQuantity} lbs)</span>
-                <span className="font-medium">${totalAmount.toLocaleString()}</span>
+                <span className="font-medium">{formatCurrency(totalAmount)}</span>
               </div>
               {deliveryFee > 0 && (
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Delivery Fee</span>
-                  <span>+${deliveryFee}</span>
+                  <span>+{formatCurrency(deliveryFee)}</span>
                 </div>
               )}
               <Separator className="my-3" />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span className="text-primary">${finalTotal.toLocaleString()}</span>
+                <span className="text-primary">{formatCurrency(finalTotal)}</span>
               </div>
             </div>
           </Card>
@@ -271,7 +272,7 @@ export const MenuOrderForm = ({
               className="w-full"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting Order...' : `Submit Order - $${finalTotal.toLocaleString()}`}
+              {isSubmitting ? 'Submitting Order...' : `Submit Order - ${formatCurrency(finalTotal)}`}
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">
               Your order will be reviewed and confirmed within 1 hour

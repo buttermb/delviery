@@ -10,6 +10,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BetterEmptyState } from '@/components/BetterEmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 interface LiveOrder {
   id: string;
@@ -120,7 +121,7 @@ export default function RealtimeDashboard() {
     },
     {
       title: "Total Revenue",
-      value: `$${(stats?.totalRevenue || 0).toFixed(2)}`,
+      value: formatCurrency(stats?.totalRevenue || 0),
       sub: "Today",
       icon: DollarSign,
       color: "text-green-500",
@@ -136,7 +137,7 @@ export default function RealtimeDashboard() {
     },
     {
       title: "Avg Order",
-      value: `$${(stats?.avgOrderValue || 0).toFixed(2)}`,
+      value: formatCurrency(stats?.avgOrderValue || 0),
       sub: "Average value",
       icon: TrendingUp,
       color: "text-amber-500",
@@ -225,7 +226,7 @@ export default function RealtimeDashboard() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <div className="text-base font-bold">${(order.total || 0).toFixed(2)}</div>
+                        <div className="text-base font-bold">{formatCurrency(order.total || 0)}</div>
                         <Badge
                           variant={order.status === 'completed' ? 'default' : 'secondary'}
                           className="text-[10px] px-1.5 h-5"
