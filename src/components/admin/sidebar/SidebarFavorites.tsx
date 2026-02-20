@@ -17,6 +17,7 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { useParams, useLocation } from 'react-router-dom';
 import type { FeatureId } from '@/lib/featureConfig';
+import { isRouteActive } from '@/lib/sidebar/isRouteActive';
 
 export function SidebarFavorites() {
   const { tenantSlug } = useParams();
@@ -64,9 +65,9 @@ export function SidebarFavorites() {
 
   // Check if path is active
   const isActive = useCallback((url: string) => {
-    const fullPath = `/${tenantSlug}${url}`;
-    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
-  }, [tenantSlug, location.pathname]);
+    if (!tenantSlug) return false;
+    return isRouteActive(url, tenantSlug, location.pathname, location.search);
+  }, [tenantSlug, location.pathname, location.search]);
 
   // Handle item click - track feature access for recently used
   const handleItemClick = useCallback((itemId: string, featureId?: string) => {

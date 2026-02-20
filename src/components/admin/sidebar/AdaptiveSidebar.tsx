@@ -36,6 +36,7 @@ import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
 import { useState, Suspense, useMemo, useCallback } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isRouteActive } from '@/lib/sidebar/isRouteActive';
 import { CreditBalance } from '@/components/credits';
 import { useCommandPaletteStore } from '@/components/tenant-admin/CommandPalette';
 import { SidebarLoadingSkeleton } from './SidebarLoadingSkeleton';
@@ -116,9 +117,8 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   // All hooks must be called before any early returns to follow React's rules of hooks
   const isActive = useCallback((url: string) => {
     if (!tenantSlug) return false;
-    const fullPath = `/${tenantSlug}${url}`;
-    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
-  }, [tenantSlug, location.pathname]);
+    return isRouteActive(url, tenantSlug, location.pathname, location.search);
+  }, [tenantSlug, location.pathname, location.search]);
 
   const handleLogout = useCallback(async () => {
     await logout();

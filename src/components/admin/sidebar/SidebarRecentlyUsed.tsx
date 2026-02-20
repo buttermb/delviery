@@ -13,6 +13,7 @@ import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { useParams, useLocation } from 'react-router-dom';
 import type { FeatureId } from '@/lib/featureConfig';
 import type { SidebarItem } from '@/types/sidebar';
+import { isRouteActive } from '@/lib/sidebar/isRouteActive';
 import { Clock } from 'lucide-react';
 import { useMemo } from 'react';
 
@@ -80,8 +81,8 @@ export function SidebarRecentlyUsed() {
     if (filteredRecentItems.length === 0) return null;
 
     const isActive = (url: string) => {
-        const fullPath = `/${tenantSlug}${url}`;
-        return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
+        if (!tenantSlug) return false;
+        return isRouteActive(url, tenantSlug, location.pathname, location.search);
     };
 
     const handleItemClick = (_itemId: string, _featureId?: string) => {
