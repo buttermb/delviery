@@ -12,7 +12,7 @@ import {
   BarChart3, FileText, Package, DollarSign, Download,
   TrendingUp, Loader2, ArrowLeft
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, startOfMonth, endOfMonth, subMonths, subWeeks } from 'date-fns';
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
@@ -24,7 +24,7 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function ReportsPage() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');
@@ -170,7 +170,7 @@ export default function ReportsPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateToAdmin('analytics-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,7 +60,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateInvoicePage() {
     const { tenant } = useTenantAdminAuth();
-    const navigate = useNavigate();
+    const { navigateToAdmin, navigate } = useTenantNavigation();
     const { account, loading: accountLoading } = useAccount();
     const accountId = account?.id ?? null;
     const isAccountReady = !accountLoading && !!accountId;
@@ -150,7 +150,7 @@ export default function CreateInvoicePage() {
     return (
         <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/invoices')}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
@@ -374,7 +374,7 @@ export default function CreateInvoicePage() {
                     </Card>
 
                     <div className="flex justify-end gap-4">
-                        <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                        <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/invoices')}>
                             Cancel
                         </Button>
                         <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>

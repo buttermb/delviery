@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,7 +59,7 @@ interface InvoiceData {
 }
 
 export function AdvancedInvoice() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<InvoiceData>({
     invoiceNumber: `INV-${Date.now()}`,
@@ -194,7 +194,7 @@ ${invoice.companyName}
       {/* Header */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/invoices')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

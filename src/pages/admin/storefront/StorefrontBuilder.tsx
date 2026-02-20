@@ -12,6 +12,7 @@ import { MarketplaceStore, type SectionConfig, type ExtendedThemeConfig } from '
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -182,6 +183,7 @@ export function StorefrontBuilder({
     onDirtyChange,
 }: StorefrontBuilderProps) {
     const { tenant } = useTenantAdminAuth();
+    const { navigateToAdmin } = useTenantNavigation();
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();
 
@@ -757,9 +759,9 @@ export function StorefrontBuilder({
         if (onRequestClose) {
             onRequestClose();
         } else {
-            window.history.back();
+            navigateToAdmin('storefront');
         }
-    }, [onRequestClose]);
+    }, [onRequestClose, navigateToAdmin]);
 
     return (
         <div

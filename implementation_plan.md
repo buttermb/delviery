@@ -556,7 +556,7 @@
 ## Phase C3: Navigation & Routing Fixes (9 tasks)
 
 - [x] Task 326: Fix breadcrumb trail on all detail pages — Added useBreadcrumbLabel() to 5 detail pages missing entity-specific breadcrumb labels: PreOrderDetailPage (Pre-Order #N), FrontedInventoryDetails (Fronted #ID), marketplace/OrderDetailPage (Order #N), CustomerInsights (customer name), DeliveryTracking (Delivery #N). All other detail pages already had proper breadcrumb labels.
-- [ ] Task 327: Fix back button behavior � go to parent list, not browser back
+- [x] Task 327: Fix back button behavior — go to parent list, not browser back — Replaced navigate(-1) and window.history.back() with navigateToAdmin() using explicit parent routes in 18 admin pages: CreateOrderPage (→orders), CreateInvoicePage (→crm/invoices), CreatePreOrderPage (→crm/pre-orders), DisposableMenuOrders (→disposable-menus), DisposableMenuAnalytics (→disposable-menus), AnalyticsPage (→analytics-hub), RecordFrontedSale (→fronted-inventory/:id), RecordFrontedPayment (→fronted-inventory), LocationAnalyticsPage (→analytics-hub), ReportsPage (→analytics-hub), RunnerLocationTracking (→delivery-management), SettingsPage (→dashboard), ImagesPage (→inventory-hub), CategoriesPage (→inventory-hub), BatchesPage (→inventory-hub), StorefrontBuilder (→storefront), BuilderHeader (added onBack prop), AdvancedInvoice (→crm/invoices). All use useTenantNavigation from @/lib/navigation/tenantNavigation.
 - [ ] Task 328: Fix sidebar active state highlighting � correct item highlighted on all routes
 - [ ] Task 329: Fix sidebar collapse state persistence � remember collapsed/expanded across navigation
 - [ ] Task 330: Fix deep link routing � direct URL to /admin/orders/123 works after login

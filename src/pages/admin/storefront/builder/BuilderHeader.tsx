@@ -33,6 +33,7 @@ interface BuilderHeaderProps {
     isPublishing: boolean;
     onUnpublish: () => void;
     isUnpublishing: boolean;
+    onBack?: () => void;
 }
 
 export function BuilderHeader({
@@ -56,11 +57,12 @@ export function BuilderHeader({
     isPublishing,
     onUnpublish,
     isUnpublishing,
+    onBack,
 }: BuilderHeaderProps) {
     return (
         <div className="flex items-center justify-between px-6 py-3 bg-background border-b shrink-0 z-20">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+                <Button variant="ghost" size="icon" onClick={onBack}>
                     <ArrowLeft className="w-4 h-4" />
                 </Button>
                 <span className="font-semibold">Store Builder</span>

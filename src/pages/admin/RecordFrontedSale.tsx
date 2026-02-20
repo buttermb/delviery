@@ -1,7 +1,8 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ interface ScannedSale {
 }
 
 export default function RecordFrontedSale() {
-  const navigate = useNavigate();
+  const { navigateToAdmin, navigate } = useTenantNavigation();
   const { id } = useParams();
   const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
@@ -125,7 +126,7 @@ export default function RecordFrontedSale() {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin(`fronted-inventory/${id}`)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>

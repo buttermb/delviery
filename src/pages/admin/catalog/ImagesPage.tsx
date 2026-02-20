@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Upload,
   Search,
@@ -30,7 +30,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { Loader2 } from 'lucide-react';
 
 export default function ImagesPage() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -214,7 +214,7 @@ export default function ImagesPage() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigateToAdmin('inventory-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   ArrowLeft, MapPin, History, TrendingUp, Clock,
   Navigation, Truck, Timer, Phone, RefreshCw,
@@ -46,7 +46,7 @@ function formatRouteDate(date: Date): string {
 }
 
 export default function RunnerLocationTracking() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [selectedRunnerId, setSelectedRunnerId] = useState<string>('');
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>('');
@@ -224,7 +224,7 @@ export default function RunnerLocationTracking() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={() => navigateToAdmin('delivery-management')}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back

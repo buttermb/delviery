@@ -461,7 +461,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={() => navigateToAdmin('dashboard')}
           className="mb-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

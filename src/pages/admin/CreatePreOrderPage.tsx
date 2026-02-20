@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreatePreOrderPage() {
     const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-    const navigate = useNavigate();
+    const { navigateToAdmin, navigate } = useTenantNavigation();
     const createPreOrder = useCreatePreOrder();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -82,7 +82,7 @@ export default function CreatePreOrderPage() {
                         {contextError || 'Unable to load tenant context. Please refresh the page.'}
                     </AlertDescription>
                 </Alert>
-                <Button onClick={() => navigate(-1)}>Go Back</Button>
+                <Button onClick={() => navigateToAdmin('crm/pre-orders')}>Go Back</Button>
             </div>
         );
     }
@@ -126,7 +126,7 @@ export default function CreatePreOrderPage() {
     return (
         <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/pre-orders')}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
@@ -250,7 +250,7 @@ export default function CreatePreOrderPage() {
                     </Card>
 
                     <div className="flex justify-end gap-4">
-                        <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                        <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/pre-orders')}>
                             Cancel
                         </Button>
                         <Button type="submit" disabled={createPreOrder.isPending}>

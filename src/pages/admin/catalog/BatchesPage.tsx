@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Plus,
   Search,
@@ -42,7 +42,7 @@ import { useCreditGatedAction } from '@/hooks/useCredits';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function BatchesPage() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -226,7 +226,7 @@ export default function BatchesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateToAdmin('inventory-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

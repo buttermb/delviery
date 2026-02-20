@@ -120,7 +120,7 @@ export default function RecordFrontedPayment() {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin('fronted-inventory')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>

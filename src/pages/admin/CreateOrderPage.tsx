@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
@@ -8,10 +7,11 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { CreateOrderForm } from "@/components/crm/CreateOrderForm";
 import { useCreateCRMOrder } from "@/hooks/crm/useCreateCRMOrder";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 export function CreateOrderPage() {
     const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-    const navigate = useNavigate();
+    const { navigateToAdmin, navigate } = useTenantNavigation();
     const createOrder = useCreateCRMOrder();
     const logActivity = useLogActivity();
 
@@ -40,7 +40,7 @@ export function CreateOrderPage() {
                         {contextError || 'Unable to load tenant context. Please refresh the page.'}
                     </AlertDescription>
                 </Alert>
-                <Button onClick={() => navigate(-1)}>Go Back</Button>
+                <Button onClick={() => navigateToAdmin('orders')}>Go Back</Button>
             </div>
         );
     }
@@ -96,13 +96,13 @@ export function CreateOrderPage() {
     };
 
     const handleCancel = () => {
-        navigate(-1);
+        navigateToAdmin('orders');
     };
 
     return (
         <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('orders')}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>

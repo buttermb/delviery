@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
 import { useDisposableMenus, useMenuAccessLogs, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { EnhancedAnalyticsCard } from '@/components/admin/disposable-menus/EnhancedAnalyticsCard';
 import { SecurityEventsTable } from '@/components/admin/disposable-menus/SecurityEventsTable';
 import { ViewTrackingChart } from '@/components/admin/disposable-menus/ViewTrackingChart';
@@ -68,6 +69,7 @@ interface _SecurityEvent {
 const DisposableMenuAnalytics = () => {
   const { tenant } = useTenantAdminAuth();
   const { menuId } = useParams();
+  const { navigateToAdmin } = useTenantNavigation();
 
   const { data: menus, isLoading: menusLoading } = useDisposableMenus(tenant?.id);
   const { data: accessLogs, isLoading: logsLoading, refetch: refetchLogs } = useMenuAccessLogs(menuId!);
@@ -193,7 +195,7 @@ const DisposableMenuAnalytics = () => {
       <div className="container mx-auto p-6">
         <Card className="p-12 text-center">
           <p className="text-lg">Menu not found</p>
-          <Button onClick={() => window.history.back()} className="mt-4">
+          <Button onClick={() => navigateToAdmin('disposable-menus')} className="mt-4">
             Go Back
           </Button>
         </Card>
@@ -206,7 +208,7 @@ const DisposableMenuAnalytics = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('disposable-menus')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

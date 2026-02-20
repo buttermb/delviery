@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import { format } from 'date-fns';
@@ -34,6 +35,7 @@ import { LastUpdated } from '@/components/shared/LastUpdated';
 import CopyButton from '@/components/CopyButton';
 const DisposableMenuOrders = () => {
   const { tenant } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'completed' | 'cancelled'>('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -112,7 +114,7 @@ const DisposableMenuOrders = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.history.back()}
+            onClick={() => navigateToAdmin('disposable-menus')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Menus
