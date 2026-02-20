@@ -536,9 +536,9 @@ export function StockTransfer({ className }: StockTransferProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Source Location</Label>
-                <Select value={sourceLocationId} onValueChange={setSourceLocationId}>
+                <Select value={sourceLocationId} onValueChange={setSourceLocationId} disabled={isLoadingLocations}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select source location" />
+                    <SelectValue placeholder={isLoadingLocations ? "Loading locations..." : "Select source location"} />
                   </SelectTrigger>
                   <SelectContent>
                     {locations
@@ -555,9 +555,9 @@ export function StockTransfer({ className }: StockTransferProps) {
 
               <div className="space-y-2">
                 <Label>Destination Location</Label>
-                <Select value={destinationLocationId} onValueChange={setDestinationLocationId}>
+                <Select value={destinationLocationId} onValueChange={setDestinationLocationId} disabled={isLoadingLocations}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select destination location" />
+                    <SelectValue placeholder={isLoadingLocations ? "Loading locations..." : "Select destination location"} />
                   </SelectTrigger>
                   <SelectContent>
                     {locations

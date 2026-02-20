@@ -74,7 +74,7 @@ export function EditWholesaleOrderDialog({
   onSuccess,
 }: EditWholesaleOrderDialogProps) {
   const queryClient = useQueryClient();
-  const { data: couriers = [] } = useWholesaleCouriers();
+  const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
@@ -336,30 +336,39 @@ export function EditWholesaleOrderDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Assign Courier</Label>
-              <Select value={runnerId || '__none__'} onValueChange={(v) => setRunnerId(v === '__none__' ? '' : v)}>
+              <Select value={runnerId || '__none__'} onValueChange={(v) => setRunnerId(v === '__none__' ? '' : v)} disabled={couriersLoading}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a courier..." />
+                  <SelectValue placeholder={couriersLoading ? "Loading couriers..." : "Select a courier..."} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">Unassigned</SelectItem>
-                  {couriers.map((courier: any) => (
-                    <SelectItem key={courier.id} value={courier.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{courier.full_name}</span>
-                        {courier.vehicle_type && (
-                          <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
-                        )}
-                        {courier.status && (
-                          <Badge
-                            variant={courier.status === 'available' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {courier.status}
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {couriersLoading ? (
+                    <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Loading couriers...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <SelectItem value="__none__">Unassigned</SelectItem>
+                      {couriers.map((courier: { id: string; full_name: string; vehicle_type?: string; status?: string }) => (
+                        <SelectItem key={courier.id} value={courier.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{courier.full_name}</span>
+                            {courier.vehicle_type && (
+                              <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
+                            )}
+                            {courier.status && (
+                              <Badge
+                                variant={courier.status === 'available' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {courier.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>

@@ -88,7 +88,7 @@ function RecurringOrderSetupComponent({
   const { tenant: _tenant } = useTenantAdminAuth();
   const { createSchedule, updateSchedule } = useRecurringOrders();
   const { data: clients = [], isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useWholesaleClients();
-  const { data: couriers = [] } = useWholesaleCouriers();
+  const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
   const { data: products = [], isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useProductsForWholesale();
 
   const [orderItems, setOrderItems] = useState<RecurringOrderItem[]>(
@@ -635,26 +635,36 @@ function RecurringOrderSetupComponent({
                 <Select
                   value={watch("preferred_runner_id") || ""}
                   onValueChange={(v) => setValue("preferred_runner_id", v || null)}
+                  disabled={couriersLoading}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select runner" />
+                    <SelectValue placeholder={couriersLoading ? "Loading runners..." : "Select runner"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {couriers.map((courier: { id: string; full_name: string; status?: string }) => (
-                      <SelectItem key={courier.id} value={courier.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{courier.full_name}</span>
-                          {courier.status && (
-                            <Badge
-                              variant={courier.status === "available" ? "default" : "secondary"}
-                              className="text-xs"
-                            >
-                              {courier.status}
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {couriersLoading ? (
+                      <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Loading runners...</span>
+                      </div>
+                    ) : couriers.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">No runners available</div>
+                    ) : (
+                      couriers.map((courier: { id: string; full_name: string; status?: string }) => (
+                        <SelectItem key={courier.id} value={courier.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{courier.full_name}</span>
+                            {courier.status && (
+                              <Badge
+                                variant={courier.status === "available" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {courier.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>

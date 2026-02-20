@@ -923,9 +923,10 @@ export default function NewWholesaleOrder() {
                   <Select
                     value={orderData.runnerId}
                     onValueChange={(value) => setOrderData((prev) => ({ ...prev, runnerId: value }))}
+                    disabled={couriersLoading}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a courier..." />
+                      <SelectValue placeholder={couriersLoading ? "Loading couriers..." : "Select a courier..."} />
                     </SelectTrigger>
                     <SelectContent>
                       {couriersLoading ? (
