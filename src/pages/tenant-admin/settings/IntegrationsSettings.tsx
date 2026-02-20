@@ -209,7 +209,7 @@ export default function IntegrationsSettings() {
     },
   });
 
-  // Toggle webhook mutation
+  // Toggle webhook mutation with optimistic UI
   const toggleWebhookMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       const { error } = await supabase
@@ -219,12 +219,26 @@ export default function IntegrationsSettings() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+    onMutate: async ({ id, active }) => {
+      await queryClient.cancelQueries({ queryKey: ['webhooks', tenant?.id] });
+      const previousWebhooks = queryClient.getQueryData<WebhookEndpoint[]>(['webhooks', tenant?.id]);
+      queryClient.setQueryData<WebhookEndpoint[]>(['webhooks', tenant?.id], (old) => {
+        if (!old) return old;
+        return old.map((webhook) =>
+          webhook.id === id ? { ...webhook, active } : webhook
+        );
+      });
+      return { previousWebhooks };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      if (context?.previousWebhooks) {
+        queryClient.setQueryData(['webhooks', tenant?.id], context.previousWebhooks);
+      }
       logger.error('Failed to toggle webhook', { error });
       toast({ title: 'Failed to toggle webhook', description: error.message, variant: 'destructive' });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
     },
   });
 

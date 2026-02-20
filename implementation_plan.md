@@ -571,7 +571,7 @@
 - [x] Task 336: Fix silent failures � no mutation should fail without user-visible feedback
 - [x] Task 337: Standardize toast messages � 'Order created successfully' not 'Success!' or raw errors
 - [x] Task 338: Add toast on copy-to-clipboard actions � menu links, invoice numbers, etc.
-- [ ] Task 339: Add optimistic UI for status toggles � switch flips immediately, reverts on error
+- [x] Task 339: Add optimistic UI for status toggles � switch flips immediately, reverts on error
 - [ ] Task 340: Add inline success indicators � checkmark flash on save, not just toast
 - [ ] Task 341: Fix error toast messages � show human-readable message, not raw Supabase error
 - [ ] Task 342: Run npx tsc --noEmit � Checkpoint
