@@ -16,7 +16,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { formatPhoneNumber } from '@/lib/formatters';
+import { formatPhoneNumber, formatCurrency } from '@/lib/formatters';
 
 export interface ConvertToInvoiceDialogProps {
   open: boolean;
@@ -228,7 +228,7 @@ export function ConvertToInvoiceDialog({
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Order Total:</span>
-                  <span className="font-semibold">${Number(order.total_amount || 0).toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(order.total_amount ?? 0)}</span>
                 </div>
               </div>
 

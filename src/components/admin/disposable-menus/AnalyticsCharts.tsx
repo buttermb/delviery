@@ -290,7 +290,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number | undefined) => value ? formatCurrency(value) : ''} />
+                <Tooltip formatter={(value: number | undefined) => formatCurrency(value ?? 0)} />
               </PieChart>
             </ResponsiveContainer>
           </Card>

@@ -16,7 +16,7 @@ import {
   X,
   CheckCircle2,
 } from "lucide-react";
-import { formatSmartDate } from '@/lib/formatters';
+import { formatSmartDate, formatCurrency } from '@/lib/formatters';
 
 interface ReturnAuthorization {
   id: string;
@@ -137,14 +137,14 @@ export function RADetail({ open, onOpenChange, returnAuth, onEdit }: RADetailPro
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Amount:</span>
                   <span className="font-medium">
-                    ${Number(returnAuth.total_amount || 0).toFixed(2)}
+                    {formatCurrency(returnAuth.total_amount ?? 0)}
                   </span>
                 </div>
-                {returnAuth.restocking_fee && (
+                {returnAuth.restocking_fee != null && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Restocking Fee:</span>
                     <span className="font-medium">
-                      ${Number(returnAuth.restocking_fee).toFixed(2)}
+                      {formatCurrency(returnAuth.restocking_fee)}
                     </span>
                   </div>
                 )}

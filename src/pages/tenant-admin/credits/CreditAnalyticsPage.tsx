@@ -702,7 +702,7 @@ export function CreditAnalyticsPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                {pricePaid ? formatCurrency(pricePaid / 100) : '-'}
+                                {pricePaid != null ? formatCurrency(pricePaid / 100) : '-'}
                               </TableCell>
                             </TableRow>
                           );

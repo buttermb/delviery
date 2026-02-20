@@ -504,7 +504,7 @@ function ClientCard({
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-medium text-foreground capitalize">
                               {activity.type}
-                              {activity.amount && ` - ${formatCurrency(activity.amount)}`}
+                              {activity.amount != null && ` - ${formatCurrency(activity.amount)}`}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {format(activity.createdAt, 'MMM d, h:mm a')}

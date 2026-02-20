@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 import { OrderLink } from '@/components/admin/cross-links';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
+import { formatCurrency } from '@/lib/formatters';
 
 // Types
 export interface LiveOrder {
@@ -155,8 +156,8 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                     {/* Info Grid */}
                     <div className="flex items-center justify-between text-xs">
                         <SLATimer createdAt={order.created_at} />
-                        {order.total_amount && (
-                            <span className="font-semibold">${Number(order.total_amount).toFixed(2)}</span>
+                        {order.total_amount != null && (
+                            <span className="font-semibold">{formatCurrency(order.total_amount)}</span>
                         )}
                     </div>
 

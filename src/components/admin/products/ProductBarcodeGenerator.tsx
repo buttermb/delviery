@@ -635,10 +635,10 @@ export function ProductBarcodeGenerator({
                     </p>
 
                     {/* Additional Info */}
-                    {(barcode.sku || barcode.price) && (
+                    {(barcode.sku || barcode.price != null) && (
                       <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                         {barcode.sku && <span>SKU: {barcode.sku}</span>}
-                        {barcode.price && <span>{formatCurrency(barcode.price)}</span>}
+                        {barcode.price != null && <span>{formatCurrency(barcode.price)}</span>}
                       </div>
                     )}
                   </div>

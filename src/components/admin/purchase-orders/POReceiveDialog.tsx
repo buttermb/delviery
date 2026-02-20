@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, CheckCircle2, Package } from "lucide-react";
 import { useReceivePurchaseOrder } from "@/hooks/useReceivePurchaseOrder";
+import { formatCurrency } from '@/lib/formatters';
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
@@ -99,11 +100,11 @@ export function POReceiveDialog({
                     <div>
                       <div className="font-medium">Product ID: {item.product_id?.substring(0, 8)}...</div>
                       <div className="text-sm text-muted-foreground">
-                        Ordered: {item.quantity} @ ${Number(item.unit_cost).toFixed(2)}
+                        Ordered: {item.quantity} @ {formatCurrency(item.unit_cost)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">${Number(item.total_cost).toFixed(2)}</div>
+                      <div className="font-medium">{formatCurrency(item.total_cost)}</div>
                     </div>
                   </div>
                   

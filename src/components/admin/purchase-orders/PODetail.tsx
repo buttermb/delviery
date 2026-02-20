@@ -32,7 +32,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { POReceiveDialog } from "./POReceiveDialog";
 import type { Database } from "@/integrations/supabase/types";
-import { formatSmartDate } from '@/lib/formatters';
+import { formatSmartDate, formatCurrency } from '@/lib/formatters';
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row'];
@@ -227,10 +227,10 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                       </div>
                       <div className="text-right">{item.quantity}</div>
                       <div className="text-right">
-                        ${Number(item.unit_cost).toFixed(2)}
+                        {formatCurrency(item.unit_cost)}
                       </div>
                       <div className="text-right font-medium">
-                        ${Number(item.total_cost).toFixed(2)}
+                        {formatCurrency(item.total_cost)}
                       </div>
                       <div className="text-right">
                         {item.received_quantity || 0} / {item.quantity}
@@ -256,19 +256,19 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal:</span>
                   <span className="font-medium">
-                    ${Number(purchaseOrder.subtotal || 0).toFixed(2)}
+                    {formatCurrency(purchaseOrder.subtotal ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax:</span>
                   <span className="font-medium">
-                    ${Number(purchaseOrder.tax || 0).toFixed(2)}
+                    {formatCurrency(purchaseOrder.tax ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping:</span>
                   <span className="font-medium">
-                    ${Number(purchaseOrder.shipping || 0).toFixed(2)}
+                    {formatCurrency(purchaseOrder.shipping ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
