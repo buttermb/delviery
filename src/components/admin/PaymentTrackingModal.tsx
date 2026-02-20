@@ -68,7 +68,7 @@ export function PaymentTrackingModal({
 
         <div className="space-y-4">
           {/* Summary Cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg bg-muted/50 border">
               <div className="text-sm text-muted-foreground mb-1">Total Owed</div>
               <div className="text-2xl font-bold text-red-500">

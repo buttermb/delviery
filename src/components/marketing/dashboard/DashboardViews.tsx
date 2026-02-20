@@ -54,7 +54,7 @@ function DashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard label="Total Revenue" value="$24,592.00" trend="+12.5%" color="bg-emerald-100 text-emerald-600" delay={0} />
         <MetricCard label="Active Orders" value="148" trend="+4.2%" color="bg-blue-100 text-blue-600" delay={0.1} />
         <MetricCard label="Pending Delivery" value="32" trend="-1.1%" color="bg-amber-100 text-amber-600" delay={0.2} />
@@ -396,7 +396,7 @@ function CatalogView({ isInteractive }: { isInteractive: boolean }) {
           </div>
         </div>
       </div>
-      <div className={`grid grid-cols-4 gap-4 flex-1 min-h-0 ${isInteractive ? 'overflow-y-auto pr-2' : 'overflow-hidden'}`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 min-h-0 ${isInteractive ? 'overflow-y-auto pr-2' : 'overflow-hidden'}`}>
         {products.map((p, i) => (
           <motion.div
             key={p.id}
@@ -451,7 +451,7 @@ function CRMView({ isInteractive }: { isInteractive: boolean }) {
       </div>
 
       {/* Pipeline Summary Bar */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col shadow-sm">
           <span className="text-[10px] text-slate-400 font-bold uppercase">Total Clients</span>
           <span className="text-lg font-bold text-slate-900">1,248</span>

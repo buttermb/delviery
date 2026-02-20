@@ -291,7 +291,7 @@ export function LocalAIIntegration() {
                 These AI models run locally in your browser or on your server. 
                 No data is sent to external services, ensuring complete privacy.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <strong>Ollama:</strong> Run LLMs on your server
                 </div>

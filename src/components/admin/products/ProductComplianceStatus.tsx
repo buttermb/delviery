@@ -515,7 +515,7 @@ export function ProductComplianceStatus({ product }: ProductComplianceStatusProp
                             <FileText className="h-5 w-5 text-primary" />
                             <span className="font-medium">License Documents</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-3 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                             <div className="text-center p-3 bg-muted/50 rounded">
                                 <p className="text-2xl font-bold text-green-600">
                                     {documents.filter(d => d.status === 'active').length}

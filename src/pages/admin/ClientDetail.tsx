@@ -319,7 +319,7 @@ export default function ClientDetail() {
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Total Spent</div>
             <div className="text-2xl font-bold">${(displayClient.total_spent / 1000).toFixed(0)}k</div>
@@ -342,7 +342,7 @@ export default function ClientDetail() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Reliability</div>
             <div className="flex items-center gap-1 mb-1">

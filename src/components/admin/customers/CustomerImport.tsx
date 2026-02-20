@@ -831,7 +831,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
             <RadioGroup
               value={duplicateStrategy}
               onValueChange={(v) => setDuplicateStrategy(v as DuplicateStrategy)}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
             >
               <Label
                 htmlFor="skip"

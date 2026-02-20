@@ -131,7 +131,7 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
         {/* Summary Stats */}
         {invoices && invoices.length > 0 && (
           <>
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="border rounded-lg p-4">
                 <p className="text-sm text-muted-foreground">Total Invoiced</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalInvoiced)}</p>

@@ -26,7 +26,7 @@ export const EarningsStats = memo(({
     return (
       <div className="space-y-4 animate-pulse">
         <div className="bg-muted rounded-2xl h-40" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-muted rounded-xl h-24" />
           <div className="bg-muted rounded-xl h-24" />
           <div className="bg-muted rounded-xl h-24" />
@@ -60,7 +60,7 @@ export const EarningsStats = memo(({
       </Card>
 
       {/* Breakdown Cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-4 text-center">
           <DollarSign className="w-6 h-6 mx-auto mb-2 text-primary" aria-hidden="true" />
           <p className="text-2xl font-bold text-primary">{formatCurrency(commission)}</p>

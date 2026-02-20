@@ -496,7 +496,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
 
       {/* Stats Bar */}
       {activeDeliveries.length > 0 && (
-        <div className="p-3 bg-muted/50 border-b grid grid-cols-3 gap-3">
+        <div className="p-3 bg-muted/50 border-b grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-info/10">
             <Truck className="h-4 w-4 text-info" />
             <div>

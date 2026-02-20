@@ -246,7 +246,7 @@ export function ProductPriceHistoryChart({ productId }: ProductPriceHistoryChart
             )}
 
             {/* Stats Summary */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                 <p className="text-xs text-muted-foreground">Total Changes</p>
                 <p className="text-2xl font-bold text-blue-600">{rawHistory?.length ?? 0}</p>

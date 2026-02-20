@@ -802,7 +802,7 @@ export function ProductBulkImportDialog({
           {step === "preview" && (
             <div className="space-y-4 overflow-hidden flex flex-col h-full">
               {/* Summary Cards */}
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <div className="text-2xl font-bold">{summary.total}</div>
                   <div className="text-xs text-muted-foreground">Total Records</div>
@@ -963,7 +963,7 @@ export function ProductBulkImportDialog({
               <CheckCircle2 className="h-16 w-16 text-green-500" />
               <div className="text-center space-y-2">
                 <h3 className="text-xl font-semibold">Import Complete!</h3>
-                <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                   <div className="bg-green-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-green-600">{importResults.imported}</div>
                     <div className="text-xs text-green-600">Imported</div>

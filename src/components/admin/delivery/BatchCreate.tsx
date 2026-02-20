@@ -826,7 +826,7 @@ export function BatchCreate({ className }: BatchCreateProps) {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Summary stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
               <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {successCount}
