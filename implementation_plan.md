@@ -643,7 +643,7 @@
 - [x] Task 390: Fix form label associations — Added aria-label to ~30 standalone search inputs, ~15 SelectTrigger filters, 3 Switches, 3 Checkboxes, 3 Textareas, and 1 native input across admin components for WCAG label association compliance
 - [x] Task 391: Fix table header scope — th scope='col' on all table headers — Added scope="col" as default prop in shadcn TableHead component (covers all shadcn-based tables). Also added scope="col" to all raw <th> elements across 21 additional files including migration preview, chart export, billing invoices, super-admin data inspector/query builder/cohort analysis, bulk price editor, batch category editor, order print view, customer management, pricing page, orders skeleton, and SuperAdminEnhanced tenant table.
 - [x] Task 392: Fix skip-to-content link — hidden until focused, jumps to main content — SkipToContent component already existed in App.tsx with sr-only/focus:not-sr-only pattern. Added id="main-content" tabIndex={-1} to all <main> elements missing it: shared AdminLayout (compact + full mode), DocsLayout, ShopLayout (loading + luxury + default themes). Changed AuthLayout main content from <div> to <main> with proper id/tabIndex. All layouts now have a target for the skip link.
-- [ ] Task 393: Fix image alt text � all img tags have meaningful alt or role='presentation'
+- [x] Task 393: Fix image alt text — all img tags have meaningful alt or role='presentation' — Added alt={product_name} to MarketplaceCartPage img (was missing entirely), changed empty alt="" to descriptive alt on both StoreSelector store logo images, improved alt="QR" to alt="QR Code" in labelPrinting compact template
 - [ ] Task 394: Run npx tsc --noEmit � Checkpoint
 
 ## Phase C11: Performance & Perceived Speed (4 tasks)

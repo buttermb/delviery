@@ -53,9 +53,9 @@ export function StoreSelector({
         <Button variant="outline" className="justify-between min-w-[200px]">
           <div className="flex items-center gap-2">
             {activeStore?.logo_url ? (
-              <img 
-                src={activeStore.logo_url} 
-                alt=""
+              <img
+                src={activeStore.logo_url}
+                alt={`${activeStore.store_name} logo`}
                 className="w-5 h-5 rounded object-cover"
               />
             ) : (
@@ -85,9 +85,9 @@ export function StoreSelector({
               }}
             >
               {store.logo_url ? (
-                <img 
-                  src={store.logo_url} 
-                  alt=""
+                <img
+                  src={store.logo_url}
+                  alt={`${store.store_name} logo`}
                   className="w-8 h-8 rounded object-cover"
                 />
               ) : (

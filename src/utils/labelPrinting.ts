@@ -242,7 +242,7 @@ export function generateSmallPackageLabelHTML(data: SmallPackageLabelData, optio
       </div>
       ${data.qrCodeDataUrl ? `
         <div style="flex-shrink: 0; margin-left: 0.05in;">
-          <img src="${data.qrCodeDataUrl}" style="width: 0.7in; height: 0.7in;" alt="QR" />
+          <img src="${data.qrCodeDataUrl}" style="width: 0.7in; height: 0.7in;" alt="QR Code" />
         </div>
       ` : ''}
     </div>

@@ -183,7 +183,7 @@ export default function MarketplaceCartPage() {
                                 <CardContent className="p-4 flex gap-4 items-center">
                                     <div className="h-20 w-20 bg-muted rounded-md overflow-hidden flex-shrink-0">
                                         {item.marketplace_listings?.images?.[0] ? (
-                                            <img src={item.marketplace_listings.images[0]} className="h-full w-full object-cover" />
+                                            <img src={item.marketplace_listings.images[0]} alt={item.marketplace_listings.product_name || 'Product image'} className="h-full w-full object-cover" />
                                         ) : (
                                             <div className="h-full w-full flex items-center justify-center bg-gray-100">
                                                 <ShoppingCart className="h-8 w-8 text-gray-300" />
