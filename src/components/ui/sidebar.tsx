@@ -133,7 +133,14 @@ const SidebarProvider = React.forwardRef<
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen);
+  // Read persisted state from localStorage on init, falling back to defaultOpen prop.
+  const [_open, _setOpen] = React.useState(() => {
+    const stored = safeStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    if (stored !== null) {
+      return stored !== 'true'; // 'true' means collapsed, so open = !collapsed
+    }
+    return defaultOpen;
+  });
   const open = openProp ?? _open;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {

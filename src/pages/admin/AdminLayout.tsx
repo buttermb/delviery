@@ -12,12 +12,10 @@ import { Search, Keyboard } from "lucide-react";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 import { BreadcrumbProvider } from "@/contexts/BreadcrumbContext";
 import { InstallPWA } from "@/components/InstallPWA";
-import { Suspense, useMemo } from "react";
+import { Suspense } from "react";
 import { LoadingFallback } from "@/components/LoadingFallback";
 import { useEventNotifications } from "@/hooks/useEventNotifications";
 import { useEventToasts } from "@/hooks/useEventToasts";
-import { STORAGE_KEYS, safeStorage } from "@/constants/storageKeys";
-
 import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCenter";
 import { initBrowserNotifications } from "@/utils/browserNotifications";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
@@ -116,13 +114,6 @@ const AdminLayout = () => {
   // Sidebar mode toggle (Classic vs Optimized)
   const { isOptimized } = useSidebarMode();
 
-  // Read persisted sidebar collapse state from localStorage (only once on mount)
-  const sidebarDefaultOpen = useMemo(() => {
-    const stored = safeStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
-    // stored === 'true' means collapsed, so defaultOpen is the inverse
-    return stored === 'true' ? false : true;
-  }, []);
-
   // Enable real-time event notifications for orders and stock alerts
   useEventNotifications({
     enabled: true,
@@ -192,7 +183,7 @@ const AdminLayout = () => {
         <TenantAdminCommandPalette />
 
         {/* Unified Layout with Sidebar (Optimized or Classic) */}
-        <SidebarProvider defaultOpen={sidebarDefaultOpen}>
+        <SidebarProvider>
           <MobileSidebarCloser />
           <ScrollMainToTop />
           <div className="min-h-dvh flex w-full premium-gradient-mesh">
