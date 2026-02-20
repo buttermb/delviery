@@ -179,7 +179,7 @@ export function AdminLayout({
               />
             </div>
           )}
-          <main className={cn('p-4', contentClassName)}>{children}</main>
+          <main id="main-content" tabIndex={-1} className={cn('p-4 focus:outline-none', contentClassName)}>{children}</main>
         </div>
       </AdminLayoutContext.Provider>
     );
@@ -278,7 +278,7 @@ export function AdminLayout({
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto">
+          <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto focus:outline-none">
             <div className={cn('p-4 lg:p-6', contentClassName)}>
               <div className="max-w-7xl mx-auto w-full">
                 {/* Page Header */}

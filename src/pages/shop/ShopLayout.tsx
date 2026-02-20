@@ -280,7 +280,7 @@ export default function ShopLayout() {
             </div>
           </div>
         </header>
-        <main className="container mx-auto px-4 py-8">
+        <main id="main-content" tabIndex={-1} className="container mx-auto px-4 py-8 focus:outline-none">
           <Skeleton className="h-64 w-full mb-8" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -417,7 +417,7 @@ export default function ShopLayout() {
           />
 
           {/* Main Content */}
-          <main>
+          <main id="main-content" tabIndex={-1} className="focus:outline-none">
             <Outlet />
           </main>
 
@@ -632,7 +632,7 @@ export default function ShopLayout() {
         </header>
 
         {/* Main Content */}
-        <main>
+        <main id="main-content" tabIndex={-1} className="focus:outline-none">
           <Outlet />
         </main>
 

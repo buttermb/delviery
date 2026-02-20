@@ -68,7 +68,7 @@ export function AuthLayout({
       )}
 
       {/* Main content area */}
-      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+      <main id="main-content" tabIndex={-1} className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8 focus:outline-none">
         {/* Logo */}
         <div className="mb-8">
           <FloraIQLogo size="lg" />
@@ -83,7 +83,7 @@ export function AuthLayout({
         >
           {children}
         </Card>
-      </div>
+      </main>
 
       {/* Footer */}
       <footer className="relative z-10 w-full border-t border-border/50 bg-background/80 backdrop-blur-sm">

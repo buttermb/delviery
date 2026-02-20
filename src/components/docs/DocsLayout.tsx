@@ -13,7 +13,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
       <MarketingNav />
       <div className="flex">
         <DocsSidebar />
-        <main className="flex-1">
+        <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
           <div className="container mx-auto px-6 py-12 max-w-5xl">
             {children}
           </div>
