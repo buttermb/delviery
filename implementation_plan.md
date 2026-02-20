@@ -596,7 +596,7 @@
 - [x] Task 355: Fix delete confirmations � every destructive action has confirm dialog with item name
 - [x] Task 356: Fix action dropdown menus on tables � Edit, View, Delete, status changes all wired
 - [x] Task 357: Fix disabled button states � visually distinct, cursor not-allowed, tooltip explaining why
-- [ ] Task 358: Add keyboard shortcut hints � Cmd+S to save, Cmd+N for new, Escape to cancel
+- [x] Task 358: Add keyboard shortcut hints � Cmd+S to save, Cmd+N for new, Escape to cancel
 - [ ] Task 359: Fix floating action buttons � consistent position bottom-right on mobile
 - [ ] Task 360: Run npx tsc --noEmit � Checkpoint
 

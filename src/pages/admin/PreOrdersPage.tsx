@@ -36,6 +36,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 
 export default function PreOrdersPage() {
     const { navigateToAdmin } = useTenantNavigation();
@@ -44,6 +45,7 @@ export default function PreOrdersPage() {
     const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
     const { data: preOrders, isLoading } = usePreOrders();
+    const mod = useModifierKey();
     const cancelPreOrder = useCancelPreOrder();
 
     const filteredPreOrders = preOrders?.filter((order) => {
@@ -105,9 +107,11 @@ export default function PreOrdersPage() {
                         Manage pre-orders and convert them to invoices.
                     </p>
                 </div>
-                <Button onClick={() => navigateToAdmin("crm/pre-orders/new")}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Pre-Order
-                </Button>
+                <ShortcutHint keys={[mod, "N"]} label="New">
+                    <Button onClick={() => navigateToAdmin("crm/pre-orders/new")}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Pre-Order
+                    </Button>
+                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}

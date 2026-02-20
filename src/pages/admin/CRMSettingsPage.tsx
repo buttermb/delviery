@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save } from "lucide-react";
 import { useCRMSettings, useUpdateCRMSettings } from "@/hooks/crm/useCRMSettings";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
+import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
 
 const formSchema = z.object({
     invoice_prefix: z.string().min(1, "Prefix is required"),
@@ -53,6 +55,12 @@ export default function CRMSettingsPage() {
 
     const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
         isDirty: form.formState.isDirty,
+    });
+
+    const mod = useModifierKey();
+
+    useFormKeyboardShortcuts({
+        onSave: () => form.handleSubmit(onSubmit)(),
     });
 
     useEffect(() => {
@@ -227,11 +235,13 @@ export default function CRMSettingsPage() {
                     </Card>
 
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={updateSettings.isPending}>
-                            {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            Save Settings
-                        </Button>
+                        <ShortcutHint keys={[mod, "S"]} label="Save">
+                            <Button type="submit" disabled={updateSettings.isPending}>
+                                {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                Save Settings
+                            </Button>
+                        </ShortcutHint>
                     </div>
                 </form>
             </Form>

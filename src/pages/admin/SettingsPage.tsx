@@ -24,6 +24,8 @@ import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeS
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
+import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { FeatureTogglesPanel } from '@/components/admin/settings/FeatureTogglesPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
@@ -166,6 +168,17 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   );
   const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
     isDirty,
+  });
+
+  const mod = useModifierKey();
+
+  // Cmd/Ctrl+S submits the active tab's form
+  useFormKeyboardShortcuts({
+    onSave: () => {
+      if (activeTab === 'general') generalForm.handleSubmit(onSaveGeneral)();
+      else if (activeTab === 'security') securityForm.handleSubmit(onSaveSecurity)();
+      else if (activeTab === 'notifications') notificationForm.handleSubmit(onSaveNotifications)();
+    },
   });
 
 
@@ -429,10 +442,12 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                 <Input value="USD" disabled />
               </div>
             </div>
-            <Button type="submit" disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-              Save General Settings
-            </Button>
+            <ShortcutHint keys={[mod, "S"]} label="Save">
+              <Button type="submit" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                Save General Settings
+              </Button>
+            </ShortcutHint>
           </form>
           <div className="pt-4 border-t mt-6">
             <h4 className="text-sm font-medium mb-2">Team Management</h4>
@@ -590,10 +605,12 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                     <p className="text-sm text-destructive">{securityForm.formState.errors.passwordMinLength.message}</p>
                   )}
                 </div>
-                <Button type="submit" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                  Save Security Settings
-                </Button>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Security Settings
+                  </Button>
+                </ShortcutHint>
               </form>
             </Card>
           )}
@@ -653,10 +670,12 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                     />
                   </div>
                 </div>
-                <Button type="submit" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                  Save Notification Settings
-                </Button>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Notification Settings
+                  </Button>
+                </ShortcutHint>
               </form>
             </Card>
           )}

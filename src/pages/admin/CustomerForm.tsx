@@ -30,6 +30,8 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
+import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
 
 const customerFormSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
@@ -81,6 +83,8 @@ export default function CustomerForm() {
   const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
     isDirty: form.formState.isDirty,
   });
+
+  const mod = useModifierKey();
 
   useEffect(() => {
     if (isEdit && id && !accountLoading) {
@@ -224,6 +228,11 @@ export default function CustomerForm() {
       setSaving(false);
     }
   };
+
+  useFormKeyboardShortcuts({
+    onSave: () => form.handleSubmit(onSubmit)(),
+    onCancel: () => navigateToAdmin('customer-management'),
+  });
 
   if (accountLoading || pageLoading) {
     return (
@@ -444,27 +453,31 @@ export default function CustomerForm() {
 
               {/* Actions */}
               <div className="flex gap-4 justify-end pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigateToAdmin('customer-management')}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                >
-                  {saving ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      {isEdit ? 'Update Customer' : 'Create Customer'}
-                    </>
-                  )}
-                </Button>
+                <ShortcutHint keys={["Esc"]} label="Cancel">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigateToAdmin('customer-management')}
+                  >
+                    Cancel
+                  </Button>
+                </ShortcutHint>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                  >
+                    {saving ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {isEdit ? 'Update Customer' : 'Create Customer'}
+                      </>
+                    )}
+                  </Button>
+                </ShortcutHint>
               </div>
             </div>
           </form>

@@ -44,6 +44,7 @@ import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useOfflineOrderCreation, OfflineOrderItem, OfflineOrderData } from '@/hooks/useOfflineOrderCreation';
 import { db as idb } from '@/lib/idb';
 import { cn } from '@/lib/utils';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 
 interface ProductForOrder {
   id: string;
@@ -65,6 +66,8 @@ export default function OfflineOrderCreate() {
     removeOfflineOrder,
     retryOrder,
   } = useOfflineOrderCreation(tenant?.id);
+
+  const mod = useModifierKey();
 
   // Form state
   const [customerName, setCustomerName] = useState('');
@@ -610,20 +613,22 @@ export default function OfflineOrderCreate() {
                 )}
 
                 {/* Submit Button */}
-                <Button
-                  className="w-full mt-4"
-                  size="lg"
-                  onClick={handleSubmit}
-                  disabled={!isFormValid || isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
-                  ) : !isOnline ? (
-                    <><WifiOff className="mr-2 h-4 w-4" />Save Offline</>
-                  ) : (
-                    <><Plus className="mr-2 h-4 w-4" />Create Order</>
-                  )}
-                </Button>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button
+                    className="w-full mt-4"
+                    size="lg"
+                    onClick={handleSubmit}
+                    disabled={!isFormValid || isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
+                    ) : !isOnline ? (
+                      <><WifiOff className="mr-2 h-4 w-4" />Save Offline</>
+                    ) : (
+                      <><Plus className="mr-2 h-4 w-4" />Create Order</>
+                    )}
+                  </Button>
+                </ShortcutHint>
 
                 {!isOnline && (
                   <p className="text-xs text-center text-muted-foreground mt-2">

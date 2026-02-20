@@ -29,6 +29,7 @@ import { StandardPagination } from '@/components/shared/StandardPagination';
 import { MenuCard, Menu } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
 import { cn } from '@/lib/utils';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 
 type ViewMode = 'grid' | 'list';
 type StatusFilter = 'all' | 'active' | 'soft_burned' | 'hard_burned';
@@ -41,6 +42,7 @@ export function MenusListPage() {
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
     const { data: menus, isLoading } = useDisposableMenus(tenant?.id);
+    const mod = useModifierKey();
 
     const filteredMenus = menus?.filter((menu) => {
         const matchesSearch =
@@ -85,9 +87,11 @@ export function MenusListPage() {
                         Create and manage secure product menus for your customers.
                     </p>
                 </div>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Menu
-                </Button>
+                <ShortcutHint keys={[mod, "N"]} label="New">
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Menu
+                    </Button>
+                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}

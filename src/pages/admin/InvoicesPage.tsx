@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { TruncatedText } from "@/components/shared/TruncatedText";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
@@ -466,6 +467,7 @@ export function InvoicesPage() {
     const voidInvoice = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const { data: crmSettings } = useCRMSettings();
+    const mod = useModifierKey();
 
     const filteredInvoices = (() => {
         const filtered = invoices?.filter((invoice) => {
@@ -701,9 +703,11 @@ export function InvoicesPage() {
                         Manage your invoices and track payments.
                     </p>
                 </div>
-                <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Invoice
-                </Button>
+                <ShortcutHint keys={[mod, "N"]} label="New">
+                    <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Invoice
+                    </Button>
+                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}

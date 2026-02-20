@@ -32,6 +32,8 @@ import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
+import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
 
 const formSchema = z.object({
     client_id: z.string().min(1, "Client is required"),
@@ -55,6 +57,16 @@ export default function CreatePreOrderPage() {
             expected_date: addDays(new Date(), 7),
             notes: "",
         },
+    });
+
+    const mod = useModifierKey();
+
+    useFormKeyboardShortcuts({
+        onSave: () => {
+            const formEl = document.querySelector<HTMLFormElement>('form');
+            formEl?.requestSubmit();
+        },
+        onCancel: () => navigateToAdmin('crm/pre-orders'),
     });
 
     const tenantSlug = tenant?.slug;
@@ -250,14 +262,18 @@ export default function CreatePreOrderPage() {
                     </Card>
 
                     <div className="flex justify-end gap-4">
-                        <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/pre-orders')}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={createPreOrder.isPending}>
-                            {createPreOrder.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            Create Pre-Order
-                        </Button>
+                        <ShortcutHint keys={["Esc"]} label="Cancel">
+                            <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/pre-orders')}>
+                                Cancel
+                            </Button>
+                        </ShortcutHint>
+                        <ShortcutHint keys={[mod, "S"]} label="Save">
+                            <Button type="submit" disabled={createPreOrder.isPending}>
+                                {createPreOrder.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                Create Pre-Order
+                            </Button>
+                        </ShortcutHint>
                     </div>
                 </form>
             </Form>
