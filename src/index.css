@@ -412,8 +412,8 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Indigo tinted border */
     --input: 254 15% 96%;
     /* Indigo tinted input */
-    --ring: 35 89% 60%;
-    /* Gold ring */
+    --ring: 254 70% 28%;
+    /* Primary Indigo ring — WCAG 1.4.11 compliant (12.5:1 on white vs Gold's 2.1:1) */
 
     --radius: 0.5rem;
 

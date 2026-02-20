@@ -637,7 +637,7 @@
 
 ## Phase C10: Accessibility Quick Wins (8 tasks)
 
-- [ ] Task 387: Fix focus ring visibility � visible outline on all interactive elements when focused
+- [x] Task 387: Fix focus ring visibility — visible outline on all interactive elements when focused — Changed --ring CSS variable in light mode from Gold (35 89% 60%, ~2.1:1 contrast on white) to Primary Indigo (254 70% 28%, ~12.5:1 contrast) for WCAG 1.4.11 non-text contrast compliance. Global *:focus-visible rule and shadcn/ui component focus-visible:ring-ring classes already provide ring-2 with ring-offset-2 on all interactive elements.
 - [ ] Task 388: Fix color contrast � all text meets WCAG AA 4.5:1 ratio
 - [ ] Task 389: Fix focus trap in modals � Tab stays within modal, returns focus on close
 - [ ] Task 390: Fix form label associations � every input has a linked label
