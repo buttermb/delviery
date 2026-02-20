@@ -90,6 +90,7 @@ interface TenantAdminAuthContextType {
   isAuthenticated: boolean; // New: cookie-based authentication state
   connectionStatus: ConnectionStatus; // Network connection status
   loading: boolean;
+  initialized: boolean; // True after initializeAuth completes (prevents flash of login)
   login: (email: string, password: string, tenantSlug: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<boolean>;
@@ -148,6 +149,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [tenantSlug, setTenantSlug] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Cookie-based auth state
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false); // Set true only after initializeAuth completes
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
 
   // Track whether auth has been initialized to prevent re-running on route changes
@@ -737,10 +739,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Safety timeout: force loading to false after 12 seconds
     const safetyTimeout = setTimeout(() => {
       setLoading(false);
+      setInitialized(true);
     }, LOADING_TIMEOUT_MS);
 
     initializeAuth().finally(() => {
       clearTimeout(safetyTimeout);
+      setInitialized(true);
     });
 
     // Cleanup timeout on unmount
@@ -1476,6 +1480,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       isAuthenticated,
       connectionStatus,
       loading,
+      initialized,
       login,
       logout,
       refreshAuthToken,

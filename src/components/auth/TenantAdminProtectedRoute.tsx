@@ -26,7 +26,7 @@ const _NETWORK_TIMEOUT_MS = 2000;
 const VERIFICATION_CACHE_DURATION = 2 * 60 * 1000;
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
-  const { admin, tenant, token, loading } = useTenantAdminAuth();
+  const { admin, tenant, token, loading, initialized } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   // Clerk logic removed
@@ -325,6 +325,11 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     };
     // Remove verified, skipVerification, and verifying from deps to prevent infinite loops
   }, [tenantSlug, location.pathname, effectiveAdmin, effectiveTenant, effectiveLoading]);
+
+  // Show spinner while auth is initializing — prevents flash of login page
+  if (!initialized) {
+    return <LoadingFallback />;
+  }
 
   // Loading state - wait for auth AND verification (unless skipped OR not authenticated)
   // If user is not authenticated (no admin/tenant), let it fall through to redirect
