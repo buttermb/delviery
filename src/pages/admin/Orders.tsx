@@ -1257,6 +1257,13 @@ export default function Orders() {
               )}
             />}
 
+            {/* Search results count */}
+            {!(isError && orders.length === 0) && sortedOrders.length > 0 && hasActiveFilters && (
+              <div className="text-sm text-muted-foreground px-2 pt-2">
+                Showing {filteredOrders.length} of {orders.length} orders
+              </div>
+            )}
+
             {/* Pagination */}
             {!(isError && orders.length === 0) && sortedOrders.length > 0 && (
               <StandardPagination

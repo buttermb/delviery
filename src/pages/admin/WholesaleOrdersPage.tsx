@@ -945,6 +945,13 @@ export default function WholesaleOrdersPage() {
               }
             }}
           />
+
+          {/* Search results count */}
+          {hasActiveFilters && filteredOrders.length > 0 && (
+            <div className="text-sm text-muted-foreground px-2 py-2">
+              Showing {filteredOrders.length} of {orders.length} orders
+            </div>
+          )}
         </Card>
 
         {/* Dialogs */}
