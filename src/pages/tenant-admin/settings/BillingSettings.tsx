@@ -431,7 +431,7 @@ export default function BillingSettings() {
   </div>
   <table>
     <thead>
-      <tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+      <tr><th scope="col">Description</th><th scope="col">Qty</th><th scope="col">Price</th><th scope="col">Total</th></tr>
     </thead>
     <tbody>
       ${invoiceData.lineItems.map(item => `

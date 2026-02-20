@@ -212,7 +212,7 @@ export function QueryBuilder() {
                     <thead className="bg-muted sticky top-0">
                       <tr>
                         {Object.keys(results[0] || {}).map((key) => (
-                          <th key={key} className="px-4 py-2 text-left font-semibold">
+                          <th key={key} scope="col" className="px-4 py-2 text-left font-semibold">
                             {key}
                           </th>
                         ))}

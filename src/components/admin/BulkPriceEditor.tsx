@@ -209,12 +209,12 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
-                    <th className="text-left p-2">Product</th>
+                    <th scope="col" className="text-left p-2">Product</th>
                     {(priceField === 'wholesale' || priceField === 'both') && (
-                      <th className="text-right p-2">Wholesale</th>
+                      <th scope="col" className="text-right p-2">Wholesale</th>
                     )}
                     {(priceField === 'retail' || priceField === 'both') && (
-                      <th className="text-right p-2">Retail</th>
+                      <th scope="col" className="text-right p-2">Retail</th>
                     )}
                   </tr>
                 </thead>

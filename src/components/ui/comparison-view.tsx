@@ -172,12 +172,13 @@ export function ComparisonView({
               <table className="w-full">
                 <thead>
                   <tr>
-                    <th className="sticky left-0 bg-background z-10 min-w-[120px] p-3 text-left text-sm font-medium text-muted-foreground border-b">
+                    <th scope="col" className="sticky left-0 bg-background z-10 min-w-[120px] p-3 text-left text-sm font-medium text-muted-foreground border-b">
                       Field
                     </th>
                     {items.map(item => (
                       <th
                         key={item.id}
+                        scope="col"
                         className="min-w-[150px] p-3 text-center border-b"
                       >
                         <div className="flex flex-col items-center gap-2">

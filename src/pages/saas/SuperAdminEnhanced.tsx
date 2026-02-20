@@ -631,7 +631,7 @@ export default function SuperAdminEnhanced() {
               <table className="w-full">
                 <thead className="bg-muted">
                   <tr>
-                    <th className="w-[50px] p-3">
+                    <th scope="col" className="w-[50px] p-3">
                       <Checkbox
                         checked={tenants?.length > 0 && selectedTenants.length === tenants?.length}
                         onCheckedChange={(checked) => {
@@ -643,13 +643,13 @@ export default function SuperAdminEnhanced() {
                         }}
                       />
                     </th>
-                    <th className="text-left p-3 text-sm font-medium">Business</th>
-                    <th className="text-left p-3 text-sm font-medium">Plan</th>
-                    <th className="text-left p-3 text-sm font-medium">Status</th>
-                    <th className="text-left p-3 text-sm font-medium">MRR</th>
-                    <th className="text-left p-3 text-sm font-medium">Health</th>
-                    <th className="text-left p-3 text-sm font-medium">Joined</th>
-                    <th className="text-left p-3 text-sm font-medium">Actions</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Business</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Plan</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Status</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">MRR</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Health</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Joined</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>

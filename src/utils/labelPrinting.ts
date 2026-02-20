@@ -409,10 +409,10 @@ export function generateTransferManifestHTML(data: TransferManifestData, _option
         <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
           <thead>
             <tr style="background: #f5f5f5;">
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Package #</th>
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Product</th>
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: right;">Quantity</th>
-              <th style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Unit</th>
+              <th scope="col" style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Package #</th>
+              <th scope="col" style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Product</th>
+              <th scope="col" style="border: 1px solid #ccc; padding: 0.1in; text-align: right;">Quantity</th>
+              <th scope="col" style="border: 1px solid #ccc; padding: 0.1in; text-align: left;">Unit</th>
             </tr>
           </thead>
           <tbody>

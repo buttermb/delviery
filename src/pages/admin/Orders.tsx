@@ -605,7 +605,7 @@ export default function Orders() {
               <thead className="bg-muted/50 border-b">
                 <tr>
                   {["", "Order #", "Customer", "Status", "Total", "Source", "Date", ""].map((h, i) => (
-                    <th key={i} className="px-4 py-3 text-left">
+                    <th key={i} scope="col" className="px-4 py-3 text-left">
                       <Skeleton className="h-3 w-16" />
                     </th>
                   ))}

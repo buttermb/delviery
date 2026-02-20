@@ -711,11 +711,11 @@ export default function TenantDetailPage() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-white/10">
-                            <th className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Date</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Invoice</th>
-                            <th className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Amount</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Status</th>
-                            <th className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Actions</th>
+                            <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Date</th>
+                            <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Invoice</th>
+                            <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Amount</th>
+                            <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Status</th>
+                            <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -788,9 +788,9 @@ export default function TenantDetailPage() {
                                               <table class="line-items">
                                                 <thead>
                                                   <tr>
-                                                    <th>Description</th>
-                                                    <th>Quantity</th>
-                                                    <th style="text-align: right;">Amount</th>
+                                                    <th scope="col">Description</th>
+                                                    <th scope="col">Quantity</th>
+                                                    <th scope="col" style="text-align: right;">Amount</th>
                                                   </tr>
                                                 </thead>
                                                 <tbody>
@@ -885,9 +885,9 @@ export default function TenantDetailPage() {
                                             <table class="line-items">
                                               <thead>
                                                 <tr>
-                                                  <th>Description</th>
-                                                  <th>Quantity</th>
-                                                  <th style="text-align: right;">Amount</th>
+                                                  <th scope="col">Description</th>
+                                                  <th scope="col">Quantity</th>
+                                                  <th scope="col" style="text-align: right;">Amount</th>
                                                 </tr>
                                               </thead>
                                               <tbody>

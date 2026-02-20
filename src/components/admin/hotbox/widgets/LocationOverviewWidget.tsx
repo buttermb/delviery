@@ -140,11 +140,11 @@ export function LocationOverviewWidget() {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b">
-                                <th className="text-left py-2 font-medium">Location</th>
-                                <th className="text-right py-2 font-medium">Today</th>
-                                <th className="text-right py-2 font-medium">Margin</th>
-                                <th className="text-right py-2 font-medium">Orders</th>
-                                <th className="text-right py-2 font-medium">Issues</th>
+                                <th scope="col" className="text-left py-2 font-medium">Location</th>
+                                <th scope="col" className="text-right py-2 font-medium">Today</th>
+                                <th scope="col" className="text-right py-2 font-medium">Margin</th>
+                                <th scope="col" className="text-right py-2 font-medium">Orders</th>
+                                <th scope="col" className="text-right py-2 font-medium">Issues</th>
                             </tr>
                         </thead>
                         <tbody>

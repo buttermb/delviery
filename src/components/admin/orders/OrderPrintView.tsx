@@ -345,14 +345,14 @@ function PackingSlipLayout({
       <table className="w-full border-collapse mb-8">
         <thead>
           <tr className="bg-gray-100">
-            <th className="border border-gray-300 p-3 text-left font-semibold">Item</th>
-            <th className="border border-gray-300 p-3 text-left font-semibold w-24">SKU</th>
-            <th className="border border-gray-300 p-3 text-center font-semibold w-20">Qty</th>
-            <th className="border border-gray-300 p-3 text-center font-semibold w-20">Packed</th>
+            <th scope="col" className="border border-gray-300 p-3 text-left font-semibold">Item</th>
+            <th scope="col" className="border border-gray-300 p-3 text-left font-semibold w-24">SKU</th>
+            <th scope="col" className="border border-gray-300 p-3 text-center font-semibold w-20">Qty</th>
+            <th scope="col" className="border border-gray-300 p-3 text-center font-semibold w-20">Packed</th>
             {showPrices && (
               <>
-                <th className="border border-gray-300 p-3 text-right font-semibold w-24">Price</th>
-                <th className="border border-gray-300 p-3 text-right font-semibold w-24">Total</th>
+                <th scope="col" className="border border-gray-300 p-3 text-right font-semibold w-24">Price</th>
+                <th scope="col" className="border border-gray-300 p-3 text-right font-semibold w-24">Total</th>
               </>
             )}
           </tr>

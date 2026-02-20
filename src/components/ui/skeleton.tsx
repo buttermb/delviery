@@ -207,13 +207,13 @@ function SkeletonTable({
         {hasHeader && (
           <thead className="border-b bg-muted/50">
             <tr>
-              {hasAvatar && <th className="p-4 text-left"><Skeleton className="h-4 w-8" /></th>}
+              {hasAvatar && <th scope="col" className="p-4 text-left"><Skeleton className="h-4 w-8" /></th>}
               {Array.from({ length: columns - (hasAvatar ? 1 : 0) - (hasActions ? 1 : 0) }).map((_, i) => (
-                <th key={i} className="p-4 text-left">
+                <th key={i} scope="col" className="p-4 text-left">
                   <Skeleton className="h-4 w-20" />
                 </th>
               ))}
-              {hasActions && <th className="p-4 text-right"><Skeleton className="h-4 w-16" /></th>}
+              {hasActions && <th scope="col" className="p-4 text-right"><Skeleton className="h-4 w-16" /></th>}
             </tr>
           </thead>
         )}

@@ -165,15 +165,15 @@ export function PreviewStep({
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left font-medium">Status</th>
-                <th className="px-4 py-3 text-left font-medium">Product Name</th>
-                <th className="px-4 py-3 text-left font-medium">Category</th>
-                <th className="px-4 py-3 text-left font-medium">Strain</th>
-                <th className="px-4 py-3 text-left font-medium">THC %</th>
-                <th className="px-4 py-3 text-left font-medium">Quality</th>
-                <th className="px-4 py-3 text-left font-medium">Price</th>
-                <th className="px-4 py-3 text-left font-medium">Confidence</th>
-                <th className="px-4 py-3 text-left font-medium">Actions</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Status</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Product Name</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Category</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Strain</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">THC %</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Quality</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Price</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Confidence</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>

@@ -167,14 +167,14 @@ export default function AdminPricingPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Product</th>
-                  <th className="text-left p-3 font-medium">Category</th>
-                  <th className="text-right p-3 font-medium">Retail Price</th>
-                  <th className="text-right p-3 font-medium">Wholesale Price</th>
-                  <th className="text-right p-3 font-medium">Cost</th>
-                  <th className="text-right p-3 font-medium">Margin</th>
-                  <th className="text-right p-3 font-medium">Bulk Discount</th>
-                  <th className="text-center p-3 font-medium">Actions</th>
+                  <th scope="col" className="text-left p-3 font-medium">Product</th>
+                  <th scope="col" className="text-left p-3 font-medium">Category</th>
+                  <th scope="col" className="text-right p-3 font-medium">Retail Price</th>
+                  <th scope="col" className="text-right p-3 font-medium">Wholesale Price</th>
+                  <th scope="col" className="text-right p-3 font-medium">Cost</th>
+                  <th scope="col" className="text-right p-3 font-medium">Margin</th>
+                  <th scope="col" className="text-right p-3 font-medium">Bulk Discount</th>
+                  <th scope="col" className="text-center p-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>

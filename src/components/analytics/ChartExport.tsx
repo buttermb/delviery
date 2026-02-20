@@ -102,7 +102,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
           <table>
             <thead>
               <tr>
-                ${headers.map(h => `<th>${h}</th>`).join('')}
+                ${headers.map(h => `<th scope="col">${h}</th>`).join('')}
               </tr>
             </thead>
             <tbody>

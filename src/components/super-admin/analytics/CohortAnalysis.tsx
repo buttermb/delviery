@@ -143,16 +143,16 @@ export function CohortAnalysis() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-2 font-semibold">Cohort</th>
-                <th className="text-right p-2 font-semibold">Total</th>
-                <th className="text-right p-2 font-semibold">Active</th>
-                <th className="text-right p-2 font-semibold">Churned</th>
-                <th className="text-right p-2 font-semibold">M0</th>
-                <th className="text-right p-2 font-semibold">M1</th>
-                <th className="text-right p-2 font-semibold">M3</th>
-                <th className="text-right p-2 font-semibold">M6</th>
-                <th className="text-right p-2 font-semibold">M12</th>
-                <th className="text-right p-2 font-semibold">Revenue</th>
+                <th scope="col" className="text-left p-2 font-semibold">Cohort</th>
+                <th scope="col" className="text-right p-2 font-semibold">Total</th>
+                <th scope="col" className="text-right p-2 font-semibold">Active</th>
+                <th scope="col" className="text-right p-2 font-semibold">Churned</th>
+                <th scope="col" className="text-right p-2 font-semibold">M0</th>
+                <th scope="col" className="text-right p-2 font-semibold">M1</th>
+                <th scope="col" className="text-right p-2 font-semibold">M3</th>
+                <th scope="col" className="text-right p-2 font-semibold">M6</th>
+                <th scope="col" className="text-right p-2 font-semibold">M12</th>
+                <th scope="col" className="text-right p-2 font-semibold">Revenue</th>
               </tr>
             </thead>
             <tbody>

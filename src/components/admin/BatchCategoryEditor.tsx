@@ -143,9 +143,9 @@ export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: B
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
-                    <th className="text-left p-2">Product</th>
-                    <th className="text-left p-2">Current Category</th>
-                    <th className="text-left p-2">SKU</th>
+                    <th scope="col" className="text-left p-2">Product</th>
+                    <th scope="col" className="text-left p-2">Current Category</th>
+                    <th scope="col" className="text-left p-2">SKU</th>
                   </tr>
                 </thead>
                 <tbody>
