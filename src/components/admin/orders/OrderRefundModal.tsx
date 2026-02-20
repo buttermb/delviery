@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 
 import {
   Dialog,
@@ -38,6 +38,7 @@ import {
   type RefundMethod,
 } from '@/hooks/useOrderRefund';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface OrderRefundModalProps {
   open: boolean;
@@ -141,9 +142,23 @@ export function OrderRefundModal({
     }
   }, [open, order?.id]);
 
+  // Dirty state: user has modified any field from initial defaults
+  const isDirty = refundType !== 'full' || partialAmount !== '' || reason !== 'customer_request' || refundMethod !== 'original_payment' || notes !== '' || !restoreInventory;
+
+  const handleClose = useCallback(() => {
+    resetForm();
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
+
   // Handle modal close
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
+      if (isDirty) {
+        guardedOnOpenChange(false);
+        return;
+      }
       resetForm();
     }
     onOpenChange(newOpen);
@@ -178,8 +193,9 @@ export function OrderRefundModal({
   const orderItems = order.items || [];
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="sm:max-w-lg" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5" />
@@ -372,7 +388,7 @@ export function OrderRefundModal({
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}
+              onClick={() => guardedOnOpenChange(false)}
               disabled={isRefunding}
               className="flex-1"
             >
@@ -391,5 +407,7 @@ export function OrderRefundModal({
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

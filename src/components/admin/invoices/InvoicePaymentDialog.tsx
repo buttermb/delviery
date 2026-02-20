@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,6 +35,7 @@ import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { Loader2, AlertCircle, DollarSign } from 'lucide-react';
 import { INVOICE_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface InvoicePaymentDialogProps {
   invoiceId: string;
@@ -81,7 +82,7 @@ export function InvoicePaymentDialog({
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
     setValue,
     watch,
   } = useForm<PaymentFormValues>({
@@ -107,6 +108,12 @@ export function InvoicePaymentDialog({
       });
     }
   }, [open, reset]);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
   const recordPayment = useMutation({
     mutationFn: async (values: PaymentFormValues) => {
@@ -191,8 +198,9 @@ export function InvoicePaymentDialog({
   const watchAmount = watch('amount');
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="sm:max-w-md" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
@@ -336,7 +344,7 @@ export function InvoicePaymentDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => guardedOnOpenChange(false)}
               disabled={recordPayment.isPending}
             >
               Cancel
@@ -359,5 +367,7 @@ export function InvoicePaymentDialog({
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

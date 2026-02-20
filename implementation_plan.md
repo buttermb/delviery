@@ -548,7 +548,7 @@
 - [x] Task 319: Fix modal data not refreshing — ensure modal receives fresh data on open, not stale
 - [x] Task 320: Fix modal form reset on close � clear form state when dialog closes
 - [x] Task 321: Fix modal scroll on long forms � scrollable body, sticky footer with actions
-- [ ] Task 322: Fix modal backdrop click � confirm discard if form is dirty
+- [x] Task 322: Fix modal backdrop click — confirm discard if form is dirty — Created useDirtyFormGuard hook (src/hooks/useDirtyFormGuard.tsx) that intercepts onPointerDownOutside and onEscapeKeyDown when isDirty=true, showing a "Discard unsaved changes?" AlertDialog. Applied to 6 key form modals: OrderEditModal (snapshot-based dirty detection), OrderRefundModal (field comparison), InvoicePaymentDialog (RHF formState.isDirty), POSRefundDialog (selected items tracking), CreateClientDialog (JSON comparison vs defaults), CreateWholesaleClientDialog (field comparison). SafeModal and RecurringInvoiceForm/RecurringOrderSetup/BulkPriceEditor already had this protection.
 - [ ] Task 323: Fix modal Escape key � same discard logic as backdrop click
 - [ ] Task 324: Fix all modals invalidate correct queries on success � data refreshes after save
 - [ ] Task 325: Run npx tsc --noEmit � Checkpoint

@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Loader2, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
+import { useDirtyFormGuard } from "@/hooks/useDirtyFormGuard";
 
 type WholesaleClientInsert = Database['public']['Tables']['wholesale_clients']['Insert'];
 
@@ -66,6 +67,15 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       setFormData(defaultFormData);
     }
   }, [open]);
+
+  // Dirty state: any field differs from default
+  const isDirty = JSON.stringify(formData) !== JSON.stringify(defaultFormData);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,8 +165,9 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle>Create New Client</DialogTitle>
         </DialogHeader>
@@ -297,7 +308,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => guardedOnOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading || !isContextReady || tenantLoading}>
@@ -308,6 +319,8 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }
 

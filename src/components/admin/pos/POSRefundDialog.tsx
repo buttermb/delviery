@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -41,6 +41,7 @@ import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Package from 'lucide-react/dist/esm/icons/package';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 const REFUND_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -221,7 +222,21 @@ export function POSRefundDialog({
     reset({ refundAmount: 0, refundMethod: 'cash', notes: '' });
   };
 
+  // Dirty state: order found and items selected or form modified
+  const isDirty = selectedItems.size > 0 || currentRefundAmount > 0;
+
+  const handleClose = useCallback(() => {
+    resetDialog();
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
+
   const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && isDirty) {
+      guardedOnOpenChange(false);
+      return;
+    }
     if (!newOpen) {
       resetDialog();
     }
@@ -346,8 +361,9 @@ export function POSRefundDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5" />
@@ -588,7 +604,7 @@ export function POSRefundDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleOpenChange(false)}
+                onClick={() => guardedOnOpenChange(false)}
                 disabled={refundMutation.isPending}
                 className="flex-1"
               >
@@ -613,5 +629,7 @@ export function POSRefundDialog({
         )}
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

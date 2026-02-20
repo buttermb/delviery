@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface Props {
     open: boolean;
@@ -30,20 +31,31 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
         address: ''
     });
 
+    const defaultFormData = {
+        business_name: '',
+        contact_name: '',
+        email: '',
+        phone: '',
+        license_number: '',
+        payment_terms: 'net_30',
+        address: ''
+    };
+
     // Reset form when dialog closes without submit
     useEffect(() => {
         if (!open) {
-            setFormData({
-                business_name: '',
-                contact_name: '',
-                email: '',
-                phone: '',
-                license_number: '',
-                payment_terms: 'net_30',
-                address: ''
-            });
+            setFormData(defaultFormData);
         }
     }, [open]);
+
+    // Dirty state: any field differs from empty defaults
+    const isDirty = formData.business_name !== '' || formData.contact_name !== '' || formData.email !== '' || formData.phone !== '' || formData.license_number !== '' || formData.address !== '' || formData.payment_terms !== 'net_30';
+
+    const handleClose = useCallback(() => {
+        onClose();
+    }, [onClose]);
+
+    const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -134,8 +146,9 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
     };
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+        <>
+        <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+            <DialogContent className="sm:max-w-[500px]" {...dialogContentProps}>
                 <DialogHeader>
                     <DialogTitle>Add New Wholesale Client</DialogTitle>
                 </DialogHeader>
@@ -228,7 +241,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                     </div>
 
                     <DialogFooter className="pt-4">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+                        <Button type="button" variant="outline" onClick={() => guardedOnOpenChange(false)} disabled={loading}>
                             Cancel
                         </Button>
                         <Button type="submit" disabled={loading}>
@@ -245,5 +258,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                 </form>
             </DialogContent>
         </Dialog>
+        <DiscardAlert />
+        </>
     );
 }
