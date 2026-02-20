@@ -525,7 +525,7 @@
 ## Phase C1: Dropdown & Select Fixes (13 tasks)
 
 - [x] Task 301: Audit every Select/Combobox component — 23 data-fetching selects found. 6 reusable selectors (ProductCategorySelect x2, VendorSelector, ClientSelector, POSCustomerSelector, VariantSelector) all well-built. Critical issues: AssignRunnerDialog, AssignRouteDialog, POCreateForm (vendor+product), RACreateForm missing tenant_id filter. RecurringInvoiceForm, RACreateForm, QuickReceiving, CreateMenuSimpleDialog missing loading/error states. BulkAssignRunnerDialog (useAvailableRunners) confirmed tenant_id filtered. CRM ClientSelector uses account_id (correct for crm_clients table).
-- [ ] Task 302: Fix product category dropdown � ensure categories load with tenant_id filter
+- [x] Task 302: Fix product category dropdown — Both ProductCategorySelect components already use useCategories() hook with tenant_id filtering, loading/error/empty states. Refactored CashRegister.tsx to use useCategories() hook instead of duplicating the query logic (removed 20-line direct Supabase query + local Category interface). All category dropdowns now use the centralized hook.
 - [ ] Task 303: Fix client selector dropdown � in order creation, invoice creation
 - [ ] Task 304: Fix customer selector dropdown � in POS, order creation
 - [ ] Task 305: Fix status filter dropdowns � Orders, Invoices, Delivery pages

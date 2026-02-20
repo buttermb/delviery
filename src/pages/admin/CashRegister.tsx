@@ -52,6 +52,7 @@ import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialo
 import { useCustomerLoyaltyStatus, useLoyaltyConfig, calculatePointsToEarn, TIER_DISPLAY_INFO } from '@/hooks/useCustomerLoyalty';
 import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
 import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
+import { useCategories } from '@/hooks/useCategories';
 
 interface Product {
   id: string;
@@ -63,11 +64,6 @@ interface Product {
   barcode: string | null;
   category: string | null;
   category_id: string | null;
-}
-
-interface Category {
-  id: string;
-  name: string;
 }
 
 // Customer type is POSCustomer from POSCustomerSelector
@@ -221,28 +217,8 @@ function CashRegisterContent() {
     enabled: !!tenantId,
   });
 
-  // Load categories
-  const { data: categories = [] } = useQuery({
-    queryKey: queryKeys.categories.list(tenantId),
-    queryFn: async () => {
-      if (!tenantId) return [];
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name')
-          .eq('tenant_id', tenantId)
-          .order('name', { ascending: true });
-
-        if (error && error.code === '42P01') return [];
-        if (error) throw error;
-        return (data || []) as Category[];
-      } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
-        throw error;
-      }
-    },
-    enabled: !!tenantId,
-  });
+  // Load categories (uses useCategories hook — tenant_id filtered, graceful 42P01 handling)
+  const { data: categories = [] } = useCategories();
 
   // Load customers for selection (POSCustomer format for POSCustomerSelector)
   const { data: customers = [], isLoading: customersLoading } = useQuery({
