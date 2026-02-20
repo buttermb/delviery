@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { Loader2, Plus, Minus, Trash2, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useWholesaleCouriers } from '@/hooks/useWholesaleData';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface OrderItem {
   id: string;
@@ -84,6 +85,7 @@ export function EditWholesaleOrderDialog({
   const [runnerId, setRunnerId] = useState('');
   const [status, setStatus] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
+  const initialSnapshotRef = useRef<string>('');
 
   // Reset form when order changes
   useEffect(() => {
@@ -94,6 +96,14 @@ export function EditWholesaleOrderDialog({
       setRunnerId(order.runner_id || '');
       setStatus(order.status);
       setPaymentStatus(order.payment_status);
+      initialSnapshotRef.current = JSON.stringify({
+        items: order.items || [],
+        deliveryAddress: order.delivery_address || '',
+        deliveryNotes: order.delivery_notes || '',
+        runnerId: order.runner_id || '',
+        status: order.status,
+        paymentStatus: order.payment_status,
+      });
     }
   }, [order]);
 
@@ -183,11 +193,21 @@ export function EditWholesaleOrderDialog({
     }
   };
 
+  const isDirty = !!order && JSON.stringify({
+    items, deliveryAddress, deliveryNotes, runnerId, status, paymentStatus,
+  }) !== initialSnapshotRef.current;
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+    isDirty,
+    () => onOpenChange(false)
+  );
+
   if (!order) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -420,6 +440,8 @@ export function EditWholesaleOrderDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }
 

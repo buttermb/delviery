@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { useUpdateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
 import { logger } from '@/lib/logger';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 import { Loader2, Pencil } from 'lucide-react';
 import type { CRMClient } from '@/types/crm';
 
@@ -74,6 +75,11 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
         }
     }, [client, form]);
 
+    const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+        form.formState.isDirty,
+        () => setOpen(false)
+    );
+
     const onSubmit = async (values: FormValues) => {
         try {
             await updateClient.mutateAsync({
@@ -106,14 +112,15 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <>
+        <Dialog open={open} onOpenChange={guardedOnOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit Profile
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px]" {...dialogContentProps}>
                 <DialogHeader>
                     <DialogTitle>Edit Client</DialogTitle>
                     <DialogDescription>
@@ -192,5 +199,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                 </Form>
             </DialogContent>
         </Dialog>
+        <DiscardAlert />
+        </>
     );
 }

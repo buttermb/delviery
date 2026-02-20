@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -27,6 +27,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Plus, Minus, Trash2, Package, Calendar } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface PurchaseOrderItem {
     id: string;
@@ -72,14 +73,22 @@ export function EditPurchaseOrderDialog({
     const [expectedDate, setExpectedDate] = useState('');
     const [notes, setNotes] = useState('');
     const [status, setStatus] = useState('');
+    const initialSnapshotRef = useRef<string>('');
 
     // Reset form when order changes
     useEffect(() => {
         if (order) {
             setItems(order.items || []);
-            setExpectedDate(order.expected_delivery_date ? order.expected_delivery_date.split('T')[0] : '');
+            const date = order.expected_delivery_date ? order.expected_delivery_date.split('T')[0] : '';
+            setExpectedDate(date);
             setNotes(order.notes || '');
             setStatus(order.status);
+            initialSnapshotRef.current = JSON.stringify({
+                items: order.items || [],
+                expectedDate: date,
+                notes: order.notes || '',
+                status: order.status,
+            });
         }
     }, [order]);
 
@@ -168,11 +177,21 @@ export function EditPurchaseOrderDialog({
         }
     };
 
+    const isDirty = !!order && JSON.stringify({
+        items, expectedDate, notes, status,
+    }) !== initialSnapshotRef.current;
+
+    const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+        isDirty,
+        () => onOpenChange(false)
+    );
+
     if (!order) return null;
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <>
+        <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Package className="h-5 w-5" />
@@ -350,5 +369,7 @@ export function EditPurchaseOrderDialog({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+        <DiscardAlert />
+        </>
     );
 }

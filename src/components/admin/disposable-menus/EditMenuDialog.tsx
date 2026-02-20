@@ -29,6 +29,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { sanitizeFormInput } from '@/lib/utils/sanitize';
 import { logger } from '@/lib/logger';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 // ============================================
 // Schema
@@ -226,9 +227,15 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
   const neverExpires = form.watch('neverExpires');
   const isLoading = isLoadingMenu || isLoadingProducts;
 
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+    form.formState.isDirty,
+    () => onOpenChange(false)
+  );
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Pencil className="h-5 w-5" />
@@ -392,5 +399,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
         )}
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

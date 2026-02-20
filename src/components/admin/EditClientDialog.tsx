@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { useDirtyFormGuard } from "@/hooks/useDirtyFormGuard";
 import { Loader2 } from "lucide-react";
 import { FieldHelp, fieldHelpTexts } from "@/components/ui/field-help";
 
@@ -46,6 +47,8 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
     notes: ""
   });
 
+  const initialFormDataRef = useRef<string>('');
+
   const fetchClient = useCallback(async () => {
     try {
       setFetching(true);
@@ -58,7 +61,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       if (error) throw error;
 
       if (data) {
-        setFormData({
+        const newFormData: ClientFormData = {
           business_name: data.business_name || "",
           contact_name: data.contact_name || "",
           email: data.email || "",
@@ -68,7 +71,9 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
           credit_limit: String(data.credit_limit || 50000),
           payment_terms: String(data.payment_terms || 7),
           notes: data.notes || ""
-        });
+        };
+        setFormData(newFormData);
+        initialFormDataRef.current = JSON.stringify(newFormData);
       }
     } catch (error) {
       logger.error("Error fetching client:", error);
@@ -83,6 +88,13 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       fetchClient();
     }
   }, [open, clientId, fetchClient]);
+
+  const isDirty = !fetching && JSON.stringify(formData) !== initialFormDataRef.current;
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+    isDirty,
+    () => onOpenChange(false)
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,8 +148,9 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle>Edit Client</DialogTitle>
         </DialogHeader>
@@ -289,5 +302,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
         )}
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }
