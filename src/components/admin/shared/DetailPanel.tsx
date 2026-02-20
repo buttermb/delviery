@@ -31,7 +31,7 @@
  * ```
  */
 
-import { useEffect, useCallback, ReactNode } from 'react';
+import { useEffect, useCallback, useRef, ReactNode } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -40,6 +40,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { getFocusableElements } from '@/hooks/useKeyboardNavigation';
 
 /**
  * Action configuration for the detail panel
@@ -207,23 +208,63 @@ export function DetailPanel({
   className,
   width = 'md',
 }: DetailPanelProps) {
-  // Handle escape key to close
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<Element | null>(null);
+
+  // Focus management: auto-focus on open, restore on close
+  useEffect(() => {
+    if (isOpen) {
+      // Store currently focused element for restoration on close
+      previousActiveElement.current = document.activeElement;
+
+      // Focus first focusable element in panel after transition
+      requestAnimationFrame(() => {
+        if (panelRef.current) {
+          const focusable = getFocusableElements(panelRef.current);
+          if (focusable.length > 0) {
+            focusable[0].focus();
+          }
+        }
+      });
+    } else if (previousActiveElement.current instanceof HTMLElement) {
+      // Restore focus to the element that triggered the panel
+      previousActiveElement.current.focus();
+      previousActiveElement.current = null;
+    }
+  }, [isOpen]);
+
+  // Keyboard handler: Escape to close + Tab focus trap
   const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      if (event.key === 'Tab' && panelRef.current) {
+        const focusable = getFocusableElements(panelRef.current);
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey) {
+          // Shift+Tab on first element → wrap to last
+          if (document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else {
+          // Tab on last element → wrap to first
+          if (document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
       }
     },
-    [isOpen, onClose]
+    [onClose]
   );
-
-  // Add/remove keyboard listener
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
 
   // Prevent body scroll when panel is open
   useEffect(() => {
@@ -256,9 +297,11 @@ export function DetailPanel({
 
       {/* Panel */}
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={entityContext ? `${title} - ${entityContext}` : title}
+        onKeyDown={handleKeyDown}
         className={cn(
           'fixed inset-y-0 right-0 z-50 flex flex-col bg-background shadow-xl',
           'w-full border-l',

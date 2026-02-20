@@ -639,7 +639,7 @@
 
 - [x] Task 387: Fix focus ring visibility — visible outline on all interactive elements when focused — Changed --ring CSS variable in light mode from Gold (35 89% 60%, ~2.1:1 contrast on white) to Primary Indigo (254 70% 28%, ~12.5:1 contrast) for WCAG 1.4.11 non-text contrast compliance. Global *:focus-visible rule and shadcn/ui component focus-visible:ring-ring classes already provide ring-2 with ring-offset-2 on all interactive elements.
 - [x] Task 388: Fix color contrast — all text meets WCAG AA 4.5:1 ratio — Darkened --muted-foreground from 50% to 40% lightness (≈6.3:1 on white). Added WCAG AA overrides for text-neutral-400/300 (#A3A3A3→#737373 ≈4.7:1) and text-zinc-400/300 (#A1A1AA→#71717A ≈4.7:1) in light mode. Added data-dark-panel escape hatches to preserve original colors on always-dark containers (financial dashboard, TV dashboard, home sections, age gate, storefront preview, undo toast, courier stats, QR demo).
-- [ ] Task 389: Fix focus trap in modals � Tab stays within modal, returns focus on close
+- [x] Task 389: Fix focus trap in modals — Added focus trap (Tab/Shift+Tab cycling), auto-focus on open, and focus restoration on close to DetailPanel.tsx and TutorialOverlay.tsx. Radix-based Dialog/AlertDialog/Sheet already have built-in focus trapping.
 - [ ] Task 390: Fix form label associations � every input has a linked label
 - [ ] Task 391: Fix table header scope � th scope='col' on all table headers
 - [ ] Task 392: Fix skip-to-content link � hidden until focused, jumps to main content
