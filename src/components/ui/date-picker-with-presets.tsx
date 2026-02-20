@@ -119,9 +119,6 @@ interface DateRangePreset {
 
 const defaultRangePresets: DateRangePreset[] = [
   { label: "Today", getValue: () => ({ from: new Date(), to: new Date() }) },
-  { label: "Yesterday", getValue: () => ({ from: subDays(new Date(), 1), to: subDays(new Date(), 1) }) },
-  { label: "Last 7 Days", getValue: () => ({ from: subDays(new Date(), 6), to: new Date() }) },
-  { label: "Last 30 Days", getValue: () => ({ from: subDays(new Date(), 29), to: new Date() }) },
   { label: "This Week", getValue: () => ({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) }) },
   { label: "This Month", getValue: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
 ];
@@ -144,11 +141,18 @@ export function DateRangePickerWithPresets({
   className,
 }: DateRangePickerWithPresetsProps) {
   const [open, setOpen] = React.useState(false);
+  const [isCustomMode, setIsCustomMode] = React.useState(false);
   const isMobile = useIsMobile();
 
   const handlePresetClick = (preset: DateRangePreset) => {
+    setIsCustomMode(false);
     onDateRangeChange(preset.getValue());
     setOpen(false);
+  };
+
+  const handleCustomClick = () => {
+    setIsCustomMode(true);
+    onDateRangeChange({ from: undefined, to: undefined });
   };
 
   const formatDateRange = () => {
@@ -165,7 +169,10 @@ export function DateRangePickerWithPresets({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      if (!newOpen) setIsCustomMode(false);
+    }}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -190,7 +197,7 @@ export function DateRangePickerWithPresets({
             {presets.map((preset) => (
               <Button
                 key={preset.label}
-                variant="ghost"
+                variant={!isCustomMode && !dateRange.from ? "ghost" : "ghost"}
                 size="sm"
                 className={cn("justify-start text-sm", isMobile ? "h-9 min-w-[44px] px-3" : "w-full")}
                 onClick={() => handlePresetClick(preset)}
@@ -198,6 +205,18 @@ export function DateRangePickerWithPresets({
                 {preset.label}
               </Button>
             ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "justify-start text-sm",
+                isMobile ? "h-9 min-w-[44px] px-3" : "w-full",
+                isCustomMode && "bg-accent text-accent-foreground"
+              )}
+              onClick={handleCustomClick}
+            >
+              Custom
+            </Button>
           </div>
           <Calendar
             mode="range"
@@ -205,6 +224,7 @@ export function DateRangePickerWithPresets({
             onSelect={(range) => {
               onDateRangeChange({ from: range?.from, to: range?.to });
               if (range?.from && range?.to) {
+                setIsCustomMode(false);
                 setOpen(false);
               }
             }}

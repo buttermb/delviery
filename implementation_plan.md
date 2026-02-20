@@ -619,7 +619,7 @@
 - [x] Task 372: Fix combined filters — search + status + date range all work together — Moved status filtering from server-side (DB query) to client-side in both Orders.tsx and WholesaleOrdersPage.tsx so all filters (search, status, date range) compose as AND conditions at the same level. Removed statusFilter from queryKeys and DB queries, added status filtering to filteredOrders useMemo alongside search and date range. Updated all optimistic update queryKey references. Filters now combine instantly without refetches.
 - [x] Task 373: Add active filter indicators — badge count showing how many filters active — Added activeFilterCount useMemo to Orders.tsx (counts search, status, date range) and WholesaleOrdersPage.tsx (counts search, status). Both pages now show a Filter icon with badge count when filters are active. Also added Clear button to WholesaleOrdersPage.
 - [x] Task 374: Add 'Clear all filters' button when any filter is active
-- [ ] Task 375: Fix date range picker � presets (Today, This Week, This Month, Custom)
+- [x] Task 375: Fix date range picker — presets (Today, This Week, This Month, Custom) — Simplified defaultRangePresets to Today, This Week, This Month. Added Custom button that clears the range and highlights to indicate custom calendar selection mode. Popover stays open during custom selection until both from/to dates are picked.
 - [ ] Task 376: Fix search results count � 'Showing 12 of 145 orders' below table
 - [ ] Task 377: Fix empty search results � helpful message 'No orders match your search'
 - [ ] Task 378: Run npx tsc --noEmit � Checkpoint
