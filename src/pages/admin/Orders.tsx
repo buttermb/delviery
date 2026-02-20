@@ -1190,10 +1190,16 @@ export default function Orders() {
               }
               emptyState={{
                 icon: ShoppingBag,
-                title: hasActiveFilters ? "No orders found" : "No orders yet",
-                description: hasActiveFilters
-                  ? "Try adjusting your filters to find orders"
-                  : "Orders appear here when customers purchase from your menus or storefront",
+                title: searchQuery
+                  ? `No orders match your search`
+                  : hasActiveFilters
+                    ? "No orders found"
+                    : "No orders yet",
+                description: searchQuery
+                  ? `No results for "${searchQuery}". Try a different search term or clear your search.`
+                  : hasActiveFilters
+                    ? "Try adjusting your filters to find orders"
+                    : "Orders appear here when customers purchase from your menus or storefront",
                 primaryAction: hasActiveFilters ? {
                   label: "Clear Filters",
                   onClick: handleClearFilters

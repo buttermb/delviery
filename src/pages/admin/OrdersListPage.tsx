@@ -651,9 +651,11 @@ export function OrdersListPage() {
         sort={sort}
         onSortChange={setSort}
         emptyMessage={
-          Object.keys(activeFilters).length > 0 || searchValue
-            ? "No orders match your filters"
-            : "No orders found"
+          searchValue
+            ? `No orders match your search "${searchValue}"`
+            : Object.keys(activeFilters).length > 0
+              ? "No orders match your filters"
+              : "No orders found"
         }
         enableSelection
         enableColumnVisibility

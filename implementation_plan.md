@@ -621,7 +621,7 @@
 - [x] Task 374: Add 'Clear all filters' button when any filter is active
 - [x] Task 375: Fix date range picker — presets (Today, This Week, This Month, Custom) — Simplified defaultRangePresets to Today, This Week, This Month. Added Custom button that clears the range and highlights to indicate custom calendar selection mode. Popover stays open during custom selection until both from/to dates are picked.
 - [x] Task 376: Fix search results count — 'Showing 12 of 145 orders' below table — Added filtered results count text between table and pagination in Orders.tsx (shows when filters active: "Showing X of Y orders"). Also added to WholesaleOrdersPage.tsx inside the Card below the table.
-- [ ] Task 377: Fix empty search results � helpful message 'No orders match your search'
+- [x] Task 377: Fix empty search results — helpful message 'No orders match your search'
 - [ ] Task 378: Run npx tsc --noEmit � Checkpoint
 
 ## Phase C9: Auth & Session UX (8 tasks)
