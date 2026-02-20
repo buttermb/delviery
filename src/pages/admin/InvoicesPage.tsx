@@ -774,7 +774,7 @@ export function InvoicesPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="gap-2 w-full md:w-auto justify-center h-11 md:h-10 text-base md:text-sm">
                                     <Filter className="h-4 w-4" />
-                                    Filter: {statusFilter ? statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) : "All"}
+                                    Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px]">
@@ -791,6 +791,9 @@ export function InvoicesPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
                                     Paid
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("partially_paid")}>
+                                    Partially Paid
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
                                     Overdue
