@@ -6,17 +6,16 @@ import { logger } from '@/lib/logger';
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Mail, ArrowLeft, Clock } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/utils/apiClient';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
-import { AuthErrorAlert, getAuthErrorMessage } from '@/components/auth/AuthErrorAlert';
 
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 3;
@@ -45,15 +44,12 @@ function ResendButton({ onResend }: { onResend: () => void }) {
 }
 
 export function CustomerForgotPasswordPage() {
-  const _navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [_tenant, setTenant] = useState<{ id: string; slug: string; name: string } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
-  const [formError, setFormError] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const { validateToken } = useCsrfToken();
@@ -132,15 +128,13 @@ export function CustomerForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
 
     if (!validateToken()) {
-      setFormError('Invalid security token. Please refresh the page and try again.');
+      toast.error('Invalid security token. Please refresh the page and try again.');
       return;
     }
 
     if (!email) {
-      setFormError('Please enter your email address.');
       return;
     }
 
@@ -151,36 +145,29 @@ export function CustomerForgotPasswordPage() {
     // Track this request for rate limiting
     requestTimestamps.current.push(Date.now());
 
-    setLoading(true);
+    // Always show success for security (don't reveal if email exists)
+    // Fire and forget the actual request
+    const trimmedEmail = email.trim().toLowerCase();
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await apiFetch(`${supabaseUrl}/functions/v1/request-password-reset`, {
-        method: 'POST',
-        body: JSON.stringify({
-          email,
-          tenant_slug: tenantSlug,
-        }),
-        skipAuth: true,
+    apiFetch(`${supabaseUrl}/functions/v1/request-password-reset`, {
+      method: 'POST',
+      body: JSON.stringify({
+        email: trimmedEmail,
+        tenant_slug: tenantSlug,
+      }),
+      skipAuth: true,
+    })
+      .then(() => {
+        logger.debug('Customer password reset request completed', { email: trimmedEmail });
+      })
+      .catch(() => {
+        // Silently fail - don't reveal if email exists
+        logger.debug('Customer password reset request failed silently', { email: trimmedEmail });
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to send reset link');
-      }
-
-      setSent(true);
-      toast({
-        title: 'Reset Link Sent',
-        description: 'If an account exists with this email, a password reset link has been sent.',
-      });
-    } catch (error: unknown) {
-      logger.error('Request password reset error', error, { component: 'CustomerForgotPasswordPage' });
-      const errorMessage = getAuthErrorMessage(error, 'Failed to send reset link. Please try again later.');
-      setFormError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    // Immediately show success regardless of API result
+    setSent(true);
   };
 
   if (tenantLoading) {
@@ -240,13 +227,6 @@ export function CustomerForgotPasswordPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <AuthErrorAlert
-              message={formError || ''}
-              type="error"
-              variant="light"
-              className="mb-2"
-            />
-
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -257,7 +237,7 @@ export function CustomerForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
-                disabled={loading || rateLimited}
+                disabled={rateLimited}
                 className="min-h-[44px]"
               />
             </div>
@@ -272,14 +252,9 @@ export function CustomerForgotPasswordPage() {
             <Button
               type="submit"
               className="w-full min-h-[44px]"
-              disabled={loading || !email || rateLimited}
+              disabled={!email || rateLimited}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : rateLimited ? (
+              {rateLimited ? (
                 <>
                   <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
                   Try again in {cooldownRemaining}s

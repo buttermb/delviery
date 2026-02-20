@@ -10,8 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Mail, Clock } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Mail, Clock } from "lucide-react";
+import { toast } from "sonner";
 import { requestSuperAdminPasswordReset, requestTenantAdminPasswordReset, requestCustomerPasswordReset } from "@/utils/passwordReset";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { logger } from "@/lib/logger";
@@ -29,7 +29,6 @@ interface ForgotPasswordDialogProps {
 export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPasswordDialogProps) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const { validateToken } = useCsrfToken();
@@ -89,11 +88,7 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
     e.preventDefault();
 
     if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
-        description: "Invalid security token. Please refresh the page and try again.",
-      });
+      toast.error("Invalid security token. Please refresh the page and try again.");
       return;
     }
 
@@ -104,59 +99,34 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
     // Track this request for rate limiting
     requestTimestamps.current.push(Date.now());
 
-    setLoading(true);
+    // Always show success for security (don't reveal if email exists)
+    // Fire and forget the actual request
+    const trimmedEmail = email.trim().toLowerCase();
 
-    try {
-      let result;
+    const makeRequest = async () => {
       if (userType === "super_admin") {
-        result = await requestSuperAdminPasswordReset(email);
-      } else if (userType === "tenant_admin") {
-        if (!tenantSlug) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Tenant slug is required",
-          });
-          setLoading(false);
-          return;
-        }
-        result = await requestTenantAdminPasswordReset(email, tenantSlug);
-      } else {
-        if (!tenantSlug) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Tenant slug is required",
-          });
-          setLoading(false);
-          return;
-        }
-        result = await requestCustomerPasswordReset(email, tenantSlug);
+        return requestSuperAdminPasswordReset(trimmedEmail);
+      } else if (userType === "tenant_admin" && tenantSlug) {
+        return requestTenantAdminPasswordReset(trimmedEmail, tenantSlug);
+      } else if (userType === "customer" && tenantSlug) {
+        return requestCustomerPasswordReset(trimmedEmail, tenantSlug);
       }
+      return null;
+    };
 
-      if (result.success) {
-        toast({
-          title: "Reset Email Sent",
-          description: result.message,
-        });
-        setOpen(false);
-        setEmail("");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: result.message,
-        });
-      }
-    } catch (error: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send reset email",
+    makeRequest()
+      .then(() => {
+        logger.debug("Password reset request completed", { email: trimmedEmail, userType });
+      })
+      .catch(() => {
+        // Silently fail - don't reveal if email exists
+        logger.debug("Password reset request failed silently", { email: trimmedEmail, userType });
       });
-    } finally {
-      setLoading(false);
-    }
+
+    // Immediately show success regardless of API result
+    toast.success("If an account exists with that email, a reset link has been sent.");
+    setOpen(false);
+    setEmail("");
   };
 
   return (
@@ -185,7 +155,7 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading || rateLimited}
+              disabled={rateLimited}
               inputMode="email"
               enterKeyHint="send"
               autoComplete="email"
@@ -199,13 +169,8 @@ export function ForgotPasswordDialog({ userType, tenantSlug, trigger }: ForgotPa
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading || rateLimited}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                Sending...
-              </>
-            ) : rateLimited ? (
+          <Button type="submit" className="w-full" disabled={rateLimited}>
+            {rateLimited ? (
               <>
                 <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
                 Try again in {cooldownRemaining}s

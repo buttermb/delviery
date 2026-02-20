@@ -127,9 +127,10 @@ export function usePasswordReset() {
       };
     },
     onError: (error) => {
+      // Only log - never show error toast for password reset requests
+      // to avoid revealing whether an email exists in the system
       const errorMessage = getErrorMessage(error);
       logger.warn("Password reset request failed", { error: errorMessage });
-      toast.error("Failed to send reset email", { description: errorMessage });
     },
   });
 
