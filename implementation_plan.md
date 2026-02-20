@@ -602,7 +602,7 @@
 
 ## Phase C7: Responsive & Layout Fixes (9 tasks)
 
-- [ ] Task 361: Fix sidebar overlap on tablet (768-1024px) � collapse by default
+- [x] Task 361: Fix sidebar overlap on tablet (768-1024px) � collapse by default
 - [ ] Task 362: Fix card grid responsiveness � 1 col mobile, 2 col tablet, 3-4 col desktop
 - [ ] Task 363: Fix dashboard stat cards � stack vertically on mobile, no horizontal scroll
 - [ ] Task 364: Fix form layouts on mobile � full-width inputs, no side-by-side on small screens
