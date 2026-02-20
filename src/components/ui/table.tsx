@@ -7,11 +7,49 @@ interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
 }
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
-  ({ className, containerClassName, ...props }, ref) => (
-    <div className={cn("relative w-full overflow-auto", containerClassName)}>
-      <table ref={ref} className={cn("w-full caption-bottom text-sm dark:bg-gray-800 dark:text-gray-100", className)} {...props} />
-    </div>
-  ),
+  ({ className, containerClassName, ...props }, ref) => {
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+    const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+    React.useEffect(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+
+      const updateScrollState = () => {
+        const { scrollLeft, scrollWidth, clientWidth } = el;
+        setCanScrollLeft(scrollLeft > 2);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
+      };
+
+      updateScrollState();
+      el.addEventListener('scroll', updateScrollState, { passive: true });
+      const observer = new ResizeObserver(updateScrollState);
+      observer.observe(el);
+
+      return () => {
+        el.removeEventListener('scroll', updateScrollState);
+        observer.disconnect();
+      };
+    }, []);
+
+    return (
+      <div className="relative w-full">
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 w-4 z-10 pointer-events-none bg-gradient-to-r from-background/80 to-transparent" />
+        )}
+        <div
+          ref={scrollRef}
+          className={cn("relative w-full overflow-auto", containerClassName)}
+        >
+          <table ref={ref} className={cn("w-full caption-bottom text-sm dark:bg-gray-800 dark:text-gray-100", className)} {...props} />
+        </div>
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-4 z-10 pointer-events-none bg-gradient-to-l from-background/80 to-transparent" />
+        )}
+      </div>
+    );
+  },
 );
 Table.displayName = "Table";
 
