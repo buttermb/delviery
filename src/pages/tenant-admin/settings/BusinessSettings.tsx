@@ -160,8 +160,8 @@ export default function BusinessSettings() {
       setClearDemoDialogOpen(false);
     },
     onError: (error: Error) => {
-      toast.error('Error', {
-        description: error.message || 'Failed to clear demo data',
+      toast.error('Failed to clear demo data', {
+        description: error.message || 'Please try again.',
       });
     },
   });

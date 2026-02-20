@@ -285,7 +285,7 @@ export function CheckoutPage() {
         toast.error('Invalid card', { description: 'Card not found' });
       }
     } catch {
-      toast.error('Error', { description: 'Failed to validate card' });
+      toast.error('Failed to validate gift card', { description: 'Please check the card number and try again.' });
     } finally {
       setIsCheckingGiftCard(false);
     }

@@ -286,6 +286,6 @@ export function useCreateInvoice() {
                 });
             }
         },
-        onError: (error: Error) => { logger.error('Create failed', error); toast.error(error.message); },
+        onError: (error: Error) => { logger.error('Create failed', error); toast.error('Failed to create invoice', { description: error.message }); },
     });
 }

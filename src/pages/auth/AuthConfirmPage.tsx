@@ -161,7 +161,7 @@ export default function AuthConfirmPage() {
 
             if (error) {
                 logger.error('[AuthConfirm] Resend failed', { email: resendEmail, error: error.message, type: resendType });
-                toast.error(error.message);
+                toast.error('Failed to resend verification email', { description: error.message });
             } else {
                 logger.info('[AuthConfirm] Resend successful', { email: resendEmail, type: resendType });
                 setResendSuccess(true);
@@ -191,7 +191,7 @@ export default function AuthConfirmPage() {
 
             if (error) {
                 logger.error('[AuthConfirm] Password reset request failed', { email: resendEmail, error: error.message });
-                toast.error(error.message);
+                toast.error('Failed to send password reset email', { description: error.message });
             } else {
                 logger.info('[AuthConfirm] Password reset request sent', { email: resendEmail });
                 setResendSuccess(true);

@@ -40,7 +40,7 @@ export function VendorLoginPage() {
       navigate("/vendor/dashboard");
     } catch (error) {
       logger.error('Vendor login failed', error instanceof Error ? error : new Error(String(error)), { component: 'VendorLoginPage' });
-      toast.error(error instanceof Error ? error.message : "Invalid credentials");
+      toast.error("Login failed", { description: error instanceof Error ? error.message : "Invalid credentials" });
     } finally {
       setIsLoading(false);
     }

@@ -132,8 +132,8 @@ export default function CartPage() {
       }
     } catch (error: unknown) {
       logger.error('Error applying coupon', error);
-      toast.error('Error', {
-        description: 'Failed to apply coupon. Please try again.',
+      toast.error('Failed to apply coupon', {
+        description: 'Please try again.',
       });
     } finally {
       setIsApplyingCoupon(false);

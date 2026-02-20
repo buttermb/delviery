@@ -901,7 +901,7 @@ export default function ProductManagement() {
       setProducts((prev) =>
         prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
       );
-      toast.success('Updated!');
+      toast.success('Product updated successfully');
 
       // Warn if price changed and product is on active menus
       if (field === 'wholesale_price' || field === 'retail_price' || field === 'cost_per_unit') {

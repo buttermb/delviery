@@ -68,7 +68,7 @@ export function VendorOrderDetailPage() {
             queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
         },
         onError: (error) => {
-            toast.error(`Failed to update status: ${error.message}`);
+            toast.error('Failed to update order status', { description: error.message });
         }
     });
 

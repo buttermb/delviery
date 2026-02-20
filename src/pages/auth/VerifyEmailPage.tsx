@@ -127,7 +127,7 @@ export function VerifyEmailPage() {
 
       if (error) {
         logger.error('[VerifyEmail] Resend failed', { email: resendEmail, error: error.message });
-        toast.error(error.message);
+        toast.error('Failed to resend verification email', { description: error.message });
       } else {
         setResendSuccess(true);
         toast.success('Verification email sent! Check your inbox.');

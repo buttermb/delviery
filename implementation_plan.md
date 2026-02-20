@@ -569,7 +569,7 @@
 
 - [x] Task 335: Audit all mutations — ensure every mutation shows success OR error toast — Added toast.success/toast.error to 50+ mutations across 20 files: useCustomerCredit, useCustomerFlags, useCustomerLoyalty, useDeliveryCompliance, useDeliveryRatings, useDeliveryZones, useOrganizations, useRouteOptimizer, useSettingsVersions, useVendorCommunications, useVendorCompliance, useVendorContacts, useVendorDocuments, useVendorPaymentTerms, useVendorPriceHistory, useAutoTagRules, useOrderTags, useStorefrontOrders, MarketingAutomationPage, StorefrontDesignPage (also fixed useToast→sonner), NotificationDropdown. System-level mutations (compliance checks) get error-only toasts; user CRUD mutations get both success and error toasts.
 - [x] Task 336: Fix silent failures � no mutation should fail without user-visible feedback
-- [ ] Task 337: Standardize toast messages � 'Order created successfully' not 'Success!' or raw errors
+- [x] Task 337: Standardize toast messages � 'Order created successfully' not 'Success!' or raw errors
 - [ ] Task 338: Add toast on copy-to-clipboard actions � menu links, invoice numbers, etc.
 - [ ] Task 339: Add optimistic UI for status toggles � switch flips immediately, reverts on error
 - [ ] Task 340: Add inline success indicators � checkmark flash on save, not just toast
