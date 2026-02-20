@@ -25,6 +25,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
@@ -159,7 +160,7 @@ export default function SecuritySettings() {
       toast({ title: 'Session revoked', description: 'The device has been signed out.' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to revoke session', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to revoke session', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -182,7 +183,7 @@ export default function SecuritySettings() {
       toast({ title: 'All sessions revoked', description: 'You have been signed out of all other devices.' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to revoke sessions', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to revoke sessions', description: humanizeError(error), variant: 'destructive' });
     },
   });
 

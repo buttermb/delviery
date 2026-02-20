@@ -43,6 +43,7 @@ import Download from "lucide-react/dist/esm/icons/download";
 import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
 import Eye from "lucide-react/dist/esm/icons/eye";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import { humanizeError } from "@/lib/humanizeError";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -561,7 +562,7 @@ export function ProductBulkImportDialog({
       logger.error("Import failed:", error instanceof Error ? error : new Error(String(error)), {
         component: "ProductBulkImportDialog",
       });
-      toast.error(error instanceof Error ? error.message : "Failed to import products");
+      toast.error(humanizeError(error, "Failed to import products"));
       setLoading(false);
     }
   };

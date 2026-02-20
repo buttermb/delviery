@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -238,7 +239,7 @@ export function useVendorCommunications(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to log communication');
+      toast.error(humanizeError(error, 'Failed to log communication'));
     },
   });
 
@@ -288,7 +289,7 @@ export function useVendorCommunications(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update communication');
+      toast.error(humanizeError(error, 'Failed to update communication'));
     },
   });
 
@@ -321,7 +322,7 @@ export function useVendorCommunications(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete communication');
+      toast.error(humanizeError(error, 'Failed to delete communication'));
     },
   });
 

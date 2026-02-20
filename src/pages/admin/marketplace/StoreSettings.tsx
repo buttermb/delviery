@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { Loader2, Save, Store, Palette, Truck, Upload } from "lucide-react";
 import { MarketplaceProfile } from "@/types/marketplace-extended";
 
@@ -78,7 +79,7 @@ export default function StoreSettings() {
             toast.success("Store settings updated successfully");
         },
         onError: (error) => {
-            toast.error("Failed to update settings: " + error.message);
+            toast.error(humanizeError(error, "Failed to update settings"));
         }
     });
 

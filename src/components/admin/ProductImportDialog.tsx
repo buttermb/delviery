@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, AlertCircle, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import { humanizeError } from "@/lib/humanizeError";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -289,7 +290,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             }
         } catch (error) {
             logger.error('Import failed:', error instanceof Error ? error : new Error(String(error)), { component: 'ProductImportDialog' });
-            toast.error(error instanceof Error ? error.message : "Failed to import products");
+            toast.error(humanizeError(error, "Failed to import products"));
             setLoading(false);
         }
     };

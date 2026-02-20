@@ -33,6 +33,7 @@ import {
   Check,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { humanizeError } from '@/lib/humanizeError';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -243,7 +244,7 @@ export function SinglePageCheckout() {
     onError: (error: Error) => {
       logger.error('Order failed', error);
       toast.error('Order failed', {
-        description: error.message || 'Something went wrong',
+        description: humanizeError(error, 'Something went wrong'),
       });
     },
   });

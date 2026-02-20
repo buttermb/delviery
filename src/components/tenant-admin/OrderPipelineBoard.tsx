@@ -31,6 +31,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useSearchParams } from 'react-router-dom';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { LastUpdated } from '@/components/ui/last-updated';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import {
     DropdownMenu,
@@ -298,7 +299,7 @@ export function OrderPipelineBoard() {
         },
         onError: (error: Error) => {
             toast.error('Failed to update order status', {
-                description: error.message
+                description: humanizeError(error)
             });
         }
     });

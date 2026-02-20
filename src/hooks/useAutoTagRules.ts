@@ -17,6 +17,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useTags, useAssignTag } from '@/hooks/useCustomerTags';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Predefined tag names for auto-tagging
 export const AUTO_TAG_NAMES = {
@@ -148,7 +149,7 @@ export function useEnsureAutoTag() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create auto tag');
+      toast.error(humanizeError(error, 'Failed to create auto tag'));
     },
   });
 }
@@ -242,7 +243,7 @@ export function useApplyAutoTags() {
       toast.success('Auto tags applied successfully');
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to apply auto tags');
+      toast.error(humanizeError(error, 'Failed to apply auto tags'));
     },
   });
 }

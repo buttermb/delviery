@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt, RotateCcw } from 'lucide-react';
+import { humanizeError } from '@/lib/humanizeError';
 import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { queryKeys } from '@/lib/queryKeys';
 import { ZReport } from './ZReport';
@@ -234,7 +235,7 @@ export function ShiftManager() {
       setOpeningCash('0.00');
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(humanizeError(error, 'Failed to start shift'));
     },
   });
 
@@ -282,7 +283,7 @@ export function ShiftManager() {
       setClosingCash('0.00');
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(humanizeError(error, 'Failed to close shift'));
     },
   });
 

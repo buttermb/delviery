@@ -13,6 +13,7 @@ import Shield from "lucide-react/dist/esm/icons/shield";
 import ImageIcon from "lucide-react/dist/esm/icons/image";
 import ClipboardCheck from "lucide-react/dist/esm/icons/clipboard-check";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { BasicInfoStep } from "./BasicInfoStep";
 import { PricingStep } from "./PricingStep";
@@ -327,7 +328,7 @@ export function CreateProductForm({
       const sanitizedData = sanitizeFormData(formData);
       await onSubmit(sanitizedData);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save product");
+      toast.error(humanizeError(error, "Failed to save product"));
     } finally {
       setIsSubmitting(false);
     }

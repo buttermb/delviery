@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export type CashDrawerEventType = 'open' | 'close' | 'add' | 'remove' | 'payout' | 'deposit';
 
@@ -177,7 +178,7 @@ export function useCashDrawer(shiftId: string | undefined) {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message,
+        description: humanizeError(error),
         variant: 'destructive',
       });
     },

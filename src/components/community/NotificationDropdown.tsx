@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -41,7 +42,7 @@ export function NotificationDropdown() {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.notifications.lists() });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to mark notification as read');
+      toast.error(humanizeError(error, 'Failed to mark notification as read'));
     },
   });
 
@@ -51,7 +52,7 @@ export function NotificationDropdown() {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.notifications.lists() });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to mark notifications as read');
+      toast.error(humanizeError(error, 'Failed to mark notifications as read'));
     },
   });
 

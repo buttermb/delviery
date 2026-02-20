@@ -16,6 +16,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Types
 export interface ProductTag {
@@ -251,7 +252,7 @@ export function useCreateProductTag() {
       toast.success('Tag created successfully');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create tag: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to create tag'));
     },
   });
 }
@@ -291,7 +292,7 @@ export function useUpdateProductTag() {
       toast.success('Tag updated successfully');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update tag: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to update tag'));
     },
   });
 }
@@ -323,7 +324,7 @@ export function useDeleteProductTag() {
       toast.success('Tag deleted successfully');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to delete tag: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to delete tag'));
     },
   });
 }
@@ -363,7 +364,7 @@ export function useAssignProductTag() {
       if (error.message.includes('duplicate') || error.message.includes('unique')) {
         toast.error('Tag is already assigned to this product');
       } else {
-        toast.error(`Failed to assign tag: ${error.message}`);
+        toast.error(humanizeError(error, 'Failed to assign tag'));
       }
     },
   });
@@ -396,7 +397,7 @@ export function useRemoveProductTag() {
       toast.success('Tag removed');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to remove tag: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to remove tag'));
     },
   });
 }
@@ -436,7 +437,7 @@ export function useBatchAssignProductTags() {
       toast.success('Tags assigned to products');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to assign tags: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to assign tags'));
     },
   });
 }

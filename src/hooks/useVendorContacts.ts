@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -156,7 +157,7 @@ export function useVendorContacts(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create contact');
+      toast.error(humanizeError(error, 'Failed to create contact'));
     },
   });
 
@@ -202,7 +203,7 @@ export function useVendorContacts(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update contact');
+      toast.error(humanizeError(error, 'Failed to update contact'));
     },
   });
 
@@ -235,7 +236,7 @@ export function useVendorContacts(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete contact');
+      toast.error(humanizeError(error, 'Failed to delete contact'));
     },
   });
 
@@ -272,7 +273,7 @@ export function useVendorContacts(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to set primary contact');
+      toast.error(humanizeError(error, 'Failed to set primary contact'));
     },
   });
 
@@ -313,7 +314,7 @@ export function useVendorContacts(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to log interaction');
+      toast.error(humanizeError(error, 'Failed to log interaction'));
     },
   });
 

@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface LoyaltyConfig {
   program_name?: string;
@@ -123,7 +124,7 @@ export default function LoyaltyProgramPage() {
       setIsConfigOpen(false);
     },
     onError: (error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
     },
   });
 
@@ -142,7 +143,7 @@ export default function LoyaltyProgramPage() {
       setEditingTier(null);
     },
     onError: (error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
     },
   });
 
@@ -161,7 +162,7 @@ export default function LoyaltyProgramPage() {
       setEditingReward(null);
     },
     onError: (error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
     },
   });
 

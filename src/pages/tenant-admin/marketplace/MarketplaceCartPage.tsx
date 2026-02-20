@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     Trash2,
     ShoppingCart,
@@ -67,7 +68,7 @@ export default function MarketplaceCartPage() {
         },
         onError: (error: Error) => {
             logger.error('Failed to remove cart item', { error });
-            toast({ title: "Failed to remove item", description: error.message, variant: "destructive" });
+            toast({ title: "Failed to remove item", description: humanizeError(error), variant: "destructive" });
         },
     });
 
@@ -154,7 +155,7 @@ export default function MarketplaceCartPage() {
         } catch (error: any) {
             toast({
                 title: "Checkout Failed",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         } finally {

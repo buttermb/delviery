@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 import type { CreateForumProfileRequest } from '@/types/forum';
 
 export function useForumProfile() {
@@ -41,7 +42,7 @@ export function useCreateForumProfile() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create forum profile', error, { component: 'useCreateForumProfile' });
-      toast.error(error instanceof Error ? error.message : 'Failed to create profile');
+      toast.error(humanizeError(error, 'Failed to create profile'));
     },
   });
 }
@@ -57,7 +58,7 @@ export function useUpdateForumProfile() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to update forum profile', error, { component: 'useUpdateForumProfile' });
-      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
+      toast.error(humanizeError(error, 'Failed to update profile'));
     },
   });
 }

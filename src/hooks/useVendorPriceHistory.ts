@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export interface VendorPriceHistoryEntry {
   id: string;
@@ -158,7 +159,7 @@ export function useDismissPriceAlert() {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to dismiss price alert');
+      toast.error(humanizeError(error, 'Failed to dismiss price alert'));
     },
   });
 }
@@ -242,7 +243,7 @@ export function useUpdatePriceAlertSettings() {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update alert settings');
+      toast.error(humanizeError(error, 'Failed to update alert settings'));
     },
   });
 }
@@ -301,7 +302,7 @@ export function useLogVendorPriceChange() {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to log price change');
+      toast.error(humanizeError(error, 'Failed to log price change'));
     },
   });
 }

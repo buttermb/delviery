@@ -8,6 +8,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2 } from "lucide-react";
 
 export function VendorLoginPage() {
@@ -40,7 +41,7 @@ export function VendorLoginPage() {
       navigate("/vendor/dashboard");
     } catch (error) {
       logger.error('Vendor login failed', error instanceof Error ? error : new Error(String(error)), { component: 'VendorLoginPage' });
-      toast.error("Login failed", { description: error instanceof Error ? error.message : "Invalid credentials" });
+      toast.error("Login failed", { description: humanizeError(error, "Invalid credentials") });
     } finally {
       setIsLoading(false);
     }

@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   MessageSquare,
   Search,
@@ -216,7 +217,7 @@ export default function MessagesPage() {
     },
     onError: (error: Error) => {
       logger.error('Failed to mark messages as read', { error });
-      toast({ title: 'Failed to mark as read', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to mark as read', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -262,7 +263,7 @@ export default function MessagesPage() {
       logger.error('Failed to send message', error, { component: 'MessagesPage' });
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to send message',
+        description: humanizeError(error, 'Failed to send message'),
         variant: 'destructive',
       });
     },

@@ -11,6 +11,7 @@ import { useGuestCart } from "@/hooks/useGuestCart";
 import { SwipeableCartItem } from "@/components/SwipeableCartItem";
 import { haptics } from "@/utils/haptics";
 import { logger } from "@/lib/logger";
+import { humanizeError } from "@/lib/humanizeError";
 import { useTenant } from "@/contexts/TenantContext";
 import type { AppUser } from "@/types/auth";
 import type { Product } from "@/types/product";
@@ -139,7 +140,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Failed to update quantity");
+      toast.error(humanizeError(error, "Failed to update quantity"));
     }
   };
 
@@ -166,7 +167,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Failed to remove item");
+      toast.error(humanizeError(error, "Failed to remove item"));
       haptics.error();
     }
   };

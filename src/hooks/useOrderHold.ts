@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface HoldOrderParams {
@@ -98,7 +99,7 @@ export function useHoldOrder() {
     onError: (error: Error) => {
       logger.error('Failed to hold order', error, { component: 'useHoldOrder' });
       toast.error('Failed to place order on hold', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -179,7 +180,7 @@ export function useResumeOrder() {
     onError: (error: Error) => {
       logger.error('Failed to resume order', error, { component: 'useResumeOrder' });
       toast.error('Failed to resume order', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

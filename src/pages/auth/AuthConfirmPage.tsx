@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 
 /**
@@ -161,7 +162,7 @@ export default function AuthConfirmPage() {
 
             if (error) {
                 logger.error('[AuthConfirm] Resend failed', { email: resendEmail, error: error.message, type: resendType });
-                toast.error('Failed to resend verification email', { description: error.message });
+                toast.error('Failed to resend verification email', { description: humanizeError(error) });
             } else {
                 logger.info('[AuthConfirm] Resend successful', { email: resendEmail, type: resendType });
                 setResendSuccess(true);
@@ -191,7 +192,7 @@ export default function AuthConfirmPage() {
 
             if (error) {
                 logger.error('[AuthConfirm] Password reset request failed', { email: resendEmail, error: error.message });
-                toast.error('Failed to send password reset email', { description: error.message });
+                toast.error('Failed to send password reset email', { description: humanizeError(error) });
             } else {
                 logger.info('[AuthConfirm] Password reset request sent', { email: resendEmail });
                 setResendSuccess(true);

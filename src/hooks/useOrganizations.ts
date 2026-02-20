@@ -18,6 +18,7 @@ import { logger } from '@/lib/logger';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 import type {
   Organization,
@@ -385,7 +386,7 @@ export function useOrganizations({
       queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create organization');
+      toast.error(humanizeError(error, 'Failed to create organization'));
     },
   });
 
@@ -436,7 +437,7 @@ export function useOrganizations({
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update organization');
+      toast.error(humanizeError(error, 'Failed to update organization'));
     },
   });
 
@@ -479,7 +480,7 @@ export function useOrganizations({
       queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete organization');
+      toast.error(humanizeError(error, 'Failed to delete organization'));
     },
   });
 
@@ -525,7 +526,7 @@ export function useOrganizations({
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update organization status');
+      toast.error(humanizeError(error, 'Failed to update organization status'));
     },
   });
 
@@ -678,7 +679,7 @@ export function useOrganizationDetail({
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to add member');
+      toast.error(humanizeError(error, 'Failed to add member'));
     },
   });
 
@@ -718,7 +719,7 @@ export function useOrganizationDetail({
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to remove member');
+      toast.error(humanizeError(error, 'Failed to remove member'));
     },
   });
 
@@ -768,7 +769,7 @@ export function useOrganizationDetail({
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update member');
+      toast.error(humanizeError(error, 'Failed to update member'));
     },
   });
 

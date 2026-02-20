@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { apiFetch } from '@/lib/utils/apiClient';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Dialog,
   DialogContent,
@@ -132,7 +133,7 @@ export function OrderAssignCourier({
         component: 'OrderAssignCourier',
         orderId
       });
-      toast.error(error instanceof Error ? error.message : 'Failed to assign courier');
+      toast.error(humanizeError(error, 'Failed to assign courier'));
     },
   });
 

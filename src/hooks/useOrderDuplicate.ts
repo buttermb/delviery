@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 
@@ -178,7 +179,7 @@ export function useOrderDuplicate(options: UseOrderDuplicateOptions = {}) {
     onError: (error: Error) => {
       logger.error('Order duplication failed', error, { component: 'useOrderDuplicate' });
       toast.error('Failed to duplicate order', {
-        description: error.message,
+        description: humanizeError(error),
       });
       options.onError?.(error);
     },

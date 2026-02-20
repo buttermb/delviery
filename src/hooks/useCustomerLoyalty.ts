@@ -20,6 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -485,7 +486,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to save loyalty configuration');
+      toast.error(humanizeError(error, 'Failed to save loyalty configuration'));
     },
   });
 
@@ -668,7 +669,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to award points');
+      toast.error(humanizeError(error, 'Failed to award points'));
     },
   });
 
@@ -733,7 +734,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to redeem points');
+      toast.error(humanizeError(error, 'Failed to redeem points'));
     },
   });
 
@@ -793,7 +794,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to adjust points');
+      toast.error(humanizeError(error, 'Failed to adjust points'));
     },
   });
 

@@ -6,6 +6,7 @@ import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { humanizeError } from '@/lib/humanizeError';
 
 export const crmPreOrderKeys = {
     all: ['crm-pre-orders'] as const,
@@ -78,9 +79,8 @@ export function useCreatePreOrder() {
             if (context?.previousPreOrders) {
                 queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
             }
-            const message = error instanceof Error ? error.message : 'Failed to create pre-order';
             logger.error('Pre-order creation failed', error, { component: 'useCreatePreOrder' });
-            toast.error('Pre-order creation failed', { description: message });
+            toast.error('Pre-order creation failed', { description: humanizeError(error, 'Failed to create pre-order') });
         },
         onSuccess: () => { toast.success('Pre-order created'); },
         onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); },
@@ -112,9 +112,8 @@ export function useCancelPreOrder() {
             if (context?.previousPreOrders) {
                 queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
             }
-            const message = error instanceof Error ? error.message : 'Failed to cancel pre-order';
             logger.error('Pre-order cancellation failed', error, { component: 'useCancelPreOrder' });
-            toast.error('Pre-order cancellation failed', { description: message });
+            toast.error('Pre-order cancellation failed', { description: humanizeError(error, 'Failed to cancel pre-order') });
         },
         onSuccess: () => { toast.success('Pre-order cancelled'); },
         onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); },
@@ -154,9 +153,8 @@ export function useConvertPreOrderToInvoice() {
             if (context?.previousPreOrders) {
                 queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
             }
-            const message = error instanceof Error ? error.message : 'Failed to convert pre-order';
             logger.error('Pre-order conversion failed', error, { component: 'useConvertPreOrderToInvoice' });
-            toast.error('Conversion failed', { description: message });
+            toast.error('Conversion failed', { description: humanizeError(error, 'Failed to convert pre-order') });
         },
         onSuccess: (result) => {
             toast.success('Converted successfully');

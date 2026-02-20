@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useTenantContext } from '@/hooks/useTenantContext';
 import type { DeliveryZone, DeliveryZoneFormData, DEFAULT_DELIVERY_HOURS } from '@/types/delivery-zone';
 
@@ -105,7 +106,7 @@ export function useDeliveryZones() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create delivery zone');
+      toast.error(humanizeError(error, 'Failed to create delivery zone'));
     },
   });
 
@@ -143,7 +144,7 @@ export function useDeliveryZones() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update delivery zone');
+      toast.error(humanizeError(error, 'Failed to update delivery zone'));
     },
   });
 
@@ -168,7 +169,7 @@ export function useDeliveryZones() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete delivery zone');
+      toast.error(humanizeError(error, 'Failed to delete delivery zone'));
     },
   });
 
@@ -193,7 +194,7 @@ export function useDeliveryZones() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY, tenantId] });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to toggle delivery zone');
+      toast.error(humanizeError(error, 'Failed to toggle delivery zone'));
     },
   });
 

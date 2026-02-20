@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   SUBSCRIPTION_PLANS,
   PLAN_FEATURES,
@@ -450,7 +451,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     onError: (error: Error) => {
       logger.error('Subscribe failed', { error }, 'useCreditSubscription');
       toast.error('Subscription failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -497,7 +498,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     onError: (error: Error) => {
       logger.error('Cancel subscription failed', { error }, 'useCreditSubscription');
       toast.error('Cancellation failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -539,7 +540,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     onError: (error: Error) => {
       logger.error('Pause subscription failed', { error }, 'useCreditSubscription');
       toast.error('Pause failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -585,7 +586,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     onError: (error: Error) => {
       logger.error('Resume subscription failed', { error }, 'useCreditSubscription');
       toast.error('Resume failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -645,7 +646,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     onError: (error: Error) => {
       logger.error('Upgrade subscription failed', { error }, 'useCreditSubscription');
       toast.error('Upgrade failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -705,7 +706,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     onError: (error: Error) => {
       logger.error('Downgrade subscription failed', { error }, 'useCreditSubscription');
       toast.error('Downgrade failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

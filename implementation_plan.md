@@ -573,7 +573,7 @@
 - [x] Task 338: Add toast on copy-to-clipboard actions � menu links, invoice numbers, etc.
 - [x] Task 339: Add optimistic UI for status toggles � switch flips immediately, reverts on error
 - [x] Task 340: Add inline success indicators � checkmark flash on save, not just toast
-- [ ] Task 341: Fix error toast messages � show human-readable message, not raw Supabase error
+- [x] Task 341: Fix error toast messages — show human-readable message, not raw Supabase error — Created src/lib/humanizeError.ts with pattern-matching utility that maps raw Supabase/PostgreSQL errors to user-friendly messages. Updated 90+ files across hooks, components, and pages to use humanizeError() instead of raw error.message in all toast.error and destructive toast calls.
 - [ ] Task 342: Run npx tsc --noEmit � Checkpoint
 
 ## Phase C5: Data Display & Formatting Fixes (10 tasks)

@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
@@ -63,7 +64,7 @@ export function StorefrontDesignPage() {
             setHasUnsavedChanges(false);
         },
         onError: (error) => {
-            toast.error(error instanceof Error ? error.message : 'Failed to save draft');
+            toast.error(humanizeError(error, 'Failed to save draft'));
         },
     });
 

@@ -27,6 +27,7 @@ import type {
 } from '@/types/delivery-compliance';
 import { DEFAULT_COMPLIANCE_SETTINGS } from '@/types/delivery-compliance';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantContext } from '@/hooks/useTenantContext';
@@ -157,7 +158,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create compliance check');
+      toast.error(humanizeError(error, 'Failed to create compliance check'));
     },
   });
 
@@ -197,7 +198,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to verify compliance check');
+      toast.error(humanizeError(error, 'Failed to verify compliance check'));
     },
   });
 
@@ -243,7 +244,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to override compliance check');
+      toast.error(humanizeError(error, 'Failed to override compliance check'));
     },
   });
 
@@ -421,7 +422,7 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to initialize compliance checks');
+      toast.error(humanizeError(error, 'Failed to initialize compliance checks'));
     },
   });
 

@@ -21,6 +21,7 @@ import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import FileSpreadsheet from "lucide-react/dist/esm/icons/file-spreadsheet";
 import Download from "lucide-react/dist/esm/icons/download";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import { humanizeError } from "@/lib/humanizeError";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -472,7 +473,7 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
         error instanceof Error ? error : new Error(String(error)),
         { component: "ProductBulkImport" }
       );
-      toast.error(error instanceof Error ? error.message : "Failed to import products");
+      toast.error(humanizeError(error, "Failed to import products"));
       setLoading(false);
     }
   };

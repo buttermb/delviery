@@ -43,6 +43,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Plus,
   Package,
@@ -225,7 +226,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to toggle bundle status', { error });
-      toast({ title: 'Failed to update bundle', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to update bundle', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -246,7 +247,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to delete bundle', { error });
-      toast({ title: 'Failed to delete bundle', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to delete bundle', description: humanizeError(error), variant: 'destructive' });
     },
   });
 

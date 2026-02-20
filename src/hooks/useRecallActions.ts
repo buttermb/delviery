@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from "@/lib/queryKeys";
 
 interface NotifyRecallParams {
@@ -27,7 +28,7 @@ export function useRecallActions() {
     },
     onError: (error: any) => {
       logger.error('Failed to send recall notifications', error, { component: 'useRecallActions' });
-      toast.error(error.message || 'Failed to send recall notifications');
+      toast.error(humanizeError(error, 'Failed to send recall notifications'));
     },
   });
 

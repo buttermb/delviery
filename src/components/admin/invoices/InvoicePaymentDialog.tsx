@@ -32,6 +32,7 @@ import { crmInvoiceKeys } from '@/hooks/crm/useInvoices';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { formatCurrency } from '@/utils/formatters';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { Loader2, AlertCircle, DollarSign } from 'lucide-react';
 import { INVOICE_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
@@ -187,7 +188,7 @@ export function InvoicePaymentDialog({
     },
     onError: (error: Error) => {
       logger.error('Failed to record payment', { error, invoiceId });
-      toast.error('Failed to record payment', { description: error.message });
+      toast.error('Failed to record payment', { description: humanizeError(error) });
     },
   });
 

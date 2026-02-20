@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
     ArrowRight,
@@ -199,7 +200,7 @@ export default function NewPurchaseOrder() {
 
         } catch (error: any) {
             logger.error('Failed to create PO', error);
-            toast.error(`Failed to create PO: ${error.message}`);
+            toast.error(humanizeError(error, 'Failed to create purchase order'));
         } finally {
             setIsSubmitting(false);
         }

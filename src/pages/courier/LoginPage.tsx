@@ -14,6 +14,7 @@ import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { AuthOfflineIndicator } from '@/components/auth/AuthOfflineIndicator';
 import { useAuthOffline } from '@/hooks/useAuthOffline';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -128,11 +129,11 @@ export default function CourierLoginPage() {
       // Not authorized
       await supabase.auth.signOut();
       throw new Error('Not authorized as a courier or runner');
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Login error', error);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: humanizeError(error, "Invalid email or password"),
         variant: "destructive",
       });
     } finally {
@@ -185,11 +186,11 @@ export default function CourierLoginPage() {
       });
 
       navigate('/courier/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('PIN verification error', error);
       toast({
         title: "Verification Failed",
-        description: error.message || "Invalid PIN",
+        description: humanizeError(error, "Invalid PIN"),
         variant: "destructive",
       });
       setPin('');

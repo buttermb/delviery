@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
     CheckCircle,
@@ -87,7 +88,7 @@ export default function PurchaseOrderDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }
@@ -118,7 +119,7 @@ export default function PurchaseOrderDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error sending message",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }

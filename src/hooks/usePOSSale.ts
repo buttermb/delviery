@@ -20,6 +20,7 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // TYPES
@@ -198,7 +199,7 @@ export function usePOSSale() {
     onError: (error: Error) => {
       logger.error('POS sale failed', error, { component: 'usePOSSale' });
       toast.error('Sale failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

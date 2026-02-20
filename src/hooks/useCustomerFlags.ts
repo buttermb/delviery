@@ -17,6 +17,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -294,7 +295,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to add customer flag');
+      toast.error(humanizeError(error, 'Failed to add customer flag'));
     },
   });
 
@@ -344,7 +345,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to resolve customer flag');
+      toast.error(humanizeError(error, 'Failed to resolve customer flag'));
     },
   });
 

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState } from 'react';
 import {
   Dialog,
@@ -86,7 +87,7 @@ export function BulkActionsDialog({
       onClose();
     } catch (error: unknown) {
       logger.error('Bulk action error', error, { component: 'BulkActionsDialog' });
-      toast.error(error instanceof Error ? error.message : 'Failed to perform bulk action');
+      toast.error(humanizeError(error, 'Failed to perform bulk action'));
     } finally {
       setLoading(false);
     }

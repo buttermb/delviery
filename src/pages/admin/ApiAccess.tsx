@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { Key, Plus, Copy, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function ApiAccess() {
   const { tenant } = useTenantAdminAuth();
@@ -60,10 +61,10 @@ export default function ApiAccess() {
       setFormData({ name: '', permissions: [] });
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create API key',
+        description: humanizeError(error, 'Failed to create API key'),
         variant: 'destructive',
       });
     },

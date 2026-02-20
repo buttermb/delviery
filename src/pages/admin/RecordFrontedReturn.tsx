@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { BarcodeScanner } from "@/components/inventory/BarcodeScanner";
 import { ArrowLeft, Package, AlertTriangle, CheckCircle, Trash2 } from "lucide-react";
 import { useCreditGatedAction } from "@/hooks/useCredits";
@@ -217,7 +218,7 @@ export default function RecordFrontedReturn() {
         );
         navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`);
       } catch (error: unknown) {
-        toast.error("Failed to process return: " + (error instanceof Error ? error.message : 'Unknown error'));
+        toast.error("Failed to process return: " + humanizeError(error, 'Unknown error'));
       } finally {
         setProcessing(false);
       }

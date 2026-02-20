@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     Table,
     TableBody,
@@ -52,7 +53,7 @@ export default function AllTenantsPage() {
             window.location.href = `/${data.slug}/admin/dashboard`;
         },
         onError: (error) => {
-            toast({ title: "Access Failed", description: error.message, variant: "destructive" });
+            toast({ title: "Access Failed", description: humanizeError(error), variant: "destructive" });
         }
     });
 

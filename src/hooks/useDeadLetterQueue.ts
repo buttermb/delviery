@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export interface DeadLetterEntry {
   id: string;
@@ -76,7 +77,7 @@ export function useDeadLetterQueue() {
       toast.success('Workflow execution queued for retry');
     },
     onError: (error: unknown) => {
-      toast.error('Failed to retry execution: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast.error(humanizeError(error, 'Failed to retry execution'));
     },
   });
 
@@ -95,7 +96,7 @@ export function useDeadLetterQueue() {
       toast.success('Entry marked as resolved');
     },
     onError: (error: unknown) => {
-      toast.error('Failed to resolve entry: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast.error(humanizeError(error, 'Failed to resolve entry'));
     },
   });
 
@@ -120,7 +121,7 @@ export function useDeadLetterQueue() {
       toast.success('Entry ignored');
     },
     onError: (error: unknown) => {
-      toast.error('Failed to ignore entry: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast.error(humanizeError(error, 'Failed to ignore entry'));
     },
   });
 
@@ -140,7 +141,7 @@ export function useDeadLetterQueue() {
       toast.success('Entry deleted');
     },
     onError: (error: unknown) => {
-      toast.error('Failed to delete entry: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      toast.error(humanizeError(error, 'Failed to delete entry'));
     },
   });
 

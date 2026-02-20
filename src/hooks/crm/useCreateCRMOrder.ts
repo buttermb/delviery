@@ -7,6 +7,7 @@ import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { humanizeError } from '@/lib/humanizeError';
 
 export interface CreateCRMOrderInput {
     client_id: string;
@@ -114,9 +115,8 @@ export function useCreateCRMOrder() {
             await queryClient.cancelQueries({ queryKey: crmInvoiceKeys.all });
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'Failed to create order';
             logger.error('CRM order creation failed', error, { component: 'useCreateCRMOrder' });
-            toast.error('Order creation failed', { description: message });
+            toast.error('Order creation failed', { description: humanizeError(error, 'Failed to create order') });
         },
         onSuccess: (result) => {
             if (result.type === 'invoice') {

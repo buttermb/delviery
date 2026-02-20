@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { SEOHead } from '@/components/SEOHead';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -196,7 +197,7 @@ export default function TeamManagement() {
     },
     onError: (error: Error) => {
       logger.error('Failed to send invitation', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to send invitation');
+      toast.error(humanizeError(error, 'Failed to send invitation'));
     },
   });
 
@@ -221,7 +222,7 @@ export default function TeamManagement() {
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to update role');
+      toast.error(humanizeError(error, 'Failed to update role'));
     },
   });
 
@@ -246,7 +247,7 @@ export default function TeamManagement() {
     },
     onError: (error: Error) => {
       logger.error('Failed to update status', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to update status');
+      toast.error(humanizeError(error, 'Failed to update status'));
     },
   });
 
@@ -273,7 +274,7 @@ export default function TeamManagement() {
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to remove team member');
+      toast.error(humanizeError(error, 'Failed to remove team member'));
     },
   });
 

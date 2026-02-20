@@ -38,6 +38,7 @@ import {
   Brain,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -186,7 +187,7 @@ export default function IntegrationsSettings() {
       toast({ title: 'Webhook added' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to add webhook', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to add webhook', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -205,7 +206,7 @@ export default function IntegrationsSettings() {
       toast({ title: 'Webhook deleted' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to delete webhook', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to delete webhook', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -235,7 +236,7 @@ export default function IntegrationsSettings() {
         queryClient.setQueryData(['webhooks', tenant?.id], context.previousWebhooks);
       }
       logger.error('Failed to toggle webhook', { error });
-      toast({ title: 'Failed to toggle webhook', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to toggle webhook', description: humanizeError(error), variant: 'destructive' });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });

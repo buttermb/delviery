@@ -53,6 +53,7 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { TIER_PRICES, TIER_NAMES, getFeaturesByCategory, type SubscriptionTier } from '@/lib/featureConfig';
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
 import { AddPaymentMethodDialog } from '@/components/billing/AddPaymentMethodDialog';
@@ -282,7 +283,7 @@ export default function BillingSettings() {
       logger.error('Error updating subscription', { error: error.message });
       toast({
         title: 'Upgrade Failed',
-        description: error.message,
+        description: humanizeError(error),
         variant: 'destructive',
       });
       setUpgradeLoading(false);
@@ -345,10 +346,9 @@ export default function BillingSettings() {
         });
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to open customer portal';
       toast({
         title: 'Error',
-        description: message,
+        description: humanizeError(error, 'Failed to open customer portal'),
         variant: 'destructive',
       });
     } finally {
@@ -379,10 +379,9 @@ export default function BillingSettings() {
         });
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to open customer portal';
       toast({
         title: 'Error',
-        description: message,
+        description: humanizeError(error, 'Failed to open customer portal'),
         variant: 'destructive',
       });
     } finally {

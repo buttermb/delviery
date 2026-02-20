@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -274,7 +275,7 @@ export function useVendorPaymentTerms(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to save payment terms');
+      toast.error(humanizeError(error, 'Failed to save payment terms'));
     },
   });
 
@@ -324,7 +325,7 @@ export function useVendorPaymentTerms(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update payment terms');
+      toast.error(humanizeError(error, 'Failed to update payment terms'));
     },
   });
 
@@ -357,7 +358,7 @@ export function useVendorPaymentTerms(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete payment terms');
+      toast.error(humanizeError(error, 'Failed to delete payment terms'));
     },
   });
 

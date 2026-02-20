@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ShoppingCart,
     ArrowLeft,
@@ -123,7 +124,7 @@ export default function OrderDetailPage() {
             logger.error('Failed to update order status', error, { component: 'OrderDetailPage' });
             toast({
                 title: 'Error',
-                description: error instanceof Error ? error.message : 'Failed to update order',
+                description: humanizeError(error, 'Failed to update order'),
                 variant: 'destructive',
             });
         },
@@ -154,7 +155,7 @@ export default function OrderDetailPage() {
             logger.error('Failed to update notes', error, { component: 'OrderDetailPage' });
             toast({
                 title: 'Error',
-                description: error instanceof Error ? error.message : 'Failed to update notes',
+                description: humanizeError(error, 'Failed to update notes'),
                 variant: 'destructive',
             });
         },
@@ -190,7 +191,7 @@ export default function OrderDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error sending message",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }
@@ -224,7 +225,7 @@ export default function OrderDetailPage() {
             logger.error('Failed to mark order as paid', error, { component: 'OrderDetailPage' });
             toast({
                 title: 'Error',
-                description: error instanceof Error ? error.message : 'Failed to update payment status',
+                description: humanizeError(error, 'Failed to update payment status'),
                 variant: 'destructive',
             });
         },

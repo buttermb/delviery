@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { z } from 'zod';
 import { FormFactory } from '@/components/shared/FormFactory';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -158,7 +159,7 @@ export default function TeamSettings() {
     },
     onError: (error: Error) => {
       logger.error('Invite failed', error, { component: 'TeamSettings' });
-      toast.error(error.message || 'Failed to send invitation');
+      toast.error(humanizeError(error, 'Failed to send invitation'));
     },
   });
 
@@ -181,7 +182,7 @@ export default function TeamSettings() {
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamSettings' });
-      toast.error(error.message || 'Failed to update role');
+      toast.error(humanizeError(error, 'Failed to update role'));
     },
   });
 
@@ -206,7 +207,7 @@ export default function TeamSettings() {
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamSettings' });
-      toast.error(error.message || 'Failed to remove team member');
+      toast.error(humanizeError(error, 'Failed to remove team member'));
     },
   });
 

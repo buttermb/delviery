@@ -14,6 +14,7 @@ import { validatePromoCode } from '@/lib/credits';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -94,7 +95,7 @@ export function BuyCreditsPage() {
 
       if (error) {
         logger.error('Purchase error', error);
-        toast.error('Failed to start purchase', { description: error.message });
+        toast.error('Failed to start purchase', { description: humanizeError(error) });
         return;
       }
 

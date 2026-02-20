@@ -11,6 +11,7 @@ import { logger } from '@/lib/logger';
 import { Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { humanizeError } from '@/lib/humanizeError';
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
 
@@ -125,11 +126,11 @@ export default function DataExport() {
       /* refetch() if we had the query handle handy, but react-query will re-fetch on window focus 
          or we can invalidate queries */
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Export initiation failed", error);
       toast({
         title: "Export Failed",
-        description: error.message,
+        description: humanizeError(error),
         variant: "destructive"
       });
     }

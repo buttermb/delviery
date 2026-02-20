@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, Maximize2, Minimize2, Share2, Receipt, Loader2, AlertCircle } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -422,7 +423,7 @@ export default function PointOfSale() {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     } catch (error) {
       logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
-      toast.error('Error completing sale', { description: error instanceof Error ? error.message : 'Unknown error' });
+      toast.error('Error completing sale', { description: humanizeError(error, 'Unknown error') });
     } finally {
       setLoading(false);
     }

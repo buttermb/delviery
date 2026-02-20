@@ -4,6 +4,7 @@ import type { CRMNote, NoteFormValues } from '@/types/crm';
 import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export const crmNoteKeys = {
     all: ['crm-notes'] as const,
@@ -72,9 +73,8 @@ export function useCreateNote() {
             toast.success('Note added successfully');
         },
         onError: (error: unknown) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Note creation failed', error, { component: 'useCreateNote' });
-            toast.error(`Failed to add note: ${errorMessage}`);
+            toast.error(humanizeError(error, 'Failed to add note'));
         },
     });
 }

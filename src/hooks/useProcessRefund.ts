@@ -18,6 +18,7 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // TYPES
@@ -283,7 +284,7 @@ export function useProcessRefund() {
       });
 
       toast.error('Refund failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

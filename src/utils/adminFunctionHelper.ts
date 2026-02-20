@@ -9,6 +9,7 @@ import { Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import bugFinder from './bugFinder';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface FunctionCallOptions {
   functionName: string;
@@ -64,7 +65,7 @@ export async function callAdminFunction<T = unknown>({
 
       if (showToast) {
         toast.error(errorMessage, {
-          description: error.message || 'Please try again later',
+          description: humanizeError(error, 'Please try again later'),
         });
       }
 
@@ -117,7 +118,7 @@ export async function callAdminFunction<T = unknown>({
 
     if (showToast) {
       toast.error(errorMessage, {
-        description: errorObj.message || 'An unexpected error occurred',
+        description: humanizeError(errorObj, 'An unexpected error occurred'),
       });
     }
 

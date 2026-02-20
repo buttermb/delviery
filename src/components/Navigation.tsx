@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -262,7 +263,7 @@ const Navigation = () => {
                           toast.success("Signed out successfully");
                         } catch (error: unknown) {
                           logger.error('Sign out failed', error, { component: 'Navigation' });
-                          toast.error(error instanceof Error ? error.message : 'Failed to sign out');
+                          toast.error(humanizeError(error, 'Failed to sign out'));
                         } finally {
                           setIsSigningOut(false);
                         }
@@ -375,7 +376,7 @@ const Navigation = () => {
                             toast.success("Signed out successfully");
                           } catch (error: unknown) {
                             logger.error('Sign out failed', error, { component: 'Navigation' });
-                            toast.error(error instanceof Error ? error.message : 'Failed to sign out');
+                            toast.error(humanizeError(error, 'Failed to sign out'));
                           } finally {
                             setIsSigningOut(false);
                           }

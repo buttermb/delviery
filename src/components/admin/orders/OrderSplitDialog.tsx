@@ -35,6 +35,7 @@ import Package from 'lucide-react/dist/esm/icons/package';
 import ArrowRightLeft from 'lucide-react/dist/esm/icons/arrow-right-left';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 import { logActivity } from '@/lib/activityLog';
 import { unifiedOrdersKeys } from '@/hooks/useUnifiedOrders';
@@ -341,7 +342,7 @@ export function OrderSplitDialog({
     onError: (error: Error) => {
       logger.error('Order split failed', error, { component: 'OrderSplitDialog' });
       toast.error('Failed to split order', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

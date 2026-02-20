@@ -20,6 +20,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 export const SecurityMonitoringPanel = () => {
@@ -119,7 +120,7 @@ export const SecurityMonitoringPanel = () => {
       toast({
         variant: 'destructive',
         title: 'Failed to block IP',
-        description: error.message,
+        description: humanizeError(error),
       });
       return;
     }
@@ -142,7 +143,7 @@ export const SecurityMonitoringPanel = () => {
       toast({
         variant: 'destructive',
         title: 'Failed to unblock IP',
-        description: error.message,
+        description: humanizeError(error),
       });
       return;
     }
@@ -165,7 +166,7 @@ export const SecurityMonitoringPanel = () => {
       toast({
         variant: 'destructive',
         title: 'Failed to acknowledge event',
-        description: error.message,
+        description: humanizeError(error),
       });
       return;
     }

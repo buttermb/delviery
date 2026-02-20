@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
@@ -178,13 +179,14 @@ export default function StorefrontCoupons() {
         description: `Coupon ${formData.code.toUpperCase()} has been saved.`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       logger.error('Failed to save coupon', error, { component: 'StorefrontCoupons' });
+      const rawMessage = error instanceof Error ? error.message : '';
       toast({
         title: 'Error',
-        description: error.message?.includes('duplicate')
+        description: rawMessage?.includes('duplicate')
           ? 'A coupon with this code already exists'
-          : 'Failed to save coupon',
+          : humanizeError(error, 'Failed to save coupon'),
         variant: 'destructive',
       });
     },

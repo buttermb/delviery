@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 /**
  * Check whether a rating already exists for a given tracking token.
@@ -84,7 +85,7 @@ export function useSubmitDeliveryRating() {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit rating');
+      toast.error(humanizeError(error, 'Failed to submit rating'));
     },
   });
 }

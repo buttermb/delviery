@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useEffect, useCallback } from 'react';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -139,7 +140,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             onClose();
         } catch (error: any) {
             logger.error('Failed to create client:', error);
-            toast.error(error.message || 'Failed to create client');
+            toast.error(humanizeError(error, 'Failed to create client'));
         } finally {
             setLoading(false);
         }

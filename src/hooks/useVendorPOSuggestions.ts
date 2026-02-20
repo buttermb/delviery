@@ -26,6 +26,7 @@ import {
   type StockoutWarningLevel,
 } from '@/hooks/useInventoryForecast';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -345,7 +346,7 @@ export function useVendorPOSuggestions(): UseVendorPOSuggestionsResult {
       logger.error('Failed to create draft PO', error, {
         component: 'useVendorPOSuggestions',
       });
-      toast.error(error.message || 'Failed to create purchase order');
+      toast.error(humanizeError(error, 'Failed to create purchase order'));
     },
   });
 

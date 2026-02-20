@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { Loader2, Plus, Search, Filter, MoreHorizontal } from "lucide-react";
 import { MarketplaceListing } from "@/types/marketplace-extended";
 import {
@@ -70,7 +71,7 @@ export default function ProductVisibilityManager() {
             toast.success("Visibility updated");
         },
         onError: (error) => {
-            toast.error("Failed to update visibility: " + error.message);
+            toast.error(humanizeError(error, "Failed to update visibility"));
         }
     });
 
@@ -93,7 +94,7 @@ export default function ProductVisibilityManager() {
             toast.success("Status updated");
         },
         onError: (error) => {
-            toast.error("Failed to update status: " + error.message);
+            toast.error(humanizeError(error, "Failed to update status"));
         }
     });
 

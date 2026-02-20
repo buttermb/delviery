@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface UseInventorySyncProps {
     tenantId?: string;
@@ -183,7 +184,7 @@ export function useConfirmOrderInventory() {
 
             toast({
                 title: "Inventory Update Failed",
-                description: error.message || "Failed to update stock levels. Please try again.",
+                description: humanizeError(error, "Failed to update stock levels. Please try again."),
                 variant: "destructive",
             });
         },
@@ -290,7 +291,7 @@ export function useCancelOrderInventory() {
 
             toast({
                 title: "Inventory Restoration Failed",
-                description: error.message || "Failed to restore stock levels. Please try again.",
+                description: humanizeError(error, "Failed to restore stock levels. Please try again."),
                 variant: "destructive",
             });
         },

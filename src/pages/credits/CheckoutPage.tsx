@@ -28,6 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
@@ -150,7 +151,7 @@ export function CheckoutPage() {
     onError: (error: Error) => {
       logger.error('Credit purchase checkout failed', { error: error.message });
       toast.error('Payment failed', {
-        description: error.message || 'Unable to start checkout. Please try again.',
+        description: humanizeError(error, 'Unable to start checkout. Please try again.'),
       });
     },
   });

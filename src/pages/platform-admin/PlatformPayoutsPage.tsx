@@ -17,6 +17,7 @@ import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     Dialog,
     DialogContent,
@@ -75,7 +76,7 @@ export default function PlatformPayoutsPage() {
             queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
         },
         onError: (error) => {
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+            toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
         }
     });
 
@@ -100,7 +101,7 @@ export default function PlatformPayoutsPage() {
             queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
         },
         onError: (error) => {
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+            toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
         }
     });
 

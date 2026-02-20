@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -133,7 +134,7 @@ export function QuickReceiving() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to receive items', error, { component: 'QuickReceiving' });
-      toast.error(`Failed to receive items: ${error instanceof Error ? error.message : 'An error occurred'}`);
+      toast.error(humanizeError(error, 'Failed to receive items'));
     },
   });
 

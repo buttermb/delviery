@@ -5,6 +5,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { humanizeError } from '@/lib/humanizeError';
 
 export interface CustomerInvoiceLineItem {
   id?: string;
@@ -211,7 +212,7 @@ export function useCustomerInvoices() {
       },
       onError: (error: Error) => {
         logger.error('Failed to create invoice', error, { component: 'useCustomerInvoices' });
-        toast.error('Failed to create invoice', { description: error.message });
+        toast.error('Failed to create invoice', { description: humanizeError(error) });
       },
     });
 

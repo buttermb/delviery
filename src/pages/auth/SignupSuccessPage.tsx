@@ -19,6 +19,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import FloraIQLogo from '@/components/FloraIQLogo';
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -154,7 +155,7 @@ export function SignupSuccessPage() {
         logger.error('[SignupSuccess] Resend failed', { email, error: error.message });
         toast({
           title: 'Failed to Resend',
-          description: error.message,
+          description: humanizeError(error),
           variant: 'destructive',
         });
       } else {

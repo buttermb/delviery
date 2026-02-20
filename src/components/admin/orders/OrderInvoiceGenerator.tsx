@@ -11,6 +11,7 @@ import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/utils/formatters';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -908,7 +909,7 @@ export function useOrderInvoiceSave() {
         component: 'useOrderInvoiceSave',
       });
       toast.error('Failed to create invoice', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

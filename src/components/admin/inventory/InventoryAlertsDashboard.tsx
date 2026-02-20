@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { humanizeError } from '@/lib/humanizeError';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface InventoryAlert {
@@ -56,7 +57,7 @@ export function InventoryAlertsDashboard() {
       toast.success('Alert resolved');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to resolve alert: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to resolve alert'));
     },
   });
 

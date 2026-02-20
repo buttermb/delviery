@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Review {
   id: string;
@@ -127,7 +128,7 @@ export function ReviewSection() {
       queryClient.invalidateQueries({ queryKey: ['home-reviews'] });
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit review');
+      toast.error(humanizeError(error, 'Failed to submit review'));
     },
   });
 

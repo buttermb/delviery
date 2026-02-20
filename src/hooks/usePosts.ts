@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
 import type { GetPostsOptions, CreatePostRequest } from '@/types/forum';
+import { humanizeError } from '@/lib/humanizeError';
 
 export function usePosts(options: GetPostsOptions = {}) {
   return useQuery({
@@ -41,7 +42,7 @@ export function useCreatePost() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create post', error, { component: 'useCreatePost' });
-      toast.error(error instanceof Error ? error.message : 'Failed to create post');
+      toast.error(humanizeError(error, 'Failed to create post'));
     },
   });
 }
@@ -59,7 +60,7 @@ export function useUpdatePost() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to update post', error, { component: 'useUpdatePost' });
-      toast.error(error instanceof Error ? error.message : 'Failed to update post');
+      toast.error(humanizeError(error, 'Failed to update post'));
     },
   });
 }
@@ -75,7 +76,7 @@ export function useDeletePost() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete post', error, { component: 'useDeletePost' });
-      toast.error(error instanceof Error ? error.message : 'Failed to delete post');
+      toast.error(humanizeError(error, 'Failed to delete post'));
     },
   });
 }

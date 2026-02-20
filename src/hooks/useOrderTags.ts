@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import type { Tag } from '@/hooks/useCustomerTags';
 
 // Types
@@ -89,7 +90,7 @@ export function useAssignOrderTag() {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to assign tag');
+      toast.error(humanizeError(error, 'Failed to assign tag'));
     },
   });
 }
@@ -124,7 +125,7 @@ export function useRemoveOrderTag() {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to remove tag');
+      toast.error(humanizeError(error, 'Failed to remove tag'));
     },
   });
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,7 +93,7 @@ export default function MarketingAutomationPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketing.campaigns() });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete campaign');
+      toast.error(humanizeError(error, 'Failed to delete campaign'));
     },
   });
 

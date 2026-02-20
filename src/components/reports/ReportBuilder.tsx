@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { REPORT_TYPES, REPORT_FIELDS, DATE_RANGES, SCHEDULE_OPTIONS, ReportField } from '@/lib/constants/reportFields';
 import { Plus, X, Calendar, Mail } from 'lucide-react';
 
@@ -87,7 +88,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
       onClose?.();
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error', description: humanizeError(error), variant: 'destructive' });
     },
   });
 

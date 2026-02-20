@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 interface StripeConfig {
@@ -122,14 +123,14 @@ export function TenantStripeConfig() {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setConnectionStatus("error");
-      setStatusMessage(error.message || "Connection test failed");
+      setStatusMessage(humanizeError(error, "Connection test failed"));
 
       if (!silent) {
         toast({
           title: "Connection Error",
-          description: error.message || "Failed to test Stripe connection",
+          description: humanizeError(error, "Failed to test Stripe connection"),
           variant: "destructive",
         });
       }
@@ -213,11 +214,11 @@ export function TenantStripeConfig() {
 
       // Reload to confirm
       await loadConfiguration();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error saving Stripe configuration:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save Stripe configuration",
+        description: humanizeError(error, "Failed to save Stripe configuration"),
         variant: "destructive",
       });
     } finally {

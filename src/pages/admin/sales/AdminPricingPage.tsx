@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign, Edit, Save, X } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Product {
   id: string;
@@ -67,10 +68,10 @@ export default function AdminPricingPage() {
       setEditingId(null);
       setEditData({});
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Update failed',
-        description: error.message,
+        description: humanizeError(error),
         variant: 'destructive'
       });
     }

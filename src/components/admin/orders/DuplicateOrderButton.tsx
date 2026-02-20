@@ -42,6 +42,7 @@ import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
 import Package from 'lucide-react/dist/esm/icons/package';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface OrderItem {
@@ -238,7 +239,7 @@ export function DuplicateOrderButton({
     onError: (error: Error) => {
       logger.error('Order duplication failed', error, { component: 'DuplicateOrderButton' });
       toast.error('Failed to duplicate order', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

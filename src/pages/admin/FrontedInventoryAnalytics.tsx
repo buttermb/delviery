@@ -25,6 +25,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { format, subDays } from "date-fns";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { humanizeError } from "@/lib/humanizeError";
 
 export default function FrontedInventoryAnalytics() {
   const [loading, setLoading] = useState(true);
@@ -61,7 +62,7 @@ export default function FrontedInventoryAnalytics() {
 
       if (error) {
         logger.error('Error loading fronted inventory:', error);
-        toast.error(`Failed to load analytics: ${error.message}`);
+        toast.error(`Failed to load analytics: ${humanizeError(error)}`);
         return;
       }
 

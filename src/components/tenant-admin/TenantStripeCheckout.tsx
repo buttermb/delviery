@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, CreditCard, AlertCircle } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { humanizeError } from '@/lib/humanizeError';
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export function TenantStripeCheckout() {
@@ -77,7 +78,7 @@ export function TenantStripeCheckout() {
       }
     } catch (error: any) {
       logger.error("Checkout error", error, { component: "TenantStripeCheckout" });
-      toast.error(error.message || "Failed to create checkout session");
+      toast.error(humanizeError(error, "Failed to create checkout session"));
     } finally {
       setLoading(false);
     }

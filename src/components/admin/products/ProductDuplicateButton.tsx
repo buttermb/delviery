@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Copy from "lucide-react/dist/esm/icons/copy";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -168,7 +169,7 @@ export function ProductDuplicateButton({
     onError: (error: Error) => {
       logger.error('Product duplication failed', { error: error.message });
       toast.error('Failed to duplicate product', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

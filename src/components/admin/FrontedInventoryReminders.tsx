@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,7 +63,7 @@ export default function FrontedInventoryReminders() {
       setReminders(frontsNeedingReminder || []);
     } catch (error: unknown) {
       logger.error("Failed to load reminders", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders' });
-      toast.error("Failed to load reminders: " + (error instanceof Error ? error.message : "Unknown error"));
+      toast.error(humanizeError(error, "Failed to load reminders"));
     }
   }, [reminderDays]);
 
@@ -88,7 +89,7 @@ export default function FrontedInventoryReminders() {
       });
     } catch (error: unknown) {
       logger.error("Failed to send reminder", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders', frontId: front.id });
-      toast.error("Failed to send reminder: " + (error instanceof Error ? error.message : "Unknown error"));
+      toast.error(humanizeError(error, "Failed to send reminder"));
     }
   };
 
@@ -105,7 +106,7 @@ export default function FrontedInventoryReminders() {
       toast.success(`Sent ${reminders.length} reminders`);
     } catch (error: unknown) {
       logger.error("Failed to send bulk reminders", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders' });
-      toast.error("Failed to send bulk reminders: " + (error instanceof Error ? error.message : "Unknown error"));
+      toast.error(humanizeError(error, "Failed to send bulk reminders"));
     }
   };
 

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Plus, Edit, Download } from 'lucide-react';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface CustomReport {
   id: string;
@@ -98,7 +99,7 @@ export default function CustomReports() {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create report',
+        description: humanizeError(error, 'Failed to create report'),
         variant: 'destructive',
       });
     },
@@ -139,7 +140,7 @@ export default function CustomReports() {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update report',
+        description: humanizeError(error, 'Failed to update report'),
         variant: 'destructive',
       });
     },

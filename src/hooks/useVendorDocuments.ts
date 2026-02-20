@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   validateFile,
   generateSecureStoragePath,
@@ -309,7 +310,7 @@ export function useVendorDocuments(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create document');
+      toast.error(humanizeError(error, 'Failed to create document'));
     },
   });
 
@@ -352,7 +353,7 @@ export function useVendorDocuments(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update document');
+      toast.error(humanizeError(error, 'Failed to update document'));
     },
   });
 
@@ -420,7 +421,7 @@ export function useVendorDocuments(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete document');
+      toast.error(humanizeError(error, 'Failed to delete document'));
     },
   });
 

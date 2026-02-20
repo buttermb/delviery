@@ -17,6 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Search,
   Package,
@@ -292,7 +293,7 @@ export default function StorefrontProducts() {
     },
     onError: (error: Error) => {
       logger.error('Failed to update product visibility', { error });
-      toast({ title: 'Failed to update visibility', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to update visibility', description: humanizeError(error), variant: 'destructive' });
     },
   });
 

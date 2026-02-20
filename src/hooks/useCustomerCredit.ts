@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -261,7 +262,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to add credit');
+      toast.error(humanizeError(error, 'Failed to add credit'));
     },
   });
 
@@ -319,7 +320,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to deduct credit');
+      toast.error(humanizeError(error, 'Failed to deduct credit'));
     },
   });
 

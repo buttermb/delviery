@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -257,7 +258,7 @@ export function useVendorCompliance(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create compliance record');
+      toast.error(humanizeError(error, 'Failed to create compliance record'));
     },
   });
 
@@ -365,7 +366,7 @@ export function useVendorCompliance(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update compliance record');
+      toast.error(humanizeError(error, 'Failed to update compliance record'));
     },
   });
 
@@ -398,7 +399,7 @@ export function useVendorCompliance(vendorId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete compliance record');
+      toast.error(humanizeError(error, 'Failed to delete compliance record'));
     },
   });
 
@@ -538,7 +539,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to upload document');
+      toast.error(humanizeError(error, 'Failed to upload document'));
     },
   });
 
@@ -573,7 +574,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete document');
+      toast.error(humanizeError(error, 'Failed to delete document'));
     },
   });
 

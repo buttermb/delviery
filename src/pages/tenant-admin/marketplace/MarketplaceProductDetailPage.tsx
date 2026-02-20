@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
     ShoppingCart,
@@ -114,7 +115,7 @@ export default function MarketplaceProductDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error adding to cart",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }
@@ -145,7 +146,7 @@ export default function MarketplaceProductDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error sending message",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }

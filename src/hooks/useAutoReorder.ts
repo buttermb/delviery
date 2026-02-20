@@ -17,6 +17,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -458,7 +459,7 @@ export function useCreateReorderPO() {
     },
     onError: (error: Error) => {
       logger.error('Reorder PO creation failed', error, { component: 'useCreateReorderPO' });
-      toast.error(error.message || 'Failed to create purchase order');
+      toast.error(humanizeError(error, 'Failed to create purchase order'));
     },
   });
 }

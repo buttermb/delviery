@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Truck, Check, X } from "lucide-react";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Separator } from '@/components/ui/separator';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -68,7 +69,7 @@ export function VendorOrderDetailPage() {
             queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
         },
         onError: (error) => {
-            toast.error('Failed to update order status', { description: error.message });
+            toast.error('Failed to update order status', { description: humanizeError(error) });
         }
     });
 

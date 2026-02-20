@@ -78,6 +78,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/utils/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';
@@ -377,7 +378,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
         });
       } catch (error) {
         logger.error('Failed to process CSV', error, { component: 'CatalogSync' });
-        toast.error(error instanceof Error ? error.message : 'Failed to process CSV');
+        toast.error(humanizeError(error, 'Failed to process CSV'));
       } finally {
         setIsProcessing(false);
         setUploadProgress(0);

@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 /**
  * Query key factory for CRM clients
@@ -151,9 +152,8 @@ export function useCreateClient() {
                     queryClient.setQueryData(queryKey as readonly unknown[], data);
                 });
             }
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client creation failed', error, { component: 'useCreateClient' });
-            toast.error('Client creation failed', { description: errorMessage });
+            toast.error('Client creation failed', { description: humanizeError(error) });
         },
         onSuccess: (data) => {
             toast.success('Client created successfully');
@@ -235,9 +235,8 @@ export function useUpdateClient() {
             if (context?.previousDetail && context.clientId) {
                 queryClient.setQueryData(crmClientKeys.detail(context.clientId), context.previousDetail);
             }
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client update failed', error, { component: 'useUpdateClient' });
-            toast.error('Client update failed', { description: errorMessage });
+            toast.error('Client update failed', { description: humanizeError(error) });
         },
         onSuccess: (data: CRMClient | null) => {
             toast.success('Client updated successfully');
@@ -303,9 +302,8 @@ export function useArchiveClient() {
                     queryClient.setQueryData(queryKey as readonly unknown[], data);
                 });
             }
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client archive failed', error, { component: 'useArchiveClient' });
-            toast.error('Client archive failed', { description: errorMessage });
+            toast.error('Client archive failed', { description: humanizeError(error) });
         },
         onSuccess: (data: CRMClient | null) => {
             toast.success('Client archived successfully');
@@ -373,9 +371,8 @@ export function useRestoreClient() {
                     queryClient.setQueryData(queryKey as readonly unknown[], data);
                 });
             }
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Client restore failed', error, { component: 'useRestoreClient' });
-            toast.error('Client restore failed', { description: errorMessage });
+            toast.error('Client restore failed', { description: humanizeError(error) });
         },
         onSuccess: () => {
             toast.success('Client restored successfully');

@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -110,7 +111,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
       onSuccess?.();
     } catch (error: unknown) {
       logger.error('Error adding runner', error as Error, { component: 'AddRunnerDialog' });
-      toast.error(error instanceof Error ? error.message : 'Failed to add runner');
+      toast.error(humanizeError(error, 'Failed to add runner'));
     } finally {
       setIsSubmitting(false);
     }

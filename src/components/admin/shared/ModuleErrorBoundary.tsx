@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface ModuleErrorBoundaryProps {
   children: ReactNode;
@@ -60,7 +61,7 @@ export class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, Mod
 
     // Show toast notification
     toast.error(`${moduleName} encountered an error`, {
-      description: error.message || 'An unexpected error occurred',
+      description: humanizeError(error, 'An unexpected error occurred'),
     });
 
     // Update state with error details

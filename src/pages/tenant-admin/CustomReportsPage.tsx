@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ReportBuilder } from '@/components/reports/ReportBuilder';
 import { Plus, Play, Calendar, Mail, Trash2, FileText } from 'lucide-react';
 import { REPORT_TYPES } from '@/lib/constants/reportFields';
+import { humanizeError } from '@/lib/humanizeError';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function CustomReportsPage() {
@@ -49,7 +50,7 @@ export default function CustomReportsPage() {
       toast({ title: 'Report deleted' });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -77,7 +78,7 @@ export default function CustomReportsPage() {
       toast({ title: 'Report generated', description: 'Your report is ready to view.' });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error', description: humanizeError(error), variant: 'destructive' });
     },
   });
 

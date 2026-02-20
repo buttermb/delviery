@@ -43,6 +43,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { logActivity, EntityType, ActivityAction } from '@/lib/activityLog';
 import { cn } from '@/lib/utils';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface TransferItem {
   product_id: string;
@@ -404,7 +405,7 @@ export function StockTransfer({ className }: StockTransferProps) {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create stock transfer', error, { component: 'StockTransfer' });
-      toast.error(error instanceof Error ? error.message : 'Failed to create stock transfer');
+      toast.error(humanizeError(error, 'Failed to create stock transfer'));
     },
   });
 
