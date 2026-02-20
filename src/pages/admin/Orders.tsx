@@ -32,6 +32,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/CopyButton";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
@@ -106,6 +107,7 @@ export default function Orders() {
   const navigate = useTenantNavigate();
   const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { canEdit, canDelete, canExport } = usePermissions();
   const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
   const deliveryEnabled = isFeatureEnabled('delivery_tracking');
 
@@ -836,19 +838,23 @@ export default function Orders() {
 
         return (
           <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
-            <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
-              <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
-                <SelectValue>{getStatusBadge(order.status)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="preparing">Preparing</SelectItem>
-                <SelectItem value="in_transit">In Transit</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            {canEdit('orders') ? (
+              <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
+                <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                  <SelectValue>{getStatusBadge(order.status)}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="preparing">Preparing</SelectItem>
+                  <SelectItem value="in_transit">In Transit</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              getStatusBadge(order.status)
+            )}
             <OrderSLAIndicator order={slaOrder} compact />
           </div>
         );
@@ -910,7 +916,7 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              {isOrderEditable(order.status) && (
+              {isOrderEditable(order.status) && canEdit('orders') && (
                 <DropdownMenuItem onClick={() => {
                   setEditOrder(order);
                   setEditModalOpen(true);
@@ -927,7 +933,7 @@ export default function Orders() {
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
-              {['delivered', 'completed'].includes(order.status) && (
+              {['delivered', 'completed'].includes(order.status) && canEdit('orders') && (
                 <DropdownMenuItem onClick={() => {
                   setRefundOrder(order);
                   setRefundModalOpen(true);
@@ -937,7 +943,7 @@ export default function Orders() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              {order.status !== 'cancelled' && (
+              {order.status !== 'cancelled' && canEdit('orders') && (
                 <DropdownMenuItem
                   onClick={() => handleCancelOrder(order)}
                   className="text-destructive focus:text-destructive"
@@ -946,13 +952,15 @@ export default function Orders() {
                   Cancel Order
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={() => handleDelete(order.id)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Order
-              </DropdownMenuItem>
+              {canDelete('orders') && (
+                <DropdownMenuItem
+                  onClick={() => handleDelete(order.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Order
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -984,28 +992,34 @@ export default function Orders() {
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex gap-2">
-              <OrderExportButton
-                orders={sortedOrders}
-                filenamePrefix="orders-export"
-                variant="outline"
-                className="min-h-[48px] touch-manipulation"
-                disabled={sortedOrders.length === 0}
-              />
-              <Button
-                variant="outline"
-                className="min-h-[48px] touch-manipulation"
-                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
-              >
-                <WifiOff className="mr-2 h-4 w-4" />
-                Offline Order
-              </Button>
-              <Button
-                variant="default"
-                className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
-                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
-              >
-                + New Order
-              </Button>
+              {canExport('orders') && (
+                <OrderExportButton
+                  orders={sortedOrders}
+                  filenamePrefix="orders-export"
+                  variant="outline"
+                  className="min-h-[48px] touch-manipulation"
+                  disabled={sortedOrders.length === 0}
+                />
+              )}
+              {canEdit('orders') && (
+                <Button
+                  variant="outline"
+                  className="min-h-[48px] touch-manipulation"
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
+                >
+                  <WifiOff className="mr-2 h-4 w-4" />
+                  Offline Order
+                </Button>
+              )}
+              {canEdit('orders') && (
+                <Button
+                  variant="default"
+                  className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
+                >
+                  + New Order
+                </Button>
+              )}
               <TakeTourButton
                 tutorialId={ordersTutorial.id}
                 steps={ordersTutorial.steps}
@@ -1291,58 +1305,62 @@ export default function Orders() {
         selectedIds={selectedOrders}
         onClearSelection={() => setSelectedOrders([])}
         actions={[
-          {
-            id: 'mark-confirmed',
-            label: 'Confirmed',
-            icon: <CheckCircle className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('confirmed'); },
-          },
-          {
-            id: 'mark-delivered',
-            label: 'Delivered',
-            icon: <CheckCircle className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('delivered'); },
-          },
-          {
-            id: 'mark-preparing',
-            label: 'Preparing',
-            icon: <Package className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('preparing'); },
-          },
-          {
-            id: 'mark-in-transit',
-            label: 'In Transit',
-            icon: <Truck className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('in_transit'); },
-          },
-          {
-            id: 'assign-runner',
-            label: 'Assign Runner',
-            icon: <UserPlus className="h-4 w-4" />,
-            disabled: !deliveryEnabled,
-            tooltip: !deliveryEnabled ? 'Enable Delivery Tracking in Settings' : undefined,
-            onClick: async () => { setAssignRunnerDialogOpen(true); },
-          },
-          {
-            id: 'merge-orders',
-            label: 'Merge',
-            icon: <Merge className="h-4 w-4" />,
-            onClick: async () => { setMergeDialogOpen(true); },
-          },
-          {
-            id: 'mark-cancelled',
-            label: 'Cancel',
-            icon: <XCircle className="h-4 w-4" />,
-            variant: 'destructive',
-            onClick: async () => { handleBulkStatusChange('cancelled'); },
-          },
-          {
-            id: 'delete',
-            label: 'Delete',
-            icon: <Trash2 className="h-4 w-4" />,
-            variant: 'destructive',
-            onClick: async () => { handleBulkDelete(); },
-          },
+          ...(canEdit('orders') ? [
+            {
+              id: 'mark-confirmed',
+              label: 'Confirmed',
+              icon: <CheckCircle className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('confirmed'); },
+            },
+            {
+              id: 'mark-delivered',
+              label: 'Delivered',
+              icon: <CheckCircle className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('delivered'); },
+            },
+            {
+              id: 'mark-preparing',
+              label: 'Preparing',
+              icon: <Package className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('preparing'); },
+            },
+            {
+              id: 'mark-in-transit',
+              label: 'In Transit',
+              icon: <Truck className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('in_transit'); },
+            },
+            {
+              id: 'assign-runner',
+              label: 'Assign Runner',
+              icon: <UserPlus className="h-4 w-4" />,
+              disabled: !deliveryEnabled,
+              tooltip: !deliveryEnabled ? 'Enable Delivery Tracking in Settings' : undefined,
+              onClick: async () => { setAssignRunnerDialogOpen(true); },
+            },
+            {
+              id: 'merge-orders',
+              label: 'Merge',
+              icon: <Merge className="h-4 w-4" />,
+              onClick: async () => { setMergeDialogOpen(true); },
+            },
+            {
+              id: 'mark-cancelled',
+              label: 'Cancel',
+              icon: <XCircle className="h-4 w-4" />,
+              variant: 'destructive' as const,
+              onClick: async () => { handleBulkStatusChange('cancelled'); },
+            },
+          ] : []),
+          ...(canDelete('orders') ? [
+            {
+              id: 'delete',
+              label: 'Delete',
+              icon: <Trash2 className="h-4 w-4" />,
+              variant: 'destructive' as const,
+              onClick: async () => { handleBulkDelete(); },
+            },
+          ] : []),
         ]}
       />
 

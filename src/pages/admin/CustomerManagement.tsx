@@ -35,6 +35,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
@@ -103,6 +104,7 @@ export function CustomerManagement() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
   const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const { canEdit, canDelete, canExport } = usePermissions();
   const posEnabled = isFeatureEnabled('pos');
 
   // Get customer IDs filtered by tags
@@ -470,14 +472,16 @@ export function CustomerManagement() {
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
-        <Button
-          onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
-          className="min-h-[44px] touch-manipulation flex-shrink-0"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Add Customer</span>
-          <span className="sm:hidden">Add</span>
-        </Button>
+        {canEdit('customers') && (
+          <Button
+            onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
+            className="min-h-[44px] touch-manipulation flex-shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Add Customer</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
+        )}
       </div>
 
       {/* Stats Carousel */}
@@ -552,16 +556,20 @@ export function CustomerManagement() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
-              <Download className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Export</span>
-              <span className="sm:hidden">Export</span>
-            </Button>
-            <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Import</span>
-              <span className="sm:hidden">Import</span>
-            </Button>
+            {canExport('customers') && (
+              <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
+                <Download className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Export</span>
+                <span className="sm:hidden">Export</span>
+              </Button>
+            )}
+            {canEdit('customers') && (
+              <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Import</span>
+                <span className="sm:hidden">Import</span>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
               <Filter className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Refresh</span>
@@ -706,25 +714,31 @@ export function CustomerManagement() {
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            disabled={!posEnabled}
-                            title={!posEnabled ? 'Enable POS in Settings' : undefined}
-                            onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
-                          >
-                            <DollarSign className="w-4 h-4 mr-2" />
-                            New Order
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
-                          >
-                            <Trash className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
+                          {canEdit('customers') && (
+                            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                          )}
+                          {canEdit('orders') && (
+                            <DropdownMenuItem
+                              disabled={!posEnabled}
+                              title={!posEnabled ? 'Enable POS in Settings' : undefined}
+                              onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              New Order
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete('customers') && (
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
+                            >
+                              <Trash className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>

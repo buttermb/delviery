@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOptimisticList } from "@/hooks/useOptimisticUpdate";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -114,6 +115,7 @@ export default function ProductManagement() {
   const navigateTenant = useTenantNavigate();
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
+  const { canEdit, canDelete, canExport } = usePermissions();
   useEncryption();
   const queryClient = useQueryClient();
   const { invalidateProductCaches } = useProductMutations();
@@ -1054,25 +1056,33 @@ export default function ProductManagement() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled={isGenerating} onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
-              <Edit className="mr-2 h-4 w-4" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={isDuplicating} onClick={() => duplicateProduct(product)}>
-              <Copy className="mr-2 h-4 w-4" /> Duplicate
-            </DropdownMenuItem>
+            {canEdit('products') && (
+              <DropdownMenuItem disabled={isGenerating} onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
+              </DropdownMenuItem>
+            )}
+            {canEdit('products') && (
+              <DropdownMenuItem disabled={isDuplicating} onClick={() => duplicateProduct(product)}>
+                <Copy className="mr-2 h-4 w-4" /> Duplicate
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              disabled={isDeleting}
-              onClick={() => handleDelete(product.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={isPublishing} onClick={() => handlePublish(product.id)}>
-              <Store className="mr-2 h-4 w-4" /> Publish to Store
-            </DropdownMenuItem>
+            {canDelete('products') && (
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                disabled={isDeleting}
+                onClick={() => handleDelete(product.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            )}
+            {canEdit('products') && (
+              <DropdownMenuItem disabled={isPublishing} onClick={() => handlePublish(product.id)}>
+                <Store className="mr-2 h-4 w-4" /> Publish to Store
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -1168,35 +1178,41 @@ export default function ProductManagement() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <ExportButton
-            data={filteredProducts.map(p => ({
-              ...p,
-              margin_percent: p.wholesale_price && p.cost_per_unit
-                ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
-                : null,
-            }))}
-            filename="products"
-            columns={[
-              { key: "name", label: "Name" },
-              { key: "sku", label: "SKU" },
-              { key: "category", label: "Category" },
-              { key: "cost_per_unit", label: "Cost" },
-              { key: "wholesale_price", label: "Price" },
-              { key: "margin_percent", label: "Margin %" },
-              { key: "available_quantity", label: "Stock" },
-              { key: "strain_name", label: "Strain" },
-              { key: "vendor_name", label: "Vendor" },
-            ]}
-          />
-          <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
-            <Barcode className="h-4 w-4 mr-2" />
-            Generate Barcodes
-          </Button>
-          <ProductImportDialog
-            open={importDialogOpen}
-            onOpenChange={setImportDialogOpen}
-            onSuccess={loadProducts}
-          />
+          {canExport('products') && (
+            <ExportButton
+              data={filteredProducts.map(p => ({
+                ...p,
+                margin_percent: p.wholesale_price && p.cost_per_unit
+                  ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
+                  : null,
+              }))}
+              filename="products"
+              columns={[
+                { key: "name", label: "Name" },
+                { key: "sku", label: "SKU" },
+                { key: "category", label: "Category" },
+                { key: "cost_per_unit", label: "Cost" },
+                { key: "wholesale_price", label: "Price" },
+                { key: "margin_percent", label: "Margin %" },
+                { key: "available_quantity", label: "Stock" },
+                { key: "strain_name", label: "Strain" },
+                { key: "vendor_name", label: "Vendor" },
+              ]}
+            />
+          )}
+          {canEdit('products') && (
+            <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
+              <Barcode className="h-4 w-4 mr-2" />
+              Generate Barcodes
+            </Button>
+          )}
+          {canEdit('products') && (
+            <ProductImportDialog
+              open={importDialogOpen}
+              onOpenChange={setImportDialogOpen}
+              onSuccess={loadProducts}
+            />
+          )}
 
           <Dialog
             open={isDialogOpen}
@@ -1205,12 +1221,14 @@ export default function ProductManagement() {
               if (!open) setEditingProduct(null);
             }}
           >
-            <DialogTrigger asChild>
-              <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-            </DialogTrigger>
+            {canEdit('products') && (
+              <DialogTrigger asChild>
+                <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Product
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
               <DialogHeader>
                 <DialogTitle>

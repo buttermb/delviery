@@ -36,6 +36,7 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
+import { usePermissions } from '@/hooks/usePermissions';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -82,6 +83,7 @@ const initialFormData: InviteFormData = {
 export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { canEdit, canDelete } = usePermissions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
@@ -423,62 +425,70 @@ export default function TeamManagement() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'admin' })}
-                  disabled={row.role === 'admin' || isUpdating}
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  Make Admin
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'member' })}
-                  disabled={row.role === 'member' || isUpdating}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Make Member
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'viewer' })}
-                  disabled={row.role === 'viewer' || isUpdating}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Make Viewer
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {row.status === 'active' ? (
-                  <DropdownMenuItem
-                    onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'suspended' })}
-                    className="text-amber-600"
-                    disabled={isUpdating}
-                  >
-                    <UserX className="h-4 w-4 mr-2" />
-                    Suspend Member
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'active' })}
-                    className="text-green-600"
-                    disabled={isUpdating}
-                  >
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Reactivate Member
-                  </DropdownMenuItem>
+                {canEdit('team') && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'admin' })}
+                      disabled={row.role === 'admin' || isUpdating}
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Make Admin
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'member' })}
+                      disabled={row.role === 'member' || isUpdating}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Make Member
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'viewer' })}
+                      disabled={row.role === 'viewer' || isUpdating}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Make Viewer
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {row.status === 'active' ? (
+                      <DropdownMenuItem
+                        onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'suspended' })}
+                        className="text-amber-600"
+                        disabled={isUpdating}
+                      >
+                        <UserX className="h-4 w-4 mr-2" />
+                        Suspend Member
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'active' })}
+                        className="text-green-600"
+                        disabled={isUpdating}
+                      >
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        Reactivate Member
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
-                  className="text-destructive"
-                  disabled={isUpdating}
-                >
-                  Remove Member
-                </DropdownMenuItem>
+                {canDelete('team') && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
+                      className="text-destructive"
+                      disabled={isUpdating}
+                    >
+                      Remove Member
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ],
-    [updateRoleMutation.isPending, updateStatusMutation.isPending, removeMutation.isPending]
+    [updateRoleMutation.isPending, updateStatusMutation.isPending, removeMutation.isPending, canEdit, canDelete]
   );
 
   if (authLoading) {
@@ -534,12 +544,14 @@ export default function TeamManagement() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button disabled={isLimitReached || inviteMutation.isPending}>
-              <Plus className="w-4 h-4 mr-2" />
-              Invite Member
-            </Button>
-          </DialogTrigger>
+          {canEdit('team') && (
+            <DialogTrigger asChild>
+              <Button disabled={isLimitReached || inviteMutation.isPending}>
+                <Plus className="w-4 h-4 mr-2" />
+                Invite Member
+              </Button>
+            </DialogTrigger>
+          )}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Team Member</DialogTitle>
