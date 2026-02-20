@@ -416,7 +416,7 @@ export const useSendNotification = () => {
       return { 
         success: successCount > 0, 
         notifications,
-        message: successCount > 0 ? `${successCount} notification(s) sent` : 'No notifications sent'
+        message: successCount > 0 ? `${successCount} ${successCount === 1 ? 'notification' : 'notifications'} sent` : 'No notifications sent'
       };
     },
     onSuccess: (result) => {

@@ -377,7 +377,7 @@ export function useOrderCancellation(): UseOrderCancellationResult {
       } else {
         showSuccessToast(
           'Order Cancelled',
-          `${successCount} items restored, ${failedCount} failed`
+          `${successCount} ${successCount === 1 ? 'item' : 'items'} restored, ${failedCount} failed`
         );
       }
 

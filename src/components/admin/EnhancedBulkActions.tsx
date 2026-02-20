@@ -121,7 +121,7 @@ export function EnhancedBulkActions({
               setIsUpdating(true);
               try {
                 await onBulkUpdate({ in_stock: true });
-                toast.success(`${selectedCount} product(s) are now visible`);
+                toast.success(`${selectedCount === 1 ? '1 product is' : `${selectedCount} products are`} now visible`);
               } catch (error: unknown) {
                 logger.error('Bulk show failed', error, { component: 'EnhancedBulkActions' });
                 toast.error(humanizeError(error, 'Failed to show products'));
@@ -151,7 +151,7 @@ export function EnhancedBulkActions({
               setIsUpdating(true);
               try {
                 await onBulkUpdate({ in_stock: false });
-                toast.success(`${selectedCount} product(s) are now hidden`);
+                toast.success(`${selectedCount === 1 ? '1 product is' : `${selectedCount} products are`} now hidden`);
               } catch (error: unknown) {
                 logger.error('Bulk hide failed', error, { component: 'EnhancedBulkActions' });
                 toast.error(humanizeError(error, 'Failed to hide products'));

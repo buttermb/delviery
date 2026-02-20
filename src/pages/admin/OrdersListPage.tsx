@@ -376,7 +376,7 @@ export function OrdersListPage() {
       return ids;
     },
     onSuccess: (ids) => {
-      toast.success(`${ids.length} order${ids.length > 1 ? 's' : ''} deleted`);
+      toast.success(`${ids.length} ${ids.length !== 1 ? 'orders' : 'order'} deleted`);
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
     },
     onError: (error) => {

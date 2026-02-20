@@ -141,14 +141,14 @@ function calculateComplianceStatus(
             licenseStatus = 'expired';
             issues.push({
                 severity: 'critical',
-                message: `${expiredLicenses.length} license(s) expired`,
+                message: `${expiredLicenses.length} ${expiredLicenses.length === 1 ? 'license' : 'licenses'} expired`,
                 field: 'license',
             });
         } else if (expiringLicenses.length > 0) {
             licenseStatus = 'expiring_soon';
             issues.push({
                 severity: 'warning',
-                message: `${expiringLicenses.length} license(s) expiring soon`,
+                message: `${expiringLicenses.length} ${expiringLicenses.length === 1 ? 'license' : 'licenses'} expiring soon`,
                 field: 'license',
             });
         }

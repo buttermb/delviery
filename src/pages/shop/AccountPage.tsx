@@ -1098,7 +1098,7 @@ function QuickReorderButton({
       setCartItemCount(cart.reduce((sum: number, c: any) => sum + c.quantity, 0));
 
       toast.success('Items added to cart', {
-        description: `${order.items?.length || 0} item(s) from order ${order.order_number}`,
+        description: `${(order.items?.length || 0) === 1 ? '1 item' : `${order.items?.length || 0} items`} from order ${order.order_number}`,
       });
 
       // Navigate to cart

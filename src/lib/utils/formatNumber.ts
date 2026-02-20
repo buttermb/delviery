@@ -98,6 +98,22 @@ export function formatQuantity(
 }
 
 /**
+ * Pluralize a word based on count
+ * pluralize(1, 'item') → '1 item'
+ * pluralize(0, 'item') → '0 items'
+ * pluralize(5, 'item') → '5 items'
+ * pluralize(1, 'category', 'categories') → '1 category'
+ */
+export function pluralize(
+  count: number,
+  singular: string,
+  plural?: string
+): string {
+  const pluralForm = plural || `${singular}s`;
+  return `${formatNumber(count)} ${count === 1 ? singular : pluralForm}`;
+}
+
+/**
  * Format large numbers with abbreviations (K, M, B)
  */
 export function formatCompactNumber(

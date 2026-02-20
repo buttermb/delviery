@@ -114,7 +114,7 @@ export class BusinessIntelligenceEngine {
                 insights.push({
                     type: 'risk',
                     title: 'Slow-Moving Inventory',
-                    description: `${slowMovers.length} products have not sold in the last 14 days.`,
+                    description: `${slowMovers.length} ${slowMovers.length === 1 ? 'product has' : 'products have'} not sold in the last 14 days.`,
                     impact: slowMovers.length > 5 ? 'high' : 'medium',
                     recommendations: [
                         'Create flash sale for slow movers',

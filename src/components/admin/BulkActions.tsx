@@ -56,7 +56,7 @@ export function BulkActions({
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["admin-products"] });
-      toast({ title: `✓ ${selectedCount} products deleted` });
+      toast({ title: `✓ ${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} deleted` });
       onClearSelection();
     },
     onError: (error: unknown) => {
@@ -73,7 +73,7 @@ export function BulkActions({
     bulkUpdate.mutate(
       { updates: { in_stock: true } },
       {
-        onSuccess: () => toast({ title: `${selectedCount} products set to active` }),
+        onSuccess: () => toast({ title: `${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to active` }),
       }
     );
   };
@@ -82,7 +82,7 @@ export function BulkActions({
     bulkUpdate.mutate(
       { updates: { in_stock: false } },
       {
-        onSuccess: () => toast({ title: `${selectedCount} products set to inactive` }),
+        onSuccess: () => toast({ title: `${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to inactive` }),
       }
     );
   };
@@ -104,14 +104,14 @@ export function BulkActions({
         open={bulkDeleteDialogOpen}
         onOpenChange={setBulkDeleteDialogOpen}
         onConfirm={confirmBulkDelete}
-        itemName={`${selectedCount} products`}
+        itemName={`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'}`}
         itemType="products"
         isLoading={bulkDelete.isPending}
       />
       <Card className="p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-medium">{selectedCount} products selected</span>
+          <span className="font-medium">{selectedCount} {selectedCount === 1 ? 'product' : 'products'} selected</span>
           <Button
             onClick={onClearSelection}
             variant="ghost"

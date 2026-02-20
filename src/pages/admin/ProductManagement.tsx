@@ -752,10 +752,10 @@ export default function ProductManagement() {
 
           if (skippedCount > 0) {
             toast.warning(`Deleted ${deletableIds.length} products, skipped ${skippedCount}`, {
-              description: `${skippedCount} product(s) with existing orders were not deleted.`
+              description: `${skippedCount} ${skippedCount === 1 ? 'product' : 'products'} with existing orders not deleted.`
             });
           } else {
-            toast.success(`${deletableIds.length} products deleted`);
+            toast.success(`${deletableIds.length} ${deletableIds.length === 1 ? 'product' : 'products'} deleted`);
           }
 
           setProducts(prev => prev.filter(p => !deletableIds.includes(p.id)));

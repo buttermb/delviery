@@ -333,7 +333,7 @@ export default function Orders() {
     },
     onSuccess: (ids) => {
       const count = ids.length;
-      toast.success(`${count} order${count > 1 ? 's' : ''} deleted successfully`);
+      toast.success(`${count} ${count !== 1 ? 'orders' : 'order'} deleted successfully`);
       refetch();
       setSelectedOrders([]);
       triggerHaptic('heavy');
@@ -1300,7 +1300,7 @@ export default function Orders() {
         open={deleteConfirmation.open}
         onOpenChange={(open) => setDeleteConfirmation(prev => ({ ...prev, open }))}
         onConfirm={handleConfirmDelete}
-        itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} orders` : 'this order'}
+        itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} ${selectedOrders.length === 1 ? 'order' : 'orders'}` : 'this order'}
         description="This action cannot be undone."
       />
 

@@ -169,7 +169,7 @@ export function OrdersHubPage() {
 
       toast({
         title: 'Items added to cart',
-        description: `${order.items.length} item(s) from order #${order.order_number}`,
+        description: `${order.items.length} ${order.items.length === 1 ? 'item' : 'items'} from order #${order.order_number}`,
       });
       navigate(`/shop/${storeSlug}/cart`);
     } catch (error) {

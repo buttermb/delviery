@@ -223,7 +223,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: 'critical',
       category: 'orders',
-      title: `${pendingMenuOrders.data.length} Disposable Menu orders waiting`,
+      title: `${pendingMenuOrders.data.length} Disposable Menu ${pendingMenuOrders.data.length === 1 ? 'order' : 'orders'} waiting`,
       description: 'Customers waiting for confirmation',
       value: String(totalValue),
       actionLabel: 'Process',
@@ -237,7 +237,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: 'critical',
       category: 'delivery',
-      title: `${lateDeliveries.data.length} deliveries running late`,
+      title: `${lateDeliveries.data.length} ${lateDeliveries.data.length === 1 ? 'delivery' : 'deliveries'} running late`,
       description: 'Customers waiting - check with drivers',
       actionLabel: 'Track',
       actionRoute: '/admin/fulfillment-hub',
@@ -250,7 +250,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: 'critical',
       category: 'inventory',
-      title: `${outOfStock.data.length} products out of stock`,
+      title: `${outOfStock.data.length} ${outOfStock.data.length === 1 ? 'product' : 'products'} out of stock`,
       description: 'Customers cannot order these items',
       actionLabel: 'Restock',
       actionRoute: '/admin/inventory-hub?tab=stock&filter=out_of_stock',
@@ -270,7 +270,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: priority as AlertPriority,
       category: 'orders',
-      title: `${pendingOrders.data.length} orders waiting to process`,
+      title: `${pendingOrders.data.length} ${pendingOrders.data.length === 1 ? 'order' : 'orders'} waiting to process`,
       value: String(totalValue),
       actionLabel: 'View',
       actionRoute: '/admin/orders?status=pending',
@@ -287,7 +287,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: 'important',
       category: 'orders',
-      title: `${wholesalePending.data.length} wholesale orders need approval`,
+      title: `${wholesalePending.data.length} wholesale ${wholesalePending.data.length === 1 ? 'order needs' : 'orders need'} approval`,
       value: String(totalValue),
       actionLabel: 'Review',
       actionRoute: '/admin/orders?tab=wholesale',
@@ -300,7 +300,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: 'important',
       category: 'inventory',
-      title: `${lowStock.data.length} items running low`,
+      title: `${lowStock.data.length} ${lowStock.data.length === 1 ? 'item' : 'items'} running low`,
       description: 'Reorder to avoid stockouts',
       actionLabel: 'Reorder',
       actionRoute: '/admin/inventory-hub?tab=stock',
@@ -318,7 +318,7 @@ export async function fetchAttentionItems(
       items.push(createAttentionItem({
         priority: 'important',
         category: 'customers',
-        title: `${customerTabs.data.length} customers with open tabs`,
+        title: `${customerTabs.data.length} ${customerTabs.data.length === 1 ? 'customer' : 'customers'} with open tabs`,
         value: String(totalOwed),
         actionLabel: 'Collect',
         actionRoute: '/admin/customer-hub',
@@ -334,7 +334,7 @@ export async function fetchAttentionItems(
     items.push(createAttentionItem({
       priority: 'info',
       category: 'delivery',
-      title: `${activeDeliveries.data.length} deliveries in progress`,
+      title: `${activeDeliveries.data.length} ${activeDeliveries.data.length === 1 ? 'delivery' : 'deliveries'} in progress`,
       description: 'All on schedule',
       actionLabel: 'Track',
       actionRoute: '/admin/fulfillment-hub',

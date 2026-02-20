@@ -35,7 +35,7 @@ export async function processAutomationRules(
             results.push({
                 ruleId: 'low_stock_alert',
                 triggered: true,
-                message: `${count} items are running low on stock.`,
+                message: `${count} ${count === 1 ? 'item is' : 'items are'} running low on stock.`,
                 action: '/admin/inventory-hub',
                 data: { count }
             });

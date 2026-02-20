@@ -24,6 +24,7 @@ export {
   formatNumber,
   formatPercent,
   formatQuantity,
+  pluralize,
   formatCompactNumber,
   formatDuration,
   formatFileSize,
@@ -79,6 +80,9 @@ export {
  * - formatNumber(1234) → "1,234"
  * - formatPercent(12.5) → "12.5%"
  * - formatQuantity(5, 'items') → "5 items"
+ * - pluralize(1, 'item') → "1 item"
+ * - pluralize(5, 'item') → "5 items"
+ * - pluralize(1, 'category', 'categories') → "1 category"
  * - formatCompactNumber(1234567) → "1.2M"
  * - formatDuration(90) → "1 hour 30 min"
  * - formatFileSize(1024) → "1 KB"

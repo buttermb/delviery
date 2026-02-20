@@ -380,7 +380,7 @@ function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
               <div>
                 <p className="font-medium">Out of Stock Alert</p>
                 <p className="text-sm text-muted-foreground">
-                  {inventory.outOfStockProducts} products are currently out of stock
+                  {inventory.outOfStockProducts} {inventory.outOfStockProducts === 1 ? 'product is' : 'products are'} currently out of stock
                 </p>
               </div>
             </div>
@@ -485,7 +485,7 @@ function CustomersTab({ data }: { data: UnifiedAnalyticsData }) {
                         </div>
                         <div className="text-right ml-2">
                           <p className="text-sm font-medium">{formatCurrency(customer.totalSpent)}</p>
-                          <p className="text-xs text-muted-foreground">{customer.orderCount} orders</p>
+                          <p className="text-xs text-muted-foreground">{customer.orderCount} {customer.orderCount === 1 ? 'order' : 'orders'}</p>
                         </div>
                       </div>
                     </div>

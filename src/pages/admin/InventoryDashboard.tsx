@@ -500,7 +500,7 @@ export default function InventoryDashboard() {
                         </Pie>
                         <Tooltip
                           formatter={(value: number, name: string) => [
-                            `${value} products`,
+                            `${value} ${value === 1 ? 'product' : 'products'}`,
                             name,
                           ]}
                         />

@@ -288,7 +288,7 @@ export default function StorefrontProducts() {
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       setSelectedProducts(new Set());
       toast({
-        title: `${selectedProducts.size} products ${isVisible ? 'shown' : 'hidden'}`,
+        title: `${selectedProducts.size} ${selectedProducts.size === 1 ? 'product' : 'products'} ${isVisible ? 'shown' : 'hidden'}`,
       });
     },
     onError: (error: Error) => {
