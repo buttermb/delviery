@@ -563,7 +563,7 @@
 - [x] Task 331: Fix redirect after login — go to intended page, not always dashboard — Added intendedDestinationUtils.consume() to MFAChallengePage (all portals), customer LoginPage (3 redirect paths), and super-admin LoginPage (2 redirect paths) so all login flows now respect the saved intended destination from sessionStorage instead of always redirecting to dashboard.
 - [x] Task 332: Fix tenant slug in URL consistency — no double-slug or missing-slug bugs — Fixed 4 files with missing tenant slug in navigation: ConvertPreOrderDialog.tsx (raw useNavigate→useTenantNavigate), OrderPipelineBoard.tsx PipelineColumn (raw useNavigate→useTenantNavigate), NotFoundPage.tsx (hardcoded /admin/ quick links now use slug derived from URL params/path, hidden when no tenant context), MenuCard.tsx (window.location.href→useTenantNavigate for storefront builder link). KPICard and files using useTenantNavigate were already correct.
 - [x] Task 333: Add page titles — document.title updates on every route change — Created DocumentTitleManager component (src/components/DocumentTitleManager.tsx) that watches location.pathname via useLocation() and auto-generates page titles from path segments using a comprehensive SEGMENT_LABELS map (~180 entries). Handles all portal prefixes (Super Admin, Platform Admin, Courier, Vendor, Community, tenant admin, customer shop). Filters out dynamic segments (UUIDs, numeric IDs). Placed inside BrowserRouter in App.tsx alongside RouteProgressManager. Pages using usePageTitle() hook override with their own title since their effect runs after this component.
-- [ ] Task 334: Run npx tsc --noEmit � Checkpoint
+- [x] Task 334: Run npx tsc --noEmit � Checkpoint. Zero errors.
 
 ## Phase C4: Toast & Feedback Consistency (8 tasks)
 
