@@ -227,7 +227,7 @@ export function SuperAdminLayout() {
         tabIndex={-1}
         className={cn(
           isImpersonating ? 'pt-28' : 'pt-16', // Extra offset if impersonation banner is shown
-          'min-h-[calc(100vh-4rem)]',
+          'min-h-[calc(100dvh-4rem)]',
           'px-4 md:px-6 print:px-0 print:pt-0',
           'focus:outline-none'
         )}

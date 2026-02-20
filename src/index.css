@@ -118,7 +118,7 @@ body {
 /* Dialog content should be scrollable when keyboard opens */
 body.keyboard-open [role="dialog"],
 body.keyboard-open [data-radix-dialog-content] {
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
   overflow-y: auto;
 }
 
@@ -349,7 +349,7 @@ body.keyboard-open [data-radix-dialog-content] {
 
   html,
   body {
-    min-height: 100vh;
+    min-height: 100dvh;
     /* overflow-x: hidden; - handled by specific containers if needed */
   }
 
@@ -1020,7 +1020,7 @@ body.keyboard-open [data-radix-dialog-content] {
   /* Dialog content should be scrollable when keyboard opens */
   body.keyboard-open [role="dialog"],
   body.keyboard-open [data-radix-dialog-content] {
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
     overflow-y: auto;
   }
 
