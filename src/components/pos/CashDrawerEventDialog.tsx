@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { DollarSign, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { DollarSign, ArrowDownCircle, ArrowUpCircle, Loader2 } from 'lucide-react';
 
 interface CashDrawerEventDialogProps {
   open: boolean;
@@ -137,6 +137,7 @@ export function CashDrawerEventDialog({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!isValid || isPending}>
+            {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isPending ? 'Processing...' : config.buttonText}
           </Button>
         </DialogFooter>

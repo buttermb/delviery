@@ -26,7 +26,7 @@ import {
     Eye,
     TrendingUp,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -46,7 +46,6 @@ interface TenantQuickActionsProps {
 
 export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQuickActionsProps) {
     const navigate = useNavigate();
-    const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
@@ -58,19 +57,12 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
             localStorage.setItem('impersonating_tenant', 'true');
             localStorage.setItem('impersonation_timestamp', Date.now().toString());
 
-            toast({
-                title: 'Logged in as tenant',
-                description: `You are now viewing as ${tenant.business_name}`,
-            });
+            toast.success(`Logged in as ${tenant.business_name}`);
 
             // Navigate to tenant's admin dashboard
             navigate(`/${tenant.slug}/admin/dashboard`);
         } catch (error) {
-            toast({
-                title: 'Failed to login',
-                description: error instanceof Error ? error.message : 'Unknown error',
-                variant: 'destructive',
-            });
+            toast.error(error instanceof Error ? error.message : 'Failed to login');
         } finally {
             setIsLoading(false);
         }
@@ -82,19 +74,11 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
     };
 
     const handleSendEmail = () => {
-        // Open notification dialog pre-filled with this tenant
-        toast({
-            title: 'Send Email',
-            description: 'Email dialog will open here',
-        });
+        toast.info('Email dialog will open here');
     };
 
     const handleChangePlan = () => {
-        // Open plan change dialog
-        toast({
-            title: 'Change Plan',
-            description: 'Plan change dialog will open here',
-        });
+        toast.info('Plan change dialog will open here');
     };
 
     const handleToggleSuspend = () => {
@@ -123,19 +107,12 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
 
                     if (error) throw error;
 
-                    toast({
-                        title: `Tenant ${action}ed`,
-                        description: `${tenant.business_name} has been ${action}ed`,
-                    });
+                    toast.success(`${tenant.business_name} has been ${action}ed`);
 
                     closeDialog();
                     onRefresh?.();
                 } catch (error) {
-                    toast({
-                        title: `Failed to ${action}`,
-                        description: error instanceof Error ? error.message : 'Unknown error',
-                        variant: 'destructive',
-                    });
+                    toast.error(error instanceof Error ? error.message : `Failed to ${action}`);
                 } finally {
                     setLoading(false);
                     setIsLoading(false);
@@ -153,7 +130,7 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
                     variant="ghost"
                     size="sm"
                     disabled={isLoading}
-                    className="h-8 w-8 p-0"
+                    className="h-11 w-11 p-0"
                 >
                     <MoreVertical className="h-4 w-4" />
                     <span className="sr-only">Open menu</span>
@@ -198,7 +175,7 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
                     Change Plan
                 </DropdownMenuItem>
 
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/${tenant.slug}/admin/settings?tab=payments`)}>
                     <CreditCard className="mr-2 h-4 w-4" />
                     View Billing
                 </DropdownMenuItem>

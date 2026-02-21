@@ -16,6 +16,7 @@ import { UnifiedDeliveryView } from '@/components/courier/UnifiedDeliveryView';
 import { RoleIndicator } from '@/components/courier/RoleIndicator';
 import { LocationTrackingStatus } from '@/components/courier/LocationTrackingStatus';
 import { useRunnerStats } from '@/hooks/useRunnerStats';
+import { humanizeError } from '@/lib/humanizeError';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
@@ -166,10 +167,10 @@ export default function CourierDashboardPage() {
 
       loadAvailableOrders();
       navigate(`/courier/order/${orderId}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to Accept Order',
-        description: error.message || 'Order may have been taken by another courier',
+        description: humanizeError(error, 'Order may have been taken by another courier'),
         variant: 'destructive',
       });
     }

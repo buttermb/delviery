@@ -41,6 +41,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatSmartDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -106,12 +107,7 @@ function getCustomerName(customer: CustomerData): string {
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return 'Never';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return formatSmartDate(dateString);
 }
 
 function formatAddress(address: DeliveryAddress): string {
@@ -221,7 +217,7 @@ function CustomerDetailPanelContent({
           Order History
         </h4>
         {stats ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-xs text-muted-foreground">Total Orders</p>
               <p className="text-2xl font-bold">{stats.order_count}</p>

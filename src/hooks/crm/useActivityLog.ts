@@ -4,6 +4,7 @@ import type { CRMActivityLog } from '@/types/crm';
 import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export const crmActivityKeys = {
     all: ['crm-activity'] as const,
@@ -99,9 +100,8 @@ export function useLogActivity() {
             queryClient.invalidateQueries({ queryKey: crmActivityKeys.recent(10) });
         },
         onError: (error: unknown) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Activity logging failed', error, { component: 'useLogActivity' });
-            toast.error('Failed to log activity', { description: errorMessage });
+            toast.error('Failed to log activity', { description: humanizeError(error) });
         },
     });
 }

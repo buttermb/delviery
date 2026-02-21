@@ -20,6 +20,7 @@ import {
   Percent,
   Save,
   X,
+  Loader2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ const organizationFormSchema = z.object({
 
   // Contact
   email: z.string().email('Invalid email').optional().or(z.literal('')),
-  phone: z.string().max(20).optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
 
   // Address
@@ -363,7 +364,7 @@ export function OrganizationForm({
                     <FileText className="h-4 w-4" />
                     License Information
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="license_number"
@@ -763,7 +764,7 @@ export function OrganizationForm({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                <Save className="h-4 w-4 mr-2" />
+                {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Organization'}
               </Button>
             </DialogFooter>

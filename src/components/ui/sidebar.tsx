@@ -19,6 +19,7 @@ const SIDEBAR_WIDTH = "17rem";
 const SIDEBAR_WIDTH_MOBILE = "20rem";
 const SIDEBAR_WIDTH_ICON = "3.5rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+const TABLET_MAX_BREAKPOINT = 1024;
 
 // Swipe gesture configuration
 const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
@@ -133,7 +134,19 @@ const SidebarProvider = React.forwardRef<
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen);
+  // Read persisted state from localStorage on init, falling back to defaultOpen prop.
+  // On tablet (768-1024px), default to collapsed to prevent overlap.
+  const [_open, _setOpen] = React.useState(() => {
+    const stored = safeStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    if (stored !== null) {
+      return stored !== 'true'; // 'true' means collapsed, so open = !collapsed
+    }
+    // Collapse by default on tablet-sized viewports to prevent overlap
+    if (typeof window !== 'undefined' && window.innerWidth < TABLET_MAX_BREAKPOINT) {
+      return false;
+    }
+    return defaultOpen;
+  });
   const open = openProp ?? _open;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -156,6 +169,20 @@ const SidebarProvider = React.forwardRef<
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
   }, [isMobile, setOpen, setOpenMobile]);
+
+  // Auto-collapse sidebar when viewport enters tablet range (768-1024px)
+  React.useEffect(() => {
+    const tabletQuery = window.matchMedia(
+      `(min-width: 768px) and (max-width: ${TABLET_MAX_BREAKPOINT - 1}px)`
+    );
+    const onTabletChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        setOpen(false);
+      }
+    };
+    tabletQuery.addEventListener("change", onTabletChange);
+    return () => tabletQuery.removeEventListener("change", onTabletChange);
+  }, [setOpen]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -320,7 +347,7 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
         data-sidebar="trigger"
         variant="ghost"
         size="icon"
-        className={cn("h-7 w-7", className)}
+        className={cn("h-11 w-11 sm:h-7 sm:w-7", className)}
         onClick={(event) => {
           onClick?.(event);
           toggleSidebar();

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +21,7 @@ import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";
 import { queryKeys } from "@/lib/queryKeys";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +53,8 @@ export default function MarketingAutomationPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [_editingCampaign, _setEditingCampaign] = useState<MarketingCampaign | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: queryKeys.marketing.campaigns(),
@@ -84,7 +89,11 @@ export default function MarketingAutomationPage() {
       if (error) throw error;
     },
     onSuccess: () => {
+      toast.success('Campaign deleted successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.marketing.campaigns() });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to delete campaign'));
     },
   });
 
@@ -114,7 +123,8 @@ export default function MarketingAutomationPage() {
   };
 
   const handleDeleteCampaign = (id: string) => {
-    deleteCampaignMutation.mutate(id);
+    setCampaignToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
   const filteredCampaigns = campaigns.filter(c =>
@@ -184,7 +194,7 @@ export default function MarketingAutomationPage() {
       cell: (row) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -329,6 +339,20 @@ export default function MarketingAutomationPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (campaignToDelete) {
+            deleteCampaignMutation.mutate(campaignToDelete);
+            setDeleteDialogOpen(false);
+            setCampaignToDelete(null);
+          }
+        }}
+        itemType="campaign"
+        isLoading={deleteCampaignMutation.isPending}
+      />
     </div>
   );
 }

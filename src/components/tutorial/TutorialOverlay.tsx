@@ -1,9 +1,10 @@
 import { logger } from '@/lib/logger';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getFocusableElements } from '@/hooks/useKeyboardNavigation';
 
 export interface TutorialStep {
   id: string;
@@ -38,6 +39,7 @@ export function TutorialOverlay({
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const retryCountRef = useRef(0);
+  const previousActiveElement = useRef<Element | null>(null);
   const MAX_RETRIES = 10; // Prevent infinite retries
 
   const currentStepData = steps[currentStep];
@@ -258,23 +260,61 @@ export function TutorialOverlay({
     };
   }, [isOpen, currentStep, currentStepData]);
 
-  // Handle keyboard navigation
+  // Focus management: store previous element on open, restore on close
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElement.current = document.activeElement;
+    } else if (previousActiveElement.current instanceof HTMLElement) {
+      previousActiveElement.current.focus();
+      previousActiveElement.current = null;
+    }
+  }, [isOpen]);
+
+  // Auto-focus content panel on step change
   useEffect(() => {
     if (!isOpen) return;
+    requestAnimationFrame(() => {
+      if (contentRef.current) {
+        const focusable = getFocusableElements(contentRef.current);
+        if (focusable.length > 0) {
+          focusable[0].focus();
+        }
+      }
+    });
+  }, [isOpen, currentStep]);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // Handle keyboard navigation + focus trap
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === 'Escape') {
         onSkip();
       } else if (e.key === 'ArrowRight' && !isLastStep) {
         onNext();
       } else if (e.key === 'ArrowLeft' && !isFirstStep) {
         onPrevious();
-      }
-    };
+      } else if (e.key === 'Tab' && contentRef.current) {
+        // Focus trap within the tutorial content panel
+        const focusable = getFocusableElements(contentRef.current);
+        if (focusable.length === 0) return;
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isFirstStep, isLastStep, onNext, onPrevious, onSkip]);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    },
+    [isFirstStep, isLastStep, onNext, onPrevious, onSkip]
+  );
 
   // Early return for performance - check conditions before any rendering
   if (!isOpen || !currentStepData) return null;
@@ -300,6 +340,7 @@ export function TutorialOverlay({
           aria-modal="true"
           aria-labelledby="tutorial-title"
           role="dialog"
+          onKeyDown={handleKeyDown}
         >
           {/* Dark overlay with cutout */}
           <motion.div

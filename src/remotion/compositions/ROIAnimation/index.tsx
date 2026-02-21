@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ROIAnimation — 12-second composition (360 frames @ 30fps).
  * Animated counter ($0 → $24,592 saved/month),

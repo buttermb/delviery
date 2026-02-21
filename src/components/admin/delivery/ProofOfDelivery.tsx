@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 import { toast } from 'sonner';
 
 // Form validation schema
@@ -313,8 +314,7 @@ export function ProofOfDelivery({
       '',
       `Order ID: ${orderId.slice(0, 8).toUpperCase()}`,
       `Delivery ID: ${deliveryId.slice(0, 8).toUpperCase()}`,
-      `Date: ${now.toLocaleDateString()}`,
-      `Time: ${now.toLocaleTimeString()}`,
+      `Date & Time: ${formatSmartDate(now, { includeTime: true })}`,
       '',
       '───────────────────────────────────',
       '',

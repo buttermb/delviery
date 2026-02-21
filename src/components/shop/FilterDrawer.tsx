@@ -31,9 +31,8 @@ interface FilterDrawerProps {
 
 const SORT_OPTIONS = [
   { value: 'name', label: 'Name A-Z' },
-  { value: 'name-desc', label: 'Name Z-A' },
-  { value: 'price', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
   { value: 'newest', label: 'Newest First' },
 ];
 

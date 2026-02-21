@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,11 +65,7 @@ export default function CompliancePage() {
   ];
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading compliance status...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading compliance status..." />;
   }
 
   const compliantCount = complianceChecks.filter((c) => c.status === 'compliant').length;

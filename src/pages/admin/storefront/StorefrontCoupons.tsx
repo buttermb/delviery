@@ -12,13 +12,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
@@ -176,13 +179,14 @@ export default function StorefrontCoupons() {
         description: `Coupon ${formData.code.toUpperCase()} has been saved.`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       logger.error('Failed to save coupon', error, { component: 'StorefrontCoupons' });
+      const rawMessage = error instanceof Error ? error.message : '';
       toast({
         title: 'Error',
-        description: error.message?.includes('duplicate')
+        description: rawMessage?.includes('duplicate')
           ? 'A coupon with this code already exists'
-          : 'Failed to save coupon',
+          : humanizeError(error, 'Failed to save coupon'),
         variant: 'destructive',
       });
     },
@@ -245,7 +249,7 @@ export default function StorefrontCoupons() {
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: 'Code copied!' });
+    showCopyToast('Coupon code');
   };
 
   const generateCode = () => {
@@ -417,9 +421,13 @@ export default function StorefrontCoupons() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={saveCouponMutation.isPending}>
-                  {saveCouponMutation.isPending ? 'Saving...' : 'Save Coupon'}
-                </Button>
+                <SaveButton
+                  type="submit"
+                  isPending={saveCouponMutation.isPending}
+                  isSuccess={saveCouponMutation.isSuccess}
+                >
+                  Save Coupon
+                </SaveButton>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -510,7 +518,7 @@ export default function StorefrontCoupons() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => copyCode(coupon.code)}
                           >
                             <Copy className="w-3 h-3" />

@@ -15,6 +15,7 @@ import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import type { SidebarSection as SidebarSectionType } from '@/types/sidebar';
 import type { FeatureId } from '@/lib/featureConfig';
 import type { FeatureToggleKey } from '@/lib/featureFlags';
+import { resolveMostSpecificActive } from '@/lib/sidebar/isRouteActive';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -50,6 +51,13 @@ export function SidebarSection({
   const hasActiveItem = useMemo(() => {
     return section.items.some((item) => isActive(item.path));
   }, [section.items, isActive]);
+
+  // Resolve active states: when multiple items match (e.g., "/admin/orders" and
+  // "/admin/orders?tab=wholesale"), only highlight the most specific match
+  const resolvedActiveStates = useMemo(() => {
+    const rawStates = filteredItems.map((item) => isActive(item.path));
+    return resolveMostSpecificActive(filteredItems, rawStates);
+  }, [filteredItems, isActive]);
 
   // Auto-expand section when search matches items
   useEffect(() => {
@@ -130,7 +138,7 @@ export function SidebarSection({
                   <SidebarMenuItem
                     key={`${section.section}-${item.id}-${index}`}
                     item={item}
-                    isActive={isActive(item.path)}
+                    isActive={resolvedActiveStates[index]}
                     hasAccess={hasAccess}
                     onItemClick={onItemClick}
                     onLockedItemClick={onLockedItemClick}

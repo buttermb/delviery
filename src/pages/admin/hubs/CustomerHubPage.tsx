@@ -24,6 +24,7 @@ import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { QuickCreateCustomerDialog } from '@/components/pos/QuickCreateCustomerDialog';
@@ -84,7 +85,7 @@ export default function CustomerHubPage() {
                         hubHref="customer-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Customers</h1>
                             <p className="text-muted-foreground text-sm">
@@ -131,51 +132,65 @@ export default function CustomerHubPage() {
 
                 {/* Contacts Tab */}
                 <TabsContent value="contacts" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerManagement />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Customer Management">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CustomerManagement />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Wholesale Tab */}
                 <TabsContent value="wholesale" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <WholesaleClients />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Wholesale Clients">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <WholesaleClients />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* CRM Tab */}
                 <TabsContent value="crm" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerCRMPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="CRM">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CustomerCRMPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Insights Tab */}
                 <TabsContent value="insights" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerInsightsPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Customer Insights">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CustomerInsightsPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Invoices Tab */}
                 <TabsContent value="invoices" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerInvoices />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Customer Invoices">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CustomerInvoices />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Loyalty Tab */}
                 <TabsContent value="loyalty" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LoyaltyProgramPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Loyalty Program">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LoyaltyProgramPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Analytics Tab */}
                 <TabsContent value="analytics" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CustomerAnalyticsPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Customer Analytics">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CustomerAnalyticsPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
 

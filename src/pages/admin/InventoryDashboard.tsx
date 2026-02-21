@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InventoryHistoryTimeline } from '@/components/admin/inventory/InventoryHistoryTimeline';
 import { toast } from 'sonner';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 interface InventoryStats {
   totalProducts: number;
@@ -92,18 +93,20 @@ export default function InventoryDashboard() {
     if (!tenantId) return;
 
     const channel = supabase
-      .channel('inventory-dashboard-updates')
+      .channel(`inventory-dashboard-updates-${tenantId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'products',
+          filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.summary(tenantId) });
-          queryClient.invalidateQueries({ queryKey: ['inventory-stats', tenantId] });
-          queryClient.invalidateQueries({ queryKey: ['low-stock-products', tenantId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stats(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.categoryStock(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stockDistribution(tenantId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lowStockProducts(tenantId) });
         }
       )
       .subscribe((status) => {
@@ -119,7 +122,7 @@ export default function InventoryDashboard() {
 
   // Fetch inventory stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['inventory-stats', tenantId],
+    queryKey: queryKeys.inventory.stats(tenantId),
     queryFn: async (): Promise<InventoryStats> => {
       if (!tenantId) {
         return {
@@ -168,7 +171,7 @@ export default function InventoryDashboard() {
 
   // Fetch category-wise stock breakdown
   const { data: categoryData = [], isLoading: categoryLoading } = useQuery({
-    queryKey: ['category-stock', tenantId],
+    queryKey: queryKeys.inventory.categoryStock(tenantId),
     queryFn: async (): Promise<CategoryStock[]> => {
       if (!tenantId) return [];
 
@@ -207,7 +210,7 @@ export default function InventoryDashboard() {
 
   // Fetch stock level distribution
   const { data: stockDistribution = [], isLoading: distributionLoading } = useQuery({
-    queryKey: ['stock-distribution', tenantId],
+    queryKey: queryKeys.inventory.stockDistribution(tenantId),
     queryFn: async (): Promise<StockDistribution[]> => {
       if (!tenantId) return [];
 
@@ -258,7 +261,7 @@ export default function InventoryDashboard() {
 
   // Fetch low stock products for alerts
   const { data: lowStockProducts = [], isLoading: lowStockLoading } = useQuery({
-    queryKey: ['low-stock-products', tenantId],
+    queryKey: queryKeys.inventory.lowStockProducts(tenantId),
     queryFn: async (): Promise<LowStockProduct[]> => {
       if (!tenantId) return [];
 
@@ -298,10 +301,10 @@ export default function InventoryDashboard() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['inventory-stats', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['category-stock', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['stock-distribution', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['low-stock-products', tenantId] }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stats(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.categoryStock(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.stockDistribution(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lowStockProducts(tenantId) }),
     ]);
     setRefreshing(false);
   };
@@ -402,7 +405,7 @@ export default function InventoryDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statsLoading
           ? [1, 2, 3, 4].map((i) => (
               <Card key={i} className="border-none shadow-sm">
@@ -497,7 +500,7 @@ export default function InventoryDashboard() {
                         </Pie>
                         <Tooltip
                           formatter={(value: number, name: string) => [
-                            `${value} products`,
+                            `${value} ${value === 1 ? 'product' : 'products'}`,
                             name,
                           ]}
                         />
@@ -640,7 +643,7 @@ export default function InventoryDashboard() {
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-medium truncate">{product.name}</h4>
+                            <TruncatedText text={product.name} className="font-medium" />
                             {isOutOfStock ? (
                               <Badge variant="destructive">Out of Stock</Badge>
                             ) : isCritical ? (

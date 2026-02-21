@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -40,6 +42,7 @@ import { logger } from '@/lib/logger';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { ClientSelector } from "@/components/crm/ClientSelector";
+import { DisabledTooltip } from "@/components/shared/DisabledTooltip";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
@@ -50,15 +53,15 @@ const formSchema = z.object({
     issue_date: z.date(),
     due_date: z.date(),
     status: z.enum(["draft", "sent", "paid"]),
-    tax_rate: z.coerce.number().min(0).max(100),
-    notes: z.string().optional(),
+    tax_rate: z.coerce.number().min(0, "Tax rate cannot be negative").max(100, "Tax rate cannot exceed 100%"),
+    notes: z.string().max(1000, "Notes must be 1000 characters or less").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateInvoicePage() {
     const { tenant } = useTenantAdminAuth();
-    const navigate = useNavigate();
+    const { navigateToAdmin, navigate } = useTenantNavigation();
     const { account, loading: accountLoading } = useAccount();
     const accountId = account?.id ?? null;
     const isAccountReady = !accountLoading && !!accountId;
@@ -78,6 +81,10 @@ export default function CreateInvoicePage() {
             tax_rate: 0,
             notes: "",
         },
+    });
+
+    const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+        isDirty: form.formState.isDirty || lineItems.length > 0,
     });
 
     // Calculate totals
@@ -144,7 +151,7 @@ export default function CreateInvoicePage() {
     return (
         <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/invoices')}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
@@ -330,6 +337,7 @@ export default function CreateInvoicePage() {
                                                 <Textarea
                                                     placeholder="Add any notes or payment instructions..."
                                                     className="min-h-[120px]"
+                                                    maxLength={1000}
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -367,17 +375,25 @@ export default function CreateInvoicePage() {
                     </Card>
 
                     <div className="flex justify-end gap-4">
-                        <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                        <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/invoices')}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
-                            {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            {accountLoading ? 'Loading...' : 'Create Invoice'}
-                        </Button>
+                        <DisabledTooltip disabled={!isAccountReady && !accountLoading && !createInvoice.isPending} reason="Account context not available">
+                            <Button type="submit" disabled={createInvoice.isPending || !isAccountReady || accountLoading}>
+                                {(createInvoice.isPending || accountLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                {accountLoading ? 'Loading...' : 'Create Invoice'}
+                            </Button>
+                        </DisabledTooltip>
                     </div>
                 </form>
             </Form>
+
+            <UnsavedChangesDialog
+                open={showBlockerDialog}
+                onConfirmLeave={confirmLeave}
+                onCancelLeave={cancelLeave}
+            />
         </div>
     );
 }

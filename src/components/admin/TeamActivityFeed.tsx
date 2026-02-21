@@ -29,6 +29,7 @@ import User from "lucide-react/dist/esm/icons/user";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Filter from "lucide-react/dist/esm/icons/filter";
 import { formatRelativeTime } from '@/lib/utils/formatDate';
+import { formatSmartDate } from '@/lib/formatters';
 import { useTeamActivity, type TeamActivityEntry } from '@/hooks/useTeamActivity';
 
 interface TeamActivityFeedProps {
@@ -111,11 +112,7 @@ export function TeamActivityFeed({
     const groups: Record<string, TeamActivityEntry[]> = {};
 
     for (const activity of activities) {
-      const dateKey = new Date(activity.created_at).toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'short',
-        day: 'numeric',
-      });
+      const dateKey = formatSmartDate(activity.created_at);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -167,7 +164,7 @@ export function TeamActivityFeed({
               <Badge variant="outline" className="text-xs">
                 Live
               </Badge>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleRefresh} aria-label="Refresh activity feed">
+              <Button variant="ghost" size="icon" className="h-11 w-11" onClick={handleRefresh} aria-label="Refresh activity feed">
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>

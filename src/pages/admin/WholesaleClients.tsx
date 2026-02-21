@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -20,10 +20,13 @@ import {
 import {
   Plus,
   Phone,
-  MessageSquare,
   DollarSign,
   Package,
-  Edit2
+  Edit2,
+  Building,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
 } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
@@ -32,7 +35,6 @@ import { ClientStatusBadge } from "@/components/admin/ClientStatusBadge";
 import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { toast } from "sonner";
 import { queryKeys } from "@/lib/queryKeys";
-// SendSMS removed per plan - can be re-added if needed
 import {
   Select,
   SelectContent,
@@ -54,6 +56,7 @@ import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { SearchInput } from "@/components/shared/SearchInput";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -61,8 +64,10 @@ interface WholesaleClient extends WholesaleClientRow {
   territory: string;
   monthly_volume_lbs: number;
   total_spent: number;
-  risk_score?: number | null;
 }
+
+type ClientSortField = 'business_name' | 'outstanding_balance' | 'created_at' | 'status';
+type SortOrder = 'asc' | 'desc';
 
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import CopyButton from "@/components/CopyButton";
@@ -90,14 +95,14 @@ export default function WholesaleClients() {
     setSearchTerm(value);
   }, []);
   const [filter, setFilter] = useState<string>(preferences.customFilters?.filter || "all");
+  const [sortField, setSortField] = useState<ClientSortField>('business_name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: WholesaleClient }>({ open: false });
 
   // Save preferences when filter changes
   useEffect(() => {
     savePreferences({ customFilters: { filter } });
   }, [filter, savePreferences]);
-  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
-  const [smsClient, setSmsClient] = useState<WholesaleClient | null>(null);
   const [portalLinkDialogOpen, setPortalLinkDialogOpen] = useState(false);
   const [portalLinkClient, setPortalLinkClient] = useState<WholesaleClient | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -120,8 +125,8 @@ export default function WholesaleClients() {
         query = query.eq("status", "active");
       } else if (filter === "credit_approved") {
         query = query.gt("credit_limit", 0);
-      } else if (filter === "overdue") {
-        query = query.gt("outstanding_balance", 10000);
+      } else if (filter === "high_balance") {
+        query = query.gt("outstanding_balance", 0);
       }
 
       const { data, error } = await query;
@@ -144,6 +149,57 @@ export default function WholesaleClients() {
     client.contact_name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  const handleSort = (field: ClientSortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'created_at' ? 'desc' : 'asc');
+    }
+  };
+
+  const SortableHeader = ({ field, label }: { field: ClientSortField; label: string }) => {
+    const isActive = sortField === field;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8 hover:bg-transparent"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        {isActive ? (
+          sortOrder === 'asc' ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+        ) : (
+          <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </Button>
+    );
+  };
+
+  const sortedClients = useMemo(() => {
+    const sorted = [...filteredClients];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'business_name':
+          cmp = (a.business_name || '').localeCompare(b.business_name || '');
+          break;
+        case 'outstanding_balance':
+          cmp = (Number(a.outstanding_balance) || 0) - (Number(b.outstanding_balance) || 0);
+          break;
+        case 'created_at':
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'status':
+          cmp = (a.status || '').localeCompare(b.status || '');
+          break;
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [filteredClients, sortField, sortOrder]);
+
   const {
     paginatedItems: paginatedClients,
     currentPage,
@@ -153,16 +209,16 @@ export default function WholesaleClients() {
     goToPage,
     changePageSize,
     pageSizeOptions,
-  } = usePagination(filteredClients, {
+  } = usePagination(sortedClients, {
     defaultPageSize: 25,
     persistInUrl: true,
     urlKey: 'clients',
   });
 
-  // Reset to page 1 when search or filter changes
+  // Reset to page 1 when search, filter, or sort changes
   useEffect(() => {
     goToPage(1);
-  }, [searchTerm, filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchTerm, filter, sortField, sortOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getClientTypeLabel = (type: string) => {
     const types: Record<string, string> = {
@@ -299,12 +355,12 @@ export default function WholesaleClients() {
                 Credit Approved
               </Button>
               <Button
-                variant={filter === "overdue" ? "default" : "outline"}
+                variant={filter === "high_balance" ? "default" : "outline"}
                 size="sm"
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                onClick={() => setFilter("overdue")}
+                className="min-h-[44px] touch-manipulation text-xs sm:text-sm border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white"
+                onClick={() => setFilter("high_balance")}
               >
-                Overdue
+                High Balance
               </Button>
             </div>
           </div>
@@ -317,13 +373,13 @@ export default function WholesaleClients() {
               <Table data-tutorial="customer-list" className="w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs sm:text-sm">Client</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="business_name" label="Client" /></TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="status" label="Status" /></TableHead>
                     <TableHead className="text-xs sm:text-sm">Type</TableHead>
                     <TableHead className="text-xs sm:text-sm">Contact</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Credit Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="outstanding_balance" label="Credit Status" /></TableHead>
                     <TableHead className="text-xs sm:text-sm">Reliability</TableHead>
-                    <TableHead className="text-xs sm:text-sm">This Month</TableHead>
+                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="created_at" label="This Month" /></TableHead>
                     <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -343,15 +399,15 @@ export default function WholesaleClients() {
                         className="cursor-pointer hover:bg-muted/50 touch-manipulation"
                         onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
                       >
-                        <TableCell className="text-xs sm:text-sm">
-                          <div>
-                            <div className="font-semibold text-foreground flex items-center gap-2">
+                        <TableCell className="text-xs sm:text-sm max-w-[200px]">
+                          <div className="max-w-[200px] min-w-0">
+                            <div className="font-semibold text-foreground flex items-center gap-2 min-w-0">
                               <CustomerQuickViewCard customer={client}>
-                                <span className="truncate">{client.business_name}</span>
+                                <TruncatedText text={client.business_name} className="font-semibold" maxWidthClass="max-w-[200px]" />
                               </CustomerQuickViewCard>
-                              <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">{client.territory}</div>
+                            <TruncatedText text={client.territory} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
@@ -378,18 +434,20 @@ export default function WholesaleClients() {
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <div>
-                            <div className="text-xs sm:text-sm text-foreground truncate">{client.contact_name}</div>
+                        <TableCell className="text-xs sm:text-sm max-w-[200px]">
+                          <div className="max-w-[200px] min-w-0">
+                            <TruncatedText text={client.contact_name} className="text-xs sm:text-sm text-foreground" maxWidthClass="max-w-[200px]" />
                             <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
                               {client.email && (
                                 <>
-                                  <span className="truncate">{client.email}</span>
+                                  <TruncatedText text={client.email} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
                                   <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">{client.phone}</div>
+                            {client.phone && (
+                              <TruncatedText text={client.phone} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
@@ -437,7 +495,7 @@ export default function WholesaleClients() {
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
                           <CustomerRiskBadge
-                            score={client.risk_score ?? client.reliability_score ?? null}
+                            score={client.reliability_score ?? null}
                             showLabel={true}
                           />
                         </TableCell>
@@ -466,19 +524,6 @@ export default function WholesaleClients() {
                               title="Send Portal Link"
                             >
                               <Link2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="min-h-[48px] min-w-[48px] touch-manipulation"
-                              disabled={updateClientMutation.isPending}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSmsClient(client);
-                                setSmsDialogOpen(true);
-                              }}
-                            >
-                              <MessageSquare className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
@@ -535,11 +580,11 @@ export default function WholesaleClients() {
                     <TableRow>
                       <TableCell colSpan={8} className="h-96 text-center">
                         <EnhancedEmptyState
-                          icon={Package}
-                          title={searchTerm ? "No Clients Found" : "No Clients Yet"}
-                          description={searchTerm ? "No clients found matching your search criteria." : "Get started by adding your first wholesale client."}
+                          icon={Building}
+                          title={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
+                          description={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
                           primaryAction={{
-                            label: "Add Your First Client",
+                            label: "Add Client",
                             onClick: () => setCreateClientDialogOpen(true),
                             icon: Plus
                           }}
@@ -553,7 +598,7 @@ export default function WholesaleClients() {
           </div>
 
           {/* Desktop Pagination */}
-          {totalItems > pageSize && (
+          {totalItems > 0 && (
             <StandardPagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -600,9 +645,9 @@ export default function WholesaleClients() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <ClientStatusBadge status={client.status || 'active'} showIcon={false} className="text-[10px] px-1.5 h-5" />
-                          <h3 className="font-semibold text-base truncate">{client.business_name}</h3>
+                          <TruncatedText text={client.business_name} className="font-semibold text-base" maxWidthClass="max-w-[180px]" />
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">{client.territory}</p>
+                        <TruncatedText text={client.territory} className="text-sm text-muted-foreground" maxWidthClass="max-w-[180px]" />
                         <Badge variant="outline" className="text-xs mt-1">{getClientTypeLabel(client.client_type)}</Badge>
                       </div>
                     </div>
@@ -611,8 +656,8 @@ export default function WholesaleClients() {
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</div>
                         <div className="text-sm">
-                          <p className="truncate">{client.contact_name}</p>
-                          <p className="text-muted-foreground truncate">{client.phone}</p>
+                          <TruncatedText text={client.contact_name} className="text-sm" maxWidthClass="max-w-[180px]" />
+                          <TruncatedText text={client.phone || ''} className="text-muted-foreground text-sm" maxWidthClass="max-w-[180px]" />
                         </div>
                       </div>
 
@@ -633,7 +678,7 @@ export default function WholesaleClients() {
                         <div className="flex flex-col gap-1">
                           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reliability</div>
                           <CustomerRiskBadge
-                            score={client.risk_score ?? client.reliability_score ?? null}
+                            score={client.reliability_score ?? null}
                             showLabel={true}
                           />
                         </div>
@@ -645,19 +690,6 @@ export default function WholesaleClients() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
-                          disabled={updateClientMutation.isPending}
-                          onClick={() => {
-                            setSmsClient(client);
-                            setSmsDialogOpen(true);
-                          }}
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          <span className="text-xs">Message</span>
-                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -710,11 +742,11 @@ export default function WholesaleClients() {
             ) : (
               <div className="py-8">
                 <EnhancedEmptyState
-                  icon={Package}
-                  title={searchTerm ? "No Clients Found" : "No Clients Yet"}
-                  description={searchTerm ? "No clients found matching your search criteria." : "Get started by adding your first wholesale client."}
+                  icon={Building}
+                  title={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
+                  description={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
                   primaryAction={{
-                    label: "Add Your First Client",
+                    label: "Add Client",
                     onClick: () => setCreateClientDialogOpen(true),
                     icon: Plus
                   }}
@@ -724,7 +756,7 @@ export default function WholesaleClients() {
           </div>
 
           {/* Mobile Pagination */}
-          {totalItems > pageSize && (
+          {totalItems > 0 && (
             <StandardPagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -747,21 +779,6 @@ export default function WholesaleClients() {
             open={paymentDialog.open}
             onOpenChange={(open) => setPaymentDialog({ open, client: open ? paymentDialog.client : undefined })}
           />
-        )}
-
-        {/* SMS Dialog */}
-        {smsClient && (
-          <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Send SMS to {smsClient.business_name || smsClient.contact_name}</DialogTitle>
-              </DialogHeader>
-              {/* SendSMS removed per plan - can be re-added if needed */}
-              <div className="p-4 text-center text-muted-foreground">
-                SMS functionality temporarily unavailable
-              </div>
-            </DialogContent>
-          </Dialog>
         )}
 
         {/* Send Portal Link Dialog */}

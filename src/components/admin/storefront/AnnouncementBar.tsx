@@ -27,6 +27,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
@@ -45,6 +46,7 @@ import {
   ExternalLink,
   AlertCircle,
 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Announcement {
   id: string;
@@ -95,6 +97,8 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<AnnouncementFormData>(DEFAULT_FORM_DATA);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
 
   const tenantId = tenant?.id;
 
@@ -434,9 +438,9 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
                         {(announcement.start_date || announcement.end_date) && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {announcement.start_date && `From ${new Date(announcement.start_date).toLocaleDateString()}`}
+                            {announcement.start_date && `From ${formatSmartDate(announcement.start_date)}`}
                             {announcement.start_date && announcement.end_date && ' - '}
-                            {announcement.end_date && `Until ${new Date(announcement.end_date).toLocaleDateString()}`}
+                            {announcement.end_date && `Until ${formatSmartDate(announcement.end_date)}`}
                           </span>
                         )}
                         {scheduleStatus === 'scheduled' && (
@@ -465,11 +469,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
                         variant="ghost"
                         size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => {
-                          if (confirm('Delete this announcement?')) {
-                            deleteMutation.mutate(announcement.id);
-                          }
-                        }}
+                        onClick={() => { setAnnouncementToDelete(announcement); setDeleteDialogOpen(true); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -488,6 +488,22 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (announcementToDelete) {
+            deleteMutation.mutate(announcementToDelete.id);
+            setDeleteDialogOpen(false);
+            setAnnouncementToDelete(null);
+          }
+        }}
+        itemName={announcementToDelete?.text?.substring(0, 50)}
+        itemType="announcement"
+        isLoading={deleteMutation.isPending}
+      />
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

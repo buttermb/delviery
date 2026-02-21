@@ -23,6 +23,7 @@ import { useCredits } from '@/hooks/useCredits';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
+import { showCopyToast } from '@/utils/toastHelpers';
 import confetti from 'canvas-confetti';
 
 interface CreditSuggestion {
@@ -115,6 +116,7 @@ export function PurchaseSuccessPage() {
     try {
       await navigator.clipboard.writeText(transactionId);
       setCopied(true);
+      showCopyToast('Transaction ID');
       setTimeout(() => setCopied(false), 2000);
     } catch {
       logger.warn('Failed to copy transaction ID to clipboard');

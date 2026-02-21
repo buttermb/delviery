@@ -17,6 +17,7 @@ import Eye from "lucide-react/dist/esm/icons/eye";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import MenuIcon from "lucide-react/dist/esm/icons/menu";
+import LinkIcon from "lucide-react/dist/esm/icons/link";
 import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
 import List from "lucide-react/dist/esm/icons/list";
 import Filter from "lucide-react/dist/esm/icons/filter";
@@ -28,6 +29,7 @@ import { StandardPagination } from '@/components/shared/StandardPagination';
 import { MenuCard, Menu } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
 import { cn } from '@/lib/utils';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 
 type ViewMode = 'grid' | 'list';
 type StatusFilter = 'all' | 'active' | 'soft_burned' | 'hard_burned';
@@ -40,6 +42,7 @@ export function MenusListPage() {
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
     const { data: menus, isLoading } = useDisposableMenus(tenant?.id);
+    const mod = useModifierKey();
 
     const filteredMenus = menus?.filter((menu) => {
         const matchesSearch =
@@ -84,9 +87,11 @@ export function MenusListPage() {
                         Create and manage secure product menus for your customers.
                     </p>
                 </div>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Menu
-                </Button>
+                <ShortcutHint keys={[mod, "N"]} label="New">
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Menu
+                    </Button>
+                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}
@@ -223,12 +228,12 @@ export function MenusListPage() {
                         </div>
                     ) : filteredMenus.length === 0 ? (
                         <EnhancedEmptyState
-                            icon={MenuIcon}
-                            title={searchQuery || statusFilter !== 'all' ? "No Menus Found" : "No Menus Yet"}
+                            icon={LinkIcon}
+                            title={searchQuery || statusFilter !== 'all' ? "No Menus Found" : "No menus yet"}
                             description={
                                 searchQuery || statusFilter !== 'all'
                                     ? "No menus match your current filters."
-                                    : "Create your first product menu to start sharing with customers."
+                                    : "Create disposable menus to share with customers"
                             }
                             primaryAction={!searchQuery && statusFilter === 'all' ? {
                                 label: "Create Menu",
@@ -253,7 +258,7 @@ export function MenusListPage() {
                             </div>
 
                             {/* Pagination */}
-                            {totalItems > pageSize && (
+                            {totalItems > 0 && (
                                 <div className="mt-6 pt-4 border-t">
                                     <StandardPagination
                                         currentPage={currentPage}

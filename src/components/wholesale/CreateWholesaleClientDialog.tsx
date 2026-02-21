@@ -1,5 +1,7 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { humanizeError } from '@/lib/humanizeError';
+import { useState, useEffect, useCallback } from 'react';
+import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface Props {
     open: boolean;
@@ -29,20 +32,31 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
         address: ''
     });
 
+    const defaultFormData = {
+        business_name: '',
+        contact_name: '',
+        email: '',
+        phone: '',
+        license_number: '',
+        payment_terms: 'net_30',
+        address: ''
+    };
+
     // Reset form when dialog closes without submit
     useEffect(() => {
         if (!open) {
-            setFormData({
-                business_name: '',
-                contact_name: '',
-                email: '',
-                phone: '',
-                license_number: '',
-                payment_terms: 'net_30',
-                address: ''
-            });
+            setFormData(defaultFormData);
         }
     }, [open]);
+
+    // Dirty state: any field differs from empty defaults
+    const isDirty = formData.business_name !== '' || formData.contact_name !== '' || formData.email !== '' || formData.phone !== '' || formData.license_number !== '' || formData.address !== '' || formData.payment_terms !== 'net_30';
+
+    const handleClose = useCallback(() => {
+        onClose();
+    }, [onClose]);
+
+    const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,9 +66,41 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             return;
         }
 
+        const emailCheck = z.string().email('Invalid email address');
+        if (formData.email && !emailCheck.safeParse(formData.email).success) {
+            toast.error('Invalid email address');
+            return;
+        }
+
+        if (formData.phone) {
+            const phoneRegex = /^[\d\s\-+()]+$/;
+            if (!phoneRegex.test(formData.phone) || formData.phone.length < 7 || formData.phone.length > 20) {
+                toast.error('Invalid phone number. Must be 7-20 characters with only digits, spaces, dashes, or parentheses.');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
+            // Check for duplicate business name within tenant
+            const { data: existingClient, error: dupCheckError } = await supabase
+                .from('wholesale_clients')
+                .select('id')
+                .eq('tenant_id', tenant.id)
+                .eq('business_name', formData.business_name.trim())
+                .maybeSingle();
+
+            if (dupCheckError) {
+                logger.error('Error checking duplicate client:', dupCheckError);
+            }
+
+            if (existingClient) {
+                toast.error('A client with this business name already exists');
+                setLoading(false);
+                return;
+            }
+
             const { data, error } = await (supabase as any)
                 .from('wholesale_clients')
                 .insert({
@@ -94,15 +140,16 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
             onClose();
         } catch (error: any) {
             logger.error('Failed to create client:', error);
-            toast.error(error.message || 'Failed to create client');
+            toast.error(humanizeError(error, 'Failed to create client'));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+        <>
+        <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+            <DialogContent className="sm:max-w-[500px]" {...dialogContentProps}>
                 <DialogHeader>
                     <DialogTitle>Add New Wholesale Client</DialogTitle>
                 </DialogHeader>
@@ -160,6 +207,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 placeholder="(555) 123-4567"
+                                maxLength={20}
                             />
                         </div>
                     </div>
@@ -194,7 +242,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                     </div>
 
                     <DialogFooter className="pt-4">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+                        <Button type="button" variant="outline" onClick={() => guardedOnOpenChange(false)} disabled={loading}>
                             Cancel
                         </Button>
                         <Button type="submit" disabled={loading}>
@@ -211,5 +259,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                 </form>
             </DialogContent>
         </Dialog>
+        <DiscardAlert />
+        </>
     );
 }

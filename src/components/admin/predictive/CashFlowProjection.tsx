@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from '@/lib/formatters';
 
 export function CashFlowProjection() {
   const { tenant } = useTenantAdminAuth();
@@ -58,7 +59,7 @@ export function CashFlowProjection() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">${proj.amount.toFixed(0)}</span>
+                <span className="text-2xl font-bold">{formatCurrency(proj.amount)}</span>
                 {proj.trend === "up" ? (
                   <TrendingUp className="h-5 w-5 text-success" />
                 ) : (
@@ -81,7 +82,7 @@ export function CashFlowProjection() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(value: number | string) => `$${typeof value === 'number' ? value.toFixed(2) : value}`} />
+              <Tooltip formatter={(value: number | string) => formatCurrency(value)} />
               <Legend />
               <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
             </LineChart>

@@ -154,7 +154,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7"
+                className="h-11 w-11 sm:h-7 sm:w-7"
                 onClick={() => removeZone(i)}
               >
                 <Trash2 className="h-3 w-3 text-red-500" />

@@ -163,10 +163,10 @@ export function APIUsageDashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2 font-semibold">Endpoint</th>
-                  <th className="text-right p-2 font-semibold">Requests</th>
-                  <th className="text-right p-2 font-semibold">Avg Response Time</th>
-                  <th className="text-right p-2 font-semibold">Status</th>
+                  <th scope="col" className="text-left p-2 font-semibold">Endpoint</th>
+                  <th scope="col" className="text-right p-2 font-semibold">Requests</th>
+                  <th scope="col" className="text-right p-2 font-semibold">Avg Response Time</th>
+                  <th scope="col" className="text-right p-2 font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>

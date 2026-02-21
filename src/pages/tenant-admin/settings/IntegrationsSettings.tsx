@@ -38,10 +38,12 @@ import {
   Brain,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Integration {
   id: string;
@@ -153,7 +155,7 @@ export default function IntegrationsSettings() {
         url: (item.config as any)?.url || '',
         events: (item.config as any)?.events || ['order.created'],
         active: item.status === 'active',
-        lastTriggered: item.updated_at ? new Date(item.updated_at).toLocaleString() : undefined,
+        lastTriggered: item.updated_at ? formatSmartDate(item.updated_at, { includeTime: true }) : undefined,
       })) as WebhookEndpoint[];
     },
     enabled: !!tenant?.id,
@@ -186,7 +188,7 @@ export default function IntegrationsSettings() {
       toast({ title: 'Webhook added' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to add webhook', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to add webhook', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -205,11 +207,11 @@ export default function IntegrationsSettings() {
       toast({ title: 'Webhook deleted' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to delete webhook', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to delete webhook', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
-  // Toggle webhook mutation
+  // Toggle webhook mutation with optimistic UI
   const toggleWebhookMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       const { error } = await supabase
@@ -219,12 +221,26 @@ export default function IntegrationsSettings() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+    onMutate: async ({ id, active }) => {
+      await queryClient.cancelQueries({ queryKey: ['webhooks', tenant?.id] });
+      const previousWebhooks = queryClient.getQueryData<WebhookEndpoint[]>(['webhooks', tenant?.id]);
+      queryClient.setQueryData<WebhookEndpoint[]>(['webhooks', tenant?.id], (old) => {
+        if (!old) return old;
+        return old.map((webhook) =>
+          webhook.id === id ? { ...webhook, active } : webhook
+        );
+      });
+      return { previousWebhooks };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      if (context?.previousWebhooks) {
+        queryClient.setQueryData(['webhooks', tenant?.id], context.previousWebhooks);
+      }
       logger.error('Failed to toggle webhook', { error });
-      toast({ title: 'Failed to toggle webhook', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to toggle webhook', description: humanizeError(error), variant: 'destructive' });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
     },
   });
 

@@ -56,7 +56,7 @@ interface StoreInfo {
       background?: string;
     };
   } | null;
-  operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
+  operating_hours: Record<string, unknown>;
   // Delivery settings
   free_delivery_threshold?: number;
   default_delivery_fee?: number;
@@ -249,7 +249,7 @@ export default function ShopLayout() {
 
     const now = new Date();
     const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const hours = store.operating_hours[dayName];
+    const hours = store.operating_hours[dayName] as { open: string; close: string; closed: boolean } | undefined;
 
     if (!hours || hours.closed) return false;
 
@@ -280,11 +280,11 @@ export default function ShopLayout() {
             </div>
           </div>
         </header>
-        <main className="container mx-auto px-4 py-8">
+        <main id="main-content" tabIndex={-1} className="container mx-auto px-4 py-8 focus:outline-none">
           <Skeleton className="h-64 w-full mb-8" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-64" />
+              <Skeleton key={i} className="h-48 sm:h-64" />
             ))}
           </div>
         </main>
@@ -417,7 +417,7 @@ export default function ShopLayout() {
           />
 
           {/* Main Content */}
-          <main>
+          <main id="main-content" tabIndex={-1} className="focus:outline-none">
             <Outlet />
           </main>
 
@@ -632,7 +632,7 @@ export default function ShopLayout() {
         </header>
 
         {/* Main Content */}
-        <main>
+        <main id="main-content" tabIndex={-1} className="focus:outline-none">
           <Outlet />
         </main>
 

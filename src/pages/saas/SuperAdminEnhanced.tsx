@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
@@ -333,13 +334,7 @@ export default function SuperAdminEnhanced() {
   };
 
   if (statsLoading || tenantsLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Loading platform data...</p>
-        </Card>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading platform data..." />;
   }
 
   const platformStats = stats || defaultStats();
@@ -631,7 +626,7 @@ export default function SuperAdminEnhanced() {
               <table className="w-full">
                 <thead className="bg-muted">
                   <tr>
-                    <th className="w-[50px] p-3">
+                    <th scope="col" className="w-[50px] p-3">
                       <Checkbox
                         checked={tenants?.length > 0 && selectedTenants.length === tenants?.length}
                         onCheckedChange={(checked) => {
@@ -643,13 +638,13 @@ export default function SuperAdminEnhanced() {
                         }}
                       />
                     </th>
-                    <th className="text-left p-3 text-sm font-medium">Business</th>
-                    <th className="text-left p-3 text-sm font-medium">Plan</th>
-                    <th className="text-left p-3 text-sm font-medium">Status</th>
-                    <th className="text-left p-3 text-sm font-medium">MRR</th>
-                    <th className="text-left p-3 text-sm font-medium">Health</th>
-                    <th className="text-left p-3 text-sm font-medium">Joined</th>
-                    <th className="text-left p-3 text-sm font-medium">Actions</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Business</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Plan</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Status</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">MRR</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Health</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Joined</th>
+                    <th scope="col" className="text-left p-3 text-sm font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -809,7 +804,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
   });
 
   if (!tenant) {
-    return <div>Loading...</div>;
+    return <EnhancedLoadingState variant="card" message="Loading tenant details..." />;
   }
 
   const health = calculateHealthScore(tenant as any);

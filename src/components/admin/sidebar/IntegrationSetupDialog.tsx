@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Dialog,
   DialogContent,
@@ -287,7 +288,7 @@ export function IntegrationSetupDialog({
       onOpenChange(false);
     } catch (error) {
       logger.error('Setup error:', error instanceof Error ? error : new Error(String(error)), { component: 'IntegrationSetupDialog' });
-      toast.error(`Failed to configure integration: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(humanizeError(error, 'Failed to configure integration'));
     } finally {
       setIsSubmitting(false);
     }

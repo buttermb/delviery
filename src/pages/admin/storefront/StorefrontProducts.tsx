@@ -17,6 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Search,
   Package,
@@ -287,12 +288,12 @@ export default function StorefrontProducts() {
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       setSelectedProducts(new Set());
       toast({
-        title: `${selectedProducts.size} products ${isVisible ? 'shown' : 'hidden'}`,
+        title: `${selectedProducts.size} ${selectedProducts.size === 1 ? 'product' : 'products'} ${isVisible ? 'shown' : 'hidden'}`,
       });
     },
     onError: (error: Error) => {
       logger.error('Failed to update product visibility', { error });
-      toast({ title: 'Failed to update visibility', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to update visibility', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -558,7 +559,7 @@ export default function StorefrontProducts() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => handleMoveUp(product.id, setting?.display_order ?? 999)}
                             disabled={updateOrderMutation.isPending}
                             title="Move up"
@@ -568,7 +569,7 @@ export default function StorefrontProducts() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => handleMoveDown(product.id, setting?.display_order ?? 999)}
                             disabled={updateOrderMutation.isPending}
                             title="Move down"

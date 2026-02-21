@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Package, Navigation } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderItem {
   product_name?: string;
@@ -92,11 +93,11 @@ export default function IncomingOrderModal({ order, open, onAccept, onReject }: 
           <div className="bg-green-50 dark:bg-green-950 border-2 border-green-500 rounded-lg p-4">
             <p className="text-sm font-medium text-green-700 dark:text-green-300">YOUR EARNINGS</p>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-              ${((order.total_amount || 0) * ((order.commission_rate || 30) / 100) + (order.tip_amount || 0)).toFixed(2)}
+              {formatCurrency((order.total_amount || 0) * ((order.commission_rate || 30) / 100) + (order.tip_amount || 0))}
             </p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-              Base: ${((order.total_amount || 0) * ((order.commission_rate || 30) / 100)).toFixed(2)} 
-              {order.tip_amount > 0 && ` | Tip: $${order.tip_amount.toFixed(2)}`}
+              Base: {formatCurrency((order.total_amount || 0) * ((order.commission_rate || 30) / 100))}
+              {order.tip_amount > 0 && ` | Tip: ${formatCurrency(order.tip_amount)}`}
             </p>
           </div>
 

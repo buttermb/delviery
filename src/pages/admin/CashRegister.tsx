@@ -1,16 +1,17 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  User, Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw
+  Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
 } from 'lucide-react';
 import {
   Dialog,
@@ -45,8 +46,16 @@ import {
 import { CashDrawerPanel } from '@/components/pos/CashDrawerPanel';
 import { useRealtimeShifts, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { POSRefundDialog } from '@/components/admin/pos/POSRefundDialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { RefundCompletionData } from '@/components/admin/pos/POSRefundDialog';
+import { useCustomerLoyaltyStatus, useLoyaltyConfig, calculatePointsToEarn, TIER_DISPLAY_INFO } from '@/hooks/useCustomerLoyalty';
+import { POSCustomerSelector } from '@/components/pos/POSCustomerSelector';
+import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
+import { useCategories } from '@/hooks/useCategories';
+import { POS_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
+import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -60,17 +69,7 @@ interface Product {
   category_id: string | null;
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-}
+// Customer type is POSCustomer from POSCustomerSelector
 
 interface POSTransaction {
   id: string;
@@ -120,10 +119,10 @@ interface ReceiptData {
 const DEFAULT_TAX_RATE = 0.0825; // 8.25%
 
 function CashRegisterContent() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
   const { execute: executeCreditAction } = useCreditGatedAction();
   const { isOnline, pendingCount } = useOfflineQueue();
@@ -177,12 +176,18 @@ function CashRegisterContent() {
   const [taxEnabled, _setTaxEnabled] = useState<boolean>(true);
 
   // Customer state
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [customerSearchQuery, setCustomerSearchQuery] = useState('');
 
   // Customer credit balance (for showing available store credit)
   const { balance: customerCreditBalance } = useCustomerCredit(selectedCustomer?.id);
+
+  // Customer loyalty status (tier, points)
+  const { isActive: loyaltyActive, effectiveConfig: loyaltyEffectiveConfig } = useLoyaltyConfig();
+  const { status: loyaltyStatus } = useCustomerLoyaltyStatus({
+    customerId: selectedCustomer?.id,
+    enabled: !!selectedCustomer,
+  });
 
   // Clear cart confirmation
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false);
@@ -216,51 +221,33 @@ function CashRegisterContent() {
     enabled: !!tenantId,
   });
 
-  // Load categories
-  const { data: categories = [] } = useQuery({
-    queryKey: queryKeys.categories.list(tenantId),
-    queryFn: async () => {
-      if (!tenantId) return [];
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name')
-          .eq('tenant_id', tenantId)
-          .order('name', { ascending: true });
+  // Load categories (uses useCategories hook — tenant_id filtered, graceful 42P01 handling)
+  const { data: categories = [] } = useCategories();
 
-        if (error && error.code === '42P01') return [];
-        if (error) throw error;
-        return (data || []) as Category[];
-      } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
-        throw error;
-      }
-    },
-    enabled: !!tenantId,
-  });
-
-  // Load customers for selection
-  const { data: customers = [] } = useQuery({
+  // Load customers for selection (POSCustomer format for POSCustomerSelector)
+  const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('id, first_name, last_name, email, phone')
+          .select('id, first_name, last_name, email, phone, customer_type, loyalty_points')
           .eq('tenant_id', tenantId)
           .order('first_name', { ascending: true })
           .limit(100);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        // Map first_name/last_name to name for Customer interface
-        return ((data || []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null }>).map(c => ({
+        return ((data || []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; customer_type: string | null; loyalty_points: number | null }>).map(c => ({
           id: c.id,
-          name: [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email || 'Unknown',
+          first_name: c.first_name || '',
+          last_name: c.last_name || '',
           email: c.email,
           phone: c.phone,
-        })) as Customer[];
+          customer_type: c.customer_type || 'recreational',
+          loyalty_points: c.loyalty_points || 0,
+        })) as POSCustomer[];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
         throw error;
@@ -320,14 +307,35 @@ function CashRegisterContent() {
     return matchesSearch && matchesCategory;
   });
 
-  // Filter customers by search
-  const filteredCustomers = customers.filter(c => {
-    const searchLower = customerSearchQuery.toLowerCase();
-    return customerSearchQuery === '' ||
-      c.name.toLowerCase().includes(searchLower) ||
-      (c.email && c.email.toLowerCase().includes(searchLower)) ||
-      (c.phone && c.phone.includes(customerSearchQuery));
-  });
+  // Compute top-selling products from recent POS transactions for quick-add grid
+  const topProducts = useMemo(() => {
+    const frequencyMap = new Map<string, number>();
+
+    if (transactions && Array.isArray(transactions)) {
+      for (const tx of transactions) {
+        const items = (tx as Record<string, unknown>).items;
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (item && typeof item === 'object' && 'product_id' in (item as Record<string, unknown>)) {
+              const parsed = item as Record<string, unknown>;
+              const productId = String(parsed.product_id);
+              const qty = typeof parsed.quantity === 'number' ? parsed.quantity : 1;
+              frequencyMap.set(productId, (frequencyMap.get(productId) ?? 0) + qty);
+            }
+          }
+        }
+      }
+    }
+
+    // Sort products: frequent sellers first, then remaining products
+    const sorted = [...products].sort((a, b) => {
+      const freqA = frequencyMap.get(a.id) ?? 0;
+      const freqB = frequencyMap.get(b.id) ?? 0;
+      return freqB - freqA;
+    });
+
+    return sorted.slice(0, 12);
+  }, [transactions, products]);
 
   // Queue transaction for offline processing
   const queueOfflineTransaction = useCallback(async (items: CartItem[], finalTotal: number, discAmt: number, taxAmt: number) => {
@@ -362,8 +370,7 @@ function CashRegisterContent() {
       3
     );
 
-    toast({
-      title: 'Transaction queued',
+    toast.info('Transaction queued', {
       description: 'Will be processed when connection is restored.'
     });
     // Reset transaction state inline to avoid circular dependency
@@ -372,7 +379,7 @@ function CashRegisterContent() {
     setDiscountValue(0);
     setDiscountType('percentage');
     setSelectedCustomer(null);
-  }, [tenantId, paymentMethod, selectedCustomer, toast]);
+  }, [tenantId, paymentMethod, selectedCustomer]);
 
   // Reset transaction state
   const resetTransaction = useCallback(() => {
@@ -479,11 +486,10 @@ function CashRegisterContent() {
         discountValue,
         taxAmount,
         taxRate,
-        customerName: selectedCustomer?.name ?? null,
+        customerName: selectedCustomer ? displayName(selectedCustomer.first_name, selectedCustomer.last_name) : null,
       });
 
-      toast({
-        title: 'Payment processed successfully!',
+      toast.success('Payment processed successfully!', {
         description: `Transaction ${result.transaction_number}`
       });
 
@@ -510,10 +516,8 @@ function CashRegisterContent() {
     onError: (error: unknown) => {
       triggerError();
       logger.error('Payment processing failed', error, { component: 'CashRegister' });
-      toast({
-        title: 'Payment failed',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
+      toast.error('Payment failed', {
+        description: error instanceof Error ? error.message : 'An error occurred'
       });
     }
   });
@@ -528,7 +532,7 @@ function CashRegisterContent() {
       if (existingItem) {
         if (existingItem.quantity >= stock) {
           triggerError();
-          toast({ title: 'Not enough stock', variant: 'destructive' });
+          toast.error('Not enough stock');
           return;
         }
         triggerLight();
@@ -540,7 +544,7 @@ function CashRegisterContent() {
       } else {
         if (stock <= 0) {
           triggerError();
-          toast({ title: 'Product out of stock', variant: 'destructive' });
+          toast.error('Product out of stock');
           return;
         }
         triggerLight();
@@ -551,7 +555,7 @@ function CashRegisterContent() {
       // Small delay for visual feedback
       setTimeout(() => setIsAddingToCart(null), 150);
     }
-  }, [cart, triggerError, triggerLight, toast]);
+  }, [cart, triggerError, triggerLight]);
 
   const updateQuantity = (productId: string, change: number) => {
     setCart(cart.map(item => {
@@ -578,24 +582,24 @@ function CashRegisterContent() {
   const confirmClearCart = () => {
     resetTransaction();
     setClearCartDialogOpen(false);
-    toast({ title: 'Cart cleared' });
+    toast.success('Cart cleared');
   };
 
   // Apply discount
   const handleApplyDiscount = (type: 'percentage' | 'fixed', value: number) => {
     // Validate discount
     if (type === 'percentage' && value > 100) {
-      toast({ title: 'Percentage cannot exceed 100%', variant: 'destructive' });
+      toast.error('Percentage cannot exceed 100%');
       return;
     }
     if (type === 'fixed' && value > subtotal) {
-      toast({ title: 'Discount cannot exceed subtotal', variant: 'destructive' });
+      toast.error('Discount cannot exceed subtotal');
       return;
     }
     setDiscountType(type);
     setDiscountValue(value);
     setDiscountDialogOpen(false);
-    toast({ title: `Discount applied: ${type === 'percentage' ? `${value}%` : `$${value.toFixed(2)}`}` });
+    toast.success(`Discount applied: ${type === 'percentage' ? `${value}%` : formatCurrency(value)}`);
   };
 
   // Print receipt
@@ -609,55 +613,59 @@ function CashRegisterContent() {
         const businessName = tenant?.business_name || 'Store';
         const isRefund = !!lastRefundData;
         const now = new Date();
-        const txDate = lastTransaction ? new Date(lastTransaction.created_at || '') : now;
-        const dateStr = txDate.toLocaleDateString();
-        const timeStr = txDate.toLocaleTimeString();
+        const txDate = lastTransaction ? lastTransaction.created_at || now : now;
+        const dateStr = formatSmartDate(txDate, { includeTime: false });
+        const timeStr = formatSmartDate(txDate, { includeTime: true });
         const receipt = lastReceiptData;
 
         // Build item rows from receipt data or refund data
         let itemRows: string;
+        let itemCount = 0;
         if (isRefund && lastRefundData.items.length > 0) {
+          itemCount = lastRefundData.items.reduce((sum, i) => sum + i.quantity, 0);
           itemRows = lastRefundData.items.map(item =>
             `<tr>
               <td class="item-name" colspan="3">${item.name}</td>
             </tr>
             <tr>
-              <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+              <td class="item-detail">${item.quantity} x ${formatCurrency(item.price)}</td>
               <td></td>
-              <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+              <td class="item-amount">-${formatCurrency(item.subtotal)}</td>
             </tr>`
           ).join('');
         } else if (receipt?.items) {
+          itemCount = receipt.items.reduce((sum, i) => sum + i.quantity, 0);
           itemRows = receipt.items.map(item =>
             `<tr>
               <td class="item-name" colspan="3">${item.name}</td>
             </tr>
             <tr>
-              <td class="item-detail">${item.quantity} x $${item.price.toFixed(2)}</td>
+              <td class="item-detail">${item.quantity} x ${formatCurrency(item.price)}</td>
               <td></td>
-              <td class="item-amount">$${item.subtotal.toFixed(2)}</td>
+              <td class="item-amount">${formatCurrency(item.subtotal)}</td>
             </tr>`
           ).join('');
         } else {
-          itemRows = `<tr><td colspan="3">${lastTransaction?.items_count || 0} item(s)</td></tr>`;
+          itemCount = lastTransaction?.items_count || 0;
+          itemRows = `<tr><td colspan="3">${itemCount} item(s)</td></tr>`;
         }
 
         const discountRow = !isRefund && receipt && receipt.discountAmount > 0
           ? `<tr>
               <td colspan="2">Discount${receipt.discountType === 'percentage' ? ` (${receipt.discountValue}%)` : ''}</td>
-              <td class="item-amount">-$${receipt.discountAmount.toFixed(2)}</td>
+              <td class="item-amount">-${formatCurrency(receipt.discountAmount)}</td>
             </tr>`
           : '';
 
         const taxRow = !isRefund && receipt && receipt.taxAmount > 0
           ? `<tr>
               <td colspan="2">Tax (${(receipt.taxRate * 100).toFixed(2)}%)</td>
-              <td class="item-amount">$${receipt.taxAmount.toFixed(2)}</td>
+              <td class="item-amount">${formatCurrency(receipt.taxAmount)}</td>
             </tr>`
           : '';
 
         const customerRow = receipt?.customerName
-          ? `<p class="customer">Customer: ${receipt.customerName}</p>`
+          ? `<div class="info-row"><span>Customer:</span><span>${receipt.customerName}</span></div>`
           : '';
 
         // Refund-specific fields
@@ -669,9 +677,14 @@ function CashRegisterContent() {
           ? `<div class="info-row"><span>Refund Method:</span><span style="text-transform:capitalize">${lastRefundData.refundMethod}</span></div>`
           : '';
 
-        const receiptLabel = isRefund ? 'REFUND' : 'RECEIPT';
+        const refundNotesRow = isRefund && lastRefundData.notes
+          ? `<div class="info-row"><span>Reason:</span><span>${lastRefundData.notes}</span></div>`
+          : '';
+
+        const receiptLabel = isRefund ? '*** REFUND ***' : 'RECEIPT';
         const totalAmount = isRefund ? lastRefundData.refundAmount : (lastTransaction?.total || 0);
         const totalLabel = isRefund ? 'REFUND TOTAL' : 'TOTAL';
+        const totalFormatted = isRefund ? `-${formatCurrency(totalAmount)}` : formatCurrency(totalAmount);
         const footerText = isRefund ? 'Refund processed.' : 'Thank you for your purchase!';
         const receiptNumber = lastTransaction?.transaction_number || '';
         const titlePrefix = isRefund ? 'Refund' : 'Receipt';
@@ -685,31 +698,44 @@ function CashRegisterContent() {
     body {
       font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
-      max-width: 300px;
+      width: 302px;
       margin: 0 auto;
       padding: 10px;
       color: #000;
     }
     .header { text-align: center; margin-bottom: 8px; }
-    .header h2 { font-size: 16px; margin-bottom: 4px; text-transform: uppercase; }
+    .header h2 { font-size: 16px; margin-bottom: 2px; text-transform: uppercase; }
     .header p { font-size: 11px; line-height: 1.4; }
-    .sep { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-    .receipt-label { text-align: center; font-size: 14px; font-weight: bold; letter-spacing: 2px; margin: 4px 0; }
+    .sep { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+    .sep-double { border: none; border-top: 2px solid #000; margin: 6px 0; }
+    .receipt-label {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin: 6px 0;
+      padding: 4px 0;
+    }
+    .receipt-label.refund {
+      border: 2px solid #000;
+      padding: 6px 0;
+    }
+    .col-header { display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; border-bottom: 1px solid #000; padding-bottom: 2px; }
     table { width: 100%; border-collapse: collapse; }
     td { padding: 1px 0; vertical-align: top; }
     .item-name { font-weight: bold; font-size: 11px; padding-top: 4px; }
     .item-detail { font-size: 11px; color: #333; padding-left: 8px; }
     .item-amount { text-align: right; white-space: nowrap; }
+    .item-count { font-size: 10px; text-align: right; margin-top: 4px; }
     .totals td { padding: 2px 0; }
     .total-row td { font-weight: bold; font-size: 14px; padding-top: 4px; }
     .info-row { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
-    .info-row span:last-child { text-align: right; }
-    .customer { font-size: 11px; margin: 4px 0; }
+    .info-row span:last-child { text-align: right; max-width: 55%; word-break: break-word; }
     .footer { text-align: center; margin-top: 12px; font-size: 11px; }
     .footer p { margin: 2px 0; }
-    .receipt-no { font-size: 10px; text-align: center; margin-top: 8px; color: #666; }
+    .receipt-id { font-size: 9px; text-align: center; margin-top: 8px; color: #666; word-break: break-all; }
     @media print {
-      body { padding: 0; margin: 0; }
+      body { padding: 0; margin: 0; width: 80mm; }
       @page { margin: 0; size: 80mm auto; }
     }
   </style>
@@ -718,35 +744,38 @@ function CashRegisterContent() {
   <div class="header">
     <h2>${businessName}</h2>
   </div>
-  <hr class="sep" />
-  <div class="receipt-label">${receiptLabel}</div>
-  <hr class="sep" />
+  <hr class="sep-double" />
+  <div class="receipt-label${isRefund ? ' refund' : ''}">${receiptLabel}</div>
+  <hr class="sep-double" />
   <div class="info-row"><span>Date:</span><span>${dateStr}</span></div>
   <div class="info-row"><span>Time:</span><span>${timeStr}</span></div>
   ${receiptNumber ? `<div class="info-row"><span>Receipt #:</span><span>${receiptNumber}</span></div>` : ''}
   ${refundOriginalRef}
   ${customerRow}
   <hr class="sep" />
+  <div class="col-header"><span>Item</span><span>Amount</span></div>
   <table>${itemRows}</table>
-  <hr class="sep" />
+  <div class="item-count">${itemCount} item(s)</div>
+  <hr class="sep-double" />
   <table class="totals">
     ${!isRefund ? `<tr>
       <td colspan="2">Subtotal</td>
-      <td class="item-amount">$${(receipt?.subtotal ?? lastTransaction?.total ?? 0).toFixed(2)}</td>
+      <td class="item-amount">${formatCurrency(receipt?.subtotal ?? lastTransaction?.total ?? 0)}</td>
     </tr>` : ''}
     ${discountRow}
     ${taxRow}
     <tr class="total-row">
       <td colspan="2">${totalLabel}</td>
-      <td class="item-amount">$${totalAmount.toFixed(2)}</td>
+      <td class="item-amount">${totalFormatted}</td>
     </tr>
   </table>
   <hr class="sep" />
   ${isRefund ? refundMethodRow : `<div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction?.payment_method || ''}</span></div>`}
+  ${refundNotesRow}
   <div class="footer">
     <p>${footerText}</p>
   </div>
-  <p class="receipt-no">${lastTransaction?.transaction_id || ''}</p>
+  <p class="receipt-id">${lastTransaction?.transaction_id || ''}</p>
 </body>
 </html>`;
         printWindow.document.write(receiptHtml);
@@ -755,11 +784,11 @@ function CashRegisterContent() {
       }
     } catch (error) {
       logger.error('Print failed', error, { component: 'CashRegister' });
-      toast({ title: 'Print failed', variant: 'destructive' });
+      toast.error('Print failed');
     } finally {
       setIsPrinting(false);
     }
-  }, [lastTransaction, lastReceiptData, lastRefundData, tenant, toast]);
+  }, [lastTransaction, lastReceiptData, lastRefundData, tenant]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -778,46 +807,56 @@ function CashRegisterContent() {
         return;
       }
 
-      // F2 - Focus search
+      // F2 - New Sale (reset transaction)
       if (e.key === 'F2') {
+        e.preventDefault();
+        resetTransaction();
+        toast.success('New sale started');
+      }
+
+      // F3 - Search Product
+      if (e.key === 'F3') {
         e.preventDefault();
         setProductDialogOpen(true);
         setTimeout(() => searchInputRef.current?.focus(), 100);
       }
 
-      // F4 - Clear cart
-      if (e.key === 'F4' && cart.length > 0) {
+      // F4 - Refund
+      if (e.key === 'F4') {
         e.preventDefault();
-        handleClearCart();
+        setRefundDialogOpen(true);
       }
 
-      // F8 - Add discount
-      if (e.key === 'F8' && cart.length > 0) {
+      // F8 - Pay Cash
+      if (e.key === 'F8' && cart.length > 0 && !processPayment.isPending) {
         e.preventDefault();
-        setDiscountDialogOpen(true);
-      }
-
-      // F10 - Select customer
-      if (e.key === 'F10') {
-        e.preventDefault();
-        setCustomerDialogOpen(true);
-      }
-
-      // F12 - Complete transaction
-      if (e.key === 'F12' && cart.length > 0 && !processPayment.isPending) {
-        e.preventDefault();
+        setPaymentMethod('cash');
         executeCreditAction('pos_process_sale', async () => {
           await processPayment.mutateAsync();
         });
       }
 
-      // Escape - Close modals
+      // F9 - Pay Card
+      if (e.key === 'F9' && cart.length > 0 && !processPayment.isPending) {
+        e.preventDefault();
+        setPaymentMethod('credit');
+        executeCreditAction('pos_process_sale', async () => {
+          await processPayment.mutateAsync();
+        });
+      }
+
+      // Escape - Clear cart or close dialogs
       if (e.key === 'Escape') {
-        setProductDialogOpen(false);
-        setCustomerDialogOpen(false);
-        setDiscountDialogOpen(false);
-        setReceiptDialogOpen(false);
-        setKeyboardHelpOpen(false);
+        const anyDialogOpen = productDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
+        if (anyDialogOpen) {
+          setProductDialogOpen(false);
+          setDiscountDialogOpen(false);
+          setReceiptDialogOpen(false);
+          setKeyboardHelpOpen(false);
+          setRefundDialogOpen(false);
+        } else if (cart.length > 0) {
+          handleClearCart();
+        }
       }
 
       // ? - Show keyboard help
@@ -830,7 +869,7 @@ function CashRegisterContent() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- processPayment.mutateAsync is stable
-  }, [cart, processPayment.isPending, executeCreditAction]);
+  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
 
   // Barcode scanner support
   useEffect(() => {
@@ -858,13 +897,11 @@ function CashRegisterContent() {
 
         if (product) {
           addToCart(product);
-          toast({ title: `Added: ${product.name}` });
+          toast.success(`Added: ${product.name}`);
         } else {
           triggerError();
-          toast({
-            title: 'Product not found',
-            description: `No product with barcode: ${barcode}`,
-            variant: 'destructive'
+          toast.error('Product not found', {
+            description: `No product with barcode: ${barcode}`
           });
         }
         barcodeBufferRef.current = '';
@@ -875,7 +912,7 @@ function CashRegisterContent() {
 
     window.addEventListener('keydown', handleBarcodeInput);
     return () => window.removeEventListener('keydown', handleBarcodeInput);
-  }, [products, addToCart, triggerError, toast]);
+  }, [products, addToCart, triggerError]);
 
   if (isLoading) {
     return (
@@ -961,7 +998,7 @@ function CashRegisterContent() {
           {activeShift && (
             <Badge variant="secondary" className="flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              Shift: ${((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)).toFixed(2)}
+              Shift: {formatCurrency((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0))}
             </Badge>
           )}
           <Button
@@ -969,15 +1006,17 @@ function CashRegisterContent() {
             size="sm"
             onClick={() => setRefundDialogOpen(true)}
             disabled={processPayment.isPending}
+            className="md:min-h-[44px] md:px-4"
           >
             <RotateCcw className="h-4 w-4 mr-1" />
             Refund/Return
+            <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F4</kbd>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setKeyboardHelpOpen(true)}
-            className="text-xs"
+            className="text-xs md:min-h-[44px] md:px-4"
           >
             <Keyboard className="h-4 w-4 mr-1" />
             Shortcuts
@@ -988,45 +1027,66 @@ function CashRegisterContent() {
         </div>
       </div>
 
-      {/* Quick Add Section */}
-      {products.length > 0 && (
+      {/* Quick Add Product Grid — Top sellers by frequency */}
+      {topProducts.length > 0 && (
         <Card className="bg-gradient-to-r from-primary/5 to-background">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Quick Add
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {products.slice(0, 8).map((product) => (
-                <Button
-                  key={product.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addToCart(product)}
-                  disabled={(product.stock_quantity ?? 0) <= 0 || isAddingToCart === product.id}
-                  className="h-auto py-2 px-3 flex flex-col items-start gap-0.5 min-w-[100px] hover:border-primary hover:bg-primary/5"
-                >
-                  {isAddingToCart === product.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <span className="font-medium text-xs truncate max-w-[80px]">{product.name}</span>
-                      <span className="text-xs text-muted-foreground">${product.price}</span>
-                    </>
-                  )}
-                </Button>
-              ))}
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Top Products
+              </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setProductDialogOpen(true)}
-                className="h-auto py-2 px-3"
+                className="text-xs h-7"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                More...
+                <Search className="h-3 w-3 mr-1" />
+                Browse All
               </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+              {topProducts.map((product) => {
+                const outOfStock = (product.stock_quantity ?? 0) <= 0;
+                return (
+                  <DisabledTooltip key={product.id} disabled={outOfStock} reason="Out of stock">
+                    <Button
+                      variant="outline"
+                      onClick={() => addToCart(product)}
+                      disabled={outOfStock || isAddingToCart === product.id}
+                      className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
+                    >
+                      {isAddingToCart === product.id ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          {product.image_url ? (
+                            <img
+                              src={product.image_url}
+                              alt={product.name}
+                              className="h-10 w-10 object-cover rounded"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 bg-muted rounded flex items-center justify-center">
+                              <Tag className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <span className="font-medium text-xs truncate w-full text-center">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">{formatCurrency(product.price)}</span>
+                          {outOfStock && (
+                            <Badge variant="destructive" className="text-[10px] px-1 py-0 absolute top-1 right-1">
+                              Out
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                    </Button>
+                  </DisabledTooltip>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -1046,100 +1106,93 @@ function CashRegisterContent() {
                   size="sm"
                   onClick={handleClearCart}
                   disabled={processPayment.isPending}
-                  className="text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive md:min-h-[44px]"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Clear
+                  <kbd className="ml-1 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">Esc</kbd>
                 </Button>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Customer Selection */}
-            <div className="flex items-center justify-between p-2 border rounded bg-muted/30">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                {selectedCustomer ? (
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <span className="font-medium text-sm">{selectedCustomer.name}</span>
-                      {selectedCustomer.phone && (
-                        <span className="text-xs text-muted-foreground ml-2">{selectedCustomer.phone}</span>
-                      )}
-                    </div>
-                    {customerCreditBalance > 0 && (
-                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
-                        <Wallet className="h-3 w-3 mr-1" />
-                        ${customerCreditBalance.toFixed(2)} credit
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Walk-in Customer</span>
-                )}
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCustomerDialogOpen(true)}
-                >
-                  {selectedCustomer ? 'Change' : 'Select'}
-                </Button>
-                {selectedCustomer && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedCustomer(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+            <div className="space-y-2">
+              <POSCustomerSelector
+                customers={customers}
+                selectedCustomer={selectedCustomer}
+                onSelectCustomer={setSelectedCustomer}
+                onCustomerCreated={(customer) => {
+                  queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+                  setSelectedCustomer(customer);
+                }}
+                isLoading={customersLoading}
+                tenantId={tenantId}
+              />
+              {selectedCustomer && (
+                <div className="flex items-center gap-2 px-2">
+                  {customerCreditBalance > 0 && (
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 text-xs">
+                      <Wallet className="h-3 w-3 mr-1" />
+                      {formatCurrency(customerCreditBalance)} credit
+                    </Badge>
+                  )}
+                  {loyaltyActive && loyaltyStatus && (
+                    <Badge variant="secondary" className={`${TIER_DISPLAY_INFO[loyaltyStatus.tier].bgColor} ${TIER_DISPLAY_INFO[loyaltyStatus.tier].color} text-xs`}>
+                      <Award className="h-3 w-3 mr-1" />
+                      {TIER_DISPLAY_INFO[loyaltyStatus.tier].label} &middot; {loyaltyStatus.current_points} pts
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Cart Items */}
             {cart.length > 0 ? (
-              <div className="space-y-2 max-h-48 overflow-auto">
+              <div className="space-y-2 max-h-48 md:max-h-64 lg:max-h-80 overflow-auto">
                 <div className="text-sm font-medium">Items ({cart.reduce((sum, item) => sum + item.quantity, 0)})</div>
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center gap-2 p-2 border rounded">
                     <div className="flex-1">
                       <div className="font-medium text-sm">{item.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        ${item.price.toFixed(2)} × {item.quantity}
+                        {formatCurrency(item.price)} × {item.quantity}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
+                      <DisabledTooltip disabled={item.quantity <= 1} reason="Minimum quantity is 1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10 lg:h-11 lg:w-11"
+                          onClick={() => updateQuantity(item.id, -1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3 md:h-4 md:w-4" />
+                        </Button>
+                      </DisabledTooltip>
+                      <span className="w-8 text-center text-sm md:text-base">{item.quantity}</span>
+                      <DisabledTooltip disabled={item.quantity >= item.stock_quantity} reason="Maximum stock reached">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10 lg:h-11 lg:w-11"
+                          onClick={() => updateQuantity(item.id, 1)}
+                          disabled={item.quantity >= item.stock_quantity}
+                        >
+                          <Plus className="h-3 w-3 md:h-4 md:w-4" />
+                        </Button>
+                      </DisabledTooltip>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6"
-                        onClick={() => updateQuantity(item.id, -1)}
-                        disabled={item.quantity <= 1}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-8 text-center text-sm">{item.quantity}</span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6"
-                        onClick={() => updateQuantity(item.id, 1)}
-                        disabled={item.quantity >= item.stock_quantity}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6"
+                        className="h-10 w-10 lg:h-11 lg:w-11"
                         onClick={() => removeFromCart(item.id)}
                       >
-                        <Trash2 className="h-3 w-3 text-destructive" />
+                        <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-destructive" />
                       </Button>
                     </div>
-                    <span className="font-bold text-sm w-16 text-right">${item.subtotal.toFixed(2)}</span>
+                    <span className="font-bold text-sm w-16 text-right">{formatCurrency(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -1156,7 +1209,7 @@ function CashRegisterContent() {
               <div className="space-y-2 pt-2 border-t">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
@@ -1164,20 +1217,29 @@ function CashRegisterContent() {
                       <Percent className="h-3 w-3" />
                       Discount ({discountType === 'percentage' ? `${discountValue}%` : 'Fixed'})
                     </span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-{formatCurrency(discountAmount)}</span>
                   </div>
                 )}
                 {taxEnabled && taxAmount > 0 && (
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Tax ({(taxRate * 100).toFixed(2)}%)</span>
-                    <span>${taxAmount.toFixed(2)}</span>
+                    <span>{formatCurrency(taxAmount)}</span>
                   </div>
                 )}
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
+                {loyaltyActive && selectedCustomer && (
+                  <div className="flex justify-between text-sm text-blue-600">
+                    <span className="flex items-center gap-1">
+                      <Award className="h-3 w-3" />
+                      Points to earn
+                    </span>
+                    <span>+{calculatePointsToEarn(total, loyaltyEffectiveConfig.points_per_dollar, loyaltyStatus?.tier_multiplier ?? 1)}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1188,7 +1250,7 @@ function CashRegisterContent() {
                 size="sm"
                 onClick={() => setDiscountDialogOpen(true)}
                 disabled={processPayment.isPending}
-                className="w-full"
+                className="w-full md:min-h-[44px]"
               >
                 <Percent className="h-4 w-4 mr-2" />
                 {discountAmount > 0 ? 'Edit Discount' : 'Add Discount'}
@@ -1200,13 +1262,14 @@ function CashRegisterContent() {
               <Label className="text-sm font-medium mb-2 block">Payment Method</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="debit">Debit Card</SelectItem>
-                  <SelectItem value="credit">Credit Card</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  {POS_PAYMENT_METHODS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1214,36 +1277,40 @@ function CashRegisterContent() {
             {/* Actions */}
             <div className="flex gap-2">
               <Button
-                className="flex-1"
+                className="flex-1 md:min-h-[44px]"
                 variant="outline"
                 onClick={() => setProductDialogOpen(true)}
                 disabled={processPayment.isPending}
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Add Item
+                <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F3</kbd>
               </Button>
-              <Button
-                className="flex-1"
-                variant="default"
-                onClick={async () => {
-                  await executeCreditAction('pos_process_sale', async () => {
-                    await processPayment.mutateAsync();
-                  });
-                }}
-                disabled={cart.length === 0 || processPayment.isPending}
-              >
-                {processPayment.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    {!isOnline ? 'Queue Payment' : 'Process Payment'}
-                  </>
-                )}
-              </Button>
+              <DisabledTooltip disabled={cart.length === 0 && !processPayment.isPending} reason="Add items to cart before processing payment">
+                <Button
+                  className="flex-1 md:min-h-[44px]"
+                  variant="default"
+                  onClick={async () => {
+                    await executeCreditAction('pos_process_sale', async () => {
+                      await processPayment.mutateAsync();
+                    });
+                  }}
+                  disabled={cart.length === 0 || processPayment.isPending}
+                >
+                  {processPayment.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      {!isOnline ? 'Queue Payment' : 'Pay'}
+                      <span className="ml-1.5 hidden sm:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
+                    </>
+                  )}
+                </Button>
+              </DisabledTooltip>
             </div>
           </CardContent>
         </Card>
@@ -1257,15 +1324,15 @@ function CashRegisterContent() {
             {transactions && transactions.length > 0 ? (
               <div className="space-y-4">
                 {(transactions as POSTransaction[]).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={transaction.id} className="flex items-center justify-between p-4 lg:p-5 border rounded-lg">
                     <div>
                       <div className="font-medium">Transaction #{transaction.id.slice(0, 8)}</div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(transaction.created_at).toLocaleString()}
+                        {formatSmartDate(transaction.created_at, { includeTime: true })}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-lg font-bold">${transaction.total_amount.toFixed(2)}</div>
+                      <div className="text-lg font-bold">{formatCurrency(transaction.total_amount)}</div>
                       <Badge variant={transaction.payment_status === 'completed' ? 'default' : 'secondary'}>
                         {transaction.payment_status}
                       </Badge>
@@ -1293,15 +1360,20 @@ function CashRegisterContent() {
         </div>
       )}
 
-      {/* No Active Shift Alert */}
+      {/* No Active Shift Empty State */}
       {!activeShift && (
-        <Alert className="mt-4">
-          <Wallet className="h-4 w-4" />
-          <AlertTitle>No Active Shift</AlertTitle>
-          <AlertDescription>
-            Start a shift from the POS page to track cash drawer activity and generate Z-reports.
-          </AlertDescription>
-        </Alert>
+        <EmptyState
+          icon={Clock}
+          title="No active shift"
+          description="Start a shift to begin processing sales and track cash drawer activity."
+          action={{
+            label: 'Start Shift',
+            onClick: () => navigate(`/${tenantSlug}/admin/pos-system?tab=shifts`),
+            icon: Clock,
+          }}
+          variant="card"
+          className="mt-4"
+        />
       )}
 
       {/* Product Selection Dialog */}
@@ -1339,7 +1411,7 @@ function CashRegisterContent() {
                 </Select>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredProducts.length === 0 ? (
                 <div className="col-span-2 text-center py-8">
                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
@@ -1381,7 +1453,7 @@ function CashRegisterContent() {
                         <p className="text-xs text-muted-foreground mb-1">SKU: {product.sku}</p>
                       )}
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
+                        <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
                         <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
                       </div>
                     </CardContent>
@@ -1393,65 +1465,7 @@ function CashRegisterContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Customer Selection Dialog */}
-      <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Select Customer</DialogTitle>
-            <DialogDescription>Search for an existing customer or proceed with walk-in</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                aria-label="Search by name, email, or phone"
-                placeholder="Search by name, email, or phone..."
-                value={customerSearchQuery}
-                onChange={(e) => setCustomerSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="max-h-60 overflow-auto space-y-2">
-              {filteredCustomers.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  No customers found
-                </div>
-              ) : (
-                filteredCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    className="flex items-center justify-between p-3 border rounded cursor-pointer hover:bg-muted/50"
-                    onClick={() => {
-                      setSelectedCustomer(customer);
-                      setCustomerDialogOpen(false);
-                      setCustomerSearchQuery('');
-                    }}
-                  >
-                    <div>
-                      <div className="font-medium">{customer.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {customer.email || customer.phone || 'No contact info'}
-                      </div>
-                    </div>
-                    <User className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCustomerDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              setSelectedCustomer(null);
-              setCustomerDialogOpen(false);
-            }}>
-              Walk-in Customer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Customer selection is now inline via POSCustomerSelector */}
 
       {/* Discount Dialog */}
       <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
@@ -1504,7 +1518,7 @@ function CashRegisterContent() {
             </div>
             {discountValue > 0 && (
               <div className="text-sm text-muted-foreground">
-                Discount: ${(discountType === 'percentage' ? subtotal * (discountValue / 100) : discountValue).toFixed(2)}
+                Discount: {formatCurrency(discountType === 'percentage' ? subtotal * (discountValue / 100) : discountValue)}
               </div>
             )}
           </div>
@@ -1556,7 +1570,7 @@ function CashRegisterContent() {
             <div className="space-y-4">
               <div className="text-center py-4 border-b">
                 <div className="text-2xl font-bold text-red-600">
-                  -${lastRefundData.refundAmount.toFixed(2)}
+                  -{formatCurrency(lastRefundData.refundAmount)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   Refund for {lastRefundData.originalOrderNumber}
@@ -1573,7 +1587,7 @@ function CashRegisterContent() {
                 </div>
                 <div className="flex justify-between">
                   <span>Date</span>
-                  <span>{new Date().toLocaleString()}</span>
+                  <span>{formatSmartDate(new Date(), { includeTime: true })}</span>
                 </div>
               </div>
             </div>
@@ -1581,7 +1595,7 @@ function CashRegisterContent() {
             <div className="space-y-4">
               <div className="text-center py-4 border-b">
                 <div className="text-2xl font-bold text-green-600">
-                  ${(lastTransaction.total || 0).toFixed(2)}
+                  {formatCurrency(lastTransaction.total || 0)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   {lastTransaction.transaction_number}
@@ -1598,7 +1612,7 @@ function CashRegisterContent() {
                 </div>
                 <div className="flex justify-between">
                   <span>Date</span>
-                  <span>{new Date(lastTransaction.created_at || '').toLocaleString()}</span>
+                  <span>{formatSmartDate(lastTransaction.created_at, { includeTime: true })}</span>
                 </div>
               </div>
             </div>
@@ -1650,27 +1664,27 @@ function CashRegisterContent() {
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F2</kbd>
-                <span>Search Products</span>
+                <span>New Sale</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F3</kbd>
+                <span>Search Product</span>
               </div>
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F4</kbd>
-                <span>Clear Cart</span>
+                <span>Refund</span>
               </div>
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F8</kbd>
-                <span>Add Discount</span>
+                <span>Pay Cash</span>
               </div>
               <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F10</kbd>
-                <span>Select Customer</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F12</kbd>
-                <span>Process Payment</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F9</kbd>
+                <span>Pay Card</span>
               </div>
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Esc</kbd>
-                <span>Close Dialogs</span>
+                <span>Clear / Close</span>
               </div>
             </div>
             <Separator />

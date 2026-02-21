@@ -103,7 +103,7 @@ export function AssignDeliveryRunnerDialog({
 
   // Fetch available runners with their active deliveries count
   const { data: runnersData, isLoading: isLoadingRunners } = useQuery({
-    queryKey: ['available-runners-with-load', tenant?.id],
+    queryKey: queryKeys.runners.list({ tenantId: tenant?.id, status: 'available' }),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -272,8 +272,9 @@ export function AssignDeliveryRunnerDialog({
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
-      queryClient.invalidateQueries({ queryKey: ['available-runners-with-load'] });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-deliveries'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runners.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
 
       toast.success('Runner Assigned', {
         description: `${runner?.full_name || 'Runner'} has been assigned to order ${orderNumber}`,

@@ -29,6 +29,7 @@ import {
 import { formatDateForDisplay } from '@/lib/utils/revenue-analysis';
 import { SimpleRevenuePredictor } from '@/lib/ai/simple-revenue-prediction';
 import { groupOrdersByDate } from '@/lib/utils/revenue-analysis';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface PredictionData {
   predictions: Array<{
@@ -203,7 +204,7 @@ export function RevenuePredictionWidget() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-muted-foreground mb-1">Next 7 Days Forecast</p>
-            <p className="text-2xl font-bold">${predictionData.totalPredicted.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{formatCurrency(predictionData.totalPredicted)}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Confidence Level</p>
@@ -233,10 +234,10 @@ export function RevenuePredictionWidget() {
                 <YAxis 
                   tick={{ fontSize: 12 }}
                   className="text-muted-foreground"
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={(value) => formatCompactCurrency(value)}
                 />
                 <Tooltip
-                  formatter={(value: number | undefined) => value ? [`$${value.toLocaleString()}`, ''] : ['', '']}
+                  formatter={(value: number | undefined) => value ? [formatCurrency(value), ''] : ['', '']}
                   labelStyle={{ color: '#000' }}
                   contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '6px' }}
                 />
@@ -279,7 +280,7 @@ export function RevenuePredictionWidget() {
                 </span>
                 <div className="flex items-center gap-2">
                   {getTrendIcon(pred.trend)}
-                  <span className="font-medium">${pred.predictedRevenue.toLocaleString()}</span>
+                  <span className="font-medium">{formatCurrency(pred.predictedRevenue)}</span>
                 </div>
               </div>
             ))}

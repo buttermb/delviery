@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useCourier } from '@/contexts/CourierContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -148,7 +149,7 @@ export default function CourierEarningsPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground">Loading earnings...</p>
+              <EnhancedLoadingState variant="list" count={5} message="Loading earnings..." />
             ) : earnings.length === 0 ? (
               <div className="text-center py-8 space-y-2">
                 <DollarSign className="mx-auto h-12 w-12 text-muted-foreground/50" />

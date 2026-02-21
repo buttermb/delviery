@@ -439,6 +439,22 @@ export function useUpdateOrderStatus() {
     mutationFn: async ({ orderId, status, notes }: { orderId: string; status: OrderStatus; notes?: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
+      // For delivered status, check if stock was already decremented (by DB trigger on confirmation)
+      let shouldDecrementStock = false;
+      if (status === 'delivered') {
+        const { data: currentOrder } = await supabase
+          .from('unified_orders')
+          .select('status')
+          .eq('id', orderId)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
+
+        // DB trigger decrements stock when status changes to 'confirmed'.
+        // Only decrement at delivery if the order was never confirmed (e.g., pending → delivered)
+        const confirmedStatuses: string[] = ['confirmed', 'processing', 'in_transit', 'delivered', 'completed'];
+        shouldDecrementStock = !currentOrder || !confirmedStatuses.includes(currentOrder.status);
+      }
+
       const updateData: Record<string, unknown> = { status };
       if (status === 'cancelled') {
         updateData.cancelled_at = new Date().toISOString();
@@ -459,6 +475,151 @@ export function useUpdateOrderStatus() {
       if (error) {
         logger.error('Failed to update order status', { orderId, status, error });
         throw error;
+      }
+
+      // Restore stock for cancelled orders
+      if (status === 'cancelled') {
+        try {
+          const { data: cancelledItems } = await supabase
+            .from('unified_order_items')
+            .select('id, product_id, quantity, product_name')
+            .eq('order_id', orderId);
+
+          if (cancelledItems && cancelledItems.length > 0) {
+            for (const item of cancelledItems) {
+              if (!item.product_id) continue;
+
+              const { data: product } = await supabase
+                .from('products')
+                .select('id, stock_quantity')
+                .eq('id', item.product_id)
+                .eq('tenant_id', tenant.id)
+                .maybeSingle();
+
+              if (!product) continue;
+
+              const previousQuantity = product.stock_quantity || 0;
+              const newQuantity = previousQuantity + item.quantity;
+
+              await supabase
+                .from('products')
+                .update({
+                  stock_quantity: newQuantity,
+                  available_quantity: newQuantity,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', item.product_id)
+                .eq('tenant_id', tenant.id);
+
+              // Log to inventory_history
+              await (supabase as any)
+                .from('inventory_history')
+                .insert({
+                  tenant_id: tenant.id,
+                  product_id: item.product_id,
+                  change_type: 'return',
+                  previous_quantity: previousQuantity,
+                  new_quantity: newQuantity,
+                  change_amount: item.quantity,
+                  reference_type: 'order_cancelled',
+                  reference_id: orderId,
+                  reason: 'order_cancelled',
+                  notes: `Order cancelled - inventory restored`,
+                  performed_by: null,
+                  metadata: {
+                    order_id: orderId,
+                    order_item_id: item.id,
+                    cancellation_reason: notes,
+                    source: 'unified_status_update',
+                  },
+                });
+            }
+
+            logger.info('Stock restored for cancelled order', {
+              component: 'useUpdateOrderStatus',
+              orderId,
+              itemCount: cancelledItems.length,
+            });
+          }
+        } catch (err) {
+          // Log but don't fail the status update — stock adjustment is secondary
+          logger.error('Failed to restore stock for cancelled order', err, {
+            component: 'useUpdateOrderStatus',
+            orderId,
+          });
+        }
+      }
+
+      // Decrement stock for delivered orders that skipped confirmation
+      if (status === 'delivered' && shouldDecrementStock) {
+        try {
+          const { data: orderItems } = await supabase
+            .from('unified_order_items')
+            .select('id, product_id, quantity, product_name')
+            .eq('order_id', orderId);
+
+          if (orderItems && orderItems.length > 0) {
+            for (const item of orderItems) {
+              if (!item.product_id) continue;
+
+              const { data: product } = await supabase
+                .from('products')
+                .select('id, stock_quantity')
+                .eq('id', item.product_id)
+                .eq('tenant_id', tenant.id)
+                .maybeSingle();
+
+              if (!product) continue;
+
+              const previousQuantity = product.stock_quantity || 0;
+              const newQuantity = Math.max(0, previousQuantity - item.quantity);
+
+              await supabase
+                .from('products')
+                .update({
+                  stock_quantity: newQuantity,
+                  available_quantity: newQuantity,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', item.product_id)
+                .eq('tenant_id', tenant.id);
+
+              // Log to inventory_history
+              await (supabase as any)
+                .from('inventory_history')
+                .insert({
+                  tenant_id: tenant.id,
+                  product_id: item.product_id,
+                  change_type: 'sale',
+                  previous_quantity: previousQuantity,
+                  new_quantity: newQuantity,
+                  change_amount: -item.quantity,
+                  reference_type: 'order_delivered',
+                  reference_id: orderId,
+                  reason: 'order_delivered',
+                  notes: `Order delivered - inventory decremented`,
+                  performed_by: null,
+                  metadata: {
+                    order_id: orderId,
+                    order_item_id: item.id,
+                    source: 'status_update',
+                  },
+                });
+            }
+
+            logger.info('Stock decremented for delivered order', {
+              component: 'useUpdateOrderStatus',
+              orderId,
+              itemCount: orderItems.length,
+            });
+          }
+        } catch (err) {
+          // Log but don't fail the status update — stock adjustment is secondary
+          logger.error('Failed to decrement stock for delivered order', err, {
+            component: 'useUpdateOrderStatus',
+            orderId,
+          });
+        }
       }
 
       return data as unknown as UnifiedOrder;
@@ -539,6 +700,10 @@ export function useUpdateOrderStatus() {
           queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
+          // Stock may have been adjusted for delivered orders
+          queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
           // Update customer stats on order completion
           if (data.customer_id) {
             queryClient.invalidateQueries({
@@ -577,8 +742,8 @@ export function useUpdateOrderStatus() {
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.lists() });
       queryClient.invalidateQueries({ queryKey: unifiedOrdersKeys.detail(variables.orderId) });
       // Inventory is synced by database trigger when status changes to confirmed/cancelled
-      // Invalidate inventory queries to reflect stock changes
-      if (variables.status === 'confirmed' || variables.status === 'cancelled') {
+      // Also sync on delivery for orders that may have skipped confirmation
+      if (variables.status === 'confirmed' || variables.status === 'cancelled' || variables.status === 'delivered') {
         queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       }
@@ -636,6 +801,77 @@ export function useCancelOrder() {
           p_contact_id: order.wholesale_client_id,
           p_amount: order.total_amount,
           p_operation: 'subtract',
+        });
+      }
+
+      // Restore stock for cancelled order items
+      try {
+        const { data: orderItems } = await supabase
+          .from('unified_order_items')
+          .select('id, product_id, quantity, product_name')
+          .eq('order_id', orderId);
+
+        if (orderItems && orderItems.length > 0) {
+          for (const item of orderItems) {
+            if (!item.product_id) continue;
+
+            const { data: product } = await supabase
+              .from('products')
+              .select('id, stock_quantity')
+              .eq('id', item.product_id)
+              .eq('tenant_id', tenant.id)
+              .maybeSingle();
+
+            if (!product) continue;
+
+            const previousQuantity = product.stock_quantity || 0;
+            const newQuantity = previousQuantity + item.quantity;
+
+            await supabase
+              .from('products')
+              .update({
+                stock_quantity: newQuantity,
+                available_quantity: newQuantity,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', item.product_id)
+              .eq('tenant_id', tenant.id);
+
+            // Log to inventory_history
+            await (supabase as any)
+              .from('inventory_history')
+              .insert({
+                tenant_id: tenant.id,
+                product_id: item.product_id,
+                change_type: 'return',
+                previous_quantity: previousQuantity,
+                new_quantity: newQuantity,
+                change_amount: item.quantity,
+                reference_type: 'order_cancelled',
+                reference_id: orderId,
+                reason: 'order_cancelled',
+                notes: `Order cancelled - inventory restored`,
+                performed_by: null,
+                metadata: {
+                  order_id: orderId,
+                  order_item_id: item.id,
+                  cancellation_reason: reason,
+                  source: 'unified_cancel_order',
+                },
+              });
+          }
+
+          logger.info('Stock restored for cancelled order', {
+            component: 'useCancelOrder',
+            orderId,
+            itemCount: orderItems.length,
+          });
+        }
+      } catch (err) {
+        // Log but don't fail the cancellation — stock adjustment is secondary
+        logger.error('Failed to restore stock for cancelled order', err, {
+          component: 'useCancelOrder',
+          orderId,
         });
       }
 

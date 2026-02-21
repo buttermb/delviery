@@ -18,6 +18,8 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // TYPES
@@ -235,7 +237,7 @@ export function useProcessRefund() {
       });
 
       toast.success('Refund processed', {
-        description: `$${result.refund_amount.toFixed(2)} refunded${result.items_returned > 0 ? `, ${result.items_returned} items returned to inventory` : ''}`,
+        description: `${formatCurrency(result.refund_amount)} refunded${result.items_returned > 0 ? `, ${result.items_returned} items returned to inventory` : ''}`,
       });
 
       // Fire REFUND_PROCESSED event for full cross-panel cascade
@@ -283,7 +285,7 @@ export function useProcessRefund() {
       });
 
       toast.error('Refund failed', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

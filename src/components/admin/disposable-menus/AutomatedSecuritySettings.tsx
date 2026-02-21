@@ -13,7 +13,8 @@ import {
   Zap, 
   Lock,
   AlertTriangle,
-  Save
+  Save,
+  Loader2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -292,7 +293,7 @@ export const AutomatedSecuritySettings = () => {
       {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>
-          <Save className="h-4 w-4 mr-2" />
+          {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
           {saving ? 'Saving...' : 'Save Security Settings'}
         </Button>
       </div>

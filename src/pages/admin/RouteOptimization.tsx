@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Route, Clock } from 'lucide-react';
 import { useWholesaleDeliveries } from '@/hooks/useWholesaleData';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function RouteOptimization() {
   const { data: deliveries, isLoading } = useWholesaleDeliveries();
@@ -32,11 +33,7 @@ export default function RouteOptimization() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading routes...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="list" message="Loading routes..." />;
   }
 
   return (

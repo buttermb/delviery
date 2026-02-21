@@ -155,10 +155,29 @@ export function ResponsiveTable<T>({
 
     if (isLoading) {
         return (
-            <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-16 w-full rounded-lg" />
-                ))}
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            {columns.map((col, index) => (
+                                <TableHead key={index} className={col.className}>
+                                    <Skeleton className="h-4 w-20" />
+                                </TableHead>
+                            ))}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {Array.from({ length: 6 }).map((_, rowIndex) => (
+                            <TableRow key={rowIndex}>
+                                {columns.map((col, colIndex) => (
+                                    <TableCell key={colIndex} className={col.className}>
+                                        <Skeleton className={cn("h-4", colIndex === 0 ? "w-3/4" : "w-full")} />
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
         );
     }

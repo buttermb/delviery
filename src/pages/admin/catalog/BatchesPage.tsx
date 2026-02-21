@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Plus,
   Search,
@@ -42,7 +43,7 @@ import { useCreditGatedAction } from '@/hooks/useCredits';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 export default function BatchesPage() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -226,7 +227,7 @@ export default function BatchesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateToAdmin('inventory-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -289,7 +290,7 @@ export default function BatchesPage() {
 
       {/* Batches Table */}
       {isLoading ? (
-        <div className="text-center py-12">Loading batches...</div>
+        <EnhancedLoadingState variant="table" count={5} message="Loading batches..." />
       ) : tableMissing ? (
         <Card>
           <CardContent className="py-12 text-center">

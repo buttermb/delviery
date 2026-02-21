@@ -18,16 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Plus from 'lucide-react/dist/esm/icons/plus';
@@ -343,26 +334,16 @@ export function ProductTagsManager({ className }: ProductTagsManagerProps) {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingTag} onOpenChange={(open) => !open && setDeletingTag(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Tag?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the tag &quot;{deletingTag?.name}&quot;?
-              This will remove it from all products. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteTag.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deletingTag}
+        onOpenChange={(open) => !open && setDeletingTag(null)}
+        onConfirm={handleDelete}
+        title="Delete Tag?"
+        description={`Are you sure you want to delete the tag "${deletingTag?.name}"? This will remove it from all products. This action cannot be undone.`}
+        itemName={deletingTag?.name}
+        itemType="tag"
+        isLoading={deleteTag.isPending}
+      />
     </Card>
   );
 }

@@ -31,6 +31,7 @@ import { useTierDashboard } from '@/hooks/useTierDashboard';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
 import { generateGreeting } from '@/lib/presets/businessTiers';
+import { formatCurrency } from '@/lib/formatters';
 
 import {
   type QuickAction,
@@ -282,7 +283,7 @@ export function HotboxDashboard() {
         {
           id: 'revenue',
           label: 'Revenue',
-          value: `$${todayRevenue.toLocaleString()}`,
+          value: formatCurrency(todayRevenue),
           change: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}%` : undefined,
           changeType: revenueChange > 0 ? 'increase' : revenueChange < 0 ? 'decrease' : 'neutral',
           subtext: 'today',
@@ -290,7 +291,7 @@ export function HotboxDashboard() {
         {
           id: 'profit',
           label: 'Profit',
-          value: `$${profit.toLocaleString()}`,
+          value: formatCurrency(profit),
           subtext: marginDisplay,
         },
         {

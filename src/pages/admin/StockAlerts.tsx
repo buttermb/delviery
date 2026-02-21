@@ -18,6 +18,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LowStockToPODialog } from '@/components/admin/inventory/LowStockToPODialog';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface StockAlert {
@@ -342,7 +343,7 @@ export function StockAlerts() {
                     <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'
                       }`} />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-sm sm:text-base truncate">{alert.product_name}</div>
+                      <TruncatedText text={alert.product_name} className="font-medium text-sm sm:text-base" as="div" />
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         Current: <span className="font-semibold">{alert.current_quantity}</span> | Threshold: {alert.threshold}
                       </div>

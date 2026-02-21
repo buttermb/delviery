@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Info, AlertCircle } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { formatCurrency } from '@/lib/formatters';
 
 interface DeliveryZone {
   zip_code: string;
@@ -179,7 +180,7 @@ const createZoneMarker = (zone: ZoneLocation, color: string): L.DivIcon => {
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           border: 2px solid white;
         ">
-          ${zone.zip_code} • $${zone.fee.toFixed(0)}
+          ${zone.zip_code} • ${formatCurrency(zone.fee)}
         </div>
         <div style="
           width: 0;
@@ -298,12 +299,12 @@ export function DeliveryZoneMapPreview({
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
             <span style="color: #666;">Delivery Fee:</span>
-            <span style="font-weight: 500;">$${zone.fee.toFixed(2)}</span>
+            <span style="font-weight: 500;">${formatCurrency(zone.fee)}</span>
           </div>
           ${zone.min_order ? `
           <div style="display: flex; justify-content: space-between; font-size: 13px;">
             <span style="color: #666;">Min Order:</span>
-            <span style="font-weight: 500;">$${zone.min_order.toFixed(2)}</span>
+            <span style="font-weight: 500;">${formatCurrency(zone.min_order)}</span>
           </div>
           ` : ''}
         </div>

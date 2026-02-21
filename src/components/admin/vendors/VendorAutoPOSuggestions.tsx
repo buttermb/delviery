@@ -33,6 +33,7 @@ import {
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVendorPOSuggestions, type VendorPOSuggestion } from '@/hooks/useVendorPOSuggestions';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -138,10 +139,7 @@ export function VendorAutoPOSuggestions({
 
   const formatDate = (date: Date | null) => {
     if (!date) return 'N/A';
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatSmartDate(date);
   };
 
   const getUrgencyBadge = (level: VendorPOSuggestion['urgencyLevel']) => {

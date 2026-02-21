@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 /**
  * Show notification via service worker for home/lock screen support
  */
@@ -62,7 +63,7 @@ export async function notifyNewOrderPersistent(
   borough: string
 ) {
   await showServiceWorkerNotification('New Delivery Order! 🚀', {
-    body: `Order #${orderNumber} • $${amount.toFixed(2)} • ${borough}`,
+    body: `Order #${orderNumber} • ${formatCurrency(amount)} • ${borough}`,
     tag: `order-${orderNumber}`,
     requireInteraction: true,
     data: {
@@ -95,7 +96,7 @@ export async function notifyDeliveryReminderPersistent(orderNumber: string) {
  */
 export async function notifyEarningsUpdatePersistent(amount: number) {
   await showServiceWorkerNotification('Earnings Updated! 💰', {
-    body: `You earned $${amount.toFixed(2)} from your last delivery`,
+    body: `You earned ${formatCurrency(amount)} from your last delivery`,
     tag: 'earnings-update',
     data: {
       type: 'earnings_update',

@@ -22,6 +22,7 @@ import { subscribe, publish } from '@/lib/eventBus';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantContext } from '@/hooks/useTenantContext';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // Types
@@ -423,7 +424,7 @@ async function notifyAdminVipUpgrade(
     tenant_id: tenantId,
     user_id: null, // Notify all admins
     title: 'Customer Upgraded to VIP',
-    message: `${customerName ?? 'A customer'} has been upgraded to VIP status with $${totalSpend.toFixed(2)} in total purchases.`,
+    message: `${customerName ?? 'A customer'} has been upgraded to VIP status with ${formatCurrency(totalSpend)} in total purchases.`,
     type: 'success',
     entity_type: 'customer',
     entity_id: customerId,

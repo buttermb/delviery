@@ -72,7 +72,7 @@ export function MarketingNav() {
             </Button>
           </Link>
           <button
-            className="p-2 text-[hsl(var(--marketing-text))]"
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[hsl(var(--marketing-text))]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}

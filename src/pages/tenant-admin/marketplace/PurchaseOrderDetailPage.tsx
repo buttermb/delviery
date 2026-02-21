@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
     CheckCircle,
@@ -30,6 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -87,7 +89,7 @@ export default function PurchaseOrderDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }
@@ -118,18 +120,14 @@ export default function PurchaseOrderDetailPage() {
         onError: (error) => {
             toast({
                 title: "Error sending message",
-                description: error.message,
+                description: humanizeError(error),
                 variant: "destructive"
             });
         }
     });
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!order) {

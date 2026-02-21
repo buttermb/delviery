@@ -9,6 +9,7 @@ import { History, Search, User, Clock, Shield } from 'lucide-react';
 
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function AuditTrail() {
   const { tenant } = useTenantAdminAuth();
@@ -116,7 +117,7 @@ export default function AuditTrail() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        <span>{new Date(log.created_at).toLocaleString()}</span>
+                        <span>{formatSmartDate(log.created_at, { includeTime: true })}</span>
                       </div>
                     </div>
                   </div>

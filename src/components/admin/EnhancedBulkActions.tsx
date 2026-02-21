@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,7 +86,7 @@ export function EnhancedBulkActions({
       setAdjustmentPercent("");
     } catch (error: unknown) {
       logger.error('Bulk price adjustment failed', error, { component: 'EnhancedBulkActions' });
-      toast.error(error instanceof Error ? error.message : 'Failed to adjust prices');
+      toast.error(humanizeError(error, 'Failed to adjust prices'));
     } finally {
       setIsAdjustingPrice(false);
     }
@@ -120,10 +121,10 @@ export function EnhancedBulkActions({
               setIsUpdating(true);
               try {
                 await onBulkUpdate({ in_stock: true });
-                toast.success(`${selectedCount} product(s) are now visible`);
+                toast.success(`${selectedCount === 1 ? '1 product is' : `${selectedCount} products are`} now visible`);
               } catch (error: unknown) {
                 logger.error('Bulk show failed', error, { component: 'EnhancedBulkActions' });
-                toast.error(error instanceof Error ? error.message : 'Failed to show products');
+                toast.error(humanizeError(error, 'Failed to show products'));
               } finally {
                 setIsUpdating(false);
               }
@@ -150,10 +151,10 @@ export function EnhancedBulkActions({
               setIsUpdating(true);
               try {
                 await onBulkUpdate({ in_stock: false });
-                toast.success(`${selectedCount} product(s) are now hidden`);
+                toast.success(`${selectedCount === 1 ? '1 product is' : `${selectedCount} products are`} now hidden`);
               } catch (error: unknown) {
                 logger.error('Bulk hide failed', error, { component: 'EnhancedBulkActions' });
-                toast.error(error instanceof Error ? error.message : 'Failed to hide products');
+                toast.error(humanizeError(error, 'Failed to hide products'));
               } finally {
                 setIsUpdating(false);
               }
@@ -301,7 +302,7 @@ export function EnhancedBulkActions({
                       setStockDialogOpen(false);
                     } catch (error: unknown) {
                       logger.error('Bulk stock update failed', error, { component: 'EnhancedBulkActions' });
-                      toast.error(error instanceof Error ? error.message : 'Failed to update stock');
+                      toast.error(humanizeError(error, 'Failed to update stock'));
                     } finally {
                       setIsSettingStock(false);
                     }

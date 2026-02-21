@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { format, subDays } from 'date-fns';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -94,7 +95,7 @@ export function RevenueForecastChart() {
             />
             <YAxis 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value: number) => formatCompactCurrency(value)}
               className="text-muted-foreground"
             />
             <Tooltip
@@ -105,8 +106,8 @@ export function RevenueForecastChart() {
               }}
               formatter={(value: number | string | undefined, name: string) => {
                 if (typeof value === 'number') {
-                  if (name === 'actual') return [`$${value.toLocaleString()}`, 'Actual'];
-                  if (name === 'predicted') return [`$${value.toLocaleString()}`, 'Predicted'];
+                  if (name === 'actual') return [formatCurrency(value), 'Actual'];
+                  if (name === 'predicted') return [formatCurrency(value), 'Predicted'];
                 }
                 return [value, name];
               }}
@@ -134,12 +135,12 @@ export function RevenueForecastChart() {
         <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Average Daily Revenue</p>
-            <p className="text-xl font-bold">${avgRevenue.toLocaleString()}</p>
+            <p className="text-xl font-bold">{formatCurrency(avgRevenue)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">7-Day Forecast</p>
             <p className="text-xl font-bold">
-              ${(avgRevenue * 7).toLocaleString()}
+              {formatCurrency(avgRevenue * 7)}
             </p>
           </div>
           <div>

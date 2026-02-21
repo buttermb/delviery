@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * InventoryDemo — Shows inventory grid with stock levels,
  * barcode scanning animation, and low stock alerts.

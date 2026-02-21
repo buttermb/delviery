@@ -152,7 +152,7 @@ export function StockAdjustment({
 
   // Calculate preview of new quantity and change
   const preview = useMemo(() => {
-    if (!parsedQuantity || parsedQuantity <= 0) {
+    if (parsedQuantity < 0 || (adjustmentType !== 'set' && parsedQuantity <= 0)) {
       return { newQuantity: currentQuantity, change: 0, warning: null };
     }
 
@@ -292,7 +292,9 @@ export function StockAdjustment({
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      if (!parsedQuantity || parsedQuantity <= 0 || !reason) return;
+      if (parsedQuantity < 0 || !reason) return;
+      // For add/remove, quantity must be > 0; for set, allow 0 (zero out stock)
+      if (adjustmentType !== 'set' && parsedQuantity <= 0) return;
 
       adjustmentMutation.mutate({
         type: adjustmentType,
@@ -321,7 +323,7 @@ export function StockAdjustment({
     }
   };
 
-  const isFormValid = parsedQuantity > 0 && reason !== '';
+  const isFormValid = (adjustmentType === 'set' ? parsedQuantity >= 0 : parsedQuantity > 0) && reason !== '';
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -391,7 +393,7 @@ export function StockAdjustment({
               id="quantity"
               type="number"
               step="0.01"
-              min="0.01"
+              min={adjustmentType === 'set' ? '0' : '0.01'}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               placeholder="0.00"
@@ -400,7 +402,7 @@ export function StockAdjustment({
           </div>
 
           {/* Preview of change */}
-          {parsedQuantity > 0 && (
+          {(parsedQuantity > 0 || (adjustmentType === 'set' && parsedQuantity === 0 && quantity !== '')) && (
             <div className="p-3 border rounded-lg bg-muted/50 space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium">
                 {getAdjustmentIcon()}

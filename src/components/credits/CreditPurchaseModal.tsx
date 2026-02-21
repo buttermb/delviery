@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { humanizeError } from "@/lib/humanizeError";
 
 interface CreditPurchaseModalProps {
   open: boolean;
@@ -47,7 +48,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
 
       if (error) {
         logger.error('Purchase error', error);
-        toast.error('Failed to start purchase', { description: error.message });
+        toast.error('Failed to start purchase', { description: humanizeError(error) });
         return;
       }
 

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface SmartOnboardingWidgetProps {
     productCount: number;
@@ -63,7 +64,7 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
         onError: (error: any) => {
             logger.error("Failed to add sample product", error);
             toast.error("Failed to add sample product", {
-                description: error.message
+                description: humanizeError(error)
             });
         }
     });

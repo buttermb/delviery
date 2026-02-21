@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle2, XCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { humanizeError } from '@/lib/humanizeError';
 import { format } from "date-fns/format";
 
 interface IntegrationStatusProps {
@@ -38,10 +39,10 @@ export function IntegrationStatus({
                 title: "Test successful",
                 description: `${name} connection is working correctly.`,
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast({
                 title: "Test failed",
-                description: error.message || `Failed to connect to ${name}.`,
+                description: humanizeError(error, `Failed to connect to ${name}.`),
                 variant: "destructive",
             });
         } finally {

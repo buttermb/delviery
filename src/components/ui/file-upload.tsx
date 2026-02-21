@@ -128,7 +128,7 @@ interface FileUploadProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "on
  *   accept="image/*"
  *   maxSize={5 * 1024 * 1024}
  *   maxFiles={3}
- *   onChange={(files) => console.log(files)}
+ *   onChange={(files) => logger.debug('files', files)}
  *   showPreview
  * />
  * ```

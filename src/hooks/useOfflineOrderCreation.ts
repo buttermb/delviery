@@ -263,10 +263,10 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       }
 
       if (success > 0) {
-        toast.success(`${success} offline order${success > 1 ? 's' : ''} synced successfully`);
+        toast.success(`${success} offline ${success !== 1 ? 'orders' : 'order'} synced successfully`);
       }
       if (failed > 0) {
-        toast.error(`${failed} order${failed > 1 ? 's' : ''} failed to sync`);
+        toast.error(`${failed} ${failed !== 1 ? 'orders' : 'order'} failed to sync`);
       }
     } finally {
       setIsSyncing(false);

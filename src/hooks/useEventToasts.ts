@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { sendBrowserNotification } from '@/utils/browserNotifications';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -89,7 +90,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
 
     // Clean up existing channels
     channelsRef.current.forEach((ch) => {
-      supabase.removeChannel(ch).catch(() => {});
+      supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventToasts' }));
     });
     channelsRef.current = [];
 
@@ -187,7 +188,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
           if (!shouldShowToast(key)) return;
 
           const link = adminLink('finance');
-          toast.success(`Payment $${amount.toFixed(2)} received`, {
+          toast.success(`Payment ${formatCurrency(amount)} received`, {
             action: {
               label: 'View',
               onClick: () => navigate(link),
@@ -199,7 +200,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
           if (amount >= 500) {
             sendBrowserNotification(
               'Large Payment Received',
-              `$${amount.toFixed(2)} payment processed`,
+              `${formatCurrency(amount)} payment processed`,
               link
             );
           }
@@ -244,7 +245,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
     const channels = channelsRef.current;
     return () => {
       channels.forEach((ch) => {
-        supabase.removeChannel(ch).catch(() => {});
+        supabase.removeChannel(ch).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventToasts' }));
       });
       channelsRef.current = [];
     };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { Loader2, Plus, Minus, Trash2, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useWholesaleCouriers } from '@/hooks/useWholesaleData';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface OrderItem {
   id: string;
@@ -74,7 +75,7 @@ export function EditWholesaleOrderDialog({
   onSuccess,
 }: EditWholesaleOrderDialogProps) {
   const queryClient = useQueryClient();
-  const { data: couriers = [] } = useWholesaleCouriers();
+  const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
@@ -84,6 +85,7 @@ export function EditWholesaleOrderDialog({
   const [runnerId, setRunnerId] = useState('');
   const [status, setStatus] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
+  const initialSnapshotRef = useRef<string>('');
 
   // Reset form when order changes
   useEffect(() => {
@@ -94,6 +96,14 @@ export function EditWholesaleOrderDialog({
       setRunnerId(order.runner_id || '');
       setStatus(order.status);
       setPaymentStatus(order.payment_status);
+      initialSnapshotRef.current = JSON.stringify({
+        items: order.items || [],
+        deliveryAddress: order.delivery_address || '',
+        deliveryNotes: order.delivery_notes || '',
+        runnerId: order.runner_id || '',
+        status: order.status,
+        paymentStatus: order.payment_status,
+      });
     }
   }, [order]);
 
@@ -183,11 +193,21 @@ export function EditWholesaleOrderDialog({
     }
   };
 
+  const isDirty = !!order && JSON.stringify({
+    items, deliveryAddress, deliveryNotes, runnerId, status, paymentStatus,
+  }) !== initialSnapshotRef.current;
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+    isDirty,
+    () => onOpenChange(false)
+  );
+
   if (!order) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -256,7 +276,7 @@ export function EditWholesaleOrderDialog({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11 sm:h-7 sm:w-7"
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity_lbs', Math.max(1, item.quantity_lbs - 1))
                           }
@@ -275,7 +295,7 @@ export function EditWholesaleOrderDialog({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11 sm:h-7 sm:w-7"
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity_lbs', item.quantity_lbs + 1)
                           }
@@ -336,30 +356,44 @@ export function EditWholesaleOrderDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Assign Courier</Label>
-              <Select value={runnerId || '__none__'} onValueChange={(v) => setRunnerId(v === '__none__' ? '' : v)}>
+              <Select value={runnerId || '__none__'} onValueChange={(v) => setRunnerId(v === '__none__' ? '' : v)} disabled={couriersLoading}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a courier..." />
+                  <SelectValue placeholder={couriersLoading ? "Loading couriers..." : "Select a courier..."} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">Unassigned</SelectItem>
-                  {couriers.map((courier: any) => (
-                    <SelectItem key={courier.id} value={courier.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{courier.full_name}</span>
-                        {courier.vehicle_type && (
-                          <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
-                        )}
-                        {courier.status && (
-                          <Badge
-                            variant={courier.status === 'available' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {courier.status}
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {couriersLoading ? (
+                    <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Loading couriers...</span>
+                    </div>
+                  ) : couriers.length === 0 ? (
+                    <>
+                      <SelectItem value="__none__">Unassigned</SelectItem>
+                      <div className="p-2 text-center text-sm text-muted-foreground">No couriers available</div>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="__none__">Unassigned</SelectItem>
+                      {couriers.map((courier: { id: string; full_name: string; vehicle_type?: string; status?: string }) => (
+                        <SelectItem key={courier.id} value={courier.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{courier.full_name}</span>
+                            {courier.vehicle_type && (
+                              <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
+                            )}
+                            {courier.status && (
+                              <Badge
+                                variant={courier.status === 'available' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {courier.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -406,6 +440,8 @@ export function EditWholesaleOrderDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }
 

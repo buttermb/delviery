@@ -31,13 +31,14 @@ import { Button } from '@/components/ui/button';
 import { useUpdateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
 import { logger } from '@/lib/logger';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 import { Loader2, Pencil } from 'lucide-react';
 import type { CRMClient } from '@/types/crm';
 
 const formSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or less'),
     email: z.string().email('Invalid email address').optional().or(z.literal('')),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
+    phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
     status: z.enum(['active', 'archived']),
 });
 
@@ -74,6 +75,11 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
         }
     }, [client, form]);
 
+    const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(
+        form.formState.isDirty,
+        () => setOpen(false)
+    );
+
     const onSubmit = async (values: FormValues) => {
         try {
             await updateClient.mutateAsync({
@@ -106,14 +112,15 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <>
+        <Dialog open={open} onOpenChange={guardedOnOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit Profile
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px]" {...dialogContentProps}>
                 <DialogHeader>
                     <DialogTitle>Edit Client</DialogTitle>
                     <DialogDescription>
@@ -129,7 +136,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                                 <FormItem>
                                     <FormLabel required>Name</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input maxLength={100} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -142,7 +149,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                                 <FormItem>
                                     <FormLabel>Email (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input type="email" {...field} />
+                                        <Input type="email" maxLength={254} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -155,7 +162,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                                 <FormItem>
                                     <FormLabel>Phone (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input type="tel" {...field} />
+                                        <Input type="tel" maxLength={20} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -192,5 +199,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
                 </Form>
             </DialogContent>
         </Dialog>
+        <DiscardAlert />
+        </>
     );
 }

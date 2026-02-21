@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -82,6 +83,13 @@ export function OrderCancelModal({
       restockItems: true,
     },
   });
+
+  // Reset form when modal opens with fresh data
+  useEffect(() => {
+    if (open) {
+      form.reset();
+    }
+  }, [open, orderId, form]);
 
   const handleSubmit = (data: CancelOrderFormData) => {
     // Build the full cancellation reason with notes

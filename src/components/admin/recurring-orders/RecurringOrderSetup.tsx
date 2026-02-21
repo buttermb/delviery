@@ -8,6 +8,8 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Truck from "lucide-react/dist/esm/icons/truck";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import Repeat from "lucide-react/dist/esm/icons/repeat";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +37,7 @@ import {
 import { useWholesaleClients, useWholesaleCouriers, useProductsForWholesale } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
+import { formatSmartDate } from '@/lib/formatters';
 
 const schema = z.object({
   name: z.string().min(1, "Schedule name is required"),
@@ -85,9 +88,9 @@ function RecurringOrderSetupComponent({
 }: RecurringOrderSetupProps) {
   const { tenant: _tenant } = useTenantAdminAuth();
   const { createSchedule, updateSchedule } = useRecurringOrders();
-  const { data: clients = [] } = useWholesaleClients();
-  const { data: couriers = [] } = useWholesaleCouriers();
-  const { data: products = [] } = useProductsForWholesale();
+  const { data: clients = [], isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useWholesaleClients();
+  const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
+  const { data: products = [], isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useProductsForWholesale();
 
   const [orderItems, setOrderItems] = useState<RecurringOrderItem[]>(
     editSchedule?.order_items || [{ product_name: "", quantity: 1, unit_price: 0 }]
@@ -147,7 +150,7 @@ function RecurringOrderSetupComponent({
   // Update delivery address when client changes
   const handleClientChange = (id: string) => {
     setValue("client_id", id);
-    const client = clients.find((c) => c.id === id) as any;
+    const client = clients.find((c) => c.id === id);
     // Use email as fallback since address may not exist on wholesale_clients
     if (!watch("delivery_address") && client) {
       setValue("delivery_address", client.email || '');
@@ -266,25 +269,42 @@ function RecurringOrderSetupComponent({
             <Label>
               Client <span className="text-destructive">*</span>
             </Label>
-            <Select value={clientId} onValueChange={handleClientChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select client" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    <div className="flex items-center gap-2">
-                      <span>{client.business_name}</span>
-                      {client.outstanding_balance > 0 && (
-                        <Badge variant="outline" className="text-xs text-yellow-600">
-                          {formatCurrency(client.outstanding_balance)} owed
-                        </Badge>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {clientsLoading ? (
+              <div className="flex items-center gap-2 py-2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Loading clients...</span>
+              </div>
+            ) : clientsError ? (
+              <div className="flex items-center gap-2 py-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <span className="text-sm text-destructive">Failed to load clients</span>
+                <Button type="button" variant="outline" size="sm" onClick={() => refetchClients()}>
+                  <RefreshCw className="mr-1 h-3 w-3" /> Retry
+                </Button>
+              </div>
+            ) : clients.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">No clients found. Create a wholesale client first.</p>
+            ) : (
+              <Select value={clientId} onValueChange={handleClientChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{client.business_name}</span>
+                        {client.outstanding_balance > 0 && (
+                          <Badge variant="outline" className="text-xs text-yellow-600">
+                            {formatCurrency(client.outstanding_balance)} owed
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {errors.client_id && (
               <p className="text-sm text-destructive">{errors.client_id.message}</p>
             )}
@@ -446,26 +466,43 @@ function RecurringOrderSetupComponent({
                 <CardContent className="p-3">
                   <div className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-5">
-                      <Select
-                        value={item.product_name}
-                        onValueChange={(v) => handleProductSelect(index, v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select product" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((product: { id: string; product_name: string; base_price: number }) => (
-                            <SelectItem key={product.id} value={product.product_name}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{product.product_name}</span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  {formatCurrency(product.base_price)}/unit
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {productsLoading ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Loading products...</span>
+                        </div>
+                      ) : productsError ? (
+                        <div className="flex items-center gap-2 py-2">
+                          <AlertTriangle className="h-4 w-4 text-destructive" />
+                          <span className="text-sm text-destructive">Failed to load products</span>
+                          <Button type="button" variant="outline" size="sm" onClick={() => refetchProducts()}>
+                            <RefreshCw className="mr-1 h-3 w-3" /> Retry
+                          </Button>
+                        </div>
+                      ) : products.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-2">No products available.</p>
+                      ) : (
+                        <Select
+                          value={item.product_name}
+                          onValueChange={(v) => handleProductSelect(index, v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select product" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {products.map((product: { id: string; product_name: string; base_price: number }) => (
+                              <SelectItem key={product.id} value={product.product_name}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{product.product_name}</span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {formatCurrency(product.base_price)}/unit
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                     <div className="col-span-2">
                       <Input
@@ -544,15 +581,15 @@ function RecurringOrderSetupComponent({
               {...register("delivery_address")}
               placeholder="Enter delivery address or use client's default"
             />
-            {(selectedClient as any)?.email && (
+            {selectedClient?.email && (
               <Button
                 type="button"
                 variant="link"
                 size="sm"
                 className="h-auto p-0 text-xs"
-                onClick={() => setValue("delivery_address", (selectedClient as any).email)}
+                onClick={() => setValue("delivery_address", selectedClient.email || '')}
               >
-                Use client's email: {(selectedClient as any).email}
+                Use client's email: {selectedClient.email}
               </Button>
             )}
           </div>
@@ -599,26 +636,36 @@ function RecurringOrderSetupComponent({
                 <Select
                   value={watch("preferred_runner_id") || ""}
                   onValueChange={(v) => setValue("preferred_runner_id", v || null)}
+                  disabled={couriersLoading}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select runner" />
+                    <SelectValue placeholder={couriersLoading ? "Loading runners..." : "Select runner"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {couriers.map((courier: { id: string; full_name: string; status?: string }) => (
-                      <SelectItem key={courier.id} value={courier.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{courier.full_name}</span>
-                          {courier.status && (
-                            <Badge
-                              variant={courier.status === "available" ? "default" : "secondary"}
-                              className="text-xs"
-                            >
-                              {courier.status}
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {couriersLoading ? (
+                      <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Loading runners...</span>
+                      </div>
+                    ) : couriers.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">No runners available</div>
+                    ) : (
+                      couriers.map((courier: { id: string; full_name: string; status?: string }) => (
+                        <SelectItem key={courier.id} value={courier.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{courier.full_name}</span>
+                            {courier.status && (
+                              <Badge
+                                variant={courier.status === "available" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {courier.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -663,13 +710,13 @@ function RecurringOrderSetupComponent({
                   )}
                   , starting from{" "}
                   <span className="font-medium">
-                    {new Date(watch("next_order_date") || "").toLocaleDateString()}
+                    {formatSmartDate(watch("next_order_date") || "")}
                   </span>
                   {watch("end_date") && (
                     <>
                       {" "}until{" "}
                       <span className="font-medium">
-                        {new Date(watch("end_date") || "").toLocaleDateString()}
+                        {formatSmartDate(watch("end_date") || "")}
                       </span>
                     </>
                   )}

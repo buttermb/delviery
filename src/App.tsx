@@ -54,6 +54,7 @@ import OfflineBanner from "./components/OfflineBanner";
 import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RouteProgressManager } from "./components/RouteProgressManager";
+import { DocumentTitleManager } from "./components/DocumentTitleManager";
 import { InstallPWA } from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
@@ -86,6 +87,7 @@ function SuspenseProgressFallback() {
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
+const AdminNotFoundPage = lazy(() => import("./pages/admin/AdminNotFoundPage"));
 const ButtonMonitorPage = lazy(() => import("./pages/debug/ButtonMonitorPage"));
 
 // Marketing & Public Pages
@@ -273,6 +275,7 @@ const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmat
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
 const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
+const ShopDealsPage = lazy(() => import("./pages/shop/DealsPage"));
 const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
 const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
@@ -287,6 +290,7 @@ const POSShiftsPage = lazy(() => import("./pages/tenant-admin/POSShiftsPage"));
 const ZReportPage = lazy(() => import("./pages/tenant-admin/ZReportPage"));
 const POSHubPage = lazy(() => import("./pages/admin/hubs/POSHubPage"));
 const OrdersHubPage = lazy(() => import("./pages/admin/hubs/OrdersHubPage"));
+const OrderDetailsPage = lazy(() => import("./pages/admin/OrderDetailsPage"));
 const InventoryHubPage = lazy(() => import("./pages/admin/hubs/InventoryHubPage"));
 const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"));
 const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
@@ -334,11 +338,6 @@ const ListingForm = lazy(() => import("./pages/tenant-admin/marketplace/ListingF
 const ListingDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/ListingDetailPage"));
 const MarketplaceOrdersPage = lazy(() => import("./pages/admin/marketplace/OrdersPage"));
 const OrderDetailPage = lazy(() => import("./pages/admin/marketplace/OrderDetailPage"));
-const MarketplaceBrowsePage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceBrowsePage"));
-const MarketplaceProductDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceProductDetailPage"));
-const MarketplaceCartPage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceCartPage"));
-const MarketplacePurchasesPage = lazy(() => import('@/pages/tenant-admin/marketplace/MarketplacePurchasesPage'));
-const PurchaseOrderDetailPage = lazy(() => import('@/pages/tenant-admin/marketplace/PurchaseOrderDetailPage'));
 const VendorPayoutsPage = lazy(() => import('@/pages/tenant-admin/marketplace/VendorPayoutsPage'));
 const MessagesPage = lazy(() => import("./pages/tenant-admin/marketplace/MessagesPage"));
 
@@ -533,6 +532,7 @@ const App = () => {
                                   <Suspense fallback={<SuspenseProgressFallback />}>
                                     <UrlEncodingFixer />
                                     <RouteProgressManager />
+                                    <DocumentTitleManager />
                                     <ScrollToTop />
                                     <Routes>
                                       {/* Marketing & Public Routes */}
@@ -587,6 +587,7 @@ const App = () => {
                                         <Route path="products/:productId" element={<ShopProductDetailPage />} />
                                         {/* SEO-friendly slug-based product URLs */}
                                         <Route path="product/:productSlug" element={<ShopProductDetailPage />} />
+                                        <Route path="deals" element={<ShopDealsPage />} />
                                         <Route path="cart" element={<ShopCartPage />} />
                                         <Route path="checkout" element={<ShopCheckoutPage />} />
                                         <Route path="express-checkout" element={<SinglePageCheckout />} />
@@ -830,11 +831,12 @@ const App = () => {
                                         <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                                         <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                         <Route path="orders" element={<FeatureProtectedRoute featureId="basic-orders"><OrdersHubPage /></FeatureProtectedRoute>} />
+                                        <Route path="orders/:orderId" element={<FeatureProtectedRoute featureId="basic-orders"><OrderDetailsPage /></FeatureProtectedRoute>} />
 
                                         {/* Orders Hub Redirects */}
                                         <Route path="disposable-menu-orders" element={<Navigate to="orders?tab=menu" replace />} />
-                                        <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
-                                        <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics" feature="analytics_advanced"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics" feature="analytics_advanced"><MenuAnalytics /></FeatureProtectedRoute>} />
 
                                         {/* Inventory Hub Redirects */}
                                         <Route path="inventory/products" element={<Navigate to="../inventory-hub?tab=products" replace />} />
@@ -860,7 +862,7 @@ const App = () => {
                                         {/* Billing redirects to Settings */}
                                         <Route path="billing" element={<Navigate to="../settings?tab=payments" replace />} />
                                         {/* Credit Routes */}
-                                        <Route path="credits/analytics" element={<CreditAnalyticsPage />} />
+                                        <Route path="credits/analytics" element={<FeatureProtectedRoute feature="analytics_advanced"><CreditAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
                                         <Route path="settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
@@ -879,19 +881,6 @@ const App = () => {
                                         <Route path="marketplace/messages" element={<FeatureProtectedRoute featureId="marketplace"><MessagesPage /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/financials" element={<FeatureProtectedRoute featureId="marketplace"><VendorPayoutsPage /></FeatureProtectedRoute>} />
 
-                                        {/* Marketplace (Buyer & Seller) */}
-                                        <Route path="marketplace/listings" element={<MyListingsPage />} />
-                                        <Route path="marketplace/listings/new" element={<ListingForm />} />
-                                        <Route path="marketplace/listings/:id" element={<ListingForm />} />
-
-                                        <Route path="marketplace/profile" element={<SellerProfilePage />} />
-
-                                        {/* Marketplace Buyer Routes */}
-                                        <Route path="marketplace/browse" element={<MarketplaceBrowsePage />} />
-                                        <Route path="marketplace/product/:productId" element={<MarketplaceProductDetailPage />} />
-                                        <Route path="marketplace/cart" element={<MarketplaceCartPage />} />
-                                        <Route path="marketplace/purchases" element={<MarketplacePurchasesPage />} />
-                                        <Route path="marketplace/purchases/:orderId" element={<PurchaseOrderDetailPage />} />
 
                                         {/* White-Label Storefront Routes */}
                                         <Route
@@ -922,7 +911,7 @@ const App = () => {
                                         <Route path="marketplace" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/settings" element={<FeatureProtectedRoute featureId="marketplace"><StoreSettings /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/products" element={<FeatureProtectedRoute featureId="marketplace"><ProductVisibilityManager /></FeatureProtectedRoute>} />
-                                        <Route path="marketplace/coupons" element={<FeatureProtectedRoute featureId="marketplace"><CouponManager /></FeatureProtectedRoute>} />
+                                        <Route path="marketplace/coupons" element={<FeatureProtectedRoute featureId="marketplace" feature="marketing_hub"><CouponManager /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/categories" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceCategoryManager /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/sync" element={<FeatureProtectedRoute featureId="marketplace-product-sync"><ProductSyncPage /></FeatureProtectedRoute>} />
 
@@ -937,7 +926,7 @@ const App = () => {
                                         <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="customer-invoices" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
                                         <Route path="fleet-management" element={<FeatureProtectedRoute feature="fleet_management"><Navigate to="fulfillment-hub?tab=fleet" replace /></FeatureProtectedRoute>} />
-                                        <Route path="delivery-hub" element={<Navigate to="fulfillment-hub" replace />} />
+                                        <Route path="delivery-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="fulfillment-hub" replace /></FeatureProtectedRoute>} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
                                         <Route path="settings-hub" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
@@ -947,7 +936,7 @@ const App = () => {
                                         <Route path="compliance-hub" element={<Navigate to="operations-hub?tab=compliance" replace />} />
                                         <Route path="marketing-hub" element={<FeatureProtectedRoute featureId="loyalty-program" feature="marketing_hub"><MarketingHubPage /></FeatureProtectedRoute>} />
                                         <Route path="marketing/reviews" element={<FeatureProtectedRoute featureId="storefront" feature="marketing_hub"><ReviewsPage /></FeatureProtectedRoute>} />
-                                        <Route path="delivery-management" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                        <Route path="delivery-management" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
                                         <Route path="live-map" element={<FeatureProtectedRoute feature="delivery_tracking"><LiveMap /></FeatureProtectedRoute>} />
                                         <Route path="gps-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><RunnerLocationTracking /></FeatureProtectedRoute>} />
                                         <Route path="pos-system" element={<FeatureProtectedRoute feature="pos"><POSHubPage /></FeatureProtectedRoute>} />
@@ -959,10 +948,10 @@ const App = () => {
                                         {/* 13 Hidden gem pages */}
                                         <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat" feature="live_chat"><AdminLiveChat /></FeatureProtectedRoute>} />
                                         <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
-                                        <Route path="couriers" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                        <Route path="couriers" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
                                         <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
                                         <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
-                                        <Route path="delivery-tracking" element={<Navigate to="operations-hub?tab=delivery" replace />} />
+                                        <Route path="delivery-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
                                         <Route path="delivery-zones" element={<FeatureProtectedRoute feature="delivery_tracking"><DeliveryZonesPage /></FeatureProtectedRoute>} />
                                         <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                         <Route path="financial-center" element={<Navigate to="command-center" replace />} />
@@ -971,7 +960,7 @@ const App = () => {
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
                                         <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers" feature="purchase_orders"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
-                                        <Route path="loyalty-program" element={<Navigate to="marketing-hub?tab=loyalty" replace />} />
+                                        <Route path="loyalty-program" element={<FeatureProtectedRoute feature="marketing_hub"><Navigate to="marketing-hub?tab=loyalty" replace /></FeatureProtectedRoute>} />
                                         <Route path="coupons" element={<Navigate to="storefront-hub?tab=coupons" replace />} />
                                         <Route path="quality-control" element={<FeatureProtectedRoute feature="quality_control"><Navigate to="operations-hub?tab=quality" replace /></FeatureProtectedRoute>} />
                                         <Route path="customer-crm" element={<Navigate to="customer-hub?tab=crm" replace />} />
@@ -985,7 +974,7 @@ const App = () => {
                                         <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><PreOrderDetailPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><CRMSettingsPage /></FeatureProtectedRoute>} />
                                         <Route path="crm/invites" element={<FeatureProtectedRoute featureId="customer-crm" feature="crm_advanced"><InvitesPage /></FeatureProtectedRoute>} />
-                                        <Route path="marketing-automation" element={<Navigate to="marketing-hub?tab=campaigns" replace />} />
+                                        <Route path="marketing-automation" element={<FeatureProtectedRoute feature="marketing_hub"><Navigate to="marketing-hub?tab=campaigns" replace /></FeatureProtectedRoute>} />
                                         <Route path="appointments" element={<Navigate to="operations-hub?tab=appointments" replace />} />
                                         <Route path="support-tickets" element={<Navigate to="operations-hub?tab=support" replace />} />
                                         <Route path="batch-recall" element={<Navigate to="compliance-hub?tab=batch-recall" replace />} />
@@ -993,13 +982,13 @@ const App = () => {
                                         <Route path="compliance" element={<Navigate to="compliance-hub" replace />} />
                                         <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting" feature="analytics_advanced"><AdvancedReportingPage /></FeatureProtectedRoute>} />
                                         <Route path="predictive-analytics" element={<Navigate to="analytics-hub?tab=forecasting" replace />} />
-                                        <Route path="board-report" element={<BoardReportPage />} />
-                                        <Route path="strategic-dashboard" element={<StrategicDashboardPage />} />
-                                        <Route path="expansion" element={<ExpansionAnalysisPage />} />
+                                        <Route path="board-report" element={<FeatureProtectedRoute feature="analytics_advanced"><BoardReportPage /></FeatureProtectedRoute>} />
+                                        <Route path="strategic-dashboard" element={<FeatureProtectedRoute feature="analytics_advanced"><StrategicDashboardPage /></FeatureProtectedRoute>} />
+                                        <Route path="expansion" element={<FeatureProtectedRoute feature="analytics_advanced"><ExpansionAnalysisPage /></FeatureProtectedRoute>} />
 
                                         {/* Professional Tier - Analytics */}
                                         <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics" feature="analytics_advanced"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
-                                        <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
+                                        <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard" feature="analytics_advanced"><SalesDashboardPage /></FeatureProtectedRoute>} />
                                         <Route path="customer-insights" element={<Navigate to="customer-hub?tab=insights" replace />} />
 
                                         {/* Additional routes that don't need FeatureProtectedRoute or need different paths */}
@@ -1051,6 +1040,8 @@ const App = () => {
                                         <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
                                         {/* Coming Soon Pages for missing features */}
                                         <Route path="expense-tracking" element={<ComingSoonPage pageName="Expense Tracking" description="Track and manage business expenses" />} />
+                                        {/* Catch-all for unknown admin routes */}
+                                        <Route path="*" element={<Suspense fallback={<LoadingFallback />}><AdminNotFoundPage /></Suspense>} />
                                       </Route>
 
                                       {/* Mobile Test Route */}

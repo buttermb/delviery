@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface RevenueChartProps {
   storeId: string;
@@ -96,6 +98,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
       return { data: grouped, totalRevenue: Math.round(totalRevenue * 100) / 100 };
     },
     enabled: !!storeId,
+    ...ANALYTICS_QUERY_CONFIG,
   });
 
   if (isLoading) {
@@ -132,7 +135,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
         <div>
           <CardTitle>Revenue</CardTitle>
           <CardDescription>
-            Total: <span className="text-2xl font-bold text-foreground">${revenueData.totalRevenue.toLocaleString()}</span>
+            Total: <span className="text-2xl font-bold text-foreground">{formatCurrency(revenueData.totalRevenue)}</span>
           </CardDescription>
         </div>
         <Select value={granularity} onValueChange={(v) => setGranularity(v as Granularity)}>
@@ -158,14 +161,14 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
                 axisLine={false}
               />
               <YAxis
-                tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+                tickFormatter={(v: number) => formatCompactCurrency(v)}
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
                 width={60}
               />
               <Tooltip
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                formatter={(value: number) => [formatCurrency(value), 'Revenue']}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',
                   borderColor: 'hsl(var(--border))',

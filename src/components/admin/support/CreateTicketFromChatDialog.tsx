@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -122,6 +121,8 @@ export function CreateTicketFromChatDialog({
 
       const ticketData = {
         tenant_id: tenant.id,
+        account_id: tenant.id,
+        ticket_number: `TKT-${Date.now()}`,
         subject: sanitizeInput(formData.subject, 200),
         description: sanitizeInput(fullDescription, 10000),
         priority: formData.priority,

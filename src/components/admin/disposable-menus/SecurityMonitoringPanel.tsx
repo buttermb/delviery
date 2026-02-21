@@ -20,7 +20,9 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 export const SecurityMonitoringPanel = () => {
   interface BlockedIP {
@@ -31,6 +33,9 @@ export const SecurityMonitoringPanel = () => {
   }
 
   const [blockedIPs, setBlockedIPs] = useState<BlockedIP[]>([]);
+  const [unblockDialogOpen, setUnblockDialogOpen] = useState(false);
+  const [ipToUnblock, setIpToUnblock] = useState<BlockedIP | null>(null);
+  const [isUnblocking, setIsUnblocking] = useState(false);
   const { data: recentEvents, refetch } = useMenuSecurityEvents();
 
   // Real-time monitoring
@@ -119,7 +124,7 @@ export const SecurityMonitoringPanel = () => {
       toast({
         variant: 'destructive',
         title: 'Failed to block IP',
-        description: error.message,
+        description: humanizeError(error),
       });
       return;
     }
@@ -132,17 +137,21 @@ export const SecurityMonitoringPanel = () => {
     loadBlockedIPs();
   };
 
-  const handleUnblockIP = async (id: string) => {
+  const handleUnblockIP = async () => {
+    if (!ipToUnblock) return;
+    setIsUnblocking(true);
     const { error } = await supabase
       .from('blocked_ips')
       .delete()
-      .eq('id', id);
+      .eq('id', ipToUnblock.id);
+
+    setIsUnblocking(false);
 
     if (error) {
       toast({
         variant: 'destructive',
         title: 'Failed to unblock IP',
-        description: error.message,
+        description: humanizeError(error),
       });
       return;
     }
@@ -152,6 +161,8 @@ export const SecurityMonitoringPanel = () => {
       description: 'IP address has been unblocked',
     });
 
+    setUnblockDialogOpen(false);
+    setIpToUnblock(null);
     loadBlockedIPs();
   };
 
@@ -165,7 +176,7 @@ export const SecurityMonitoringPanel = () => {
       toast({
         variant: 'destructive',
         title: 'Failed to acknowledge event',
-        description: error.message,
+        description: humanizeError(error),
       });
       return;
     }
@@ -366,7 +377,7 @@ export const SecurityMonitoringPanel = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleUnblockIP(blocked.id)}
+                          onClick={() => { setIpToUnblock(blocked); setUnblockDialogOpen(true); }}
                         >
                           Unblock
                         </Button>
@@ -379,6 +390,17 @@ export const SecurityMonitoringPanel = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Unblock IP Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={unblockDialogOpen}
+        onOpenChange={setUnblockDialogOpen}
+        onConfirm={handleUnblockIP}
+        title="Unblock IP address"
+        description={ipToUnblock ? `Are you sure you want to unblock "${ipToUnblock.ip_address}"? This will allow traffic from this IP again.` : undefined}
+        itemType="blocked IP"
+        isLoading={isUnblocking}
+      />
     </div>
   );
 };

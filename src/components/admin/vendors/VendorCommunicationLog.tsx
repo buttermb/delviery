@@ -51,16 +51,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Phone,
   Mail,
@@ -109,7 +100,7 @@ const communicationFormSchema = z.object({
   purchase_order_id: z.string().optional(),
   contact_name: z.string().optional(),
   contact_email: z.string().email('Invalid email').optional().or(z.literal('')),
-  contact_phone: z.string().optional(),
+  contact_phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   communication_date: z.string().optional(),
 });
 
@@ -623,27 +614,15 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteCommunicationId} onOpenChange={() => setDeleteCommunicationId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Communication</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this communication entry? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeleting}
-            >
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteCommunicationId}
+        onOpenChange={() => setDeleteCommunicationId(null)}
+        onConfirm={handleDelete}
+        title="Delete Communication"
+        description="Are you sure you want to delete this communication entry? This action cannot be undone."
+        itemType="communication"
+        isLoading={isDeleting}
+      />
     </>
   );
 }
@@ -686,7 +665,7 @@ function CommunicationCard({ communication, onEdit, onDelete }: CommunicationCar
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Communication actions">
+              <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-8 sm:w-8 shrink-0" aria-label="Communication actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

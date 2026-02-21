@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useNetworkStatus } from './useNetworkStatus';
 
 interface OptimisticUpdateOptions<T> {
@@ -163,7 +164,7 @@ export function useOptimisticUpdate<T = any, P = any>(
           setIsLoading(false);
           
           toast.error(errorMessage, {
-            description: errorObj.message || 'Please try again',
+            description: humanizeError(errorObj, 'Please try again'),
             duration: 4000,
           });
         }, rollbackDelay);
@@ -246,7 +247,7 @@ export function useOptimisticList<T extends { id: string }>(
         
         toast.dismiss(loadingToast);
         toast.error('Failed to add', {
-          description: error.message,
+          description: humanizeError(error),
         });
         
         return null;
@@ -298,7 +299,7 @@ export function useOptimisticList<T extends { id: string }>(
         
         toast.dismiss(loadingToast);
         toast.error('Failed to update', {
-          description: error.message,
+          description: humanizeError(error),
         });
         
         return null;
@@ -335,7 +336,7 @@ export function useOptimisticList<T extends { id: string }>(
         
         toast.dismiss(loadingToast);
         toast.error('Failed to delete', {
-          description: error.message,
+          description: humanizeError(error),
         });
         
         return false;

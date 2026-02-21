@@ -11,11 +11,13 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -250,9 +252,13 @@ export function useVendorCompliance(vendorId: string) {
       return data as VendorCompliance;
     },
     onSuccess: () => {
+      toast.success('Compliance record created successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to create compliance record'));
     },
   });
 
@@ -354,9 +360,13 @@ export function useVendorCompliance(vendorId: string) {
       return data as VendorCompliance;
     },
     onSuccess: () => {
+      toast.success('Compliance record updated successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to update compliance record'));
     },
   });
 
@@ -383,9 +393,13 @@ export function useVendorCompliance(vendorId: string) {
       }
     },
     onSuccess: () => {
+      toast.success('Compliance record deleted successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to delete compliance record'));
     },
   });
 
@@ -516,12 +530,16 @@ export function useVendorComplianceDocuments(complianceId: string) {
       return data as ComplianceDocument;
     },
     onSuccess: () => {
+      toast.success('Document uploaded successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.complianceDocuments(
           tenantId || '',
           complianceId
         ),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to upload document'));
     },
   });
 
@@ -547,12 +565,16 @@ export function useVendorComplianceDocuments(complianceId: string) {
       }
     },
     onSuccess: () => {
+      toast.success('Document deleted successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.complianceDocuments(
           tenantId || '',
           complianceId
         ),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to delete document'));
     },
   });
 

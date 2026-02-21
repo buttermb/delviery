@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * AES-256 Encryption Utilities
  * 
@@ -44,7 +43,7 @@ export async function deriveKeyFromPassword(
   return await crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: salt,
+      salt: salt as BufferSource,
       iterations: 100000,
       hash: 'SHA-256',
     },

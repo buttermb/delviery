@@ -43,6 +43,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { logActivity, EntityType, ActivityAction } from '@/lib/activityLog';
 import { cn } from '@/lib/utils';
+import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface TransferItem {
   product_id: string;
@@ -404,7 +406,7 @@ export function StockTransfer({ className }: StockTransferProps) {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create stock transfer', error, { component: 'StockTransfer' });
-      toast.error(error instanceof Error ? error.message : 'Failed to create stock transfer');
+      toast.error(humanizeError(error, 'Failed to create stock transfer'));
     },
   });
 
@@ -536,38 +538,56 @@ export function StockTransfer({ className }: StockTransferProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Source Location</Label>
-                <Select value={sourceLocationId} onValueChange={setSourceLocationId}>
+                <Select value={sourceLocationId} onValueChange={setSourceLocationId} disabled={isLoadingLocations}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select source location" />
+                    <SelectValue placeholder={isLoadingLocations ? "Loading locations..." : "Select source location"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations
-                      .filter(loc => loc.id !== destinationLocationId)
-                      .map(location => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                          {location.city && ` - ${location.city}`}
-                        </SelectItem>
-                      ))}
+                    {isLoadingLocations ? (
+                      <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Loading locations...</span>
+                      </div>
+                    ) : locations.filter(loc => loc.id !== destinationLocationId).length === 0 ? (
+                      <div className="p-2 text-center text-sm text-muted-foreground">No locations available</div>
+                    ) : (
+                      locations
+                        .filter(loc => loc.id !== destinationLocationId)
+                        .map(location => (
+                          <SelectItem key={location.id} value={location.id}>
+                            {location.name}
+                            {location.city && ` - ${location.city}`}
+                          </SelectItem>
+                        ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Destination Location</Label>
-                <Select value={destinationLocationId} onValueChange={setDestinationLocationId}>
+                <Select value={destinationLocationId} onValueChange={setDestinationLocationId} disabled={isLoadingLocations}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select destination location" />
+                    <SelectValue placeholder={isLoadingLocations ? "Loading locations..." : "Select destination location"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations
-                      .filter(loc => loc.id !== sourceLocationId)
-                      .map(location => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                          {location.city && ` - ${location.city}`}
-                        </SelectItem>
-                      ))}
+                    {isLoadingLocations ? (
+                      <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Loading locations...</span>
+                      </div>
+                    ) : locations.filter(loc => loc.id !== sourceLocationId).length === 0 ? (
+                      <div className="p-2 text-center text-sm text-muted-foreground">No locations available</div>
+                    ) : (
+                      locations
+                        .filter(loc => loc.id !== sourceLocationId)
+                        .map(location => (
+                          <SelectItem key={location.id} value={location.id}>
+                            {location.name}
+                            {location.city && ` - ${location.city}`}
+                          </SelectItem>
+                        ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -588,15 +608,26 @@ export function StockTransfer({ className }: StockTransferProps) {
                         <SelectValue placeholder="Select product to transfer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableProducts.map(product => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.name}
-                            {product.sku && ` (${product.sku})`}
-                            <span className="ml-2 text-muted-foreground">
-                              — {product.stock_quantity} available
-                            </span>
-                          </SelectItem>
-                        ))}
+                        {isLoadingProducts ? (
+                          <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm">Loading products...</span>
+                          </div>
+                        ) : availableProducts.length === 0 ? (
+                          <div className="p-2 text-center text-sm text-muted-foreground">
+                            {products.length === 0 ? 'No products with stock available' : 'All products already added'}
+                          </div>
+                        ) : (
+                          availableProducts.map(product => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.name}
+                              {product.sku && ` (${product.sku})`}
+                              <span className="ml-2 text-muted-foreground">
+                                — {product.stock_quantity} available
+                              </span>
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -748,7 +779,7 @@ export function StockTransfer({ className }: StockTransferProps) {
                           {transfer.items?.length || 0} item(s)
                         </span>
                         <span>
-                          {new Date(transfer.created_at).toLocaleDateString()}
+                          {formatSmartDate(transfer.created_at)}
                         </span>
                       </div>
                     </div>

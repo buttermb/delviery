@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 
 import {
   Dialog,
@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,8 @@ import {
   type RefundMethod,
 } from '@/hooks/useOrderRefund';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderRefundModalProps {
   open: boolean;
@@ -68,7 +71,7 @@ export function OrderRefundModal({
   onSuccess,
 }: OrderRefundModalProps) {
   // Use the refund hook with full inventory restore logic
-  const { refundOrder, isRefunding } = useOrderRefund();
+  const { refundOrderAsync, isRefunding } = useOrderRefund();
 
   // Form state
   const [refundType, setRefundType] = useState<RefundType>('full');
@@ -111,7 +114,7 @@ export function OrderRefundModal({
       if (numAmount > order.total_amount) {
         return {
           valid: false,
-          error: `Refund amount ($${numAmount.toFixed(2)}) cannot exceed order total ($${order.total_amount.toFixed(2)})`,
+          error: `Refund amount (${formatCurrency(numAmount)}) cannot exceed order total (${formatCurrency(order.total_amount)})`,
         };
       }
     }
@@ -133,32 +136,57 @@ export function OrderRefundModal({
     setRestoreInventory(true);
   };
 
+  // Reset form when modal opens with fresh data or order changes
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open, order?.id]);
+
+  // Dirty state: user has modified any field from initial defaults
+  const isDirty = refundType !== 'full' || partialAmount !== '' || reason !== 'customer_request' || refundMethod !== 'original_payment' || notes !== '' || !restoreInventory;
+
+  const handleClose = useCallback(() => {
+    resetForm();
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
+
   // Handle modal close
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
+      if (isDirty) {
+        guardedOnOpenChange(false);
+        return;
+      }
       resetForm();
     }
     onOpenChange(newOpen);
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!order || !validation.valid) return;
 
-    refundOrder({
-      orderId: order.id,
-      refundType,
-      amount: refundAmount,
-      reason,
-      refundMethod,
-      notes: notes ? sanitizeTextareaInput(notes, 500) : null,
-      restoreInventory,
-    });
+    try {
+      await refundOrderAsync({
+        orderId: order.id,
+        refundType,
+        amount: refundAmount,
+        reason,
+        refundMethod,
+        notes: notes ? sanitizeTextareaInput(notes, 500) : null,
+        restoreInventory,
+      });
 
-    handleOpenChange(false);
-    onSuccess?.();
+      handleOpenChange(false);
+      onSuccess?.();
+    } catch {
+      // Error is already handled by the useOrderRefund hook's onError callback
+    }
   };
 
   if (!order) return null;
@@ -166,8 +194,9 @@ export function OrderRefundModal({
   const orderItems = order.items || [];
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="sm:max-w-lg" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5" />
@@ -184,7 +213,7 @@ export function OrderRefundModal({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Order Total</span>
               <span className="text-lg font-semibold">
-                ${order.total_amount.toFixed(2)}
+                {formatCurrency(order.total_amount)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -226,7 +255,7 @@ export function OrderRefundModal({
                   <DollarSign className="mb-2 h-6 w-6" />
                   <span className="text-sm font-medium">Full Refund</span>
                   <span className="text-xs text-muted-foreground">
-                    ${order.total_amount.toFixed(2)}
+                    {formatCurrency(order.total_amount)}
                   </span>
                 </Label>
               </div>
@@ -350,17 +379,17 @@ export function OrderRefundModal({
             <AlertDescription className="flex items-center justify-between">
               <span className="font-medium">Refund Amount:</span>
               <span className="text-lg font-bold">
-                ${refundAmount.toFixed(2)}
+                {formatCurrency(refundAmount)}
               </span>
             </AlertDescription>
           </Alert>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}
+              onClick={() => guardedOnOpenChange(false)}
               disabled={isRefunding}
               className="flex-1"
             >
@@ -375,9 +404,11 @@ export function OrderRefundModal({
                 ? 'Processing...'
                 : `Process ${refundType === 'full' ? 'Full' : 'Partial'} Refund`}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

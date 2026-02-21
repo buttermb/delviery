@@ -50,9 +50,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { formatSmartDate } from '@/lib/utils/formatDate';
+import { formatCurrency } from '@/lib/formatters';
+import { formatSmartDate } from '@/lib/formatters';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { TIER_PRICES, TIER_NAMES, getFeaturesByCategory, type SubscriptionTier } from '@/lib/featureConfig';
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
 import { AddPaymentMethodDialog } from '@/components/billing/AddPaymentMethodDialog';
@@ -282,7 +283,7 @@ export default function BillingSettings() {
       logger.error('Error updating subscription', { error: error.message });
       toast({
         title: 'Upgrade Failed',
-        description: error.message,
+        description: humanizeError(error),
         variant: 'destructive',
       });
       setUpgradeLoading(false);
@@ -345,10 +346,9 @@ export default function BillingSettings() {
         });
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to open customer portal';
       toast({
         title: 'Error',
-        description: message,
+        description: humanizeError(error, 'Failed to open customer portal'),
         variant: 'destructive',
       });
     } finally {
@@ -379,10 +379,9 @@ export default function BillingSettings() {
         });
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to open customer portal';
       toast({
         title: 'Error',
-        description: message,
+        description: humanizeError(error, 'Failed to open customer portal'),
         variant: 'destructive',
       });
     } finally {
@@ -422,8 +421,8 @@ export default function BillingSettings() {
   </div>
   <div class="section">
     <div class="row"><strong>Invoice #:</strong> ${invoiceData.invoiceNumber}</div>
-    <div class="row"><strong>Date:</strong> ${new Date(invoiceData.issueDate).toLocaleDateString()}</div>
-    <div class="row"><strong>Due:</strong> ${new Date(invoiceData.dueDate).toLocaleDateString()}</div>
+    <div class="row"><strong>Date:</strong> ${formatSmartDate(invoiceData.issueDate)}</div>
+    <div class="row"><strong>Due:</strong> ${formatSmartDate(invoiceData.dueDate)}</div>
   </div>
   <div class="section">
     <strong>Bill To:</strong><br/>
@@ -432,23 +431,23 @@ export default function BillingSettings() {
   </div>
   <table>
     <thead>
-      <tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+      <tr><th scope="col">Description</th><th scope="col">Qty</th><th scope="col">Price</th><th scope="col">Total</th></tr>
     </thead>
     <tbody>
       ${invoiceData.lineItems.map(item => `
         <tr>
           <td>${item.description}</td>
           <td>${item.quantity}</td>
-          <td>$${item.unitPrice.toFixed(2)}</td>
-          <td>$${item.total.toFixed(2)}</td>
+          <td>${formatCurrency(item.unitPrice)}</td>
+          <td>${formatCurrency(item.total)}</td>
         </tr>
       `).join('')}
     </tbody>
   </table>
   <div class="totals">
-    <div>Subtotal: $${invoiceData.subtotal.toFixed(2)}</div>
-    ${invoiceData.tax > 0 ? `<div>Tax: $${invoiceData.tax.toFixed(2)}</div>` : ''}
-    <div class="total-row">Total: $${invoiceData.total.toFixed(2)}</div>
+    <div>Subtotal: ${formatCurrency(invoiceData.subtotal)}</div>
+    ${invoiceData.tax > 0 ? `<div>Tax: ${formatCurrency(invoiceData.tax)}</div>` : ''}
+    <div class="total-row">Total: ${formatCurrency(invoiceData.total)}</div>
   </div>
 </body>
 </html>`;
@@ -598,7 +597,7 @@ export default function BillingSettings() {
                   Save 17% with Annual Billing
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Switch to yearly billing and get 2 months free - that's ${Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17)} savings!
+                  Switch to yearly billing and get 2 months free - that's ${formatCurrency(Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17))} savings!
                 </p>
               </div>
             </div>
@@ -644,7 +643,7 @@ export default function BillingSettings() {
                     {nextFreeGrantAt && (
                       <p className="text-sm text-muted-foreground mt-1">
                         <Sparkles className="h-3 w-3 inline mr-1" />
-                        Refreshes on {nextFreeGrantAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                        Refreshes on {formatSmartDate(nextFreeGrantAt)}
                       </p>
                     )}
                   </div>
@@ -742,7 +741,7 @@ export default function BillingSettings() {
               )}
               {!isTrial && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Next billing: {nextBillingDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  Next billing: {formatSmartDate(nextBillingDate)}
                 </p>
               )}
               {tenant?.mrr && (

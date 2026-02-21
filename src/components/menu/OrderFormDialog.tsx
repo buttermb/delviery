@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { useMenuCart } from '@/contexts/MenuCartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderFormDialogProps {
   open: boolean;
@@ -169,13 +170,13 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
               {items.map((item) => (
                 <div key={item.productId} className="flex justify-between">
                   <span>{item.productName} × {item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>{formatCurrency(item.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
             <div className="pt-2 border-t flex justify-between font-semibold">
               <span>Total:</span>
-              <span className="text-primary">${totalAmount.toFixed(2)}</span>
+              <span className="text-primary">{formatCurrency(totalAmount)}</span>
             </div>
           </div>
 
@@ -254,7 +255,7 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
                   Placing Order...
                 </>
               ) : (
-                `Place Order - $${totalAmount.toFixed(2)}`
+                `Place Order - ${formatCurrency(totalAmount)}`
               )}
             </Button>
           </div>

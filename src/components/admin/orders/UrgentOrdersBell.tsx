@@ -204,7 +204,7 @@ function NotificationItem({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 flex-shrink-0"
+        className="h-11 w-11 flex-shrink-0"
         onClick={(e) => onAcknowledge(notification.id, e)}
         disabled={isAcknowledging}
         title="Mark as read"

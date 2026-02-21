@@ -368,6 +368,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, never_expires: checked })
                 }
+                aria-label="Never expires"
               />
             </div>
 
@@ -383,6 +384,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, auto_apply: checked })
                 }
+                aria-label="Auto apply"
               />
             </div>
           </div>

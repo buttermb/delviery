@@ -4,7 +4,6 @@
  * Inspired by PagerDuty and Datadog alerting
  */
 
-// @ts-nocheck
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,12 +54,18 @@ export function AlertConfig() {
     },
   ]);
 
-  const [newAlert, setNewAlert] = useState({
+  const [newAlert, setNewAlert] = useState<{
+    name: string;
+    metric: string;
+    threshold: number;
+    condition: 'above' | 'below' | 'equals';
+    channel: 'email' | 'webhook' | 'sms';
+  }>({
     name: '',
     metric: 'cpu',
     threshold: 80,
-    condition: 'above' as const,
-    channel: 'email' as const,
+    condition: 'above',
+    channel: 'email',
   });
 
   const handleAdd = () => {
@@ -150,9 +155,9 @@ export function AlertConfig() {
             <div className="space-y-2">
               <Label>Condition</Label>
               <Select
-                value={newAlert.condition as string}
-                onValueChange={(value: string) =>
-                  setNewAlert({ ...newAlert, condition: value as 'above' | 'below' | 'equals' })
+                value={newAlert.condition}
+                onValueChange={(value) =>
+                  setNewAlert({ ...newAlert, condition: value as AlertRule['condition'] })
                 }
               >
                 <SelectTrigger>
@@ -181,9 +186,9 @@ export function AlertConfig() {
             <div className="space-y-2">
               <Label>Notification Channel</Label>
               <Select
-                value={newAlert.channel as string}
-                onValueChange={(value: string) =>
-                  setNewAlert({ ...newAlert, channel: value as 'email' | 'webhook' | 'sms' })
+                value={newAlert.channel}
+                onValueChange={(value) =>
+                  setNewAlert({ ...newAlert, channel: value as AlertRule['channel'] })
                 }
               >
                 <SelectTrigger>

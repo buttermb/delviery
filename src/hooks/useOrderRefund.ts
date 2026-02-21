@@ -6,12 +6,14 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { logActivity } from '@/lib/activityLog';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { unifiedOrdersKeys } from '@/hooks/useUnifiedOrders';
@@ -205,7 +207,7 @@ export function useOrderRefund(): UseOrderRefundResult {
 
       // Validate refund amount
       if (amount > orderData.total_amount) {
-        throw new Error(`Refund amount ($${amount.toFixed(2)}) cannot exceed order total ($${orderData.total_amount.toFixed(2)})`);
+        throw new Error(`Refund amount (${formatCurrency(amount)}) cannot exceed order total (${formatCurrency(orderData.total_amount)})`);
       }
 
       // Check if order can be refunded
@@ -443,7 +445,7 @@ export function useOrderRefund(): UseOrderRefundResult {
           tenant_id: tenant.id,
           user_id: null, // Notify all admins
           title: 'Order Refund Processed',
-          message: `Order ${orderData.order_number} has been ${refundType === 'full' ? 'fully' : 'partially'} refunded ($${amount.toFixed(2)})`,
+          message: `Order ${orderData.order_number} has been ${refundType === 'full' ? 'fully' : 'partially'} refunded (${formatCurrency(amount)})`,
           type: 'info',
           entity_type: 'order',
           entity_id: orderId,
@@ -455,6 +457,7 @@ export function useOrderRefund(): UseOrderRefundResult {
           component: 'useOrderRefund',
           orderId,
         });
+        toast.warning('Refund processed, but admin notification could not be created');
       }
 
       // Create notification for customer if they have an ID
@@ -465,7 +468,7 @@ export function useOrderRefund(): UseOrderRefundResult {
             tenant_id: tenant.id,
             user_id: orderData.customer_id,
             title: 'Refund Processed',
-            message: `Your order ${orderData.order_number} has been refunded ($${amount.toFixed(2)})`,
+            message: `Your order ${orderData.order_number} has been refunded (${formatCurrency(amount)})`,
             type: 'success',
             entity_type: 'order',
             entity_id: orderId,
@@ -478,6 +481,7 @@ export function useOrderRefund(): UseOrderRefundResult {
             orderId,
             customerId: orderData.customer_id,
           });
+          toast.warning('Refund processed, but customer notification could not be sent');
         }
       }
 
@@ -525,17 +529,17 @@ export function useOrderRefund(): UseOrderRefundResult {
       if (result.restoreResults.length === 0) {
         showSuccessToast(
           'Refund Processed',
-          `$${result.refundAmount.toFixed(2)} refunded for order ${result.orderNumber}`
+          `${formatCurrency(result.refundAmount)} refunded for order ${result.orderNumber}`
         );
       } else if (failedCount === 0) {
         showSuccessToast(
           'Refund Processed',
-          `$${result.refundAmount.toFixed(2)} refunded, inventory restored for ${successCount} item${successCount !== 1 ? 's' : ''} (+${totalRestored} units)`
+          `${formatCurrency(result.refundAmount)} refunded, inventory restored for ${successCount} item${successCount !== 1 ? 's' : ''} (+${totalRestored} units)`
         );
       } else {
         showSuccessToast(
           'Refund Processed',
-          `$${result.refundAmount.toFixed(2)} refunded, ${successCount} items restored, ${failedCount} failed`
+          `${formatCurrency(result.refundAmount)} refunded, ${successCount} items restored, ${failedCount} failed`
         );
       }
 

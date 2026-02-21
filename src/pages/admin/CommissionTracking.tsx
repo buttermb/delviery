@@ -15,6 +15,7 @@ import { BetterEmptyState } from '@/components/BetterEmptyState';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 export default function CommissionTracking() {
   const { tenant } = useTenantAdminAuth();
@@ -104,9 +105,9 @@ export default function CommissionTracking() {
         ['Order ID', 'Amount', 'Status', 'Date'].join(','),
         ...commissions.map((c: any) => [
           c.order_id || 'N/A',
-          `$${(c.amount || 0).toFixed(2)}`,
+          formatCurrency(c.amount || 0),
           c.status || 'pending',
-          new Date(c.created_at).toLocaleDateString()
+          formatSmartDate(c.created_at)
         ].join(','))
       ];
 
@@ -169,7 +170,7 @@ export default function CommissionTracking() {
             <DollarSign className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">${totalCommissions.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-emerald-600">{formatCurrency(totalCommissions)}</div>
             <p className="text-xs text-muted-foreground mt-1">{commissionCount} transactions</p>
           </CardContent>
         </Card>
@@ -180,7 +181,7 @@ export default function CommissionTracking() {
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">${pendingCommissions.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-yellow-600">{formatCurrency(pendingCommissions)}</div>
             <p className="text-xs text-muted-foreground mt-1">awaiting payout</p>
           </CardContent>
         </Card>
@@ -191,7 +192,7 @@ export default function CommissionTracking() {
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${paidCommissions.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(paidCommissions)}</div>
             <p className="text-xs text-muted-foreground mt-1">completed</p>
           </CardContent>
         </Card>
@@ -230,12 +231,12 @@ export default function CommissionTracking() {
                     <div className="font-medium">Order #{commission.order_id?.slice(0, 8) || 'N/A'}</div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(commission.created_at).toLocaleDateString()}
+                      {formatSmartDate(commission.created_at)}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-lg font-bold text-emerald-600">
-                      ${(commission.amount || 0).toFixed(2)}
+                      {formatCurrency(commission.amount || 0)}
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch

@@ -33,6 +33,7 @@ interface BuilderHeaderProps {
     isPublishing: boolean;
     onUnpublish: () => void;
     isUnpublishing: boolean;
+    onBack?: () => void;
 }
 
 export function BuilderHeader({
@@ -56,26 +57,27 @@ export function BuilderHeader({
     isPublishing,
     onUnpublish,
     isUnpublishing,
+    onBack,
 }: BuilderHeaderProps) {
     return (
         <div className="flex items-center justify-between px-6 py-3 bg-background border-b shrink-0 z-20">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+                <Button variant="ghost" size="icon" onClick={onBack}>
                     <ArrowLeft className="w-4 h-4" />
                 </Button>
                 <span className="font-semibold">Store Builder</span>
                 <div className="flex rounded-md bg-muted p-1">
                     <Button
                         variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
-                        size="icon" className="h-7 w-7"
+                        size="icon" className="h-11 w-11"
                         onClick={() => setDevicePreview('desktop')}><Monitor className="w-4 h-4" /></Button>
                     <Button
                         variant={devicePreview === 'tablet' ? 'secondary' : 'ghost'}
-                        size="icon" className="h-7 w-7"
+                        size="icon" className="h-11 w-11"
                         onClick={() => setDevicePreview('tablet')}><Tablet className="w-4 h-4" /></Button>
                     <Button
                         variant={devicePreview === 'mobile' ? 'secondary' : 'ghost'}
-                        size="icon" className="h-7 w-7"
+                        size="icon" className="h-11 w-11"
                         onClick={() => setDevicePreview('mobile')}><Smartphone className="w-4 h-4" /></Button>
                 </div>
                 <Separator orientation="vertical" className="h-6" />
@@ -83,7 +85,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-11 w-11"
                         onClick={undo}
                         disabled={historyIndex <= 0}
                     >
@@ -92,7 +94,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-11 w-11"
                         onClick={redo}
                         disabled={historyIndex >= historyLength - 1}
                     >
@@ -105,7 +107,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-11 w-11 sm:h-6 sm:w-6"
                         onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
                         disabled={previewZoom <= 0.5}
                     >
@@ -115,7 +117,7 @@ export function BuilderHeader({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-11 w-11 sm:h-6 sm:w-6"
                         onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
                         disabled={previewZoom >= 1.2}
                     >

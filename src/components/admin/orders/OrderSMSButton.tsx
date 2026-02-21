@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { getSMSCharInfo } from '@/lib/utils/smsValidation';
 import {
@@ -86,7 +87,7 @@ export function OrderSMSButton({
     },
     onError: (error) => {
       toast.error('Failed to send SMS', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });
@@ -169,7 +170,7 @@ export function OrderSMSButton({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0"
+              className="h-11 w-11 p-0"
               onClick={() => setOpen(false)}
               aria-label="Close SMS dialog"
             >

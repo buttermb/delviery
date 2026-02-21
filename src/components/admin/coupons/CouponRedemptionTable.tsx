@@ -216,6 +216,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by code or order..."
+                  aria-label="Search by code or order"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -228,7 +229,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
                 setDateFilter(v);
                 setPage(0);
               }}>
-                <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]" aria-label="Filter by date range">
                   <Calendar className="h-4 w-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>

@@ -78,6 +78,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/utils/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';
@@ -377,7 +378,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
         });
       } catch (error) {
         logger.error('Failed to process CSV', error, { component: 'CatalogSync' });
-        toast.error(error instanceof Error ? error.message : 'Failed to process CSV');
+        toast.error(humanizeError(error, 'Failed to process CSV'));
       } finally {
         setIsProcessing(false);
         setUploadProgress(0);
@@ -750,6 +751,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
                       placeholder="Search by name or SKU..."
+                      aria-label="Search by name or SKU"
                       value={searchTerm}
                       onChange={(e) => {
                         setSearchTerm(e.target.value);
@@ -766,7 +768,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]" aria-label="Filter items">
                     <SelectValue placeholder="Filter..." />
                   </SelectTrigger>
                   <SelectContent>

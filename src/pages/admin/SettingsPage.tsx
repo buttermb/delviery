@@ -1,5 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/unsaved-changes';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +15,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Settings, Shield, Bell, Printer, Plug, Save,
+  Settings, Shield, Bell, Printer, Plug, Save, Loader2,
   Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload, ToggleRight
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
@@ -22,10 +24,12 @@ import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeS
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
+import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
 import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 import { FeatureTogglesPanel } from '@/components/admin/settings/FeatureTogglesPanel';
 import { SettingsImportDialog, type ImportedSettings } from '@/components/settings/SettingsImportDialog';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   GeneralSettingsSkeleton,
   SecuritySettingsSkeleton,
@@ -42,7 +46,7 @@ import {
 const generalSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
   email: z.string().email("Invalid email address").optional().or(z.literal('')),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   address: z.string().optional(),
 });
 
@@ -65,11 +69,14 @@ type GeneralFormValues = z.infer<typeof generalSchema>;
 type SecurityFormValues = z.infer<typeof securitySchema>;
 type NotificationFormValues = z.infer<typeof notificationSchema>;
 
-export default function SettingsPage() {
+interface SettingsPageProps {
+  embedded?: boolean;
+}
+
+export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
-  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(tabParam);
@@ -153,6 +160,27 @@ export default function SettingsPage() {
   // Determine if we should show loading skeletons
   const showSkeletons = accountLoading || !formsInitialized;
 
+  // Warn on unsaved changes when navigating away
+  const isDirty = formsInitialized && (
+    generalForm.formState.isDirty ||
+    securityForm.formState.isDirty ||
+    notificationForm.formState.isDirty
+  );
+  const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+    isDirty,
+  });
+
+  const mod = useModifierKey();
+
+  // Cmd/Ctrl+S submits the active tab's form
+  useFormKeyboardShortcuts({
+    onSave: () => {
+      if (activeTab === 'general') generalForm.handleSubmit(onSaveGeneral)();
+      else if (activeTab === 'security') securityForm.handleSubmit(onSaveSecurity)();
+      else if (activeTab === 'notifications') notificationForm.handleSubmit(onSaveNotifications)();
+    },
+  });
+
 
   // --- Submit Handlers ---
 
@@ -176,10 +204,10 @@ export default function SettingsPage() {
       if (error) throw error;
 
       await refreshAccount();
-      toast({ title: "Settings Saved", description: "General settings updated successfully." });
+      toast.success("General settings updated successfully.");
     } catch (err) {
       logger.error("Error saving general settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+      toast.error("Failed to save settings.");
     } finally {
       setLoading(false);
     }
@@ -202,10 +230,10 @@ export default function SettingsPage() {
 
       if (error) throw error;
       await refreshAccount();
-      toast({ title: "Settings Saved", description: "Security settings updated successfully." });
+      toast.success("Security settings updated successfully.");
     } catch (err) {
       logger.error("Error saving security settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+      toast.error("Failed to save settings.");
     } finally {
       setLoading(false);
     }
@@ -236,10 +264,10 @@ export default function SettingsPage() {
       }
 
       await refreshAccount();
-      toast({ title: "Settings Saved", description: "Notification preferences updated." });
+      toast.success("Notification preferences updated.");
     } catch (err) {
       logger.error("Error saving notification settings", err);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save settings." });
+      toast.error("Failed to save settings.");
     } finally {
       setLoading(false);
     }
@@ -349,7 +377,7 @@ export default function SettingsPage() {
       }
 
       await refreshAccount();
-      toast({ title: "Settings Imported", description: "Your settings have been imported successfully." });
+      toast.success("Your settings have been imported successfully.");
     } catch (err) {
       logger.error("Error importing settings", err);
       throw err;
@@ -359,13 +387,96 @@ export default function SettingsPage() {
   };
 
 
+  // General settings content - shared between embedded and standalone modes
+  const generalSettingsContent = (
+    <>
+      {showSkeletons ? (
+        <GeneralSettingsSkeleton />
+      ) : (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            General Settings
+          </h3>
+          <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
+            <div>
+              <Label>Company Name</Label>
+              <Input {...generalForm.register("companyName")} />
+              {generalForm.formState.errors.companyName && (
+                <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
+              )}
+            </div>
+            <div>
+              <Label>Details</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input type="email" {...generalForm.register("email")} />
+                  {generalForm.formState.errors.email && (
+                    <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Phone</Label>
+                  <Input type="tel" {...generalForm.register("phone")} />
+                  {generalForm.formState.errors.phone && (
+                    <p className="text-sm text-destructive">{generalForm.formState.errors.phone.message}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Textarea {...generalForm.register("address")} rows={3} />
+              {generalForm.formState.errors.address && (
+                <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.address.message}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Timezone</Label>
+                <Input value="America/New_York" disabled />
+              </div>
+              <div>
+                <Label>Currency</Label>
+                <Input value="USD" disabled />
+              </div>
+            </div>
+            <ShortcutHint keys={[mod, "S"]} label="Save">
+              <Button type="submit" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                Save General Settings
+              </Button>
+            </ShortcutHint>
+          </form>
+          <div className="pt-4 border-t mt-6">
+            <h4 className="text-sm font-medium mb-2">Team Management</h4>
+            <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
+              <Users className="h-4 w-4 mr-2" />
+              Manage Team Members
+            </Button>
+          </div>
+        </Card>
+      )}
+    </>
+  );
+
+  // When embedded inside SettingsHubPage, render only general settings content
+  if (embedded) {
+    return (
+      <div className="p-2 sm:p-6 space-y-6">
+        {generalSettingsContent}
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-2 sm:p-6 space-y-6">
       <div>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={() => navigateToAdmin('dashboard')}
           className="mb-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -435,66 +546,7 @@ export default function SettingsPage() {
 
         {/* General Settings */}
         <TabsContent value="general">
-          {showSkeletons ? (
-            <GeneralSettingsSkeleton />
-          ) : (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                General Settings
-              </h3>
-              <form onSubmit={generalForm.handleSubmit(onSaveGeneral)} className="space-y-4">
-                <div>
-                  <Label>Company Name</Label>
-                  <Input {...generalForm.register("companyName")} />
-                  {generalForm.formState.errors.companyName && (
-                    <p className="text-sm text-destructive mt-1">{generalForm.formState.errors.companyName.message}</p>
-                  )}
-                </div>
-                <div>
-                  <Label>Details</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Email</Label>
-                      <Input type="email" {...generalForm.register("email")} />
-                      {generalForm.formState.errors.email && (
-                        <p className="text-sm text-destructive">{generalForm.formState.errors.email.message}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Phone</Label>
-                      <Input type="tel" {...generalForm.register("phone")} />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Label>Address</Label>
-                  <Textarea {...generalForm.register("address")} rows={3} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Timezone</Label>
-                    <Input value="America/New_York" disabled />
-                  </div>
-                  <div>
-                    <Label>Currency</Label>
-                    <Input value="USD" disabled />
-                  </div>
-                </div>
-                <Button type="submit" disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save General Settings
-                </Button>
-              </form>
-              <div className="pt-4 border-t mt-6">
-                <h4 className="text-sm font-medium mb-2">Team Management</h4>
-                <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Manage Team Members
-                </Button>
-              </div>
-            </Card>
-          )}
+          {generalSettingsContent}
         </TabsContent>
 
         {/* Security Settings */}
@@ -553,10 +605,12 @@ export default function SettingsPage() {
                     <p className="text-sm text-destructive">{securityForm.formState.errors.passwordMinLength.message}</p>
                   )}
                 </div>
-                <Button type="submit" disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Security Settings
-                </Button>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Security Settings
+                  </Button>
+                </ShortcutHint>
               </form>
             </Card>
           )}
@@ -616,10 +670,12 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
-                <Button type="submit" disabled={loading}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Notification Settings
-                </Button>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Notification Settings
+                  </Button>
+                </ShortcutHint>
               </form>
             </Card>
           )}
@@ -729,6 +785,12 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <UnsavedChangesDialog
+        open={showBlockerDialog}
+        onConfirmLeave={confirmLeave}
+        onCancelLeave={cancelLeave}
+      />
     </div>
   );
 }

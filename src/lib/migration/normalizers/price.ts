@@ -3,6 +3,8 @@
  * Parses and normalizes price formats with tier detection
  */
 
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
+
 export interface PriceResult {
   amount: number;
   tier?: 'lb' | 'hp' | 'qp' | 'oz' | 'unit';
@@ -242,9 +244,9 @@ export function validatePricing(pricing: TieredPricing): {
  */
 export function formatPrice(amount: number): string {
   if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(1)}k`;
+    return formatCompactCurrency(amount);
   }
-  return `$${amount.toFixed(2)}`;
+  return formatCurrency(amount);
 }
 
 /**

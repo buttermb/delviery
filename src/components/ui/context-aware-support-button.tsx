@@ -186,6 +186,7 @@ Screen: ${context.screenSize}
 
     navigator.clipboard.writeText(contextText);
     setCopied(true);
+    toast.success('Support context copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 

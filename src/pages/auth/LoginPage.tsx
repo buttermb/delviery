@@ -18,7 +18,7 @@ import {
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { logger } from '@/lib/logger';
-import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, AlertCircle, Eye, EyeOff, Info } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -45,6 +45,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const redirectTo = searchParams.get('redirect') || null;
+  const sessionExpired = searchParams.get('expired') === '1';
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -127,6 +128,14 @@ export function LoginPage() {
             Enter your credentials to access the dashboard
           </p>
         </div>
+
+        {/* Session Expired Alert */}
+        {sessionExpired && !loginError && (
+          <Alert className="animate-in fade-in-0 slide-in-from-top-1 border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+            <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertDescription>Your session has expired. Please sign in again.</AlertDescription>
+          </Alert>
+        )}
 
         {/* Error Alert */}
         {loginError && (

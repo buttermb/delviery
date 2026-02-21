@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
 import { queryKeys } from '@/lib/queryKeys';
@@ -100,7 +101,7 @@ export function MenuPaymentSettingsDialog({
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast.error('Failed to save settings', { description: error.message });
+      toast.error('Failed to save settings', { description: humanizeError(error) });
     },
   });
 

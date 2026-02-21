@@ -16,6 +16,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { queryKeys } from "@/lib/queryKeys";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { formatPhoneNumber } from "@/lib/formatters";
 
 interface Delivery {
   id: string;
@@ -341,7 +342,7 @@ export default function FleetManagement() {
                   </div>
                   <div>
                     <div className="font-semibold text-foreground">{runner.full_name}</div>
-                    <div className="text-xs text-muted-foreground">{runner.phone}</div>
+                    <div className="text-xs text-muted-foreground">{formatPhoneNumber(runner.phone)}</div>
                   </div>
                 </div>
                 <Badge variant="outline" className="capitalize">

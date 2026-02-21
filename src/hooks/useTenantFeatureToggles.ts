@@ -5,12 +5,13 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { FEATURE_TOGGLE_DEFAULTS, type FeatureToggleKey } from '@/lib/featureFlags';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 interface UseTenantFeatureTogglesReturn {
   isEnabled: (flag: FeatureToggleKey) => boolean;
   toggleFeature: (flag: FeatureToggleKey, enabled: boolean) => Promise<void>;
-  flags: Record<string, boolean>;
+  flags: Record<FeatureToggleKey, boolean>;
   isLoading: boolean;
 }
 
@@ -28,7 +29,7 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
   const tenantId = tenant?.id ?? null;
   const queryClient = useQueryClient();
 
-  const queryKey = ['tenant-feature-toggles', tenantId];
+  const queryKey = queryKeys.featureToggles.byTenant(tenantId);
 
   // Fetch feature_toggles from the tenants table
   const { data: dbToggles, isLoading } = useQuery({
@@ -36,23 +37,28 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
     queryFn: async (): Promise<Record<string, boolean>> => {
       if (!tenantId) return {};
 
-      const { data, error } = await (supabase as any)
-        .from('tenants')
-        .select('feature_toggles')
-        .eq('id', tenantId)
-        .maybeSingle();
+      try {
+        const { data, error } = await (supabase as any)
+          .from('tenants')
+          .select('feature_toggles')
+          .eq('id', tenantId)
+          .maybeSingle();
 
-      if (error) {
-        logger.warn('[FeatureToggles] Failed to fetch toggles', { message: error.message });
+        if (error) {
+          logger.warn('[FeatureToggles] Failed to fetch toggles', { message: error.message });
+          return {};
+        }
+
+        // feature_toggles is JSONB, may be null or an object
+        const toggles = (data as Record<string, unknown> | null)?.feature_toggles;
+        if (toggles && typeof toggles === 'object' && !Array.isArray(toggles)) {
+          return toggles as Record<string, boolean>;
+        }
+        return {};
+      } catch (err) {
+        logger.warn('[FeatureToggles] Query error, returning defaults', err instanceof Error ? err : new Error(String(err)));
         return {};
       }
-
-      // feature_toggles is JSONB, may be null or an object
-      const toggles = (data as Record<string, unknown> | null)?.feature_toggles;
-      if (toggles && typeof toggles === 'object' && !Array.isArray(toggles)) {
-        return toggles as Record<string, boolean>;
-      }
-      return {};
     },
     enabled: !!tenantId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -61,11 +67,11 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
   });
 
   // Merge defaults with DB overrides (DB values take precedence)
-  const flags = useMemo<Record<string, boolean>>(() => {
+  const flags = useMemo<Record<FeatureToggleKey, boolean>>(() => {
     return {
       ...FEATURE_TOGGLE_DEFAULTS,
       ...(dbToggles ?? {}),
-    };
+    } as Record<FeatureToggleKey, boolean>;
   }, [dbToggles]);
 
   const isEnabled = useCallback(
@@ -81,7 +87,7 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
     mutationFn: async ({ flag, enabled }: { flag: FeatureToggleKey; enabled: boolean }) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      // Optimistically merge with current DB toggles
+      // Merge with current DB toggles
       const current: Record<string, boolean> = { ...(dbToggles ?? {}) };
       current[flag] = enabled;
 

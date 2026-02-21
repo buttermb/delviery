@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Tag, Trash2, Calendar, Loader2 } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import {
     Dialog,
@@ -23,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { formatCurrency } from '@/lib/formatters';
 
 type Coupon = {
     id: string;
@@ -131,7 +133,7 @@ export default function CouponManager() {
         createCoupon.mutate(newCoupon);
     };
 
-    if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
+    if (isLoading) return <EnhancedLoadingState variant="table" message="Loading coupons..." />;
 
     return (
         <div className="space-y-6 h-full p-4 md:p-8">
@@ -252,7 +254,7 @@ export default function CouponManager() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {coupon.type === 'percentage' ? `${coupon.discount_value}%` : `$${coupon.discount_value.toFixed(2)}`}
+                                        {coupon.type === 'percentage' ? `${coupon.discount_value}%` : formatCurrency(coupon.discount_value)}
                                     </TableCell>
                                     <TableCell>
                                         {coupon.used_count} / {coupon.usage_limit || '∞'}

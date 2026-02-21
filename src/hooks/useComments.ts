@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
 import type { CreateCommentRequest } from '@/types/forum';
+import { humanizeError } from '@/lib/humanizeError';
 
 export function useComments(postId: string | undefined) {
   return useQuery({
@@ -34,7 +35,7 @@ export function useCreateComment() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create comment', error, { component: 'useCreateComment' });
-      toast.error(error instanceof Error ? error.message : 'Failed to post comment');
+      toast.error(humanizeError(error, 'Failed to post comment'));
     },
   });
 }
@@ -51,7 +52,7 @@ export function useUpdateComment() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to update comment', error, { component: 'useUpdateComment' });
-      toast.error(error instanceof Error ? error.message : 'Failed to update comment');
+      toast.error(humanizeError(error, 'Failed to update comment'));
     },
   });
 }
@@ -69,7 +70,7 @@ export function useDeleteComment() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete comment', error, { component: 'useDeleteComment' });
-      toast.error(error instanceof Error ? error.message : 'Failed to delete comment');
+      toast.error(humanizeError(error, 'Failed to delete comment'));
     },
   });
 }

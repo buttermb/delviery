@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { logger } from "@/lib/logger";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
@@ -18,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 
 interface Product {
@@ -146,7 +148,7 @@ export function InventoryManagement() {
     {
       header: 'Product',
       accessorKey: 'name',
-      cell: (item) => <div className="font-medium truncate max-w-[150px] sm:max-w-none">{item.name}</div>
+      cell: (item) => <TruncatedText text={item.name} className="font-medium" maxWidthClass="max-w-[150px] sm:max-w-none" as="div" />
     },
     {
       header: 'Weight',
@@ -321,10 +323,7 @@ export function InventoryManagement() {
 
       {/* Warehouses */}
       {loading ? (
-        <Card className="p-8 text-center">
-          <Package className="h-10 w-10 animate-bounce text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading inventory...</p>
-        </Card>
+        <EnhancedLoadingState variant="table" message="Loading inventory..." />
       ) : Object.keys(groupedInventory).length === 0 ? (
         <Card className="p-8 text-center">
           <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />

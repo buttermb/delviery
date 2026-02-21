@@ -20,6 +20,7 @@ import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Package from "lucide-react/dist/esm/icons/package";
 import Save from "lucide-react/dist/esm/icons/save";
 import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { useStockAlertSettings } from '@/hooks/useStockAlertSettings';
@@ -216,7 +217,7 @@ export function StockAlertSettings() {
             </div>
             <div className="flex items-end">
               <Button onClick={handleBulkApply} disabled={isSaving} className="w-full sm:w-auto">
-                <Save className="h-4 w-4 mr-2" />
+                {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 Apply to {filteredProducts?.length || 0} Products
               </Button>
             </div>

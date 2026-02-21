@@ -46,6 +46,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import { usePagination } from '@/hooks/usePagination';
+import { formatSmartDate } from '@/lib/formatters';
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
 type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row'];
@@ -216,11 +217,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatSmartDate(dateString);
   };
 
   const handlePOClick = (poId: string) => {
@@ -304,6 +301,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search by PO number..."
+                  aria-label="Search by PO number"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -311,7 +309,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
               </div>
             </div>
             <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as POStatus)}>
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]" aria-label="Filter by status">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>

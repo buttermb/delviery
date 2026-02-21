@@ -112,7 +112,7 @@ export function InlineStockEdit({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-success hover:text-success"
+          className="h-11 w-11 text-success hover:text-success"
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -121,7 +121,7 @@ export function InlineStockEdit({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          className="h-11 w-11 text-muted-foreground hover:text-destructive"
           onClick={handleCancel}
           disabled={isSaving}
         >

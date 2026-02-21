@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/unsaved-changes';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,28 +30,23 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
+import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
 
 const customerFormSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
+  first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
+  last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be 100 characters or less'),
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   phone: z.string()
-    .optional()
+    .regex(/^[\d\s\-+()]+$/, "Invalid phone number")
+    .min(7, "Phone number must be at least 7 characters")
+    .max(20, "Phone number must be 20 characters or less")
     .or(z.literal(''))
-    .transform(val => val || '')
-    .pipe(
-      z.string().refine(
-        (val) => val === '' || /^[\d\s\-+()]+$/.test(val),
-        'Phone must contain only digits, spaces, dashes, or parentheses'
-      ).refine(
-        (val) => val === '' || val.replace(/\D/g, '').length >= 10,
-        'Phone number must be at least 10 digits'
-      )
-    ),
+    .optional(),
   date_of_birth: z.string().min(1, 'Date of birth is required'),
-  address: z.string().optional().or(z.literal('')),
+  address: z.string().max(500, 'Address must be 500 characters or less').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
-  medical_card_number: z.string().optional().or(z.literal('')),
+  medical_card_number: z.string().max(50, 'Medical card number must be 50 characters or less').optional().or(z.literal('')),
   medical_card_expiration: z.string().optional().or(z.literal('')),
   status: z.enum(['active', 'inactive', 'suspended']),
 });
@@ -82,6 +79,12 @@ export default function CustomerForm() {
     },
     mode: 'onBlur',
   });
+
+  const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+    isDirty: form.formState.isDirty,
+  });
+
+  const mod = useModifierKey();
 
   useEffect(() => {
     if (isEdit && id && !accountLoading) {
@@ -226,6 +229,11 @@ export default function CustomerForm() {
     }
   };
 
+  useFormKeyboardShortcuts({
+    onSave: () => form.handleSubmit(onSubmit)(),
+    onCancel: () => navigateToAdmin('customer-management'),
+  });
+
   if (accountLoading || pageLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -278,7 +286,7 @@ export default function CustomerForm() {
                         <FormItem>
                           <FormLabel required>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="John" autoFocus {...field} />
+                            <Input placeholder="John" autoFocus maxLength={100} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -291,7 +299,7 @@ export default function CustomerForm() {
                         <FormItem>
                           <FormLabel required>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Doe" {...field} />
+                            <Input placeholder="Doe" maxLength={100} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -320,7 +328,7 @@ export default function CustomerForm() {
                         <FormItem>
                           <FormLabel>Phone</FormLabel>
                           <FormControl>
-                            <Input type="tel" placeholder="(555) 123-4567" {...field} />
+                            <Input type="tel" placeholder="(555) 123-4567" maxLength={20} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -373,7 +381,7 @@ export default function CustomerForm() {
                       <FormItem>
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Main St" {...field} />
+                          <Input placeholder="123 Main St" maxLength={500} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -419,7 +427,7 @@ export default function CustomerForm() {
                           <FormItem>
                             <FormLabel>Medical Card Number</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input maxLength={50} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -445,31 +453,41 @@ export default function CustomerForm() {
 
               {/* Actions */}
               <div className="flex gap-4 justify-end pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigateToAdmin('customer-management')}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                >
-                  {saving ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      {isEdit ? 'Update Customer' : 'Create Customer'}
-                    </>
-                  )}
-                </Button>
+                <ShortcutHint keys={["Esc"]} label="Cancel">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigateToAdmin('customer-management')}
+                  >
+                    Cancel
+                  </Button>
+                </ShortcutHint>
+                <ShortcutHint keys={[mod, "S"]} label="Save">
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                  >
+                    {saving ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {isEdit ? 'Update Customer' : 'Create Customer'}
+                      </>
+                    )}
+                  </Button>
+                </ShortcutHint>
               </div>
             </div>
           </form>
         </Form>
+
+        <UnsavedChangesDialog
+          open={showBlockerDialog}
+          onConfirmLeave={confirmLeave}
+          onCancelLeave={cancelLeave}
+        />
       </div>
     </div>
   );

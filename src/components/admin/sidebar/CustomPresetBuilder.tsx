@@ -20,21 +20,12 @@ import {
   DialogTitle,
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import type { CustomPreset } from '@/types/sidebar';
-import { Plus, Save, Trash2, Edit, Check } from 'lucide-react';
+import { Plus, Save, Trash2, Edit, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CustomPresetBuilder() {
@@ -289,7 +280,7 @@ export function CustomPresetBuilder() {
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 {editingPresetId ? 'Update' : 'Create'} Preset
               </Button>
             </DialogFooter>
@@ -360,22 +351,16 @@ export function CustomPresetBuilder() {
         </div>
       )}
 
-      <AlertDialog open={!!deletePresetId} onOpenChange={() => setDeletePresetId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Custom Preset?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your custom preset.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deletePresetId && handleDelete(deletePresetId)}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deletePresetId}
+        onOpenChange={() => setDeletePresetId(null)}
+        onConfirm={() => {
+          if (deletePresetId) {
+            handleDelete(deletePresetId);
+          }
+        }}
+        itemType="preset"
+      />
     </div>
   );
 }

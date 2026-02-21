@@ -377,7 +377,7 @@ export function OrderComms({
     const groups: Record<string, CommunicationEntry[]> = {};
 
     for (const entry of entries) {
-      const dateKey = new Date(entry.createdAt).toLocaleDateString();
+      const dateKey = formatSmartDate(entry.createdAt);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -507,7 +507,7 @@ export function OrderComms({
               <div key={dateKey}>
                 <div className="ml-6 pt-4 pb-2">
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {dateKey === new Date().toLocaleDateString() ? 'Today' : dateKey}
+                    {dateKey}
                   </span>
                 </div>
                 {dateEntries.map((entry) => (

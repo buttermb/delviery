@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -7,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Upload,
   Search,
@@ -28,9 +29,10 @@ import {
 import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/lib/queryKeys';
 import { Loader2 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function ImagesPage() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -214,7 +216,7 @@ export default function ImagesPage() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigateToAdmin('inventory-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -299,7 +301,7 @@ export default function ImagesPage() {
 
       {/* Images Grid/List */}
       {isLoading ? (
-        <div className="text-center py-12">Loading images...</div>
+        <EnhancedLoadingState variant="grid" count={6} message="Loading images..." />
       ) : filteredImages?.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -330,7 +332,7 @@ export default function ImagesPage() {
                 <div className="p-3">
                   <p className="text-sm font-medium truncate">{image.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(image.created_at).toLocaleDateString()}
+                    {formatSmartDate(image.created_at)}
                   </p>
                 </div>
               </CardContent>
@@ -357,7 +359,7 @@ export default function ImagesPage() {
                   <div className="flex-1">
                     <p className="font-medium">{image.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      Uploaded {new Date(image.created_at).toLocaleDateString()}
+                      Uploaded {formatSmartDate(image.created_at)}
                     </p>
                   </div>
                   <Button
@@ -439,7 +441,7 @@ export default function ImagesPage() {
               <div>
                 <p className="text-muted-foreground">Uploaded</p>
                 <p className="font-medium">
-                  {selectedImage && new Date(selectedImage.created_at).toLocaleDateString()}
+                  {selectedImage && formatSmartDate(selectedImage.created_at)}
                 </p>
               </div>
               <div className="col-span-2">

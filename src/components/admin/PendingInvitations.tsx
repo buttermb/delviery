@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Clock, X, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { showCopyToast, showErrorToast } from '@/utils/toastHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -70,16 +71,9 @@ export function PendingInvitations({ invitations, tenantId, onInvitationsChange 
       const inviteLink = `${window.location.origin}/invite/${invitation.token}`;
       await navigator.clipboard.writeText(inviteLink);
 
-      toast({
-        title: 'Invitation Link Copied',
-        description: 'Share this link with the invitee to join your team'
-      });
+      showCopyToast('Invitation link');
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to copy invitation link',
-        variant: 'destructive'
-      });
+      showErrorToast('Failed to copy invitation link');
     } finally {
       setResendingId(null);
     }

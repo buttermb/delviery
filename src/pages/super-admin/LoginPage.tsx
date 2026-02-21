@@ -14,6 +14,7 @@ import { AuthOfflineIndicator } from "@/components/auth/AuthOfflineIndicator";
 import { useAuthOffline } from "@/hooks/useAuthOffline";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { AuthErrorAlert, getAuthErrorType, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
+import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 
 
 export default function SuperAdminLoginPage() {
@@ -33,7 +34,10 @@ export default function SuperAdminLoginPage() {
         title: "Welcome, Super Admin!",
         description: "Logged in successfully",
       });
-      navigate("/super-admin/dashboard", { replace: true });
+      const intendedDestination = intendedDestinationUtils.consume();
+      const redirectTo = intendedDestination || "/super-admin/dashboard";
+      logger.debug('[SuperAdminLogin] Redirecting after queued login', { intendedDestination, redirectTo });
+      navigate(redirectTo, { replace: true });
     }
   );
 
@@ -61,7 +65,10 @@ export default function SuperAdminLoginPage() {
         description: "Logged in successfully",
       });
 
-      navigate("/super-admin/dashboard", { replace: true });
+      const intendedDestination = intendedDestinationUtils.consume();
+      const redirectTo = intendedDestination || "/super-admin/dashboard";
+      logger.debug('[SuperAdminLogin] Redirecting after successful login', { intendedDestination, redirectTo });
+      navigate(redirectTo, { replace: true });
     } catch (error: unknown) {
       logger.error("Super admin login error", error, { component: 'SuperAdminLoginPage' });
       const errorMessage = getAuthErrorMessage(error, "Invalid email or password. Please try again.");

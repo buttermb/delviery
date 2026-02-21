@@ -3,11 +3,15 @@
  * Extracted from ZReportPage.tsx for use in POSHubPage
  */
 
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { BarChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { formatSmartDate } from '@/lib/formatters';
 import { ZReport } from '@/components/pos/ZReport';
+import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +46,7 @@ export default function ZReportPanel() {
     });
 
     if (isLoading) {
-        return <div className="p-6 text-center">Loading shifts...</div>;
+        return <EnhancedLoadingState variant="table" message="Loading shifts..." />;
     }
 
     return (
@@ -65,7 +69,7 @@ export default function ZReportPanel() {
                                             {shift.shift_number} - {shift.cashier_name}
                                         </span>
                                         <span className="text-muted-foreground">
-                                            {new Date(shift.ended_at).toLocaleDateString()}
+                                            {formatSmartDate(shift.ended_at)}
                                         </span>
                                         <Badge variant="outline">${shift.total_sales.toFixed(2)}</Badge>
                                     </div>
@@ -79,11 +83,11 @@ export default function ZReportPanel() {
             {selectedShiftId && <ZReport shiftId={selectedShiftId} />}
 
             {!selectedShiftId && shifts && shifts.length === 0 && (
-                <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                        No closed shifts found. Close a shift to generate a Z-Report.
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={BarChart}
+                    title="No shift reports yet"
+                    description="Reports are generated when you complete a shift"
+                />
             )}
         </div>
     );

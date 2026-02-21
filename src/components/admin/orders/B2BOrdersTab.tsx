@@ -264,6 +264,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
         <Checkbox
           checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
           onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+          aria-label="Select all orders"
         />
       ) as unknown as string,
       className: 'w-[40px]',
@@ -272,6 +273,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
           <Checkbox
             checked={selectedOrders.includes(order.id)}
             onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+            aria-label="Select order"
           />
         </div>
       ),
@@ -375,7 +377,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0"
+            className="h-11 w-11 p-0"
             onClick={() => navigate(`wholesale-orders/${order.id}`)}
           >
             <Eye className="h-4 w-4" />

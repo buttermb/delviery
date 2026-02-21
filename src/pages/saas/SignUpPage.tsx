@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap, Coins, ArrowLeft } from 'lucide-react';
 import { FREE_TIER_MONTHLY_CREDITS } from '@/lib/credits';
 import { getPlanConfig, type PlanKey } from '@/config/planPricing';
@@ -111,7 +111,6 @@ const SUBMIT_COOLDOWN_MS = 3000;
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { handleSignupSuccess } = useTenantAdminAuth();
   const { prefetch } = usePrefetchDashboard();
   const [showOptionalFields, setShowOptionalFields] = useState(false);
@@ -189,22 +188,14 @@ export default function SignUpPage() {
 
   const onSubmit = async (data: SignupFormData) => {
     if (!validateToken()) {
-      toast({
-        title: 'Security Error',
-        description: 'Invalid security token. Please refresh the page and try again.',
-        variant: 'destructive',
-      });
+      toast.error('Invalid security token. Please refresh the page and try again.');
       return;
     }
 
     // Client-side rate limiting
     const now = Date.now();
     if (now - lastSubmitTime < SUBMIT_COOLDOWN_MS) {
-      toast({
-        title: 'Please Wait',
-        description: 'Please wait a moment before submitting again.',
-        variant: 'destructive',
-      });
+      toast.error('Please wait a moment before submitting again.');
       return;
     }
     setLastSubmitTime(now);
@@ -235,11 +226,7 @@ export default function SignUpPage() {
 
       if (!eligibility.allowed) {
         logger.warn('[SIGNUP] Signup blocked', { reason: eligibility.blockReason });
-        toast({
-          title: 'Unable to Create Account',
-          description: eligibility.blockReason || 'Please contact support if you believe this is an error.',
-          variant: 'destructive',
-        });
+        toast.error(eligibility.blockReason || 'Please contact support if you believe this is an error.');
         setIsSubmitting(false);
         return;
       }
@@ -269,11 +256,7 @@ export default function SignUpPage() {
       // CAPTCHA validation - only required if Turnstile is configured
       const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
       if (turnstileSiteKey && !captchaToken) {
-        toast({
-          title: 'Verification Required',
-          description: 'Please complete the security verification.',
-          variant: 'destructive',
-        });
+        toast.error('Please complete the security verification.');
         setIsSubmitting(false);
         return;
       }
@@ -385,8 +368,7 @@ export default function SignUpPage() {
         userId: result.user.id,
       });
 
-      toast({
-        title: 'Account Created!',
+      toast.success('Account Created!', {
         description: 'Setting up your dashboard...',
       });
 
@@ -532,11 +514,7 @@ export default function SignUpPage() {
         }
       }
 
-      toast({
-        title: 'Sign Up Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -808,11 +786,7 @@ export default function SignUpPage() {
                             onSuccess={(token) => setCaptchaToken(token)}
                             onError={() => {
                               setCaptchaToken('');
-                              toast({
-                                title: 'Verification Failed',
-                                description: 'CAPTCHA verification failed. Please try again.',
-                                variant: 'destructive',
-                              });
+                              toast.error('CAPTCHA verification failed. Please try again.');
                             }}
                             onExpire={() => {
                               setCaptchaToken('');

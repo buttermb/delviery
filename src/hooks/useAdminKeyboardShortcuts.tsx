@@ -9,6 +9,7 @@ interface KeyboardShortcutsOptions {
   onSearch?: () => void;
   onCreate?: () => void;
   onEscape?: () => void;
+  onSave?: () => void;
 }
 
 export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}) => {
@@ -65,6 +66,15 @@ export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}
           options.onCreate();
           return;
         }
+      }
+
+      // Save action (Cmd/Ctrl + S)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's' && !e.shiftKey) {
+        e.preventDefault();
+        if (options.onSave) {
+          options.onSave();
+        }
+        return;
       }
 
       // Search action (Cmd/Ctrl + K)

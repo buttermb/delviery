@@ -43,9 +43,9 @@ import { useEncryption } from '@/lib/hooks/useEncryption';
 import type { POSCustomer } from './POSCustomerSelector';
 
 const formSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
-  phone: z.string().optional(),
+  first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
+  last_name: z.string().min(1, 'Last name is required').max(100, 'Last name must be 100 characters or less'),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   customer_type: z.enum(['recreational', 'medical']),
 });
@@ -177,6 +177,9 @@ export function QuickCreateCustomerDialog({
         email: data.email,
         phone: data.phone,
       });
+
+      // Close the dialog
+      onOpenChange(false);
     },
     onError: (error) => {
       logger.error('Failed to create customer', error, {
@@ -215,7 +218,7 @@ export function QuickCreateCustomerDialog({
                   <FormItem>
                     <FormLabel required>First Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" autoFocus {...field} />
+                      <Input placeholder="John" autoFocus maxLength={100} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -228,7 +231,7 @@ export function QuickCreateCustomerDialog({
                   <FormItem>
                     <FormLabel required>Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      <Input placeholder="Doe" maxLength={100} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -243,7 +246,7 @@ export function QuickCreateCustomerDialog({
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="(555) 123-4567" type="tel" {...field} />
+                    <Input placeholder="(555) 123-4567" type="tel" maxLength={20} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -269,7 +272,7 @@ export function QuickCreateCustomerDialog({
               name="customer_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Type</FormLabel>
+                  <FormLabel required>Customer Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

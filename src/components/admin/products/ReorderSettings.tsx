@@ -406,8 +406,16 @@ export function ReorderSettings({
 
   const handleSave = useCallback((e: React.FormEvent) => {
     e.preventDefault();
+    if (parsedReorderPoint < 0) {
+      showErrorToast('Validation Error', 'Reorder point cannot be negative');
+      return;
+    }
+    if (parsedReorderQuantity < 0) {
+      showErrorToast('Validation Error', 'Reorder quantity cannot be negative');
+      return;
+    }
     saveMutation.mutate();
-  }, [saveMutation]);
+  }, [saveMutation, parsedReorderPoint, parsedReorderQuantity]);
 
   const handleCreatePO = useCallback(() => {
     createPOMutation.mutate();

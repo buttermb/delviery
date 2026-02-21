@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 
 interface CustomerRetentionChartProps {
@@ -60,6 +61,7 @@ export function CustomerRetentionChart({ storeId, className }: CustomerRetention
             };
         },
         enabled: !!storeId,
+        ...ANALYTICS_QUERY_CONFIG,
     });
 
     if (isLoading) {

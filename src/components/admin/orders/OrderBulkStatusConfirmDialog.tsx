@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, Package, Truck, XCircle, Clock } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Package, Truck, XCircle, Clock, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -120,6 +120,7 @@ export function OrderBulkStatusConfirmDialog({
             onClick={onConfirm}
             disabled={isLoading}
           >
+            {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isLoading ? 'Updating...' : `Update ${selectedCount} Order${selectedCount !== 1 ? 's' : ''}`}
           </Button>
         </AlertDialogFooter>

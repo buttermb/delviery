@@ -28,6 +28,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Plus,
     Trash2,
@@ -75,6 +76,8 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
     const queryClient = useQueryClient();
     const [editingCarousel, setEditingCarousel] = useState<Carousel | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [carouselToDelete, setCarouselToDelete] = useState<Carousel | null>(null);
     const [newCarousel, setNewCarousel] = useState({
         title: '',
         subtitle: '',
@@ -309,11 +312,7 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="text-destructive"
-                                                onClick={() => {
-                                                    if (confirm('Delete this carousel?')) {
-                                                        deleteMutation.mutate(carousel.id);
-                                                    }
-                                                }}
+                                                onClick={() => { setCarouselToDelete(carousel); setDeleteDialogOpen(true); }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -436,6 +435,22 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDeleteDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={() => {
+                    if (carouselToDelete) {
+                        deleteMutation.mutate(carouselToDelete.id);
+                        setDeleteDialogOpen(false);
+                        setCarouselToDelete(null);
+                    }
+                }}
+                itemName={carouselToDelete?.title}
+                itemType="carousel"
+                isLoading={deleteMutation.isPending}
+            />
 
             {/* Edit Dialog (simplified - same as create for now) */}
             {editingCarousel && (

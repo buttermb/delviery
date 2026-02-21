@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -222,25 +223,25 @@ export function usePurchaseCredits(): UsePurchaseCreditsReturn {
       switch (error.type) {
         case 'card_error':
           toast.error('Payment Failed', {
-            description: error.message,
+            description: humanizeError(error),
             duration: 6000,
           });
           break;
         case 'validation_error':
           toast.error('Invalid Card Details', {
-            description: error.message,
+            description: humanizeError(error),
             duration: 5000,
           });
           break;
         case 'network_error':
           toast.error('Connection Error', {
-            description: error.message,
+            description: humanizeError(error),
             duration: 5000,
           });
           break;
         default:
           toast.error('Purchase Failed', {
-            description: error.message || 'Please try again or contact support.',
+            description: humanizeError(error, 'Please try again or contact support.'),
             duration: 5000,
           });
       }

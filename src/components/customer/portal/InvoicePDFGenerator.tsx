@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import jsPDF from 'jspdf';
 import { logger } from '@/lib/logger';
 import type { PortalInvoice } from '@/types/portal';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 export interface InvoicePDFGeneratorProps {
   invoice: PortalInvoice;
@@ -10,6 +11,7 @@ export interface InvoicePDFGeneratorProps {
   companyName?: string;
   companyAddress?: string;
   paymentInstructions?: string;
+  amountPaid?: number;
 }
 
 export function generateInvoicePDF({
@@ -19,6 +21,7 @@ export function generateInvoicePDF({
   companyName = 'BigMike Wholesale',
   companyAddress = '',
   paymentInstructions = 'Please remit payment within 30 days.',
+  amountPaid = 0,
 }: InvoicePDFGeneratorProps): void {
   try {
     const pdf = new jsPDF({
@@ -61,9 +64,9 @@ export function generateInvoicePDF({
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Invoice #: ${invoice.invoice_number}`, margin, yPosition);
     yPosition += 6;
-    pdf.text(`Issue Date: ${new Date(invoice.issue_date).toLocaleDateString()}`, margin, yPosition);
+    pdf.text(`Issue Date: ${formatSmartDate(invoice.issue_date)}`, margin, yPosition);
     yPosition += 6;
-    pdf.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, margin, yPosition);
+    pdf.text(`Due Date: ${formatSmartDate(invoice.due_date)}`, margin, yPosition);
     yPosition += 10;
 
     // Bill To
@@ -120,8 +123,8 @@ export function generateInvoicePDF({
       const itemName = pdf.splitTextToSize(item.product_name, colWidths.item - 2);
       pdf.text(itemName, margin, yPosition);
       pdf.text(String(item.quantity), margin + colWidths.item, yPosition);
-      pdf.text(`$${item.price.toFixed(2)}`, margin + colWidths.item + colWidths.qty, yPosition);
-      pdf.text(`$${item.total.toFixed(2)}`, margin + colWidths.item + colWidths.qty + colWidths.price, yPosition);
+      pdf.text(formatCurrency(item.price), margin + colWidths.item + colWidths.qty, yPosition);
+      pdf.text(formatCurrency(item.total), margin + colWidths.item + colWidths.qty + colWidths.price, yPosition);
       yPosition += itemName.length * 5 + 2;
     });
 
@@ -131,12 +134,12 @@ export function generateInvoicePDF({
     const totalsX = margin + colWidths.item + colWidths.qty;
     pdf.setFont('helvetica', 'normal');
     pdf.text('Subtotal:', totalsX, yPosition);
-    pdf.text(`$${invoice.subtotal.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+    pdf.text(formatCurrency(invoice.subtotal), pageWidth - margin, yPosition, { align: 'right' });
     yPosition += 6;
 
     if (invoice.tax > 0) {
       pdf.text('Tax:', totalsX, yPosition);
-      pdf.text(`$${invoice.tax.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
+      pdf.text(formatCurrency(invoice.tax), pageWidth - margin, yPosition, { align: 'right' });
       yPosition += 6;
     }
 
@@ -148,8 +151,40 @@ export function generateInvoicePDF({
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Total:', totalsX, yPosition);
-    pdf.text(`$${invoice.total.toFixed(2)}`, pageWidth - margin, yPosition, { align: 'right' });
-    yPosition += 10;
+    pdf.text(formatCurrency(invoice.total), pageWidth - margin, yPosition, { align: 'right' });
+    yPosition += 8;
+
+    // Partial payment indicator
+    if (amountPaid > 0) {
+      const balanceDue = Math.max(0, invoice.total - amountPaid);
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(34, 197, 94);
+      pdf.text('Amount Paid:', totalsX, yPosition);
+      pdf.text(formatCurrency(amountPaid), pageWidth - margin, yPosition, { align: 'right' });
+      yPosition += 6;
+
+      pdf.setLineWidth(0.5);
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(totalsX, yPosition, pageWidth - margin, yPosition);
+      yPosition += 6;
+
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      if (balanceDue > 0) {
+        pdf.setTextColor(239, 68, 68);
+      } else {
+        pdf.setTextColor(34, 197, 94);
+      }
+      pdf.text('Amount Due:', totalsX, yPosition);
+      pdf.text(formatCurrency(balanceDue), pageWidth - margin, yPosition, { align: 'right' });
+      yPosition += 8;
+
+      pdf.setTextColor(0, 0, 0);
+    }
+
+    yPosition += 2;
 
     // Payment Instructions
     if (paymentInstructions) {

@@ -3,6 +3,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface TrialBannerProps {
   daysRemaining: number;
@@ -31,7 +32,7 @@ export function TrialBanner({ daysRemaining, trialEndsAt, tenantSlug }: TrialBan
     if (daysRemaining === 1) {
       return "Your trial ends tomorrow. Your card will be charged automatically.";
     }
-    return `Your trial ends in ${daysRemaining} days. Your card will be charged on ${new Date(trialEndsAt).toLocaleDateString()}.`;
+    return `Your trial ends in ${daysRemaining} days. Your card will be charged on ${formatSmartDate(trialEndsAt)}.`;
   };
 
   return (

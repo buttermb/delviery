@@ -39,6 +39,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { getCreditCostInfo } from '@/lib/credits';
+import { formatSmartDate } from '@/lib/formatters';
 
 export interface CreditActivityFeedProps {
   className?: string;
@@ -179,11 +180,7 @@ export function CreditActivityFeed({
           ? 'Today'
           : date === yesterday
           ? 'Yesterday'
-          : new Date(date).toLocaleDateString('en-US', {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-            });
+          : formatSmartDate(date);
 
       const totalSpent = txs
         .filter((t) => t.amount < 0)
@@ -260,11 +257,7 @@ export function CreditActivityFeed({
 
   // Format time
   const formatTime = (dateString: string): string => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    return formatSmartDate(dateString, { includeTime: true });
   };
 
   if (isLoading) {

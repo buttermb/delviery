@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Review {
   id: string;
@@ -127,12 +129,12 @@ export function ReviewSection() {
       queryClient.invalidateQueries({ queryKey: ['home-reviews'] });
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit review');
+      toast.error(humanizeError(error, 'Failed to submit review'));
     },
   });
 
   return (
-    <section className="py-24 md:py-32 bg-neutral-900">
+    <section className="py-24 md:py-32 bg-neutral-900" data-dark-panel>
       <div className="container mx-auto px-6 max-w-7xl">
         
         <motion.div
@@ -266,7 +268,7 @@ export function ReviewSection() {
                       {review.profiles?.full_name || 'Anonymous'}
                     </div>
                     <div className="text-xs text-white/40 font-light">
-                      {new Date(review.created_at).toLocaleDateString()}
+                      {formatSmartDate(review.created_at)}
                     </div>
                   </div>
                 </div>

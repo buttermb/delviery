@@ -33,7 +33,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
+import { usePermissions } from '@/hooks/usePermissions';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -80,6 +83,7 @@ const initialFormData: InviteFormData = {
 export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { canEdit, canDelete } = usePermissions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
@@ -92,7 +96,7 @@ export default function TeamManagement() {
     isLoading: loadingMembers,
     error: membersError,
   } = useQuery({
-    queryKey: ['team', 'members', tenant?.id],
+    queryKey: queryKeys.team.members(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
@@ -146,7 +150,7 @@ export default function TeamManagement() {
     data: pendingInvitations = [],
     isLoading: loadingInvitations,
   } = useQuery({
-    queryKey: ['team', 'invitations', 'pending', tenant?.id],
+    queryKey: queryKeys.team.invitations(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -191,12 +195,12 @@ export default function TeamManagement() {
       setIsDialogOpen(false);
       setFormData(initialFormData);
       setFormErrors({});
-      queryClient.invalidateQueries({ queryKey: ['team', 'members'] });
-      queryClient.invalidateQueries({ queryKey: ['team', 'invitations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) });
     },
     onError: (error: Error) => {
       logger.error('Failed to send invitation', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to send invitation');
+      toast.error(humanizeError(error, 'Failed to send invitation'));
     },
   });
 
@@ -217,11 +221,11 @@ export default function TeamManagement() {
       toast.success('Role updated successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       // Invalidate user-role queries so sidebar reflects new permissions without reload
-      queryClient.invalidateQueries({ queryKey: ['user-role'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
     },
     onError: (error: Error) => {
       logger.error('Failed to update role', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to update role');
+      toast.error(humanizeError(error, 'Failed to update role'));
     },
   });
 
@@ -242,11 +246,11 @@ export default function TeamManagement() {
       toast.success(newStatus === 'suspended' ? 'Member suspended' : 'Member reactivated');
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       // Invalidate user-role queries so sidebar reflects updated access
-      queryClient.invalidateQueries({ queryKey: ['user-role'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
     },
     onError: (error: Error) => {
       logger.error('Failed to update status', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to update status');
+      toast.error(humanizeError(error, 'Failed to update status'));
     },
   });
 
@@ -269,11 +273,11 @@ export default function TeamManagement() {
       setMemberToRemove(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
       // Invalidate user-role queries so sidebar reflects removed access
-      queryClient.invalidateQueries({ queryKey: ['user-role'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
     },
     onError: (error: Error) => {
       logger.error('Failed to remove member', error, { component: 'TeamManagement' });
-      toast.error(error.message || 'Failed to remove team member');
+      toast.error(humanizeError(error, 'Failed to remove team member'));
     },
   });
 
@@ -398,7 +402,7 @@ export default function TeamManagement() {
       {
         header: 'Joined',
         accessorKey: 'created_at',
-        cell: (row) => (row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'),
+        cell: (row) => (row.created_at ? formatSmartDate(row.created_at) : 'N/A'),
       },
       {
         header: 'Actions',
@@ -412,7 +416,7 @@ export default function TeamManagement() {
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={isUpdating}>
+                <Button variant="ghost" size="sm" className="h-11 w-11 p-0" disabled={isUpdating}>
                   {isUpdating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
@@ -421,62 +425,70 @@ export default function TeamManagement() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'admin' })}
-                  disabled={row.role === 'admin' || isUpdating}
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  Make Admin
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'member' })}
-                  disabled={row.role === 'member' || isUpdating}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Make Member
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'viewer' })}
-                  disabled={row.role === 'viewer' || isUpdating}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Make Viewer
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {row.status === 'active' ? (
-                  <DropdownMenuItem
-                    onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'suspended' })}
-                    className="text-amber-600"
-                    disabled={isUpdating}
-                  >
-                    <UserX className="h-4 w-4 mr-2" />
-                    Suspend Member
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'active' })}
-                    className="text-green-600"
-                    disabled={isUpdating}
-                  >
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Reactivate Member
-                  </DropdownMenuItem>
+                {canEdit('team') && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'admin' })}
+                      disabled={row.role === 'admin' || isUpdating}
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Make Admin
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'member' })}
+                      disabled={row.role === 'member' || isUpdating}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Make Member
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => updateRoleMutation.mutate({ userId: row.user_id, newRole: 'viewer' })}
+                      disabled={row.role === 'viewer' || isUpdating}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Make Viewer
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {row.status === 'active' ? (
+                      <DropdownMenuItem
+                        onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'suspended' })}
+                        className="text-amber-600"
+                        disabled={isUpdating}
+                      >
+                        <UserX className="h-4 w-4 mr-2" />
+                        Suspend Member
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => updateStatusMutation.mutate({ userId: row.user_id, newStatus: 'active' })}
+                        className="text-green-600"
+                        disabled={isUpdating}
+                      >
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        Reactivate Member
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
-                  className="text-destructive"
-                  disabled={isUpdating}
-                >
-                  Remove Member
-                </DropdownMenuItem>
+                {canDelete('team') && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleRemoveClick(row.user_id, row.full_name || row.email)}
+                      className="text-destructive"
+                      disabled={isUpdating}
+                    >
+                      Remove Member
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ],
-    [updateRoleMutation.isPending, updateStatusMutation.isPending, removeMutation.isPending]
+    [updateRoleMutation.isPending, updateStatusMutation.isPending, removeMutation.isPending, canEdit, canDelete]
   );
 
   if (authLoading) {
@@ -532,12 +544,14 @@ export default function TeamManagement() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button disabled={isLimitReached || inviteMutation.isPending}>
-              <Plus className="w-4 h-4 mr-2" />
-              Invite Member
-            </Button>
-          </DialogTrigger>
+          {canEdit('team') && (
+            <DialogTrigger asChild>
+              <Button disabled={isLimitReached || inviteMutation.isPending}>
+                <Plus className="w-4 h-4 mr-2" />
+                Invite Member
+              </Button>
+            </DialogTrigger>
+          )}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Team Member</DialogTitle>

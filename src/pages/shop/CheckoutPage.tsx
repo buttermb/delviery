@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
@@ -35,13 +35,13 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock, Ban } from 'lucide-react';
+import { Clock, Ban, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 
 // Email validation regex
@@ -67,6 +67,36 @@ interface CheckoutData {
   paymentMethod: string;
 }
 
+// Extended store properties beyond base StoreInfo type
+interface DeliveryZone {
+  zip_code: string;
+  fee?: number;
+  min_order?: number;
+}
+
+interface PurchaseLimits {
+  enabled?: boolean;
+  max_per_order?: number;
+  max_daily?: number;
+  max_weekly?: number;
+}
+
+interface GiftCardValidationResult {
+  is_valid: boolean;
+  current_balance: number;
+  message: string;
+}
+
+interface OrderResult {
+  order_id: string;
+  order_number: string;
+  tracking_token?: string;
+  total?: number;
+}
+
+// Helper type for calling untyped Supabase RPCs
+type SupabaseRpc = (name: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>;
+
 const STEPS = [
   { id: 1, name: 'Contact', icon: User },
   { id: 2, name: 'Delivery', icon: MapPin },
@@ -80,8 +110,6 @@ export function CheckoutPage() {
   const [searchParams] = useSearchParams();
   const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor, cardBg, cardBorder, textPrimary, textMuted, inputBg, inputBorder, inputText } = useLuxuryTheme();
-  const { toast } = useToast();
-
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
@@ -89,8 +117,7 @@ export function CheckoutPage() {
   // Handle cancelled Stripe checkout return
   useEffect(() => {
     if (searchParams.get('cancelled') === 'true') {
-      toast({
-        title: 'Payment cancelled',
+      toast('Payment cancelled', {
         description: 'Your payment was not completed. You can try again or choose a different payment method.',
       });
       // Remove the cancelled param from URL without navigation
@@ -98,7 +125,7 @@ export function CheckoutPage() {
       newParams.delete('cancelled');
       window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
     }
-  }, [searchParams, toast]);
+  }, [searchParams]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CheckoutData>({
@@ -172,6 +199,7 @@ export function CheckoutPage() {
     isInitialized,
     applyCoupon,
     appliedCoupon,
+    removeCoupon,
     getCouponDiscount,
     validateCart
   } = useShopCart({
@@ -181,16 +209,16 @@ export function CheckoutPage() {
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
-  const [, setIsApplyingCoupon] = useState(false);
-  const [, setCouponError] = useState<string | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   // Redirect to cart if empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
-      toast({ title: 'Your cart is empty', description: 'Add some items before checkout.' });
+      toast('Your cart is empty', { description: 'Add some items before checkout.' });
       navigate(`/shop/${storeSlug}/cart`);
     }
-  }, [isInitialized, cartItems.length, navigate, storeSlug, toast]);
+  }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
   // Validate cart on mount
   useEffect(() => {
@@ -203,7 +231,7 @@ export function CheckoutPage() {
   const { totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems, formData.email || undefined);
 
   // Apply coupon handler
-  const _handleApplyCoupon = async () => {
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     setIsApplyingCoupon(true);
     setCouponError(null);
@@ -211,10 +239,11 @@ export function CheckoutPage() {
     const result = await applyCoupon(couponCode.trim(), subtotal);
 
     if (result.success) {
-      toast({ title: 'Coupon applied!', description: `Saved ${formatCurrency(result.coupon?.calculated_discount || 0)}` });
+      toast.success('Coupon applied!', { description: `Saved ${formatCurrency(result.coupon?.calculated_discount || 0)}` });
       setCouponCode('');
     } else {
       setCouponError(result.error || 'Invalid coupon');
+      toast.error('Invalid coupon', { description: result.error || 'This coupon cannot be applied.' });
     }
     setIsApplyingCoupon(false);
   };
@@ -232,30 +261,31 @@ export function CheckoutPage() {
     setIsCheckingGiftCard(true);
 
     try {
-      const { data, error } = await (supabase.rpc as any)('validate_marketplace_gift_card', {
+      const { data, error } = await (supabase.rpc as unknown as SupabaseRpc)('validate_marketplace_gift_card', {
         p_store_id: store.id,
         p_code: giftCardCode.trim()
       });
 
       if (error) throw error;
 
-      if (data && (data as any[]).length > 0) {
-        const card = data[0];
+      const giftCardResults = data as unknown as GiftCardValidationResult[] | null;
+      if (giftCardResults && giftCardResults.length > 0) {
+        const card = giftCardResults[0];
         if (card.is_valid) {
           applyGiftCard({
             code: giftCardCode.trim(),
             balance: card.current_balance
           });
           setGiftCardCode('');
-          toast({ title: 'Gift card applied!', description: `Balance: $${card.current_balance}` });
+          toast.success('Gift card applied!', { description: `Balance: $${card.current_balance}` });
         } else {
-          toast({ title: 'Invalid card', description: card.message, variant: 'destructive' });
+          toast.error('Invalid card', { description: card.message });
         }
       } else {
-        toast({ title: 'Invalid card', description: 'Card not found', variant: 'destructive' });
+        toast.error('Invalid card', { description: 'Card not found' });
       }
     } catch {
-      toast({ title: 'Error', description: 'Failed to validate card', variant: 'destructive' });
+      toast.error('Failed to validate gift card', { description: 'Please check the card number and try again.' });
     } finally {
       setIsCheckingGiftCard(false);
     }
@@ -266,8 +296,8 @@ export function CheckoutPage() {
     if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
 
     // Check if zip matches a delivery zone
-    const deliveryZones = (store as any)?.delivery_zones || [];
-    const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
+    const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) || [];
+    const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
 
     if (matchingZone) {
       return matchingZone.fee || store?.default_delivery_fee || 5;
@@ -285,7 +315,7 @@ export function CheckoutPage() {
   const rawTotal = Math.max(0, subtotal + effectiveDeliveryFee - loyaltyDiscount - dealsDiscount - couponDiscount);
 
   // Cart rounding: round to nearest dollar if enabled
-  const enableCartRounding = (store as any)?.enable_cart_rounding === true;
+  const enableCartRounding = (store as unknown as { enable_cart_rounding?: boolean })?.enable_cart_rounding === true;
   const totalBeforeGiftCards = enableCartRounding ? Math.round(rawTotal) : rawTotal;
   const roundingAdjustment = enableCartRounding ? (totalBeforeGiftCards - rawTotal) : 0;
 
@@ -304,46 +334,42 @@ export function CheckoutPage() {
     switch (currentStep) {
       case 1:
         if (!formData.firstName || !formData.lastName || !formData.email) {
-          toast({ title: 'Please fill in all required fields', variant: 'destructive' });
+          toast.error('Please fill in all required fields');
           return false;
         }
         if (!EMAIL_REGEX.test(formData.email)) {
-          toast({ title: 'Invalid email address', description: 'Please enter a valid email.', variant: 'destructive' });
+          toast.error('Invalid email address', { description: 'Please enter a valid email.' });
           return false;
         }
-        if ((store as any)?.checkout_settings?.require_phone && !formData.phone) {
-          toast({ title: 'Phone number is required', variant: 'destructive' });
+        if (store?.checkout_settings?.require_phone && !formData.phone) {
+          toast.error('Phone number is required');
           return false;
         }
         // Validate phone format if provided
         if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
-          toast({ title: 'Invalid phone number', description: 'Please enter a valid phone number.', variant: 'destructive' });
+          toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
           return false;
         }
         return true;
       case 2:
         if (!formData.street || !formData.city || !formData.zip) {
-          toast({ title: 'Please fill in your delivery address', variant: 'destructive' });
+          toast.error('Please fill in your delivery address');
           return false;
         }
         // Validate delivery zone if zones are configured
-        const deliveryZones = (store as any)?.delivery_zones || [];
+        const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) || [];
         if (deliveryZones.length > 0) {
-          const matchingZone = deliveryZones.find((zone: any) => zone.zip_code === formData.zip);
+          const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
           if (!matchingZone) {
-            toast({
-              title: 'Delivery not available',
+            toast.error('Delivery not available', {
               description: `We don't currently deliver to zip code ${formData.zip}. Please try a different address.`,
-              variant: 'destructive'
             });
             return false;
           }
           // Check minimum order if zone has one
           if (matchingZone.min_order && subtotal < matchingZone.min_order) {
-            toast({
-              title: 'Minimum order not met',
+            toast.error('Minimum order not met', {
               description: `This delivery zone requires a minimum order of $${matchingZone.min_order}.`,
-              variant: 'destructive'
             });
             return false;
           }
@@ -351,13 +377,13 @@ export function CheckoutPage() {
         return true;
       case 3:
         if (!formData.paymentMethod) {
-          toast({ title: 'Please select a payment method', variant: 'destructive' });
+          toast.error('Please select a payment method');
           return false;
         }
         return true;
       case 4:
         if (!agreeToTerms) {
-          toast({ title: 'Please agree to the terms to continue', variant: 'destructive' });
+          toast.error('Please agree to the terms to continue');
           return false;
         }
         return true;
@@ -424,13 +450,13 @@ export function CheckoutPage() {
       }
 
       // Validate purchase limits
-      const purchaseLimits = (store as any)?.purchase_limits;
+      const purchaseLimits = (store as unknown as { purchase_limits?: PurchaseLimits })?.purchase_limits;
       if (purchaseLimits?.enabled) {
         // Check max per order limit
         if (purchaseLimits.max_per_order && total > purchaseLimits.max_per_order) {
           throw new Error(
-            `Order exceeds maximum limit of $${purchaseLimits.max_per_order} per transaction. ` +
-            `Your order total is $${total.toFixed(2)}.`
+            `Order exceeds maximum limit of ${formatCurrency(purchaseLimits.max_per_order)} per transaction. ` +
+            `Your order total is ${formatCurrency(total)}.`
           );
         }
 
@@ -464,8 +490,8 @@ export function CheckoutPage() {
             if (purchaseLimits.max_daily && (dailyTotal + total) > purchaseLimits.max_daily) {
               const remaining = Math.max(0, purchaseLimits.max_daily - dailyTotal);
               throw new Error(
-                `You've reached your daily purchase limit of $${purchaseLimits.max_daily}. ` +
-                `You can spend $${remaining.toFixed(2)} more today.`
+                `You've reached your daily purchase limit of ${formatCurrency(purchaseLimits.max_daily)}. ` +
+                `You can spend ${formatCurrency(remaining)} more today.`
               );
             }
 
@@ -473,8 +499,8 @@ export function CheckoutPage() {
             if (purchaseLimits.max_weekly && (weeklyTotal + total) > purchaseLimits.max_weekly) {
               const remaining = Math.max(0, purchaseLimits.max_weekly - weeklyTotal);
               throw new Error(
-                `You've reached your weekly purchase limit of $${purchaseLimits.max_weekly}. ` +
-                `You can spend $${remaining.toFixed(2)} more this week.`
+                `You've reached your weekly purchase limit of ${formatCurrency(purchaseLimits.max_weekly)}. ` +
+                `You can spend ${formatCurrency(remaining)} more this week.`
               );
             }
           }
@@ -484,7 +510,7 @@ export function CheckoutPage() {
       // Calculate gift card usage for RPC
       // Attempt to place order with retries
       // Attempt to place order with retries
-      const attemptOrder = async (attempt: number): Promise<any> => {
+      const attemptOrder = async (attempt: number): Promise<OrderResult> => {
         try {
           if (!store?.id) throw new Error('Store ID missing');
 
@@ -529,33 +555,43 @@ export function CheckoutPage() {
 
           if (!orderId) throw new Error('Failed to create order');
 
-          // 2. Complete Reservations (use any to bypass type checking since function is newly created)
-          await (supabase.rpc as any)('complete_reservation', {
+          // 2. Complete Reservations
+          await (supabase.rpc as unknown as SupabaseRpc)('complete_reservation', {
             p_session_id: sessionId,
             p_order_id: orderId
           });
 
           // 3. Redeem Coupon
           if (appliedCoupon?.coupon_id) {
-            await (supabase.rpc as any)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
+            await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
           }
 
-          // Return order info - orderId is a UUID string
-          return { order_id: orderId, order_number: orderId };
+          // 4. Fetch order details (tracking token, order number, total)
+          const { data: orderRow } = await supabase
+            .from('storefront_orders')
+            .select('order_number, tracking_token, total')
+            .eq('id', orderId as string)
+            .maybeSingle();
 
-        } catch (err: any) {
-          const isNetworkError = err instanceof Error &&
-            (err.message.toLowerCase().includes('network') ||
-              err.message.toLowerCase().includes('fetch') ||
-              err.message.toLowerCase().includes('timeout') ||
-              err.message.toLowerCase().includes('failed to fetch'));
+          return {
+            order_id: orderId as string,
+            order_number: (orderRow?.order_number as string) || (orderId as string),
+            tracking_token: (orderRow?.tracking_token as string) || undefined,
+            total: (orderRow?.total as number) || undefined,
+          };
+
+        } catch (err: unknown) {
+          const errMessage = err instanceof Error ? err.message : String(err);
+          const isNetworkError =
+            errMessage.toLowerCase().includes('network') ||
+              errMessage.toLowerCase().includes('fetch') ||
+              errMessage.toLowerCase().includes('timeout') ||
+              errMessage.toLowerCase().includes('failed to fetch');
 
           // Retry on network errors
           if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
             setOrderRetryCount(attempt);
-            toast({
-              title: `Connection issue, retrying (${attempt}/3)...`,
-            });
+            toast(`Connection issue, retrying (${attempt}/3)...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
             return attemptOrder(attempt + 1);
           }
@@ -581,7 +617,8 @@ export function CheckoutPage() {
           }));
 
           const origin = window.location.origin;
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}&token=${data.tracking_token}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
+          const trackingParam = data.tracking_token ? `&token=${data.tracking_token}` : '';
+          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}${trackingParam}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
           const cancelUrl = `${origin}/shop/${storeSlug}/checkout?cancelled=true`;
 
           // Calculate total discount applied (coupon + loyalty + deals)
@@ -618,12 +655,11 @@ export function CheckoutPage() {
             window.location.href = url;
             return;
           }
-        } catch (stripeError: any) {
+        } catch (stripeError: unknown) {
           logger.error('Stripe checkout error', stripeError, { component: 'CheckoutPage' });
-          toast({
-            title: 'Payment setup failed',
-            description: stripeError.message || 'Unable to initialize payment. Please try again or choose a different payment method.',
-            variant: 'destructive',
+          const stripeErrMsg = stripeError instanceof Error ? stripeError.message : 'Unable to initialize payment. Please try again or choose a different payment method.';
+          toast.error('Payment setup failed', {
+            description: stripeErrMsg,
           });
           return;
         }
@@ -656,10 +692,11 @@ export function CheckoutPage() {
           delivery_fee: deliveryFee,
           total: data.total,
           store_name: store?.store_name || 'Store',
-          tracking_url: `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}`,
+          tracking_url: data.tracking_token ? `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}` : undefined,
         },
       }).catch((err) => {
         logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
+        toast.warning('Order placed, but confirmation email could not be sent');
       });
 
       // Navigate to confirmation
@@ -671,31 +708,23 @@ export function CheckoutPage() {
         },
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
 
-      const errorMessage = error?.message || 'Something went wrong. Please try again.';
+      const errorMessage = error.message || 'Something went wrong. Please try again.';
       const isNetworkError = errorMessage.toLowerCase().includes('network') ||
         errorMessage.toLowerCase().includes('fetch') ||
         errorMessage.toLowerCase().includes('timeout');
 
-      toast({
-        title: 'Order failed',
+      toast.error('Order failed', {
         description: isNetworkError
           ? 'Network connection issue. Check your connection and try again.'
           : errorMessage,
-        variant: 'destructive',
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePlaceOrder()}
-            className="ml-2"
-          >
-            Retry
-          </Button>
-        ),
+        action: {
+          label: 'Retry',
+          onClick: () => handlePlaceOrder(),
+        },
       });
     },
   });
@@ -729,7 +758,7 @@ export function CheckoutPage() {
               >
                 {/* Connecting Line */}
                 {index < STEPS.length - 1 && (
-                  <div className={`absolute top-5 left-[calc(50%+20px)] w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                  <div className={`absolute top-4 sm:top-5 left-[calc(50%+16px)] sm:left-[calc(50%+20px)] w-[calc(100%-32px)] sm:w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
                     <motion.div
                       className="h-full"
                       initial={{ width: "0%" }}
@@ -741,7 +770,7 @@ export function CheckoutPage() {
                 )}
 
                 <div
-                  className={`relative w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-4 ring-offset-background scale-110' : ''
+                  className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-2 sm:ring-offset-4 ring-offset-background scale-110' : ''
                     } ${isFuture ? (isLuxuryTheme ? 'bg-white/5 text-white/20' : 'bg-muted text-muted-foreground') : ''
                     }`}
                   style={{
@@ -752,9 +781,9 @@ export function CheckoutPage() {
                   }}
                 >
                   {isComplete ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
 
                   {/* Active Pulse Ring */}
@@ -770,7 +799,7 @@ export function CheckoutPage() {
                 </div>
 
                 <span
-                  className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
+                  className={`text-[10px] sm:text-xs uppercase tracking-wide sm:tracking-widest mt-2 sm:mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
                     }`}
                   style={{ color: isActive ? themeColor : undefined }}
                 >
@@ -1266,8 +1295,8 @@ export function CheckoutPage() {
           </Card>
         </div>
 
-        {/* Order Summary Sidebar */}
-        <div>
+        {/* Order Summary Sidebar — hidden on mobile (collapsible summary above) */}
+        <div className="hidden lg:block">
           <Card className="sticky top-24">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1329,12 +1358,58 @@ export function CheckoutPage() {
             </CardContent>
           </Card>
 
-          {/* Order Summary */}
+          {/* Order Summary — also hidden on mobile */}
           <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
             <CardHeader>
               <CardTitle className={isLuxuryTheme ? 'text-white font-light' : ''}>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Coupon Code Input */}
+              {!appliedCoupon ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Coupon code"
+                      value={couponCode}
+                      onChange={(e) => { setCouponCode(e.target.value); setCouponError(null); }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                      className={isLuxuryTheme ? `${inputBg} ${inputBorder} ${inputText}` : ''}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleApplyCoupon}
+                      disabled={isApplyingCoupon || !couponCode.trim()}
+                      className={isLuxuryTheme ? 'border-white/10 hover:bg-white/10 text-white' : ''}
+                    >
+                      {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                  {couponError && (
+                    <p className="text-xs text-red-500">{couponError}</p>
+                  )}
+                </div>
+              ) : (
+                <div className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-green-500/10' : 'bg-green-50'}`}>
+                  <div className="flex items-center gap-2">
+                    <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`} />
+                    <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`}>
+                      {appliedCoupon.code}
+                    </span>
+                    <span className={`text-xs ${isLuxuryTheme ? 'text-green-400/60' : 'text-green-500'}`}>
+                      (-{formatCurrency(couponDiscount)})
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { removeCoupon(); toast('Coupon removed'); }}
+                    className={isLuxuryTheme ? 'text-red-400 hover:text-red-300 hover:bg-white/5' : 'text-red-500 hover:text-red-600'}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              )}
+
               {/* Gift Card Input */}
               <div className="flex gap-2">
                 <Input
@@ -1363,7 +1438,7 @@ export function CheckoutPage() {
                         <span className="font-mono">{card.code}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-500">-${formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
+                        <span className="text-emerald-500">-{formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -1395,6 +1470,12 @@ export function CheckoutPage() {
                   <div className="flex justify-between text-green-500">
                     <span>Deals & Discounts</span>
                     <span>-{formatCurrency(dealsDiscount)}</span>
+                  </div>
+                )}
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-green-500">
+                    <span>Coupon</span>
+                    <span>-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (

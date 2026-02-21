@@ -10,6 +10,8 @@ import Banknote from "lucide-react/dist/esm/icons/banknote";
 import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Bitcoin from "lucide-react/dist/esm/icons/bitcoin";
+import Building from "lucide-react/dist/esm/icons/building";
+import Smartphone from "lucide-react/dist/esm/icons/smartphone";
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 
@@ -41,6 +43,31 @@ const paymentMethodConfigs: Record<string, PaymentMethodConfig> = {
     icon: CreditCard,
     label: 'Debit',
     className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  },
+  check: {
+    icon: FileText,
+    label: 'Check',
+    className: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+  },
+  bank_transfer: {
+    icon: Building,
+    label: 'Bank Transfer',
+    className: 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+  },
+  wire_transfer: {
+    icon: Building,
+    label: 'Wire Transfer',
+    className: 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+  },
+  venmo: {
+    icon: Smartphone,
+    label: 'Venmo',
+    className: 'bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800',
+  },
+  zelle: {
+    icon: Smartphone,
+    label: 'Zelle',
+    className: 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800',
   },
   invoice: {
     icon: FileText,

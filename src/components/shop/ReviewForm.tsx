@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Review Submission Form
  * Allows customers to leave product reviews

@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +13,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,13 +37,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAccount } from '@/contexts/AccountContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 const runnerSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   vehicle_type: z.string().min(1, 'Vehicle type is required'),
   vehicle_plate: z.string().optional(),
@@ -57,7 +60,6 @@ interface AddRunnerDialogProps {
 export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   const { account } = useAccount();
   const queryClient = useQueryClient();
 
@@ -99,27 +101,17 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: `Runner ${data.full_name} added successfully`,
-      });
+      toast.success(`Runner ${data.full_name} added successfully`);
 
       // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['runners'] });
-      if (account?.id) {
-        queryClient.invalidateQueries({ queryKey: ['runners', account.id] });
-      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.runners.all });
 
       form.reset();
       setOpen(false);
       onSuccess?.();
     } catch (error: unknown) {
       logger.error('Error adding runner', error as Error, { component: 'AddRunnerDialog' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to add runner',
-        variant: 'destructive',
-      });
+      toast.error(humanizeError(error, 'Failed to add runner'));
     } finally {
       setIsSubmitting(false);
     }
@@ -220,7 +212,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -242,7 +234,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
                   </>
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

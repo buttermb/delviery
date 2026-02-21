@@ -40,7 +40,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
@@ -102,7 +102,7 @@ export default function NewWholesaleOrder() {
   });
 
   // Products catalog for wholesale orders
-  const { data: inventory = [], isLoading: isInventoryLoading } = useProductsForWholesale();
+  const { data: inventory = [], isLoading: isInventoryLoading, isError: isInventoryError, refetch: refetchInventory } = useProductsForWholesale();
   const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
 
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
@@ -426,7 +426,7 @@ export default function NewWholesaleOrder() {
 
     // Credit limit check
     if (orderExceedsCreditLimit) {
-      errors.push(`Order total ($${totals.subtotal.toLocaleString()}) exceeds available credit ($${((orderData.client?.credit_limit ?? 0) - (orderData.client?.outstanding_balance ?? 0)).toLocaleString()})`);
+      errors.push(`Order total (${formatCurrency(totals.subtotal)}) exceeds available credit (${formatCurrency((orderData.client?.credit_limit ?? 0) - (orderData.client?.outstanding_balance ?? 0))})`);
     }
 
     // Minimum order quantity check per product
@@ -614,6 +614,14 @@ export default function NewWholesaleOrder() {
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
+                  ) : isInventoryError ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-3">
+                      <AlertTriangle className="h-6 w-6 text-destructive" />
+                      <p className="text-sm text-destructive">Failed to load products</p>
+                      <Button variant="outline" size="sm" onClick={() => refetchInventory()}>
+                        Retry
+                      </Button>
+                    </div>
                   ) : (
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                       {filteredInventory.length === 0 ? (
@@ -710,7 +718,7 @@ export default function NewWholesaleOrder() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-6 w-6 shrink-0"
+                                className="h-11 w-11 sm:h-6 sm:w-6 shrink-0"
                                 onClick={() => handleUpdateQty(product.id, 0)}
                               >
                                 <X className="h-3 w-3" />
@@ -723,7 +731,7 @@ export default function NewWholesaleOrder() {
                                 <Button
                                   size="icon"
                                   variant="outline"
-                                  className="h-7 w-7"
+                                  className="h-11 w-11"
                                   onClick={() => handleUpdateQty(product.id, product.qty - 1)}
                                 >
                                   <Minus className="h-3 w-3" />
@@ -736,7 +744,7 @@ export default function NewWholesaleOrder() {
                                 <Button
                                   size="icon"
                                   variant="outline"
-                                  className="h-7 w-7"
+                                  className="h-11 w-11"
                                   onClick={() => handleUpdateQty(product.id, product.qty + 1)}
                                 >
                                   <Plus className="h-3 w-3" />
@@ -915,9 +923,10 @@ export default function NewWholesaleOrder() {
                   <Select
                     value={orderData.runnerId}
                     onValueChange={(value) => setOrderData((prev) => ({ ...prev, runnerId: value }))}
+                    disabled={couriersLoading}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a courier..." />
+                      <SelectValue placeholder={couriersLoading ? "Loading couriers..." : "Select a courier..."} />
                     </SelectTrigger>
                     <SelectContent>
                       {couriersLoading ? (
@@ -1011,6 +1020,7 @@ export default function NewWholesaleOrder() {
                     onChange={(e) => setOrderData((prev) => ({ ...prev, notes: e.target.value }))}
                     placeholder="Special instructions for the runner..."
                     rows={3}
+                    maxLength={1000}
                   />
                 </div>
               </div>

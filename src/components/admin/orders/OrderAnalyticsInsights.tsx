@@ -27,7 +27,7 @@ import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
@@ -281,7 +281,7 @@ export function OrderAnalyticsInsights({
       icon: <Clock className="h-4 w-4 text-blue-500" />,
       label: 'Order Time',
       value: `${getTimeEmoji(orderHour)} ${analytics.timeOfDayLabel}`,
-      description: `Placed at ${orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      description: `Placed at ${formatSmartDate(orderDate, { includeTime: true })}`,
     });
 
     // Insight 4: New products for this customer

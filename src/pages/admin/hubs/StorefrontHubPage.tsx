@@ -30,6 +30,7 @@ import { lazy, Suspense, useCallback, Fragment } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -94,7 +95,7 @@ export default function StorefrontHubPage() {
                         hubHref="storefront-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Storefront</h1>
                             <p className="text-muted-foreground text-sm">
@@ -102,7 +103,7 @@ export default function StorefrontHubPage() {
                             </p>
                         </div>
                         {/* Quick Actions - Always Visible */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -148,40 +149,40 @@ export default function StorefrontHubPage() {
                 {/* Constrain tab content height so embedded tools (like Builder) don't get clipped */}
                 <div className="flex-1 min-h-0 overflow-auto">
                     <TabsContent value="dashboard" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontDashboard /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Overview"><Suspense fallback={<TabSkeleton />}><StorefrontDashboard /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="live" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontLiveOrders /></Suspense>
+                        <ModuleErrorBoundary moduleName="Live Orders"><Suspense fallback={<TabSkeleton />}><StorefrontLiveOrders /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="products" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontProducts /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Products"><Suspense fallback={<TabSkeleton />}><StorefrontProducts /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="orders" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontOrders /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Orders"><Suspense fallback={<TabSkeleton />}><StorefrontOrders /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="customers" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontCustomers /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Customers"><Suspense fallback={<TabSkeleton />}><StorefrontCustomers /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="coupons" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontCoupons /></Suspense>
+                        <ModuleErrorBoundary moduleName="Promotions"><Suspense fallback={<TabSkeleton />}><StorefrontCoupons /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="reviews" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><ReviewsPage /></Suspense>
+                        <ModuleErrorBoundary moduleName="Reviews"><Suspense fallback={<TabSkeleton />}><ReviewsPage /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="builder" className="m-0 h-full overflow-hidden">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontDesignPage /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Design"><Suspense fallback={<TabSkeleton />}><StorefrontDesignPage /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="bundles" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense>
+                        <ModuleErrorBoundary moduleName="Bundles"><Suspense fallback={<TabSkeleton />}><StorefrontBundles /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="analytics" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontAnalytics /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Analytics"><Suspense fallback={<TabSkeleton />}><StorefrontAnalytics /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="gift-cards" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontGiftCards /></Suspense>
+                        <ModuleErrorBoundary moduleName="Gift Cards"><Suspense fallback={<TabSkeleton />}><StorefrontGiftCards /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                     <TabsContent value="settings" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}><StorefrontSettings /></Suspense>
+                        <ModuleErrorBoundary moduleName="Store Settings"><Suspense fallback={<TabSkeleton />}><StorefrontSettings /></Suspense></ModuleErrorBoundary>
                     </TabsContent>
                 </div>
             </Tabs>

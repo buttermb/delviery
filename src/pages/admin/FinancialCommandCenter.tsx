@@ -127,7 +127,7 @@ export default function FinancialCommandCenter() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="min-h-dvh bg-zinc-950">
+    <div className="min-h-dvh bg-zinc-950" data-dark-panel>
       <SEOHead 
         title="Financial Command Center" 
         description="Your unified financial dashboard - cash flow, AR, inventory, performance"
@@ -157,7 +157,7 @@ export default function FinancialCommandCenter() {
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 border-zinc-700 hover:bg-zinc-800"
+              className="h-11 w-11 sm:h-8 sm:w-8 border-zinc-700 hover:bg-zinc-800"
               onClick={() => navigateToAdmin('settings')}
             >
               <Settings className="h-3.5 w-3.5" />

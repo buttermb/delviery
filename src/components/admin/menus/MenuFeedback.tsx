@@ -19,17 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -112,6 +102,8 @@ export function MenuFeedback({ menuId: propMenuId, className }: MenuFeedbackProp
 
   const [selectedMenuId, setSelectedMenuId] = useState<string | undefined>(propMenuId);
   const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [feedbackToDelete, setFeedbackToDelete] = useState<string | null>(null);
 
   const currentMenuId = propMenuId || selectedMenuId;
 
@@ -496,34 +488,17 @@ export function MenuFeedback({ menuId: propMenuId, className }: MenuFeedbackProp
                                 </div>
                               </div>
 
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete this feedback? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteFeedbackMutation.mutate(feedback.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => {
+                                  setFeedbackToDelete(feedback.id);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                         );
@@ -544,6 +519,20 @@ export function MenuFeedback({ menuId: propMenuId, className }: MenuFeedbackProp
           </div>
         </>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (feedbackToDelete) {
+            deleteFeedbackMutation.mutate(feedbackToDelete);
+            setDeleteDialogOpen(false);
+            setFeedbackToDelete(null);
+          }
+        }}
+        itemType="feedback"
+        isLoading={deleteFeedbackMutation.isPending}
+      />
     </div>
   );
 }

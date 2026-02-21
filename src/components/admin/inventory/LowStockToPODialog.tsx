@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Dialog,
   DialogContent,
@@ -418,7 +419,7 @@ export function LowStockToPODialog({
       logger.error('Failed to create purchase orders', error, {
         component: 'LowStockToPODialog',
       });
-      toast.error(error.message || 'Failed to create purchase orders');
+      toast.error(humanizeError(error, 'Failed to create purchase orders'));
     },
   });
 

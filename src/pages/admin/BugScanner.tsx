@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import bugFinder, { BugReport, BugScanResult } from '@/utils/bugFinder';
 import { AlertTriangle, RefreshCw, Download, Trash2, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function BugScanner() {
   const [scanResult, setScanResult] = useState<BugScanResult | null>(null);
@@ -89,15 +91,7 @@ export default function BugScanner() {
   const commonIssues = scanResult ? bugFinder.checkCommonIssues() : null;
 
   if (!scanResult) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-muted-foreground">Loading bug scanner...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading bug scanner..." />;
   }
 
   return (
@@ -312,7 +306,7 @@ export default function BugScanner() {
                 </div>
               )}
               <div>
-                <strong>Timestamp:</strong> {new Date(selectedBug.timestamp).toLocaleString()}
+                <strong>Timestamp:</strong> {formatSmartDate(selectedBug.timestamp, { includeTime: true })}
               </div>
             </div>
           </CardContent>
@@ -385,7 +379,7 @@ function BugList({
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(bug.timestamp).toLocaleString()}
+                    {formatSmartDate(bug.timestamp, { includeTime: true })}
                   </div>
                 </div>
               </div>

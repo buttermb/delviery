@@ -68,7 +68,7 @@ export function SortableSectionItem({
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    className="h-11 w-11 sm:h-6 sm:w-6 text-muted-foreground hover:text-foreground"
                     onClick={onToggleVisibility}
                 >
                     {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -76,7 +76,7 @@ export function SortableSectionItem({
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    className="h-11 w-11 sm:h-6 sm:w-6 text-muted-foreground hover:text-foreground"
                     onClick={onDuplicate}
                 >
                     <Copy className="w-3 h-3" />
@@ -84,7 +84,7 @@ export function SortableSectionItem({
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    className="h-11 w-11 sm:h-6 sm:w-6 text-muted-foreground hover:text-destructive"
                     onClick={onRemove}
                 >
                     <Trash2 className="w-3 h-3" />

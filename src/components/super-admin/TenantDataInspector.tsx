@@ -189,7 +189,7 @@ export function TenantDataInspector({ tenantId }: TenantDataInspectorProps) {
               <thead className="bg-muted sticky top-0">
                 <tr>
                   {tableData.columns.map((column) => (
-                    <th key={column} className="px-4 py-2 text-left font-semibold">
+                    <th key={column} scope="col" className="px-4 py-2 text-left font-semibold">
                       {column}
                     </th>
                   ))}

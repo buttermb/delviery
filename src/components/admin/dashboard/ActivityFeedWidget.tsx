@@ -139,7 +139,7 @@ export function ActivityFeedWidget() {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <Activity className="h-5 w-5" />

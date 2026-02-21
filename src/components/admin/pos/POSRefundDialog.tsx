@@ -1,13 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { UnifiedOrder, UnifiedOrderItem } from '@/hooks/useUnifiedOrders';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import {
@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,9 @@ import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Package from 'lucide-react/dist/esm/icons/package';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
+import { formatSmartDate } from '@/lib/formatters';
+import { formatCurrency } from '@/lib/formatters';
 
 const REFUND_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -81,13 +85,12 @@ export function POSRefundDialog({
 }: POSRefundDialogProps) {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Order search state
   const [orderSearch, setOrderSearch] = useState('');
   const [searchSubmitted, setSearchSubmitted] = useState('');
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch order by order_number when search is submitted
   const {
@@ -218,31 +221,47 @@ export function POSRefundDialog({
     setOrderSearch('');
     setSearchSubmitted('');
     setSelectedItems(new Set());
-    setIsSubmitting(false);
     reset({ refundAmount: 0, refundMethod: 'cash', notes: '' });
   };
 
+  // Dirty state: order found and items selected or form modified
+  const isDirty = selectedItems.size > 0 || currentRefundAmount > 0;
+
+  const handleClose = useCallback(() => {
+    resetDialog();
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
+
   const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && isDirty) {
+      guardedOnOpenChange(false);
+      return;
+    }
     if (!newOpen) {
       resetDialog();
     }
     onOpenChange(newOpen);
   };
 
-  // Submit refund
-  const onSubmit = async (values: RefundFormValues) => {
-    if (!foundOrder || !tenantId) return;
+  // POS refund mutation
+  const refundMutation = useMutation({
+    mutationFn: async (values: RefundFormValues) => {
+      if (!foundOrder || !tenantId) throw new Error('Missing order or tenant');
 
-    setIsSubmitting(true);
-    try {
       const refundedItemIds = orderItems
         .filter((item) => selectedItems.has(item.id))
         .map((item) => item.id);
 
-      // Create a negative transaction record (refund)
+      // Create a negative transaction record (refund) in pos_transactions
       const refundClient = supabase as unknown as {
         from: (table: string) => ReturnType<typeof supabase.from>;
       };
+
+      const resolvedMethod = values.refundMethod === 'original_method'
+        ? (foundOrder.payment_method || 'cash')
+        : 'cash';
 
       const { error: refundError } = await refundClient
         .from('pos_transactions')
@@ -251,9 +270,7 @@ export function POSRefundDialog({
           order_id: foundOrder.id,
           transaction_type: 'refund',
           amount: -values.refundAmount,
-          payment_method: values.refundMethod === 'original_method'
-            ? (foundOrder.payment_method || 'cash')
-            : 'cash',
+          payment_method: resolvedMethod,
           shift_id: shiftId || null,
           notes: values.notes ? sanitizeTextareaInput(values.notes, 500) : null,
           refunded_items: refundedItemIds,
@@ -265,7 +282,7 @@ export function POSRefundDialog({
         throw refundError;
       }
 
-      // Restore stock for returned items
+      // Restore stock for returned items (increment stock_quantity)
       const itemsToRestore = orderItems.filter((item) => selectedItems.has(item.id));
       for (const item of itemsToRestore) {
         if (!item.product_id) continue;
@@ -291,11 +308,11 @@ export function POSRefundDialog({
             component: 'POSRefundDialog',
             productId: item.product_id,
           });
-          // Don't block refund for stock failure
+          // Don't block refund for stock restore failure
         }
       }
 
-      // Update order payment_status if full refund
+      // Update order status if full refund
       if (values.refundAmount >= foundOrder.total_amount) {
         await supabase
           .from('unified_orders')
@@ -304,48 +321,51 @@ export function POSRefundDialog({
           .eq('tenant_id', tenantId);
       }
 
-      toast({
-        title: 'Refund processed',
-        description: `$${values.refundAmount.toFixed(2)} refunded for order ${foundOrder.order_number}`,
-      });
-
-      // Pass refund data for receipt printing
-      const refundedItems = orderItems
-        .filter((item) => selectedItems.has(item.id))
-        .map((item) => ({
+      // Return data for onSuccess callback (receipt printing)
+      return {
+        refundAmount: values.refundAmount,
+        refundMethod: resolvedMethod,
+        originalOrderNumber: foundOrder.order_number,
+        items: itemsToRestore.map((item) => ({
           name: item.product_name,
           quantity: item.quantity,
           price: item.unit_price,
           subtotal: item.total_price,
-        }));
-
-      onRefundComplete?.({
-        refundAmount: values.refundAmount,
-        refundMethod: values.refundMethod === 'original_method'
-          ? (foundOrder.payment_method || 'cash')
-          : 'cash',
-        originalOrderNumber: foundOrder.order_number,
-        items: refundedItems,
+        })),
         notes: values.notes || undefined,
+      } satisfies RefundCompletionData;
+    },
+    onSuccess: (data) => {
+      // Invalidate affected queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+
+      toast.success('Refund processed', {
+        description: `${formatCurrency(data.refundAmount)} refunded for order ${data.originalOrderNumber}`,
       });
 
+      onRefundComplete?.(data);
       handleOpenChange(false);
       onSuccess?.();
-    } catch (err) {
+    },
+    onError: (err) => {
       logger.error('POS refund failed', err, { component: 'POSRefundDialog' });
-      toast({
-        title: 'Refund failed',
+      toast.error('Refund failed', {
         description: 'Unable to process refund. Please try again.',
-        variant: 'destructive',
       });
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  // Submit refund
+  const onSubmit = (values: RefundFormValues) => {
+    refundMutation.mutate(values);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RotateCcw className="h-5 w-5" />
@@ -419,7 +439,7 @@ export function POSRefundDialog({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total</span>
-                <span className="font-semibold">${foundOrder.total_amount.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(foundOrder.total_amount)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Status</span>
@@ -432,7 +452,7 @@ export function POSRefundDialog({
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Date</span>
                 <span className="text-sm">
-                  {new Date(foundOrder.created_at).toLocaleDateString()}
+                  {formatSmartDate(foundOrder.created_at)}
                 </span>
               </div>
             </div>
@@ -481,10 +501,10 @@ export function POSRefundDialog({
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{item.product_name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {item.quantity} x ${item.unit_price.toFixed(2)}
+                          {item.quantity} x {formatCurrency(item.unit_price)}
                         </div>
                       </div>
-                      <span className="text-sm font-medium">${item.total_price.toFixed(2)}</span>
+                      <span className="text-sm font-medium">{formatCurrency(item.total_price)}</span>
                     </label>
                   ))}
                 </div>
@@ -495,7 +515,7 @@ export function POSRefundDialog({
 
             {/* Refund Amount */}
             <div className="space-y-2">
-              <Label htmlFor="pos-refund-amount">Refund Amount</Label>
+              <Label htmlFor="pos-refund-amount">Refund Amount <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Controller
                 name="refundAmount"
                 control={control}
@@ -516,14 +536,14 @@ export function POSRefundDialog({
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Package className="h-3 w-3" />
                   {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
-                  (${selectedRefundTotal.toFixed(2)})
+                  ({formatCurrency(selectedRefundTotal)})
                 </p>
               )}
             </div>
 
             {/* Refund Method */}
             <div className="space-y-2">
-              <Label htmlFor="pos-refund-method">Refund Method</Label>
+              <Label htmlFor="pos-refund-method">Refund Method <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Controller
                 name="refundMethod"
                 control={control}
@@ -545,6 +565,9 @@ export function POSRefundDialog({
                   </Select>
                 )}
               />
+              {errors.refundMethod && (
+                <p className="text-sm text-destructive">{errors.refundMethod.message}</p>
+              )}
             </div>
 
             {/* Notes */}
@@ -563,6 +586,9 @@ export function POSRefundDialog({
                   />
                 )}
               />
+              {errors.notes && (
+                <p className="text-sm text-destructive">{errors.notes.message}</p>
+              )}
             </div>
 
             {/* Refund Summary */}
@@ -570,40 +596,42 @@ export function POSRefundDialog({
               <Alert>
                 <AlertDescription className="flex items-center justify-between">
                   <span className="font-medium">Refund Total:</span>
-                  <span className="text-lg font-bold">${currentRefundAmount.toFixed(2)}</span>
+                  <span className="text-lg font-bold">{formatCurrency(currentRefundAmount)}</span>
                 </AlertDescription>
               </Alert>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-2 pt-2">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={isSubmitting}
+                onClick={() => guardedOnOpenChange(false)}
+                disabled={refundMutation.isPending}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={!canSubmit || isSubmitting}
+                disabled={!canSubmit || refundMutation.isPending}
                 className="flex-1"
               >
-                {isSubmitting ? (
+                {refundMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
                 ) : (
-                  `Process Refund ($${currentRefundAmount.toFixed(2)})`
+                  `Process Refund (${formatCurrency(currentRefundAmount)})`
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

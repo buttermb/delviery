@@ -1,11 +1,14 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOptimisticList } from "@/hooks/useOptimisticUpdate";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -31,7 +34,9 @@ import {
   Loader2,
   Printer,
   MoreVertical,
-  Store
+  Store,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -110,6 +115,7 @@ export default function ProductManagement() {
   const navigateTenant = useTenantNavigate();
   const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
+  const { canEdit, canDelete, canExport } = usePermissions();
   useEncryption();
   const queryClient = useQueryClient();
   const { invalidateProductCaches } = useProductMutations();
@@ -135,12 +141,16 @@ export default function ProductManagement() {
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
-  const [loading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Warn on navigation when product dialog is open
+  const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+    isDirty: isDialogOpen,
+  });
 
   // Table preferences persistence
   const { preferences, savePreferences } = useTablePreferences('products', {
@@ -270,17 +280,36 @@ export default function ProductManagement() {
     enabled: !!tenant?.id,
   });
 
+  // Fetch products via useQuery
+  const { data: productsData, isLoading: productsLoading, isError: productsError, refetch: refetchProductsQuery } = useQuery({
+    queryKey: queryKeys.products.list(tenant?.id),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('name');
+      if (error) {
+        logger.error('Failed to fetch products', { error });
+        throw error;
+      }
+      return (data ?? []) as Product[];
+    },
+    enabled: !!tenant?.id,
+  });
+
+  // Sync query data into optimistic list
+  useEffect(() => {
+    if (productsData) {
+      setProducts(productsData);
+    }
+  }, [productsData, setProducts]);
+
   // Refetch products helper
   const refetchProducts = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: queryKeys.products.list(tenant?.id) });
   }, [queryClient, tenant?.id]);
-
-  // Sync query data when component mounts
-  useEffect(() => {
-    if (tenant?.id) {
-      refetchProducts();
-    }
-  }, [tenant?.id, refetchProducts]);
 
   // Alias for external usage
   const loadProducts = refetchProducts;
@@ -406,6 +435,30 @@ export default function ProductManagement() {
     return data === null;
   };
 
+  // Check product name uniqueness within tenant
+  const checkNameUniqueness = async (name: string, excludeProductId?: string): Promise<boolean> => {
+    if (!name || !tenant?.id) return true;
+
+    let query = supabase
+      .from('products')
+      .select('id')
+      .eq('tenant_id', tenant.id)
+      .eq('name', name.trim());
+
+    if (excludeProductId) {
+      query = query.neq('id', excludeProductId);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+      logger.error('Error checking product name uniqueness:', { error: error.message });
+      return true; // Allow submission on error, let DB handle constraint
+    }
+
+    return data === null;
+  };
+
   // Handlers
   const handleProductSubmit = async (data: ProductFormData) => {
     // Validate tenant context first
@@ -428,6 +481,16 @@ export default function ProductManagement() {
         const isSkuUnique = await checkSkuUniqueness(data.sku, editingProduct?.id);
         if (!isSkuUnique) {
           toast.error('SKU already exists. Please use a unique SKU.');
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      // Check product name uniqueness
+      if (data.name) {
+        const isNameUnique = await checkNameUniqueness(data.name, editingProduct?.id);
+        if (!isNameUnique) {
+          toast.error('A product with this name already exists');
           setIsGenerating(false);
           return;
         }
@@ -691,10 +754,10 @@ export default function ProductManagement() {
 
           if (skippedCount > 0) {
             toast.warning(`Deleted ${deletableIds.length} products, skipped ${skippedCount}`, {
-              description: `${skippedCount} product(s) with existing orders were not deleted.`
+              description: `${skippedCount} ${skippedCount === 1 ? 'product' : 'products'} with existing orders not deleted.`
             });
           } else {
-            toast.success(`${deletableIds.length} products deleted`);
+            toast.success(`${deletableIds.length} ${deletableIds.length === 1 ? 'product' : 'products'} deleted`);
           }
 
           setProducts(prev => prev.filter(p => !deletableIds.includes(p.id)));
@@ -840,7 +903,7 @@ export default function ProductManagement() {
       setProducts((prev) =>
         prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
       );
-      toast.success('Updated!');
+      toast.success('Product updated successfully');
 
       // Warn if price changed and product is on active menus
       if (field === 'wholesale_price' || field === 'retail_price' || field === 'cost_per_unit') {
@@ -988,30 +1051,38 @@ export default function ProductManagement() {
       cell: (product) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-11 w-11">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled={isGenerating} onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
-              <Edit className="mr-2 h-4 w-4" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={isDuplicating} onClick={() => duplicateProduct(product)}>
-              <Copy className="mr-2 h-4 w-4" /> Duplicate
-            </DropdownMenuItem>
+            {canEdit('products') && (
+              <DropdownMenuItem disabled={isGenerating} onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
+              </DropdownMenuItem>
+            )}
+            {canEdit('products') && (
+              <DropdownMenuItem disabled={isDuplicating} onClick={() => duplicateProduct(product)}>
+                <Copy className="mr-2 h-4 w-4" /> Duplicate
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => { setLabelProduct(product); setLabelDialogOpen(true); }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              disabled={isDeleting}
-              onClick={() => handleDelete(product.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={isPublishing} onClick={() => handlePublish(product.id)}>
-              <Store className="mr-2 h-4 w-4" /> Publish to Store
-            </DropdownMenuItem>
+            {canDelete('products') && (
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                disabled={isDeleting}
+                onClick={() => handleDelete(product.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            )}
+            {canEdit('products') && (
+              <DropdownMenuItem disabled={isPublishing} onClick={() => handlePublish(product.id)}>
+                <Store className="mr-2 h-4 w-4" /> Publish to Store
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -1107,35 +1178,41 @@ export default function ProductManagement() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <ExportButton
-            data={filteredProducts.map(p => ({
-              ...p,
-              margin_percent: p.wholesale_price && p.cost_per_unit
-                ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
-                : null,
-            }))}
-            filename="products"
-            columns={[
-              { key: "name", label: "Name" },
-              { key: "sku", label: "SKU" },
-              { key: "category", label: "Category" },
-              { key: "cost_per_unit", label: "Cost" },
-              { key: "wholesale_price", label: "Price" },
-              { key: "margin_percent", label: "Margin %" },
-              { key: "available_quantity", label: "Stock" },
-              { key: "strain_name", label: "Strain" },
-              { key: "vendor_name", label: "Vendor" },
-            ]}
-          />
-          <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
-            <Barcode className="h-4 w-4 mr-2" />
-            Generate Barcodes
-          </Button>
-          <ProductImportDialog
-            open={importDialogOpen}
-            onOpenChange={setImportDialogOpen}
-            onSuccess={loadProducts}
-          />
+          {canExport('products') && (
+            <ExportButton
+              data={filteredProducts.map(p => ({
+                ...p,
+                margin_percent: p.wholesale_price && p.cost_per_unit
+                  ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
+                  : null,
+              }))}
+              filename="products"
+              columns={[
+                { key: "name", label: "Name" },
+                { key: "sku", label: "SKU" },
+                { key: "category", label: "Category" },
+                { key: "cost_per_unit", label: "Cost" },
+                { key: "wholesale_price", label: "Price" },
+                { key: "margin_percent", label: "Margin %" },
+                { key: "available_quantity", label: "Stock" },
+                { key: "strain_name", label: "Strain" },
+                { key: "vendor_name", label: "Vendor" },
+              ]}
+            />
+          )}
+          {canEdit('products') && (
+            <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
+              <Barcode className="h-4 w-4 mr-2" />
+              Generate Barcodes
+            </Button>
+          )}
+          {canEdit('products') && (
+            <ProductImportDialog
+              open={importDialogOpen}
+              onOpenChange={setImportDialogOpen}
+              onSuccess={loadProducts}
+            />
+          )}
 
           <Dialog
             open={isDialogOpen}
@@ -1144,12 +1221,14 @@ export default function ProductManagement() {
               if (!open) setEditingProduct(null);
             }}
           >
-            <DialogTrigger asChild>
-              <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-            </DialogTrigger>
+            {canEdit('products') && (
+              <DialogTrigger asChild>
+                <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Product
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
               <DialogHeader>
                 <DialogTitle>
@@ -1346,7 +1425,19 @@ export default function ProductManagement() {
           </div>
         </CardHeader>
         <CardContent className="p-0 sm:p-6">
-          {loading ? (
+          {productsError && !productsLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+              <h3 className="text-lg font-semibold mb-1">Failed to load products</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                Something went wrong while fetching your products. Please try again.
+              </p>
+              <Button variant="outline" onClick={() => refetchProductsQuery()} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Try Again
+              </Button>
+            </div>
+          ) : productsLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
@@ -1379,7 +1470,7 @@ export default function ProductManagement() {
                   columns={columns}
                   data={filteredProducts}
                   keyExtractor={(item) => item.id}
-                  isLoading={loading}
+                  isLoading={productsLoading}
                   mobileRenderer={renderMobileProduct}
                 />
               </div>
@@ -1392,7 +1483,7 @@ export default function ProductManagement() {
               description={
                 searchTerm || categoryFilter !== "all"
                   ? "Try adjusting your filters to find products"
-                  : "Add your first product to start selling"
+                  : "Add your inventory to start selling"
               }
               primaryAction={
                 !searchTerm && categoryFilter === "all"
@@ -1483,6 +1574,12 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
+      />
+
+      <UnsavedChangesDialog
+        open={showBlockerDialog}
+        onConfirmLeave={confirmLeave}
+        onCancelLeave={cancelLeave}
       />
     </div>
   );

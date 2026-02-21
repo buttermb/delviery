@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Bug, Download, Trash2, AlertCircle, Info, AlertTriangle, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 
 const CATEGORIES: Array<LogCategory | 'all'> = [
   'all',
@@ -102,7 +103,7 @@ function SimplifiedDebugPanel() {
   const warnCount = logs.filter(l => l.level === 'warn').length;
 
   return (
-    <div className="fixed bottom-4 right-4 z-max">
+    <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-max">
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant={errorCount > 0 ? "destructive" : "secondary"}
@@ -149,7 +150,7 @@ function SimplifiedDebugPanel() {
                 <Download className="h-3 w-3 mr-1" />
                 Export
               </Button>
-              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Close debug console">
+              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-11 w-11 p-0" aria-label="Close debug console">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -167,7 +168,7 @@ function SimplifiedDebugPanel() {
                         {levelIcons[log.level]}
                         <span className="font-bold text-gray-200">[{log.category}]</span>
                       </div>
-                      <span className="text-gray-500 text-[10px]">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className="text-gray-500 text-[10px]">{formatSmartDate(log.timestamp, { includeTime: true })}</span>
                     </div>
                     <div className="text-gray-300 mb-1">{log.message}</div>
                     {log.data && Object.keys(log.data).length > 0 && (
@@ -248,7 +249,7 @@ function FullAdminDebugPanel() {
   const warnCount = logs.filter(l => l.level === 'warn').length;
 
   return (
-    <div className="fixed bottom-4 right-4 z-max">
+    <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-max">
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant={errorCount > 0 ? "destructive" : "secondary"}
@@ -300,7 +301,7 @@ function FullAdminDebugPanel() {
                 <Download className="h-3 w-3 mr-1" />
                 Export
               </Button>
-              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Close debug console">
+              <Button onClick={() => setIsOpen(false)} variant="ghost" size="sm" className="h-11 w-11 p-0" aria-label="Close debug console">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -337,7 +338,7 @@ function FullAdminDebugPanel() {
                         {levelIcons[log.level]}
                         <span className="font-bold text-gray-200">[{log.category}]</span>
                       </div>
-                      <span className="text-gray-500 text-[10px]">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className="text-gray-500 text-[10px]">{formatSmartDate(log.timestamp, { includeTime: true })}</span>
                     </div>
                     <div className="text-gray-300 mb-1">{log.message}</div>
                     {log.data && Object.keys(log.data).length > 0 && (

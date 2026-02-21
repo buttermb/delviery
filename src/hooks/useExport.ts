@@ -323,7 +323,7 @@ export function useExport(): UseExportResult {
 
         showSuccessToast(
           'Export complete',
-          `${rowCount.toLocaleString()} items exported to ${exportFilename}`
+          `${rowCount.toLocaleString()} ${rowCount === 1 ? 'item' : 'items'} exported to ${exportFilename}`
         );
 
         logger.info('[useExport] JSON export completed', {

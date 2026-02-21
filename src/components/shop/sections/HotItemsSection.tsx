@@ -33,6 +33,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useToast } from '@/hooks/use-toast';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import type { StorefrontHotItem } from '@/types/storefront-hot-items';
+import { formatSmartDate } from '@/lib/formatters';
 
 export interface HotItemsSectionProps {
   content?: {
@@ -135,11 +136,7 @@ export function HotItemsSection({
   // Format current time for display
   const formatCurrentTime = () => {
     const now = new Date();
-    return now.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    return formatSmartDate(now, { includeTime: true });
   };
 
   // Loading state
@@ -154,7 +151,7 @@ export function HotItemsSection({
               <Skeleton className="h-4 w-64" />
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-white dark:bg-zinc-950 rounded-2xl p-3 space-y-3">
                 <Skeleton className="aspect-square w-full rounded-xl" />
@@ -241,7 +238,7 @@ export function HotItemsSection({
         </motion.div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           <AnimatePresence>
             {items.map((product, index) => (
               <HotItemCard

@@ -26,6 +26,7 @@ import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { displayName, displayValue } from '@/lib/formatters';
 
 const PAGE_SIZE = 25;
 
@@ -243,7 +244,10 @@ export default function CustomerInvoices() {
 
   const updateLineItem = (index: number, field: string, value: string | number) => {
     const updated = [...lineItems];
-    updated[index] = { ...updated[index], [field]: value };
+    let safeValue = value;
+    if (field === 'quantity') safeValue = Math.max(1, Number(value));
+    if (field === 'rate') safeValue = Math.max(0, Number(value));
+    updated[index] = { ...updated[index], [field]: safeValue };
 
     // Calculate amount
     if (field === 'quantity' || field === 'rate') {
@@ -266,6 +270,15 @@ export default function CustomerInvoices() {
     if (!tenant) return;
 
     const { subtotal, tax, total } = calculateTotals();
+
+    if (total < 0 || subtotal < 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Invoice total cannot be negative',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -366,10 +379,16 @@ export default function CustomerInvoices() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-primary/10 text-primary border-primary/20';
-      case 'unpaid': return 'bg-orange-500/10 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border-orange-500/20 dark:border-orange-700';
-      case 'overdue': return 'bg-destructive/10 text-destructive border-destructive/20';
-      default: return 'bg-muted text-muted-foreground border-muted';
+      case 'paid': return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700';
+      case 'sent': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700';
+      case 'partially_paid':
+      case 'partial':
+      case 'unpaid': return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700';
+      case 'overdue': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700';
+      case 'cancelled':
+      case 'void': return 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600';
+      case 'draft': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700';
     }
   };
 
@@ -418,7 +437,7 @@ export default function CustomerInvoices() {
                     <option value="">Select customer</option>
                     {customers.map((customer: Customer) => (
                       <option key={customer.id} value={customer.id}>
-                        {customer.first_name} {customer.last_name} ({customer.email})
+                        {displayName(customer.first_name, customer.last_name)} ({displayValue(customer.email, 'No email')})
                       </option>
                     ))}
                   </select>
@@ -544,8 +563,9 @@ export default function CustomerInvoices() {
                       <Input
                         type="number"
                         step="0.001"
+                        min={0}
                         value={formData.tax_rate}
-                        onChange={(e) => setFormData({ ...formData, tax_rate: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, tax_rate: String(Math.max(0, parseFloat(e.target.value) || 0)) })}
                         className="w-20 h-8 text-right"
                       />
                       <span>%</span>

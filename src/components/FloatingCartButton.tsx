@@ -18,7 +18,7 @@ export default function FloatingCartButton({ itemCount, onClick, className }: Fl
       size="lg"
       variant="hero"
       className={cn(
-        "fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50",
+        "fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50",
         "h-14 w-14 md:h-16 md:w-16 rounded-full",
         "shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
         "animate-in fade-in slide-in-from-bottom-4 duration-300",

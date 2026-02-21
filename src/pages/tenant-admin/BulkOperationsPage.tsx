@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -389,7 +390,7 @@ export default function BulkOperationsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-12">Loading products...</div>
+            <EnhancedLoadingState variant="table" count={5} message="Loading products..." />
           ) : products?.length === 0 ? (
             <EnhancedEmptyState
               icon={Package}

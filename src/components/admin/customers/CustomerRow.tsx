@@ -16,6 +16,7 @@ import Lock from "lucide-react/dist/esm/icons/lock";
 import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
 import Trash from "lucide-react/dist/esm/icons/trash";
 import CopyButton from "@/components/CopyButton";
+import { formatSmartDate, formatPhoneNumber, displayName } from "@/lib/formatters";
 
 interface Customer {
   id: string;
@@ -90,7 +91,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
                 </span>
               ) : (
                 <>
-                  {customer.email || customer.phone || 'No contact'}
+                  {customer.email || formatPhoneNumber(customer.phone, { fallback: '' }) || 'No contact'}
                   {customer.email && (
                     <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
@@ -116,7 +117,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       </td>
       <td className="px-6 py-4 text-sm text-muted-foreground">
         {customer.last_purchase_at
-          ? new Date(customer.last_purchase_at).toLocaleDateString()
+          ? formatSmartDate(customer.last_purchase_at)
           : 'Never'}
       </td>
       <td className="px-6 py-4">
@@ -144,7 +145,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600"
-              onClick={() => onDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
+              onClick={() => onDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
             >
               <Trash className="w-4 h-4 mr-2" />
               Delete

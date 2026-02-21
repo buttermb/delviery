@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, DollarSign, Activity, Users } from 'lucide-react';
+import { DollarSign, Activity, Users } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -13,7 +13,7 @@ export default function CommissionTrackingPage() {
     const { data: metrics, isLoading } = useQuery({
         queryKey: ['platform-metrics'],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('get_platform_metrics');
+            const { data, error } = await (supabase as any).rpc('get_platform_metrics');
             if (error) throw error;
             return data as {
                 total_gmv: number;
@@ -25,7 +25,7 @@ export default function CommissionTrackingPage() {
         enabled: isPlatformAdmin,
     });
 
-    if (isLoading) return <Loader2 className="h-8 w-8 animate-spin" />;
+    if (isLoading) return <EnhancedLoadingState variant="table" message="Loading commissions..." />;
 
     return (
         <div className="space-y-6">

@@ -21,16 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import {
   useRecurringOrders,
   RecurringOrderSchedule,
@@ -373,34 +364,20 @@ function RecurringOrdersListComponent({ clientId, compact = false }: RecurringOr
       />
 
       {/* Delete Confirmation */}
-      <AlertDialog
+      <ConfirmDeleteDialog
         open={!!scheduleToDelete}
         onOpenChange={(open) => !open && setScheduleToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Recurring Order Schedule?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete this recurring order schedule. No new orders will be
-              created from this schedule. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (scheduleToDelete) {
-                  deleteSchedule.mutate(scheduleToDelete);
-                  setScheduleToDelete(null);
-                }
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete Schedule
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onConfirm={() => {
+          if (scheduleToDelete) {
+            deleteSchedule.mutate(scheduleToDelete);
+            setScheduleToDelete(null);
+          }
+        }}
+        title="Delete Recurring Order Schedule?"
+        description="This will permanently delete this recurring order schedule. No new orders will be created from this schedule. This action cannot be undone."
+        itemType="schedule"
+        isLoading={deleteSchedule.isPending}
+      />
     </div>
   );
 }

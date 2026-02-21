@@ -13,6 +13,7 @@ import Shield from "lucide-react/dist/esm/icons/shield";
 import ImageIcon from "lucide-react/dist/esm/icons/image";
 import ClipboardCheck from "lucide-react/dist/esm/icons/clipboard-check";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { sanitizeFormInput, sanitizeTextareaInput, sanitizeSkuInput } from "@/lib/utils/sanitize";
 import { BasicInfoStep } from "./BasicInfoStep";
 import { PricingStep } from "./PricingStep";
@@ -201,11 +202,31 @@ export function CreateProductForm({
         if (!price || price <= 0) {
           valid = false;
         }
+        // Block negative values on all price fields
+        const priceFields = [formData.sale_price, formData.cost_per_unit, formData.wholesale_price, formData.retail_price];
+        for (const pf of priceFields) {
+          if (pf !== "" && pf !== undefined && pf !== null) {
+            const num = typeof pf === 'string' ? parseFloat(pf) : (pf as number);
+            if (!isNaN(num) && num < 0) {
+              valid = false;
+            }
+          }
+        }
         const stock = formData.stock_quantity;
         if (stock !== "" && stock !== undefined && stock !== null) {
           const stockNum = typeof stock === 'string' ? parseFloat(stock as string) : (stock as number);
           if (!Number.isInteger(stockNum) || stockNum < 0) {
             valid = false;
+          }
+        }
+        // Block negative values on available_quantity and low_stock_alert
+        const quantityFields = [formData.available_quantity, formData.low_stock_alert];
+        for (const qf of quantityFields) {
+          if (qf !== "" && qf !== undefined && qf !== null) {
+            const num = typeof qf === 'string' ? parseFloat(qf as string) : (qf as number);
+            if (!isNaN(num) && num < 0) {
+              valid = false;
+            }
           }
         }
         break;
@@ -274,14 +295,14 @@ export function CreateProductForm({
   const sanitizeFormData = (data: CreateProductFormData): CreateProductFormData => {
     return {
       ...data,
-      name: sanitizeFormInput(data.name, 100),
+      name: sanitizeFormInput(data.name, 200),
       sku: data.sku ? sanitizeSkuInput(data.sku) : "",
       vendor_name: sanitizeFormInput(data.vendor_name, 100),
       strain_name: sanitizeFormInput(data.strain_name, 100),
       strain_lineage: sanitizeFormInput(data.strain_lineage, 200),
       batch_number: sanitizeFormInput(data.batch_number, 100),
       lab_name: sanitizeFormInput(data.lab_name, 100),
-      description: sanitizeTextareaInput(data.description, 1000),
+      description: sanitizeTextareaInput(data.description, 2000),
       usage_tips: sanitizeTextareaInput(data.usage_tips, 500),
       barcode: sanitizeFormInput(data.barcode, 50),
     };
@@ -307,7 +328,7 @@ export function CreateProductForm({
       const sanitizedData = sanitizeFormData(formData);
       await onSubmit(sanitizedData);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save product");
+      toast.error(humanizeError(error, "Failed to save product"));
     } finally {
       setIsSubmitting(false);
     }

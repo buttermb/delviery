@@ -29,7 +29,7 @@ export function SalesChartWidget() {
       </div>
 
       {/* Category breakdown */}
-      <div className="mt-4 pt-4 border-t grid grid-cols-3 gap-4 text-sm">
+      <div className="mt-4 pt-4 border-t grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
         <div>
           <div className="text-muted-foreground mb-1">Flower</div>
           <div className="font-semibold">65%</div>

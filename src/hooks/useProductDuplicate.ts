@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { logActivity, EntityType } from '@/lib/activityLog';
 import type { Database } from '@/integrations/supabase/types';
+import { humanizeError } from '@/lib/humanizeError';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -148,7 +149,7 @@ export function useProductDuplicate(options?: UseProductDuplicateOptions) {
     onError: (error: Error) => {
       logger.error('Product duplication failed', { error: error.message });
       toast.error('Failed to duplicate product', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

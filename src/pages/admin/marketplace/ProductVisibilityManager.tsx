@@ -1,16 +1,18 @@
-// @ts-nocheck
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { Loader2, Plus, Search, Filter, MoreHorizontal } from "lucide-react";
 import { MarketplaceListing } from "@/types/marketplace-extended";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import {
     Table,
     TableBody,
@@ -32,6 +34,7 @@ import {
 export default function ProductVisibilityManager() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
+    const navigateTenant = useTenantNavigate();
     const [searchTerm, setSearchTerm] = useState("");
 
     // Fetch listings
@@ -40,7 +43,7 @@ export default function ProductVisibilityManager() {
         queryFn: async () => {
             if (!tenant?.id) return [];
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('marketplace_listings')
                 .select('*')
                 .eq('tenant_id', tenant.id)
@@ -57,9 +60,9 @@ export default function ProductVisibilityManager() {
         mutationFn: async ({ id, currentVisibility }: { id: string, currentVisibility: string }) => {
             if (!tenant?.id) throw new Error("No tenant");
             const newVisibility = currentVisibility === 'public' ? 'hidden' : 'public';
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('marketplace_listings')
-                .update({ visibility: newVisibility } as any)
+                .update({ visibility: newVisibility })
                 .eq('id', id)
                 .eq('tenant_id', tenant.id);
 
@@ -71,7 +74,7 @@ export default function ProductVisibilityManager() {
             toast.success("Visibility updated");
         },
         onError: (error) => {
-            toast.error("Failed to update visibility: " + error.message);
+            toast.error(humanizeError(error, "Failed to update visibility"));
         }
     });
 
@@ -80,9 +83,9 @@ export default function ProductVisibilityManager() {
         mutationFn: async ({ id, currentStatus }: { id: string, currentStatus: string }) => {
             if (!tenant?.id) throw new Error("No tenant");
             const newStatus = currentStatus === 'active' ? 'draft' : 'active';
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('marketplace_listings')
-                .update({ status: newStatus } as any)
+                .update({ status: newStatus })
                 .eq('id', id)
                 .eq('tenant_id', tenant.id);
 
@@ -94,7 +97,7 @@ export default function ProductVisibilityManager() {
             toast.success("Status updated");
         },
         onError: (error) => {
-            toast.error("Failed to update status: " + error.message);
+            toast.error(humanizeError(error, "Failed to update status"));
         }
     });
 
@@ -103,7 +106,7 @@ export default function ProductVisibilityManager() {
     ) || [];
 
     if (isLoading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+        return <EnhancedLoadingState variant="table" message="Loading products..." />;
     }
 
     return (
@@ -209,14 +212,14 @@ export default function ProductVisibilityManager() {
                                         <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <Button variant="ghost" className="h-11 w-11 p-0">
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Edit Details</DropdownMenuItem>
-                                                    <DropdownMenuItem>Manage Bulk Pricing</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => navigateTenant(`/admin/marketplace/listings/${listing.id}/edit`)}>Edit Details</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => navigateTenant(`/admin/marketplace/listings/${listing.id}`)}>Manage Bulk Pricing</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
                                                         onClick={() => toggleStatus.mutate({

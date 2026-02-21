@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -6,7 +7,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import {
   Package,
   CheckCircle,
@@ -42,16 +44,15 @@ import { useLocationOptions } from '@/hooks/useLocations';
 export default function ReceivingPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { options: locationOptions } = useLocationOptions();
+  const { options: locationOptions, isLoading: locationsLoading, isError: locationsError } = useLocationOptions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'qc_passed' | 'qc_failed'>('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
   const [qcDialogOpen, setQcDialogOpen] = useState(false);
-  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<Record<string, unknown> | null>(null);
   const [newReceipt, setNewReceipt] = useState({
     shipment_number: '',
     vendor: '',
@@ -137,7 +138,7 @@ export default function ReceivingPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Receiving record created successfully!' });
+      toast.success('Receiving record created successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.receiving.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.locations.all });
@@ -153,20 +154,17 @@ export default function ReceivingPage() {
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast({
-        title: 'Failed to create receiving record',
-        description: errorMessage,
-        variant: 'destructive'
-      });
+      logger.error('Failed to create receiving record', { error: errorMessage });
+      toast.error(`Failed to create receiving record: ${errorMessage}`);
     }
   });
 
   // Update receiving status
   const updateReceiptStatus = useMutation({
-    mutationFn: async ({ id, status, qcData }: { id: string; status: string; qcData?: any }) => {
+    mutationFn: async ({ id, status, qcData }: { id: string; status: string; qcData?: { qc_status: string; qc_notes: string; damaged_items: number; missing_items: number } }) => {
       if (!tenantId) throw new Error('Tenant context required');
 
-      const updates: any = { status };
+      const updates: Record<string, unknown> = { status };
       if (qcData) {
         updates.qc_status = qcData.qc_status;
         updates.qc_notes = qcData.qc_notes;
@@ -183,18 +181,16 @@ export default function ReceivingPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Receiving record updated successfully!' });
+      toast.success('Receiving record updated successfully');
       queryClient.invalidateQueries({ queryKey: queryKeys.receiving.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
       setQcDialogOpen(false);
       setSelectedReceipt(null);
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Failed to update receiving record',
-        description: error.message,
-        variant: 'destructive'
-      });
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to update receiving record', { error: errorMessage });
+      toast.error(`Failed to update receiving record: ${errorMessage}`);
     }
   });
 
@@ -280,18 +276,24 @@ export default function ReceivingPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {/* Location filter */}
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
+              <Select value={locationFilter} onValueChange={setLocationFilter} disabled={locationsLoading}>
                 <SelectTrigger className="w-[180px]">
                   <MapPin className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Locations" />
+                  <SelectValue placeholder={locationsLoading ? 'Loading...' : 'All Locations'} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
-                  {locationOptions.map((loc) => (
-                    <SelectItem key={loc.value} value={loc.value}>
-                      {loc.label}
-                    </SelectItem>
-                  ))}
+                  {locationsError ? (
+                    <div className="px-2 py-1.5 text-sm text-destructive">Failed to load locations</div>
+                  ) : locationOptions.length === 0 && !locationsLoading ? (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">No locations found</div>
+                  ) : (
+                    locationOptions.map((loc) => (
+                      <SelectItem key={loc.value} value={loc.value}>
+                        {loc.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               {/* Status filters */}
@@ -330,7 +332,7 @@ export default function ReceivingPage() {
 
       {/* Receipts List */}
       {isLoading ? (
-        <div className="text-center py-12">Loading receipts...</div>
+        <EnhancedLoadingState variant="table" count={5} message="Loading receipts..." />
       ) : tableMissing ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -487,24 +489,31 @@ export default function ReceivingPage() {
               <Select
                 value={newReceipt.location_id}
                 onValueChange={(value) => setNewReceipt({ ...newReceipt, location_id: value })}
+                disabled={locationsLoading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a location (optional)" />
+                  <SelectValue placeholder={locationsLoading ? 'Loading locations...' : 'Select a location (optional)'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {locationOptions.map((loc) => (
-                    <SelectItem key={loc.value} value={loc.value}>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{loc.label}</span>
-                        {loc.description && (
-                          <span className="text-muted-foreground text-xs">
-                            ({loc.description})
-                          </span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {locationsError ? (
+                    <div className="px-2 py-1.5 text-sm text-destructive">Failed to load locations</div>
+                  ) : locationOptions.length === 0 && !locationsLoading ? (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">No locations available</div>
+                  ) : (
+                    locationOptions.map((loc) => (
+                      <SelectItem key={loc.value} value={loc.value}>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          <span>{loc.label}</span>
+                          {loc.description && (
+                            <span className="text-muted-foreground text-xs">
+                              ({loc.description})
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
@@ -629,7 +638,7 @@ export default function ReceivingPage() {
               onClick={() => {
                 if (selectedReceipt) {
                   updateReceiptStatus.mutate({
-                    id: selectedReceipt.id,
+                    id: selectedReceipt.id as string,
                     status: qcData.qc_status === 'passed' ? 'qc_passed' : 'qc_failed',
                     qcData
                   });

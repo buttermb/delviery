@@ -421,7 +421,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                                         <Icon className="mr-2 h-4 w-4" />
                                         <span>{cmd.label}</span>
                                         {cmd.shortcut && (
-                                            <CommandShortcut>{cmd.shortcut}</CommandShortcut>
+                                            <CommandShortcut className="hidden sm:inline">{cmd.shortcut}</CommandShortcut>
                                         )}
                                     </CommandItem>
                                 );
@@ -445,7 +445,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                                         <Icon className="mr-2 h-4 w-4" />
                                         <span>{cmd.label}</span>
                                         {cmd.shortcut && (
-                                            <CommandShortcut>{cmd.shortcut}</CommandShortcut>
+                                            <CommandShortcut className="hidden sm:inline">{cmd.shortcut}</CommandShortcut>
                                         )}
                                     </CommandItem>
                                 );
@@ -468,7 +468,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
                                     <Icon className="mr-2 h-4 w-4" />
                                     <span>{cmd.label}</span>
                                     {cmd.shortcut && (
-                                        <CommandShortcut>{cmd.shortcut}</CommandShortcut>
+                                        <CommandShortcut className="hidden sm:inline">{cmd.shortcut}</CommandShortcut>
                                     )}
                                 </CommandItem>
                             );

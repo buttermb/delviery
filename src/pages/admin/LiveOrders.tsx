@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
+import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -13,6 +13,8 @@ import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
 import { queryKeys } from '@/lib/queryKeys';
+import { EmptyState } from '@/components/admin/shared/EmptyState';
+import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 
 // Type Definitions matching Supabase response
 interface MenuOrderRaw {
@@ -334,14 +336,24 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       </div>
 
       {/* Kanban Board Container */}
-      <div className="flex-1 overflow-hidden p-6">
-        <div className="max-w-[1800px] mx-auto h-full">
-          <LiveOrdersKanban
-            orders={orders}
-            isLoading={isLoading}
-            onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
-          />
-        </div>
+      <div className="flex-1 overflow-auto p-6">
+        <PullToRefresh onRefresh={async () => { await refetch(); }}>
+          <div className="max-w-[1800px] mx-auto h-full">
+            {!isLoading && orders.length === 0 ? (
+              <EmptyState
+                icon={Radio}
+                title="No active orders right now"
+                description="Live orders appear here in real-time when customers place orders"
+              />
+            ) : (
+              <LiveOrdersKanban
+                orders={orders}
+                isLoading={isLoading}
+                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+              />
+            )}
+          </div>
+        </PullToRefresh>
       </div>
 
       {/* Undo Toast */}

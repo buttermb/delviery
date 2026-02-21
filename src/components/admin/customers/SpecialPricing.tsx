@@ -67,21 +67,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // ============================================================================
 // Types
@@ -621,7 +613,7 @@ export function SpecialPricing({
     if (pricing.discount_type === 'percentage') {
       return `${pricing.discount_value}% off`;
     }
-    return `$${pricing.discount_value.toFixed(2)} (fixed)`;
+    return `${formatCurrency(pricing.discount_value)} (fixed)`;
   };
 
   const getTargetLabel = (pricing: CustomerPricing) => {
@@ -953,7 +945,7 @@ export function SpecialPricing({
                       <SelectContent>
                         {products?.map((product) => (
                           <SelectItem key={product.id} value={product.id}>
-                            {product.name} (${product.price.toFixed(2)})
+                            {product.name} ({formatCurrency(product.price)})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1022,7 +1014,7 @@ export function SpecialPricing({
                     </FormControl>
                     {effectivePrice !== null && discountType === 'percentage' && (
                       <FormDescription>
-                        Effective price: ${effectivePrice.toFixed(2)}
+                        Effective price: {formatCurrency(effectivePrice)}
                       </FormDescription>
                     )}
                     <FormMessage />
@@ -1031,7 +1023,7 @@ export function SpecialPricing({
               />
 
               {/* Date Range */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="start_date"
@@ -1106,29 +1098,17 @@ export function SpecialPricing({
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Pricing Rule</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this pricing rule? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => pricingToDelete && deleteMutation.mutate(pricingToDelete)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              )}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={() => {
+          if (pricingToDelete) {
+            deleteMutation.mutate(pricingToDelete);
+          }
+        }}
+        itemType="pricing rule"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   );
 }

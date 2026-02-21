@@ -24,7 +24,7 @@ import { useDisposableMenus, useMenuOrders, useUpdateOrderStatus } from '@/hooks
 import { MenuCard } from './MenuCard';
 import { PanicModeButton } from './PanicModeButton';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatCurrency } from '@/lib/formatters';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ResponsiveGrid } from '@/components/shared/ResponsiveGrid';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -88,7 +88,7 @@ function exportAnalyticsCsv(analytics: MenuAnalytics, filename: string): void {
     ...analytics.viewsByHour.map((h) => [String(h.hour), String(h.views)]),
     [],
     ['Product', 'Orders', 'Revenue'],
-    ...analytics.topProducts.map((p) => [p.name, String(p.orders), `$${p.revenue.toFixed(2)}`]),
+    ...analytics.topProducts.map((p) => [p.name, String(p.orders), formatCurrency(p.revenue)]),
   ];
 
   const csvContent = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
@@ -273,7 +273,7 @@ function OrdersTab() {
             <Skeleton key={i} className="h-24" />
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-64" />
           ))}
@@ -969,7 +969,7 @@ export function SmartDashboard() {
       {/* Mobile FAB */}
       <Button
         onClick={() => setWizardOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl sm:hidden bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+        className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-xl sm:hidden bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
         size="icon"
       >
         <Plus className="h-6 w-6" />

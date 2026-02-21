@@ -16,6 +16,7 @@ import {
   X,
   CheckCircle2,
 } from "lucide-react";
+import { formatSmartDate, formatCurrency } from '@/lib/formatters';
 
 interface ReturnAuthorization {
   id: string;
@@ -136,14 +137,14 @@ export function RADetail({ open, onOpenChange, returnAuth, onEdit }: RADetailPro
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Amount:</span>
                   <span className="font-medium">
-                    ${Number(returnAuth.total_amount || 0).toFixed(2)}
+                    {formatCurrency(returnAuth.total_amount ?? 0)}
                   </span>
                 </div>
-                {returnAuth.restocking_fee && (
+                {returnAuth.restocking_fee != null && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Restocking Fee:</span>
                     <span className="font-medium">
-                      ${Number(returnAuth.restocking_fee).toFixed(2)}
+                      {formatCurrency(returnAuth.restocking_fee)}
                     </span>
                   </div>
                 )}
@@ -173,7 +174,7 @@ export function RADetail({ open, onOpenChange, returnAuth, onEdit }: RADetailPro
                 <span className="text-muted-foreground">Created:</span>
                 <span>
                   {returnAuth.created_at
-                    ? new Date(returnAuth.created_at).toLocaleDateString()
+                    ? formatSmartDate(returnAuth.created_at)
                     : "N/A"}
                 </span>
               </div>
@@ -181,14 +182,14 @@ export function RADetail({ open, onOpenChange, returnAuth, onEdit }: RADetailPro
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4 text-info" />
                   <span className="text-muted-foreground">Received:</span>
-                  <span>{new Date(returnAuth.received_at).toLocaleDateString()}</span>
+                  <span>{formatSmartDate(returnAuth.received_at)}</span>
                 </div>
               )}
               {returnAuth.processed_at && (
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" />
                   <span className="text-muted-foreground">Processed:</span>
-                  <span>{new Date(returnAuth.processed_at).toLocaleDateString()}</span>
+                  <span>{formatSmartDate(returnAuth.processed_at)}</span>
                 </div>
               )}
             </CardContent>

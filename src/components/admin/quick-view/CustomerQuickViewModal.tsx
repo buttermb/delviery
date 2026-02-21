@@ -19,6 +19,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { getStatusColor } from '@/lib/utils/statusColors';
 import { cn } from '@/lib/utils';
+import { displayName } from '@/lib/formatters';
 import { QuickViewModal } from './QuickViewModal';
 
 interface CustomerQuickViewData {
@@ -51,8 +52,8 @@ export function CustomerQuickViewModal({
 }: CustomerQuickViewModalProps) {
   if (!customer) return null;
 
-  const fullName = `${customer.first_name} ${customer.last_name}`.trim();
-  const initials = `${customer.first_name?.[0] || ''}${customer.last_name?.[0] || ''}`.toUpperCase();
+  const fullName = displayName(customer.first_name, customer.last_name);
+  const initials = `${customer.first_name?.[0] || ''}${customer.last_name?.[0] || ''}`.toUpperCase() || '?';
 
   const isMedicalExpired = customer.medical_card_expiration
     ? new Date(customer.medical_card_expiration) < new Date()

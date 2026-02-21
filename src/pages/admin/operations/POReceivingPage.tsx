@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 import {
   Package,
   Search,
@@ -329,7 +330,7 @@ export default function POReceivingPage() {
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
                               <span className={isOverdue ? 'text-red-500 font-medium' : isDueToday ? 'text-orange-500 font-medium' : ''}>
-                                {new Date(po.expected_delivery_date).toLocaleDateString()}
+                                {formatSmartDate(po.expected_delivery_date)}
                               </span>
                               {isOverdue && (
                                 <AlertCircle className="h-4 w-4 text-red-500" />

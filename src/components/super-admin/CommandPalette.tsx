@@ -257,11 +257,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     key={cmd.id}
                     onSelect={() => handleSelect(cmd.action)}
                     keywords={cmd.keywords}
+                    className="min-h-[44px]"
                   >
                     <Icon className="mr-2 h-4 w-4" />
                     <span>{cmd.label}</span>
                     {cmd.shortcut && (
-                      <kbd className="ml-auto text-xs text-muted-foreground font-mono">
+                      <kbd className="ml-auto text-xs text-muted-foreground font-mono hidden sm:inline">
                         {cmd.shortcut}
                       </kbd>
                     )}
@@ -282,11 +283,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   key={cmd.id}
                   onSelect={() => handleSelect(cmd.action)}
                   keywords={cmd.keywords}
+                  className="min-h-[44px]"
                 >
                   <Icon className="mr-2 h-4 w-4" />
                   <span>{cmd.label}</span>
                   {cmd.shortcut && (
-                    <kbd className="ml-auto text-xs text-muted-foreground font-mono">
+                    <kbd className="ml-auto text-xs text-muted-foreground font-mono hidden sm:inline">
                       {cmd.shortcut}
                     </kbd>
                   )}

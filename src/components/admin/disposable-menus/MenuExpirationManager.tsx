@@ -50,6 +50,7 @@ import {
   type ArchivedMenu,
 } from '@/hooks/useMenuExpiration';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatSmartDate } from '@/lib/formatters';
 import { logger } from '@/lib/logger';
 import { publish } from '@/lib/eventBus';
 import { cn } from '@/lib/utils';
@@ -203,7 +204,7 @@ const ArchivedMenuCard = ({ menu, onReactivate, isReactivating }: ArchivedMenuCa
 
             <div className="mt-2 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3 inline mr-1" />
-              Archived {menu.archived_at ? new Date(menu.archived_at).toLocaleDateString() : 'N/A'}
+              Archived {menu.archived_at ? formatSmartDate(menu.archived_at) : 'N/A'}
               {menu.archived_reason && ` • ${menu.archived_reason}`}
             </div>
           </div>

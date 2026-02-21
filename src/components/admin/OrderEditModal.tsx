@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -28,6 +28,7 @@ import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
 import { isOrderEditable, getEditRestrictionMessage } from '@/lib/utils/orderEditability';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 /**
  * Represents an editable order item
@@ -104,6 +105,9 @@ export function OrderEditModal({
   const canEdit = order ? isOrderEditable(order.status) : false;
   const editRestrictionMessage = order ? getEditRestrictionMessage(order.status) : null;
 
+  // Track initial values for dirty state comparison
+  const initialSnapshot = useRef('');
+
   // Reset form when order changes or dialog opens
   useEffect(() => {
     if (open && order) {
@@ -118,6 +122,13 @@ export function OrderEditModal({
       setDeliveryAddress(order.delivery_address || '');
       setDeliveryNotes(order.delivery_notes || '');
       setCustomerNotes(order.customer_notes || '');
+      // Capture initial snapshot for dirty detection
+      initialSnapshot.current = JSON.stringify({
+        items: editableItems,
+        deliveryAddress: order.delivery_address || '',
+        deliveryNotes: order.delivery_notes || '',
+        customerNotes: order.customer_notes || '',
+      });
     }
     if (!open) {
       setItems([]);
@@ -125,8 +136,23 @@ export function OrderEditModal({
       setDeliveryNotes('');
       setCustomerNotes('');
       setIsSubmitting(false);
+      initialSnapshot.current = '';
     }
   }, [open, order]);
+
+  // Dirty state detection
+  const isDirty = open && initialSnapshot.current !== '' && JSON.stringify({
+    items,
+    deliveryAddress,
+    deliveryNotes,
+    customerNotes,
+  }) !== initialSnapshot.current;
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
@@ -295,8 +321,9 @@ export function OrderEditModal({
   if (!order) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -353,7 +380,7 @@ export function OrderEditModal({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11"
                           disabled={!canEdit}
                           onClick={() =>
                             handleUpdateItem(
@@ -383,7 +410,7 @@ export function OrderEditModal({
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11"
                           disabled={!canEdit}
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity', item.quantity + 1)
@@ -493,7 +520,7 @@ export function OrderEditModal({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => guardedOnOpenChange(false)}>
               Cancel
             </Button>
             <Button
@@ -514,5 +541,7 @@ export function OrderEditModal({
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

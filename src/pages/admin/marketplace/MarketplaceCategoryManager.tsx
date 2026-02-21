@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { Loader2, Plus, FolderTree, Edit2, Trash2 } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 type MarketplaceCategory = {
@@ -44,13 +44,13 @@ export default function MarketplaceCategoryManager() {
         queryKey: ['marketplace-categories', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await supabase
-                .from('marketplace_categories' as any) // Type assertion until types generated
+            const { data, error } = await (supabase as any)
+                .from('marketplace_categories')
                 .select('*')
                 .eq('tenant_id', tenant.id)
                 .order('display_order', { ascending: true });
             if (error) throw error;
-            return data as MarketplaceCategory[];
+            return (data ?? []) as MarketplaceCategory[];
         },
         enabled: !!tenant?.id
     });
@@ -125,7 +125,7 @@ export default function MarketplaceCategoryManager() {
         upsertCategory.mutate(formData);
     };
 
-    if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
+    if (isLoading) return <EnhancedLoadingState variant="table" message="Loading categories..." />;
 
     return (
         <div className="space-y-6 h-full p-4 md:p-8">

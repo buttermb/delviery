@@ -29,16 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Tooltip,
   TooltipContent,
@@ -266,7 +257,9 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               onChange={(e) => setEditedText(e.target.value)}
               rows={3}
               className="resize-none"
+              maxLength={1000}
               autoFocus
+              aria-label="Edit note"
             />
             <div className="flex items-center gap-2">
               <Select value={editedType} onValueChange={(v) => setEditedType(v as NoteType)}>
@@ -438,8 +431,10 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               placeholder="Add a note about this customer..."
+              aria-label="Add a note about this customer"
               rows={3}
               className="resize-none"
+              maxLength={1000}
               autoFocus
             />
             <div className="flex items-center gap-2">
@@ -485,6 +480,7 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
+                aria-label="Search notes"
                 className="pl-9"
               />
               {searchQuery && (
@@ -571,25 +567,15 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
       </CardContent>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmNote} onOpenChange={() => setDeleteConfirmNote(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Note</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this note? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteNote}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteConfirmNote}
+        onOpenChange={() => setDeleteConfirmNote(null)}
+        onConfirm={handleDeleteNote}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+        itemType="note"
+        isLoading={deleteNoteMutation.isPending}
+      />
     </Card>
   );
 }

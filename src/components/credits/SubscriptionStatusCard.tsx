@@ -26,6 +26,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 
 export interface SubscriptionStatusCardProps {
   className?: string;
@@ -110,12 +111,7 @@ function formatPeriodType(periodType: string): string {
 
 function formatRenewalDate(dateString: string | null): string {
   if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return formatSmartDate(dateString);
 }
 
 export function SubscriptionStatusCard({ className }: SubscriptionStatusCardProps) {

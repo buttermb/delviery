@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Truck, Clock, CheckCircle2, XCircle,
   User, Package
@@ -22,6 +22,23 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
 import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
+import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
+
+interface DeliveryRow {
+  id: string;
+  user_id: string | null;
+  total_amount: number | null;
+  status: string;
+  delivery_address: string | null;
+  delivery_scheduled_at: string | null;
+  delivery_completed_at: string | null;
+  courier_id: string | null;
+  couriers: {
+    full_name: string;
+    phone: string;
+    vehicle_type: string;
+  } | null;
+}
 
 interface Delivery {
   id: string;
@@ -47,7 +64,6 @@ interface Delivery {
 
 export default function DeliveryManagement() {
   const { navigateToAdmin } = useTenantNavigation();
-  const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -64,7 +80,7 @@ export default function DeliveryManagement() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const response: any = await (supabase as any)
+      const response: { data: DeliveryRow[] | null; error: { message: string } | null } = await (supabase as unknown as Record<string, CallableFunction>)
         .from('orders')
         .select(`
           id,
@@ -78,12 +94,12 @@ export default function DeliveryManagement() {
           couriers(full_name, phone, vehicle_type)
         `)
         .eq('tenant_id', tenant.id)
-        .in('status', ['pending', 'confirmed', 'out_for_delivery', 'delivered'])
+        .in('status', ['pending', 'confirmed', 'out_for_delivery', 'delivered', 'cancelled'])
         .order('delivery_scheduled_at', { ascending: false });
 
       if (response.error) throw response.error;
 
-      return (response.data || []).map((d: any) => ({
+      return (response.data || []).map((d) => ({
         id: d.id,
         order_id: d.id,
         courier_id: d.courier_id,
@@ -126,41 +142,41 @@ export default function DeliveryManagement() {
   const assignCourier = async (deliveryId: string, courierId: string) => {
     if (!tenant) return;
     try {
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown as Record<string, CallableFunction>)
         .from('orders')
         .update({ courier_id: courierId, status: 'confirmed' })
         .eq('id', deliveryId)
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
-      toast({ title: 'Courier assigned successfully' });
+      toast.success('Courier assigned successfully');
       refetch();
     } catch (error) {
       logger.error('Error assigning courier:', error as Error);
-      toast({ title: 'Error assigning courier', variant: 'destructive' });
+      toast.error('Error assigning courier');
     }
   };
 
   const updateDeliveryStatus = async (deliveryId: string, status: string) => {
     if (!tenant) return;
     try {
-      const updates: any = { status };
+      const updates: Record<string, string> = { status };
       if (status === 'delivered') {
         updates.delivery_completed_at = new Date().toISOString();
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as unknown as Record<string, CallableFunction>)
         .from('orders')
         .update(updates)
         .eq('id', deliveryId)
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
-      toast({ title: 'Status updated successfully' });
+      toast.success('Status updated successfully');
       refetch();
     } catch (error) {
       logger.error('Error updating status:', error as Error);
-      toast({ title: 'Error updating status', variant: 'destructive' });
+      toast.error('Error updating status');
     }
   };
 
@@ -215,7 +231,7 @@ export default function DeliveryManagement() {
     },
     {
       header: 'Total',
-      cell: (d) => `$${d.orders.total_amount?.toFixed(2) || '0.00'}`
+      cell: (d) => formatCurrency(d.orders.total_amount)
     }
   ];
 
@@ -239,7 +255,7 @@ export default function DeliveryManagement() {
       cell: (d) => d.couriers ? (
         <div className="flex flex-col text-sm">
           <span>{d.couriers.full_name}</span>
-          <span className="text-muted-foreground text-xs">{d.couriers.phone}</span>
+          <span className="text-muted-foreground text-xs">{formatPhoneNumber(d.couriers.phone)}</span>
         </div>
       ) : <span className="text-muted-foreground italic">Unassigned</span>
     },
@@ -277,23 +293,29 @@ export default function DeliveryManagement() {
                     <DialogTitle>Assign Courier</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-3">
-                    {couriers.map(courier => (
-                      <div
-                        key={courier.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
-                        onClick={() => assignCourier(d.id, courier.id)}
-                      >
-                        <div>
-                          <p className="font-medium">{courier.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {courier.vehicle_type} • {courier.phone}
-                          </p>
-                        </div>
-                        {courier.is_online && (
-                          <Badge variant="default">Online</Badge>
-                        )}
+                    {couriers.length === 0 ? (
+                      <div className="text-center py-6 text-muted-foreground">
+                        No couriers available
                       </div>
-                    ))}
+                    ) : (
+                      couriers.map(courier => (
+                        <div
+                          key={courier.id}
+                          className="flex items-center justify-between p-3 border rounded-lg hover:border-primary cursor-pointer"
+                          onClick={() => assignCourier(d.id, courier.id)}
+                        >
+                          <div>
+                            <p className="font-medium">{courier.full_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {courier.vehicle_type} • {formatPhoneNumber(courier.phone)}
+                            </p>
+                          </div>
+                          {courier.is_online && (
+                            <Badge variant="default">Online</Badge>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
@@ -318,7 +340,7 @@ export default function DeliveryManagement() {
       cell: (d) => d.couriers ? (
         <div className="flex flex-col text-sm">
           <span>{d.couriers.full_name}</span>
-          <span className="text-muted-foreground text-xs">{d.couriers.phone}</span>
+          <span className="text-muted-foreground text-xs">{formatPhoneNumber(d.couriers.phone)}</span>
         </div>
       ) : '-'
     },
@@ -381,7 +403,7 @@ export default function DeliveryManagement() {
 
       <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
-          <Package className="h-3 w-3" /> ${d.orders.total_amount?.toFixed(2)}
+          <Package className="h-3 w-3" /> {formatCurrency(d.orders.total_amount)}
         </div>
         {d.couriers && (
           <div className="flex items-center gap-1">
@@ -496,7 +518,7 @@ export default function DeliveryManagement() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48">
-                <SelectValue />
+                <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
@@ -504,6 +526,7 @@ export default function DeliveryManagement() {
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
                 <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </div>

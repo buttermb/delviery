@@ -61,7 +61,7 @@ export function GallerySection({ content, styles }: GallerySectionProps) {
                 </motion.div>
 
                 {/* Masonry-style Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {images.map((image, index) => (
                         <motion.div
                             key={index}

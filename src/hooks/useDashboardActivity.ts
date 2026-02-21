@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 export type ActivityType = 'order' | 'product' | 'customer' | 'payment' | 'menu' | 'delivery';
 
@@ -84,7 +85,7 @@ export function useDashboardActivity() {
             id: `order-${order.id}`,
             type: 'order',
             title: `Order ${formatStatus(String(order.status ?? 'pending'))}`,
-            description: `${customerLabel} -- $${Number(order.total_amount ?? 0).toFixed(2)}`,
+            description: `${customerLabel} -- ${formatCurrency(order.total_amount ?? 0)}`,
             createdAt: order.created_at,
             linkPath: `orders`,
           });

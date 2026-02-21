@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
@@ -486,18 +487,15 @@ export default function StorefrontSettings() {
               Open Store
             </a>
           </Button>
-          <Button
+          <SaveButton
             size="sm"
             onClick={() => saveMutation.mutate()}
-            disabled={!isDirty || saveMutation.isPending}
+            isPending={saveMutation.isPending}
+            isSuccess={saveMutation.isSuccess}
+            disabled={!isDirty}
           >
-            {saveMutation.isPending ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4 mr-2" />
-            )}
-            {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
-          </Button>
+            Save Changes
+          </SaveButton>
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, AlertCircle, DollarSign, Package, Plus } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { formatSmartDate } from "@/lib/formatters";
 import {
   Select,
   SelectContent,
@@ -130,7 +131,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
       {isAdding && (
         <div className="mb-4 p-4 border rounded-lg bg-muted/30 space-y-3">
           <Select value={noteType} onValueChange={setNoteType}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Note type">
               <SelectValue placeholder="Note type" />
             </SelectTrigger>
             <SelectContent>
@@ -143,8 +144,10 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
 
           <Textarea
             placeholder="Add internal note about this client..."
+            aria-label="Add internal note about this client"
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
+            maxLength={1000}
             className="min-h-[100px]"
           />
 
@@ -193,7 +196,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
                   <span className="ml-1 capitalize">{note.note_type}</span>
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {formatSmartDate(note.created_at, { includeTime: true })}
                 </span>
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap">

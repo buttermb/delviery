@@ -106,25 +106,25 @@ export function StorefrontProductCard({
                         />
                     </div>
 
-                    {/* Quick Overlay Actions */}
-                    <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out z-10">
+                    {/* Quick Overlay Actions - always visible on mobile, hover-reveal on desktop */}
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-2 sm:translate-x-12 sm:opacity-0 sm:group-hover:translate-x-0 sm:group-hover:opacity-100 transition-all duration-300 ease-out z-10">
                         <button
                             onClick={(e) => { e.preventDefault(); onToggleWishlist(); }}
                             aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                             className={cn(
-                                "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
+                                "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
                                 isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white dark:bg-zinc-900 text-neutral-400 hover:text-red-500 border-white dark:border-zinc-900"
                             )}
                         >
-                            <svg className={cn("w-5 h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                            <svg className={cn("w-4 h-4 sm:w-5 sm:h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
                             aria-label="Quick view product"
-                            className="w-10 h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ color: isHovered ? accentColor : undefined }}
                         >
-                            <Eye className="w-5 h-5" aria-hidden="true" />
+                            <Eye className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
                         </button>
                     </div>
 
@@ -167,7 +167,7 @@ export function StorefrontProductCard({
                 </Link>
 
                 {/* Content */}
-                <div className="p-5 flex flex-col flex-1">
+                <div className="p-3 sm:p-5 flex flex-col flex-1">
                     <div className="flex-1 space-y-2">
                         <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:opacity-80 transition-colors block">
                             <h3 className="font-bold text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
@@ -205,7 +205,7 @@ export function StorefrontProductCard({
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
+                <div className="px-3 pt-3 sm:px-5 sm:pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (

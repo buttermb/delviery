@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { usePagination } from '@/hooks/usePagination';
+import { StandardPagination } from '@/components/shared/StandardPagination';
 import { format } from 'date-fns';
 import {
   ShoppingBag,
@@ -18,7 +21,8 @@ import {
   ArrowLeft,
   Package,
   TrendingUp,
-  FileText
+  FileText,
+  ClipboardList
 } from 'lucide-react';
 import { exportOrders } from '@/utils/exportHelpers';
 import { showSuccessToast } from '@/utils/toastHelpers';
@@ -31,6 +35,7 @@ import { LastUpdated } from '@/components/shared/LastUpdated';
 import CopyButton from '@/components/CopyButton';
 const DisposableMenuOrders = () => {
   const { tenant } = useTenantAdminAuth();
+  const { navigateToAdmin } = useTenantNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'completed' | 'cancelled'>('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -57,6 +62,21 @@ const DisposableMenuOrders = () => {
 
     return matchesSearch && matchesStatus;
   }) || [];
+
+  // Pagination
+  const {
+    paginatedItems: paginatedOrders,
+    currentPage,
+    totalPages,
+    pageSize,
+    totalItems,
+    goToPage,
+    changePageSize,
+  } = usePagination(filteredOrders, {
+    defaultPageSize: 25,
+    persistInUrl: true,
+    urlKey: 'menuOrders',
+  });
 
   // Calculate stats - Fixed: processing should use 'processing', completed should use 'completed'/'delivered'
   const stats = {
@@ -94,7 +114,7 @@ const DisposableMenuOrders = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.history.back()}
+            onClick={() => navigateToAdmin('disposable-menus')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Menus
@@ -115,6 +135,15 @@ const DisposableMenuOrders = () => {
         </Button>
       </div>
 
+      {/* Empty state when zero orders */}
+      {!isLoading && (!orders || orders.length === 0) ? (
+        <EnhancedEmptyState
+          icon={ClipboardList}
+          title="No menu orders yet"
+          description="Orders appear here when customers order from your disposable menus"
+        />
+      ) : (
+      <>
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card>
@@ -287,14 +316,14 @@ const DisposableMenuOrders = () => {
               </div>
             ) : filteredOrders.length === 0 ? (
               <EnhancedEmptyState
-                icon={ShoppingBag}
-                title="No Orders Found"
-                description={searchQuery || statusFilter !== 'all' ? "No orders match your current filters." : "No orders have been placed yet."}
+                icon={ClipboardList}
+                title="No orders found"
+                description="No orders match your current filters."
                 compact
               />
             ) : (
               <div className="space-y-3">
-                {filteredOrders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <div
                     key={order.id}
                     className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -331,7 +360,7 @@ const DisposableMenuOrders = () => {
                           ${parseFloat(String(order.total_amount || 0)).toFixed(2)}
                         </div>
                         <div className="flex gap-2 justify-end">
-                          {!(order as any).converted_to_invoice_id && (
+                          {!order.converted_to_invoice_id && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -381,8 +410,18 @@ const DisposableMenuOrders = () => {
               </div>
             )}
           </ScrollArea>
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+          />
         </CardContent>
       </Card>
+      </>
+      )}
 
       {/* Order Details Dialog */}
       {selectedOrder && (

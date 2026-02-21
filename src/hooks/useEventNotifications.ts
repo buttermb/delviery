@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 export interface EventNotificationOptions {
@@ -183,7 +184,7 @@ export function useEventNotifications({
       // Show toast notification
       const orderNum = orderPayload.order_number || orderPayload.id.slice(0, 8);
       const amount = orderPayload.total_amount
-        ? `$${parseFloat(String(orderPayload.total_amount)).toFixed(2)}`
+        ? formatCurrency(orderPayload.total_amount)
         : '';
       const source = orderPayload.source
         ? ` from ${orderPayload.source.charAt(0).toUpperCase() + orderPayload.source.slice(1)}`
@@ -301,7 +302,7 @@ export function useEventNotifications({
 
     // Clean up existing channels
     channelsRef.current.forEach((channel) => {
-      supabase.removeChannel(channel).catch(() => {});
+      supabase.removeChannel(channel).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventNotifications' }));
     });
     channelsRef.current = [];
 
@@ -387,7 +388,7 @@ export function useEventNotifications({
     // Cleanup
     return () => {
       channels.forEach((channel) => {
-        supabase.removeChannel(channel).catch(() => {});
+        supabase.removeChannel(channel).catch((err) => logger.warn('Error removing channel', { error: err, component: 'useEventNotifications' }));
       });
       channelsRef.current = [];
       stockCache.clear();

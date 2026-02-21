@@ -55,7 +55,7 @@ const MOCK_MENUS: MockMenu[] = [
 // Mobile-optimized version
 function QRMenuDemoMobile() {
   return (
-    <div className="w-full min-h-[300px] bg-slate-50 dark:bg-zinc-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative p-5">
+    <div className="w-full min-h-[300px] bg-slate-50 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export function QRMenuDemo() {
           </div>
 
           {/* Mini nav */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" data-dark-panel>
             <button
               onClick={() => setActiveIndex(prev => (prev - 1 + menus.length) % menus.length)}
               className="w-7 h-7 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 flex items-center justify-center text-zinc-400 hover:text-white transition-all"

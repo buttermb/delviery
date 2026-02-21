@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -92,10 +94,13 @@ export function useSettingsVersions({
       return data;
     },
     onSuccess: (_, variables) => {
-      // Invalidate the versions query to refetch
+      toast.success('Settings version saved');
       queryClient.invalidateQueries({
         queryKey: queryKeys.settingsVersions.byKey(variables.tenantId, variables.settingsKey),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to save settings version'));
     },
   });
 

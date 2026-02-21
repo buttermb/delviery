@@ -336,6 +336,8 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.crm.clients.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.customers() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
     },
 
     // ============================================================================
@@ -501,7 +503,10 @@ export function invalidateOnEvent(
     INVOICE_CREATED: () => {
       // Finance
       queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financeSummary.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueToday.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.accountsReceivable.all });
 
@@ -510,6 +515,7 @@ export function invalidateOnEvent(
 
       // Dashboard
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.badgeCounts.all });
 
       if (metadata?.customerId) {

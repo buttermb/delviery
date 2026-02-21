@@ -15,7 +15,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -284,13 +286,16 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
       return data as CustomerFlag;
     },
     onSuccess: (_data, variables) => {
-      // Invalidate queries
+      toast.success('Customer flag added successfully');
       queryClient.invalidateQueries({
         queryKey: customerFlagsKeys.active(tenantId!, variables.customerId),
       });
       queryClient.invalidateQueries({
         queryKey: customerFlagsKeys.history(tenantId!, variables.customerId),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to add customer flag'));
     },
   });
 
@@ -331,13 +336,16 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
       return data as CustomerFlag;
     },
     onSuccess: (data) => {
-      // Invalidate queries
+      toast.success('Customer flag resolved successfully');
       queryClient.invalidateQueries({
         queryKey: customerFlagsKeys.active(tenantId!, data.customer_id),
       });
       queryClient.invalidateQueries({
         queryKey: customerFlagsKeys.history(tenantId!, data.customer_id),
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to resolve customer flag'));
     },
   });
 

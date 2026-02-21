@@ -26,6 +26,9 @@ import type {
   ComplianceSettings,
 } from '@/types/delivery-compliance';
 import { DEFAULT_COMPLIANCE_SETTINGS } from '@/types/delivery-compliance';
+import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantContext } from '@/hooks/useTenantContext';
 import { logger } from '@/lib/logger';
@@ -154,6 +157,9 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
         queryKey: [COMPLIANCE_QUERY_KEY, tenantId, orderId],
       });
     },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to create compliance check'));
+    },
   });
 
   // Verify compliance check mutation
@@ -190,6 +196,9 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       queryClient.invalidateQueries({
         queryKey: [COMPLIANCE_QUERY_KEY, tenantId, orderId],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to verify compliance check'));
     },
   });
 
@@ -229,9 +238,13 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       return data as DeliveryComplianceCheck;
     },
     onSuccess: () => {
+      toast.success('Compliance check overridden');
       queryClient.invalidateQueries({
         queryKey: [COMPLIANCE_QUERY_KEY, tenantId, orderId],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to override compliance check'));
     },
   });
 
@@ -407,6 +420,9 @@ export function useDeliveryCompliance(orderId?: string, deliveryId?: string) {
       queryClient.invalidateQueries({
         queryKey: [COMPLIANCE_QUERY_KEY, tenantId, orderId],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to initialize compliance checks'));
     },
   });
 

@@ -176,14 +176,51 @@ export function ProductForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate price fields are not negative
+        const priceFields: { label: string; value: string }[] = [
+            { label: "Cost per Unit", value: formData.cost_per_unit },
+            { label: "Wholesale Price", value: formData.wholesale_price },
+            { label: "Retail Price", value: formData.retail_price },
+            { label: "Minimum Price", value: formData.minimum_price },
+        ];
+
+        for (const field of priceFields) {
+            if (field.value !== "" && field.value !== undefined) {
+                const num = parseFloat(field.value);
+                if (!isNaN(num) && num < 0) {
+                    toast.error(`${field.label} cannot be negative`);
+                    setActiveTab("pricing");
+                    return;
+                }
+            }
+        }
+
+        // Validate quantity fields are not negative
+        const quantityFields: { label: string; value: string }[] = [
+            { label: "Initial Quantity", value: formData.available_quantity },
+            { label: "Low Stock Alert", value: formData.low_stock_alert },
+        ];
+
+        for (const field of quantityFields) {
+            if (field.value !== "" && field.value !== undefined) {
+                const num = parseInt(field.value, 10);
+                if (!isNaN(num) && num < 0) {
+                    toast.error(`${field.label} cannot be negative`);
+                    setActiveTab("inventory");
+                    return;
+                }
+            }
+        }
+
         const sanitizedData: ProductFormData = {
             ...formData,
-            name: sanitizeFormInput(formData.name, 100),
+            name: sanitizeFormInput(formData.name, 200),
             sku: formData.sku ? sanitizeSkuInput(formData.sku) : '',
             vendor_name: sanitizeFormInput(formData.vendor_name, 100),
             strain_name: sanitizeFormInput(formData.strain_name, 100),
             batch_number: sanitizeFormInput(formData.batch_number, 100),
-            description: sanitizeTextareaInput(formData.description, 1000),
+            description: sanitizeTextareaInput(formData.description, 2000),
             metrc_retail_id: sanitizeFormInput(formData.metrc_retail_id, 100),
         };
         onSubmit(sanitizedData, imageFile);
@@ -219,9 +256,10 @@ export function ProductForm({
                     <TabsContent value="details" className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Product Name *</Label>
+                                <Label>Product Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                                 <Input
                                     required
+                                    maxLength={200}
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="Blue Dream 1/8oz"
@@ -229,7 +267,7 @@ export function ProductForm({
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Category *</Label>
+                                <Label>Category <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                                 <Select
                                     value={formData.category}
                                     onValueChange={(value) => setFormData({ ...formData, category: value })}
@@ -303,6 +341,7 @@ export function ProductForm({
                             <div className="space-y-2">
                                 <Label>Description</Label>
                                 <Textarea
+                                    maxLength={2000}
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Product description..."
@@ -316,7 +355,7 @@ export function ProductForm({
                     <TabsContent value="pricing" className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Cost per Unit *</Label>
+                                <Label>Cost per Unit <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                                 <CurrencyInput
                                     required
                                     value={formData.cost_per_unit}
@@ -325,7 +364,7 @@ export function ProductForm({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Wholesale Price *</Label>
+                                <Label>Wholesale Price <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
                                 <CurrencyInput
                                     required
                                     value={formData.wholesale_price}

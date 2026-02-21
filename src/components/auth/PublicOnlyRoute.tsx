@@ -3,6 +3,7 @@ import { Navigate, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { LoadingFallback } from '@/components/LoadingFallback';
+import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
 
 interface PublicOnlyRouteProps {
   children: ReactNode;
@@ -41,7 +42,9 @@ export function PublicOnlyRoute({ children, portal = 'saas' }: PublicOnlyRoutePr
 
     if (admin && tenant) {
       const slug = tenantSlug || tenant.slug;
-      return <Navigate to={`/${slug}/admin/dashboard`} replace />;
+      // Check for intended destination (user was redirected to login from a deep link)
+      const intended = intendedDestinationUtils.consume();
+      return <Navigate to={intended || `/${slug}/admin/dashboard`} replace />;
     }
 
     return <>{children}</>;
@@ -59,7 +62,9 @@ export function PublicOnlyRoute({ children, portal = 'saas' }: PublicOnlyRoutePr
   }
 
   if (admin && tenant) {
-    return <Navigate to={`/${tenant.slug}/admin/dashboard`} replace />;
+    // Check for intended destination (user was redirected to login from a deep link)
+    const intended = intendedDestinationUtils.consume();
+    return <Navigate to={intended || `/${tenant.slug}/admin/dashboard`} replace />;
   }
 
   return <>{children}</>;

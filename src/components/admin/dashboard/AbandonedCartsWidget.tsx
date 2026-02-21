@@ -79,7 +79,7 @@ export function AbandonedCartsWidget() {
 
       {/* Stats Summary */}
       {!isLoading && stats && (
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-2xl font-bold text-destructive">
               {stats.total_abandoned}

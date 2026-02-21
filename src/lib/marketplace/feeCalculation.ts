@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 /**
  * Platform Fee Calculation Utilities
  * Calculates 2% transaction fee on marketplace orders
@@ -94,21 +95,21 @@ export function validateFeeCalculation(calculation: FeeCalculationResult): boole
 export function formatFeeBreakdown(calculation: FeeCalculationResult): string {
   const parts: string[] = [];
   
-  parts.push(`Subtotal: $${calculation.subtotal.toFixed(2)}`);
-  
+  parts.push(`Subtotal: ${formatCurrency(calculation.subtotal)}`);
+
   if (calculation.platformFee > 0) {
-    parts.push(`Platform Fee (2%): $${calculation.platformFee.toFixed(2)}`);
+    parts.push(`Platform Fee (2%): ${formatCurrency(calculation.platformFee)}`);
   }
-  
+
   if (calculation.tax > 0) {
-    parts.push(`Tax: $${calculation.tax.toFixed(2)}`);
+    parts.push(`Tax: ${formatCurrency(calculation.tax)}`);
   }
-  
+
   if (calculation.shippingCost > 0) {
-    parts.push(`Shipping: $${calculation.shippingCost.toFixed(2)}`);
+    parts.push(`Shipping: ${formatCurrency(calculation.shippingCost)}`);
   }
-  
-  parts.push(`Total: $${calculation.totalAmount.toFixed(2)}`);
+
+  parts.push(`Total: ${formatCurrency(calculation.totalAmount)}`);
   
   return parts.join(' | ');
 }

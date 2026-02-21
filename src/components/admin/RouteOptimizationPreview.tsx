@@ -50,7 +50,7 @@ export function RouteOptimizationPreview({
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <MapPin className="h-4 w-4" />

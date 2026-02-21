@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { playNotificationSound } from '@/utils/notificationSound';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -66,7 +67,7 @@ interface UseOrdersRealtimeReturn {
  * const { newOrderIds, isSubscribed } = useOrdersRealtime({
  *   enabled: true,
  *   onNewOrder: (event) => {
- *     console.log('New order:', event);
+ *     logger.debug('New order:', event);
  *   }
  * });
  *
@@ -91,6 +92,8 @@ export function useOrdersRealtime({
       if (Notification.permission === 'default') {
         Notification.requestPermission().then((permission) => {
           notificationPermissionRef.current = permission;
+        }).catch((err) => {
+          logger.warn('Failed to request notification permission', { error: err });
         });
       } else {
         notificationPermissionRef.current = Notification.permission;
@@ -126,7 +129,7 @@ export function useOrdersRealtime({
       : event.source.toUpperCase();
 
     const notification = new Notification(`New ${sourceLabel} Order`, {
-      body: `#${event.orderNumber} - ${event.customerName} - $${event.totalAmount.toFixed(2)}`,
+      body: `#${event.orderNumber} - ${event.customerName} - ${formatCurrency(event.totalAmount)}`,
       icon: '/logo.svg',
       badge: '/logo.svg',
       tag: `new-order-${event.id}`,
@@ -213,8 +216,8 @@ export function useOrdersRealtime({
 
     return () => {
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current).catch(() => {
-          // Silently ignore cleanup errors
+        supabase.removeChannel(channelRef.current).catch((err) => {
+          logger.warn('Error removing realtime channel', { error: err, component: 'useOrdersRealtime' });
         });
         channelRef.current = null;
       }

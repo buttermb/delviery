@@ -44,6 +44,7 @@ import {
 import { SearchInput } from '@/components/shared/SearchInput';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { InventoryStatusBadge } from '@/components/admin/InventoryStatusBadge';
 import { ProductCard } from '@/components/admin/ProductCard';
 import {
@@ -66,10 +67,18 @@ import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Archive from "lucide-react/dist/esm/icons/archive";
 import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import GitCompare from "lucide-react/dist/esm/icons/git-compare";
+import ArrowUp from "lucide-react/dist/esm/icons/arrow-up";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
+import ArrowUpDown from "lucide-react/dist/esm/icons/arrow-up-down";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 
 import type { Database } from '@/integrations/supabase/types';
 
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ProductComparison } from '@/components/admin/products/ProductComparison';
+import { usePagination } from '@/hooks/usePagination';
+import { StandardPagination } from '@/components/shared/StandardPagination';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 // Extended product type to include archived_at field (added via migration)
@@ -77,6 +86,7 @@ type Product = ProductRow & { archived_at?: string | null };
 
 type ViewMode = 'grid' | 'table';
 type SortOption = 'name' | 'price' | 'stock' | 'category';
+type SortOrder = 'asc' | 'desc';
 
 export function ProductsListPage() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
@@ -118,12 +128,17 @@ export function ProductsListPage() {
   const [sortBy, setSortBy] = useState<SortOption>(
     (preferences.sortBy as SortOption) || 'name'
   );
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // Selection state
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   // Comparison dialog state
   const [showComparison, setShowComparison] = useState(false);
+
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   // Persist filter changes
   const prevFiltersRef = useRef({ advancedFilters, sortBy });
@@ -161,7 +176,8 @@ export function ProductsListPage() {
   const {
     data: products = [],
     isLoading,
-    error,
+    isError,
+    isFetching,
     refetch,
   } = useQuery({
     queryKey: queryKeys.products.byTenant(tenant?.id || ''),
@@ -333,20 +349,24 @@ export function ProductsListPage() {
         return true;
       })
       .sort((a, b) => {
+        let cmp = 0;
         switch (sortBy) {
           case 'name':
-            return (a.name || '').localeCompare(b.name || '');
+            cmp = (a.name || '').localeCompare(b.name || '');
+            break;
           case 'price':
-            return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+            cmp = (a.wholesale_price || 0) - (b.wholesale_price || 0);
+            break;
           case 'stock':
-            return (b.available_quantity || 0) - (a.available_quantity || 0);
+            cmp = (a.available_quantity || 0) - (b.available_quantity || 0);
+            break;
           case 'category':
-            return (a.category || '').localeCompare(b.category || '');
-          default:
-            return 0;
+            cmp = (a.category || '').localeCompare(b.category || '');
+            break;
         }
+        return sortOrder === 'asc' ? cmp : -cmp;
       });
-  }, [products, debouncedSearch, advancedFilters, sortBy]);
+  }, [products, debouncedSearch, advancedFilters, sortBy, sortOrder]);
 
   // Check if any advanced filters are active
   const hasActiveFilters = useMemo(() => {
@@ -363,6 +383,21 @@ export function ProductsListPage() {
       advancedFilters.createdBefore !== null
     );
   }, [advancedFilters]);
+
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredProducts, {
+    defaultPageSize: 25,
+    persistInUrl: false,
+  });
 
   // Stats
   const stats = useMemo(() => {
@@ -395,11 +430,10 @@ export function ProductsListPage() {
 
   const handleDelete = useCallback(
     (productId: string) => {
-      if (window.confirm('Are you sure you want to delete this product?')) {
-        deleteMutation.mutate(productId);
-      }
+      setProductToDelete(productId);
+      setDeleteDialogOpen(true);
     },
-    [deleteMutation]
+    []
   );
 
   const handleAddProduct = useCallback(() => {
@@ -415,17 +449,47 @@ export function ProductsListPage() {
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    if (selectedProducts.length === filteredProducts.length) {
+    if (selectedProducts.length === paginatedItems.length) {
       setSelectedProducts([]);
     } else {
-      setSelectedProducts(filteredProducts.map((p) => p.id));
+      setSelectedProducts(paginatedItems.map((p) => p.id));
     }
-  }, [selectedProducts.length, filteredProducts]);
+  }, [selectedProducts.length, paginatedItems]);
 
   const handleRefresh = useCallback(async () => {
     await refetch();
     triggerHaptic('light');
   }, [refetch]);
+
+  // Sort handler for clickable column headers
+  const handleSort = useCallback((field: SortOption) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder(field === 'price' || field === 'stock' ? 'desc' : 'asc');
+    }
+  }, [sortBy]);
+
+  // Sortable header component for table columns
+  const SortableHeader = useCallback(({ field, label }: { field: SortOption; label: string }) => {
+    const isActive = sortBy === field;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8 hover:bg-transparent"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        {isActive ? (
+          sortOrder === 'asc' ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+        ) : (
+          <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </Button>
+    );
+  }, [sortBy, sortOrder, handleSort]);
 
   // Virtual scrolling for grid view
   // Calculate items per row dynamically based on viewport
@@ -439,7 +503,7 @@ export function ProductsListPage() {
   };
 
   const columnsPerRow = getColumnsPerRow();
-  const gridRowCount = Math.ceil(filteredProducts.length / columnsPerRow);
+  const gridRowCount = Math.ceil(paginatedItems.length / columnsPerRow);
 
   const gridVirtualizer = useVirtualizer({
     count: gridRowCount,
@@ -454,8 +518,8 @@ export function ProductsListPage() {
       header: (
         <Checkbox
           checked={
-            filteredProducts.length > 0 &&
-            selectedProducts.length === filteredProducts.length
+            paginatedItems.length > 0 &&
+            selectedProducts.length === paginatedItems.length
           }
           onCheckedChange={handleSelectAll}
           aria-label="Select all"
@@ -473,6 +537,7 @@ export function ProductsListPage() {
     {
       header: 'Image',
       accessorKey: 'image_url',
+      className: 'hidden lg:table-cell',
       cell: (product) => (
         <img
           src={product.image_url || '/placeholder.svg'}
@@ -483,37 +548,44 @@ export function ProductsListPage() {
       ),
     },
     {
-      header: 'Product',
+      header: <SortableHeader field="name" label="Product" />,
       accessorKey: 'name',
+      className: 'max-w-[200px]',
       cell: (product) => (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{product.name}</span>
+        <div className="flex flex-col max-w-[200px] min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <TruncatedText text={product.name} className="font-medium" />
             {product.archived_at && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs shrink-0">
                 Archived
               </Badge>
             )}
           </div>
           {product.sku && (
-            <span className="text-xs text-muted-foreground">
-              SKU: {product.sku}
-            </span>
+            <TruncatedText
+              text={`SKU: ${product.sku}`}
+              className="text-xs text-muted-foreground"
+              maxWidthClass="max-w-[200px]"
+            />
           )}
         </div>
       ),
     },
     {
-      header: 'Category',
+      header: <SortableHeader field="category" label="Category" />,
       accessorKey: 'category',
+      className: 'max-w-[150px] hidden lg:table-cell',
       cell: (product) => (
-        <Badge variant="outline" className="capitalize">
-          {product.category || 'Uncategorized'}
+        <Badge variant="outline" className="capitalize max-w-[140px] inline-flex">
+          <TruncatedText
+            text={product.category || 'Uncategorized'}
+            maxWidthClass="max-w-[120px]"
+          />
         </Badge>
       ),
     },
     {
-      header: 'Price',
+      header: <SortableHeader field="price" label="Price" />,
       accessorKey: 'wholesale_price',
       className: 'text-right',
       cell: (product) => (
@@ -523,7 +595,7 @@ export function ProductsListPage() {
       ),
     },
     {
-      header: 'Stock',
+      header: <SortableHeader field="stock" label="Stock" />,
       accessorKey: 'available_quantity',
       cell: (product) => (
         <div className="flex items-center gap-2">
@@ -541,7 +613,7 @@ export function ProductsListPage() {
       cell: (product) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-11 w-11">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -549,10 +621,29 @@ export function ProductsListPage() {
             <DropdownMenuItem onClick={() => handleEdit(product.id)}>
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              const printWindow = window.open('', '_blank');
+              if (printWindow) {
+                printWindow.document.write(`
+                  <html><head><title>Label: ${product.name}</title>
+                  <style>body{font-family:Arial,sans-serif;padding:20px;text-align:center}
+                  .label{border:2px solid #000;padding:20px;max-width:300px;margin:0 auto}
+                  .name{font-size:18px;font-weight:bold;margin-bottom:8px}
+                  .sku{font-size:14px;color:#555;margin-bottom:4px}
+                  .price{font-size:16px;font-weight:bold;margin-top:8px}</style></head>
+                  <body><div class="label">
+                  <div class="name">${product.name}</div>
+                  ${product.sku ? `<div class="sku">SKU: ${product.sku}</div>` : ''}
+                  ${product.category ? `<div class="sku">${product.category}</div>` : ''}
+                  <div class="price">${product.wholesale_price ? `$${product.wholesale_price}` : ''}</div>
+                  </div></body></html>`);
+                printWindow.document.close();
+                printWindow.print();
+              }
+            }}>
               <Printer className="mr-2 h-4 w-4" /> Print Label
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigateTenant(`/admin/inventory-hub?tab=products&edit=${product.id}`)}>
               <Store className="mr-2 h-4 w-4" /> Publish to Store
             </DropdownMenuItem>
             {product.archived_at ? (
@@ -656,30 +747,6 @@ export function ProductsListPage() {
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive">Failed to load products</p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() =>
-                queryClient.invalidateQueries({
-                  queryKey: queryKeys.products.all,
-                })
-              }
-            >
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
@@ -697,8 +764,8 @@ export function ProductsListPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Stats Cards — hidden when error with no cached data (zeros are misleading) */}
+      {!(isError && products.length === 0) && <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -745,9 +812,52 @@ export function ProductsListPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
-      {/* Search and Filters */}
+      {/* Error State — no cached data */}
+      {isError && products.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <p className="font-semibold text-destructive">Failed to load products</p>
+          <p className="text-muted-foreground text-sm mt-1 mb-4">
+            Something went wrong while fetching your products. Please try again.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="border-destructive/30 text-destructive hover:bg-destructive/10"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            {isFetching ? 'Retrying...' : 'Try Again'}
+          </Button>
+        </div>
+      )}
+
+      {/* Error banner — cached data still available */}
+      {isError && products.length > 0 && (
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-destructive bg-destructive/5 px-4 py-3">
+          <p className="text-destructive text-sm">
+            Failed to refresh products. Showing cached data.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Search, Filters, and Products — hidden when error with no data */}
+      {!(isError && products.length === 0) && <>
       <div className="flex flex-col gap-3">
         {/* Search Bar */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
@@ -764,15 +874,19 @@ export function ProductsListPage() {
           <div className="flex items-center gap-2">
             <Select
               value={sortBy}
-              onValueChange={(v) => setSortBy(v as SortOption)}
+              onValueChange={(v) => {
+                const field = v as SortOption;
+                setSortBy(field);
+                setSortOrder(field === 'price' || field === 'stock' ? 'desc' : 'asc');
+              }}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name">Name (A-Z)</SelectItem>
-                <SelectItem value="price">Price (High-Low)</SelectItem>
-                <SelectItem value="stock">Stock (High-Low)</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="price">Price</SelectItem>
+                <SelectItem value="stock">Stock</SelectItem>
                 <SelectItem value="category">Category</SelectItem>
               </SelectContent>
             </Select>
@@ -834,7 +948,7 @@ export function ProductsListPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0 sm:p-6">
-          {filteredProducts.length > 0 ? (
+          {paginatedItems.length > 0 ? (
             viewMode === 'grid' ? (
               <div
                 ref={gridParentRef}
@@ -850,7 +964,7 @@ export function ProductsListPage() {
                 >
                   {gridVirtualizer.getVirtualItems().map((virtualRow) => {
                     const startIndex = virtualRow.index * columnsPerRow;
-                    const rowProducts = filteredProducts.slice(
+                    const rowProducts = paginatedItems.slice(
                       startIndex,
                       startIndex + columnsPerRow
                     );
@@ -896,7 +1010,7 @@ export function ProductsListPage() {
               <div className="-mx-4 sm:mx-0">
                 <ResponsiveTable
                   columns={columns}
-                  data={filteredProducts}
+                  data={paginatedItems}
                   keyExtractor={(item) => item.id}
                   isLoading={false}
                   mobileRenderer={renderMobileProduct}
@@ -933,13 +1047,41 @@ export function ProductsListPage() {
             />
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {filteredProducts.length > 0 && (
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            pageSizeOptions={pageSizeOptions}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+          />
+        )}
       </Card>
+      </>}
 
       {/* Product Comparison Dialog */}
       <ProductComparison
         productIds={selectedProducts}
         open={showComparison}
         onClose={() => setShowComparison(false)}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (productToDelete) {
+            deleteMutation.mutate(productToDelete);
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
+          }
+        }}
+        itemType="product"
+        isLoading={deleteMutation.isPending}
       />
     </div>
     </PullToRefresh>

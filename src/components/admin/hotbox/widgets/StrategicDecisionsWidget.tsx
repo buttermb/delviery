@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
+import { formatCurrency } from '@/lib/formatters';
 
 export function StrategicDecisionsWidget() {
     const { tenant } = useTenantAdminAuth();
@@ -39,7 +40,7 @@ export function StrategicDecisionsWidget() {
                     id: 'wholesale-pipeline',
                     emoji: '💼',
                     title: 'High-Value Wholesale Pipeline',
-                    description: `$${wholesalePipelineValue.toLocaleString()} in pending approvals`,
+                    description: `${formatCurrency(wholesalePipelineValue)} in pending approvals`,
                     priority: wholesalePipelineValue > 50000 ? 'critical' : 'high',
                     action: 'wholesale-orders',
                 });
@@ -61,7 +62,7 @@ export function StrategicDecisionsWidget() {
                     id: 'inventory-investment',
                     emoji: '📦',
                     title: 'Inventory Investment Review',
-                    description: `$${inventoryValue.toLocaleString()} tied up in inventory`,
+                    description: `${formatCurrency(inventoryValue)} tied up in inventory`,
                     priority: inventoryValue > 100000 ? 'high' : 'medium',
                     action: 'advanced-inventory',
                 });
@@ -83,7 +84,7 @@ export function StrategicDecisionsWidget() {
                     id: 'ar-collection',
                     emoji: '💳',
                     title: 'Accounts Receivable',
-                    description: `$${arOutstanding.toLocaleString()} outstanding from customers`,
+                    description: `${formatCurrency(arOutstanding)} outstanding from customers`,
                     priority: arOutstanding > 20000 ? 'critical' : 'high',
                     action: 'customer-management',
                 });

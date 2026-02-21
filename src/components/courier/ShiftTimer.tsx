@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function ShiftTimer() {
   const [startTime, setStartTime] = useState<Date | null>(() => {
@@ -75,7 +76,7 @@ export default function ShiftTimer() {
           </div>
           {isActive && startTime && (
             <p className="text-xs text-muted-foreground">
-              Started at {startTime.toLocaleTimeString()}
+              Started at {formatSmartDate(startTime, { includeTime: true })}
             </p>
           )}
         </div>

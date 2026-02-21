@@ -26,7 +26,7 @@ function getFieldError(
   switch (field) {
     case "name":
       if (!value || !(value as string).trim()) return "Product name is required";
-      if ((value as string).trim().length > 100) return "Name must be 100 characters or less";
+      if ((value as string).trim().length > 200) return "Name must be 200 characters or less";
       return null;
     case "category":
       if (!value) return "Category is required";
@@ -60,6 +60,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
           <Label htmlFor="name">Product Name <span className="text-destructive">*</span></Label>
           <Input
             id="name"
+            maxLength={200}
             value={formData.name || ""}
             onChange={(e) => updateFormData({ name: e.target.value })}
             onBlur={() => markTouched("name")}
@@ -154,7 +155,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="thca">Cannabinoid Percentage *</Label>
+            <Label htmlFor="thca">Cannabinoid Percentage <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <div className="flex items-center mt-1.5">
               <Input
                 id="thca"
@@ -193,7 +194,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
         </div>
 
         <div>
-          <Label htmlFor="weight">Weight/Size *</Label>
+          <Label htmlFor="weight">Weight/Size <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
           <div className="flex gap-2 mt-1.5">
             <Input
               id="weight"

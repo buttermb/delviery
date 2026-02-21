@@ -40,7 +40,7 @@ type SortOrder = 'asc' | 'desc';
 export default function LocationInventoryPage() {
   const { locationId } = useParams<{ locationId?: string }>();
   const { tenant } = useTenantAdminAuth();
-  const { options: locationOptions } = useLocationOptions();
+  const { options: locationOptions, isLoading: locationsLoading, isError: locationsError, refetch: refetchLocations } = useLocationOptions();
   const { getLocationById } = useLocations();
 
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(locationId);
@@ -56,12 +56,13 @@ export default function LocationInventoryPage() {
     if (selectedLocationId || !inventory.length) return [];
     const map = new Map<string, { product_id: string; product_name: string; sku: string; location_count: number; total_quantity: number; total_reserved: number }>();
     for (const item of inventory) {
-      const pid = (item as any).product_id || item.product?.id || item.id;
+      const itemRecord = item as unknown as Record<string, unknown>;
+      const pid = (itemRecord.product_id as string) || item.product?.id || item.id;
       const existing = map.get(pid);
       if (existing) {
         existing.location_count += 1;
         existing.total_quantity += item.quantity || 0;
-        existing.total_reserved += (item as any).reserved_quantity || 0;
+        existing.total_reserved += (typeof itemRecord.reserved_quantity === 'number' ? itemRecord.reserved_quantity : 0);
       } else {
         map.set(pid, {
           product_id: pid,
@@ -69,7 +70,7 @@ export default function LocationInventoryPage() {
           sku: item.product?.sku || '',
           location_count: 1,
           total_quantity: item.quantity || 0,
-          total_reserved: (item as any).reserved_quantity || 0,
+          total_reserved: (typeof itemRecord.reserved_quantity === 'number' ? itemRecord.reserved_quantity : 0),
         });
       }
     }
@@ -152,23 +153,30 @@ export default function LocationInventoryPage() {
             onValueChange={(value) =>
               setSelectedLocationId(value === 'all' ? undefined : value)
             }
+            disabled={locationsLoading}
           >
             <SelectTrigger className="w-[250px]">
               <MapPin className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Select a location" />
+              <SelectValue placeholder={locationsLoading ? 'Loading locations...' : 'Select a location'} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Locations</SelectItem>
-              {locationOptions.map((loc) => (
-                <SelectItem key={loc.value} value={loc.value}>
-                  {loc.label}
-                  {loc.description && (
-                    <span className="text-muted-foreground ml-2 text-xs">
-                      ({loc.description})
-                    </span>
-                  )}
-                </SelectItem>
-              ))}
+              {locationsError ? (
+                <div className="px-2 py-1.5 text-sm text-destructive">Failed to load locations</div>
+              ) : locationOptions.length === 0 && !locationsLoading ? (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">No locations found</div>
+              ) : (
+                locationOptions.map((loc) => (
+                  <SelectItem key={loc.value} value={loc.value}>
+                    {loc.label}
+                    {loc.description && (
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        ({loc.description})
+                      </span>
+                    )}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={() => refetch()}>

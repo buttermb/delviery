@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Building2 } from 'lucide-react';
+import { Plus, Search, Building2, Loader2 } from 'lucide-react';
 import { useVendors, Vendor, useCreateVendor } from '@/hooks/useVendors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
@@ -165,7 +165,10 @@ function CreateVendorDialog({ open, onOpenChange, onSuccess }: { open: boolean, 
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isPending || !name}>Create Vendor</Button>
+                    <Button onClick={handleSubmit} disabled={isPending || !name}>
+                        {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        Create Vendor
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

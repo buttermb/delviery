@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
 import { queryKeys } from '@/lib/queryKeys';
@@ -163,7 +163,6 @@ export function ProductDetailPage() {
   const isSlugBased = !!productSlug && !productId;
   const identifier = productSlug || productId;
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();
-  const { toast } = useToast();
 
   // Use unified cart hook
   const { addItem, cartCount, subtotal } = useShopCart({
@@ -175,6 +174,7 @@ export function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<{
@@ -223,6 +223,7 @@ export function ProductDetailPage() {
               image_url: item.image_url,
               images: item.images || [],
               in_stock: item.stock_quantity > 0,
+              stock_quantity: item.stock_quantity,
               is_featured: item.is_featured,
               marketplace_category_name: item.category,
               variants: [],
@@ -232,10 +233,10 @@ export function ProductDetailPage() {
               strain_type: item.strain_type,
               thc_content: item.thc_content,
               cbd_content: item.cbd_content,
-              metrc_retail_id: null,
-              exclude_from_discounts: false,
-              minimum_price: null,
-              effects: [],
+              metrc_retail_id: (item as any).metrc_retail_id ?? null,
+              exclude_from_discounts: (item as any).exclude_from_discounts ?? false,
+              minimum_price: (item as any).minimum_price ?? null,
+              effects: (item as any).effects || [],
               slug: item.slug,
             } as ProductDetails & { slug?: string };
           }
@@ -263,7 +264,7 @@ export function ProductDetailPage() {
 
   // Fetch product reviews
   const { data: reviews = [] } = useQuery({
-    queryKey: ['product-reviews', store?.id, product?.product_id],
+    queryKey: queryKeys.shopProducts.reviews(store?.id, product?.product_id),
     queryFn: async () => {
       if (!store?.id || !product?.product_id) return [];
 
@@ -417,28 +418,25 @@ export function ProductDetailPage() {
 
   // Toggle wishlist with error handling
   const toggleWishlist = () => {
-    if (!store?.id || !productId) return;
+    if (!store?.id || !product?.product_id) return;
 
     try {
       const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
       let newWishlist;
 
       if (isWishlisted) {
-        newWishlist = wishlist.filter((id: string) => id !== productId);
-        toast({ title: 'Removed from wishlist' });
+        newWishlist = wishlist.filter((id: string) => id !== product.product_id);
+        toast.success('Removed from wishlist');
       } else {
-        newWishlist = [...wishlist, productId];
-        toast({ title: 'Added to wishlist', description: 'View in your account' });
+        newWishlist = [...wishlist, product.product_id];
+        toast.success('Added to wishlist');
       }
 
       localStorage.setItem(`shop_wishlist_${store.id}`, JSON.stringify(newWishlist));
       setIsWishlisted(!isWishlisted);
     } catch (error) {
       logger.error('Wishlist operation failed', error);
-      toast({
-        title: isWishlisted ? 'Removed from wishlist' : 'Added to wishlist',
-        description: 'Changes may not persist across sessions'
-      });
+      toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
       setIsWishlisted(!isWishlisted);
     }
   };
@@ -571,18 +569,19 @@ export function ProductDetailPage() {
             {/* Left Column: Image Gallery (Span 7) */}
             <div className="lg:col-span-7 space-y-6">
               <div
-                className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5"
-                onMouseEnter={() => setShowZoom(true)}
-                onMouseLeave={() => setShowZoom(false)}
+                className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                onClick={() => setShowZoom(true)}
               >
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={selectedImage}
                     src={allImages[selectedImage] || '/placeholder.png'}
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${showZoom ? 'scale-110' : 'scale-100'}`}
+                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
                     initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: showZoom ? 1.1 : 1 }}
+                    animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4 }}
                   />
@@ -652,7 +651,7 @@ export function ProductDetailPage() {
             <div className="lg:col-span-5 relative">
               <div className="sticky top-24 space-y-8">
                 {/* Glassmorphism Details Card */}
-                <div className={`rounded-3xl p-8 backdrop-blur-xl ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-card border'}`}>
+                <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-8 backdrop-blur-xl ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-card border'}`}>
                   {/* Brand & Category */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -680,7 +679,7 @@ export function ProductDetailPage() {
                   </div>
 
                   {/* Title */}
-                  <h1 className={`text-4xl md:text-5xl font-light tracking-tight mb-4 leading-tight ${isLuxuryTheme ? 'text-white' : ''}`}>
+                  <h1 className={`text-2xl sm:text-4xl md:text-5xl font-light tracking-tight mb-4 leading-tight ${isLuxuryTheme ? 'text-white' : ''}`}>
                     {product.name}
                   </h1>
 
@@ -870,18 +869,18 @@ export function ProductDetailPage() {
           <div className="mt-24 space-y-24">
 
             {/* Description & Reviews Tabs Overlay */}
-            <div className={`rounded-3xl p-8 lg:p-12 ${isLuxuryTheme ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-card border'}`}>
+            <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 ${isLuxuryTheme ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-card border'}`}>
               <Tabs defaultValue="description" className="w-full">
-                <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-8">
+                <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-6 sm:mb-8">
                   <TabsTrigger
                     value="description"
-                    className="text-lg px-8 py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
                   >
                     Description
                   </TabsTrigger>
                   <TabsTrigger
                     value="reviews"
-                    className="text-lg px-8 py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
                   >
                     Reviews ({reviews.length})
                   </TabsTrigger>
@@ -918,18 +917,19 @@ export function ProductDetailPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                       <div>
                         {/* Rating Summary */}
-                        <div className="flex items-center gap-8 mb-12 bg-white/5 p-8 rounded-2xl border border-white/5">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mb-8 sm:mb-12 bg-white/5 p-4 sm:p-8 rounded-2xl border border-white/5">
                           <div className="text-center">
-                            <span className="text-6xl font-light text-white block">{averageRating.toFixed(1)}</span>
+                            <span className="text-4xl sm:text-6xl font-light text-white block">{averageRating.toFixed(1)}</span>
                             <div className="flex justify-center mt-2">
                               {renderStars(averageRating, 'w-5 h-5')}
                             </div>
                             <span className="text-sm text-white/40 mt-2 block">{reviews.length} ratings</span>
                           </div>
-                          <div className="h-20 w-px bg-white/10" />
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-light text-white mb-2">Customer Reviews</h3>
-                            <p className="text-white/60 mb-6">95% of customers recommended this product</p>
+                          <div className="hidden sm:block h-20 w-px bg-white/10" />
+                          <Separator className="sm:hidden bg-white/10" />
+                          <div className="flex-1 text-center sm:text-left">
+                            <h3 className="text-xl sm:text-2xl font-light text-white mb-2">Customer Reviews</h3>
+                            <p className="text-white/60 mb-4 sm:mb-6">95% of customers recommended this product</p>
                             {store && product && (
                               <ReviewForm
                                 storeId={store.id}
@@ -1037,7 +1037,7 @@ export function ProductDetailPage() {
 
             {/* Recently Viewed */}
             <RecentlyViewedSection
-              currentProductId={productId}
+              currentProductId={product?.product_id}
               className="py-12 border-t border-white/5"
             />
           </div>

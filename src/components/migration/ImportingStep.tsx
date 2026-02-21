@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Package, CheckCircle2 } from 'lucide-react';
 import type { ImportProgress } from '@/types/migration';
@@ -36,7 +35,7 @@ export function ImportingStep({ progress, isLoading }: ImportingStepProps) {
         </h3>
         {progress && (
           <p className="text-sm text-muted-foreground">
-            Batch {progress.currentBatch} of {progress.totalBatches}
+            Processing {progress.current} of {progress.total}
           </p>
         )}
       </div>

@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 import type { RequestForumApprovalRequest } from '@/types/forum';
 
 export function useForumApproval() {
@@ -29,7 +30,7 @@ export function useRequestForumApproval() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to request approval', error, { component: 'useRequestForumApproval' });
-      toast.error(error instanceof Error ? error.message : 'Failed to submit approval request');
+      toast.error(humanizeError(error, 'Failed to submit approval request'));
     },
   });
 }

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -73,7 +74,7 @@ export default function IntegrationsHubPage() {
                         hubHref="integrations-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Integrations</h1>
                             <p className="text-muted-foreground text-sm">
@@ -94,25 +95,39 @@ export default function IntegrationsHubPage() {
                 </div>
 
                 <TabsContent value="overview" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><CustomIntegrationsPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Integrations Overview">
+                        <Suspense fallback={<TabSkeleton />}><CustomIntegrationsPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="api" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><APIAccessPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="API Keys">
+                        <Suspense fallback={<TabSkeleton />}><APIAccessPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="webhooks" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><WebhooksPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Webhooks">
+                        <Suspense fallback={<TabSkeleton />}><WebhooksPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="automation" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><AutomationPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Automation">
+                        <Suspense fallback={<TabSkeleton />}><AutomationPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="bulk" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><BulkOperationsPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Bulk Operations">
+                        <Suspense fallback={<TabSkeleton />}><BulkOperationsPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="ai" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><LocalAIPage /></Suspense>
+                    <ModuleErrorBoundary moduleName="Local AI">
+                        <Suspense fallback={<TabSkeleton />}><LocalAIPage /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="devtools" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}><DeveloperTools /></Suspense>
+                    <ModuleErrorBoundary moduleName="Developer Tools">
+                        <Suspense fallback={<TabSkeleton />}><DeveloperTools /></Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

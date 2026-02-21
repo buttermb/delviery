@@ -194,7 +194,7 @@ export function MappingStep({ detectedColumns, onUpdateMappings, onConfirm }: Ma
               <thead className="bg-muted/30">
                 <tr>
                   {detectedColumns.headers.map((header) => (
-                    <th key={header} className="px-4 py-2 text-left font-medium">
+                    <th key={header} scope="col" className="px-4 py-2 text-left font-medium">
                       {header}
                     </th>
                   ))}

@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { format, subDays } from "date-fns";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { humanizeError } from "@/lib/humanizeError";
+import { formatCurrency } from '@/lib/formatters';
 
 export default function FrontedInventoryAnalytics() {
   const [loading, setLoading] = useState(true);
@@ -61,7 +64,7 @@ export default function FrontedInventoryAnalytics() {
 
       if (error) {
         logger.error('Error loading fronted inventory:', error);
-        toast.error(`Failed to load analytics: ${error.message}`);
+        toast.error(`Failed to load analytics: ${humanizeError(error)}`);
         return;
       }
 
@@ -224,10 +227,10 @@ export default function FrontedInventoryAnalytics() {
       ["Generated", new Date().toLocaleString()],
       [""],
       ["Overall Statistics"],
-      ["Total Fronted", `$${stats.totalFronted.toFixed(2)}`],
-      ["Total Revenue", `$${stats.totalRevenue.toFixed(2)}`],
-      ["Total Profit", `$${stats.totalProfit.toFixed(2)}`],
-      ["Total Owed", `$${stats.totalOwed.toFixed(2)}`],
+      ["Total Fronted", formatCurrency(stats.totalFronted)],
+      ["Total Revenue", formatCurrency(stats.totalRevenue)],
+      ["Total Profit", formatCurrency(stats.totalProfit)],
+      ["Total Owed", formatCurrency(stats.totalOwed)],
       ["Active Fronts", stats.activeFronts],
       ["Overdue Fronts", stats.overdueFronts],
       ["Average Margin", `${stats.averageMargin.toFixed(1)}%`],
@@ -237,8 +240,8 @@ export default function FrontedInventoryAnalytics() {
       ["Name", "Total Profit", "Total Revenue", "Number of Fronts"],
       ...topPerformers.map((p) => [
         p.name,
-        `$${p.profit.toFixed(2)}`,
-        `$${p.revenue.toFixed(2)}`,
+        formatCurrency(p.profit),
+        formatCurrency(p.revenue),
         p.fronts,
       ]),
       [""],
@@ -247,7 +250,7 @@ export default function FrontedInventoryAnalytics() {
       ...topProducts.map((p) => [
         p.name,
         p.units,
-        `$${p.revenue.toFixed(2)}`,
+        formatCurrency(p.revenue),
         p.fronts,
       ]),
     ]
@@ -263,7 +266,7 @@ export default function FrontedInventoryAnalytics() {
     toast.success("Report exported");
   };
 
-  if (loading) return <div className="p-6">Loading analytics...</div>;
+  if (loading) return <EnhancedLoadingState variant="dashboard" message="Loading analytics..." />;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -288,7 +291,7 @@ export default function FrontedInventoryAnalytics() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Fronted</p>
-                <p className="text-2xl font-bold">${stats.totalFronted.toFixed(0)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(stats.totalFronted)}</p>
               </div>
             </div>
           </CardContent>
@@ -302,7 +305,7 @@ export default function FrontedInventoryAnalytics() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">${stats.totalRevenue.toFixed(0)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
                 <p className="text-xs text-green-500">
                   {((stats.totalRevenue / stats.totalFronted) * 100 || 0).toFixed(1)}% collected
                 </p>
@@ -320,7 +323,7 @@ export default function FrontedInventoryAnalytics() {
               <div>
                 <p className="text-sm text-muted-foreground">Total Profit</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${stats.totalProfit.toFixed(0)}
+                  {formatCurrency(stats.totalProfit)}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {stats.averageMargin.toFixed(1)}% avg margin
@@ -338,7 +341,7 @@ export default function FrontedInventoryAnalytics() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Owed</p>
-                <p className="text-2xl font-bold text-red-500">${stats.totalOwed.toFixed(0)}</p>
+                <p className="text-2xl font-bold text-red-500">{formatCurrency(stats.totalOwed)}</p>
                 <p className="text-xs text-red-500">{stats.overdueFronts} overdue</p>
               </div>
             </div>
@@ -410,12 +413,12 @@ export default function FrontedInventoryAnalytics() {
                   </TableCell>
                   <TableCell className="font-medium">{performer.name}</TableCell>
                   <TableCell className="text-green-600 font-bold">
-                    ${performer.profit.toFixed(2)}
+                    {formatCurrency(performer.profit)}
                   </TableCell>
-                  <TableCell>${performer.revenue.toFixed(2)}</TableCell>
+                  <TableCell>{formatCurrency(performer.revenue)}</TableCell>
                   <TableCell>{performer.fronts}</TableCell>
                   <TableCell>
-                    ${(performer.profit / performer.fronts).toFixed(2)}
+                    {formatCurrency(performer.profit / performer.fronts)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -452,9 +455,9 @@ export default function FrontedInventoryAnalytics() {
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.units} units</TableCell>
-                  <TableCell className="font-bold">${product.revenue.toFixed(2)}</TableCell>
+                  <TableCell className="font-bold">{formatCurrency(product.revenue)}</TableCell>
                   <TableCell>{product.fronts}</TableCell>
-                  <TableCell>${(product.revenue / product.fronts).toFixed(2)}</TableCell>
+                  <TableCell>{formatCurrency(product.revenue / product.fronts)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -477,8 +480,8 @@ export default function FrontedInventoryAnalytics() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{day.date}</span>
                   <div className="flex gap-4">
-                    <span className="text-blue-500">Fronted: ${day.fronted.toFixed(0)}</span>
-                    <span className="text-green-500">Revenue: ${day.revenue.toFixed(0)}</span>
+                    <span className="text-blue-500">Fronted: {formatCurrency(day.fronted)}</span>
+                    <span className="text-green-500">Revenue: {formatCurrency(day.revenue)}</span>
                   </div>
                 </div>
                 <div className="flex gap-1">

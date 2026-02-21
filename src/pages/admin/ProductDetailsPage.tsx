@@ -25,6 +25,7 @@ import { ProductSyncStatusIndicator } from '@/components/admin/products/ProductS
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useProductArchive } from '@/hooks/useProductArchive';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 import { useStorefrontProductSync } from '@/hooks/useStorefrontProductSync';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { Button } from '@/components/ui/button';
@@ -78,11 +79,7 @@ export default function ProductDetailsPage() {
 
     // Loading state
     if (isLoading) {
-        return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     // Error state
@@ -102,13 +99,24 @@ export default function ProductDetailsPage() {
     // Not found state
     if (!product) {
         return (
-            <div className="container mx-auto py-8 text-center">
-                <h2 className="text-2xl font-bold">Product not found</h2>
-                <p className="text-muted-foreground mt-2">The product you are looking for does not exist.</p>
-                <Button onClick={() => navigateToAdmin('inventory-hub?tab=products')} className="mt-4">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Products
-                </Button>
+            <div className="container mx-auto py-8 flex items-center justify-center">
+                <Card className="max-w-md w-full text-center">
+                    <CardContent className="pt-8 pb-6 space-y-4">
+                        <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                            <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Product not found</h2>
+                            <p className="text-muted-foreground mt-1">
+                                The product you are looking for does not exist or has been removed.
+                            </p>
+                        </div>
+                        <Button onClick={() => navigateToAdmin('inventory-hub?tab=products')}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Products
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }

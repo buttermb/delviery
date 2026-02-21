@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { quickExportCSV } from '@/lib/utils/exportUtils';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,11 +28,12 @@ import {
   RefreshCw,
   DollarSign,
   FileText,
-  Warehouse
+  Warehouse,
+  Filter,
+  X
 } from 'lucide-react';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useTablePreferences } from '@/hooks/useTablePreferences';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useAdminKeyboardShortcuts } from '@/hooks/useAdminKeyboardShortcuts';
 import { useExport } from '@/hooks/useExport';
 import { BulkActions } from '@/components/shared/BulkActions';
@@ -121,23 +122,46 @@ const PAYMENT_STATUS_CONFIG: Record<string, { label: string; color: string }> = 
   paid: { label: 'Paid', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
 };
 
+const WHOLESALE_FILTER_CONFIG = [
+  { key: 'q', defaultValue: '' },
+  { key: 'status', defaultValue: 'all' },
+  { key: 'view', defaultValue: 'selling' },
+];
+
 export default function WholesaleOrdersPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const { preferences, savePreferences } = useTablePreferences('wholesale-orders-table');
   const { exportCSV } = useExport();
 
-  // State
-  const [viewMode, setViewMode] = useState<'selling' | 'buying'>('selling');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
+  // Filter state — persisted in URL for back-button & navigation support
+  const [filters, setFilters, clearUrlFilters] = useUrlFilters(WHOLESALE_FILTER_CONFIG);
+  const searchQuery = filters.q as string;
+  const statusFilter = filters.status as string;
+  const viewMode = ((filters.view as string) || 'selling') as 'selling' | 'buying';
+
+  const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
+  const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
+  const handleViewModeChange = useCallback((v: 'selling' | 'buying') => setFilters({ view: v }), [setFilters]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (statusFilter !== 'all') count++;
+    return count;
+  }, [searchQuery, statusFilter]);
+
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const handleClearFilters = useCallback(() => {
+    clearUrlFilters();
+  }, [clearUrlFilters]);
+
+  // UI state
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Keyboard shortcuts
   useAdminKeyboardShortcuts({
@@ -149,19 +173,14 @@ export default function WholesaleOrdersPage() {
     onCreate: () => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`),
   });
 
-  // Save preferences when filter changes
-  useEffect(() => {
-    savePreferences({ customFilters: { status: statusFilter } });
-  }, [statusFilter, savePreferences]);
-
   // Fetch orders (Wholesale or Purchase based on viewMode)
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['orders', viewMode, tenant?.id, statusFilter],
+    queryKey: ['orders', viewMode, tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
       if (viewMode === 'selling') {
-        let query = supabase
+        const query = supabase
           .from('wholesale_orders')
           .select(`
             *,
@@ -170,10 +189,6 @@ export default function WholesaleOrdersPage() {
           `)
           .eq('tenant_id', tenant.id)
           .order('created_at', { ascending: false });
-
-        if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
-        }
 
         const { data: ordersData, error: ordersError } = await query;
 
@@ -202,8 +217,8 @@ export default function WholesaleOrdersPage() {
           type: 'selling'
         })) as unknown as WholesaleOrder[];
       } else {
-        // Buying Mode
-        let query = supabase
+        // Buying Mode (all statuses — status filtering is client-side)
+        const query = supabase
           .from('purchase_orders')
           .select(`
             *,
@@ -212,17 +227,6 @@ export default function WholesaleOrdersPage() {
           `)
           .eq('account_id', tenant.id)
           .order('created_at', { ascending: false });
-
-        if (statusFilter !== 'all') {
-          const statusMap: Record<string, string> = {
-            'pending': 'pending',
-            'ordered': 'ordered',
-            'received': 'received',
-            'cancelled': 'cancelled'
-          };
-          // Only apply filter if status is valid for POs
-          if (statusMap[statusFilter]) query = query.eq('status', statusFilter);
-        }
 
         const { data: poData, error: poError } = await query;
 
@@ -240,28 +244,39 @@ export default function WholesaleOrdersPage() {
     enabled: !!tenant?.id,
   });
 
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      if (!debouncedSearchQuery) return true;
-      const query = debouncedSearchQuery.toLowerCase();
-      if (viewMode === 'selling') {
-        const o = order as WholesaleOrder;
-        return (
-          o.order_number?.toLowerCase().includes(query) ||
-          o.client?.business_name?.toLowerCase().includes(query) ||
-          o.client?.contact_name?.toLowerCase().includes(query) ||
-          o.courier?.full_name?.toLowerCase().includes(query)
-        );
-      } else {
-        const p = order as PurchaseOrder;
-        return (
-          p.po_number?.toLowerCase().includes(query) ||
-          p.vendor?.name?.toLowerCase().includes(query) ||
-          p.vendor?.contact_name?.toLowerCase().includes(query)
-        );
-      }
-    });
-  }, [orders, debouncedSearchQuery, viewMode]);
+  const filteredOrders = useMemo((): OrderType[] => {
+    let result: OrderType[] = orders;
+
+    // Status filter (client-side for consistent combined filtering)
+    if (statusFilter !== 'all') {
+      result = result.filter(order => order.status === statusFilter);
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = (searchQuery as string).toLowerCase();
+      result = result.filter((order) => {
+        if (viewMode === 'selling') {
+          const o = order as WholesaleOrder;
+          return (
+            o.order_number?.toLowerCase().includes(query) ||
+            o.client?.business_name?.toLowerCase().includes(query) ||
+            o.client?.contact_name?.toLowerCase().includes(query) ||
+            o.courier?.full_name?.toLowerCase().includes(query)
+          );
+        } else {
+          const p = order as PurchaseOrder;
+          return (
+            p.po_number?.toLowerCase().includes(query) ||
+            p.vendor?.name?.toLowerCase().includes(query) ||
+            p.vendor?.contact_name?.toLowerCase().includes(query)
+          );
+        }
+      });
+    }
+
+    return result;
+  }, [orders, statusFilter, searchQuery, viewMode]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -746,7 +761,7 @@ export default function WholesaleOrdersPage() {
           <div className="bg-muted p-1 rounded-lg flex self-start sm:self-center order-last sm:order-none">
             <Button
               variant={viewMode === 'selling' ? 'default' : 'ghost'}
-              onClick={() => setViewMode('selling')}
+              onClick={() => handleViewModeChange('selling')}
               size="sm"
               className="w-24"
             >
@@ -754,7 +769,7 @@ export default function WholesaleOrdersPage() {
             </Button>
             <Button
               variant={viewMode === 'buying' ? 'default' : 'ghost'}
-              onClick={() => setViewMode('buying')}
+              onClick={() => handleViewModeChange('buying')}
               size="sm"
               className="w-24"
             >
@@ -846,12 +861,22 @@ export default function WholesaleOrdersPage() {
         {/* Filters & Search */}
         <Card className="p-4">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
-            <div className="w-full sm:w-80">
-              <SearchInput
-                placeholder="Search by order #, client, runner..."
-                defaultValue={searchQuery}
-                onSearch={setSearchQuery}
-              />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              {activeFilterCount > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Badge variant="secondary" className="h-5 px-1.5 text-xs font-medium">
+                    {activeFilterCount}
+                  </Badge>
+                </div>
+              )}
+              <div className="w-full sm:w-80">
+                <SearchInput
+                  placeholder="Search by order #, client, runner..."
+                  defaultValue={searchQuery}
+                  onSearch={handleSearchChange}
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
               <div className="flex bg-muted/20 p-1 rounded-lg">
@@ -860,7 +885,7 @@ export default function WholesaleOrdersPage() {
                     key={filter.id}
                     variant={statusFilter === filter.id ? 'secondary' : 'ghost'}
                     size="sm"
-                    onClick={() => setStatusFilter(filter.id)}
+                    onClick={() => handleStatusFilterChange(filter.id)}
                     className="gap-2 h-7"
                   >
                     {filter.label}
@@ -870,6 +895,17 @@ export default function WholesaleOrdersPage() {
                   </Button>
                 ))}
               </div>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 px-2"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Clear
+                </Button>
+              )}
             </div>
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t">
@@ -909,6 +945,13 @@ export default function WholesaleOrdersPage() {
               }
             }}
           />
+
+          {/* Search results count */}
+          {hasActiveFilters && filteredOrders.length > 0 && (
+            <div className="text-sm text-muted-foreground px-2 py-2">
+              Showing {filteredOrders.length} of {orders.length} orders
+            </div>
+          )}
         </Card>
 
         {/* Dialogs */}

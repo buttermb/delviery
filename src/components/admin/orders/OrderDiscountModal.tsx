@@ -3,7 +3,7 @@
  * Supports percentage, fixed amount, and coupon code discount options
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
   Dialog,
@@ -69,6 +69,17 @@ export function OrderDiscountModal({
   );
   const [couponCode, setCouponCode] = useState<string>(currentDiscount?.couponCode || '');
   const [couponValidation, setCouponValidation] = useState<CouponValidationResult | null>(null);
+
+  // Sync form state from props when modal opens with fresh data
+  useEffect(() => {
+    if (open) {
+      setActiveTab(currentDiscount?.type || 'percentage');
+      setPercentageValue(currentDiscount?.type === 'percentage' ? currentDiscount.value : 0);
+      setFixedValue(currentDiscount?.type === 'fixed' ? currentDiscount.value : 0);
+      setCouponCode(currentDiscount?.couponCode || '');
+      setCouponValidation(null);
+    }
+  }, [open, currentDiscount]);
 
   // Validate coupon mutation
   const validateCouponMutation = useMutation({

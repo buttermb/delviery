@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,6 +82,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { showInfoToast } from '@/utils/toastHelpers';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function TenantsListPage() {
   const navigate = useNavigate();
@@ -95,6 +97,7 @@ export default function TenantsListPage() {
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Dialog states for bulk actions
   const [changePlanDialogOpen, setChangePlanDialogOpen] = useState(false);
@@ -110,13 +113,13 @@ export default function TenantsListPage() {
 
   // Fetch tenants
   const { data: tenants = [], isLoading } = useQuery({
-    queryKey: ['super-admin-tenants-list', searchQuery, statusFilter, planFilter],
+    queryKey: ['super-admin-tenants-list', debouncedSearch, statusFilter, planFilter],
     queryFn: async () => {
       let query = supabase.from('tenants').select('*');
 
-      if (searchQuery) {
+      if (debouncedSearch) {
         query = query.or(
-          `business_name.ilike.%${escapePostgresLike(searchQuery)}%,owner_email.ilike.%${escapePostgresLike(searchQuery)}%,id.eq.${searchQuery}`
+          `business_name.ilike.%${escapePostgresLike(debouncedSearch)}%,owner_email.ilike.%${escapePostgresLike(debouncedSearch)}%,id.eq.${debouncedSearch}`
         );
       }
 
@@ -201,11 +204,7 @@ export default function TenantsListPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-12">Loading tenants...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading tenants..." />;
   }
 
   return (
@@ -327,7 +326,7 @@ export default function TenantsListPage() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4">
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Sort By</label>
                   <Select defaultValue="name">

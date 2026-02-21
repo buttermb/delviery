@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { read, utils } from "xlsx";
 import { logger } from "@/lib/logger";
+import { humanizeError } from "@/lib/humanizeError";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -297,7 +298,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             }
         } catch (error) {
             logger.error('Import failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerImportDialog' });
-            toast.error(error instanceof Error ? error.message : "Failed to import customers");
+            toast.error(humanizeError(error, "Failed to import customers"));
             setLoading(false);
         }
     };
@@ -350,7 +351,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                     {step === 'map' && (
                         <div className="space-y-4">
                             {/* Import Settings */}
-                            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg mb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg mb-4">
                                 <div className="space-y-2">
                                     <Label>Date Format</Label>
                                     <Select value={dateFormat} onValueChange={(v: any) => setDateFormat(v)}>

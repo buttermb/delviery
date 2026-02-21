@@ -41,6 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface SupportTicket {
   id: string;
@@ -98,7 +99,7 @@ export default function SuperAdminSupport() {
       if (error) {
         toast({
           title: "Error fetching tickets",
-          description: error.message,
+          description: humanizeError(error),
           variant: "destructive"
         });
         throw error;

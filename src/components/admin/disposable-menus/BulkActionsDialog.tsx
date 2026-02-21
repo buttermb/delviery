@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState } from 'react';
 import {
   Dialog,
@@ -14,7 +15,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 
 interface BulkActionsDialogProps {
   open: boolean;
@@ -29,6 +32,7 @@ export function BulkActionsDialog({
   selectedMenuIds,
   onComplete,
 }: BulkActionsDialogProps) {
+  const queryClient = useQueryClient();
   const [action, setAction] = useState<'activate' | 'deactivate' | 'delete'>('activate');
   const [loading, setLoading] = useState(false);
 
@@ -75,20 +79,15 @@ export function BulkActionsDialog({
 
       if (error) throw error;
 
-      toast({
-        title: 'Bulk Action Completed',
-        description: `Successfully ${action === 'activate' ? 'activated' : action === 'deactivate' ? 'deactivated' : 'deleted'} ${selectedMenuIds.length} menu(s)`,
-      });
+      toast.success(`Successfully ${action === 'activate' ? 'activated' : action === 'deactivate' ? 'deactivated' : 'deleted'} ${selectedMenuIds.length} menu(s)`);
 
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       onComplete();
       onClose();
     } catch (error: unknown) {
       logger.error('Bulk action error', error, { component: 'BulkActionsDialog' });
-      toast({
-        variant: 'destructive',
-        title: 'Bulk Action Failed',
-        description: error instanceof Error ? error.message : 'Failed to perform bulk action',
-      });
+      toast.error(humanizeError(error, 'Failed to perform bulk action'));
     } finally {
       setLoading(false);
     }

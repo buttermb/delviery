@@ -187,7 +187,7 @@ function TransactionRow({ transaction }: TransactionRowProps) {
         <TableCell className="w-8">
           {hasDetails && (
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+              <Button variant="ghost" size="sm" className="h-11 w-11 sm:h-7 sm:w-7 p-0">
                 {isOpen ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (

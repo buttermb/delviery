@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Download, TrendingUp, TrendingDown, DollarSign, Users, Package, AlertCircle } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,7 @@ import { useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { showInfoToast, showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { formatSmartDate } from '@/lib/formatters';
 
 export default function BoardReportPage() {
     const { tenant } = useTenantAdminAuth();
@@ -134,14 +136,7 @@ export default function BoardReportPage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-2 text-muted-foreground">Loading report...</p>
-                </div>
-            </div>
-        );
+        return <EnhancedLoadingState variant="dashboard" message="Loading report..." />;
     }
 
     return (
@@ -154,7 +149,7 @@ export default function BoardReportPage() {
                         Board Report
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Executive summary for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        Executive summary for {formatSmartDate(new Date(), { relative: false })}
                     </p>
                 </div>
                 <Button onClick={handleExport} className="flex items-center gap-2">
@@ -261,7 +256,7 @@ export default function BoardReportPage() {
             <Card>
                 <CardContent className="pt-6">
                     <p className="text-sm text-muted-foreground text-center">
-                        Generated on {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        Generated on {formatSmartDate(new Date(), { relative: false })}
                     </p>
                 </CardContent>
             </Card>

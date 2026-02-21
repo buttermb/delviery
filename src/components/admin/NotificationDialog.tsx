@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,7 +36,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Mail, MessageSquare, Globe } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Globe, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -57,6 +58,7 @@ interface NotificationDialogProps {
 
 export function NotificationDialog({ trigger }: NotificationDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<NotificationForm>({
@@ -100,6 +102,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
   });
 
   const onSubmit = async (data: NotificationForm) => {
+    setIsSending(true);
     try {
       // Determine which tenants to notify
       let targetTenants: string[] = [];
@@ -141,6 +144,8 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -311,15 +316,15 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
               )}
             />
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                <Globe className="h-4 w-4 mr-2" />
-                Send Notification
+              <Button type="submit" disabled={isSending}>
+                {isSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Globe className="h-4 w-4 mr-2" />}
+                {isSending ? 'Sending...' : 'Send Notification'}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

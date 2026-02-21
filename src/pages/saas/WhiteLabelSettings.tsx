@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * White Label Settings Page
  * Customize branding and theme for tenant
@@ -32,8 +31,8 @@ export default function WhiteLabelSettings() {
   );
   const [customDomain, setCustomDomain] = useState(tenant?.white_label?.domain || '');
   const [logo, setLogo] = useState(tenant?.white_label?.logo || '');
-  const [theme, setTheme] = useState(
-    tenant?.white_label?.theme || {
+  const [theme, setTheme] = useState<Record<string, string>>(
+    (tenant?.white_label?.theme as Record<string, string>) || {
       primaryColor: '#10b981',
       secondaryColor: '#3b82f6',
       backgroundColor: '#ffffff',
@@ -70,12 +69,12 @@ export default function WhiteLabelSettings() {
         domain: customDomain || null,
         logo: logo || null,
         theme: {
-          primaryColor: theme.primaryColor,
-          secondaryColor: theme.secondaryColor,
-          backgroundColor: theme.backgroundColor,
-          textColor: theme.textColor,
-          accentColor: theme.accentColor,
-          customCSS: theme.customCSS || '',
+          primaryColor: String(theme.primaryColor ?? ''),
+          secondaryColor: String(theme.secondaryColor ?? ''),
+          backgroundColor: String(theme.backgroundColor ?? ''),
+          textColor: String(theme.textColor ?? ''),
+          accentColor: String(theme.accentColor ?? ''),
+          customCSS: String(theme.customCSS ?? ''),
         },
         emailFrom: emailFrom || null,
         emailLogo: emailLogo || null,
@@ -86,7 +85,7 @@ export default function WhiteLabelSettings() {
       const { error } = await supabase
         .from('tenants')
         .update({
-          white_label: whiteLabelConfig,
+          white_label: whiteLabelConfig as any,
           updated_at: new Date().toISOString(),
         })
         .eq('id', tenant.id);
@@ -162,7 +161,7 @@ export default function WhiteLabelSettings() {
           <p className="text-muted-foreground mb-4">
             White-label branding is available on Enterprise plans only.
           </p>
-          <Button onClick={() => navigate('/saas/billing')}>
+          <Button onClick={() => window.location.href = '/saas/billing'}>
             Upgrade to Enterprise
           </Button>
         </Card>

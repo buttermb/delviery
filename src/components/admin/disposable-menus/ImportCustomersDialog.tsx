@@ -16,6 +16,7 @@ import { Search, Users, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface ImportCustomersDialogProps {
   menuId: string;
@@ -154,6 +155,7 @@ export const ImportCustomersDialog = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, company, or phone..."
+              aria-label="Search customers"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -210,7 +212,7 @@ export const ImportCustomersDialog = ({
                         {client.contact_name && client.business_name && (
                           <p>Contact: {client.contact_name}</p>
                         )}
-                        <p>Phone: {client.phone}</p>
+                        <p>Phone: {formatPhoneNumber(client.phone)}</p>
                         {client.email && <p>Email: {client.email}</p>}
                       </div>
                     </div>

@@ -75,16 +75,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Select,
   SelectContent,
@@ -831,7 +822,7 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
             </div>
 
             {/* Time Range */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="start_time">Start Time *</Label>
                 <Input
@@ -839,6 +830,11 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
                   id="start_time"
                   {...form.register('start_time')}
                 />
+                {form.formState.errors.start_time && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.start_time.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end_time">End Time *</Label>
@@ -956,30 +952,18 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Time Slot</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{slotToDelete?.label}&quot;? This action
-              cannot be undone. Existing scheduled deliveries will not be affected.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => slotToDelete && deleteSlotMutation.mutate(slotToDelete.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteSlotMutation.isPending}
-            >
-              {deleteSlotMutation.isPending && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              )}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (slotToDelete) {
+            deleteSlotMutation.mutate(slotToDelete.id);
+          }
+        }}
+        itemType="time slot"
+        itemName={slotToDelete?.label}
+        isLoading={deleteSlotMutation.isPending}
+      />
     </div>
   );
 }

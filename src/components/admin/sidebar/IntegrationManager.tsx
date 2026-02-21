@@ -210,7 +210,7 @@ export function IntegrationManager() {
               size="icon"
               onClick={() => handleRefreshStatus(integration.id, integration.name)}
               disabled={refreshingId === integration.id}
-              className="h-8 w-8"
+              className="h-11 w-11"
               title="Check connection status"
             >
               <RefreshCw 

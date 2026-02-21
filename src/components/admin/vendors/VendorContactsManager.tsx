@@ -50,16 +50,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   User,
   Plus,
@@ -90,6 +81,7 @@ import {
 } from '@/hooks/useVendorContacts';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { formatSmartDate } from '@/lib/formatters';
 
 // ============================================================================
 // Types & Schema
@@ -104,7 +96,7 @@ const contactFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   role: z.string().optional(),
   department: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   is_primary: z.boolean().default(false),
   notes: z.string().optional(),
@@ -575,27 +567,15 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteContactId} onOpenChange={() => setDeleteContactId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Contact</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this contact? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeleting}
-            >
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteContactId}
+        onOpenChange={() => setDeleteContactId(null)}
+        onConfirm={handleDelete}
+        title="Delete Contact"
+        description="Are you sure you want to delete this contact? This action cannot be undone."
+        itemType="contact"
+        isLoading={isDeleting}
+      />
     </>
   );
 }
@@ -690,7 +670,7 @@ function ContactCard({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Contact actions">
+          <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Contact actions">
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -873,11 +853,7 @@ function ContactHistoryDialog({
                           {HISTORY_ACTION_LABELS[item.action as ContactHistoryAction]}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(item.created_at).toLocaleDateString()}{' '}
-                          {new Date(item.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {formatSmartDate(item.created_at, { includeTime: true })}
                         </span>
                       </div>
                       {item.summary && (

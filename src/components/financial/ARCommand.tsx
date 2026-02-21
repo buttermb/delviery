@@ -13,10 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { formatSmartDate } from '@/lib/formatters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useARCommand, useCollectionActions, type ARClient } from '@/hooks/useFinancialCommandCenter';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface ClientCardProps {
   client: ARClient;
@@ -50,14 +52,14 @@ function ClientCard({ client, onCall, onText, onInvoice, onRemind }: ClientCardP
         </div>
         <div className="text-right">
           <div className="text-xl font-bold font-mono text-zinc-100">
-            ${client.amount.toLocaleString()}
+            {formatCurrency(client.amount)}
           </div>
         </div>
       </div>
 
       {client.lastContact && (
         <div className="text-[10px] text-zinc-500 mb-3">
-          Last contact: {client.lastContact.toLocaleDateString()}
+          Last contact: {formatSmartDate(client.lastContact)}
         </div>
       )}
 
@@ -123,11 +125,6 @@ export function ARCommand() {
     );
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
-
   const handleAction = (clientId: string, type: 'call' | 'text' | 'invoice' | 'reminder') => {
     logActivity.mutate({ clientId, type });
   };
@@ -154,7 +151,7 @@ export function ARCommand() {
               MONEY COMING IN
             </span>
             <span className="text-lg font-bold text-zinc-100 font-mono">
-              ${data?.totalOutstanding.toLocaleString()}
+              {formatCurrency(data?.totalOutstanding)}
             </span>
           </CardTitle>
         </CardHeader>
@@ -164,7 +161,7 @@ export function ARCommand() {
             <div className="w-3 h-3 rounded-full bg-red-500" />
             <span className="text-xs text-zinc-400 flex-1">OVERDUE</span>
             <span className="text-sm font-mono text-red-400">
-              {formatCurrency(data?.overdue || 0)}
+              {formatCompactCurrency(data?.overdue || 0)}
             </span>
             <Progress 
               value={overduePercentage} 
@@ -177,7 +174,7 @@ export function ARCommand() {
             <div className="w-3 h-3 rounded-full bg-amber-500" />
             <span className="text-xs text-zinc-400 flex-1">DUE THIS WEEK</span>
             <span className="text-sm font-mono text-amber-400">
-              {formatCurrency(data?.dueThisWeek || 0)}
+              {formatCompactCurrency(data?.dueThisWeek || 0)}
             </span>
             <Progress 
               value={data?.totalOutstanding ? (data.dueThisWeek / data.totalOutstanding) * 100 : 0} 
@@ -190,7 +187,7 @@ export function ARCommand() {
             <div className="w-3 h-3 rounded-full bg-emerald-500" />
             <span className="text-xs text-zinc-400 flex-1">UPCOMING</span>
             <span className="text-sm font-mono text-emerald-400">
-              {formatCurrency(data?.upcoming || 0)}
+              {formatCompactCurrency(data?.upcoming || 0)}
             </span>
             <Progress 
               value={data?.totalOutstanding ? (data.upcoming / data.totalOutstanding) * 100 : 0} 

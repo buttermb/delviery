@@ -83,7 +83,7 @@ export function CartDrawer({
             className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-neutral-950 border-l border-white/10 z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-5 h-5 text-white" />
                 <h2 className="text-white text-lg font-light tracking-wide">
@@ -105,7 +105,7 @@ export function CartDrawer({
 
             {/* Cart Items */}
             {items.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6">
+              <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
                 <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
                   <ShoppingBag className="w-8 h-8 text-white/20" />
                 </div>
@@ -121,7 +121,7 @@ export function CartDrawer({
             ) : (
               <>
                 <ScrollArea className="flex-1">
-                  <div className="p-6 space-y-4">
+                  <div className="p-4 sm:p-6 space-y-4">
                     {items.map((item) => (
                       <motion.div
                         key={item.productId}
@@ -187,7 +187,7 @@ export function CartDrawer({
                 </ScrollArea>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 space-y-3">
+                <div className="p-4 sm:p-6 border-t border-white/10 space-y-3">
                   {/* Minimum Order Notice */}
                   {belowMinimum && (
                     <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">

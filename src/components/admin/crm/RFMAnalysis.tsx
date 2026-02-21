@@ -46,7 +46,7 @@ export function RFMAnalysis({ customers }: RFMAnalysisProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Recency (R)</CardTitle>

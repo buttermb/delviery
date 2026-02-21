@@ -22,13 +22,15 @@ import {
     Copy,
     FileText,
     Receipt,
-    DollarSign
+    DollarSign,
+    Users
 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
@@ -44,21 +46,29 @@ export default function ClientDetailPage() {
     useBreadcrumbLabel(client?.name ?? null);
 
     if (isLoading) {
-        return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!client) {
         return (
-            <div className="container mx-auto py-8 text-center">
-                <h2 className="text-2xl font-bold">Client not found</h2>
-                <Button onClick={() => navigateToAdmin('crm/clients')} className="mt-4">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Clients
-                </Button>
+            <div className="container mx-auto py-8 flex items-center justify-center">
+                <Card className="max-w-md w-full text-center">
+                    <CardContent className="pt-8 pb-6 space-y-4">
+                        <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                            <Users className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Client not found</h2>
+                            <p className="text-muted-foreground mt-1">
+                                The client you are looking for does not exist or has been removed.
+                            </p>
+                        </div>
+                        <Button onClick={() => navigateToAdmin('crm/clients')}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Clients
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }

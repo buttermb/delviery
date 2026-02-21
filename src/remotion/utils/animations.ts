@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Shared Remotion animation helpers.
  * All animations are frame-driven — no CSS transitions.

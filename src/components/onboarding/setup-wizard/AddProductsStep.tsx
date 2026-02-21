@@ -29,7 +29,7 @@ import { toast } from 'sonner';
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
 const productSchema = z.object({
-  name: z.string().min(2, 'Product name is required'),
+  name: z.string().min(2, 'Product name is required').max(200, 'Product name must be 200 characters or less'),
   sku: z.string().optional(),
   price: z.string().min(1, 'Price is required').refine((val) => !isNaN(Number(val)) && Number(val) >= 0, 'Price must be a valid number'),
   category: z.string().optional(),
@@ -65,6 +65,24 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
     setIsSubmitting(true);
 
     try {
+      // Check for duplicate product name within tenant
+      const { data: existingProduct, error: dupError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('tenant_id', tenant.id)
+        .eq('name', data.name.trim())
+        .maybeSingle();
+
+      if (dupError) {
+        logger.error('Error checking product name uniqueness', dupError, { component: 'AddProductsStep' });
+      }
+
+      if (existingProduct) {
+        toast.error('A product with this name already exists');
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('products')
         .insert({
@@ -74,7 +92,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
           price: Number(data.price),
           category: data.category || 'Flower',
           thca_percentage: 0,
-          status: 'active',
+          in_stock: true,
         });
 
       if (error) throw error;
@@ -152,7 +170,8 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
           sku: skuIdx !== -1 ? cols[skuIdx] || null : null,
           category: (categoryIdx !== -1 && cols[categoryIdx]) ? cols[categoryIdx] : 'Flower',
           thca_percentage: 0,
-        } as any);
+          in_stock: true,
+        });
       }
 
       if (products.length > 0) {
@@ -222,7 +241,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
                   <FormItem>
                     <FormLabel required>Product Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Blue Dream 3.5g" {...field} />
+                      <Input placeholder="e.g., Blue Dream 3.5g" maxLength={200} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

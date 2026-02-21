@@ -12,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { Loader2, Save, Store, Palette, Truck, Upload } from "lucide-react";
 import { MarketplaceProfile } from "@/types/marketplace-extended";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 
 export default function StoreSettings() {
     const { tenant } = useTenantAdminAuth();
@@ -78,7 +80,7 @@ export default function StoreSettings() {
             toast.success("Store settings updated successfully");
         },
         onError: (error) => {
-            toast.error("Failed to update settings: " + error.message);
+            toast.error(humanizeError(error, "Failed to update settings"));
         }
     });
 
@@ -95,7 +97,7 @@ export default function StoreSettings() {
     };
 
     if (isLoading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+        return <EnhancedLoadingState variant="card" message="Loading settings..." />;
     }
 
     const currentProfile = { ...profile, ...formState } as MarketplaceProfile;

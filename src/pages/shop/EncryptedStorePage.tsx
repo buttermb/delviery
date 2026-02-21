@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Encrypted Store Page
  * Handles /s/:token routes for private store links

@@ -18,6 +18,7 @@ import {
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
 import { toast } from '@/hooks/use-toast';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
+import { formatPhoneNumber } from '@/lib/formatters';
 import {
   Select,
   SelectContent,
@@ -261,7 +262,7 @@ export const CustomerMessaging = () => {
                         <div className="font-medium">{customer.name}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-2">
                           <Phone className="h-3 w-3" />
-                          {customer.phone}
+                          {formatPhoneNumber(customer.phone)}
                         </div>
                         {customer.email && (
                           <div className="text-sm text-muted-foreground flex items-center gap-2">

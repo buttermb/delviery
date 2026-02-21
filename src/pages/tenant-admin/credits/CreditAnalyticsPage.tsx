@@ -55,6 +55,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import {
   FREE_TIER_MONTHLY_CREDITS,
   getCreditCostInfo,
@@ -690,11 +691,7 @@ export function CreditAnalyticsPage() {
                           return (
                             <TableRow key={purchase.id}>
                               <TableCell className="whitespace-nowrap">
-                                {new Date(purchase.created_at).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                })}
+                                {formatSmartDate(purchase.created_at)}
                               </TableCell>
                               <TableCell>
                                 {purchase.description || 'Credit purchase'}
@@ -705,7 +702,7 @@ export function CreditAnalyticsPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                {pricePaid ? `$${(pricePaid / 100).toFixed(2)}` : '-'}
+                                {pricePaid != null ? formatCurrency(pricePaid / 100) : '-'}
                               </TableCell>
                             </TableRow>
                           );
@@ -730,11 +727,7 @@ export function CreditAnalyticsPage() {
                       <p className="text-sm text-emerald-700 dark:text-emerald-300">
                         You'll receive {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} free credits on{' '}
                         <strong>
-                          {nextFreeGrantAt.toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
+                          {formatSmartDate(nextFreeGrantAt)}
                         </strong>
                       </p>
                     </div>

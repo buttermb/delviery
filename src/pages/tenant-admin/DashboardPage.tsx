@@ -45,9 +45,10 @@ import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
-import { useToast } from "@/hooks/use-toast";
-import { formatSmartDate } from "@/lib/utils/formatDate";
+import { toast } from "sonner";
+import { formatSmartDate } from "@/lib/formatters";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,6 +74,15 @@ interface DashboardInventoryRow {
   stock_quantity: number | null;
   available_quantity: number | null;
   low_stock_alert: number | null;
+}
+
+interface LowStockItem {
+  id: string;
+  strain: string;
+  product_name: string | null;
+  quantity_lbs: number;
+  reorder_point: number;
+  weight_lbs: number;
 }
 
 export default function TenantAdminDashboardPage() {
@@ -106,7 +116,6 @@ export default function TenantAdminDashboardPage() {
   } = useCredits();
 
   const [generatingDemoData, setGeneratingDemoData] = useState(false);
-  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Credit purchase celebration state
@@ -520,8 +529,7 @@ export default function TenantAdminDashboardPage() {
         throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate demo data');
       }
 
-      toast({
-        title: "Demo Data Generated",
+      toast.success("Demo Data Generated", {
         description: "Your dashboard has been populated with sample data.",
       });
 
@@ -584,19 +592,66 @@ export default function TenantAdminDashboardPage() {
 
   // Early return if auth loading takes too long
   if (authLoading) {
-    // Show loading fallback, but with timeout protection
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+      <div className="min-h-dvh bg-background">
+        {/* Skeleton Header */}
+        <header className="border-b border-border bg-background sticky top-0 z-50 shadow-sm">
+          <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-24 hidden sm:block" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-20 rounded-md" />
+              <Skeleton className="h-9 w-20 rounded-md" />
+            </div>
+          </div>
+        </header>
+        <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-6 lg:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+          {/* Skeleton KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card p-3 sm:p-4 md:p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg" />
+                </div>
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+          {/* Skeleton Quick Actions */}
+          <div className="rounded-lg border bg-card p-3 sm:p-4 md:p-6 space-y-4">
+            <Skeleton className="h-5 w-32" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
+          {/* Skeleton Activity Feed */}
+          <div className="rounded-lg border bg-card p-3 sm:p-4 md:p-6 space-y-4">
+            <Skeleton className="h-5 w-36" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 border rounded-lg">
+                  <Skeleton className="h-4 w-4 rounded-full mt-0.5" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background overflow-x-hidden">
       {/* Header */}
       <header className="border-b border-border bg-background sticky top-0 z-50 shadow-sm safe-area-top">
         <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
@@ -706,7 +761,7 @@ export default function TenantAdminDashboardPage() {
                     <p className="text-sm text-muted-foreground">
                       of {FREE_TIER_MONTHLY_CREDITS.toLocaleString()} credits this month
                       {nextFreeGrantAt && (
-                        <> · Refresh on {nextFreeGrantAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</>
+                        <> · Refresh on {formatSmartDate(nextFreeGrantAt)}</>
                       )}
                     </p>
                   </div>
@@ -1039,113 +1094,110 @@ export default function TenantAdminDashboardPage() {
 
         {/* Usage Limit Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4" data-tutorial="dashboard-stats">
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/inventory/products`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Package className="h-3 w-3" /> Products</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold">
-                {tenantUsage.products || 0}/{getDisplayLimit('products')}
-              </div>
-              {!isUnlimited('products') && (
-                <>
-                  <Progress
-                    value={getUsagePercentage('products')}
-                    className="mt-2 h-1.5 sm:h-2"
-                  />
-                  {getUsagePercentage('products') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
-                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('products'))}% capacity.
-                      Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
-                    </p>
-                  )}
-                </>
-              )}
-              {isUnlimited('products') && (
-                <p className="text-xs sm:text-sm text-green-600 mt-2">
-                  ✓ Unlimited products on {tenant?.subscription_plan || 'your'} plan
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Link to={`/${tenant?.slug}/admin/inventory/products`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Package className="h-3 w-3" /> Products</CardTitle>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                <div className="text-2xl sm:text-3xl font-bold">
+                  {tenantUsage.products || 0}/{getDisplayLimit('products')}
+                </div>
+                {!isUnlimited('products') && (
+                  <>
+                    <Progress
+                      value={getUsagePercentage('products')}
+                      className="mt-2 h-1.5 sm:h-2"
+                    />
+                    {getUsagePercentage('products') >= 80 && (
+                      <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
+                        <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('products'))}% capacity.
+                        Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
+                      </p>
+                    )}
+                  </>
+                )}
+                {isUnlimited('products') && (
+                  <p className="text-xs sm:text-sm text-green-600 mt-2">
+                    ✓ Unlimited products on {tenant?.subscription_plan || 'your'} plan
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/big-plug-clients`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Users className="h-3 w-3" /> Customers</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold">
-                {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
-              </div>
-              {!isUnlimited('customers') && (
-                <>
-                  <Progress
-                    value={getUsagePercentage('customers')}
-                    className="mt-2 h-1.5 sm:h-2"
-                  />
-                  {getUsagePercentage('customers') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
-                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('customers'))}% capacity.
-                      Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
-                    </p>
-                  )}
-                </>
-              )}
-              {isUnlimited('customers') && (
-                <p className="text-xs sm:text-sm text-green-600 mt-2">
-                  ✓ Unlimited customers on {tenant?.subscription_plan || 'your'} plan
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Link to={`/${tenant?.slug}/admin/big-plug-clients`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Users className="h-3 w-3" /> Customers</CardTitle>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                <div className="text-2xl sm:text-3xl font-bold">
+                  {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
+                </div>
+                {!isUnlimited('customers') && (
+                  <>
+                    <Progress
+                      value={getUsagePercentage('customers')}
+                      className="mt-2 h-1.5 sm:h-2"
+                    />
+                    {getUsagePercentage('customers') >= 80 && (
+                      <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2 flex items-start gap-1">
+                        <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> You're at {Math.round(getUsagePercentage('customers'))}% capacity.
+                        Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
+                      </p>
+                    )}
+                  </>
+                )}
+                {isUnlimited('customers') && (
+                  <p className="text-xs sm:text-sm text-green-600 mt-2">
+                    ✓ Unlimited customers on {tenant?.subscription_plan || 'your'} plan
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/disposable-menus`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Smartphone className="h-3 w-3" /> Menus</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
-                {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
-              </div>
-              {!isUnlimited('menus') && (
-                <>
-                  <Progress
-                    value={getUsagePercentage('menus')}
-                    className="mt-2 h-1.5 sm:h-2"
-                  />
-                  {getUsagePercentage('menus') >= 80 && (
-                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
-                      ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity.
-                      Upgrade to Professional for unlimited menus.
-                    </p>
-                  )}
-                </>
-              )}
-              {isUnlimited('menus') && (
-                <p className="text-xs sm:text-sm text-green-600 mt-2">
-                  ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Link to={`/${tenant?.slug}/admin/disposable-menus`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1"><Smartphone className="h-3 w-3" /> Menus</CardTitle>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
+                  {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
+                </div>
+                {!isUnlimited('menus') && (
+                  <>
+                    <Progress
+                      value={getUsagePercentage('menus')}
+                      className="mt-2 h-1.5 sm:h-2"
+                    />
+                    {getUsagePercentage('menus') >= 80 && (
+                      <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
+                        ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity.
+                        Upgrade to Professional for unlimited menus.
+                      </p>
+                    )}
+                  </>
+                )}
+                {isUnlimited('menus') && (
+                  <p className="text-xs sm:text-sm text-green-600 mt-2">
+                    ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Quick Actions */}
@@ -1247,7 +1299,7 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
               <div className="space-y-2 sm:space-y-3">
-                {todayMetrics.lowStock.map((item: any, index: number) => (
+                {todayMetrics.lowStock.map((item: LowStockItem, index: number) => (
                   <div key={index} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50/50 dark:bg-orange-950/20 gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-xs sm:text-sm text-[hsl(var(--tenant-text))] truncate">{item.strain || item.product_name || 'Unknown'}</p>

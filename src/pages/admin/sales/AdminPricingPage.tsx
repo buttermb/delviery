@@ -9,6 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign, Edit, Save, X } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
+import { formatCurrency } from '@/lib/formatters';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface Product {
   id: string;
@@ -67,10 +70,10 @@ export default function AdminPricingPage() {
       setEditingId(null);
       setEditData({});
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Update failed',
-        description: error.message,
+        description: humanizeError(error),
         variant: 'destructive'
       });
     }
@@ -102,11 +105,7 @@ export default function AdminPricingPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading pricing data...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading pricing data..." />;
   }
 
   return (
@@ -129,7 +128,7 @@ export default function AdminPricingPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">
-              ${(products.reduce((sum, p) => sum + p.price, 0) / products.length || 0).toFixed(2)}
+              {formatCurrency(products.reduce((sum, p) => sum + p.price, 0) / products.length || 0)}
             </div>
             <p className="text-xs text-muted-foreground">Avg Retail Price</p>
           </CardContent>
@@ -165,14 +164,14 @@ export default function AdminPricingPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Product</th>
-                  <th className="text-left p-3 font-medium">Category</th>
-                  <th className="text-right p-3 font-medium">Retail Price</th>
-                  <th className="text-right p-3 font-medium">Wholesale Price</th>
-                  <th className="text-right p-3 font-medium">Cost</th>
-                  <th className="text-right p-3 font-medium">Margin</th>
-                  <th className="text-right p-3 font-medium">Bulk Discount</th>
-                  <th className="text-center p-3 font-medium">Actions</th>
+                  <th scope="col" className="text-left p-3 font-medium">Product</th>
+                  <th scope="col" className="text-left p-3 font-medium">Category</th>
+                  <th scope="col" className="text-right p-3 font-medium">Retail Price</th>
+                  <th scope="col" className="text-right p-3 font-medium">Wholesale Price</th>
+                  <th scope="col" className="text-right p-3 font-medium">Cost</th>
+                  <th scope="col" className="text-right p-3 font-medium">Margin</th>
+                  <th scope="col" className="text-right p-3 font-medium">Bulk Discount</th>
+                  <th scope="col" className="text-center p-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -192,7 +191,7 @@ export default function AdminPricingPage() {
                           className="w-24 text-right"
                         />
                       ) : (
-                        <span className="font-bold">${product.price.toFixed(2)}</span>
+                        <span className="font-bold">{formatCurrency(product.price)}</span>
                       )}
                     </td>
                     <td className="p-3 text-right">
@@ -205,7 +204,7 @@ export default function AdminPricingPage() {
                           className="w-24 text-right"
                         />
                       ) : (
-                        <span>{product.wholesale_price ? `$${product.wholesale_price.toFixed(2)}` : '—'}</span>
+                        <span>{product.wholesale_price ? formatCurrency(product.wholesale_price) : '—'}</span>
                       )}
                     </td>
                     <td className="p-3 text-right">
@@ -218,7 +217,7 @@ export default function AdminPricingPage() {
                           className="w-24 text-right"
                         />
                       ) : (
-                        <span>{product.cost_per_unit ? `$${product.cost_per_unit.toFixed(2)}` : '—'}</span>
+                        <span>{product.cost_per_unit ? formatCurrency(product.cost_per_unit) : '—'}</span>
                       )}
                     </td>
                     <td className="p-3 text-right">

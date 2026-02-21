@@ -335,8 +335,8 @@ export function useRealtimeSync({
     const cleanup = () => {
       channelsRef.current.forEach((channel) => {
         try {
-          supabase.removeChannel(channel).catch(() => {
-            // Silently ignore cleanup errors
+          supabase.removeChannel(channel).catch((err) => {
+            logger.warn('Error removing realtime channel', { error: err, component: 'useRealtimeSync' });
           });
         } catch {
           // Silently ignore cleanup errors

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useClients } from '@/hooks/crm/useClients';
 import { CreateClientDialog } from '@/components/crm/CreateClientDialog';
@@ -15,6 +15,7 @@ import { User, Phone, Mail, DollarSign, Users, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 
 interface Client {
     id: string;
@@ -25,10 +26,21 @@ interface Client {
     status: string;
 }
 
+const CLIENTS_FILTER_CONFIG = [
+    { key: 'q', defaultValue: '' },
+    { key: 'status', defaultValue: 'active' },
+];
+
 export default function ClientsPage() {
     const { navigateToAdmin } = useTenantNavigation();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'active' | 'archived'>('active');
+
+    // Filter state — persisted in URL for back-button & navigation support
+    const [filters, setFilters] = useUrlFilters(CLIENTS_FILTER_CONFIG);
+    const searchTerm = filters.q as string;
+    const statusFilter = (filters.status || 'active') as 'active' | 'archived';
+
+    const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
+    const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
 
     const { data: clients, isLoading } = useClients(statusFilter);
 
@@ -157,13 +169,13 @@ export default function ClientsPage() {
                 <div className="relative w-full md:w-96">
                     <SearchInput
                         placeholder="Search clients..."
-                        onSearch={setSearchTerm}
+                        onSearch={handleSearchChange}
                         defaultValue={searchTerm}
                     />
                 </div>
                 <Select
                     value={statusFilter}
-                    onValueChange={(value: 'active' | 'archived') => setStatusFilter(value)}
+                    onValueChange={(value: 'active' | 'archived') => handleStatusFilterChange(value)}
                 >
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Filter by status" />
@@ -190,7 +202,7 @@ export default function ClientsPage() {
                         ? "No clients match your search criteria."
                         : "Add your first client to start managing relationships.",
                     primaryAction: searchTerm
-                        ? { label: "Clear Search", onClick: () => setSearchTerm('') }
+                        ? { label: "Clear Search", onClick: () => handleSearchChange('') }
                         : { label: "Add Your First Client", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
                 }}
             />

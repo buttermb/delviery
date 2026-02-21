@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
+import { SETTINGS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 
 interface LoyaltyConfig {
@@ -52,7 +53,7 @@ export function useLoyaltyConfig(storeId: string | undefined) {
       return data as LoyaltyConfig | null;
     },
     enabled: !!storeId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    ...SETTINGS_QUERY_CONFIG,
   });
 }
 

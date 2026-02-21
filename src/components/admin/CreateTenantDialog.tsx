@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Allows super admin to create new tenants manually
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -37,7 +38,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 
 type TenantLimits = {
   customers: number;
@@ -67,7 +68,7 @@ const createTenantSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
   owner_email: z.string().email('Invalid email address'),
   owner_name: z.string().min(2, 'Owner name must be at least 2 characters'),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
   subscription_plan: z.enum(['starter', 'professional', 'enterprise']),
   subscription_status: z.enum(['trial', 'active', 'suspended']),
   state: z.string().optional(),
@@ -81,6 +82,7 @@ interface CreateTenantDialogProps {
 
 export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -97,7 +99,15 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
     },
   });
 
+  // Reset form state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
   const onSubmit = async (data: CreateTenantForm) => {
+    setIsSaving(true);
     try {
       // Generate slug from business name
       const slug = data.business_name
@@ -236,6 +246,8 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -272,7 +284,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="owner_name"
@@ -302,7 +314,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="phone"
@@ -332,7 +344,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="subscription_plan"
@@ -380,7 +392,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -388,8 +400,11 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
               >
                 Cancel
               </Button>
-              <Button type="submit">Create Tenant</Button>
-            </div>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Create Tenant
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

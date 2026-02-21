@@ -49,6 +49,8 @@ import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { TruncatedText } from "@/components/shared/TruncatedText";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
@@ -361,7 +363,34 @@ async function generateEnhancedInvoicePDF({ invoice, settings }: GenerateInvoice
     doc.text("Total:", totalsX, yPosition);
     doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
     doc.text(formatCurrency(invoice.total), pageWidth - margin, yPosition, { align: "right" });
-    yPosition += 15;
+    yPosition += 10;
+
+    // Partial payment indicator
+    const amountPaid = invoice.amount_paid ?? 0;
+    if (amountPaid > 0) {
+        const balanceDue = Math.max(0, invoice.total - amountPaid);
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(34, 197, 94); // Green
+        doc.text("Amount Paid:", totalsX, yPosition);
+        doc.text(formatCurrency(amountPaid), pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 6;
+
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
+        yPosition += 6;
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(balanceDue > 0 ? 239 : 34, balanceDue > 0 ? 68 : 197, balanceDue > 0 ? 68 : 94);
+        doc.text("Amount Due:", totalsX, yPosition);
+        doc.text(formatCurrency(balanceDue), pageWidth - margin, yPosition, { align: "right" });
+        yPosition += 10;
+    } else {
+        yPosition += 5;
+    }
 
     // Due Date Info
     const dueDateInfo = calculateDueDateInfo(invoice.due_date);
@@ -438,16 +467,36 @@ export function InvoicesPage() {
     const voidInvoice = useVoidInvoice();
     const duplicateInvoice = useDuplicateInvoice();
     const { data: crmSettings } = useCRMSettings();
+    const mod = useModifierKey();
 
-    const filteredInvoices = invoices?.filter((invoice) => {
-        const matchesSearch =
-            invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (invoice.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredInvoices = (() => {
+        const filtered = invoices?.filter((invoice) => {
+            const matchesSearch =
+                invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (invoice.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = statusFilter ? invoice.status === statusFilter : true;
+            const isOverdue = invoice.due_date
+                && new Date(invoice.due_date) < new Date()
+                && ['sent', 'partially_paid'].includes(invoice.status);
 
-        return matchesSearch && matchesStatus;
-    }) || [];
+            const matchesStatus = statusFilter
+                ? (statusFilter === 'overdue' ? isOverdue : invoice.status === statusFilter)
+                : true;
+
+            return matchesSearch && matchesStatus;
+        }) || [];
+
+        // Client-side sort for computed 'balance' column
+        if (sort?.column === 'balance') {
+            return [...filtered].sort((a, b) => {
+                const balanceA = a.total - (a.amount_paid ?? 0);
+                const balanceB = b.total - (b.amount_paid ?? 0);
+                return sort.ascending ? balanceA - balanceB : balanceB - balanceA;
+            });
+        }
+
+        return filtered;
+    })();
 
     // Pagination
     const {
@@ -546,17 +595,18 @@ export function InvoicesPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "paid":
-                return <Badge className="bg-green-500 hover:bg-green-600">Paid</Badge>;
+                return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700">Paid</Badge>;
             case "overdue":
                 return <Badge variant="destructive">Overdue</Badge>;
             case "sent":
-                return <Badge className="bg-blue-500 hover:bg-blue-600">Sent</Badge>;
+                return <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700">Sent</Badge>;
             case "draft":
-                return <Badge variant="secondary">Draft</Badge>;
+                return <Badge className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700">Draft</Badge>;
             case "partially_paid":
-                return <Badge className="bg-yellow-500 hover:bg-yellow-600">Partially Paid</Badge>;
+                return <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">Partially Paid</Badge>;
             case "cancelled":
-                return <Badge variant="outline" className="text-muted-foreground">Cancelled</Badge>;
+            case "void":
+                return <Badge className="bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600">{status === "void" ? "Void" : "Cancelled"}</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }
@@ -580,7 +630,6 @@ export function InvoicesPage() {
     const handleSort = (column: string) => {
         setSort((prev) => {
             if (prev?.column === column) {
-                // Cycle: ascending → descending → no sort
                 if (prev.ascending) return { column, ascending: false };
                 return null;
             }
@@ -588,11 +637,23 @@ export function InvoicesPage() {
         });
     };
 
-    const SortIcon = ({ column }: { column: string }) => {
-        if (sort?.column !== column) return <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/50" />;
-        return sort.ascending
-            ? <ArrowUp className="ml-1 h-3 w-3" />
-            : <ArrowDown className="ml-1 h-3 w-3" />;
+    const SortableHeader = ({ field, label }: { field: string; label: string }) => {
+        const isActive = sort?.column === field;
+        return (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-3 h-8 hover:bg-transparent"
+                onClick={() => handleSort(field)}
+            >
+                <span>{label}</span>
+                {isActive ? (
+                    sort.ascending ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+                ) : (
+                    <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+                )}
+            </Button>
+        );
     };
 
     // Calculate stats
@@ -642,9 +703,11 @@ export function InvoicesPage() {
                         Manage your invoices and track payments.
                     </p>
                 </div>
-                <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Invoice
-                </Button>
+                <ShortcutHint keys={[mod, "N"]} label="New">
+                    <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Invoice
+                    </Button>
+                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}
@@ -716,7 +779,7 @@ export function InvoicesPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="gap-2 w-full md:w-auto justify-center h-11 md:h-10 text-base md:text-sm">
                                     <Filter className="h-4 w-4" />
-                                    Filter: {statusFilter ? statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) : "All"}
+                                    Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px]">
@@ -733,6 +796,9 @@ export function InvoicesPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
                                     Paid
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("partially_paid")}>
+                                    Partially Paid
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
                                     Overdue
@@ -768,7 +834,7 @@ export function InvoicesPage() {
                                 <EnhancedEmptyState
                                     icon={FileText}
                                     title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
-                                    description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track customer payments"}
+                                    description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
                                     primaryAction={searchQuery || statusFilter ? {
                                         label: "Clear Filters",
                                         onClick: () => { setSearchQuery(""); setStatusFilter(null); },
@@ -789,19 +855,21 @@ export function InvoicesPage() {
                                     onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <span className="font-semibold text-sm">{invoice.invoice_number}</span>
-                                            <p className="text-sm text-foreground/90 font-medium">
+                                        <div className="min-w-0 flex-1 mr-2">
+                                            <TruncatedText text={invoice.invoice_number} className="font-semibold text-sm" maxWidthClass="max-w-[180px]" />
+                                            <div className="text-sm text-foreground/90 font-medium min-w-0 max-w-[180px] overflow-hidden">
                                                 <CustomerLink
                                                     customerId={invoice.client_id}
                                                     customerName={invoice.client?.name || "Unknown Client"}
                                                 />
-                                            </p>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             {getStatusBadge(invoice.status)}
                                             {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
-                                                <Badge variant="destructive">Overdue</Badge>
+                                                <Badge variant="destructive">
+                                                    Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
+                                                </Badge>
                                             )}
                                         </div>
                                     </div>
@@ -914,43 +982,27 @@ export function InvoicesPage() {
                     <Table className="hidden md:table">
                         <TableHeader>
                             <TableRow>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('invoice_number')}
-                                >
-                                    <span className="inline-flex items-center">Invoice # <SortIcon column="invoice_number" /></span>
+                                <TableHead className="sticky left-0 z-20 bg-background">
+                                    <SortableHeader field="invoice_number" label="Invoice #" />
                                 </TableHead>
                                 <TableHead>Client</TableHead>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('invoice_date')}
-                                >
-                                    <span className="inline-flex items-center">Date <SortIcon column="invoice_date" /></span>
+                                <TableHead className="hidden lg:table-cell">
+                                    <SortableHeader field="invoice_date" label="Date" />
                                 </TableHead>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('due_date')}
-                                >
-                                    <span className="inline-flex items-center">Due Date <SortIcon column="due_date" /></span>
+                                <TableHead>
+                                    <SortableHeader field="due_date" label="Due Date" />
                                 </TableHead>
-                                <TableHead
-                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('total')}
-                                >
-                                    <span className="inline-flex items-center justify-end w-full">Amount Due <SortIcon column="total" /></span>
+                                <TableHead className="text-right">
+                                    <SortableHeader field="total" label="Amount" />
                                 </TableHead>
-                                <TableHead
-                                    className="text-right cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('amount_paid')}
-                                >
-                                    <span className="inline-flex items-center justify-end w-full">Amount Paid <SortIcon column="amount_paid" /></span>
+                                <TableHead className="text-right hidden lg:table-cell">
+                                    <SortableHeader field="amount_paid" label="Paid" />
                                 </TableHead>
-                                <TableHead className="text-right">Balance</TableHead>
-                                <TableHead
-                                    className="cursor-pointer select-none hover:bg-muted/50"
-                                    onClick={() => handleSort('status')}
-                                >
-                                    <span className="inline-flex items-center">Status <SortIcon column="status" /></span>
+                                <TableHead className="text-right">
+                                    <SortableHeader field="balance" label="Balance" />
+                                </TableHead>
+                                <TableHead>
+                                    <SortableHeader field="status" label="Status" />
                                 </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -960,12 +1012,12 @@ export function InvoicesPage() {
                                 // Skeleton loading state
                                 [...Array(5)].map((_, i) => (
                                     <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                        <TableCell className="sticky left-0 z-10 bg-background"><Skeleton className="h-4 w-20" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                                        <TableCell className="text-right hidden lg:table-cell"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                                         <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
@@ -977,7 +1029,7 @@ export function InvoicesPage() {
                                         <EnhancedEmptyState
                                             icon={FileText}
                                             title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
-                                            description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track customer payments"}
+                                            description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
                                             primaryAction={searchQuery || statusFilter ? {
                                                 label: "Clear Filters",
                                                 onClick: () => { setSearchQuery(""); setStatusFilter(null); },
@@ -998,18 +1050,18 @@ export function InvoicesPage() {
                                         className="cursor-pointer hover:bg-muted/50"
                                         onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
                                     >
-                                        <TableCell className="font-medium">
-                                            {invoice.invoice_number}
+                                        <TableCell className="max-w-[200px] sticky left-0 z-10 bg-background">
+                                            <TruncatedText text={invoice.invoice_number} className="font-medium" maxWidthClass="max-w-[200px]" />
                                         </TableCell>
                                         <TableCell className="max-w-[200px]">
-                                            <div className="truncate">
+                                            <div className="max-w-[200px] min-w-0 overflow-hidden">
                                                 <CustomerLink
                                                     customerId={invoice.client_id}
                                                     customerName={invoice.client?.name || "Unknown Client"}
                                                 />
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden lg:table-cell">
                                             {format(new Date(invoice.invoice_date), "MMM d, yyyy")}
                                         </TableCell>
                                         <TableCell>
@@ -1018,7 +1070,7 @@ export function InvoicesPage() {
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(invoice.total)}
                                         </TableCell>
-                                        <TableCell className={`text-right font-medium ${
+                                        <TableCell className={`text-right font-medium hidden lg:table-cell ${
                                             invoice.status === 'paid' ? 'text-green-600' :
                                             invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
                                         }`}>
@@ -1035,14 +1087,16 @@ export function InvoicesPage() {
                                             <div className="flex items-center gap-1.5">
                                                 {getStatusBadge(invoice.status)}
                                                 {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
-                                                    <Badge variant="destructive">Overdue</Badge>
+                                                    <Badge variant="destructive">
+                                                        Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
+                                                    </Badge>
                                                 )}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" className="h-11 w-11 p-0" onClick={(e) => e.stopPropagation()}>
                                                         <span className="sr-only">Open menu</span>
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
@@ -1123,7 +1177,7 @@ export function InvoicesPage() {
                 </CardContent>
 
                 {/* Pagination */}
-                {totalItems > pageSize && (
+                {totalItems > 0 && (
                     <div className="p-4 border-t">
                         <StandardPagination
                             currentPage={currentPage}

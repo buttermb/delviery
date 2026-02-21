@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useCouponUsageStats } from '@/hooks/useCouponUsageStats';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface MetricCardProps {
   title: string;
@@ -273,7 +274,7 @@ export function MarketingOverview({ className, showViewAll = true }: MarketingOv
                       -{formatCurrency(redemption.discountAmount)}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(redemption.usedAt).toLocaleDateString()}
+                      {formatSmartDate(redemption.usedAt)}
                     </span>
                   </div>
                 </div>

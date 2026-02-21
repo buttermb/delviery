@@ -20,8 +20,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 import { OrderLink } from '@/components/admin/cross-links';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
+import { formatCurrency } from '@/lib/formatters';
 
 // Types
 export interface LiveOrder {
@@ -111,6 +114,8 @@ function SLATimer({ createdAt }: { createdAt: string }) {
 
 function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'] }) {
     const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
+    const { isEnabled } = useTenantFeatureToggles();
+    const deliveryEnabled = isEnabled('delivery_tracking');
 
     // Determine next logical status
     const getNextStatus = (current: string) => {
@@ -151,8 +156,8 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                     {/* Info Grid */}
                     <div className="flex items-center justify-between text-xs">
                         <SLATimer createdAt={order.created_at} />
-                        {order.total_amount && (
-                            <span className="font-semibold">${Number(order.total_amount).toFixed(2)}</span>
+                        {order.total_amount != null && (
+                            <span className="font-semibold">{formatCurrency(order.total_amount)}</span>
                         )}
                     </div>
 
@@ -160,7 +165,7 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" aria-label="Order actions">
+                                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Order actions">
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -176,15 +181,27 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
 
                         <div className="flex items-center gap-2">
                             {showAssignToFleet && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 text-xs gap-1 border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                                    onClick={() => setFleetDialogOpen(true)}
-                                >
-                                    <Truck className="h-3 w-3" />
-                                    Fleet
-                                </Button>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span tabIndex={0}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-7 text-xs gap-1 border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                                                    onClick={() => setFleetDialogOpen(true)}
+                                                    disabled={!deliveryEnabled}
+                                                >
+                                                    <Truck className="h-3 w-3" />
+                                                    Fleet
+                                                </Button>
+                                            </span>
+                                        </TooltipTrigger>
+                                        {!deliveryEnabled && (
+                                            <TooltipContent>Enable Delivery Tracking in Settings</TooltipContent>
+                                        )}
+                                    </Tooltip>
+                                </TooltipProvider>
                             )}
                             {nextStatus && (
                                 <Button

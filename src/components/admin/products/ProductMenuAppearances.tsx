@@ -50,6 +50,7 @@ import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/utils/formatters';
 import { format, isPast } from 'date-fns';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import type { Database, Json } from '@/integrations/supabase/types';
 
 type DisposableMenu = Database['public']['Tables']['disposable_menus']['Row'];
@@ -388,7 +389,7 @@ function MenuAppearanceItem({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11"
           onClick={() => navigateToAdmin(`menus/${menu.id}`)}
         >
           <ExternalLink className="h-4 w-4" />
@@ -492,7 +493,7 @@ function StoreAppearanceItem({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11"
           onClick={() => navigateToAdmin(`storefront/${store.id}`)}
         >
           <ExternalLink className="h-4 w-4" />
@@ -621,6 +622,8 @@ export function ProductMenuAppearances({ productId, basePrice }: ProductMenuAppe
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [menuToRemove, setMenuToRemove] = useState<{ menuProductId: string; menuName: string } | null>(null);
 
   const { data, isLoading, error } = useProductMenuAppearances(productId, tenant?.id);
   const removeFromMenu = useRemoveFromMenu();
@@ -633,13 +636,15 @@ export function ProductMenuAppearances({ productId, basePrice }: ProductMenuAppe
   const activeMenus = menus.filter(m => !m.isExpired && m.menu.status === 'active');
   const activeStores = stores.filter(s => s.store.is_active && (s.settings.is_visible ?? true));
 
-  const handleRemoveFromMenu = async (menuProductId: string) => {
-    if (!productId) return;
-    setRemovingId(menuProductId);
+  const handleRemoveFromMenu = async () => {
+    if (!productId || !menuToRemove) return;
+    setRemovingId(menuToRemove.menuProductId);
     try {
-      await removeFromMenu.mutateAsync({ menuProductId, productId });
+      await removeFromMenu.mutateAsync({ menuProductId: menuToRemove.menuProductId, productId });
     } finally {
       setRemovingId(null);
+      setDeleteDialogOpen(false);
+      setMenuToRemove(null);
     }
   };
 
@@ -782,7 +787,7 @@ export function ProductMenuAppearances({ productId, basePrice }: ProductMenuAppe
                 <MenuAppearanceItem
                   key={appearance.menuProduct.id}
                   appearance={appearance}
-                  onRemove={() => handleRemoveFromMenu(appearance.menuProduct.id)}
+                  onRemove={() => { setMenuToRemove({ menuProductId: appearance.menuProduct.id, menuName: appearance.menu.name }); setDeleteDialogOpen(true); }}
                   basePrice={basePrice}
                   isRemoving={removingId === appearance.menuProduct.id}
                 />
@@ -823,6 +828,16 @@ export function ProductMenuAppearances({ productId, basePrice }: ProductMenuAppe
           existingMenuIds={existingMenuIds}
         />
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleRemoveFromMenu}
+        title="Remove from menu"
+        description={menuToRemove ? `Are you sure you want to remove this product from "${menuToRemove.menuName}"? This action cannot be undone.` : undefined}
+        itemType="menu appearance"
+        isLoading={removeFromMenu.isPending}
+      />
     </Card>
   );
 }

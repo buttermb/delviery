@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { sanitizeTextareaInput } from "@/lib/utils/sanitize";
+import { queryKeys } from "@/lib/queryKeys";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +49,7 @@ interface POCreateFormProps {
 }
 
 export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: POCreateFormProps) {
-  const { tenant: _tenant } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { createPurchaseOrder } = usePurchaseOrders();
   const [currentStep, setCurrentStep] = useState<Step>("supplier");
   const [formData, setFormData] = useState({
@@ -66,11 +67,13 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
 
   // Fetch vendors
   const { data: vendors, isLoading: vendorsLoading, isError: vendorsError } = useQuery({
-    queryKey: ["vendors"],
+    queryKey: queryKeys.vendors.byTenant(tenant?.id ?? ''),
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!tenant?.id) return [];
+      const { data, error } = await (supabase as any)
         .from("vendors")
         .select("id, name, contact_name")
+        .eq("tenant_id", tenant.id)
         .eq("status", "active")
         .order("name");
 
@@ -81,15 +84,18 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
 
       return data || [];
     },
+    enabled: !!tenant?.id,
   });
 
   // Fetch products for dropdown
   const { data: products, isLoading: productsLoading, isError: productsError } = useQuery({
-    queryKey: ["products"],
+    queryKey: queryKeys.products.byTenant(tenant?.id ?? ''),
     queryFn: async () => {
+      if (!tenant?.id) return [];
       const { data, error } = await supabase
         .from("products")
         .select("id, name, sku")
+        .eq("tenant_id", tenant.id)
         .order("name");
 
       if (error) {
@@ -99,6 +105,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
 
       return data || [];
     },
+    enabled: !!tenant?.id,
   });
 
   useEffect(() => {

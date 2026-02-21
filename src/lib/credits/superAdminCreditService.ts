@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Super Admin Credit Service
  * 
@@ -8,6 +7,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+
+// Cast for tables not in auto-generated types
+const sb = supabase as any;
 
 // ============================================================================
 // Types
@@ -140,7 +142,7 @@ export interface BulkGrantRequest {
  */
 export async function getPlatformCreditStats(): Promise<PlatformCreditStats | null> {
   try {
-    const { data, error } = await supabase.rpc('get_platform_credit_stats');
+    const { data, error } = await sb.rpc('get_platform_credit_stats');
 
     if (error) {
       logger.error('Failed to get platform credit stats', error);
@@ -194,7 +196,7 @@ export async function getTenantsWithCredits(
   filters: TenantsFilter = {}
 ): Promise<{ tenants: TenantCreditInfo[]; total: number }> {
   try {
-    const { data, error } = await supabase.rpc('get_tenants_with_credits', {
+    const { data, error } = await sb.rpc('get_tenants_with_credits', {
       p_status: filters.status || null,
       p_search: filters.search || null,
       p_limit: filters.limit || 50,
@@ -223,7 +225,7 @@ export async function getTenantsWithCredits(
     }));
 
     // Get total count
-    const { count } = await supabase
+    const { count } = await sb
       .from('tenants')
       .select('*', { count: 'exact', head: true });
 
@@ -242,7 +244,7 @@ export async function getTenantCreditDetail(
 ): Promise<TenantCreditDetail | null> {
   try {
     // Get tenant info
-    const { data: tenant, error: tenantError } = await supabase
+    const { data: tenant, error: tenantError } = await sb
       .from('tenants')
       .select('id, business_name, slug, is_free_tier, created_at')
       .eq('id', tenantId)
@@ -254,14 +256,14 @@ export async function getTenantCreditDetail(
     }
 
     // Get credit info
-    const { data: credits } = await supabase
+    const { data: credits } = await sb
       .from('tenant_credits')
       .select('*')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
     // Get recent transactions
-    const { data: transactions } = await supabase
+    const { data: transactions } = await sb
       .from('credit_transactions')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -269,20 +271,20 @@ export async function getTenantCreditDetail(
       .limit(50);
 
     // Get grants
-    const { data: grants } = await supabase
+    const { data: grants } = await sb
       .from('credit_grants')
       .select('*')
       .eq('tenant_id', tenantId)
       .order('granted_at', { ascending: false });
 
     // Get referral info
-    const { data: referralCode } = await supabase
+    const { data: referralCode } = await sb
       .from('referral_codes')
       .select('code, uses_count')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
-    const { data: referralCredits } = await supabase
+    const { data: referralCredits } = await sb
       .from('referral_redemptions')
       .select('referrer_credits_granted')
       .eq('referrer_tenant_id', tenantId);
@@ -361,7 +363,7 @@ export async function adjustTenantCredits(
   request: CreditAdjustmentRequest
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
   try {
-    const { data, error } = await supabase.rpc('admin_adjust_credits', {
+    const { data, error } = await sb.rpc('admin_adjust_credits', {
       p_tenant_id: request.tenantId,
       p_amount: request.amount,
       p_reason: request.reason,
@@ -404,7 +406,7 @@ export async function grantBulkCredits(
   request: BulkGrantRequest
 ): Promise<{ success: boolean; count?: number; error?: string }> {
   try {
-    const { data, error } = await supabase.rpc('grant_bulk_credits', {
+    const { data, error } = await sb.rpc('grant_bulk_credits', {
       p_tenant_ids: request.tenantIds,
       p_amount: request.amount,
       p_grant_type: request.grantType,
@@ -441,7 +443,7 @@ export async function refundTransaction(
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
   try {
     // Get original transaction
-    const { data: originalTx, error: txError } = await supabase
+    const { data: originalTx, error: txError } = await sb
       .from('credit_transactions')
       .select('*')
       .eq('id', transactionId)
@@ -478,7 +480,7 @@ export async function refundTransaction(
     }
 
     // Mark original as refunded
-    await supabase
+    await sb
       .from('credit_transactions')
       .update({
         metadata: {
@@ -516,7 +518,7 @@ export async function getAllTransactions(options: {
   offset?: number;
 }): Promise<{ transactions: CreditTransaction[]; total: number }> {
   try {
-    let query = supabase
+    let query = sb
       .from('credit_transactions')
       .select('*, tenants!inner(business_name, slug)', { count: 'exact' })
       .order('created_at', { ascending: false });
@@ -605,7 +607,7 @@ export async function getCreditAnalytics(options: {
     const endDate = options.endDate || new Date().toISOString();
 
     // Get consumption by day
-    const { data: consumptionData } = await supabase
+    const { data: consumptionData } = await sb
       .from('credit_transactions')
       .select('created_at, amount')
       .eq('transaction_type', 'usage')
@@ -621,7 +623,7 @@ export async function getCreditAnalytics(options: {
     });
 
     // Get purchase revenue
-    const { data: purchaseData } = await supabase
+    const { data: purchaseData } = await sb
       .from('credit_transactions')
       .select('created_at, metadata')
       .eq('transaction_type', 'purchase')
@@ -636,7 +638,7 @@ export async function getCreditAnalytics(options: {
     });
 
     // Get category breakdown
-    const { data: categoryData } = await supabase
+    const { data: categoryData } = await sb
       .from('credit_transactions')
       .select('action_type, amount')
       .eq('transaction_type', 'usage')
@@ -730,7 +732,7 @@ export interface CreatePromoCodeRequest {
  */
 export async function getAllPromoCodes(): Promise<PromoCodeAdmin[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_codes')
       .select('*')
       .order('created_at', { ascending: false });
@@ -766,7 +768,7 @@ export async function createPromoCode(
   request: CreatePromoCodeRequest
 ): Promise<{ success: boolean; promoCode?: PromoCodeAdmin; error?: string }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_codes')
       .insert({
         code: request.code.toUpperCase(),
@@ -826,7 +828,7 @@ export async function updatePromoCode(
     if (updates.description !== undefined) updateData.description = updates.description;
     if (updates.isActive !== undefined) updateData.is_active = updates.isActive;
 
-    const { error } = await supabase
+    const { error } = await sb
       .from('promo_codes')
       .update(updateData)
       .eq('id', id);
@@ -853,7 +855,7 @@ export async function getPromoCodeRedemptions(codeId: string): Promise<Array<{
   redeemedAt: string;
 }>> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_redemptions')
       .select('*, tenants!inner(business_name)')
       .eq('promo_code_id', codeId)
@@ -899,7 +901,7 @@ export interface CreditPackageDB {
  */
 export async function getAllCreditPackages(): Promise<CreditPackageDB[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('credit_packages')
       .select('*')
       .order('sort_order', { ascending: true });
@@ -937,7 +939,7 @@ export async function upsertCreditPackage(
   try {
     const slug = pkg.slug || pkg.name.toLowerCase().replace(/\s+/g, '-');
     
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('credit_packages')
       .upsert({
         id: pkg.id || undefined,
@@ -1005,12 +1007,12 @@ export interface ReferralStats {
 export async function getReferralStats(): Promise<ReferralStats> {
   try {
     // Get total referrals
-    const { count: totalReferrals } = await supabase
+    const { count: totalReferrals } = await sb
       .from('referral_redemptions')
       .select('*', { count: 'exact', head: true });
 
     // Get total credits awarded
-    const { data: creditsData } = await supabase
+    const { data: creditsData } = await sb
       .from('referral_redemptions')
       .select('referrer_credits_granted, referee_credits_granted');
 
@@ -1020,18 +1022,18 @@ export async function getReferralStats(): Promise<ReferralStats> {
     );
 
     // Get conversions
-    const { count: totalConversions } = await supabase
+    const { count: totalConversions } = await sb
       .from('referral_redemptions')
       .select('*', { count: 'exact', head: true })
       .eq('conversion_bonus_granted', true);
 
-    const { count: pendingConversions } = await supabase
+    const { count: pendingConversions } = await sb
       .from('referral_redemptions')
       .select('*', { count: 'exact', head: true })
       .eq('conversion_bonus_granted', false);
 
     // Get top referrers
-    const { data: topReferrersData } = await supabase
+    const { data: topReferrersData } = await sb
       .from('referral_codes')
       .select('tenant_id, uses_count, tenants!inner(business_name)')
       .gt('uses_count', 0)
@@ -1041,7 +1043,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
     // Get credits earned per referrer
     const topReferrers = await Promise.all(
       (topReferrersData || []).map(async (r: any) => {
-        const { data: earned } = await supabase
+        const { data: earned } = await sb
           .from('referral_redemptions')
           .select('referrer_credits_granted')
           .eq('referrer_tenant_id', r.tenant_id);

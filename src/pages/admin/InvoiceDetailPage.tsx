@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useTenant } from "@/contexts/TenantContext";
 import { CustomerLink } from "@/components/admin/cross-links";
@@ -23,7 +24,8 @@ import {
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
-import { format, parseISO } from "date-fns";
+import { formatPhoneNumber } from "@/lib/formatters";
+import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import {
     Table,
@@ -45,8 +47,10 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
+import { formatPaymentMethod } from "@/lib/constants/paymentMethods";
 
 interface PaymentHistoryEntry {
     amount: number;
@@ -63,17 +67,6 @@ function isPaymentHistoryEntry(entry: unknown): entry is PaymentHistoryEntry {
     return typeof obj.amount === 'number' && typeof obj.method === 'string' && typeof obj.date === 'string';
 }
 
-function formatPaymentMethod(method: string): string {
-    const map: Record<string, string> = {
-        cash: 'Cash',
-        check: 'Check',
-        bank_transfer: 'Bank Transfer',
-        card: 'Card',
-        other: 'Other',
-    };
-    return map[method] || method;
-}
-
 export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
     const { navigateToAdmin } = useTenantNavigation();
@@ -87,12 +80,13 @@ export default function InvoiceDetailPage() {
     const duplicateInvoice = useDuplicateInvoice();
     const deleteInvoice = useDeleteInvoice();
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // Set breadcrumb label to show invoice number
     useBreadcrumbLabel(invoice ? `Invoice #${invoice.invoice_number}` : null);
 
     if (isLoading) {
-        return <div className="p-8 text-center">Loading invoice details...</div>;
+        return <EnhancedLoadingState variant="card" message="Loading invoice details..." />;
     }
 
     if (error || !invoice) {
@@ -171,25 +165,29 @@ export default function InvoiceDetailPage() {
     };
 
     const isAnyPending = markAsSent.isPending || voidInvoiceMutation.isPending || duplicateInvoice.isPending || deleteInvoice.isPending;
-    const isVoided = invoice.status === 'cancelled' || (invoice.status as string) === 'void';
+    const isVoided = invoice.status === 'cancelled';
     const isOverdue = invoice.due_date
         && new Date(invoice.due_date) < new Date()
         && ['sent', 'partially_paid'].includes(invoice.status);
+    const daysOverdue = isOverdue && invoice.due_date
+        ? differenceInCalendarDays(new Date(), new Date(invoice.due_date))
+        : 0;
 
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "paid":
-                return <Badge className="bg-green-500 hover:bg-green-600">Paid</Badge>;
+                return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700">Paid</Badge>;
             case "overdue":
                 return <Badge variant="destructive">Overdue</Badge>;
             case "sent":
-                return <Badge className="bg-blue-500 hover:bg-blue-600">Sent</Badge>;
+                return <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700">Sent</Badge>;
             case "draft":
-                return <Badge variant="secondary">Draft</Badge>;
+                return <Badge className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700">Draft</Badge>;
             case "partially_paid":
-                return <Badge className="bg-yellow-500 hover:bg-yellow-600">Partially Paid</Badge>;
+                return <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">Partially Paid</Badge>;
             case "cancelled":
-                return <Badge variant="outline" className="text-muted-foreground">Cancelled</Badge>;
+            case "void":
+                return <Badge className="bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600">{status === "void" ? "Void" : "Cancelled"}</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }
@@ -210,7 +208,11 @@ export default function InvoiceDetailPage() {
                                     Invoice #{invoice.invoice_number}
                                 </h1>
                                 {getStatusBadge(invoice.status)}
-                                {isOverdue && <Badge variant="destructive">Overdue</Badge>}
+                                {isOverdue && (
+                                    <Badge variant="destructive">
+                                        Overdue {daysOverdue > 0 && `(${daysOverdue} day${daysOverdue === 1 ? '' : 's'})`}
+                                    </Badge>
+                                )}
                             </div>
                             <p className="text-muted-foreground">
                                 Created on {format(new Date(invoice.created_at), "PPP")}
@@ -291,30 +293,12 @@ export default function InvoiceDetailPage() {
                                         </AlertDialogContent>
                                     </AlertDialog>
                                 )}
-
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" size="icon" disabled={isAnyPending}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the invoice.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDelete} disabled={deleteInvoice.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
                             </>
                         )}
+
+                        <Button variant="destructive" size="icon" disabled={isAnyPending} onClick={() => setDeleteDialogOpen(true)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
 
@@ -323,9 +307,9 @@ export default function InvoiceDetailPage() {
                     <div className="md:col-span-2 space-y-6 print:space-y-0">
                         {/* Invoice Document */}
                         <Card className="overflow-hidden invoice-print-document print:border-none print:shadow-none relative">
-                            {(invoice.status === 'cancelled' || (invoice.status as string) === 'void') && (
+                            {invoice.status === 'cancelled' && (
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
-                                    <span className="text-8xl font-bold text-red-500/15 -rotate-[30deg]">
+                                    <span className="text-8xl font-bold text-red-500/20 -rotate-45">
                                         VOID
                                     </span>
                                 </div>
@@ -337,7 +321,7 @@ export default function InvoiceDetailPage() {
                                         <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
                                             {tenant?.address && <p>{tenant.address}</p>}
                                             {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
-                                            {tenant?.phone && <p>{tenant.phone}</p>}
+                                            {tenant?.phone && <p>{formatPhoneNumber(tenant.phone)}</p>}
                                             {tenant?.owner_email && <p>{tenant.owner_email}</p>}
                                             {tenant?.tax_id && <p>Tax ID: {tenant.tax_id}</p>}
                                         </div>
@@ -359,7 +343,7 @@ export default function InvoiceDetailPage() {
                                                 />
                                             </p>
                                             {invoice.client?.email && <p>{invoice.client.email}</p>}
-                                            {invoice.client?.phone && <p>{invoice.client.phone}</p>}
+                                            {invoice.client?.phone && <p>{formatPhoneNumber(invoice.client.phone)}</p>}
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -499,7 +483,7 @@ export default function InvoiceDetailPage() {
                                         <p className="font-medium">{tenant?.business_name}</p>
                                         {tenant?.address && <p>{tenant.address}</p>}
                                         {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
-                                        {tenant?.phone && <p>Phone: {tenant.phone}</p>}
+                                        {tenant?.phone && <p>Phone: {formatPhoneNumber(tenant.phone)}</p>}
                                         {tenant?.owner_email && <p>Email: {tenant.owner_email}</p>}
                                         <p className="mt-2">Thank you for your business!</p>
                                     </div>
@@ -589,6 +573,18 @@ export default function InvoiceDetailPage() {
                 amountPaid={invoice.amount_paid || 0}
                 open={showPaymentDialog}
                 onOpenChange={setShowPaymentDialog}
+            />
+
+            <ConfirmDeleteDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={() => {
+                    handleDelete();
+                    setDeleteDialogOpen(false);
+                }}
+                itemType="invoice"
+                itemName={`#${invoice.invoice_number}`}
+                isLoading={deleteInvoice.isPending}
             />
         </SwipeBackWrapper>
     );

@@ -4,6 +4,7 @@ import type { CRMMessage, MessageFormValues } from '@/types/crm';
 import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export const crmMessageKeys = {
     all: ['crm-messages'] as const,
@@ -73,9 +74,8 @@ export function useSendMessage() {
             toast.success('Message sent');
         },
         onError: (error: unknown) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Message send failed', error, { component: 'useSendMessage' });
-            toast.error(`Failed to send message: ${errorMessage}`);
+            toast.error(humanizeError(error, 'Failed to send message'));
         },
     });
 }

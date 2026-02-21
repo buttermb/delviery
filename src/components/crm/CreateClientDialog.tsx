@@ -25,14 +25,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCreateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
 import { useAccount } from '@/contexts/AccountContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Plus, Loader2, AlertTriangle } from 'lucide-react';
 
 const formSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or less'),
     email: z.string().email('Invalid email address').optional().or(z.literal('')),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
+    phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,6 +81,23 @@ export function CreateClientDialog({
         }
 
         try {
+            // Check for duplicate client name within account
+            const { data: existingClient, error: dupCheckError } = await supabase
+                .from('crm_clients')
+                .select('id')
+                .eq('account_id', accountId)
+                .eq('name', values.name.trim())
+                .maybeSingle();
+
+            if (dupCheckError) {
+                logger.error('Error checking duplicate client', dupCheckError, { component: 'CreateClientDialog' });
+            }
+
+            if (existingClient) {
+                toast.error('A client with this name already exists');
+                return;
+            }
+
             const client = await createClient.mutateAsync({
                 account_id: accountId,
                 name: values.name,
@@ -144,7 +162,7 @@ export function CreateClientDialog({
                                 <FormItem>
                                     <FormLabel required>Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="John Doe" {...field} />
+                                        <Input placeholder="John Doe" maxLength={100} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -157,7 +175,7 @@ export function CreateClientDialog({
                                 <FormItem>
                                     <FormLabel>Email (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="john@example.com" type="email" {...field} />
+                                        <Input placeholder="john@example.com" type="email" maxLength={254} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -170,7 +188,7 @@ export function CreateClientDialog({
                                 <FormItem>
                                     <FormLabel>Phone (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="(555) 123-4567" type="tel" {...field} />
+                                        <Input placeholder="(555) 123-4567" type="tel" maxLength={20} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

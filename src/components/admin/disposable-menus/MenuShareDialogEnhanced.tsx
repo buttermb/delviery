@@ -22,6 +22,7 @@ import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
 import { cn } from '@/lib/utils';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { formatSmartDate } from '@/lib/formatters';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MenuSecuritySettings {
@@ -120,13 +121,13 @@ Access URL: ${menuUrl}
 ${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n` : ''}
 Join the discussion, share reviews, and connect with other customers!
 
-This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
+This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`
         : `Hi! You've been granted access to our wholesale catalog.
 
 Access URL: ${menuUrl}
 Access Code: ${accessCode}
 
-This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`;
+This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`;
       setSmsMessage(defaultMessage);
     }
   }, [activeTab, menuUrl, accessCode, menu?.expiration_date, smsMessage, isForumMenu]);
@@ -246,12 +247,12 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
       `Access URL: ${menuUrl}\n` +
       `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
       `Join the discussion, share reviews, and connect with other customers!\n\n` +
-      `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
+      `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`
       : `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
       `You've been granted access to our wholesale catalog.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `Access Code: ${accessCode}\n\n` +
-      `This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`;
+      `This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -263,13 +264,13 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
       `Access URL: ${menuUrl}\n` +
       `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
       `Join the discussion, share reviews, and connect with other customers!\n\n` +
-      `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+      `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
       `Best regards`
       : `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
       `You've been granted access to our wholesale catalog.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `Access Code: ${accessCode}\n\n` +
-      `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+      `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
       `Best regards`;
     window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
   };
@@ -432,7 +433,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Expires:</span>
                   <span className="font-medium">
-                    {new Date(String(jsonToStringOrNumber(menu.expiration_date as any))).toLocaleDateString()}
+                    {formatSmartDate(String(jsonToStringOrNumber(menu.expiration_date as any)))}
                   </span>
                 </div>
               )}
@@ -575,7 +576,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                           )}
                           {entry.invited_at && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Invited: {new Date(String(entry.invited_at)).toLocaleDateString()}
+                              Invited: {formatSmartDate(String(entry.invited_at))}
                             </div>
                           )}
                         </div>

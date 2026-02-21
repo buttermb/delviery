@@ -10,9 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Plus, Edit } from 'lucide-react';
+import { Bell, Plus, Edit, Loader2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface NotificationTemplate {
   id: string;
@@ -184,11 +185,7 @@ export default function Notifications() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading templates...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading templates..." />;
   }
 
   return (
@@ -313,6 +310,7 @@ export default function Notifications() {
                 type="submit"
                 disabled={createTemplateMutation.isPending || updateTemplateMutation.isPending}
               >
+                {(createTemplateMutation.isPending || updateTemplateMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingTemplate ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>

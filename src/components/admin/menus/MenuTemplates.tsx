@@ -51,16 +51,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -961,7 +952,7 @@ function TemplateCard({ template, onEdit, onDelete, onUse, onDuplicate, onViewVe
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Template actions">
+              <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Template actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -1283,6 +1274,7 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search templates..."
+            aria-label="Search templates"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -1292,7 +1284,7 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
           value={categoryFilter}
           onValueChange={(val) => setCategoryFilter(val as MenuTemplate['category'] | 'all')}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px]" aria-label="Filter by category">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
@@ -1385,27 +1377,16 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingTemplate} onOpenChange={() => setDeletingTemplate(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{deletingTemplate?.name}"? This action cannot be
-              undone and will also delete all version history.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteTemplate}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteTemplate.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deletingTemplate}
+        onOpenChange={() => setDeletingTemplate(null)}
+        onConfirm={handleDeleteTemplate}
+        title="Delete Template?"
+        description={`Are you sure you want to delete "${deletingTemplate?.name}"? This action cannot be undone and will also delete all version history.`}
+        itemName={deletingTemplate?.name}
+        itemType="template"
+        isLoading={deleteTemplate.isPending}
+      />
 
       {/* Version History Dialog */}
       {viewingVersions && (

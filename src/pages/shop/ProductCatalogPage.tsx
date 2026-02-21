@@ -39,7 +39,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
 
 /**
@@ -156,7 +156,6 @@ export function ProductCatalogPage() {
 
   // Wishlist integration
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
-  const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
   // Cart integration for Quick Add
@@ -171,10 +170,8 @@ export function ProductCatalogPage() {
 
     // Check stock before adding
     if (product.stock_quantity <= 0) {
-      toast({
-        title: "Out of Stock",
+      toast.error('Out of Stock', {
         description: `${product.name} is currently unavailable.`,
-        variant: "destructive",
       });
       return;
     }
@@ -194,7 +191,7 @@ export function ProductCatalogPage() {
       });
 
       setAddedProducts(prev => new Set(prev).add(product.product_id));
-      toast({ title: "Added to cart", duration: 2000 });
+      toast.success('Added to cart');
 
       setTimeout(() => {
         setAddedProducts(prev => {
@@ -204,11 +201,7 @@ export function ProductCatalogPage() {
         });
       }, 2000);
     } catch {
-      toast({
-        title: "Failed to add",
-        description: "Please try again",
-        variant: "destructive",
-      });
+      toast.error('Failed to add', { description: 'Please try again' });
     }
   };
 
@@ -276,7 +269,7 @@ export function ProductCatalogPage() {
           logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
-        return (data || []).map((item: any) => transformProduct(item as RpcProduct));
+        return (data || []).map((item: unknown) => transformProduct(item as RpcProduct));
       } catch (err) {
         logger.error('Error fetching products', err, { storeId: store.id });
         throw err;
@@ -391,6 +384,9 @@ export function ProductCatalogPage() {
       case 'thc_asc':
         result.sort((a, b) => (a.thc_content ?? 0) - (b.thc_content ?? 0));
         break;
+      case 'newest':
+        // Keep original API order (newest products from DB)
+        break;
       case 'name':
       default:
         result.sort((a, b) => a.name.localeCompare(b.name));
@@ -484,7 +480,7 @@ export function ProductCatalogPage() {
       />
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">All Products</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">All Products</h1>
         <p className="text-muted-foreground">
           {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
         </p>
@@ -503,57 +499,64 @@ export function ProductCatalogPage() {
           />
         </div>
 
-        {/* Category Filter */}
-        <Select value={selectedCategory || "all"} onValueChange={(val) => setSelectedCategory(val === "all" ? "" : val)}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {productCategories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Mobile: Category + Sort in a 2-col row */}
+        <div className="grid grid-cols-2 gap-2 md:contents">
+          {/* Category Filter */}
+          <Select value={selectedCategory || "all"} onValueChange={(val) => setSelectedCategory(val === "all" ? "" : val)}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {productCategories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Sort */}
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Name A-Z</SelectItem>
-            <SelectItem value="price_asc">Price: Low to High</SelectItem>
-            <SelectItem value="price_desc">Price: High to Low</SelectItem>
-            <SelectItem value="thc_desc">THC%: High to Low</SelectItem>
-            <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
-          </SelectContent>
-        </Select>
+          {/* Sort */}
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Name A-Z</SelectItem>
+              <SelectItem value="price_asc">Price: Low to High</SelectItem>
+              <SelectItem value="price_desc">Price: High to Low</SelectItem>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="thc_desc">THC%: High to Low</SelectItem>
+              <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Strain Type Filter */}
-        <Select
-          value={selectedStrainTypes[0] || "all"}
-          onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
-        >
-          <SelectTrigger className="w-full md:w-[160px]">
-            <SelectValue placeholder="Strain Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Strains</SelectItem>
-            <SelectItem value="indica">Indica</SelectItem>
-            <SelectItem value="sativa">Sativa</SelectItem>
-            <SelectItem value="hybrid">Hybrid</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Mobile: Strain + Filter button in a 2-col row */}
+        <div className="grid grid-cols-2 gap-2 md:contents">
+          {/* Strain Type Filter */}
+          <Select
+            value={selectedStrainTypes[0] || "all"}
+            onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
+          >
+            <SelectTrigger className="w-full md:w-[160px]">
+              <SelectValue placeholder="Strain Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Strains</SelectItem>
+              <SelectItem value="indica">Indica</SelectItem>
+              <SelectItem value="sativa">Sativa</SelectItem>
+              <SelectItem value="hybrid">Hybrid</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {/* Advanced Filter Button */}
-        <FilterTriggerButton
-          onClick={() => setFilterDrawerOpen(true)}
-          activeCount={selectedCategory || inStockOnly ? 1 : 0}
-          className="md:hidden"
-        />
+          {/* Advanced Filter Button */}
+          <FilterTriggerButton
+            onClick={() => setFilterDrawerOpen(true)}
+            activeCount={selectedCategory || inStockOnly ? 1 : 0}
+            className="md:hidden"
+          />
+        </div>
 
         {/* View Toggle */}
         <div className="hidden md:flex items-center gap-1 border rounded-lg p-1">
@@ -639,7 +642,7 @@ export function ProductCatalogPage() {
 
       {/* Products Grid/List */}
       {productsLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
@@ -656,6 +659,14 @@ export function ProductCatalogPage() {
             Try Again
           </Button>
         </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-16">
+          <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mb-2">This store doesn&apos;t have any products yet</h2>
+          <p className="text-muted-foreground mb-4">
+            Check back soon for new arrivals
+          </p>
+        </div>
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-16">
           <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -668,7 +679,7 @@ export function ProductCatalogPage() {
           </Button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {paginatedProducts.map((product) => (
             <StorefrontProductCard
               key={product.product_id}

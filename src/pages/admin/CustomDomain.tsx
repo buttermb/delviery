@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Plus, Check, X, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { formatSmartDate } from '@/lib/formatters';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
@@ -155,7 +156,7 @@ export default function CustomDomain() {
                     <div>
                       <div className="font-medium">{domainItem.domain}</div>
                       <div className="text-sm text-muted-foreground">
-                        Added {new Date(domainItem.created_at).toLocaleDateString()}
+                        Added {formatSmartDate(domainItem.created_at)}
                       </div>
                     </div>
                   </div>

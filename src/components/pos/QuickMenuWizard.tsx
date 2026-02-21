@@ -9,6 +9,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Loader2, Copy, Check, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CartItem } from '@/pages/admin/PointOfSale';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface QuickMenuWizardProps {
     open: boolean;
@@ -27,8 +28,8 @@ export function QuickMenuWizard({ open, onOpenChange, cartItems, tenantId }: Qui
 
     useEffect(() => {
         if (open && step === 'details') {
-            const date = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            setName(`Quick Menu - ${date}`);
+            const dateLabel = formatSmartDate(new Date(), { includeTime: true });
+            setName(`Quick Menu - ${dateLabel}`);
         }
     }, [open, step]);
 

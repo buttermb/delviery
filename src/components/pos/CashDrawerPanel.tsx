@@ -18,6 +18,7 @@ import {
 import { useCashDrawer, type CashDrawerEvent, type CashDrawerEventType } from '@/hooks/useCashDrawer';
 import { CashCountDialog } from './CashCountDialog';
 import { CashDrawerEventDialog } from './CashDrawerEventDialog';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface CashDrawerPanelProps {
   shiftId: string | undefined;
@@ -62,7 +63,7 @@ export function CashDrawerPanel({ shiftId, openingCash, expectedCash, className 
   };
 
   const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return formatSmartDate(dateStr, { includeTime: true });
   };
 
   if (!shiftId) {

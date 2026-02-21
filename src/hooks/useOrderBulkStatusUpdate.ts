@@ -106,19 +106,32 @@ async function restoreInventoryForCancelledOrders(
 
   for (const orderId of orderIds) {
     try {
-      // Fetch order items for the cancelled order
-      const { data: orderItems, error: itemsError } = await supabase
+      // Fetch order items — try order_items first, then unified_order_items
+      let orderItems: { id: string; product_id: string; quantity: number }[] | null = null;
+
+      const { data: legacyItems, error: legacyError } = await supabase
         .from('order_items')
         .select('id, product_id, quantity')
         .eq('order_id', orderId);
 
-      if (itemsError) {
-        logger.error('Failed to fetch order items for inventory restore', itemsError, {
-          component: 'useOrderBulkStatusUpdate',
-          orderId,
-        });
-        failedCount++;
-        continue;
+      if (!legacyError && legacyItems && legacyItems.length > 0) {
+        orderItems = legacyItems;
+      } else {
+        // Fallback to unified_order_items
+        const { data: unifiedItems, error: unifiedError } = await supabase
+          .from('unified_order_items')
+          .select('id, product_id, quantity')
+          .eq('order_id', orderId);
+
+        if (unifiedError) {
+          logger.error('Failed to fetch order items for inventory restore', unifiedError, {
+            component: 'useOrderBulkStatusUpdate',
+            orderId,
+          });
+          failedCount++;
+          continue;
+        }
+        orderItems = unifiedItems;
       }
 
       if (!orderItems || orderItems.length === 0) {
@@ -196,6 +209,146 @@ async function restoreInventoryForCancelledOrders(
       successCount++;
     } catch (err) {
       logger.error('Error restoring inventory for order', err, {
+        component: 'useOrderBulkStatusUpdate',
+        orderId,
+      });
+      failedCount++;
+    }
+  }
+
+  return { success: successCount, failed: failedCount };
+}
+
+/**
+ * Decrements inventory for delivered orders
+ * When an order is delivered, reduce stock_quantity for each line item.
+ * Prevents double-decrement by checking inventory_history for prior deductions.
+ */
+async function decrementInventoryForDeliveredOrders(
+  tenantId: string,
+  orderIds: string[],
+  performedBy: string | null
+): Promise<{ success: number; failed: number }> {
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const orderId of orderIds) {
+    try {
+      // Check if inventory was already decremented for this order (e.g., at confirmation)
+      const { data: existingHistory } = await (supabase as any)
+        .from('inventory_history')
+        .select('id')
+        .eq('reference_id', orderId)
+        .in('reference_type', ['order_confirmed', 'order_delivered', 'unified_order_confirmed_inventory_deducted'])
+        .limit(1);
+
+      if (existingHistory && existingHistory.length > 0) {
+        // Stock was already decremented — skip to prevent double-decrement
+        successCount++;
+        continue;
+      }
+
+      // Fetch order items — try order_items first, then unified_order_items
+      let orderItems: { id: string; product_id: string; quantity: number }[] | null = null;
+
+      const { data: legacyItems, error: legacyError } = await supabase
+        .from('order_items')
+        .select('id, product_id, quantity')
+        .eq('order_id', orderId);
+
+      if (!legacyError && legacyItems && legacyItems.length > 0) {
+        orderItems = legacyItems;
+      } else {
+        const { data: unifiedItems, error: unifiedError } = await supabase
+          .from('unified_order_items')
+          .select('id, product_id, quantity')
+          .eq('order_id', orderId);
+
+        if (unifiedError) {
+          logger.error('Failed to fetch order items for inventory decrement', unifiedError, {
+            component: 'useOrderBulkStatusUpdate',
+            orderId,
+          });
+          failedCount++;
+          continue;
+        }
+        orderItems = unifiedItems;
+      }
+
+      if (!orderItems || orderItems.length === 0) {
+        successCount++;
+        continue;
+      }
+
+      // Decrement inventory for each item
+      for (const item of orderItems) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('id, stock_quantity')
+          .eq('id', item.product_id)
+          .eq('tenant_id', tenantId)
+          .maybeSingle();
+
+        if (productError || !product) {
+          logger.warn('Product not found for inventory decrement', {
+            component: 'useOrderBulkStatusUpdate',
+            productId: item.product_id,
+          });
+          continue;
+        }
+
+        const previousQuantity = product.stock_quantity || 0;
+        const newQuantity = Math.max(0, previousQuantity - item.quantity);
+
+        // Update product stock
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({
+            stock_quantity: newQuantity,
+            available_quantity: newQuantity,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', item.product_id)
+          .eq('tenant_id', tenantId);
+
+        if (updateError) {
+          logger.error('Failed to decrement inventory', updateError, {
+            component: 'useOrderBulkStatusUpdate',
+            productId: item.product_id,
+          });
+          continue;
+        }
+
+        // Log to inventory_history
+        const historyEntry = {
+          tenant_id: tenantId,
+          product_id: item.product_id,
+          change_type: 'sale' as const,
+          previous_quantity: previousQuantity,
+          new_quantity: newQuantity,
+          change_amount: -item.quantity,
+          reference_type: 'order_delivered',
+          reference_id: orderId,
+          reason: 'order_delivered',
+          notes: `Bulk delivery - inventory decremented`,
+          performed_by: performedBy,
+          metadata: {
+            order_id: orderId,
+            order_item_id: item.id,
+            source: 'bulk_status_update',
+          },
+        };
+
+        await (
+          supabase as any
+        )
+          .from('inventory_history')
+          .insert(historyEntry);
+      }
+
+      successCount++;
+    } catch (err) {
+      logger.error('Error decrementing inventory for order', err, {
         component: 'useOrderBulkStatusUpdate',
         orderId,
       });
@@ -355,6 +508,7 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
             tenantId,
             count: activityEntries.length,
           });
+          toast.warning('Status updated, but activity log could not be saved');
         });
       }
 
@@ -364,6 +518,7 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
           component: 'useOrderBulkStatusUpdate',
           tenantId,
         });
+        toast.warning('Status updated, but notification could not be sent');
       });
 
       // 3. Restore inventory for cancelled orders
@@ -376,12 +531,35 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
               success: result.success,
               failed: result.failed,
             });
+            toast.warning(`${result.failed} inventory restore(s) failed during cancellation`);
           }
         }).catch(err => {
           logger.error('Failed to restore inventory for cancelled orders', err, {
             component: 'useOrderBulkStatusUpdate',
             tenantId,
           });
+          toast.error('Failed to restore inventory for cancelled orders');
+        });
+      }
+
+      // 4. Decrement inventory for delivered orders
+      if (targetStatus === 'delivered' && succeededOrders.length > 0) {
+        const succeededIds = succeededOrders.map(o => o.id);
+        decrementInventoryForDeliveredOrders(tenantId, succeededIds, userId || null).then(result => {
+          if (result.failed > 0) {
+            logger.warn('Some inventory decrements failed during bulk delivery', {
+              component: 'useOrderBulkStatusUpdate',
+              success: result.success,
+              failed: result.failed,
+            });
+            toast.warning(`${result.failed} inventory decrement(s) failed during delivery`);
+          }
+        }).catch(err => {
+          logger.error('Failed to decrement inventory for delivered orders', err, {
+            component: 'useOrderBulkStatusUpdate',
+            tenantId,
+          });
+          toast.error('Failed to update inventory for delivered orders');
         });
       }
 

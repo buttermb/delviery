@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useFrontedInventory, useFrontedActions, type FrontedItem } from '@/hooks/useFinancialCommandCenter';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { format } from 'date-fns';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface ConsignmentCardProps {
   item: FrontedItem;
@@ -62,7 +63,7 @@ function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExt
       <div className="space-y-2 mb-3">
         {item.products.map((product, i) => (
           <div key={i} className="text-sm text-zinc-400">
-            {product.quantity} units {product.name} @ ${product.unitPrice.toLocaleString()}/unit
+            {product.quantity} units {product.name} @ {formatCurrency(product.unitPrice)}/unit
           </div>
         ))}
       </div>
@@ -71,7 +72,7 @@ function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExt
         <div>
           <span className="text-xs text-zinc-500">Total Value</span>
           <div className="text-lg font-bold font-mono text-zinc-100">
-            ${item.totalValue.toLocaleString()}
+            {formatCurrency(item.totalValue)}
           </div>
         </div>
         <div className="text-right">
@@ -146,11 +147,6 @@ export function FrontedInventoryZone() {
     );
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
-
   if ((data?.items.length || 0) === 0) {
     return (
       <Card className="bg-zinc-900/80 border-zinc-800/50 backdrop-blur-xl">
@@ -185,7 +181,7 @@ export function FrontedInventoryZone() {
               FRONTED INVENTORY
             </span>
             <span className="text-lg font-bold text-zinc-100 font-mono">
-              ${data?.totalValue.toLocaleString()} at risk
+              {formatCurrency(data?.totalValue)} at risk
             </span>
           </CardTitle>
         </CardHeader>
@@ -221,7 +217,7 @@ export function FrontedInventoryZone() {
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-mono text-emerald-400 w-12 sm:w-16 text-right flex-shrink-0">
-                {formatCurrency(data?.aging.healthy.value || 0)}
+                {formatCompactCurrency(data?.aging.healthy.value || 0)}
               </span>
             </div>
 
@@ -237,7 +233,7 @@ export function FrontedInventoryZone() {
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-mono text-amber-400 w-12 sm:w-16 text-right flex-shrink-0">
-                {formatCurrency(data?.aging.warning.value || 0)}
+                {formatCompactCurrency(data?.aging.warning.value || 0)}
               </span>
             </div>
 
@@ -253,7 +249,7 @@ export function FrontedInventoryZone() {
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-mono text-red-400 w-12 sm:w-16 text-right flex-shrink-0">
-                {formatCurrency(data?.aging.overdue.value || 0)}
+                {formatCompactCurrency(data?.aging.overdue.value || 0)}
               </span>
             </div>
           </div>

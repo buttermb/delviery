@@ -55,12 +55,12 @@ export function DetailsStep({ formData, updateFormData }: DetailsStepProps) {
           value={formData.description || ""}
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="Hand-trimmed indoor cultivation. Premium flower represents the pinnacle of quality genetics."
-          maxLength={200}
+          maxLength={2000}
           rows={3}
           className="mt-1.5"
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Characters: {(formData.description || "").length}/200
+          Characters: {(formData.description || "").length}/2000
         </p>
       </div>
 
@@ -75,6 +75,7 @@ export function DetailsStep({ formData, updateFormData }: DetailsStepProps) {
             })
           }
           placeholder="Tell customers about strain effects, flavor profile, best use cases, and lab testing highlights..."
+          maxLength={2000}
           rows={6}
           className="mt-1.5"
         />
@@ -126,6 +127,7 @@ export function DetailsStep({ formData, updateFormData }: DetailsStepProps) {
           value={(formData.usage_tips as string) || ""}
           onChange={(e) => updateFormData({ usage_tips: e.target.value })}
           placeholder="Best practices for consumption, dosage recommendations, etc."
+          maxLength={1000}
           rows={3}
           className="mt-1.5"
         />

@@ -35,20 +35,9 @@ export function RoleBasedSidebar() {
   const { tenantSlug, buildAdminUrl } = useTenantNavigation();
   const location = useLocation();
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<string>('owner');
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
-  // Get user role
-  useEffect(() => {
-    const fetchRole = async () => {
-      if (admin) {
-        // Use tenant admin role
-        setUserRole('owner');
-      }
-    };
-    fetchRole();
-  }, [admin]);
-
+  const userRole = admin?.role || 'owner';
   const navigation = getNavigationForRole(userRole);
   const isCollapsed = state === 'collapsed';
 

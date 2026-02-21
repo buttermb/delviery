@@ -8,13 +8,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, MousePointer2, Play } from "lucide-react";
-import { lazy, Suspense } from "react";
-// Lazy load the heavy demo component
-const BusinessAdminDemo = lazy(() => import("./demos/BusinessAdminDemo").then(module => ({ default: module.BusinessAdminDemo })));
-import { useMobileOptimized } from "@/hooks/useMobileOptimized";
-
-
+import { ArrowRight, ShieldCheck, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -34,7 +28,6 @@ const ROTATING_FEATURES = [
 ];
 
 export function ModernHero() {
-  const { isMobile, shouldUseStaticFallback } = useMobileOptimized();
   const [featureIndex, setFeatureIndex] = useState(0);
 
   useEffect(() => {
@@ -59,7 +52,7 @@ export function ModernHero() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm text-sm font-medium uppercase tracking-wider text-emerald-700"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--marketing-primary)/0.1)] border border-[hsl(var(--marketing-primary)/0.2)] shadow-sm text-sm font-medium uppercase tracking-wider text-[hsl(var(--marketing-primary))]"
               >
                 <ShieldCheck className="w-4 h-4" />
                 {ROTATING_FEATURES[featureIndex].badge}
@@ -70,10 +63,10 @@ export function ModernHero() {
           {/* Headline - Responsive sizing */}
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.1] max-w-4xl mx-auto">
             Create a Secure Menu <br className="hidden sm:block" />
-            <span className="relative inline-block text-emerald-600">
+            <span className="relative inline-block text-[hsl(var(--marketing-primary))]">
               in 30 Seconds
-              {/* Emerald underline accent */}
-              <svg className="absolute w-full h-3 -bottom-2 left-0 text-emerald-200" viewBox="0 0 100 10" preserveAspectRatio="none">
+              {/* Primary underline accent */}
+              <svg className="absolute w-full h-3 -bottom-2 left-0 text-[hsl(var(--marketing-primary)/0.3)]" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" opacity="0.6" />
               </svg>
             </span>
@@ -95,8 +88,11 @@ export function ModernHero() {
             </AnimatePresence>
           </div>
 
-          <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto">
-            The only menu system built for operators who need to disappear.
+          <p className="text-lg text-slate-500 mb-4 max-w-xl mx-auto font-semibold">
+            Your operation. One platform.
+          </p>
+          <p className="text-base text-slate-400 mb-10 max-w-xl mx-auto">
+            Manage wholesale orders, inventory, menus, and compliance — all in one place.
           </p>
 
           {/* CTAs */}
@@ -104,7 +100,7 @@ export function ModernHero() {
             <Link to="/signup?plan=free&flow=menu" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary)/0.9)] text-white rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
               >
                 Create Menu Free
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -115,7 +111,7 @@ export function ModernHero() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-2 border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-emerald-200 hover:text-emerald-700 rounded-xl transition-all duration-200"
+                className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-2 border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-[hsl(var(--marketing-primary)/0.3)] hover:text-[hsl(var(--marketing-primary))] rounded-xl transition-all duration-200"
               >
                 Watch Demo
               </Button>
@@ -129,8 +125,8 @@ export function ModernHero() {
         </div>
 
         {/* Centered Product Visual (Browser Mockup) */}
-        <div className={`relative max-w-6xl mx-auto ${isMobile ? '-mb-20' : '-mb-40'} perspective-[1200px] group`}>
-          <div className={`relative rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden ${!isMobile ? 'transform group-hover:rotate-x-2 transition-transform duration-700 ease-out' : ''}`}>
+        <div className="relative max-w-6xl mx-auto -mb-40 perspective-[1200px] group">
+          <div className="relative rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden">
 
             {/* Browser Header */}
             <div className="h-10 bg-gray-50 border-b border-gray-200 flex items-center px-4 gap-2">
@@ -146,55 +142,49 @@ export function ModernHero() {
               </div>
             </div>
 
-            {/* Dashboard Content */}
-            <div className={`${isMobile ? 'aspect-[4/3]' : 'aspect-[16/9]'} bg-white relative flex items-center justify-center overflow-hidden group/demo`}>
-
-              {/* Live Demo Component */}
-              <div className="absolute inset-0 z-0">
-                <Suspense fallback={
-                  <div className="w-full h-full bg-slate-50 flex items-center justify-center">
-                    <div className="animate-pulse flex flex-col items-center gap-4">
-                      <div className="h-8 w-32 bg-slate-200 rounded"></div>
-                      <div className="h-64 w-96 bg-slate-200 rounded"></div>
+            {/* Static Dashboard Preview */}
+            <div className="aspect-[16/9] bg-slate-50 relative flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full p-6 grid grid-cols-4 gap-4">
+                <div className="col-span-1 space-y-3">
+                  <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded-lg" />
+                  <div className="h-6 bg-slate-200 rounded w-3/4" />
+                  <div className="h-6 bg-slate-200 rounded w-2/3" />
+                  <div className="h-6 bg-slate-200 rounded w-4/5" />
+                  <div className="h-6 bg-slate-200 rounded w-1/2" />
+                </div>
+                <div className="col-span-3 space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="h-24 bg-white rounded-xl border border-gray-200 p-4">
+                      <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
+                      <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded w-2/3" />
+                    </div>
+                    <div className="h-24 bg-white rounded-xl border border-gray-200 p-4">
+                      <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
+                      <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded w-2/3" />
+                    </div>
+                    <div className="h-24 bg-white rounded-xl border border-gray-200 p-4">
+                      <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
+                      <div className="h-8 bg-[hsl(var(--marketing-primary)/0.15)] rounded w-2/3" />
                     </div>
                   </div>
-                }>
-                  <BusinessAdminDemo />
-                </Suspense>
+                  <div className="h-48 bg-white rounded-xl border border-gray-200" />
+                </div>
               </div>
 
-              {/* Interaction Overlay */}
-              {!shouldUseStaticFallback && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-[2px] transition-all duration-500 group-hover/demo:opacity-0 group-hover/demo:pointer-events-none group-hover/demo:backdrop-blur-none">
-                  <div className="text-center transform transition-transform duration-500 group-hover/demo:scale-110">
-                    <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.2)_inset] animate-pulse">
-                      <MousePointer2 className="w-8 h-8 text-emerald-600" />
-                    </div>
-                    <div className="px-6 py-3 rounded-full bg-emerald-600 shadow-xl animate-bounce">
-                      <p className="font-bold text-white tracking-wide text-base">
-                        Hover to Interact
-                      </p>
-                    </div>
+              {/* CTA Overlay */}
+              <div className="absolute inset-0 flex items-end justify-center pb-6">
+                <Link to="/demo">
+                  <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--marketing-primary))] shadow-xl hover:bg-[hsl(var(--marketing-primary)/0.9)] transition-colors">
+                    <Play className="w-4 h-4 text-white" />
+                    <span className="font-bold text-white text-sm">Watch Demo</span>
                   </div>
-                </div>
-              )}
-
-              {/* Touch device overlay */}
-              {shouldUseStaticFallback && (
-                <div className="absolute inset-0 z-10 flex items-end justify-center pb-4">
-                  <Link to="/demo">
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 shadow-xl">
-                      <Play className="w-4 h-4 text-white" />
-                      <span className="font-bold text-white text-sm">Watch Demo</span>
-                    </div>
-                  </Link>
-                </div>
-              )}
+                </Link>
+              </div>
             </div>
           </div>
 
           {/* Bottom Glow */}
-          <div className="absolute -bottom-10 left-0 right-0 h-40 bg-emerald-500 opacity-20 blur-[120px] z-[-1]" />
+          <div className="absolute -bottom-10 left-0 right-0 h-40 bg-[hsl(var(--marketing-primary))] opacity-20 blur-[120px] z-[-1]" />
         </div>
       </div>
     </section>

@@ -32,6 +32,7 @@ import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
 import { DeliveryExceptions } from '@/components/admin/delivery';
+import { useOrderInvoiceSave } from '@/components/admin/orders/OrderInvoiceGenerator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -91,6 +92,9 @@ import Printer from "lucide-react/dist/esm/icons/printer";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Save from "lucide-react/dist/esm/icons/save";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
+import { FeatureGate } from '@/components/admin/FeatureGate';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { format } from 'date-fns';
@@ -195,6 +199,8 @@ export function OrderDetailsPage() {
   const { tenant, tenantSlug } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
+  const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const deliveryEnabled = isFeatureEnabled('delivery_tracking');
 
   const [cancellationReason, setCancellationReason] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -378,11 +384,34 @@ export function OrderDetailsPage() {
               .eq('tenant_id', tenant?.id || '')
               .maybeSingle();
             if (product) {
+              const previousQuantity = product.stock_quantity || 0;
+              const newQuantity = previousQuantity + item.quantity;
               await supabase
                 .from('products')
-                .update({ stock_quantity: (product.stock_quantity || 0) + item.quantity })
+                .update({
+                  stock_quantity: newQuantity,
+                  available_quantity: newQuantity,
+                  updated_at: new Date().toISOString(),
+                })
                 .eq('id', item.product_id)
                 .eq('tenant_id', tenant?.id || '');
+              // Log to inventory_history for audit trail
+              await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: unknown }> } })
+                .from('inventory_history')
+                .insert({
+                  tenant_id: tenant?.id,
+                  product_id: item.product_id,
+                  change_type: 'return',
+                  previous_quantity: previousQuantity,
+                  new_quantity: newQuantity,
+                  change_amount: item.quantity,
+                  reference_type: 'order_cancelled',
+                  reference_id: orderId,
+                  reason: 'order_cancelled',
+                  notes: `Order cancelled — inventory restored`,
+                  performed_by: tenant?.id || null,
+                  metadata: { order_id: orderId, source: 'order_details_page' },
+                });
             }
           }
           logger.info('Inventory restored for cancelled order', { component: 'OrderDetailsPage', orderId });
@@ -498,6 +527,61 @@ export function OrderDetailsPage() {
       toast.error('Failed to save delivery notes');
     },
   });
+
+  // Check if invoice already exists for this order
+  const { data: existingInvoice } = useQuery({
+    queryKey: [...queryKeys.customerInvoices.all, 'by-order', orderId],
+    queryFn: async () => {
+      if (!orderId) return null;
+      const { data, error } = await supabase
+        .from('customer_invoices')
+        .select('id, invoice_number')
+        .eq('order_id', orderId)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!orderId,
+  });
+
+  // Create invoice from order data
+  const { createInvoice, isCreating: isCreatingInvoice } = useOrderInvoiceSave();
+
+  const handleCreateInvoice = async () => {
+    if (!order?.customer_id) {
+      toast.error('No customer linked to this order');
+      return;
+    }
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 30);
+    try {
+      await createInvoice({
+        order: {
+          id: order.id,
+          tracking_code: order.order_number,
+          created_at: order.created_at,
+          total_amount: order.total_amount,
+          status: order.status,
+          delivery_address: order.delivery_address || '',
+          order_items: (order.order_items || []).map(item => ({
+            quantity: item.quantity,
+            price: item.unit_price,
+            product_name: item.product_name,
+          })),
+          subtotal: order.subtotal || 0,
+          tax: order.tax_amount || 0,
+          discount: order.discount_amount || 0,
+          notes: order.notes || undefined,
+        },
+        customerId: order.customer_id,
+        dueDate: dueDate.toISOString().split('T')[0],
+        notes: `Auto-generated from Order #${order.order_number}`,
+      });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.customerInvoices.all, 'by-order', orderId] });
+    } catch {
+      // Error already handled by useOrderInvoiceSave onError
+    }
+  };
 
   if (isLoading) {
     return (
@@ -626,6 +710,35 @@ export function OrderDetailsPage() {
               </Button>
             )}
 
+            {/* Create Invoice Button — for delivered/completed orders with customer */}
+            {['delivered', 'completed'].includes(order.status) && order.customer_id && !existingInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCreateInvoice}
+                disabled={isCreatingInvoice || updateStatusMutation.isPending}
+              >
+                {isCreatingInvoice ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-1" />
+                )}
+                Create Invoice
+              </Button>
+            )}
+
+            {/* View Invoice link — if invoice already exists for this order */}
+            {existingInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateToAdmin('customer-invoices')}
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                View Invoice
+              </Button>
+            )}
+
             {/* Report Delivery Issue Button — only for in-transit/out-for-delivery */}
             {['in_transit', 'out_for_delivery'].includes(order.status) && (
               <Button
@@ -660,15 +773,26 @@ export function OrderDetailsPage() {
 
             {/* Assign Runner Button - show when order is ready for delivery */}
             {!isCancelled && !order.courier_id && ['confirmed', 'preparing', 'ready', 'pending'].includes(order.status) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAssignRunnerDialog(true)}
-                disabled={updateStatusMutation.isPending}
-              >
-                <UserPlus className="w-4 h-4 mr-1" />
-                Assign Runner
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAssignRunnerDialog(true)}
+                        disabled={!deliveryEnabled || updateStatusMutation.isPending}
+                      >
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        Assign Runner
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!deliveryEnabled && (
+                    <TooltipContent>Enable Delivery Tracking in Settings</TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             {!isCancelled && (
@@ -1184,16 +1308,18 @@ export function OrderDetailsPage() {
               </div>
             )}
 
-            {/* Order Analytics Insights — hide on print */}
-            <div className="print:hidden">
-              <OrderAnalyticsInsights
-                orderId={order.id}
-                customerId={order.customer_id}
-                orderTotal={order.total_amount}
-                orderCreatedAt={order.created_at}
-                orderItems={order.order_items}
-              />
-            </div>
+            {/* Order Analytics Insights — hide on print, gated behind analytics_advanced */}
+            <FeatureGate feature="analytics_advanced">
+              <div className="print:hidden">
+                <OrderAnalyticsInsights
+                  orderId={order.id}
+                  customerId={order.customer_id}
+                  orderTotal={order.total_amount}
+                  orderCreatedAt={order.created_at}
+                  orderItems={order.order_items}
+                />
+              </div>
+            </FeatureGate>
 
             {/* Payment Status with Real-time Sync — hide on print */}
             <div className="print:hidden">

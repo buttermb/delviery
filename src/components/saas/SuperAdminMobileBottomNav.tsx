@@ -116,8 +116,8 @@ export function SuperAdminMobileBottomNav() {
             className="p-0 w-[85vw] max-w-sm flex flex-col bg-[hsl(var(--super-admin-surface))] border-white/10"
             style={{
               zIndex: 200,
-              height: '100vh',
-              maxHeight: '100vh',
+              height: '100dvh',
+              maxHeight: '100dvh',
               top: 0,
               bottom: 0,
               position: 'fixed'

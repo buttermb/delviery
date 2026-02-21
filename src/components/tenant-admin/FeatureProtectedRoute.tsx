@@ -49,7 +49,7 @@ function TenantToggleGate({ feature, children }: { feature: FeatureToggleKey; ch
             This feature is currently disabled. Enable it in Settings &gt; Features to start using it.
           </p>
           <Button asChild>
-            <Link to={`/${tenantSlug}/admin/settings?tab=features`}>
+            <Link to={`/${tenantSlug}/admin/settings-hub?tab=features`}>
               <Settings className="mr-2 h-4 w-4" />
               Go to Settings
             </Link>

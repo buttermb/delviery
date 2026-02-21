@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface DayData {
   day: string;
@@ -40,11 +41,7 @@ export default function OrderAnalytics() {
   });
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading analytics...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading analytics..." />;
   }
 
   const ordersByDay = (orders || []).reduce((acc: DayData[], order: any) => {

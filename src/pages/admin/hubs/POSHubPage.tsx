@@ -19,6 +19,7 @@ import ZReportContent from './panels/ZReportPanel';
 // Lazy load for performance
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -105,7 +106,7 @@ export default function POSHubPage() {
                                 hubHref="pos-system"
                                 currentTab={tabs.find(t => t.id === activeTab)?.label}
                             />
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                                 <div>
                                     <h1 className="text-2xl font-bold">Point of Sale</h1>
                                     <p className="text-muted-foreground text-sm">
@@ -128,26 +129,34 @@ export default function POSHubPage() {
 
                 {/* Register Tab - Full screen POS */}
                 <TabsContent value="register" className="m-0">
-                    <PointOfSale />
+                    <ModuleErrorBoundary moduleName="Cash Register">
+                        <PointOfSale />
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Shifts Tab */}
                 <TabsContent value="shifts" className="m-0">
-                    <div className="p-6">
-                        <ShiftManager />
-                    </div>
+                    <ModuleErrorBoundary moduleName="Shift Management">
+                        <div className="p-6">
+                            <ShiftManager />
+                        </div>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Z-Reports Tab */}
                 <TabsContent value="z-reports" className="m-0">
-                    <ZReportContent />
+                    <ModuleErrorBoundary moduleName="Z-Reports">
+                        <ZReportContent />
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Analytics Tab */}
                 <TabsContent value="analytics" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <POSAnalyticsPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="POS Analytics">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <POSAnalyticsPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

@@ -21,6 +21,7 @@ import {
   Locate, Building, KeyRound as Key
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { showErrorToast } from '@/utils/toastHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';
 import { formatWeight } from '@/utils/productHelpers';
@@ -35,6 +36,7 @@ interface CheckoutFlowProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   menuId: string;
+  tenantId?: string;
   accessToken?: string;
   minOrder?: number;
   maxOrder?: number;
@@ -1530,7 +1532,7 @@ function OrderSuccess({
           <div className="text-xs text-muted-foreground mb-1">Order Reference</div>
           <div className="flex items-center justify-center gap-2">
             <span className="font-mono text-xl font-bold">{orderId.slice(0, 8).toUpperCase()}</span>
-            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={copyOrderId} aria-label="Copy order ID">
+            <Button size="icon" variant="ghost" className="h-11 w-11 sm:h-8 sm:w-8" onClick={copyOrderId} aria-label="Copy order ID">
               {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
@@ -1617,6 +1619,7 @@ export function ModernCheckoutFlow({
   open,
   onOpenChange,
   menuId,
+  tenantId: tenantIdProp,
   accessToken: _accessToken,
   minOrder: _minOrder,
   maxOrder: _maxOrder,
@@ -1716,7 +1719,7 @@ export function ModernCheckoutFlow({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
       const orderItems = cartItems.map(item => ({
         product_id: item.productId,
@@ -1724,7 +1727,7 @@ export function ModernCheckoutFlow({
         price: item.price,
       }));
 
-      const fullAddress = formData.deliveryMethod === 'delivery' 
+      const fullAddress = formData.deliveryMethod === 'delivery'
         ? [formData.address, formData.city, formData.zipCode].filter(Boolean).join(', ')
         : '';
 
@@ -1735,65 +1738,105 @@ export function ModernCheckoutFlow({
       // Calculate total for the API
       const totalAmount = getTotal() * 1.05; // Include 5% service fee
 
-      const { data, error } = await supabase.functions.invoke('menu-order-place', {
-        body: {
-          menu_id: menuId,
-          order_items: orderItems,
-          contact_phone: formData.phone.replace(/\D/g, ''), // Send only digits
-          contact_email: formData.email || undefined,
-          customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
-          payment_method: apiPaymentMethod,
-          delivery_address: fullAddress || undefined,
-          customer_notes: formData.notes || undefined,
-          total_amount: totalAmount,
+      let newOrderId: string | undefined;
+
+      // Try edge function first, fall back to direct DB insert
+      try {
+        const { data, error } = await supabase.functions.invoke('menu-order-place', {
+          body: {
+            menu_id: menuId,
+            order_items: orderItems,
+            contact_phone: formData.phone.replace(/\D/g, ''),
+            contact_email: formData.email || undefined,
+            customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
+            payment_method: apiPaymentMethod,
+            delivery_address: fullAddress || undefined,
+            customer_notes: formData.notes || undefined,
+            total_amount: totalAmount,
+          }
+        });
+
+        if (error) throw error;
+
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to place order';
+          throw new Error(errorMessage);
         }
-      });
 
-      if (error) throw error;
+        newOrderId = data?.order_id;
+      } catch (edgeFnErr: unknown) {
+        // Edge function failed — fall back to direct DB insert
+        logger.warn('Edge function order placement failed, using direct insert', edgeFnErr, {
+          component: 'ModernCheckoutFlow',
+        });
 
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to place order';
-        throw new Error(errorMessage);
+        if (!tenantIdProp) {
+          throw new Error('Unable to place order. Please try refreshing the page.');
+        }
+
+        const orderData = {
+          items: orderItems.map(item => ({
+            ...item,
+            product_name: cartItems.find(ci => ci.productId === item.product_id)?.productName,
+            subtotal: item.price * item.quantity,
+          })),
+          total: totalAmount,
+          customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          contact_email: formData.email || undefined,
+          delivery_method: formData.deliveryMethod,
+          delivery_address: fullAddress || undefined,
+          payment_method: apiPaymentMethod,
+          notes: formData.notes || undefined,
+        };
+
+        const { data: insertResult, error: insertError } = await supabase
+          .from('menu_orders')
+          .insert({
+            menu_id: menuId,
+            tenant_id: tenantIdProp,
+            contact_phone: formData.phone.replace(/\D/g, ''),
+            total_amount: totalAmount,
+            status: 'pending' as const,
+            order_data: orderData as unknown as Json,
+            payment_method: apiPaymentMethod,
+            delivery_method: formData.deliveryMethod,
+            delivery_address: fullAddress || undefined,
+            customer_notes: formData.notes || undefined,
+          })
+          .select('id')
+          .maybeSingle();
+
+        if (insertError) throw insertError;
+        newOrderId = insertResult?.id;
       }
 
-      const newOrderId = data?.order_id || crypto.randomUUID();
-      setOrderId(newOrderId);
+      const orderId = newOrderId || crypto.randomUUID();
+      setOrderId(orderId);
       clearCart();
-      onOrderComplete(newOrderId, finalTotal);
+      onOrderComplete(orderId, finalTotal);
 
-      // Get tenant_id from menu for event publishing
-      const { data: menuData } = await supabase
-        .from('disposable_menus')
-        .select('tenant_id')
-        .eq('id', menuId)
-        .maybeSingle();
-
-      const tenantId = menuData?.tenant_id;
+      // Use provided tenantId for event publishing (avoids RLS issues with anon client)
+      const tenantId = tenantIdProp;
 
       if (tenantId) {
-        // Publish order_created event for cross-module sync
-        // This notifies admin panel, notification system, dashboard stats
         publish('order_created', {
-          orderId: newOrderId,
+          orderId,
           tenantId,
         });
 
         logger.info('Menu order event published', {
-          orderId: newOrderId,
+          orderId,
           tenantId,
           component: 'ModernCheckoutFlow',
         });
 
-        // Invalidate queries for immediate UI updates in admin panel
-        // Realtime subscription also triggers this, but explicit invalidation
-        // ensures UI updates even if realtime has latency
         queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenantId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenantId) });
         queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
         queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
         queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       }
-      
+
     } catch (err: unknown) {
       logger.error('Order submission error', err, { component: 'ModernCheckoutFlow' });
       const errorMessage = err instanceof Error ? err.message : 'Could not place order';

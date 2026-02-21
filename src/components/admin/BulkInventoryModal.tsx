@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { Loader2, AlertTriangle, ArrowUp, ArrowDown, Replace, Package } from "lucide-react";
 
@@ -60,6 +61,13 @@ export function BulkInventoryModal({
     setReason("");
     setNotes("");
   };
+
+  // Reset form when modal opens with fresh data
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open]);
 
   const parsedQuantity = parseFloat(quantity) || 0;
 
@@ -177,9 +185,9 @@ export function BulkInventoryModal({
         toast.success(`Successfully adjusted ${successCount} products`);
       }
 
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
-      queryClient.invalidateQueries({ queryKey: ["products-for-wholesale"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
 
       resetForm();
       onOpenChange(false);
@@ -196,7 +204,7 @@ export function BulkInventoryModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!parsedQuantity || !reason || selectedProducts.length === 0) return;
+    if (!parsedQuantity || parsedQuantity < 0 || !reason || selectedProducts.length === 0) return;
     bulkAdjustmentMutation.mutate();
   };
 

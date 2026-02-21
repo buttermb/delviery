@@ -1,8 +1,9 @@
-// @ts-nocheck
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   SettingsSection,
   SettingsCard,
@@ -22,6 +23,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -32,12 +34,16 @@ import {
   Clock,
   XCircle,
   RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
+import { formatSmartDate } from '@/lib/formatters';
 import { z } from 'zod';
 import { FormFactory } from '@/components/shared/FormFactory';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 // --- Types & Schemas ---
 
@@ -75,16 +81,13 @@ export default function TeamSettings() {
   const queryClient = useQueryClient();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
+
   const { data: teamMembers = [], isLoading } = useQuery({
-    queryKey: ['tenant-team', tenant?.id],
+    queryKey: queryKeys.team.members(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
-
-      // Fetch tenant_users joined with some profile info if possible.
-      // Since we can't easily join auth.users, we rely on metadata stored in tenant_users or a separate profiles table.
-      // For now, assuming tenant_users has some profile fields or we fetch them separately.
-      // Checking the schema earlier: tenant_users has avatar_url. It doesn't seem to have email/name directly?
-      // Actually, standard pattern is a profiles table.
 
       const { data, error } = await supabase
         .from('tenant_users')
@@ -95,20 +98,17 @@ export default function TeamSettings() {
           status,
           created_at,
           accepted_at,
-          avatar_url
+          avatar_url,
+          email,
+          first_name,
+          name
         `)
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
 
-      // In a real app we'd fetch profile data (email, name) from a 'profiles' table using user_id.
-      // For this implementation, we'll mock the missing profile data if the table doesn't support joins yet,
-      // OR we check if 'profiles' exists.
-      // Let's assume we can at least get the count and IDs.
-      // To make this robust, let's try to fetch profiles if we have user_ids.
-
       const userIds = data.map(u => u.user_id).filter(Boolean);
-      let profilesMap: Record<string, any> = {};
+      let profilesMap: Record<string, { first_name: string | null; last_name: string | null }> = {};
 
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
@@ -117,15 +117,20 @@ export default function TeamSettings() {
           .in('id', userIds);
 
         if (profiles) {
-          profilesMap = profiles.reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+          profilesMap = profiles.reduce<Record<string, { first_name: string | null; last_name: string | null }>>((acc, p) => ({ ...acc, [p.id]: p }), {});
         }
       }
 
-      return data.map((u: any) => ({
-        ...u,
+      return data.map((u) => ({
+        id: u.id,
+        user_id: u.user_id || '',
+        role: u.role || 'staff',
+        status: (u.accepted_at ? 'active' : (u.status || 'invited')) as TenantUser['status'],
         email: u.email || 'No email on file',
-        full_name: `${profilesMap[u.user_id]?.first_name || ''} ${profilesMap[u.user_id]?.last_name || ''}`.trim() || 'Team Member',
-        status: u.accepted_at ? 'active' : (u.status || 'invited')
+        full_name: `${profilesMap[u.user_id]?.first_name || u.first_name || ''} ${profilesMap[u.user_id]?.last_name || ''}`.trim() || u.name || 'Team Member',
+        avatar_url: u.avatar_url || undefined,
+        created_at: u.created_at || '',
+        accepted_at: u.accepted_at || undefined,
       })) as TenantUser[];
     },
     enabled: !!tenant?.id,
@@ -133,28 +138,98 @@ export default function TeamSettings() {
 
   const inviteMutation = useMutation({
     mutationFn: async (data: InviteFormData) => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // In real implementation: call edge function
-      logger.info('Inviting user', data);
+      if (!tenant?.id) throw new Error('No tenant');
+
+      const { data: response, error } = await supabase.functions.invoke('tenant-invite', {
+        body: {
+          action: 'send_invitation',
+          tenantId: tenant.id,
+          email: data.email,
+          role: data.role,
+        },
+      });
+
+      if (error) throw error;
+      if (response?.error) throw new Error(response.error);
+      return response;
     },
     onSuccess: (_, variables) => {
       setInviteDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['tenant-team'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) });
       toast.success(`Invitation sent to ${variables.email}`);
     },
-    onError: (error) => {
-      logger.error("Invite failed", error);
-      toast.error("Failed to send invitation");
-    }
+    onError: (error: Error) => {
+      logger.error('Invite failed', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to send invitation'));
+    },
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+      if (!tenant?.id) throw new Error('No tenant');
+
+      const { error } = await supabase
+        .from('tenant_users')
+        .update({ role: newRole })
+        .eq('user_id', userId)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Role updated successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to update role', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to update role'));
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
+
+      const { error } = await supabase
+        .from('tenant_users')
+        .delete()
+        .eq('user_id', userId)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Team member removed');
+      setDeleteDialogOpen(false);
+      setMemberToRemove(null);
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to remove member', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to remove team member'));
+    },
   });
 
   const handleInviteSubmit = async (data: InviteFormData) => {
     await inviteMutation.mutateAsync(data);
   };
 
+  const handleRemoveClick = (userId: string, name: string) => {
+    setMemberToRemove({ userId, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleRemove = () => {
+    if (memberToRemove) {
+      removeMemberMutation.mutate(memberToRemove.userId);
+    }
+  };
+
   const activeMembers = teamMembers.filter(m => m.status === 'active');
-  const pendingMembers = teamMembers.filter(m => m.status === 'invited' || m.status === 'pending');
+  const pendingMembers = teamMembers.filter(m => m.status === 'invited' || (m.status as string) === 'pending');
 
   const getInitials = (name: string) => {
     return name
@@ -204,27 +279,97 @@ export default function TeamSettings() {
     {
       header: "Actions",
       className: "text-right",
-      cell: (member) => (
-        <div className="flex justify-end">
-          {member.role !== 'owner' && (
+      cell: (member) => {
+        if (member.role === 'owner') {
+          return <span className="text-xs text-muted-foreground italic">Cannot modify owner</span>;
+        }
+
+        const isUpdating = updateRoleMutation.isPending || removeMemberMutation.isPending;
+
+        return (
+          <div className="flex justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-11 w-11" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MoreVertical className="h-4 w-4" />
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="text-destructive">
+                {ROLES.filter(r => r.value !== 'owner').map((role) => (
+                  <DropdownMenuItem
+                    key={role.value}
+                    onClick={() => updateRoleMutation.mutate({ userId: member.user_id, newRole: role.value })}
+                    disabled={member.role === role.value || isUpdating}
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Make {role.label}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => handleRemoveClick(member.user_id, member.full_name || member.email || 'this member')}
+                  className="text-destructive"
+                  disabled={isUpdating}
+                >
                   <XCircle className="h-4 w-4 mr-2" />
                   Remove Access
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
-        </div>
-      ),
+          </div>
+        );
+      },
     }
   ];
+
+  const resendInviteMutation = useMutation({
+    mutationFn: async (member: TenantUser) => {
+      if (!tenant?.id) throw new Error('No tenant');
+      const { data: response, error } = await supabase.functions.invoke('tenant-invite', {
+        body: {
+          action: 'send_invitation',
+          tenantId: tenant.id,
+          email: member.email,
+          role: member.role,
+        },
+      });
+      if (error) throw error;
+      if (response?.error) throw new Error(response.error);
+      return response;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(`Invitation resent to ${variables.email}`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to resend invitation', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to resend invitation'));
+    },
+  });
+
+  const cancelInviteMutation = useMutation({
+    mutationFn: async (memberId: string) => {
+      if (!tenant?.id) throw new Error('No tenant');
+      const { error } = await supabase
+        .from('tenant_users')
+        .delete()
+        .eq('id', memberId)
+        .eq('tenant_id', tenant.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Invitation cancelled');
+      queryClient.invalidateQueries({ queryKey: queryKeys.team.members(tenant?.id) });
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to cancel invitation', error, { component: 'TeamSettings' });
+      toast.error(humanizeError(error, 'Failed to cancel invitation'));
+    },
+  });
 
   const pendingColumns: ResponsiveColumn<TenantUser>[] = [
     {
@@ -238,14 +383,30 @@ export default function TeamSettings() {
     },
     {
       header: "Invited",
-      cell: (member) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(member.created_at).toLocaleDateString()}</span>
+      cell: (member) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatSmartDate(member.created_at)}</span>
     },
     {
       header: "Actions",
-      cell: () => (
+      cell: (member) => (
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8"><RefreshCw className="h-3 w-3" /></Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><XCircle className="h-3 w-3" /></Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11"
+            onClick={() => resendInviteMutation.mutate(member)}
+            disabled={resendInviteMutation.isPending}
+          >
+            {resendInviteMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11 text-destructive"
+            onClick={() => cancelInviteMutation.mutate(member.id)}
+            disabled={cancelInviteMutation.isPending}
+          >
+            {cancelInviteMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
+          </Button>
         </div>
       )
     }
@@ -253,7 +414,7 @@ export default function TeamSettings() {
 
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading team...</div>;
+    return <EnhancedLoadingState variant="table" message="Loading team..." />;
   }
 
   return (
@@ -417,6 +578,15 @@ export default function TeamSettings() {
           ))}
         </div>
       </SettingsCard>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleRemove}
+        itemName={memberToRemove?.name}
+        itemType="team member"
+        isLoading={removeMemberMutation.isPending}
+      />
     </div>
   );
 }

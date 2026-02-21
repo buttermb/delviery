@@ -23,6 +23,7 @@ import X from 'lucide-react/dist/esm/icons/x';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -540,14 +541,14 @@ export function MenuTheme({ menuId, className, onThemeChange }: MenuThemeProps) 
             <RefreshCw className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button size="sm" onClick={handleSave} disabled={saveThemeMutation.isPending}>
-            {saveThemeMutation.isPending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
+          <SaveButton
+            size="sm"
+            onClick={handleSave}
+            isPending={saveThemeMutation.isPending}
+            isSuccess={saveThemeMutation.isSuccess}
+          >
             Save Theme
-          </Button>
+          </SaveButton>
         </div>
       </div>
 

@@ -50,7 +50,7 @@ export function FreeVsTrialExplainer() {
                         className={`p-6 rounded-xl border-2 transition-all hover:border-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/5 text-left group ${loading && orderVolume === 'light' ? 'border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5' : 'border-[hsl(var(--marketing-border))] bg-background'}`}
                         disabled={loading}
                     >
-                        <div className="mb-4 w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <div className="mb-4 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                             <Package className="h-6 w-6" />
                         </div>
                         <h4 className="font-bold mb-1">Just Starting</h4>
@@ -62,7 +62,7 @@ export function FreeVsTrialExplainer() {
                         className={`p-6 rounded-xl border-2 transition-all hover:border-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/5 text-left group ${loading && orderVolume === 'medium' ? 'border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5' : 'border-[hsl(var(--marketing-border))] bg-background'}`}
                         disabled={loading}
                     >
-                        <div className="mb-4 w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                        <div className="mb-4 w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                             <TrendingUp className="h-6 w-6" />
                         </div>
                         <h4 className="font-bold mb-1">Growing</h4>
@@ -74,7 +74,7 @@ export function FreeVsTrialExplainer() {
                         className={`p-6 rounded-xl border-2 transition-all hover:border-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/5 text-left group ${loading && orderVolume === 'high' ? 'border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5' : 'border-[hsl(var(--marketing-border))] bg-background'}`}
                         disabled={loading}
                     >
-                        <div className="mb-4 w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                        <div className="mb-4 w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
                             <Truck className="h-6 w-6" />
                         </div>
                         <h4 className="font-bold mb-1">High Volume</h4>

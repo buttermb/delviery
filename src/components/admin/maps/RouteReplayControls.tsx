@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { LocationPoint } from '@/hooks/useRunnerLocationHistory';
 import { formatDistanceToNow } from 'date-fns';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface RouteReplayControlsProps {
   locations: LocationPoint[];
@@ -122,7 +123,7 @@ export function RouteReplayControls({
             Point {currentIndex + 1} of {locations.length}
           </span>
           <Badge variant="outline">
-            {new Date(currentLocation?.recorded_at || '').toLocaleTimeString()}
+            {formatSmartDate(currentLocation?.recorded_at || '', { includeTime: true })}
           </Badge>
         </div>
         <Slider

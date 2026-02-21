@@ -1,10 +1,14 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
+import { queryKeys } from "@/lib/queryKeys";
+import { invalidateOnEvent } from "@/lib/invalidation";
+import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +33,9 @@ import {
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
+import { usePermissions } from "@/hooks/usePermissions";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
@@ -44,6 +51,7 @@ import CopyButton from "@/components/CopyButton";
 import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilter";
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
 import { TruncatedText } from "@/components/shared/TruncatedText";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TagManager } from "@/components/admin/TagManager";
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -83,8 +91,7 @@ export function CustomerManagement() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterType, setFilterType] = useState("all");
@@ -96,23 +103,18 @@ export function CustomerManagement() {
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
+  const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const { canEdit, canDelete, canExport } = usePermissions();
+  const posEnabled = isFeatureEnabled('pos');
 
   // Get customer IDs filtered by tags
   const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
 
-  useEffect(() => {
-    if (tenant && !accountLoading) {
-      loadCustomers();
-    } else if (!accountLoading && !tenant) {
-      setLoading(false);
-    }
-  }, [tenant, accountLoading, filterType, filterStatus]);
+  const { data: customers = [], isLoading: loading } = useQuery({
+    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus }),
+    queryFn: async () => {
+      if (!tenant) return [];
 
-  const loadCustomers = async () => {
-    if (!tenant) return;
-
-    try {
-      setLoading(true);
       let query = supabase
         .from("customers")
         .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
@@ -165,8 +167,8 @@ export function CustomerManagement() {
               };
             }
           });
-        } catch (error) {
-          logger.warn('Failed to decrypt customers, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerManagement' });
+        } catch (decryptionError) {
+          logger.warn('Failed to decrypt customers, using plaintext', decryptionError instanceof Error ? decryptionError : new Error(String(decryptionError)), { component: 'CustomerManagement' });
           decryptedCustomers = data || [];
         }
       } else if (data && data.length > 0) {
@@ -188,17 +190,10 @@ export function CustomerManagement() {
         });
       }
 
-      setCustomers(decryptedCustomers as unknown as Customer[]);
-      if (decryptedCustomers.length > 0) {
-        // toast.success("Customers loaded"); // Reduced noise
-      }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load customers";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return decryptedCustomers as unknown as Customer[];
+    },
+    enabled: !!tenant && !accountLoading,
+  });
 
   const handleDeleteClick = (customerId: string, customerName: string) => {
     triggerHaptic('medium');
@@ -247,7 +242,7 @@ export function CustomerManagement() {
         toast.success("Customer deleted successfully");
       }
 
-      loadCustomers(); // Refresh the list
+      invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', tenant.id, { customerId: customerToDelete.id });
       setDeleteDialogOpen(false);
       setCustomerToDelete(null);
       setSelectedCustomerForDrawer(null); // Close drawer if open
@@ -265,7 +260,7 @@ export function CustomerManagement() {
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
-        `${c.first_name} ${c.last_name}`,
+        displayName(c.first_name, c.last_name),
         c.email || '',
         c.phone || '',
         c.customer_type,
@@ -285,7 +280,7 @@ export function CustomerManagement() {
   };
 
   const filteredCustomers = customers.filter((customer) => {
-    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
+    const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
     const search = debouncedSearchTerm.toLowerCase();
     const matchesSearch =
       fullName.includes(search) ||
@@ -337,8 +332,71 @@ export function CustomerManagement() {
 
   if (accountLoading || loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Stats skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-7 w-16" />
+                <Skeleton className="h-3 w-20 mt-1" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Table skeleton */}
+        <Card>
+          <CardContent className="p-0">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
+                    <th key={i} scope="col" className="px-6 py-3 text-left">
+                      <Skeleton className="h-3 w-16" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {Array.from({ length: 6 }).map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-4" /></td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-3 w-36" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-5 w-14 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -362,7 +420,7 @@ export function CustomerManagement() {
     },
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toLocaleString()}`,
+      value: formatCurrency(totalRevenue),
       sub: "Lifetime",
       icon: DollarSign,
       color: "text-green-500",
@@ -370,7 +428,7 @@ export function CustomerManagement() {
     },
     {
       title: "Avg LTV",
-      value: `$${avgLifetimeValue.toFixed(0)}`,
+      value: formatCurrency(avgLifetimeValue),
       sub: "Per customer",
       icon: TrendingUp,
       color: "text-amber-500",
@@ -414,14 +472,16 @@ export function CustomerManagement() {
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
-        <Button
-          onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
-          className="min-h-[44px] touch-manipulation flex-shrink-0"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Add Customer</span>
-          <span className="sm:hidden">Add</span>
-        </Button>
+        {canEdit('customers') && (
+          <Button
+            onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
+            className="min-h-[44px] touch-manipulation flex-shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Add Customer</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
+        )}
       </div>
 
       {/* Stats Carousel */}
@@ -496,17 +556,21 @@ export function CustomerManagement() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
-              <Download className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Export</span>
-              <span className="sm:hidden">Export</span>
-            </Button>
-            <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Import</span>
-              <span className="sm:hidden">Import</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={loadCustomers} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
+            {canExport('customers') && (
+              <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
+                <Download className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Export</span>
+                <span className="sm:hidden">Export</span>
+              </Button>
+            )}
+            {canEdit('customers') && (
+              <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Import</span>
+                <span className="sm:hidden">Import</span>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
               <Filter className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Refresh</span>
@@ -522,7 +586,7 @@ export function CustomerManagement() {
             <table className="w-full">
               <thead className="bg-muted/50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     <input
                       type="checkbox"
                       className="rounded"
@@ -535,28 +599,28 @@ export function CustomerManagement() {
                       }}
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Total Spent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Points
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Last Order
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Tags
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -581,12 +645,15 @@ export function CustomerManagement() {
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                          {customer.first_name?.[0]}{customer.last_name?.[0]}
+                          {customer.first_name?.[0] || ''}{customer.last_name?.[0] || '?'}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium">
-                            {customer.first_name} {customer.last_name}
-                          </div>
+                          <TruncatedText
+                            text={displayName(customer.first_name, customer.last_name)}
+                            className="text-sm font-medium"
+                            maxWidthClass="max-w-[200px]"
+                            as="div"
+                          />
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             {customer._encryptedIndicator ? (
                               <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
@@ -595,7 +662,12 @@ export function CustomerManagement() {
                               </span>
                             ) : (
                               <>
-                                {customer.email || customer.phone || 'No contact'}
+                                <TruncatedText
+                                  text={customer.email || customer.phone || 'No contact'}
+                                  className="text-sm text-muted-foreground"
+                                  maxWidthClass="max-w-[200px]"
+                                  as="span"
+                                />
                                 {customer.email && (
                                   <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 )}
@@ -611,7 +683,7 @@ export function CustomerManagement() {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold">
-                      ${customer.total_spent?.toFixed(2) || '0.00'}
+                      {formatCurrency(customer.total_spent)}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span className="flex items-center gap-1">
@@ -621,7 +693,7 @@ export function CustomerManagement() {
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
                       {customer.last_purchase_at
-                        ? new Date(customer.last_purchase_at).toLocaleDateString()
+                        ? formatSmartDate(customer.last_purchase_at)
                         : 'Never'}
                     </td>
                     <td className="px-6 py-4">
@@ -642,21 +714,31 @@ export function CustomerManagement() {
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}>
-                            <DollarSign className="w-4 h-4 mr-2" />
-                            New Order
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
-                          >
-                            <Trash className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
+                          {canEdit('customers') && (
+                            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                          )}
+                          {canEdit('orders') && (
+                            <DropdownMenuItem
+                              disabled={!posEnabled}
+                              title={!posEnabled ? 'Enable POS in Settings' : undefined}
+                              onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              New Order
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete('customers') && (
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
+                            >
+                              <Trash className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
@@ -669,14 +751,14 @@ export function CustomerManagement() {
               <EnhancedEmptyState
                 icon={Users}
                 title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-                description={debouncedSearchTerm ? "No customers match your search." : "Customers are added when they place orders"}
+                description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
                 primaryAction={debouncedSearchTerm ? {
                   label: "Clear Search",
                   onClick: () => setSearchTerm('')
                 } : undefined}
                 secondaryAction={!debouncedSearchTerm ? {
-                  label: "Add Customer",
-                  onClick: () => navigateToAdmin('customers/new'),
+                  label: "Import Customers",
+                  onClick: () => setImportDialogOpen(true),
                 } : undefined}
                 designSystem="tenant-admin"
               />
@@ -691,27 +773,27 @@ export function CustomerManagement() {
           <EnhancedEmptyState
             icon={Users}
             title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-            description={debouncedSearchTerm ? "No customers match your search." : "Customers are added when they place orders"}
+            description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
             primaryAction={debouncedSearchTerm ? {
               label: "Clear Search",
               onClick: () => setSearchTerm('')
             } : undefined}
             secondaryAction={!debouncedSearchTerm ? {
-              label: "Add Customer",
-              onClick: () => navigateToAdmin('customers/new'),
+              label: "Import Customers",
+              onClick: () => setImportDialogOpen(true),
             } : undefined}
             designSystem="tenant-admin"
           />
         ) : (
           <AnimatePresence>
-            {filteredCustomers.map((customer) => (
+            {paginatedCustomers.map((customer) => (
               <SwipeableItem
                 key={customer.id}
                 leftAction={{
                   icon: <Trash className="h-5 w-5" />,
                   color: 'bg-red-500',
                   label: 'Delete',
-                  onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
+                  onClick: () => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))
                 }}
                 rightAction={{
                   icon: <Eye className="h-5 w-5" />,
@@ -738,16 +820,21 @@ export function CustomerManagement() {
                           className="font-semibold text-base"
                           as="p"
                         />
-                        <p className="text-sm text-muted-foreground truncate">
+                        <div className="text-sm text-muted-foreground">
                           {customer._encryptedIndicator ? (
                             <span className="flex items-center gap-1 text-amber-600">
                               <Lock className="w-3 h-3" />
                               <span className="italic">Encrypted</span>
                             </span>
                           ) : (
-                            customer.email || customer.phone || 'No contact'
+                            <TruncatedText
+                              text={customer.email || customer.phone || 'No contact'}
+                              className="text-sm text-muted-foreground"
+                              maxWidthClass="max-w-[180px]"
+                              as="span"
+                            />
                           )}
-                        </p>
+                        </div>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
                             {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
@@ -758,7 +845,7 @@ export function CustomerManagement() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
+                      <div className="font-bold">{formatCurrency(customer.total_spent)}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1">
                         <Award className="w-3 h-3 text-yellow-600" />
                         {customer.loyalty_points || 0}
@@ -826,7 +913,7 @@ export function CustomerManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted/30 p-3 rounded-lg text-center">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Spent</div>
-                    <div className="text-xl font-bold">${selectedCustomerForDrawer.total_spent?.toFixed(2) || '0.00'}</div>
+                    <div className="text-xl font-bold">{formatCurrency(selectedCustomerForDrawer.total_spent)}</div>
                   </div>
                   <div className="bg-muted/30 p-3 rounded-lg text-center">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Points</div>
@@ -864,10 +951,25 @@ export function CustomerManagement() {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <Button className="w-full mb-2" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}>
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Create New Order
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="w-full">
+                          <Button
+                            className="w-full mb-2"
+                            disabled={!posEnabled}
+                            onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${selectedCustomerForDrawer.id}`)}
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Create New Order
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!posEnabled && (
+                        <TooltipContent>Enable POS in Settings</TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="grid grid-cols-2 gap-2">
                     <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${selectedCustomerForDrawer.id}`)}>
                       View Profile
@@ -888,7 +990,7 @@ export function CustomerManagement() {
       <CustomerImportDialog
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
-        onSuccess={loadCustomers}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })}
       />
     </div>
   );

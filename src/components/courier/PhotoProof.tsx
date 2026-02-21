@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';

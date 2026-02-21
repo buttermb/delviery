@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
   ArrowLeft, User, Mail, Phone, Calendar,
-  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare
+  DollarSign, Star, ShoppingBag, CreditCard, MessageSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -35,7 +35,9 @@ import { CustomerDeliveryMap } from '@/components/admin/customers/CustomerDelive
 import { CustomerPreferredProducts } from '@/components/admin/customers/CustomerPreferredProducts';
 import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/CustomerRelatedEntitiesPanel';
 import { CustomerComplianceVerification } from '@/components/admin/customers/CustomerComplianceVerification';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { displayName, displayValue } from '@/lib/formatters';
 
 interface Customer {
   id: string;
@@ -70,6 +72,7 @@ export default function CustomerDetails() {
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
+  const [firstOrderDate, setFirstOrderDate] = useState<string | null>(null);
   const [storeCreditDialogOpen, setStoreCreditDialogOpen] = useState(false);
   const [storeCreditAmount, setStoreCreditAmount] = useState('');
 
@@ -78,7 +81,7 @@ export default function CustomerDetails() {
 
   // Set breadcrumb label to show customer name
   useBreadcrumbLabel(
-    customer ? `${customer.first_name} ${customer.last_name}` : null
+    customer ? displayName(customer.first_name, customer.last_name) : null
   );
 
   // Use the customer credit hook for credit balance management
@@ -112,8 +115,8 @@ export default function CustomerDetails() {
       // Customer data is NOT encrypted - use plaintext fields directly
       setCustomer(customerData as Customer);
 
-      // Load orders
-      const { data: ordersData, error: ordersError } = await supabase
+      // Load orders (filter by tenant_id)
+      const ordersQuery = supabase
         .from('orders')
         .select(`
           *,
@@ -125,8 +128,22 @@ export default function CustomerDetails() {
         .eq('customer_id', id)
         .order('created_at', { ascending: false });
 
+      if (tenantId) {
+        ordersQuery.eq('tenant_id', tenantId);
+      }
+
+      const { data: ordersData, error: ordersError } = await ordersQuery;
+
       if (ordersError) throw ordersError;
       setOrders(ordersData || []);
+
+      // Compute first order date (orders are sorted desc, so last element is earliest)
+      if (ordersData && ordersData.length > 0) {
+        const earliest = ordersData[ordersData.length - 1];
+        setFirstOrderDate((earliest as Record<string, unknown>).created_at as string ?? null);
+      } else {
+        setFirstOrderDate(null);
+      }
 
       // Load payments
       const { data: paymentsData, error: paymentsError } = await supabase
@@ -138,15 +155,18 @@ export default function CustomerDetails() {
       if (paymentsError) throw paymentsError;
       setPayments(paymentsData || []);
 
-      // Load notes
-      const { data: notesData, error: notesError } = await (supabase as any)
+      // Load notes (customer_notes not in generated types)
+      const notesResult = await ((supabase as any)
         .from('customer_notes')
         .select('id, created_at, note, note_type')
-        .eq('customer_id', id)
-        .order('created_at', { ascending: false });
+        .eq('customer_id', id as string)
+        .order('created_at', { ascending: false })) as {
+          data: Array<{ id: string; created_at: string; note: string; note_type: string }> | null;
+          error: unknown;
+        };
 
-      if (notesError) throw notesError;
-      setNotes((notesData || []).map((n: any) => ({
+      if (notesResult.error) throw notesResult.error;
+      setNotes((notesResult.data || []).map((n) => ({
         id: n.id,
         created_at: n.created_at,
         note: n.note,
@@ -204,10 +224,16 @@ export default function CustomerDetails() {
 
   const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
+  // Customer Lifetime Value: compute from orders for accuracy
+  const totalOrdersCount = orders.length;
+  const totalSpentFromOrders = orders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0) as number;
+  const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number((customer as any)?.total_spent || 0);
+  const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
+
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
       <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
-        <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
+        <SEOHead title={`${displayName(customer.first_name, customer.last_name)} | Customer Details`} />
 
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
@@ -225,7 +251,7 @@ export default function CustomerDetails() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {customer.first_name} {customer.last_name}
+                      {displayName(customer.first_name, customer.last_name)}
                     </h1>
                     <Badge
                       className={customer.customer_type === 'medical'
@@ -239,11 +265,11 @@ export default function CustomerDetails() {
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4" />
-                      {customer.email}
+                      {displayValue(customer.email)}
                     </div>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4" />
-                      {customer.phone}
+                      {displayValue(customer.phone)}
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
@@ -270,7 +296,7 @@ export default function CustomerDetails() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Spent</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
-                      ${customer.total_spent?.toFixed(2) || '0.00'}
+                      ${computedTotalSpent.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
@@ -285,7 +311,7 @@ export default function CustomerDetails() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{orders.length}</p>
+                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{totalOrdersCount}</p>
                   </div>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <ShoppingBag className="w-6 h-6 text-blue-600" />
@@ -298,11 +324,13 @@ export default function CustomerDetails() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Loyalty Points</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{customer.loyalty_points || 0}</p>
+                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">First Order</p>
+                    <p className="text-2xl font-bold font-mono text-[hsl(var(--tenant-text))]">
+                      {firstOrderDate ? format(new Date(firstOrderDate), 'MMM d, yyyy') : 'No orders'}
+                    </p>
                   </div>
                   <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                    <Gift className="w-6 h-6 text-emerald-600" />
+                    <Calendar className="w-6 h-6 text-emerald-600" />
                   </div>
                 </div>
               </CardContent>
@@ -314,7 +342,7 @@ export default function CustomerDetails() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Average Order</p>
                     <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
-                      ${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}
+                      ${averageOrderValue.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -379,7 +407,7 @@ export default function CustomerDetails() {
                   {customer && (
                     <CustomerComplianceVerification
                       customerId={customer.id}
-                      customerName={`${customer.first_name} ${customer.last_name}`}
+                      customerName={displayName(customer.first_name, customer.last_name)}
                       compact
                       showBlockWarning
                     />
@@ -445,11 +473,11 @@ export default function CustomerDetails() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Total Orders</label>
-                      <p>{orders.length} orders</p>
+                      <p>{totalOrdersCount} orders</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Average Order Value</label>
-                      <p>${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}</p>
+                      <p>${averageOrderValue.toFixed(2)}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
@@ -475,7 +503,7 @@ export default function CustomerDetails() {
               <TabsContent value="compliance" className="space-y-6">
                 <CustomerComplianceVerification
                   customerId={customer.id}
-                  customerName={`${customer.first_name} ${customer.last_name}`}
+                  customerName={displayName(customer.first_name, customer.last_name)}
                   showBlockWarning
                 />
               </TabsContent>
@@ -486,7 +514,7 @@ export default function CustomerDetails() {
               <TabsContent value="addresses" className="space-y-6">
                 <CustomerDeliveryMap
                   customerId={customer.id}
-                  customerName={`${customer.first_name} ${customer.last_name}`}
+                  customerName={displayName(customer.first_name, customer.last_name)}
                 />
                 <CustomerDeliveryAddressesTab customerId={customer.id} />
               </TabsContent>
@@ -740,29 +768,34 @@ export default function CustomerDetails() {
               }}>
                 Cancel
               </Button>
-              <Button
-                onClick={async () => {
-                  if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
-                    const result = await addCredit({
-                      customerId: id,
-                      amount: parseFloat(storeCreditAmount),
-                      reason: 'Manual credit issued by admin',
-                      transactionType: 'issued',
-                    });
-                    if (result) {
-                      toast.success(`$${storeCreditAmount} store credit added`);
-                      setStoreCreditDialogOpen(false);
-                      setStoreCreditAmount('');
-                      refetchCredit();
-                    } else {
-                      toast.error('Failed to add store credit');
-                    }
-                  }
-                }}
-                disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
+              <DisabledTooltip
+                disabled={!isAddingCredit && (!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)))}
+                reason="Enter a valid credit amount"
               >
-                {isAddingCredit ? 'Adding...' : 'Add Credit'}
-              </Button>
+                <Button
+                  onClick={async () => {
+                    if (storeCreditAmount && !isNaN(parseFloat(storeCreditAmount)) && id) {
+                      const result = await addCredit({
+                        customerId: id,
+                        amount: parseFloat(storeCreditAmount),
+                        reason: 'Manual credit issued by admin',
+                        transactionType: 'issued',
+                      });
+                      if (result) {
+                        toast.success(`$${storeCreditAmount} store credit added`);
+                        setStoreCreditDialogOpen(false);
+                        setStoreCreditAmount('');
+                        refetchCredit();
+                      } else {
+                        toast.error('Failed to add store credit');
+                      }
+                    }
+                  }}
+                  disabled={!storeCreditAmount || isNaN(parseFloat(storeCreditAmount)) || isAddingCredit}
+                >
+                  {isAddingCredit ? 'Adding...' : 'Add Credit'}
+                </Button>
+              </DisabledTooltip>
             </div>
           </div>
         </DialogContent>

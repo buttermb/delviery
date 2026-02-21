@@ -43,6 +43,10 @@ interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
    */
   illustration?: IllustrationType | LucideIcon;
   /**
+   * Shorthand: pass a LucideIcon directly (alias for illustration)
+   */
+  icon?: LucideIcon;
+  /**
    * Size of the illustration icon
    */
   iconSize?: "sm" | "md" | "lg" | "xl";
@@ -55,6 +59,14 @@ interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
     variant?: "default" | "outline" | "secondary" | "ghost";
     icon?: LucideIcon;
   };
+  /**
+   * Shorthand: action button label (used with onAction)
+   */
+  actionLabel?: string;
+  /**
+   * Shorthand: action button callback (used with actionLabel)
+   */
+  onAction?: () => void;
   /**
    * Secondary action button configuration
    */
@@ -95,9 +107,12 @@ interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
 function EmptyState({
   title,
   description,
-  illustration = "no-data",
+  illustration,
+  icon,
   iconSize = "lg",
   action,
+  actionLabel,
+  onAction,
   secondaryAction,
   variant = "default",
   centered = true,
@@ -105,11 +120,17 @@ function EmptyState({
   children,
   ...props
 }: EmptyStateProps) {
+  // Resolve icon: prefer explicit `icon` prop, then `illustration`, then default
+  const resolvedIllustration = icon ?? illustration ?? "no-data";
+
   // Resolve the icon component
   const IconComponent: LucideIcon =
-    typeof illustration === "string"
-      ? illustrations[illustration]
-      : illustration;
+    typeof resolvedIllustration === "string"
+      ? illustrations[resolvedIllustration]
+      : resolvedIllustration;
+
+  // Resolve action: prefer explicit `action` object, then shorthand props
+  const resolvedAction = action ?? (actionLabel && onAction ? { label: actionLabel, onClick: onAction } : undefined);
 
   // Icon size mapping
   const iconSizeMap = {
@@ -153,16 +174,16 @@ function EmptyState({
       </div>
 
       {/* Actions */}
-      {(action || secondaryAction) && (
+      {(resolvedAction || secondaryAction) && (
         <div className="flex flex-wrap items-center justify-center gap-3">
-          {action && (
+          {resolvedAction && (
             <Button
-              variant={action.variant ?? "default"}
-              onClick={action.onClick}
+              variant={resolvedAction.variant ?? "default"}
+              onClick={resolvedAction.onClick}
               className="gap-2"
             >
-              {action.icon && <action.icon className="h-4 w-4" />}
-              {action.label}
+              {resolvedAction.icon && <resolvedAction.icon className="h-4 w-4" />}
+              {resolvedAction.label}
             </Button>
           )}
           {secondaryAction && (

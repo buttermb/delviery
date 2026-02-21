@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect, useCallback } from "react";
+import { z } from "zod";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ import { Loader2, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
+import { useDirtyFormGuard } from "@/hooks/useDirtyFormGuard";
 
 type WholesaleClientInsert = Database['public']['Tables']['wholesale_clients']['Insert'];
 
@@ -36,6 +38,18 @@ interface ClientFormData {
   notes: string;
 }
 
+const defaultFormData: ClientFormData = {
+  business_name: "",
+  contact_name: "",
+  email: "",
+  phone: "",
+  address: "",
+  client_type: "sub_dealer",
+  credit_limit: "50000",
+  payment_terms: "7",
+  notes: ""
+};
+
 export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClientDialogProps) {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
@@ -45,23 +59,41 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   const contextError = !tenantLoading && !tenant?.id
     ? 'Tenant context not available. Please refresh the page or contact support.'
     : null;
-  const [formData, setFormData] = useState<ClientFormData>({
-    business_name: "",
-    contact_name: "",
-    email: "",
-    phone: "",
-    address: "",
-    client_type: "sub_dealer",
-    credit_limit: "50000",
-    payment_terms: "7",
-    notes: ""
-  });
+  const [formData, setFormData] = useState<ClientFormData>(defaultFormData);
+
+  // Reset form state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setFormData(defaultFormData);
+    }
+  }, [open]);
+
+  // Dirty state: any field differs from default
+  const isDirty = JSON.stringify(formData) !== JSON.stringify(defaultFormData);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.business_name || !formData.contact_name || !formData.phone) {
       showErrorToast("Please fill in all required fields");
+      return;
+    }
+
+    const emailCheck = z.string().email("Invalid email address");
+    if (formData.email && !emailCheck.safeParse(formData.email).success) {
+      showErrorToast("Invalid email address");
+      return;
+    }
+
+    const phoneRegex = /^[\d\s\-+()]+$/;
+    if (!phoneRegex.test(formData.phone) || formData.phone.length < 7 || formData.phone.length > 20) {
+      showErrorToast("Invalid phone number", "Must be 7-20 characters with only digits, spaces, dashes, or parentheses");
       return;
     }
 
@@ -72,7 +104,25 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
 
     try {
       setLoading(true);
-      
+
+      // Check for duplicate business name within tenant
+      const { data: existingClient, error: dupCheckError } = await supabase
+        .from("wholesale_clients")
+        .select("id")
+        .eq("tenant_id", tenant.id)
+        .eq("business_name", formData.business_name.trim())
+        .maybeSingle();
+
+      if (dupCheckError) {
+        logger.error("Error checking duplicate client", dupCheckError, { component: 'CreateClientDialog' });
+      }
+
+      if (existingClient) {
+        showErrorToast("A client with this business name already exists");
+        setLoading(false);
+        return;
+      }
+
       const clientData: WholesaleClientInsert = {
         tenant_id: tenant.id,
         business_name: sanitizeFormInput(formData.business_name, 200),
@@ -102,17 +152,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.lists() });
       
       // Reset form
-      setFormData({
-        business_name: "",
-        contact_name: "",
-        email: "",
-        phone: "",
-        address: "",
-        client_type: "sub_dealer",
-        credit_limit: "50000",
-        payment_terms: "7",
-        notes: ""
-      });
+      setFormData(defaultFormData);
       
       onOpenChange(false);
       if (onSuccess) onSuccess();
@@ -125,8 +165,9 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle>Create New Client</DialogTitle>
         </DialogHeader>
@@ -147,6 +188,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.business_name}
                 onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                 placeholder="e.g., Big Mike's Shop"
+                maxLength={200}
                 required
               />
             </div>
@@ -158,6 +200,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.contact_name}
                 onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
                 placeholder="e.g., Mike Johnson"
+                maxLength={200}
                 required
               />
             </div>
@@ -172,6 +215,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="(555) 123-4567"
+                maxLength={20}
                 required
               />
             </div>
@@ -184,6 +228,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="mike@example.com"
+                maxLength={254}
               />
             </div>
           </div>
@@ -195,6 +240,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="123 Main St, Bronx, NY"
+              maxLength={500}
             />
           </div>
 
@@ -257,21 +303,24 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Additional notes about this client..."
               rows={3}
+              maxLength={1000}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => guardedOnOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading || !isContextReady || tenantLoading}>
               {(loading || tenantLoading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {tenantLoading ? 'Loading...' : 'Create Client'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }
 

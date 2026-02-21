@@ -11,6 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface RevenueData {
   month: string;
@@ -119,10 +120,10 @@ export function ExpansionRevenueChart() {
           </CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline">
-              New: ${totalNew.toLocaleString()}
+              New: {formatCurrency(totalNew)}
             </Badge>
             <Badge variant="outline" className="bg-green-500/10 text-green-500">
-              Expansion: ${totalExpansion.toLocaleString()}
+              Expansion: {formatCurrency(totalExpansion)}
             </Badge>
           </div>
         </div>
@@ -141,7 +142,7 @@ export function ExpansionRevenueChart() {
             />
             <YAxis 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value: number) => formatCompactCurrency(value)}
               className="text-muted-foreground"
             />
             <Tooltip
@@ -150,7 +151,7 @@ export function ExpansionRevenueChart() {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: any) => `$${value.toLocaleString()}`}
+              formatter={(value: number) => formatCurrency(value)}
             />
             <Legend />
             <Bar dataKey="newRevenue" fill="#3b82f6" name="New Revenue" radius={[8, 8, 0, 0]} />
@@ -162,15 +163,15 @@ export function ExpansionRevenueChart() {
         <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Total New Revenue</p>
-            <p className="text-xl font-bold">${totalNew.toLocaleString()}</p>
+            <p className="text-xl font-bold">{formatCurrency(totalNew)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Total Expansion</p>
-            <p className="text-xl font-bold text-green-500">${totalExpansion.toLocaleString()}</p>
+            <p className="text-xl font-bold text-green-500">{formatCurrency(totalExpansion)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Total Contraction</p>
-            <p className="text-xl font-bold text-red-500">${totalContraction.toLocaleString()}</p>
+            <p className="text-xl font-bold text-red-500">{formatCurrency(totalContraction)}</p>
           </div>
         </div>
       </CardContent>

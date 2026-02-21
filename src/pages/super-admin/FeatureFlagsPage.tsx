@@ -55,7 +55,7 @@ export default function FeatureFlagsPage() {
     refetchInterval: 30000,
   });
 
-  // Toggle feature flag mutation
+  // Toggle feature flag mutation with optimistic UI
   const toggleMutation = useMutation({
     mutationFn: async ({ flagId, enabled }: { flagId: string; enabled: boolean }) => {
       const { error } = await supabase
@@ -65,20 +65,30 @@ export default function FeatureFlagsPage() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['super-admin-feature-flags'] });
-      toast({
-        title: 'Feature flag updated',
-        description: 'The feature flag has been updated successfully.',
+    onMutate: async ({ flagId, enabled }) => {
+      await queryClient.cancelQueries({ queryKey: ['super-admin-feature-flags'] });
+      const previousFlags = queryClient.getQueryData<typeof flags>(['super-admin-feature-flags']);
+      queryClient.setQueryData<typeof flags>(['super-admin-feature-flags'], (old) => {
+        if (!old) return old;
+        return old.map((flag) =>
+          flag.id === flagId ? { ...flag, enabled } : flag
+        );
       });
+      return { previousFlags };
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, _variables, context) => {
+      if (context?.previousFlags) {
+        queryClient.setQueryData(['super-admin-feature-flags'], context.previousFlags);
+      }
       logger.error('Failed to toggle feature flag', error);
       toast({
         variant: 'destructive',
         title: 'Error',
         description: 'Failed to update feature flag. Please try again.',
       });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['super-admin-feature-flags'] });
     },
   });
 
@@ -212,7 +222,6 @@ export default function FeatureFlagsPage() {
                         <Switch
                           checked={flag.enabled}
                           onCheckedChange={() => toggleFlag(flag.id, flag.enabled)}
-                          disabled={toggleMutation.isPending}
                         />
                       </TableCell>
                     </TableRow>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * TestimonialCard — Per-card composition (~8 seconds = 240 frames @ 30fps).
  * Typewriter quote text → star rating reveal → author fade-in.

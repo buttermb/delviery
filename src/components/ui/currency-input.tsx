@@ -7,7 +7,7 @@ import { Input, type InputProps } from '@/components/ui/input';
  * Filters a keyboard event to only allow numeric characters, decimals, and control keys.
  * Returns true if the key should be blocked.
  */
-function shouldBlockKey(e: React.KeyboardEvent<HTMLInputElement>, allowDecimal: boolean): boolean {
+function shouldBlockKey(e: React.KeyboardEvent<HTMLInputElement>, allowDecimal: boolean, allowNegative = false): boolean {
   // Allow control keys
   if (
     e.key === 'Backspace' ||
@@ -27,8 +27,9 @@ function shouldBlockKey(e: React.KeyboardEvent<HTMLInputElement>, allowDecimal: 
     return false;
   }
 
-  // Allow minus sign at beginning
+  // Allow minus sign at beginning only if allowNegative is true
   if (e.key === '-') {
+    if (!allowNegative) return true;
     const target = e.target as HTMLInputElement;
     if (target.selectionStart === 0 && !target.value.includes('-')) {
       return false;
@@ -94,7 +95,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     ref,
   ) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (shouldBlockKey(e, true)) {
+      if (shouldBlockKey(e, true, false)) {
         e.preventDefault();
       }
       onKeyDown?.(e);
@@ -103,7 +104,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       // Strip any non-numeric chars that got through (e.g., paste)
       const raw = e.target.value;
-      const cleaned = raw.replace(/[^0-9.\-]/g, '');
+      const cleaned = raw.replace(/[^0-9.]/g, '');
 
       // Only allow one decimal point
       const parts = cleaned.split('.');

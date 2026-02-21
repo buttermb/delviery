@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Composition } from 'remotion';
 import { ProductDemo } from './compositions/ProductDemo';
 import { REMOTION_CONFIG, SCENE_DURATIONS } from './config';

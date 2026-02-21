@@ -6,6 +6,7 @@ import { Loader2, CheckCircle, XCircle, Mail, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'already_verified';
@@ -127,7 +128,7 @@ export function VerifyEmailPage() {
 
       if (error) {
         logger.error('[VerifyEmail] Resend failed', { email: resendEmail, error: error.message });
-        toast.error(error.message);
+        toast.error('Failed to resend verification email', { description: humanizeError(error) });
       } else {
         setResendSuccess(true);
         toast.success('Verification email sent! Check your inbox.');

@@ -19,6 +19,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { useSalesReportDrilldown } from '@/hooks/useSalesReportDrilldown';
 import { SalesReportDrilldownModal } from '@/components/admin/analytics/SalesReportDrilldownModal';
 import { format, parseISO } from 'date-fns';
+import { formatCurrency } from '@/lib/formatters';
 
 const STATUS_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -146,7 +147,7 @@ export default function SalesDashboard() {
           <div className="h-8 w-48 bg-muted animate-pulse rounded" />
           <div className="h-8 w-32 bg-muted animate-pulse rounded" />
         </div>
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="h-32 bg-muted animate-pulse rounded-xl" />
           ))}
@@ -159,7 +160,7 @@ export default function SalesDashboard() {
   const stats = [
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toFixed(2)}`,
+      value: formatCurrency(totalRevenue),
       icon: DollarSign,
       trend: "+12.5%",
       trendUp: true,
@@ -177,7 +178,7 @@ export default function SalesDashboard() {
     },
     {
       title: "Avg Order Value",
-      value: `$${avgOrderValue.toFixed(2)}`,
+      value: formatCurrency(avgOrderValue),
       icon: TrendingUp,
       trend: "-2.1%",
       trendUp: false,
@@ -220,15 +221,14 @@ export default function SalesDashboard() {
         </div>
       </div>
 
-      {/* Mobile: Horizontal Scroll, Desktop: Grid */}
-      <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 snap-x snap-mandatory hide-scrollbar">
+      {/* Stats Cards - Stack on mobile, grid on larger screens */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="min-w-[280px] sm:min-w-0 snap-center"
           >
             <Card className="border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

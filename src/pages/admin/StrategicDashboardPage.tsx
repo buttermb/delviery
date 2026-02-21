@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function StrategicDashboardPage() {
     const { tenant } = useTenantAdminAuth();
@@ -86,17 +87,7 @@ export default function StrategicDashboardPage() {
     });
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <div className="text-center space-y-4">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse" />
-                        <Loader2 className="h-12 w-12 animate-spin text-primary relative z-10" />
-                    </div>
-                    <p className="text-muted-foreground font-medium">Loading strategic insights...</p>
-                </div>
-            </div>
-        );
+        return <EnhancedLoadingState variant="dashboard" message="Loading strategic insights..." />;
     }
 
     const containerVariants = {

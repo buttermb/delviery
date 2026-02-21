@@ -1,4 +1,3 @@
-// @ts-nocheck - Temporary type suppression
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { ShoppingCart, Lock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import type { RenderCartItem } from "@/types/cart";
+import { formatCurrency } from '@/lib/formatters';
 
 interface StickyOrderSummaryProps {
   cartItems: RenderCartItem[];
@@ -73,7 +73,7 @@ export function StickyOrderSummary({
                   {item.quantity}x {item.products?.name}
                 </span>
                 <span className="font-semibold">
-                  ${(item.quantity * (item.products?.price || 0)).toFixed(2)}
+                  {formatCurrency(item.quantity * Number(item.products?.price || 0))}
                 </span>
               </motion.div>
             ))}
@@ -85,7 +85,7 @@ export function StickyOrderSummary({
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-semibold">${subtotal.toFixed(2)}</span>
+              <span className="font-semibold">{formatCurrency(subtotal)}</span>
             </div>
             
             <div className="flex justify-between text-sm">
@@ -94,7 +94,7 @@ export function StickyOrderSummary({
                 "font-semibold",
                 deliveryFee === 0 && "text-green-600"
               )}>
-                {deliveryFee === 0 ? "FREE" : `$${deliveryFee.toFixed(2)}`}
+                {deliveryFee === 0 ? "FREE" : formatCurrency(deliveryFee)}
               </span>
             </div>
 
@@ -109,7 +109,7 @@ export function StickyOrderSummary({
                   Discount
                 </span>
                 <span className="font-semibold text-green-600">
-                  -${discount.toFixed(2)}
+                  -{formatCurrency(discount)}
                 </span>
               </motion.div>
             )}
@@ -124,7 +124,7 @@ export function StickyOrderSummary({
                 animate={{ scale: 1 }}
                 className="text-primary"
               >
-                ${total.toFixed(2)}
+                {formatCurrency(total)}
               </motion.span>
             </div>
           </div>
@@ -137,7 +137,7 @@ export function StickyOrderSummary({
               className="space-y-2"
             >
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Add ${(100 - subtotal).toFixed(2)} for free delivery</span>
+                <span>Add {formatCurrency(100 - subtotal)} for free delivery</span>
                 <span>{Math.round((subtotal / 100) * 100)}%</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">

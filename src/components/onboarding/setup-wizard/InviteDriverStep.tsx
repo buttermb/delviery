@@ -33,7 +33,7 @@ import { toast } from 'sonner';
 
 const driverSchema = z.object({
   full_name: z.string().min(2, 'Name is required'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   vehicle_type: z.string().min(1, 'Vehicle type is required'),
 });

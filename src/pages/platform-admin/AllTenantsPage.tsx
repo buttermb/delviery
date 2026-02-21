@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     Table,
     TableBody,
@@ -41,7 +41,7 @@ export default function AllTenantsPage() {
 
     const accessMutation = useMutation({
         mutationFn: async (tenantId: string) => {
-            const { data, error } = await supabase.rpc('admin_grant_tenant_access', {
+            const { data, error } = await (supabase as any).rpc('admin_grant_tenant_access', {
                 target_tenant_id: tenantId
             });
             if (error) throw error;
@@ -53,7 +53,7 @@ export default function AllTenantsPage() {
             window.location.href = `/${data.slug}/admin/dashboard`;
         },
         onError: (error) => {
-            toast({ title: "Access Failed", description: error.message, variant: "destructive" });
+            toast({ title: "Access Failed", description: humanizeError(error), variant: "destructive" });
         }
     });
 

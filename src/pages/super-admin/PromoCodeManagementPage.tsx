@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Promo Code Management Page - Super Admin
  * 
@@ -19,6 +18,7 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -275,7 +275,7 @@ export default function PromoCodeManagementPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => viewRedemptions(code)}>
+                          <DropdownMenuItem onClick={() => viewRedemptions(code as any)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View Redemptions
                           </DropdownMenuItem>
@@ -391,7 +391,7 @@ function CreatePromoCodeDialog({
       code: code || generateCode(),
       creditsAmount: credits,
       maxUses,
-      validUntil: validUntil?.toISOString(),
+      validUntil: validUntil?.toISOString() as any,
       description: description || undefined,
     }),
     onSuccess: (result) => {
@@ -515,6 +515,7 @@ function CreatePromoCodeDialog({
             Cancel
           </Button>
           <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
+            {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {createMutation.isPending ? 'Creating...' : 'Create Code'}
           </Button>
         </DialogFooter>

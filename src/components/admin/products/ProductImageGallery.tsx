@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -574,7 +575,7 @@ export function ProductImageGallery({
                   variant={devicePreview === 'desktop' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setDevicePreview('desktop')}
-                  className="h-8 w-8 p-0"
+                  className="h-11 w-11 p-0"
                 >
                   <Monitor className="h-4 w-4" />
                 </Button>
@@ -582,7 +583,7 @@ export function ProductImageGallery({
                   variant={devicePreview === 'mobile' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setDevicePreview('mobile')}
-                  className="h-8 w-8 p-0"
+                  className="h-11 w-11 p-0"
                 >
                   <Smartphone className="h-4 w-4" />
                 </Button>
@@ -635,7 +636,7 @@ function ProductPreviewCard({
 }: ProductPreviewCardProps) {
   const formatPrice = (price: number | null | undefined) => {
     if (price == null) return '-';
-    return `$${price.toFixed(2)}`;
+    return formatCurrency(price);
   };
 
   if (mode === 'menu') {

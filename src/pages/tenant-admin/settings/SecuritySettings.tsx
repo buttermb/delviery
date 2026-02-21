@@ -25,6 +25,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
@@ -33,6 +34,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { supabase } from '@/integrations/supabase/client';
 import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
 import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Session {
   id: string;
@@ -136,7 +138,7 @@ export default function SecuritySettings() {
           browser,
           location: 'Unknown Location', // IP geolocation would require external service
           ip: session.ip_address || 'Unknown',
-          lastActive: isCurrent ? 'Now' : new Date(session.created_at).toLocaleString(),
+          lastActive: isCurrent ? 'Now' : formatSmartDate(session.created_at, { includeTime: true }),
           current: isCurrent,
         } as Session;
       });
@@ -159,7 +161,7 @@ export default function SecuritySettings() {
       toast({ title: 'Session revoked', description: 'The device has been signed out.' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to revoke session', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to revoke session', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -182,7 +184,7 @@ export default function SecuritySettings() {
       toast({ title: 'All sessions revoked', description: 'You have been signed out of all other devices.' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to revoke sessions', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to revoke sessions', description: humanizeError(error), variant: 'destructive' });
     },
   });
 

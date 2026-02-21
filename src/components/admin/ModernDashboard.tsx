@@ -25,6 +25,7 @@ import { ActionableInsights } from '@/components/admin/ActionableInsights';
 import { DashboardLayoutEditor } from './dashboard/DashboardLayoutEditor';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/formatters';
 
 interface DashboardData {
   revenue: number;
@@ -148,7 +149,7 @@ export function ModernDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Revenue"
-          value={`$${(dashboardData?.revenue || 0).toLocaleString()}`}
+          value={formatCurrency(dashboardData?.revenue || 0)}
           change={dashboardData?.revenueChange ? {
             value: Math.abs(dashboardData.revenueChange),
             type: dashboardData.revenueChange > 0 ? 'increase' : 'decrease',

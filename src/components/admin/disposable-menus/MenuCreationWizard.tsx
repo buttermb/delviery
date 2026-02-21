@@ -564,6 +564,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products by name, strain, category, or brand..."
+                  aria-label="Search products"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -808,7 +809,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-8 w-8 p-0"
+                                    className="h-11 w-11 p-0"
                                     onClick={() => setCustomPrices(prev => {
                                       const updated = { ...prev };
                                       delete updated[productId];

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 /**
  * Button Health Monitoring Panel
  * Displays button statistics, errors, and broken buttons
@@ -233,7 +234,7 @@ export function ButtonHealthPanel() {
                             </div>
                             <div className="text-xs text-muted-foreground mt-1">
                               {stat.lastErrorTime
-                                ? new Date(stat.lastErrorTime).toLocaleString()
+                                ? formatSmartDate(stat.lastErrorTime, { includeTime: true })
                                 : 'Unknown'}
                             </div>
                           </div>
@@ -275,7 +276,7 @@ export function ButtonHealthPanel() {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>
                           <Clock className="h-3 w-3 inline mr-1" />
-                          {new Date(error.timestamp).toLocaleString()}
+                          {formatSmartDate(error.timestamp, { includeTime: true })}
                         </span>
                         {error.duration && (
                           <span>Duration: {error.duration}ms</span>

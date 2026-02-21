@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,16 +32,11 @@ import { crmInvoiceKeys } from '@/hooks/crm/useInvoices';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { formatCurrency } from '@/utils/formatters';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { Loader2, AlertCircle, DollarSign } from 'lucide-react';
-
-const PAYMENT_METHODS = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'check', label: 'Check' },
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'card', label: 'Card' },
-  { value: 'other', label: 'Other' },
-] as const;
+import { INVOICE_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
+import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 
 interface InvoicePaymentDialogProps {
   invoiceId: string;
@@ -58,9 +53,10 @@ function createPaymentSchema(remaining: number) {
       .number({ required_error: 'Amount is required' })
       .positive('Amount must be greater than 0')
       .max(remaining, `Amount cannot exceed remaining balance of ${formatCurrency(remaining)}`),
-    payment_method: z.enum(['cash', 'check', 'bank_transfer', 'card', 'other'], {
-      required_error: 'Payment method is required',
-    }),
+    payment_method: z.enum(
+      INVOICE_PAYMENT_METHODS.map(m => m.value) as [string, ...string[]],
+      { required_error: 'Payment method is required' }
+    ),
     payment_date: z.date({ required_error: 'Payment date is required' }),
     reference: z.string().optional(),
     notes: z.string().optional(),
@@ -87,7 +83,7 @@ export function InvoicePaymentDialog({
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
     setValue,
     watch,
   } = useForm<PaymentFormValues>({
@@ -113,6 +109,12 @@ export function InvoicePaymentDialog({
       });
     }
   }, [open, reset]);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
 
   const recordPayment = useMutation({
     mutationFn: async (values: PaymentFormValues) => {
@@ -186,7 +188,7 @@ export function InvoicePaymentDialog({
     },
     onError: (error: Error) => {
       logger.error('Failed to record payment', { error, invoiceId });
-      toast.error('Failed to record payment', { description: error.message });
+      toast.error('Failed to record payment', { description: humanizeError(error) });
     },
   });
 
@@ -197,8 +199,9 @@ export function InvoicePaymentDialog({
   const watchAmount = watch('amount');
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <>
+    <Dialog open={open} onOpenChange={guardedOnOpenChange}>
+      <DialogContent className="sm:max-w-md" {...dialogContentProps}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
@@ -212,7 +215,7 @@ export function InvoicePaymentDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Amount */}
           <div className="space-y-2">
-            <Label htmlFor="payment-amount">Amount *</Label>
+            <Label htmlFor="payment-amount">Amount <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Controller
               name="amount"
               control={control}
@@ -222,12 +225,12 @@ export function InvoicePaymentDialog({
                   placeholder="0.00"
                   value={field.value !== undefined ? String(field.value) : ''}
                   onValueChange={(val) => field.onChange(val)}
-                  className={errors.amount ? 'border-red-500' : ''}
+                  className={errors.amount ? 'border-destructive' : ''}
                 />
               )}
             />
             {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount.message}</p>
+              <p className="text-sm text-destructive">{errors.amount.message}</p>
             )}
             {remaining > 0 && (
               <Button
@@ -244,7 +247,7 @@ export function InvoicePaymentDialog({
 
           {/* Payment Method */}
           <div className="space-y-2">
-            <Label>Payment Method *</Label>
+            <Label>Payment Method <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Controller
               name="payment_method"
               control={control}
@@ -253,11 +256,11 @@ export function InvoicePaymentDialog({
                   value={field.value || ''}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger className={errors.payment_method ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.payment_method ? 'border-destructive' : ''}>
                     <SelectValue placeholder="Select method" />
                   </SelectTrigger>
                   <SelectContent>
-                    {PAYMENT_METHODS.map((m) => (
+                    {INVOICE_PAYMENT_METHODS.map((m) => (
                       <SelectItem key={m.value} value={m.value}>
                         {m.label}
                       </SelectItem>
@@ -267,13 +270,13 @@ export function InvoicePaymentDialog({
               )}
             />
             {errors.payment_method && (
-              <p className="text-sm text-red-500">{errors.payment_method.message}</p>
+              <p className="text-sm text-destructive">{errors.payment_method.message}</p>
             )}
           </div>
 
           {/* Payment Date */}
           <div className="space-y-2">
-            <Label>Payment Date *</Label>
+            <Label>Payment Date <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Controller
               name="payment_date"
               control={control}
@@ -287,7 +290,7 @@ export function InvoicePaymentDialog({
               )}
             />
             {errors.payment_date && (
-              <p className="text-sm text-red-500">{errors.payment_date.message}</p>
+              <p className="text-sm text-destructive">{errors.payment_date.message}</p>
             )}
           </div>
 
@@ -342,7 +345,7 @@ export function InvoicePaymentDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => guardedOnOpenChange(false)}
               disabled={recordPayment.isPending}
             >
               Cancel
@@ -365,5 +368,7 @@ export function InvoicePaymentDialog({
         </form>
       </DialogContent>
     </Dialog>
+    <DiscardAlert />
+    </>
   );
 }

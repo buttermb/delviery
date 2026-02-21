@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
+import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 
 interface ConversionRateChartProps {
@@ -83,6 +84,7 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
             return { funnel, overallRate };
         },
         enabled: !!storeId,
+        ...ANALYTICS_QUERY_CONFIG,
     });
 
     if (isLoading) {

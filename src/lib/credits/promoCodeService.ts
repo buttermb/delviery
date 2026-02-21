@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Promo Code Service
  * 
@@ -41,6 +40,9 @@ export interface RedeemPromoResult {
   error?: string;
 }
 
+// Use `supabase as any` for tables not in auto-generated types
+const sb = supabase as any;
+
 // ============================================================================
 // Public Functions
 // ============================================================================
@@ -54,7 +56,7 @@ export async function validatePromoCode(code: string): Promise<{
   error?: string;
 }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_codes')
       .select('*')
       .eq('code', code.toUpperCase())
@@ -95,7 +97,7 @@ export async function hasRedeemedPromoCode(
   tenantId: string,
   promoCodeId: string
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data } = await sb
     .from('promo_redemptions')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -113,7 +115,7 @@ export async function redeemPromoCode(
   code: string
 ): Promise<RedeemPromoResult> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .rpc('redeem_promo_code', {
         p_tenant_id: tenantId,
         p_code: code.toUpperCase(),
@@ -153,7 +155,7 @@ export async function getTenantPromoRedemptions(
   tenantId: string
 ): Promise<PromoRedemption[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_redemptions')
       .select(`
         id,
@@ -172,7 +174,7 @@ export async function getTenantPromoRedemptions(
       return [];
     }
 
-    return data.map((d) => ({
+    return (data as any[]).map((d: any) => ({
       id: d.id,
       promoCodeId: d.promo_code_id,
       tenantId: d.tenant_id,
@@ -202,7 +204,7 @@ export async function createPromoCode(params: {
   createdBy?: string;
 }): Promise<{ success: boolean; promoCode?: PromoCode; error?: string }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_codes')
       .insert({
         code: params.code.toUpperCase(),
@@ -238,7 +240,7 @@ export async function createPromoCode(params: {
  */
 export async function deactivatePromoCode(promoCodeId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await sb
       .from('promo_codes')
       .update({ is_active: false })
       .eq('id', promoCodeId);
@@ -255,7 +257,7 @@ export async function deactivatePromoCode(promoCodeId: string): Promise<boolean>
  */
 export async function getAllPromoCodes(): Promise<PromoCode[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_codes')
       .select('*')
       .order('created_at', { ascending: false });
@@ -264,7 +266,7 @@ export async function getAllPromoCodes(): Promise<PromoCode[]> {
       return [];
     }
 
-    return data.map(mapDbToPromoCode);
+    return (data as any[]).map(mapDbToPromoCode);
   } catch (error) {
     logger.error('Error getting all promo codes', { error });
     return [];
@@ -280,7 +282,7 @@ export async function getPromoCodeStats(promoCodeId: string): Promise<{
   recentRedemptions: PromoRedemption[];
 }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('promo_redemptions')
       .select('*')
       .eq('promo_code_id', promoCodeId)
@@ -295,12 +297,12 @@ export async function getPromoCodeStats(promoCodeId: string): Promise<{
       };
     }
 
-    const totalCreditsGranted = data.reduce((sum, r) => sum + r.credits_granted, 0);
+    const totalCreditsGranted = (data as any[]).reduce((sum: number, r: any) => sum + r.credits_granted, 0);
 
     return {
       totalRedemptions: data.length,
       totalCreditsGranted,
-      recentRedemptions: data.map((d) => ({
+      recentRedemptions: (data as any[]).map((d: any) => ({
         id: d.id,
         promoCodeId: d.promo_code_id,
         tenantId: d.tenant_id,
@@ -337,10 +339,3 @@ function mapDbToPromoCode(data: Record<string, unknown>): PromoCode {
     createdAt: new Date(data.created_at as string),
   };
 }
-
-
-
-
-
-
-

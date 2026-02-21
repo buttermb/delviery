@@ -39,7 +39,7 @@ import { UserPlus, Loader2 } from "lucide-react";
 const courierSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
   license_number: z.string().min(5, "License number is required"),
   vehicle_type: z.string().min(1, "Vehicle type is required"),
   vehicle_make: z.string().optional(),

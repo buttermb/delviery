@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface ComparisonItem {
   id: string;
@@ -104,9 +105,9 @@ export function ComparisonView({
       case 'boolean':
         return value ? 'Yes' : 'No';
       case 'date':
-        return value instanceof Date 
-          ? value.toLocaleDateString() 
-          : typeof value === 'string' ? new Date(value).toLocaleDateString() : String(value);
+        return value instanceof Date
+          ? formatSmartDate(value)
+          : typeof value === 'string' ? formatSmartDate(value) : String(value);
       case 'array':
         return Array.isArray(value) ? value.join(', ') : String(value);
       default:
@@ -171,12 +172,13 @@ export function ComparisonView({
               <table className="w-full">
                 <thead>
                   <tr>
-                    <th className="sticky left-0 bg-background z-10 min-w-[120px] p-3 text-left text-sm font-medium text-muted-foreground border-b">
+                    <th scope="col" className="sticky left-0 bg-background z-10 min-w-[120px] p-3 text-left text-sm font-medium text-muted-foreground border-b">
                       Field
                     </th>
                     {items.map(item => (
                       <th
                         key={item.id}
+                        scope="col"
                         className="min-w-[150px] p-3 text-center border-b"
                       >
                         <div className="flex flex-col items-center gap-2">

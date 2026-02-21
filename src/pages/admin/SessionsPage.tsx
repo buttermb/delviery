@@ -34,6 +34,7 @@ import {
   RefreshCw,
   AlertTriangle,
 } from 'lucide-react';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 type RevokeTarget = { type: 'single'; sessionId: string; displayName: string } | { type: 'all-others' } | null;
 
@@ -242,18 +243,14 @@ export function SessionsPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium truncate">
-                            {session.browserName}
-                          </p>
+                          <TruncatedText text={session.browserName} className="font-medium" as="p" />
                           {session.isCurrent && (
                             <Badge variant="default" className="text-xs shrink-0">
                               Current
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {session.osName} • {session.deviceType}
-                        </p>
+                        <TruncatedText text={`${session.osName} • ${session.deviceType}`} className="text-sm text-muted-foreground" as="p" />
                         <div className="flex items-center gap-3 mt-1 flex-wrap">
                           <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <MapPin className="h-3 w-3" />

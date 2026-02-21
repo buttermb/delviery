@@ -17,6 +17,7 @@ import { useTenantContext } from '@/hooks/useTenantContext';
 import { useDeliveryZones } from '@/hooks/useDeliveryZones';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,16 +44,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   MapPin,
   Plus,
@@ -299,8 +291,8 @@ export default function DeliveryZones() {
             <strong>${zone.name}</strong>
             ${!zone.is_active ? '<span style="color: #888;"> (Inactive)</span>' : ''}
             <br/>
-            <span style="color: #666;">Fee: $${zone.delivery_fee.toFixed(2)}</span>
-            ${zone.minimum_order > 0 ? `<br/><span style="color: #666;">Min: $${zone.minimum_order.toFixed(2)}</span>` : ''}
+            <span style="color: #666;">Fee: ${formatCurrency(zone.delivery_fee)}</span>
+            ${zone.minimum_order > 0 ? `<br/><span style="color: #666;">Min: ${formatCurrency(zone.minimum_order)}</span>` : ''}
           </div>
         `);
 
@@ -585,10 +577,10 @@ export default function DeliveryZones() {
                         <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <DollarSign className="h-3 w-3" />
-                            ${zone.delivery_fee.toFixed(2)} fee
+                            {formatCurrency(zone.delivery_fee)} fee
                           </span>
                           {zone.minimum_order > 0 && (
-                            <span>${zone.minimum_order.toFixed(2)} min</span>
+                            <span>{formatCurrency(zone.minimum_order)} min</span>
                           )}
                         </div>
                         {canManageZones && (
@@ -675,6 +667,9 @@ export default function DeliveryZones() {
                 placeholder="Optional description for this zone..."
                 rows={2}
               />
+              {form.formState.errors.description && (
+                <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
+              )}
             </div>
 
             {/* Color */}
@@ -689,6 +684,9 @@ export default function DeliveryZones() {
                 />
                 <Input {...form.register('color')} className="flex-1" />
               </div>
+              {form.formState.errors.color && (
+                <p className="text-sm text-destructive">{form.formState.errors.color.message}</p>
+              )}
             </div>
 
             {/* ZIP Codes */}
@@ -719,6 +717,9 @@ export default function DeliveryZones() {
                   id="delivery_fee"
                   {...form.register('delivery_fee', { valueAsNumber: true })}
                 />
+                {form.formState.errors.delivery_fee && (
+                  <p className="text-sm text-destructive">{form.formState.errors.delivery_fee.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="minimum_order">Minimum Order ($)</Label>
@@ -728,6 +729,9 @@ export default function DeliveryZones() {
                   id="minimum_order"
                   {...form.register('minimum_order', { valueAsNumber: true })}
                 />
+                {form.formState.errors.minimum_order && (
+                  <p className="text-sm text-destructive">{form.formState.errors.minimum_order.message}</p>
+                )}
               </div>
             </div>
 
@@ -740,6 +744,9 @@ export default function DeliveryZones() {
                   id="estimated_time_min"
                   {...form.register('estimated_time_min', { valueAsNumber: true })}
                 />
+                {form.formState.errors.estimated_time_min && (
+                  <p className="text-sm text-destructive">{form.formState.errors.estimated_time_min.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estimated_time_max">Est. Time Max (mins)</Label>
@@ -748,6 +755,9 @@ export default function DeliveryZones() {
                   id="estimated_time_max"
                   {...form.register('estimated_time_max', { valueAsNumber: true })}
                 />
+                {form.formState.errors.estimated_time_max && (
+                  <p className="text-sm text-destructive">{form.formState.errors.estimated_time_max.message}</p>
+                )}
               </div>
             </div>
 
@@ -797,6 +807,9 @@ export default function DeliveryZones() {
                 id="priority"
                 {...form.register('priority', { valueAsNumber: true })}
               />
+              {form.formState.errors.priority && (
+                <p className="text-sm text-destructive">{form.formState.errors.priority.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Higher priority zones are matched first when areas overlap
               </p>
@@ -886,28 +899,14 @@ export default function DeliveryZones() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Zone</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{zoneToDelete?.name}&quot;? This action cannot
-              be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteZone}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeleting}
-            >
-              {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteZone}
+        itemType="zone"
+        itemName={zoneToDelete?.name}
+        isLoading={isDeleting}
+      />
     </>
   );
 }

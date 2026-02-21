@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
@@ -33,6 +33,7 @@ import {
   Check,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { humanizeError } from '@/lib/humanizeError';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -55,7 +56,6 @@ export function SinglePageCheckout() {
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();
-  const { toast } = useToast();
   const { checkCartStock } = useInventoryCheck();
 
   const [formData, setFormData] = useState<CheckoutFormData>({
@@ -115,7 +115,7 @@ export function SinglePageCheckout() {
   // Redirect if cart empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
-      toast({ title: 'Your cart is empty' });
+      toast('Your cart is empty');
       navigate(`/shop/${storeSlug}/cart`);
     }
   }, [isInitialized, cartItems.length]);
@@ -241,29 +241,27 @@ export function SinglePageCheckout() {
         state: { orderId: data.order_id },
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       logger.error('Order failed', error);
-      toast({
-        title: 'Order failed',
-        description: error.message || 'Something went wrong',
-        variant: 'destructive',
+      toast.error('Order failed', {
+        description: humanizeError(error, 'Something went wrong'),
       });
     },
   });
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      toast({ title: 'Please fix the errors', variant: 'destructive' });
+      toast.error('Please fix the errors');
       return;
     }
 
     if (!agreeToTerms) {
-      toast({ title: 'Please agree to the terms', variant: 'destructive' });
+      toast.error('Please agree to the terms');
       return;
     }
 
     if (stockIssues.length > 0) {
-      toast({ title: 'Some items are out of stock', variant: 'destructive' });
+      toast.error('Some items are out of stock');
       return;
     }
 
@@ -275,19 +273,20 @@ export function SinglePageCheckout() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="container mx-auto px-4 py-4 sm:py-6 max-w-4xl">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <Button
           variant="ghost"
           size="icon"
+          className="min-w-[44px] min-h-[44px]"
           onClick={() => navigate(`/shop/${storeSlug}/cart`)}
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Checkout</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-xl sm:text-2xl font-bold">Checkout</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} • {formatCurrency(subtotal)}
           </p>
         </div>
@@ -322,7 +321,7 @@ export function SinglePageCheckout() {
         </Card>
       )}
 
-      <div className="grid lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Main Form */}
         <div className="lg:col-span-3 space-y-6">
           {/* Contact Info */}
@@ -334,7 +333,7 @@ export function SinglePageCheckout() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name *</Label>
                   <Input
@@ -414,8 +413,8 @@ export function SinglePageCheckout() {
                   onChange={(e) => updateField('apartment', e.target.value)}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
@@ -603,6 +602,42 @@ export function SinglePageCheckout() {
           </Card>
         </div>
       </div>
+
+      {/* Sticky Mobile Checkout Bar */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t p-4 z-50">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-lg font-bold" style={{ color: themeColor }}>
+              {formatCurrency(total)}
+            </p>
+          </div>
+          <Button
+            className="flex-1 max-w-[200px] h-12 text-sm"
+            style={{ backgroundColor: themeColor }}
+            disabled={
+              placeOrderMutation.isPending ||
+              stockIssues.length > 0 ||
+              isCheckingStock
+            }
+            onClick={handleSubmit}
+          >
+            {placeOrderMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Place Order
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+      {/* Spacer for mobile sticky bar */}
+      <div className="h-24 lg:hidden" />
     </div>
   );
 }

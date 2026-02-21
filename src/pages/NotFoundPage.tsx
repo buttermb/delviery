@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,16 @@ import bugFinder from '@/utils/bugFinder';
 export default function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [search, setSearch] = useState('');
+
+  // Derive tenant slug from URL params or path for admin quick links
+  const slug = useMemo(() => {
+    if (tenantSlug) return tenantSlug;
+    // Try to extract slug from path: /:slug/admin/...
+    const match = location.pathname.match(/^\/([^/]+)\/admin/);
+    return match?.[1] || null;
+  }, [tenantSlug, location.pathname]);
 
   useEffect(() => {
     logger.error('404 Error: User attempted to access non-existent route', { pathname: location.pathname, component: 'NotFoundPage' });
@@ -80,48 +89,50 @@ export default function NotFoundPage() {
             </Button>
           </div>
 
-          {/* Helpful Links */}
-          <div className="pt-8 border-t space-y-4">
-            <p className="text-sm font-medium text-muted-foreground">Quick Links:</p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/admin/dashboard')}
-                className="gap-2"
-              >
-                <Home className="h-4 w-4" />
-                Dashboard
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/admin/orders')}
-                className="gap-2"
-              >
-                <ShoppingBag className="h-4 w-4" />
-                Orders
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/admin/inventory-hub')}
-                className="gap-2"
-              >
-                <Package className="h-4 w-4" />
-                Products
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/admin/help-hub')}
-                className="gap-2"
-              >
-                <HelpCircle className="h-4 w-4" />
-                Help
-              </Button>
+          {/* Helpful Links — only show if we can determine the tenant slug */}
+          {slug && (
+            <div className="pt-8 border-t space-y-4">
+              <p className="text-sm font-medium text-muted-foreground">Quick Links:</p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/${slug}/admin/dashboard`)}
+                  className="gap-2"
+                >
+                  <Home className="h-4 w-4" />
+                  Dashboard
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/${slug}/admin/orders`)}
+                  className="gap-2"
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  Orders
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/${slug}/admin/inventory-hub`)}
+                  className="gap-2"
+                >
+                  <Package className="h-4 w-4" />
+                  Products
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/${slug}/admin/help-hub`)}
+                  className="gap-2"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Help
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Error Details (for debugging) */}
           {import.meta.env.DEV && (

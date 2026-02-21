@@ -36,6 +36,8 @@ export const queryKeys = {
     categories: (storeId?: string) => ['shop-categories', storeId] as const,
     related: (storeId?: string, category?: string) =>
       ['related-products', storeId, category] as const,
+    reviews: (storeId?: string, productId?: string) =>
+      ['shop-product-reviews', storeId, productId] as const,
     carousels: (storeId?: string) => ['marketplace-products-map', storeId] as const,
   },
 
@@ -124,6 +126,14 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'by-location', locationId] as const,
     summary: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'summary', tenantId] as const,
+    stats: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'stats', tenantId] as const,
+    categoryStock: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'category-stock', tenantId] as const,
+    stockDistribution: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'stock-distribution', tenantId] as const,
+    lowStockProducts: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'low-stock-products', tenantId] as const,
     locations: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'locations', tenantId] as const,
   },
@@ -481,6 +491,12 @@ export const queryKeys = {
     audits: (tenantId: string) => [...queryKeys.compliance.byTenant(tenantId), 'audits'] as const,
     licenses: (tenantId: string) => [...queryKeys.compliance.byTenant(tenantId), 'licenses'] as const,
     reports: (tenantId: string) => [...queryKeys.compliance.byTenant(tenantId), 'reports'] as const,
+  },
+
+  // Permissions / user role
+  permissions: {
+    all: ['user-role'] as const,
+    role: (userId?: string, tenantId?: string) => [...queryKeys.permissions.all, userId, tenantId] as const,
   },
 
   // Team
@@ -1195,5 +1211,12 @@ export const queryKeys = {
   // Order Pipeline (standalone key)
   orderPipeline: {
     all: ['order-pipeline'] as const,
+  },
+
+  // Feature Toggles
+  featureToggles: {
+    all: ['feature-toggles'] as const,
+    byTenant: (tenantId?: string | null) =>
+      [...queryKeys.featureToggles.all, 'tenant', tenantId] as const,
   },
 } as const;

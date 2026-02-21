@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,8 @@ import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
+import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
 
 const formSchema = z.object({
     client_id: z.string().min(1, "Client is required"),
@@ -43,7 +45,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreatePreOrderPage() {
     const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-    const navigate = useNavigate();
+    const { navigateToAdmin, navigate } = useTenantNavigation();
     const createPreOrder = useCreatePreOrder();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -55,6 +57,16 @@ export default function CreatePreOrderPage() {
             expected_date: addDays(new Date(), 7),
             notes: "",
         },
+    });
+
+    const mod = useModifierKey();
+
+    useFormKeyboardShortcuts({
+        onSave: () => {
+            const formEl = document.querySelector<HTMLFormElement>('form');
+            formEl?.requestSubmit();
+        },
+        onCancel: () => navigateToAdmin('crm/pre-orders'),
     });
 
     const tenantSlug = tenant?.slug;
@@ -82,7 +94,7 @@ export default function CreatePreOrderPage() {
                         {contextError || 'Unable to load tenant context. Please refresh the page.'}
                     </AlertDescription>
                 </Alert>
-                <Button onClick={() => navigate(-1)}>Go Back</Button>
+                <Button onClick={() => navigateToAdmin('crm/pre-orders')}>Go Back</Button>
             </div>
         );
     }
@@ -126,7 +138,7 @@ export default function CreatePreOrderPage() {
     return (
         <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/pre-orders')}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
@@ -250,14 +262,18 @@ export default function CreatePreOrderPage() {
                     </Card>
 
                     <div className="flex justify-end gap-4">
-                        <Button variant="outline" type="button" onClick={() => navigate(-1)}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={createPreOrder.isPending}>
-                            {createPreOrder.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            Create Pre-Order
-                        </Button>
+                        <ShortcutHint keys={["Esc"]} label="Cancel">
+                            <Button variant="outline" type="button" onClick={() => navigateToAdmin('crm/pre-orders')}>
+                                Cancel
+                            </Button>
+                        </ShortcutHint>
+                        <ShortcutHint keys={[mod, "S"]} label="Save">
+                            <Button type="submit" disabled={createPreOrder.isPending}>
+                                {createPreOrder.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                Create Pre-Order
+                            </Button>
+                        </ShortcutHint>
                     </div>
                 </form>
             </Form>

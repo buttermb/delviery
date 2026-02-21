@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Eye, ExternalLink, Smartphone, Monitor, Tablet, Copy, Check } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { showCopyToast } from '@/utils/toastHelpers';
 
 interface StorePreviewButtonProps {
   storeSlug: string;
@@ -28,7 +28,6 @@ interface StorePreviewButtonProps {
 }
 
 export function StorePreviewButton({ storeSlug, storeName }: StorePreviewButtonProps) {
-  const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
   const [viewportSize, setViewportSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [copied, setCopied] = useState(false);
@@ -38,7 +37,7 @@ export function StorePreviewButton({ storeSlug, storeName }: StorePreviewButtonP
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(storeUrl);
     setCopied(true);
-    toast({ title: 'Store link copied!' });
+    showCopyToast('Store link');
     setTimeout(() => setCopied(false), 2000);
   };
 

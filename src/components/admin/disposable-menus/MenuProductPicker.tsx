@@ -128,7 +128,7 @@ function SortableProduct({ product, index, onRemove }: SortableProductProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 shrink-0"
+        className="h-11 w-11 shrink-0"
         onClick={() => onRemove(product.id)}
       >
         <X className="w-4 h-4" />
@@ -375,6 +375,7 @@ export function MenuProductPicker({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
+            aria-label="Search products"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"

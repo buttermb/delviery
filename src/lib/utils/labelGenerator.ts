@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
  */
 
 import jsPDF from 'jspdf';
+import { formatCurrency } from '@/lib/formatters';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
 import QRCode from 'qrcode';
 
@@ -171,11 +172,11 @@ export async function generateProductLabelPDF(
       addDetail('CBD:', `${data.cbdPercent}%`, 'right', [37, 99, 235]); // text-blue-600: rgb(37, 99, 235)
     }
     if (data.price !== undefined) {
-      addDetail('Wholesale:', `$${data.price.toFixed(2)}`, 'left');
+      addDetail('Wholesale:', formatCurrency(data.price), 'left');
     }
     // Match HTML preview: only show if truthy (not 0, null, or undefined)
     if (data.retailPrice) {
-      addDetail('Retail:', `$${data.retailPrice.toFixed(2)}`, 'right');
+      addDetail('Retail:', formatCurrency(data.retailPrice), 'right');
     }
     if (data.availableQuantity !== null && data.availableQuantity !== undefined) {
       // Full width (col-span-2), so add on left and sync both columns

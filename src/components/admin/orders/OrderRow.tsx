@@ -95,6 +95,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
           <Checkbox
             checked={isSelected}
             onCheckedChange={onSelect}
+            aria-label="Select order"
           />
         </div>
       </td>

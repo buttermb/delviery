@@ -128,8 +128,8 @@ export function useStorefrontOrderAlerts({
         // Cleanup
         return () => {
             if (channelRef.current) {
-                supabase.removeChannel(channelRef.current).catch(() => {
-                    // Silently ignore cleanup errors
+                supabase.removeChannel(channelRef.current).catch((err) => {
+                    logger.warn('Error removing realtime channel', { error: err, component: 'useStorefrontOrderAlerts' });
                 });
                 channelRef.current = null;
             }

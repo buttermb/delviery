@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Badge } from "@/components/ui/badge";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface TraceabilityViewProps {
   batchId: string | null;
@@ -166,7 +167,7 @@ export function TraceabilityView({
                         <Badge>{item.orders.status}</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
-                        Qty: {item.quantity} | {new Date(item.orders.created_at).toLocaleDateString()}
+                        Qty: {item.quantity} | {formatSmartDate(item.orders.created_at)}
                       </p>
                     </div>
                   ))}

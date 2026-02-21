@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CustomerPortalDemo — Shows white-labeled storefront mockup,
  * customer browsing and ordering.

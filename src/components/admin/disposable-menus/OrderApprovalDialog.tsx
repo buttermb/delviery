@@ -32,6 +32,7 @@ import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { useFeatureFlags } from '@/config/featureFlags';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface OrderItem {
   product_name?: string;
@@ -293,7 +294,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
             <p className="text-lg font-semibold">
               {order.urgency === 'asap' ? 'ASAP (Today/Tomorrow)' :
                 order.urgency === 'this_week' ? 'This Week' :
-                  order.specific_date ? new Date(String(jsonToStringOrNumber(order.specific_date as any))).toLocaleDateString() : 'Not specified'}
+                  order.specific_date ? formatSmartDate(String(jsonToStringOrNumber(order.specific_date as any))) : 'Not specified'}
             </p>
           </div>
 

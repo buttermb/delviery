@@ -5,6 +5,7 @@ import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export const crmSettingsKeys = {
     all: ['crm-settings'] as const,
@@ -132,9 +133,8 @@ export function useUpdateCRMSettings() {
             toast.success('Settings updated successfully');
         },
         onError: (error: unknown) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('CRM settings update failed', error, { component: 'useUpdateCRMSettings' });
-            toast.error(`Failed to update settings: ${errorMessage}`);
+            toast.error(humanizeError(error, 'Failed to update settings'));
         },
     });
 }

@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,7 +41,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Plus,
   Package,
@@ -82,6 +85,8 @@ export default function StorefrontBundles() {
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bundleToDelete, setBundleToDelete] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -221,7 +226,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to toggle bundle status', { error });
-      toast({ title: 'Failed to update bundle', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to update bundle', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -242,7 +247,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to delete bundle', { error });
-      toast({ title: 'Failed to delete bundle', description: error.message, variant: 'destructive' });
+      toast({ title: 'Failed to delete bundle', description: humanizeError(error), variant: 'destructive' });
     },
   });
 
@@ -633,7 +638,10 @@ export default function StorefrontBundles() {
                         variant="ghost"
                         size="icon"
                         className="text-red-500 hover:text-red-600"
-                        onClick={() => deleteBundleMutation.mutate(bundle.id)}
+                        onClick={() => {
+                          setBundleToDelete(bundle.id);
+                          setDeleteDialogOpen(true);
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -658,22 +666,33 @@ export default function StorefrontBundles() {
             <Button variant="outline" onClick={() => setEditingBundle(null)}>
               Cancel
             </Button>
-            <Button
+            <SaveButton
               onClick={() => editingBundle && updateBundleMutation.mutate(editingBundle)}
-              disabled={
-                updateBundleMutation.isPending ||
-                !formData.name ||
-                formData.products.length < 2
-              }
+              isPending={updateBundleMutation.isPending}
+              isSuccess={updateBundleMutation.isSuccess}
+              disabled={!formData.name || formData.products.length < 2}
             >
-              {updateBundleMutation.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
+              Save Changes
+            </SaveButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (bundleToDelete) {
+            deleteBundleMutation.mutate(bundleToDelete);
+            setDeleteDialogOpen(false);
+            setBundleToDelete(null);
+          }
+        }}
+        itemType="bundle"
+        isLoading={deleteBundleMutation.isPending}
+      />
     </div>
   );
 }
-
 
 

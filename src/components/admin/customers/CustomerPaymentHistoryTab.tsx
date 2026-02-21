@@ -53,6 +53,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomerPaymentHistoryTabProps {
   customerId: string;
@@ -127,6 +128,7 @@ function getPaymentMethodIcon(method: string | null): string {
 export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistoryTabProps) {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
+  const isMobile = useIsMobile();
   const tenantId = tenant?.id;
 
   // Filter state
@@ -389,7 +391,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-24 rounded-lg" />
             ))}
@@ -570,7 +572,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
               <CalendarComponent
                 initialFocus
                 mode="range"
@@ -579,7 +581,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
                 onSelect={(range) => {
                   setDateRange({ from: range?.from, to: range?.to });
                 }}
-                numberOfMonths={2}
+                numberOfMonths={isMobile ? 1 : 2}
               />
             </PopoverContent>
           </Popover>

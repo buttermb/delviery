@@ -44,6 +44,7 @@ export function CustomIntegrationForm({
     { key: '', value: '' },
   ]);
   
+  const [submitted, setSubmitted] = useState(false);
   const isDirty = useFormDirtyState(INITIAL_FORM, formData);
 
   const handleAddHeader = () => {
@@ -62,6 +63,7 @@ export function CustomIntegrationForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
     setIsSubmitting(true);
 
     // Sanitize form inputs before processing
@@ -113,7 +115,7 @@ export function CustomIntegrationForm({
     >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Integration Name</Label>
+            <Label htmlFor="name">Integration Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="name"
               placeholder="My Custom API"
@@ -121,6 +123,9 @@ export function CustomIntegrationForm({
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
+            {submitted && !formData.name.trim() && (
+              <p className="text-sm text-destructive">Integration name is required</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -141,7 +146,7 @@ export function CustomIntegrationForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="endpoint_url">Endpoint URL</Label>
+            <Label htmlFor="endpoint_url">Endpoint URL <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
             <Input
               id="endpoint_url"
               type="url"
@@ -150,6 +155,9 @@ export function CustomIntegrationForm({
               onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
               required
             />
+            {submitted && !formData.endpoint_url.trim() && (
+              <p className="text-sm text-destructive">Endpoint URL is required</p>
+            )}
           </div>
 
           <div className="space-y-2">

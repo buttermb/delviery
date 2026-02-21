@@ -8,21 +8,23 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
-import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 import { EditorEntryCard } from '@/components/admin/storefront/EditorEntryCard';
 import { FullScreenEditorPortal } from '@/components/admin/storefront/FullScreenEditorPortal';
 import { UnsavedChangesDialog } from '@/components/admin/storefront/UnsavedChangesDialog';
+import { UnsavedChangesDialog as RouteUnsavedChangesDialog } from '@/components/unsaved-changes';
 import { StorefrontBuilder } from '@/pages/admin/storefront/StorefrontBuilder';
 import { useFullScreenEditor } from '@/hooks/useFullScreenEditor';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 import type { MarketplaceStore } from '@/types/marketplace-extended';
 
 export function StorefrontDesignPage() {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [showCompactMode, setShowCompactMode] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -57,9 +59,12 @@ export function StorefrontDesignPage() {
             logger.info('Save triggered from design page');
         },
         onSuccess: () => {
-            toast({ title: 'Draft saved', description: 'Your changes have been saved.' });
+            toast.success('Draft saved');
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             setHasUnsavedChanges(false);
+        },
+        onError: (error) => {
+            toast.error(humanizeError(error, 'Failed to save draft'));
         },
     });
 
@@ -90,6 +95,11 @@ export function StorefrontDesignPage() {
     const handleOpenCompact = useCallback(() => {
         setShowCompactMode(true);
     }, []);
+
+    // Block route navigation when there are unsaved changes
+    const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+        isDirty: hasUnsavedChanges,
+    });
 
     // If compact mode is shown directly
     if (showCompactMode && !isFullScreen) {
@@ -130,13 +140,20 @@ export function StorefrontDesignPage() {
                 />
             </FullScreenEditorPortal>
 
-            {/* Unsaved Changes Dialog */}
+            {/* Unsaved Changes Dialog — full-screen editor exit */}
             <UnsavedChangesDialog
                 open={showExitDialog}
                 isExiting={isExiting}
                 onDiscard={confirmDiscard}
                 onSaveDraft={confirmSaveAndExit}
                 onCancel={cancelExit}
+            />
+
+            {/* Unsaved Changes Dialog — route navigation */}
+            <RouteUnsavedChangesDialog
+                open={showBlockerDialog}
+                onConfirmLeave={confirmLeave}
+                onCancelLeave={cancelLeave}
             />
         </>
     );

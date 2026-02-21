@@ -31,7 +31,7 @@ const features = [
 
 export function WhyUs() {
   return (
-    <section className="py-24 md:py-32 bg-neutral-900">
+    <section className="py-24 md:py-32 bg-neutral-900" data-dark-panel>
       <div className="container mx-auto px-6 max-w-7xl">
         
         <motion.div

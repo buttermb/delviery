@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Fragment, lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -86,7 +87,7 @@ export default function InventoryHubPage() {
                         hubHref="inventory-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Inventory</h1>
                             <p className="text-muted-foreground text-sm">
@@ -123,65 +124,83 @@ export default function InventoryHubPage() {
 
                 {/* Products Tab */}
                 <TabsContent value="products" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ProductManagement />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Products">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <ProductManagement />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Menus Tab (moved from Orders) */}
                 <TabsContent value="menus" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DisposableMenus />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Menus">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <DisposableMenus />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Global Catalog Tab */}
                 <TabsContent value="global" className="m-0 p-4">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <GlobalProductCatalog />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Global Catalog">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <GlobalProductCatalog />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Stock Levels Tab */}
                 <TabsContent value="stock" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <InventoryDashboard />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Stock Levels">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <InventoryDashboard />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Adjustments Tab */}
                 <TabsContent value="adjustments" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <InventoryManagement />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Inventory Transfers">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <InventoryManagement />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Monitoring Tab */}
                 <TabsContent value="monitoring" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <InventoryMonitoringPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Inventory Alerts">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <InventoryMonitoringPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Who Owes Me (Fronted) Tab */}
                 <TabsContent value="fronted" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <FrontedInventory />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Fronted Inventory">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <FrontedInventory />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Dispatch Tab */}
                 <TabsContent value="dispatch" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DispatchInventory />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Dispatch">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <DispatchInventory />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Barcodes Tab */}
                 <TabsContent value="barcodes" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <GenerateBarcodes />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Barcodes">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <GenerateBarcodes />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

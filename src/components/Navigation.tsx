@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import { haptics } from "@/utils/haptics";
 import type { DbCartItem } from "@/types/cart";
 import { toNumber } from "@/utils/productTypeGuards";
 import { toast } from "sonner";
+import { formatCurrency } from '@/lib/formatters';
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -182,7 +184,7 @@ const Navigation = () => {
                 haptics.light();
                 setShowCart(true);
               }}
-              aria-label={`Shopping cart with ${cartCount} items and total $${cartTotal.toFixed(2)}`}
+              aria-label={`Shopping cart with ${cartCount} items and total ${formatCurrency(cartTotal)}`}
             >
               <ShoppingCart className="w-4 h-4" />
               <div className="flex flex-col items-start gap-0.5">
@@ -191,7 +193,7 @@ const Navigation = () => {
                 </span>
                 {cartTotal > 0 && (
                   <span className="text-[10px] text-muted-foreground leading-none">
-                    ${cartTotal.toFixed(2)}
+                    {formatCurrency(cartTotal)}
                   </span>
                 )}
               </div>
@@ -262,7 +264,7 @@ const Navigation = () => {
                           toast.success("Signed out successfully");
                         } catch (error: unknown) {
                           logger.error('Sign out failed', error, { component: 'Navigation' });
-                          toast.error(error instanceof Error ? error.message : 'Failed to sign out');
+                          toast.error(humanizeError(error, 'Failed to sign out'));
                         } finally {
                           setIsSigningOut(false);
                         }
@@ -375,7 +377,7 @@ const Navigation = () => {
                             toast.success("Signed out successfully");
                           } catch (error: unknown) {
                             logger.error('Sign out failed', error, { component: 'Navigation' });
-                            toast.error(error instanceof Error ? error.message : 'Failed to sign out');
+                            toast.error(humanizeError(error, 'Failed to sign out'));
                           } finally {
                             setIsSigningOut(false);
                           }

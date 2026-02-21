@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Select,
   SelectContent,
@@ -33,6 +34,8 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const EXPENSE_CATEGORIES = [
   'Supplies',
@@ -168,11 +171,7 @@ export default function ExpenseTracking() {
   const uniqueCategories = [...new Set((expenses || []).map((e: any) => e.category).filter(Boolean))];
 
   if (isLoading) {
-    return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading expenses..." />;
   }
 
   return (
@@ -200,7 +199,7 @@ export default function ExpenseTracking() {
             <DollarSign className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">${totalExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-red-600">{formatCurrency(totalExpenses)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {filteredExpenses.length} transactions
             </p>
@@ -213,7 +212,7 @@ export default function ExpenseTracking() {
             <Calendar className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">${thisMonthExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-orange-600">{formatCurrency(thisMonthExpenses)}</div>
             <p className="text-xs text-muted-foreground mt-1">{currentMonth}</p>
           </CardContent>
         </Card>
@@ -259,7 +258,7 @@ export default function ExpenseTracking() {
                       <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -302,19 +301,19 @@ export default function ExpenseTracking() {
                 {filteredExpenses.slice(0, 20).map((expense: any) => (
                   <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{expense.description || 'No description'}</div>
+                      <TruncatedText text={expense.description || 'No description'} className="font-medium" as="div" />
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <Badge variant="outline" className="text-xs">
                           <Tag className="h-3 w-3 mr-1" />
                           {expense.category || 'Uncategorized'}
                         </Badge>
                         <span className="text-xs">
-                          {new Date(expense.created_at).toLocaleDateString()}
+                          {formatSmartDate(expense.created_at)}
                         </span>
                       </div>
                     </div>
                     <div className="text-lg font-bold text-red-600 ml-4">
-                      -${parseFloat(expense.amount || 0).toFixed(2)}
+                      -{formatCurrency(parseFloat(expense.amount || 0))}
                     </div>
                   </div>
                 ))}

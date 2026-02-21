@@ -33,6 +33,7 @@ import { Fragment, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -143,7 +144,7 @@ export default function OperationsHubPage() {
                         hubHref="operations-hub"
                         currentTab={activeTabLabel}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Operations</h1>
                             <p className="text-muted-foreground text-sm">
@@ -211,19 +212,25 @@ export default function OperationsHubPage() {
                             </TabsList>
                         </div>
                         <TabsContent value="members" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <TeamManagement />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Team Members">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <TeamManagement />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="roles" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <RoleManagement />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Role Management">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <RoleManagement />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="invites" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <InvitesPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Invites">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <InvitesPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                     </Tabs>
                 </TabsContent>
@@ -250,63 +257,81 @@ export default function OperationsHubPage() {
                             </TabsList>
                         </div>
                         <TabsContent value="vendors" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <VendorOperationsPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Vendors">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <VendorOperationsPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="purchase-orders" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <PurchaseOrdersPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Purchase Orders">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <PurchaseOrdersPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                         <TabsContent value="receiving" className="m-0">
-                            <Suspense fallback={<TabSkeleton />}>
-                                <POReceivingPage />
-                            </Suspense>
+                            <ModuleErrorBoundary moduleName="Receiving">
+                                <Suspense fallback={<TabSkeleton />}>
+                                    <POReceivingPage />
+                                </Suspense>
+                            </ModuleErrorBoundary>
                         </TabsContent>
                     </Tabs>
                 </TabsContent>
 
                 {/* Returns Tab */}
                 <TabsContent value="returns" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ReturnsManagementPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Returns">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <ReturnsManagementPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Compliance Tab */}
                 <TabsContent value="compliance" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <CompliancePage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Compliance">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <CompliancePage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Quality Tab */}
                 <TabsContent value="quality" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <QualityControlPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Quality Control">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <QualityControlPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Activity/Logs Tab */}
                 <TabsContent value="activity" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ActivityLogsPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Activity Logs">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <ActivityLogsPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Locations Tab */}
                 <TabsContent value="locations" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LocationsManagement />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Locations">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LocationsManagement />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Calendar/Appointments Tab */}
                 <TabsContent value="appointments" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <AppointmentSchedulerPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Calendar">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <AppointmentSchedulerPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

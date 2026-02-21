@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import { BarcodeScanner } from "@/components/inventory/BarcodeScanner";
 import { ArrowLeft, Package, AlertTriangle, CheckCircle, Trash2 } from "lucide-react";
 import { useCreditGatedAction } from "@/hooks/useCredits";
@@ -217,14 +219,14 @@ export default function RecordFrontedReturn() {
         );
         navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`);
       } catch (error: unknown) {
-        toast.error("Failed to process return: " + (error instanceof Error ? error.message : 'Unknown error'));
+        toast.error("Failed to process return: " + humanizeError(error, 'Unknown error'));
       } finally {
         setProcessing(false);
       }
     });
   };
 
-  if (!front) return <div>Loading...</div>;
+  if (!front) return <EnhancedLoadingState variant="card" message="Loading return details..." />;
 
   const goodReturns = scannedReturns.filter((r) => r.condition === "good").length;
   const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;

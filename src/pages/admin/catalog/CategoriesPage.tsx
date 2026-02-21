@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Plus,
   Search,
@@ -77,8 +78,7 @@ interface CategoryWithStats extends Category {
 }
 
 export default function CategoriesPage() {
-  const navigate = useNavigate();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const { navigateToAdmin, navigate, tenantSlug } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -430,7 +430,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 shrink-0"
+              className="h-11 w-11 shrink-0"
               onClick={() => toggleCategory(category.id)}
             >
               {isExpanded ? (
@@ -452,7 +452,7 @@ export default function CategoriesPage() {
           {/* Category info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-medium truncate">{category.name}</p>
+              <TruncatedText text={category.name} className="font-medium" as="p" />
               {category.slug && (
                 <Badge variant="outline" className="text-xs">
                   {category.slug}
@@ -460,7 +460,7 @@ export default function CategoriesPage() {
               )}
             </div>
             {category.description && (
-              <p className="text-sm text-muted-foreground truncate">{category.description}</p>
+              <TruncatedText text={category.description} className="text-sm text-muted-foreground" as="p" />
             )}
           </div>
 
@@ -502,7 +502,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-11 w-11"
               onClick={() => navigateToFilteredProducts(category.id)}
               title="View products"
             >
@@ -511,7 +511,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-11 w-11"
               onClick={() => setEditingCategory(category)}
             >
               <Edit className="h-4 w-4" />
@@ -519,7 +519,7 @@ export default function CategoriesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-11 w-11"
               onClick={() => {
                 setCategoryToDelete({ id: category.id, name: category.name });
                 setDeleteDialogOpen(true);
@@ -565,7 +565,7 @@ export default function CategoriesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateToAdmin('inventory-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

@@ -1,16 +1,17 @@
 import { logger } from '@/lib/logger';
 import { logOrderQuery, logRLSFailure } from '@/lib/debug/logger';
 import { logSelectQuery } from '@/lib/debug/queryLogger';
-import { useState, useEffect, useMemo } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useState, useMemo, useCallback } from 'react';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit, RotateCcw, Filter } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -31,16 +32,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/CopyButton";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
-import { useTablePreferences } from "@/hooks/useTablePreferences";
+import { OrderEditModal } from "@/components/admin/OrderEditModal";
+import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
+import { isOrderEditable } from "@/lib/utils/orderEditability";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";
 import { invalidateOnEvent } from "@/lib/invalidation";
+import { usePagination } from "@/hooks/usePagination";
+import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useDeliveryETA } from "@/hooks/useDeliveryETA";
+import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { DeliveryETACell } from "@/components/admin/orders/DeliveryETACell";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { formatCurrency, displayValue } from "@/lib/formatters";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import {
   DropdownMenu,
@@ -49,7 +58,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import type { OrderWithSLATimestamps } from "@/types/sla";
 
 interface OrderItem {
@@ -82,11 +91,25 @@ interface Order {
   order_items?: OrderItem[];
 }
 
+type OrderSortField = 'created_at' | 'total_amount' | 'status' | 'customer';
+type SortOrder = 'asc' | 'desc';
+
+const ORDERS_FILTER_CONFIG = [
+  { key: 'q', defaultValue: '' },
+  { key: 'status', defaultValue: 'all' },
+  { key: 'from', defaultValue: '' },
+  { key: 'to', defaultValue: '' },
+  { key: 'sort', defaultValue: 'created_at' },
+  { key: 'dir', defaultValue: 'desc' },
+];
+
 export default function Orders() {
   const navigate = useTenantNavigate();
   const { tenant, admin } = useTenantAdminAuth();
-  const { preferences, savePreferences } = useTablePreferences("orders-table");
   const queryClient = useQueryClient();
+  const { canEdit, canDelete, canExport } = usePermissions();
+  const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
+  const deliveryEnabled = isFeatureEnabled('delivery_tracking');
 
   useAdminKeyboardShortcuts({
     onSearch: () => {
@@ -106,19 +129,19 @@ export default function Orders() {
     onNewOrder: (event) => {
       const sourceLabel = event.source === 'storefront' ? 'Storefront' : event.source;
       toast.success(`New ${sourceLabel} order #${event.orderNumber}`, {
-        description: `${event.customerName} - $${event.totalAmount.toFixed(2)}`,
+        description: `${event.customerName} - ${formatCurrency(event.totalAmount)}`,
       });
     },
   });
 
-  // State
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
-  });
+  // Filter state — persisted in URL for back-button & navigation support
+  const [filters, setFilters, clearUrlFilters] = useUrlFilters(ORDERS_FILTER_CONFIG);
+  const searchQuery = filters.q as string;
+  const statusFilter = filters.status as string;
+  const dateRange = useMemo(() => ({
+    from: (filters.from as string) ? parseISO(filters.from as string) : undefined,
+    to: (filters.to as string) ? parseISO(filters.to as string) : undefined,
+  }), [filters.from, filters.to]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -133,6 +156,12 @@ export default function Orders() {
   }>({ open: false, targetStatus: '' });
   const [assignRunnerDialogOpen, setAssignRunnerDialogOpen] = useState(false);
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editOrder, setEditOrder] = useState<Order | null>(null);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundOrder, setRefundOrder] = useState<Order | null>(null);
+  const sortField = (filters.sort || 'created_at') as OrderSortField;
+  const sortOrder = (filters.dir || 'desc') as SortOrder;
 
   // Bulk status update hook with userId for activity logging
   const bulkStatusUpdate = useOrderBulkStatusUpdate({
@@ -143,34 +172,24 @@ export default function Orders() {
     },
   });
 
-  // Save preferences when filter changes
-  useEffect(() => {
-    savePreferences({ customFilters: { status: statusFilter } });
-  }, [statusFilter, savePreferences]);
-
   // Data Fetching - includes both regular orders and POS orders from unified_orders
-  const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['orders', tenant?.id, statusFilter],
+  const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
+    queryKey: ['orders', tenant?.id],
     queryFn: async () => {
       if (!tenant) return [];
 
       logOrderQuery('Fetching admin orders', {
         tenantId: tenant.id,
-        statusFilter,
         source: 'Orders'
       });
 
-      // Fetch regular orders
-      let regularQuery = supabase
+      // Fetch regular orders (all statuses — status filtering is client-side for combined filter support)
+      const regularQuery = supabase
         .from('orders')
         .select('id, order_number, created_at, status, total_amount, user_id, courier_id, tenant_id, accepted_at, courier_assigned_at, courier_accepted_at, delivered_at, order_items(id, product_id, quantity, price)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(100);
-
-      if (statusFilter !== 'all') {
-        regularQuery = regularQuery.eq('status', statusFilter);
-      }
 
       const { data: ordersData, error: ordersError } = await regularQuery;
 
@@ -183,20 +202,16 @@ export default function Orders() {
         throw ordersError;
       }
 
-      logSelectQuery('orders', { tenant_id: tenant.id, status: statusFilter }, ordersData, 'Orders');
+      logSelectQuery('orders', { tenant_id: tenant.id }, ordersData, 'Orders');
 
-      // Fetch POS orders from unified_orders
-      let posQuery = supabase
+      // Fetch POS orders from unified_orders (all statuses — status filtering is client-side)
+      const posQuery = supabase
         .from('unified_orders')
         .select('id, order_number, created_at, status, total_amount, payment_method, customer_id, shift_id, metadata')
         .eq('tenant_id', tenant.id)
         .eq('order_type', 'pos')
         .order('created_at', { ascending: false })
         .limit(50);
-
-      if (statusFilter !== 'all') {
-        posQuery = posQuery.eq('status', statusFilter);
-      }
 
       const { data: posOrdersData, error: posError } = await posQuery;
 
@@ -291,7 +306,7 @@ export default function Orders() {
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
       // Optimistic local update for immediate UI feedback
-      queryClient.setQueryData(['orders', tenant?.id, statusFilter], (old: Order[] = []) =>
+      queryClient.setQueryData(['orders', tenant?.id], (old: Order[] = []) =>
         old.map(o => o.id === data.id ? { ...o, status: data.status } : o)
       );
       // Cross-panel invalidation for dashboard, analytics, badges, fulfillment
@@ -313,7 +328,7 @@ export default function Orders() {
     },
     onSuccess: (ids) => {
       const count = ids.length;
-      toast.success(`${count} order${count > 1 ? 's' : ''} deleted successfully`);
+      toast.success(`${count} ${count !== 1 ? 'orders' : 'order'} deleted successfully`);
       refetch();
       setSelectedOrders([]);
       triggerHaptic('heavy');
@@ -324,13 +339,18 @@ export default function Orders() {
     }
   });
 
-  // Filter Logic
+  // Filter Logic — all filters applied client-side so they compose as AND conditions
   const filteredOrders = useMemo(() => {
     let result = orders;
 
-    // Search filter (debounced)
-    if (debouncedSearchQuery) {
-      const query = debouncedSearchQuery.toLowerCase();
+    // Status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(order => order.status === statusFilter);
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       result = result.filter(order =>
         order.order_number?.toLowerCase().includes(query) ||
         order.user?.full_name?.toLowerCase().includes(query) ||
@@ -362,7 +382,7 @@ export default function Orders() {
     }
 
     return result;
-  }, [orders, debouncedSearchQuery, dateRange]);
+  }, [orders, statusFilter, searchQuery, dateRange]);
 
   // Handlers
   const handleRefresh = async () => {
@@ -372,7 +392,7 @@ export default function Orders() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(filteredOrders.map(o => o.id));
+      setSelectedOrders(paginatedItems.map(o => o.id));
     } else {
       setSelectedOrders([]);
     }
@@ -398,7 +418,7 @@ export default function Orders() {
     const previousOrders = orders;
 
     // Optimistically update the UI
-    queryClient.setQueryData(['orders', tenant.id, statusFilter], (old: Order[] = []) =>
+    queryClient.setQueryData(['orders', tenant.id], (old: Order[] = []) =>
       old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
     );
 
@@ -428,7 +448,7 @@ export default function Orders() {
       setSelectedOrders([]);
     } catch (error) {
       // Rollback on error
-      queryClient.setQueryData(['orders', tenant.id, statusFilter], previousOrders);
+      queryClient.setQueryData(['orders', tenant.id], previousOrders);
       logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update orders");
     }
@@ -448,13 +468,174 @@ export default function Orders() {
     await bulkStatusUpdate.executeBulkUpdate(ordersToUpdate, bulkStatusConfirm.targetStatus);
   };
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    setDateRange({ from: undefined, to: undefined });
-  };
+  const handleClearFilters = useCallback(() => {
+    clearUrlFilters();
+  }, [clearUrlFilters]);
+
+  const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
+  const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
+  const handleDateRangeChange = useCallback((range: { from: Date | undefined; to: Date | undefined }) => {
+    setFilters({
+      from: range.from ? format(range.from, 'yyyy-MM-dd') : '',
+      to: range.to ? format(range.to, 'yyyy-MM-dd') : '',
+    });
+  }, [setFilters]);
 
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || dateRange.from || dateRange.to;
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (statusFilter !== 'all') count++;
+    if (dateRange.from || dateRange.to) count++;
+    return count;
+  }, [searchQuery, statusFilter, dateRange.from, dateRange.to]);
+
+  const handleSort = (field: OrderSortField) => {
+    if (sortField === field) {
+      setFilters({ dir: sortOrder === 'asc' ? 'desc' : 'asc' });
+    } else {
+      setFilters({ sort: field, dir: field === 'created_at' ? 'desc' : 'asc' });
+    }
+  };
+
+  const SortableHeader = ({ field, label }: { field: OrderSortField; label: string }) => {
+    const isActive = sortField === field;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8 hover:bg-transparent"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        {isActive ? (
+          sortOrder === 'asc' ? <ArrowUp className="ml-1 h-3.5 w-3.5" /> : <ArrowDown className="ml-1 h-3.5 w-3.5" />
+        ) : (
+          <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </Button>
+    );
+  };
+
+  const sortedOrders = useMemo(() => {
+    const sorted = [...filteredOrders];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'created_at':
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'total_amount':
+          cmp = (a.total_amount || 0) - (b.total_amount || 0);
+          break;
+        case 'status':
+          cmp = (a.status || '').localeCompare(b.status || '');
+          break;
+        case 'customer': {
+          const nameA = a.user?.full_name || a.user?.email || '';
+          const nameB = b.user?.full_name || b.user?.email || '';
+          cmp = nameA.localeCompare(nameB);
+          break;
+        }
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [filteredOrders, sortField, sortOrder]);
+
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(sortedOrders, {
+    defaultPageSize: 25,
+    persistInUrl: false,
+  });
+
+  // Loading skeleton — full page placeholder while data fetches
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6">
+        {/* Header skeleton */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-12 w-24 rounded-md" />
+            <Skeleton className="h-12 w-32 rounded-md" />
+            <Skeleton className="h-12 w-28 rounded-md" />
+          </div>
+        </div>
+
+        {/* Stats grid skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="p-3 sm:p-4 border-none shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-7 w-12" />
+                </div>
+                <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded" />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Controls skeleton */}
+        <Card className="p-3 sm:p-4 border-none shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 w-full sm:w-[180px]" />
+            <Skeleton className="h-10 w-full sm:w-[220px]" />
+          </div>
+
+          {/* Table skeleton */}
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  {["", "Order #", "Customer", "Status", "Total", "Source", "Date", ""].map((h, i) => (
+                    <th key={i} scope="col" className="px-4 py-3 text-left">
+                      <Skeleton className="h-3 w-16" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {Array.from({ length: 8 }).map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-36" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-14" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                    <td className="px-4 py-3"><Skeleton className="h-8 w-8 rounded" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const handleDelete = (id: string) => {
     setDeleteConfirmation({ open: true, type: 'single', id });
@@ -492,7 +673,7 @@ export default function Orders() {
             <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
             <div class="info"><span class="label">Status:</span> ${order.status}</div>
             <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
-            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
+            <div class="info"><span class="label">Total:</span> ${formatCurrency(order.total_amount)}</div>
             <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
             <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
           </body>
@@ -579,7 +760,7 @@ export default function Orders() {
     {
       header: (
         <Checkbox
-          checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+          checked={paginatedItems.length > 0 && selectedOrders.length === paginatedItems.length}
           onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
         />
       ) as unknown as string, // Cast to string to satisfy older interfaces if strict type checking fails intermittently, though we updated it.
@@ -595,47 +776,53 @@ export default function Orders() {
     },
     {
       header: "Order #",
+      className: "max-w-[150px]",
       cell: (order) => (
-        <div className="flex items-center gap-2">
-          <span className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}>
-            {order.order_number || order.id.slice(0, 8)}
-          </span>
-          <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="flex items-center gap-2 max-w-[150px] min-w-0">
+          <TruncatedText
+            text={order.order_number || order.id.slice(0, 8)}
+            maxWidthClass="max-w-[110px]"
+            className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}
+          />
+          <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )
     },
     {
       header: "Source",
       cell: (order) => getSourceBadge(order.order_source),
-      className: "w-[120px]"
+      className: "w-[120px] hidden lg:table-cell"
     },
     {
-      header: "Customer",
+      header: <SortableHeader field="customer" label="Customer" />,
+      className: "max-w-[200px]",
       cell: (order) => (
-        <div className="flex flex-col gap-1">
-          <CustomerLink
-            customerId={order.user_id}
-            customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
-            customerEmail={order.user?.email}
-            className="font-medium"
-          />
+        <div className="flex flex-col gap-1 max-w-[200px] min-w-0">
+          <div className="min-w-0 truncate">
+            <CustomerLink
+              customerId={order.user_id}
+              customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}
+              customerEmail={order.user?.email}
+              className="font-medium"
+            />
+          </div>
           {order.user?.email && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {order.user.email}
-              <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <TruncatedText text={order.user.email} maxWidthClass="max-w-[170px]" />
+              <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
           {!order.user?.email && order.user?.phone && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {order.user.phone}
-              <CopyButton text={order.user.phone} label="Phone" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <TruncatedText text={order.user.phone} maxWidthClass="max-w-[170px]" />
+              <CopyButton text={order.user.phone} label="Phone" showLabel={false} className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
         </div>
       )
     },
     {
-      header: "Status",
+      header: <SortableHeader field="status" label="Status" />,
       cell: (order) => {
         // Convert to SLA-compatible format
         const slaOrder: OrderWithSLATimestamps = {
@@ -651,28 +838,42 @@ export default function Orders() {
 
         return (
           <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
-            <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
-              <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
-                <SelectValue>{getStatusBadge(order.status)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="preparing">Preparing</SelectItem>
-                <SelectItem value="in_transit">In Transit</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            {canEdit('orders') ? (
+              <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
+                <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                  <SelectValue>{getStatusBadge(order.status)}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="preparing">Preparing</SelectItem>
+                  <SelectItem value="in_transit">In Transit</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              getStatusBadge(order.status)
+            )}
             <OrderSLAIndicator order={slaOrder} compact />
           </div>
         );
       }
     },
-    { header: "Method", accessorKey: "delivery_method", className: "capitalize" },
+    {
+      header: "Method",
+      className: "max-w-[120px] hidden lg:table-cell",
+      cell: (order) => (
+        <TruncatedText
+          text={order.delivery_method || '—'}
+          maxWidthClass="max-w-[120px]"
+          className="capitalize"
+        />
+      )
+    },
     {
       header: "ETA",
-      className: "w-[130px]",
+      className: "w-[130px] hidden lg:table-cell",
       cell: (order) => (
         <DeliveryETACell
           eta={etaMap[order.id]}
@@ -681,11 +882,11 @@ export default function Orders() {
       ),
     },
     {
-      header: "Total",
-      cell: (order) => <span className="font-mono font-medium">${order.total_amount?.toFixed(2)}</span>
+      header: <SortableHeader field="total_amount" label="Total" />,
+      cell: (order) => <span className="font-mono font-medium">{formatCurrency(order.total_amount)}</span>
     },
     {
-      header: "Date",
+      header: <SortableHeader field="created_at" label="Date" />,
       cell: (order) => <span className="text-muted-foreground">{formatSmartDate(order.created_at)}</span>
     },
     {
@@ -715,6 +916,15 @@ export default function Orders() {
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
+              {isOrderEditable(order.status) && canEdit('orders') && (
+                <DropdownMenuItem onClick={() => {
+                  setEditOrder(order);
+                  setEditModalOpen(true);
+                }}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Order
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Print Order
@@ -723,8 +933,17 @@ export default function Orders() {
                 <FileText className="mr-2 h-4 w-4" />
                 Generate Invoice
               </DropdownMenuItem>
+              {['delivered', 'completed'].includes(order.status) && canEdit('orders') && (
+                <DropdownMenuItem onClick={() => {
+                  setRefundOrder(order);
+                  setRefundModalOpen(true);
+                }}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Refund Order
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
-              {order.status !== 'cancelled' && (
+              {order.status !== 'cancelled' && canEdit('orders') && (
                 <DropdownMenuItem
                   onClick={() => handleCancelOrder(order)}
                   className="text-destructive focus:text-destructive"
@@ -733,13 +952,15 @@ export default function Orders() {
                   Cancel Order
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={() => handleDelete(order.id)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Order
-              </DropdownMenuItem>
+              {canDelete('orders') && (
+                <DropdownMenuItem
+                  onClick={() => handleDelete(order.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Order
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -771,28 +992,34 @@ export default function Orders() {
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex gap-2">
-              <OrderExportButton
-                orders={filteredOrders}
-                filenamePrefix="orders-export"
-                variant="outline"
-                className="min-h-[48px] touch-manipulation"
-                disabled={filteredOrders.length === 0}
-              />
-              <Button
-                variant="outline"
-                className="min-h-[48px] touch-manipulation"
-                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
-              >
-                <WifiOff className="mr-2 h-4 w-4" />
-                Offline Order
-              </Button>
-              <Button
-                variant="default"
-                className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
-                onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
-              >
-                + New Order
-              </Button>
+              {canExport('orders') && (
+                <OrderExportButton
+                  orders={sortedOrders}
+                  filenamePrefix="orders-export"
+                  variant="outline"
+                  className="min-h-[48px] touch-manipulation"
+                  disabled={sortedOrders.length === 0}
+                />
+              )}
+              {canEdit('orders') && (
+                <Button
+                  variant="outline"
+                  className="min-h-[48px] touch-manipulation"
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
+                >
+                  <WifiOff className="mr-2 h-4 w-4" />
+                  Offline Order
+                </Button>
+              )}
+              {canEdit('orders') && (
+                <Button
+                  variant="default"
+                  className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
+                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
+                >
+                  + New Order
+                </Button>
+              )}
               <TakeTourButton
                 tutorialId={ordersTutorial.id}
                 steps={ordersTutorial.steps}
@@ -803,36 +1030,46 @@ export default function Orders() {
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={stat.label} className="p-3 sm:p-4 border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                      <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
+          {/* Stats Grid — hidden when error with no cached data (zeros are misleading) */}
+          {!(isError && orders.length === 0) && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+              {stats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <Card key={stat.label} className="p-3 sm:p-4 border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
+                        <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
+                      </div>
+                      <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} flex-shrink-0`} />
                     </div>
-                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} flex-shrink-0`} />
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           {/* Controls */}
           <Card className="p-3 sm:p-4 border-none shadow-sm">
             <div className="flex flex-col gap-3 sm:gap-4 mb-4">
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {activeFilterCount > 0 && (
+                  <div className="flex items-center gap-1.5 self-center">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs font-medium">
+                      {activeFilterCount}
+                    </Badge>
+                  </div>
+                )}
                 <div className="relative flex-1">
                   <SearchInput
                     defaultValue={searchQuery}
-                    onSearch={setSearchQuery}
+                    onSearch={handleSearchChange}
                     placeholder="Search orders, customers, total..."
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                   <SelectTrigger className="w-full sm:w-[180px] bg-muted/30 border-transparent">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
@@ -848,29 +1085,114 @@ export default function Orders() {
                 </Select>
                 <DateRangePickerWithPresets
                   dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
+                  onDateRangeChange={handleDateRangeChange}
                   placeholder="Filter by date"
                   className="w-full sm:w-[220px] bg-muted/30 border-transparent"
                 />
                 {hasActiveFilters && (
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={handleClearFilters}
-                    className="h-10 px-3"
+                    className="h-10 px-3 text-muted-foreground hover:text-destructive hover:border-destructive/50"
                   >
                     <X className="mr-1 h-4 w-4" />
-                    Clear
+                    Clear all filters
                   </Button>
                 )}
               </div>
+
+              {/* Active filter badges */}
+              {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Active filters:</span>
+                  {searchQuery && (
+                    <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                      Search: &quot;{searchQuery}&quot;
+                      <button
+                        onClick={() => handleSearchChange('')}
+                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                        aria-label="Remove search filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {statusFilter !== 'all' && (
+                    <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                      Status: {statusFilter.replace('_', ' ')}
+                      <button
+                        onClick={() => handleStatusFilterChange('all')}
+                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                        aria-label="Remove status filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {(dateRange.from || dateRange.to) && (
+                    <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                      Date: {dateRange.from ? format(dateRange.from, 'MMM d') : '...'} – {dateRange.to ? format(dateRange.to, 'MMM d') : '...'}
+                      <button
+                        onClick={() => handleDateRangeChange({ from: undefined, to: undefined })}
+                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+                        aria-label="Remove date filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Bulk Actions - handled by floating BulkActionsBar below */}
 
-            {/* Responsive Table */}
-            <ResponsiveTable<Order>
-              data={filteredOrders}
+            {/* Error State — no cached data */}
+            {isError && orders.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                </div>
+                <p className="font-semibold text-destructive">Failed to load orders</p>
+                <p className="text-muted-foreground text-sm mt-1 mb-4">
+                  Something went wrong while fetching your orders. Please try again.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+                  {isFetching ? 'Retrying...' : 'Try Again'}
+                </Button>
+              </div>
+            )}
+
+            {/* Error banner — cached data still available */}
+            {isError && orders.length > 0 && (
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-destructive bg-destructive/5 px-4 py-3 mb-4">
+                <p className="text-destructive text-sm">
+                  Failed to refresh orders. Showing cached data.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+                  Retry
+                </Button>
+              </div>
+            )}
+
+            {/* Responsive Table - hidden when error with no data to avoid showing misleading empty state */}
+            {!(isError && orders.length === 0) && <ResponsiveTable<Order>
+              data={paginatedItems}
               columns={columns}
               isLoading={isLoading}
               keyExtractor={(item) => item.id}
@@ -881,11 +1203,17 @@ export default function Orders() {
                   : undefined
               }
               emptyState={{
-                icon: ShoppingCart,
-                title: hasActiveFilters ? "No orders found" : "No orders yet",
-                description: hasActiveFilters
-                  ? "Try adjusting your filters to find orders"
-                  : "Orders appear here when customers order from your menus",
+                icon: ShoppingBag,
+                title: searchQuery
+                  ? `No orders match your search`
+                  : hasActiveFilters
+                    ? "No orders found"
+                    : "No orders yet",
+                description: searchQuery
+                  ? `No results for "${searchQuery}". Try a different search term or clear your search.`
+                  : hasActiveFilters
+                    ? "Try adjusting your filters to find orders"
+                    : "Orders appear here when customers purchase from your menus or storefront",
                 primaryAction: hasActiveFilters ? {
                   label: "Clear Filters",
                   onClick: handleClearFilters
@@ -929,25 +1257,45 @@ export default function Orders() {
                         </span>
                         {getSourceBadge(order.order_source)}
                       </div>
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-medium truncate min-w-0">
                         <CustomerLink
                           customerId={order.user_id}
-                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+                          customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}
                           customerEmail={order.user?.email}
                         />
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {formatSmartDate(order.created_at)} • {order.delivery_method}
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {formatSmartDate(order.created_at)} • {displayValue(order.delivery_method, 'N/A')}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {getStatusBadge(order.status)}
-                      <span className="font-bold font-mono">${order.total_amount?.toFixed(2)}</span>
+                      <span className="font-bold font-mono">{formatCurrency(order.total_amount)}</span>
                     </div>
                   </div>
                 </SwipeableItem>
               )}
-            />
+            />}
+
+            {/* Search results count */}
+            {!(isError && orders.length === 0) && sortedOrders.length > 0 && hasActiveFilters && (
+              <div className="text-sm text-muted-foreground px-2 pt-2">
+                Showing {filteredOrders.length} of {orders.length} orders
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!(isError && orders.length === 0) && sortedOrders.length > 0 && (
+              <StandardPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                pageSizeOptions={pageSizeOptions}
+                onPageChange={goToPage}
+                onPageSizeChange={changePageSize}
+              />
+            )}
           </Card>
         </div>
       </PullToRefresh>
@@ -957,56 +1305,62 @@ export default function Orders() {
         selectedIds={selectedOrders}
         onClearSelection={() => setSelectedOrders([])}
         actions={[
-          {
-            id: 'mark-confirmed',
-            label: 'Confirmed',
-            icon: <CheckCircle className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('confirmed'); },
-          },
-          {
-            id: 'mark-delivered',
-            label: 'Delivered',
-            icon: <CheckCircle className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('delivered'); },
-          },
-          {
-            id: 'mark-preparing',
-            label: 'Preparing',
-            icon: <Package className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('preparing'); },
-          },
-          {
-            id: 'mark-in-transit',
-            label: 'In Transit',
-            icon: <Truck className="h-4 w-4" />,
-            onClick: async () => { handleBulkStatusChange('in_transit'); },
-          },
-          {
-            id: 'assign-runner',
-            label: 'Assign Runner',
-            icon: <UserPlus className="h-4 w-4" />,
-            onClick: async () => { setAssignRunnerDialogOpen(true); },
-          },
-          {
-            id: 'merge-orders',
-            label: 'Merge',
-            icon: <Merge className="h-4 w-4" />,
-            onClick: async () => { setMergeDialogOpen(true); },
-          },
-          {
-            id: 'mark-cancelled',
-            label: 'Cancel',
-            icon: <XCircle className="h-4 w-4" />,
-            variant: 'destructive',
-            onClick: async () => { handleBulkStatusChange('cancelled'); },
-          },
-          {
-            id: 'delete',
-            label: 'Delete',
-            icon: <Trash2 className="h-4 w-4" />,
-            variant: 'destructive',
-            onClick: async () => { handleBulkDelete(); },
-          },
+          ...(canEdit('orders') ? [
+            {
+              id: 'mark-confirmed',
+              label: 'Confirmed',
+              icon: <CheckCircle className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('confirmed'); },
+            },
+            {
+              id: 'mark-delivered',
+              label: 'Delivered',
+              icon: <CheckCircle className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('delivered'); },
+            },
+            {
+              id: 'mark-preparing',
+              label: 'Preparing',
+              icon: <Package className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('preparing'); },
+            },
+            {
+              id: 'mark-in-transit',
+              label: 'In Transit',
+              icon: <Truck className="h-4 w-4" />,
+              onClick: async () => { handleBulkStatusChange('in_transit'); },
+            },
+            {
+              id: 'assign-runner',
+              label: 'Assign Runner',
+              icon: <UserPlus className="h-4 w-4" />,
+              disabled: !deliveryEnabled,
+              tooltip: !deliveryEnabled ? 'Enable Delivery Tracking in Settings' : undefined,
+              onClick: async () => { setAssignRunnerDialogOpen(true); },
+            },
+            {
+              id: 'merge-orders',
+              label: 'Merge',
+              icon: <Merge className="h-4 w-4" />,
+              onClick: async () => { setMergeDialogOpen(true); },
+            },
+            {
+              id: 'mark-cancelled',
+              label: 'Cancel',
+              icon: <XCircle className="h-4 w-4" />,
+              variant: 'destructive' as const,
+              onClick: async () => { handleBulkStatusChange('cancelled'); },
+            },
+          ] : []),
+          ...(canDelete('orders') ? [
+            {
+              id: 'delete',
+              label: 'Delete',
+              icon: <Trash2 className="h-4 w-4" />,
+              variant: 'destructive' as const,
+              onClick: async () => { handleBulkDelete(); },
+            },
+          ] : []),
         ]}
       />
 
@@ -1040,14 +1394,14 @@ export default function Orders() {
         open={deleteConfirmation.open}
         onOpenChange={(open) => setDeleteConfirmation(prev => ({ ...prev, open }))}
         onConfirm={handleConfirmDelete}
-        itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} orders` : 'this order'}
+        itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} ${selectedOrders.length === 1 ? 'order' : 'orders'}` : 'this order'}
         description="This action cannot be undone."
       />
 
       <BulkAssignRunnerDialog
         open={assignRunnerDialogOpen}
         onOpenChange={setAssignRunnerDialogOpen}
-        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id)).map(o => ({
+        selectedOrders={sortedOrders.filter(o => selectedOrders.includes(o.id)).map(o => ({
           id: o.id,
           order_number: o.order_number,
         }))}
@@ -1058,12 +1412,87 @@ export default function Orders() {
       />
 
       <OrderMergeDialog
-        selectedOrders={filteredOrders.filter(o => selectedOrders.includes(o.id))}
+        selectedOrders={sortedOrders.filter(o => selectedOrders.includes(o.id))}
         open={mergeDialogOpen}
         onOpenChange={setMergeDialogOpen}
         onSuccess={() => {
           setSelectedOrders([]);
           refetch();
+        }}
+      />
+
+      <OrderEditModal
+        order={editOrder as any}
+        open={editModalOpen}
+        onOpenChange={(open) => {
+          setEditModalOpen(open);
+          if (!open) setEditOrder(null);
+        }}
+        onSuccess={() => {
+          setEditModalOpen(false);
+          setEditOrder(null);
+          refetch();
+        }}
+        orderTable="orders"
+      />
+
+      <OrderRefundModal
+        open={refundModalOpen}
+        onOpenChange={(open) => {
+          setRefundModalOpen(open);
+          if (!open) setRefundOrder(null);
+        }}
+        order={refundOrder ? {
+          id: refundOrder.id,
+          tenant_id: tenant?.id || '',
+          order_number: refundOrder.order_number,
+          order_type: refundOrder.order_source === 'pos' ? 'pos' : 'wholesale',
+          source: refundOrder.order_source || 'admin',
+          status: refundOrder.status as 'delivered' | 'completed',
+          subtotal: refundOrder.total_amount,
+          tax_amount: 0,
+          discount_amount: 0,
+          total_amount: refundOrder.total_amount,
+          payment_method: null,
+          payment_status: 'paid',
+          customer_id: refundOrder.user_id || null,
+          wholesale_client_id: null,
+          menu_id: null,
+          shift_id: null,
+          delivery_address: null,
+          delivery_notes: null,
+          courier_id: refundOrder.courier_id || null,
+          contact_name: null,
+          contact_phone: null,
+          metadata: {},
+          created_at: refundOrder.created_at,
+          updated_at: refundOrder.created_at,
+          cancelled_at: null,
+          cancellation_reason: null,
+          priority: 'normal',
+          priority_set_at: null,
+          priority_set_by: null,
+          priority_auto_set: false,
+          items: (refundOrder.order_items || []).map(item => ({
+            id: item.id,
+            order_id: refundOrder.id,
+            product_id: item.product_id,
+            inventory_id: null,
+            product_name: item.product_name || 'Unknown Product',
+            sku: null,
+            quantity: item.quantity,
+            quantity_unit: 'unit',
+            unit_price: item.price,
+            discount_amount: 0,
+            total_price: item.quantity * item.price,
+            metadata: {},
+          })),
+        } : null}
+        onSuccess={() => {
+          setRefundModalOpen(false);
+          setRefundOrder(null);
+          refetch();
+          toast.success('Refund processed successfully');
         }}
       />
 
@@ -1085,7 +1514,7 @@ export default function Orders() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Total</span>
-                  <span className="font-mono font-bold">${selectedOrder.total_amount?.toFixed(2)}</span>
+                  <span className="font-mono font-bold">{formatCurrency(selectedOrder.total_amount)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Date</span>

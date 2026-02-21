@@ -4,6 +4,7 @@
  */
 
 import { useMemo } from 'react';
+import { formatCurrency } from '@/lib/formatters';
 
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type AlertCategory = 'inventory' | 'orders' | 'payments' | 'customers' | 'compliance';
@@ -224,7 +225,7 @@ export function usePredictiveAlerts(data: PredictiveAlertsInput): PredictiveAler
               category: 'payments',
               severity: 'critical',
               title: 'Overdue Invoice',
-              message: `Invoice ${invoice.invoiceNumber} ($${invoice.amount.toLocaleString()}) from ${invoice.customerName || 'customer'} is ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? '' : 's'} overdue`,
+              message: `Invoice ${invoice.invoiceNumber} (${formatCurrency(invoice.amount)}) from ${invoice.customerName || 'customer'} is ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? '' : 's'} overdue`,
               actionLabel: 'Follow Up',
               actionHref: `/admin/invoices/${invoice.id}`,
               daysUntil: daysUntilDue,
@@ -238,7 +239,7 @@ export function usePredictiveAlerts(data: PredictiveAlertsInput): PredictiveAler
               category: 'payments',
               severity: 'warning',
               title: 'Invoice Due Soon',
-              message: `Invoice ${invoice.invoiceNumber} ($${invoice.amount.toLocaleString()}) is due in ${daysUntilDue} day${daysUntilDue === 1 ? '' : 's'}`,
+              message: `Invoice ${invoice.invoiceNumber} (${formatCurrency(invoice.amount)}) is due in ${daysUntilDue} day${daysUntilDue === 1 ? '' : 's'}`,
               actionLabel: 'Send Reminder',
               actionHref: `/admin/invoices/${invoice.id}`,
               daysUntil: daysUntilDue,

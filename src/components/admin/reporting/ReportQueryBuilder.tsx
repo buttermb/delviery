@@ -34,6 +34,7 @@ import type {
   VisualizationType,
 } from '@/lib/constants/reportDataSources';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface ReportQueryBuilderProps {
   reportId?: string;
@@ -152,7 +153,7 @@ function formatCellValue(value: unknown, fieldId: string): string {
     try {
       const date = new Date(String(value));
       if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString();
+        return formatSmartDate(date);
       }
     } catch {
       // Fall through to default

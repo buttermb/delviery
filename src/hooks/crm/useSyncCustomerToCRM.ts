@@ -16,6 +16,7 @@ import { useAccountIdSafe } from './useAccountId';
 import { crmActivityKeys } from './useActivityLog';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import type {
   CRMCustomerLink,
   LinkCustomerToCRMInput,
@@ -176,9 +177,8 @@ export function useLinkCustomerToCRM() {
       toast.success('Customer linked to CRM successfully');
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Customer CRM linking failed', error, { component: 'useLinkCustomerToCRM' });
-      toast.error('Failed to link customer to CRM', { description: errorMessage });
+      toast.error('Failed to link customer to CRM', { description: humanizeError(error) });
     },
   });
 }
@@ -229,11 +229,10 @@ export function useUnlinkCustomerFromCRM() {
       toast.success('Customer unlinked from CRM');
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Customer CRM unlinking failed', error, {
         component: 'useUnlinkCustomerFromCRM',
       });
-      toast.error('Failed to unlink customer from CRM', { description: errorMessage });
+      toast.error('Failed to unlink customer from CRM', { description: humanizeError(error) });
     },
   });
 }
@@ -286,9 +285,8 @@ export function useToggleCRMSync() {
       toast.success(data?.sync_enabled ? 'CRM sync enabled' : 'CRM sync disabled');
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Toggle CRM sync failed', error, { component: 'useToggleCRMSync' });
-      toast.error('Failed to toggle CRM sync', { description: errorMessage });
+      toast.error('Failed to toggle CRM sync', { description: humanizeError(error) });
     },
   });
 }
@@ -345,11 +343,10 @@ export function useLogCustomerCRMActivity() {
       });
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Customer CRM activity logging failed', error, {
         component: 'useLogCustomerCRMActivity',
       });
-      toast.error('Failed to log activity', { description: errorMessage });
+      toast.error('Failed to log activity', { description: humanizeError(error) });
     },
   });
 }

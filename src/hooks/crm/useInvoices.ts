@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Type-safe client wrapper for crm_invoices (not yet in generated types)
 type SupabaseQueryResult<T> = Promise<{ data: T | null; error: { code?: string; message?: string } | null }>;
@@ -286,6 +287,6 @@ export function useCreateInvoice() {
                 });
             }
         },
-        onError: (error: Error) => { logger.error('Create failed', error); toast.error(error.message); },
+        onError: (error: Error) => { logger.error('Create failed', error); toast.error('Failed to create invoice', { description: humanizeError(error) }); },
     });
 }

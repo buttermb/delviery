@@ -4,6 +4,7 @@ import type { CRMInvite, InviteFormValues } from '@/types/crm';
 import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export const crmInviteKeys = {
     all: ['crm-invites'] as const,
@@ -79,9 +80,8 @@ export function useCreateInvite() {
             toast.success('Invite created successfully');
         },
         onError: (error: unknown) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Invite creation failed', error, { component: 'useCreateInvite' });
-            toast.error(`Failed to create invite: ${errorMessage}`);
+            toast.error(humanizeError(error, 'Failed to create invite'));
         },
     });
 }
@@ -115,9 +115,8 @@ export function useArchiveInvite() {
             toast.success('Invite archived');
         },
         onError: (error: unknown) => {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             logger.error('Invite archive failed', error, { component: 'useArchiveInvite' });
-            toast.error(`Failed to archive invite: ${errorMessage}`);
+            toast.error(humanizeError(error, 'Failed to archive invite'));
         },
     });
 }

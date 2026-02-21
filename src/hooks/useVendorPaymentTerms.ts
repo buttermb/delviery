@@ -11,11 +11,13 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -267,9 +269,13 @@ export function useVendorPaymentTerms(vendorId: string) {
       return data as VendorPaymentTerms;
     },
     onSuccess: () => {
+      toast.success('Payment terms saved successfully');
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.detail(tenantId || '', vendorId), 'payment-terms'],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to save payment terms'));
     },
   });
 
@@ -313,9 +319,13 @@ export function useVendorPaymentTerms(vendorId: string) {
       return data as VendorPaymentTerms;
     },
     onSuccess: () => {
+      toast.success('Payment terms updated successfully');
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.detail(tenantId || '', vendorId), 'payment-terms'],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to update payment terms'));
     },
   });
 
@@ -342,9 +352,13 @@ export function useVendorPaymentTerms(vendorId: string) {
       }
     },
     onSuccess: () => {
+      toast.success('Payment terms deleted successfully');
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.detail(tenantId || '', vendorId), 'payment-terms'],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to delete payment terms'));
     },
   });
 

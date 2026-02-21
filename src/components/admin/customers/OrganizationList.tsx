@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { useDebounce } from '@/hooks/useDebounce';
 import {
   Building2,
   Search,
@@ -42,16 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Table,
   TableBody,
@@ -96,6 +88,7 @@ export function OrganizationList({
   const [statusFilter, setStatusFilter] = useState<OrganizationStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<OrganizationType | 'all'>('all');
   const [deleteTarget, setDeleteTarget] = useState<OrganizationWithStats | null>(null);
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   const {
     organizations,
@@ -106,7 +99,7 @@ export function OrganizationList({
     isDeleting,
   } = useOrganizations({
     filters: {
-      search: searchQuery || undefined,
+      search: debouncedSearch || undefined,
       status: statusFilter === 'all' ? undefined : statusFilter,
       organization_type: typeFilter === 'all' ? undefined : typeFilter,
     },
@@ -207,6 +200,7 @@ export function OrganizationList({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search organizations..."
+              aria-label="Search organizations"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -216,7 +210,7 @@ export function OrganizationList({
             value={statusFilter}
             onValueChange={(v) => setStatusFilter(v as OrganizationStatus | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full sm:w-40" aria-label="Filter by status">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -233,7 +227,7 @@ export function OrganizationList({
             value={typeFilter}
             onValueChange={(v) => setTypeFilter(v as OrganizationType | 'all')}
           >
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full sm:w-40" aria-label="Filter by type">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Type" />
             </SelectTrigger>
@@ -339,7 +333,7 @@ export function OrganizationList({
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Organization actions">
+                          <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Organization actions">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -409,27 +403,16 @@ export function OrganizationList({
       </CardContent>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Organization</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This will
-              remove all member associations. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Organization"
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This will remove all member associations. This action cannot be undone.`}
+        itemName={deleteTarget?.name}
+        itemType="organization"
+        isLoading={isDeleting}
+      />
     </Card>
   );
 }

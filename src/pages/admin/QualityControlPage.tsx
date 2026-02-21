@@ -35,6 +35,7 @@ import { COAUpload } from "@/components/admin/quality/COAUpload";
 import { TestResultsViewer } from "@/components/admin/quality/TestResultsViewer";
 import { QuarantineManager } from "@/components/admin/quality/QuarantineManager";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface Batch {
@@ -220,7 +221,7 @@ export default function QualityControlPage() {
                       <TableCell>{batch.lab_name || "-"}</TableCell>
                       <TableCell>
                         {batch.test_date
-                          ? new Date(batch.test_date).toLocaleDateString()
+                          ? formatSmartDate(batch.test_date)
                           : "-"}
                       </TableCell>
                       <TableCell>
@@ -251,7 +252,7 @@ export default function QualityControlPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleViewTests(batch)}
-                            className="h-8 w-8 p-0"
+                            className="h-11 w-11 p-0"
                             title="View Test Results"
                           >
                             <FileText className="h-4 w-4" />
@@ -260,7 +261,7 @@ export default function QualityControlPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleUploadCOA(batch)}
-                            className="h-8 w-8 p-0"
+                            className="h-11 w-11 p-0"
                             title="Upload COA"
                           >
                             <Upload className="h-4 w-4" />
@@ -270,7 +271,7 @@ export default function QualityControlPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleQuarantine(batch)}
-                              className="h-8 w-8 p-0 text-destructive"
+                              className="h-11 w-11 p-0 text-destructive"
                               title="Quarantine"
                             >
                               <AlertTriangle className="h-4 w-4" />

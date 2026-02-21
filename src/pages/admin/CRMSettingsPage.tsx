@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -17,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save } from "lucide-react";
 import { useCRMSettings, useUpdateCRMSettings } from "@/hooks/crm/useCRMSettings";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
+import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
 
 const formSchema = z.object({
     invoice_prefix: z.string().min(1, "Prefix is required"),
@@ -25,7 +29,7 @@ const formSchema = z.object({
     company_name: z.string().optional(),
     company_address: z.string().optional(),
     company_email: z.string().email().optional().or(z.literal("")),
-    company_phone: z.string().optional(),
+    company_phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less").optional().or(z.literal('')),
     logo_url: z.string().url().optional().or(z.literal("")),
 });
 
@@ -47,6 +51,16 @@ export default function CRMSettingsPage() {
             company_phone: "",
             logo_url: "",
         },
+    });
+
+    const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
+        isDirty: form.formState.isDirty,
+    });
+
+    const mod = useModifierKey();
+
+    useFormKeyboardShortcuts({
+        onSave: () => form.handleSubmit(onSubmit)(),
     });
 
     useEffect(() => {
@@ -221,14 +235,22 @@ export default function CRMSettingsPage() {
                     </Card>
 
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={updateSettings.isPending}>
-                            {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            <Save className="mr-2 h-4 w-4" />
-                            Save Settings
-                        </Button>
+                        <ShortcutHint keys={[mod, "S"]} label="Save">
+                            <Button type="submit" disabled={updateSettings.isPending}>
+                                {updateSettings.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <Save className="mr-2 h-4 w-4" />
+                                Save Settings
+                            </Button>
+                        </ShortcutHint>
                     </div>
                 </form>
             </Form>
+
+            <UnsavedChangesDialog
+                open={showBlockerDialog}
+                onConfirmLeave={confirmLeave}
+                onCancelLeave={cancelLeave}
+            />
         </div>
     );
 }

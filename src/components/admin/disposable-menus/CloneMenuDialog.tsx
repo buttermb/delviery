@@ -14,7 +14,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { DisposableMenu } from '@/types/admin';
 
@@ -27,6 +29,7 @@ interface CloneMenuDialogProps {
 
 export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDialogProps) {
   const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [newTitle, setNewTitle] = useState(menu?.name ? `${menu.name} (Copy)` : '');
   const [cloneSettings, setCloneSettings] = useState({
@@ -103,18 +106,16 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
         }
       }
 
-      toast({
-        title: 'Menu Cloned Successfully',
+      toast.success(`Menu cloned successfully`, {
         description: `"${newTitle}" has been created`,
       });
 
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       onComplete();
       onClose();
     } catch (error: unknown) {
       logger.error('Clone menu error', error instanceof Error ? error : new Error(String(error)), { component: 'CloneMenuDialog', menuId: menu.id });
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Clone Menu',
+      toast.error('Failed to clone menu', {
         description: error instanceof Error ? error.message : 'Could not clone menu',
       });
     } finally {

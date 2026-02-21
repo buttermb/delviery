@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
     ArrowRight,
@@ -19,6 +19,7 @@ import {
     ShoppingCart,
     Search
 } from 'lucide-react';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { SmartVendorPicker } from '@/components/wholesale/SmartVendorPicker';
 import { Vendor } from '@/hooks/useVendors';
 import { format } from 'date-fns';
@@ -138,7 +139,7 @@ export default function NewPurchaseOrder() {
             // 1. Create Purchase Order
             const poNumber = `PO-${format(new Date(), 'yyMMdd')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
-            const { data: po, error: poError } = await supabase
+            const { data: po, error: poError } = await (supabase as any)
                 .from('purchase_orders')
                 .insert({
                     tenant_id: tenant.id,
@@ -158,13 +159,13 @@ export default function NewPurchaseOrder() {
             const orderItems = poData.items.map(item => ({
                 purchase_order_id: po.id,
                 product_id: item.id,
+                product_name: item.name || 'Unknown Product',
                 quantity: item.qty,
                 unit_cost: item.unitCost,
                 total_cost: item.qty * item.unitCost,
-                tenant_id: tenant.id
             }));
 
-            const { error: itemsError } = await supabase
+            const { error: itemsError } = await (supabase as any)
                 .from('purchase_order_items')
                 .insert(orderItems);
 
@@ -174,7 +175,7 @@ export default function NewPurchaseOrder() {
             for (const item of poData.items) {
                 if (item.unitCost !== item.originalCost) {
                     // Call the RPC to log vendor price change
-                    await supabase.rpc('log_vendor_price_change', {
+                    await (supabase as any).rpc('log_vendor_price_change', {
                         p_product_id: item.id,
                         p_tenant_id: tenant.id,
                         p_vendor_id: poData.vendor.id,
@@ -200,7 +201,7 @@ export default function NewPurchaseOrder() {
 
         } catch (error: any) {
             logger.error('Failed to create PO', error);
-            toast.error(`Failed to create PO: ${error.message}`);
+            toast.error(humanizeError(error, 'Failed to create purchase order'));
         } finally {
             setIsSubmitting(false);
         }
@@ -246,12 +247,14 @@ export default function NewPurchaseOrder() {
                                 onClear={() => setPoData(prev => ({ ...prev, vendor: null }))}
                             />
                             <div className="mt-6 flex justify-end">
-                                <Button
-                                    onClick={handleNext}
-                                    disabled={!poData.vendor}
-                                >
-                                    Next Step <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
+                                <DisabledTooltip disabled={!poData.vendor} reason="Select a vendor to continue">
+                                    <Button
+                                        onClick={handleNext}
+                                        disabled={!poData.vendor}
+                                    >
+                                        Next Step <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DisabledTooltip>
                             </div>
                         </Card>
                     )}
@@ -390,14 +393,19 @@ export default function NewPurchaseOrder() {
                         </div>
 
                         {step === 2 && (
-                            <Button
-                                className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700"
-                                size="lg"
-                                onClick={handleSubmit}
-                                disabled={isSubmitting || poData.items.length === 0}
+                            <DisabledTooltip
+                                disabled={!isSubmitting && poData.items.length === 0}
+                                reason="Add at least one item to create a purchase order"
                             >
-                                {isSubmitting ? 'Creating...' : 'Create Purchase Order'}
-                            </Button>
+                                <Button
+                                    className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700"
+                                    size="lg"
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting || poData.items.length === 0}
+                                >
+                                    {isSubmitting ? 'Creating...' : 'Create Purchase Order'}
+                                </Button>
+                            </DisabledTooltip>
                         )}
                     </Card>
                 </div>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Panic Reset Tool Component
  * Allows super admins to reset tenant data with confirmation
@@ -77,7 +76,7 @@ export function PanicResetTool() {
     onSuccess: (data) => {
       toast({
         title: 'Reset Complete',
-        description: data?.message || 'Data has been reset successfully',
+        description: (data as any)?.message || 'Data has been reset successfully',
       });
       setConfirmation('');
       setShowPreview(false);
@@ -188,10 +187,10 @@ export function PanicResetTool() {
 
         {showPreview && previewMutation.data && (
           <Alert>
-            <AlertTitle>Preview: {previewMutation.data.tenant?.business_name}</AlertTitle>
+            <AlertTitle>Preview: {(previewMutation.data as any)?.tenant?.business_name}</AlertTitle>
             <AlertDescription>
               <div className="mt-2 space-y-1">
-                {Object.entries(previewMutation.data.preview || {}).map(([table, count]) => (
+                {Object.entries((previewMutation.data as any)?.preview || {}).map(([table, count]) => (
                   <div key={table} className="flex justify-between text-sm">
                     <span className="font-mono text-xs">{table}</span>
                     <Badge variant={(count as number) > 0 ? 'destructive' : 'outline'}>{count as number} records</Badge>
@@ -240,7 +239,7 @@ export function PanicResetTool() {
             <AlertTitle>Reset Complete</AlertTitle>
             <AlertDescription>
               <div className="mt-2 space-y-1 text-sm">
-                {Object.entries(resetMutation.data.results || {}).map(([table, result]: [string, any]) => (
+                {Object.entries((resetMutation.data as any)?.results || {}).map(([table, result]: [string, any]) => (
                   <div key={table} className="flex justify-between">
                     <span className="font-mono text-xs">{table}</span>
                     <Badge variant={result.deleted > 0 ? 'default' : 'outline'}>

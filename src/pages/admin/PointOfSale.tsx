@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
-import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, Maximize2, Minimize2, Share2, Receipt } from 'lucide-react';
+import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
+import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, Maximize2, Minimize2, Share2, Receipt, Loader2, AlertCircle } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
@@ -26,8 +27,10 @@ import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/formatters';
 
 export interface Product {
   id: string;
@@ -55,7 +58,6 @@ interface Customer {
 export default function PointOfSale() {
   const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
@@ -64,7 +66,6 @@ export default function PointOfSale() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
@@ -93,10 +94,42 @@ export default function PointOfSale() {
     enabled: !!tenantId,
   });
 
+  // Load customers via useQuery with loading/error states
+  const { data: customers = [], isLoading: customersLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
+    queryKey: queryKeys.customers.list(tenantId),
+    queryFn: async () => {
+      if (!tenantId) return [];
+      try {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('id, first_name, last_name, customer_type, loyalty_points')
+          .eq('tenant_id', tenantId)
+          .order('first_name');
+
+        if (error) {
+          if (error.code === '42P01') return [];
+          throw error;
+        }
+
+        return (data || []).map((c): Customer => ({
+          id: c.id,
+          first_name: c.first_name || '',
+          last_name: c.last_name || '',
+          customer_type: c.customer_type || '',
+          loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0,
+        }));
+      } catch (err) {
+        if (err instanceof Error && 'code' in err && (err as { code: string }).code === '42P01') return [];
+        throw err;
+      }
+    },
+    enabled: !!tenantId,
+    staleTime: 60_000,
+  });
+
   useEffect(() => {
     if (tenantId) {
       loadProducts();
-      loadCustomers();
     }
   }, [tenantId]);
 
@@ -140,36 +173,11 @@ export default function PointOfSale() {
       setProducts(mappedProducts);
     } catch (error) {
       logger.error('Error loading products', error);
-      toast({ title: 'Error loading products', variant: 'destructive' });
+      toast.error('Error loading products');
     }
   };
 
-  const loadCustomers = async () => {
-    if (!tenantId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('id, first_name, last_name, customer_type, loyalty_points')
-        .eq('tenant_id', tenantId)
-        .order('first_name');
-
-      if (error) throw error;
-
-      // Map to our Customer interface with proper type checking
-      const mappedCustomers: Customer[] = (data || []).map((c) => ({
-        id: c.id,
-        first_name: c.first_name || '',
-        last_name: c.last_name || '',
-        customer_type: c.customer_type || null,
-        loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0
-      }));
-
-      setCustomers(mappedCustomers);
-    } catch (error) {
-      logger.error('Error loading customers', error, { component: 'PointOfSale', tenantId });
-    }
-  };
+  // loadCustomers removed — now uses useQuery above
 
   const filterProducts = () => {
     let filtered = products;
@@ -192,7 +200,7 @@ export default function PointOfSale() {
 
     if (existingItem) {
       if (existingItem.quantity >= product.stock_quantity) {
-        toast({ title: 'Not enough stock', variant: 'destructive' });
+        toast.error('Not enough stock');
         return;
       }
       setCart(cart.map(item =>
@@ -238,12 +246,12 @@ export default function PointOfSale() {
 
   const completeSale = async () => {
     if (cart.length === 0) {
-      toast({ title: 'Cart is empty', variant: 'destructive' });
+      toast.error('Cart is empty');
       return;
     }
 
     if (!tenantId) {
-      toast({ title: 'Tenant not loaded', variant: 'destructive' });
+      toast.error('Tenant not loaded');
       return;
     }
 
@@ -251,11 +259,7 @@ export default function PointOfSale() {
     if (limitsApply) {
       const limitCheck = checkLimit('orders_per_day');
       if (!limitCheck.allowed) {
-        toast({
-          title: 'Daily Order Limit Reached',
-          description: limitCheck.message,
-          variant: 'destructive',
-        });
+        toast.error('Daily Order Limit Reached', { description: limitCheck.message });
         return;
       }
     }
@@ -265,7 +269,7 @@ export default function PointOfSale() {
       const { subtotal, tax, discount, total } = calculateTotals();
 
       if (paymentMethod === 'cash' && cashTendered && parseFloat(cashTendered) < total) {
-        toast({ title: 'Insufficient cash tendered', variant: 'destructive' });
+        toast.error('Insufficient cash tendered');
         setLoading(false);
         return;
       }
@@ -409,25 +413,18 @@ export default function PointOfSale() {
       if (paymentMethod === 'cash' && cashTendered) {
         const change = parseFloat(cashTendered) - total;
         if (change >= 0) {
-          changeMsg = ` | Change Due: $${change.toFixed(2)}`;
+          changeMsg = ` | Change Due: ${formatCurrency(change)}`;
         }
       }
 
-      toast({
-        title: 'Sale completed!',
-        description: `Transaction ${transactionNumber}${changeMsg}`
-      });
+      toast.success('Sale completed!', { description: `Transaction ${transactionNumber}${changeMsg}` });
 
       clearCart();
       loadProducts();
-      loadCustomers();
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     } catch (error) {
       logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
-      toast({
-        title: 'Error completing sale',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive'
-      });
+      toast.error('Error completing sale', { description: humanizeError(error, 'Unknown error') });
     } finally {
       setLoading(false);
     }
@@ -469,10 +466,10 @@ export default function PointOfSale() {
       }
       setActiveOrderId(order.id);
       setActiveTab('register');
-      toast({ title: 'Order loaded', description: 'Pending order loaded into register' });
+      toast.success('Order loaded', { description: 'Pending order loaded into register' });
     } catch (error) {
       logger.error('Error loading order', error);
-      toast({ title: 'Failed to load order', variant: 'destructive' });
+      toast.error('Failed to load order');
     } finally {
       setPendingLoadOrder(null);
       closeDialog();
@@ -489,10 +486,10 @@ export default function PointOfSale() {
         setDialogLoading(true);
         try {
           await orderFlowManager.transitionOrderStatus(order.id, 'cancelled', tenantId!);
-          toast({ title: 'Order cancelled' });
+          toast.success('Order cancelled');
         } catch (error) {
           logger.error('Error cancelling order', error);
-          toast({ title: 'Failed to cancel order', variant: 'destructive' });
+          toast.error('Failed to cancel order');
         } finally {
           setDialogLoading(false);
           closeDialog();
@@ -691,12 +688,32 @@ export default function PointOfSale() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="walk-in">Walk-in Customer</SelectItem>
-                {customers.map(customer => (
-                  <SelectItem key={customer.id} value={customer.id}>
-                    {customer.first_name} {customer.last_name}
-                    {customer.customer_type === 'medical' && <Badge className="ml-2" variant="secondary">Med</Badge>}
+                {customersLoading ? (
+                  <SelectItem value="_loading" disabled>
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Loading customers...
+                    </span>
                   </SelectItem>
-                ))}
+                ) : customersError ? (
+                  <SelectItem value="_error" disabled>
+                    <span className="flex items-center gap-2 text-destructive">
+                      <AlertCircle className="h-3 w-3" />
+                      Failed to load customers
+                    </span>
+                  </SelectItem>
+                ) : customers.length === 0 ? (
+                  <SelectItem value="_empty" disabled>
+                    <span className="text-muted-foreground">No customers yet</span>
+                  </SelectItem>
+                ) : (
+                  customers.map(customer => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {customer.first_name} {customer.last_name}
+                      {customer.customer_type === 'medical' && <Badge className="ml-2" variant="secondary">Med</Badge>}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {selectedCustomer && (
@@ -724,16 +741,16 @@ export default function PointOfSale() {
                         <div className="text-sm text-muted-foreground">${item.price}</div>
                       </div>
                       <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}>
+                        <Button size="icon" variant="ghost" className="h-11 w-11" onClick={() => updateQuantity(item.id, -1)}>
                           {item.quantity === 1 ? <Trash2 className="h-3 w-3 text-destructive" /> : <Minus className="h-3 w-3" />}
                         </Button>
                         <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}>
+                        <Button size="icon" variant="ghost" className="h-11 w-11" onClick={() => updateQuantity(item.id, 1)}>
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
                       <div className="font-mono font-medium min-w-[3rem] text-right pt-[0.15rem]">
-                        ${item.subtotal.toFixed(0)}
+                        {formatCurrency(item.subtotal)}
                       </div>
                     </div>
                   ))
@@ -746,22 +763,22 @@ export default function PointOfSale() {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Tax (8.875%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatCurrency(tax)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600 font-medium">
                     <span>Discount</span>
-                    <span>-${discount.toFixed(2)}</span>
+                    <span>-{formatCurrency(discount)}</span>
                   </div>
                 )}
                 <Separator className="my-2" />
                 <div className="flex justify-between text-2xl font-bold text-foreground">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
               </div>
 
@@ -796,7 +813,7 @@ export default function PointOfSale() {
                   {changeDue > 0 && (
                     <div className="flex justify-between items-center px-1">
                       <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Change Due</span>
-                      <span className="text-xl font-bold font-mono text-green-600">${changeDue.toFixed(2)}</span>
+                      <span className="text-xl font-bold font-mono text-green-600">{formatCurrency(changeDue)}</span>
                     </div>
                   )}
                 </div>
@@ -808,7 +825,7 @@ export default function PointOfSale() {
                 onClick={completeSale}
                 disabled={cart.length === 0 || loading || (paymentMethod === 'cash' && !!cashTendered && parseFloat(cashTendered) < total)}
               >
-                {loading ? 'Processing...' : `Charge $${total.toFixed(2)}`}
+                {loading ? 'Processing...' : `Charge ${formatCurrency(total)}`}
               </Button>
 
               <div className="grid grid-cols-2 gap-2">

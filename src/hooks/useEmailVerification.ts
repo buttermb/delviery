@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface VerifyEmailResponse {
   success: boolean;
@@ -45,7 +46,7 @@ export function useEmailVerification() {
     },
     onError: (error: Error) => {
       logger.error('Email verification failed', error, { component: 'useEmailVerification' });
-      toast.error('Email verification failed', { description: error.message });
+      toast.error('Email verification failed', { description: humanizeError(error) });
     },
   });
 
@@ -67,7 +68,7 @@ export function useEmailVerification() {
     },
     onError: (error: Error) => {
       logger.error('Resend verification failed', error, { component: 'useEmailVerification' });
-      toast.error('Failed to resend verification email', { description: error.message });
+      toast.error('Failed to resend verification email', { description: humanizeError(error) });
     },
   });
 

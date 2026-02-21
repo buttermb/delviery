@@ -79,6 +79,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 import { useOrganizationDetail } from '@/hooks/useOrganizations';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
@@ -216,7 +217,7 @@ export function OrganizationDetail({
     return (
       <div className={cn('space-y-6', className)}>
         <Skeleton className="h-10 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
@@ -470,7 +471,7 @@ export function OrganizationDetail({
               {organization.phone && (
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{organization.phone}</span>
+                  <span>{formatPhoneNumber(organization.phone)}</span>
                 </div>
               )}
               {organization.website && (

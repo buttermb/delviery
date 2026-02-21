@@ -92,9 +92,8 @@ export function validateURL(url: string): boolean {
 export const validationSchemas = {
   email: z.string().email().max(255),
   uuid: z.string().uuid(),
-  // Allow international phone numbers (E.164 supports up to 15 digits)
-  // Basic validation: 7-15 digits, optional leading plus
-  phone: z.string().regex(/^\+?[\d\s-().]{7,20}$/),
+  // Allow international phone numbers: digits, spaces, dashes, plus, parentheses
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
   url: z.string().url(),
   nonEmptyString: z.string().min(1).max(255),
   positiveNumber: z.number().positive(),
@@ -105,9 +104,14 @@ export const validationSchemas = {
  * Product validation schema
  */
 export const productSchema = z.object({
-  name: z.string().min(1).max(100),
-  description: z.string().max(1000).optional(),
-  price: z.number().positive().max(999999),
+  name: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  price: z.number().min(0, "Price cannot be negative").max(999999),
+  wholesale_price: z.number().min(0, "Wholesale price cannot be negative").max(999999).optional(),
+  cost_price: z.number().min(0, "Cost price cannot be negative").max(999999).optional(),
+  sale_price: z.number().min(0, "Sale price cannot be negative").max(999999).optional(),
+  stock_quantity: z.number().int("Stock quantity must be a whole number").min(0, "Stock quantity cannot be negative").optional(),
+  reorder_point: z.number().int("Reorder point must be a whole number").min(0, "Reorder point cannot be negative").optional(),
   sku: z.string().regex(/^[A-Z0-9-]+$/).optional(),
   category: z.enum(['flower', 'edibles', 'pre-rolls', 'concentrates', 'vapes']),
   vendor_name: z.string().max(100).optional(),

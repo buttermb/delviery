@@ -12,19 +12,18 @@
 
 import { useState, useCallback, createContext, useContext, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
-import { Menu, Search, Bell, X } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { AdminSidebar } from '@/components/admin/shared/AdminSidebar';
 import { PageHeader, type BreadcrumbItem, type PageBadge } from '@/components/admin/shared/PageHeader';
 import { useCommandPaletteStore } from '@/components/admin/shared/CommandPalette';
+import { NotificationBell } from '@/components/admin/shared/NotificationBell';
 import { useSidebarBadges } from '@/hooks/useSidebarBadges';
-import { useNotifications } from '@/hooks/useNotifications';
 
 // ============================================================================
 // Layout Context
@@ -130,9 +129,6 @@ export function AdminLayout({
   // Badge counts for sidebar
   const { counts } = useSidebarBadges();
 
-  // Notifications for bell icon
-  const { unreadCount } = useNotifications();
-
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
   const toggleMobileSidebar = useCallback(() => {
@@ -183,7 +179,7 @@ export function AdminLayout({
               />
             </div>
           )}
-          <main className={cn('p-4', contentClassName)}>{children}</main>
+          <main id="main-content" tabIndex={-1} className={cn('p-4 focus:outline-none', contentClassName)}>{children}</main>
         </div>
       </AdminLayoutContext.Provider>
     );
@@ -277,27 +273,12 @@ export function AdminLayout({
               </Button>
 
               {/* Notification Bell */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
-              >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 text-xs flex items-center justify-center"
-                  >
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Badge>
-                )}
-              </Button>
+              <NotificationBell />
             </div>
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto">
+          <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto focus:outline-none">
             <div className={cn('p-4 lg:p-6', contentClassName)}>
               <div className="max-w-7xl mx-auto w-full">
                 {/* Page Header */}

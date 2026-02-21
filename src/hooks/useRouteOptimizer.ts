@@ -19,6 +19,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
+
 import type { GeoLocation } from '@/types/interconnected';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -565,6 +568,12 @@ export function useRouteOptimizer(
       });
 
       return true;
+    },
+    onSuccess: () => {
+      toast.success('Route assigned to runner successfully');
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to assign route to runner'));
     },
   });
 

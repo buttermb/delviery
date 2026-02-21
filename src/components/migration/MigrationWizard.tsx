@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -169,7 +168,7 @@ export function MigrationWizard() {
           
           {migration.state.step === 'importing' && (
             <ImportingStep
-              progress={migration.state.importProgress}
+              progress={migration.state.importProgress as any}
               isLoading={migration.isImportLoading}
             />
           )}

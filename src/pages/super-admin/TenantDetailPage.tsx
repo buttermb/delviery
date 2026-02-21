@@ -16,7 +16,7 @@ import {
   Pause,
 } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
-import { formatCurrency } from "@/lib/utils/formatCurrency";
+import { formatCurrency, formatPhoneNumber } from "@/lib/formatters";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { getStatusColor, getStatusVariant } from "@/lib/utils/statusColors";
 import { toast } from "@/hooks/use-toast";
@@ -28,6 +28,7 @@ import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
+import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -248,11 +249,7 @@ export default function TenantDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center bg-[hsl(var(--super-admin-bg))]">
-        <p className="text-[hsl(var(--super-admin-text))]/70">Loading tenant details...</p>
-      </div>
-    );
+    return <DetailPageSkeleton />;
   }
 
   if (!tenant) {
@@ -427,7 +424,7 @@ export default function TenantDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Phone</p>
-                    <p className="text-base text-[hsl(var(--super-admin-text))]">{tenant.phone || "N/A"}</p>
+                    <p className="text-base text-[hsl(var(--super-admin-text))]">{formatPhoneNumber(tenant.phone, { fallback: 'N/A' })}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Stripe Customer ID</p>
@@ -711,11 +708,11 @@ export default function TenantDetailPage() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-white/10">
-                            <th className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Date</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Invoice</th>
-                            <th className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Amount</th>
-                            <th className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Status</th>
-                            <th className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Actions</th>
+                            <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Date</th>
+                            <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Invoice</th>
+                            <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Amount</th>
+                            <th scope="col" className="text-left py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Status</th>
+                            <th scope="col" className="text-right py-3 px-4 text-sm font-medium text-[hsl(var(--super-admin-text))]/70">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -776,9 +773,9 @@ export default function TenantDetailPage() {
                                               </div>
                                               <div class="invoice-info">
                                                 <div>
-                                                  <p><strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}</p>
-                                                  <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
-                                                  ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${new Date(invoice.billing_period_start).toLocaleDateString()} - ${new Date(invoice.billing_period_end).toLocaleDateString()}</p>` : ''}
+                                                  <p><strong>Issue Date:</strong> ${formatSmartDate(invoice.issue_date)}</p>
+                                                  <p><strong>Due Date:</strong> ${formatSmartDate(invoice.due_date)}</p>
+                                                  ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${formatSmartDate(invoice.billing_period_start)} - ${formatSmartDate(invoice.billing_period_end)}</p>` : ''}
                                                 </div>
                                                 <div>
                                                   <p><strong>Status:</strong> ${invoice.status?.toUpperCase() || 'PENDING'}</p>
@@ -788,9 +785,9 @@ export default function TenantDetailPage() {
                                               <table class="line-items">
                                                 <thead>
                                                   <tr>
-                                                    <th>Description</th>
-                                                    <th>Quantity</th>
-                                                    <th style="text-align: right;">Amount</th>
+                                                    <th scope="col">Description</th>
+                                                    <th scope="col">Quantity</th>
+                                                    <th scope="col" style="text-align: right;">Amount</th>
                                                   </tr>
                                                 </thead>
                                                 <tbody>
@@ -799,7 +796,7 @@ export default function TenantDetailPage() {
                                                       <tr>
                                                         <td>${item.description || item.name || 'N/A'}</td>
                                                         <td>${item.quantity || 1}</td>
-                                                        <td style="text-align: right;">$${Number(item.amount || item.total || 0).toFixed(2)}</td>
+                                                        <td style="text-align: right;">${formatCurrency(Number(item.amount || item.total || 0))}</td>
                                                       </tr>
                                                     `).join('')
                                             : `
@@ -813,23 +810,23 @@ export default function TenantDetailPage() {
                                                 <table>
                                                   <tr>
                                                     <td>Subtotal:</td>
-                                                    <td style="text-align: right;">$${Number(invoice.subtotal || 0).toFixed(2)}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.subtotal || 0))}</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Tax:</td>
-                                                    <td style="text-align: right;">$${Number(invoice.tax || 0).toFixed(2)}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.tax || 0))}</td>
                                                   </tr>
                                                   <tr class="total-row">
                                                     <td>Total:</td>
-                                                    <td style="text-align: right;">$${Number(invoice.total || 0).toFixed(2)}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.total || 0))}</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Amount Paid:</td>
-                                                    <td style="text-align: right;">$${Number(invoice.amount_paid || 0).toFixed(2)}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.amount_paid || 0))}</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Amount Due:</td>
-                                                    <td style="text-align: right;">$${Number(invoice.amount_due || 0).toFixed(2)}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.amount_due || 0))}</td>
                                                   </tr>
                                                 </table>
                                               </div>
@@ -873,9 +870,9 @@ export default function TenantDetailPage() {
                                             </div>
                                             <div class="invoice-info">
                                               <div>
-                                                <p><strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}</p>
-                                                <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
-                                                ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${new Date(invoice.billing_period_start).toLocaleDateString()} - ${new Date(invoice.billing_period_end).toLocaleDateString()}</p>` : ''}
+                                                <p><strong>Issue Date:</strong> ${formatSmartDate(invoice.issue_date)}</p>
+                                                <p><strong>Due Date:</strong> ${formatSmartDate(invoice.due_date)}</p>
+                                                ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${formatSmartDate(invoice.billing_period_start)} - ${formatSmartDate(invoice.billing_period_end)}</p>` : ''}
                                               </div>
                                               <div>
                                                 <p><strong>Status:</strong> ${invoice.status?.toUpperCase() || 'PENDING'}</p>
@@ -885,9 +882,9 @@ export default function TenantDetailPage() {
                                             <table class="line-items">
                                               <thead>
                                                 <tr>
-                                                  <th>Description</th>
-                                                  <th>Quantity</th>
-                                                  <th style="text-align: right;">Amount</th>
+                                                  <th scope="col">Description</th>
+                                                  <th scope="col">Quantity</th>
+                                                  <th scope="col" style="text-align: right;">Amount</th>
                                                 </tr>
                                               </thead>
                                               <tbody>
@@ -896,7 +893,7 @@ export default function TenantDetailPage() {
                                                     <tr>
                                                       <td>${item.description || item.name || 'N/A'}</td>
                                                       <td>${item.quantity || 1}</td>
-                                                      <td style="text-align: right;">$${Number(item.amount || item.total || 0).toFixed(2)}</td>
+                                                      <td style="text-align: right;">${formatCurrency(Number(item.amount || item.total || 0))}</td>
                                                     </tr>
                                                   `).join('')
                                           : `
@@ -910,23 +907,23 @@ export default function TenantDetailPage() {
                                               <table>
                                                 <tr>
                                                   <td>Subtotal:</td>
-                                                  <td style="text-align: right;">$${Number(invoice.subtotal || 0).toFixed(2)}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.subtotal || 0))}</td>
                                                 </tr>
                                                 <tr>
                                                   <td>Tax:</td>
-                                                  <td style="text-align: right;">$${Number(invoice.tax || 0).toFixed(2)}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.tax || 0))}</td>
                                                 </tr>
                                                 <tr class="total-row">
                                                   <td>Total:</td>
-                                                  <td style="text-align: right;">$${Number(invoice.total || 0).toFixed(2)}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.total || 0))}</td>
                                                 </tr>
                                                 <tr>
                                                   <td>Amount Paid:</td>
-                                                  <td style="text-align: right;">$${Number(invoice.amount_paid || 0).toFixed(2)}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.amount_paid || 0))}</td>
                                                 </tr>
                                                 <tr>
                                                   <td>Amount Due:</td>
-                                                  <td style="text-align: right;">$${Number(invoice.amount_due || 0).toFixed(2)}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.amount_due || 0))}</td>
                                                 </tr>
                                               </table>
                                             </div>

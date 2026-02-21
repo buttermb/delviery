@@ -208,7 +208,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                       variant={devicePreview === 'desktop' ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() => setDevicePreview('desktop')}
-                      className="h-8 w-8 p-0"
+                      className="h-11 w-11 p-0"
                     >
                       <Monitor className="h-4 w-4" />
                     </Button>
@@ -216,7 +216,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                       variant={devicePreview === 'tablet' ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() => setDevicePreview('tablet')}
-                      className="h-8 w-8 p-0"
+                      className="h-11 w-11 p-0"
                     >
                       <Tablet className="h-4 w-4" />
                     </Button>
@@ -224,7 +224,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                       variant={devicePreview === 'mobile' ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() => setDevicePreview('mobile')}
-                      className="h-8 w-8 p-0"
+                      className="h-11 w-11 p-0"
                     >
                       <Smartphone className="h-4 w-4" />
                     </Button>
@@ -233,7 +233,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => onOpenChange(false)}
-                    className="h-8 w-8 p-0"
+                    className="h-11 w-11 p-0"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -323,6 +323,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search products..."
+                      aria-label="Search products"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"

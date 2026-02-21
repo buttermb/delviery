@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useInvoiceTemplates, InvoiceTemplate, InvoiceTemplateData } from "@/hooks/useInvoiceTemplates";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { cn } from "@/lib/utils";
 
 interface InvoiceTemplateEditorProps {
@@ -26,6 +27,7 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
   const { templates, createTemplate, updateTemplate, setDefaultTemplate, deleteTemplate } = useInvoiceTemplates();
   const [selectedId, setSelectedId] = useState<string | null>(templates[0]?.id || null);
   const [editData, setEditData] = useState<Partial<InvoiceTemplate> | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const selectedTemplate = templates.find(t => t.id === selectedId);
 
@@ -139,7 +141,7 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
           </TabsList>
 
           <TabsContent value="colors" className="space-y-4 mt-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Primary Color</Label>
                 <div className="flex gap-2">
@@ -273,7 +275,7 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
               variant="outline"
               size="sm"
               className="text-destructive hover:text-destructive"
-              onClick={() => selectedId && deleteTemplate.mutate(selectedId)}
+              onClick={() => setDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-1" />
               Delete
@@ -290,6 +292,19 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
           </Button>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (selectedId) {
+            deleteTemplate.mutate(selectedId);
+            setDeleteDialogOpen(false);
+          }
+        }}
+        itemType="template"
+        isLoading={deleteTemplate.isPending}
+      />
     </div>
   );
 }

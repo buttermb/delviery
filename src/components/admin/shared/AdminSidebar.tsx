@@ -41,6 +41,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useRoutePrefetch } from '@/hooks/useRoutePrefetch';
 
 // Storage key for sidebar state
 const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
@@ -229,6 +230,7 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
   const { tenantSlug } = useParams();
   const { tenant } = useTenantAdminAuth();
   const location = useLocation();
+  const { prefetchRoute } = useRoutePrefetch();
 
   // Sidebar collapsed state (icon-only mode)
   const [isCollapsed, setIsCollapsed] = useState(getPersistedCollapsedState);
@@ -305,6 +307,7 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
     const linkContent = (
       <NavLink
         to={`/${tenantSlug}${item.href}`}
+        onMouseEnter={() => prefetchRoute(`/${tenantSlug}${item.href}`)}
         className={cn(
           'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
           'hover:bg-accent hover:text-accent-foreground',

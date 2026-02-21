@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { cn } from '@/lib/utils';
@@ -107,7 +107,6 @@ type EmailValidationStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
 export function SignupPage() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
@@ -282,8 +281,7 @@ export function SignupPage() {
         }
       }
 
-      toast({
-        title: 'Account created!',
+      toast.success('Account created!', {
         description: 'Please check your email to verify your account.',
       });
 

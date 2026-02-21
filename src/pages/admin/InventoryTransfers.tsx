@@ -17,9 +17,11 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Truck, Plus, Package, Loader2 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
@@ -184,11 +186,7 @@ export default function InventoryTransfers() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading transfers...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading transfers..." />;
   }
 
   return (
@@ -231,7 +229,7 @@ export default function InventoryTransfers() {
                   <div>
                     <div className="text-sm font-medium">Date</div>
                     <div className="text-sm text-muted-foreground">
-                      {new Date(transfer.created_at).toLocaleDateString()}
+                      {formatSmartDate(transfer.created_at)}
                     </div>
                   </div>
                   {transfer.notes && (

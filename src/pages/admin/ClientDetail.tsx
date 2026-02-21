@@ -2,10 +2,10 @@ import { logger } from '@/lib/logger';
 import { useParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2, Truck } from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2, Truck, Building2 } from "lucide-react";
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, displayValue } from '@/lib/formatters';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 
 export default function ClientDetail() {
@@ -116,13 +116,24 @@ export default function ClientDetail() {
 
   if (!client) {
     return (
-      <div className="space-y-6 p-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold">Client Not Found</h2>
-      <Button onClick={() => navigate("wholesale-clients")} className="mt-4">
-            Back to Clients
-          </Button>
-        </div>
+      <div className="container mx-auto py-8 flex items-center justify-center">
+        <Card className="max-w-md w-full text-center">
+          <CardContent className="pt-8 pb-6 space-y-4">
+            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">Client not found</h2>
+              <p className="text-muted-foreground mt-1">
+                The client you are looking for does not exist or has been removed.
+              </p>
+            </div>
+            <Button onClick={() => navigate("wholesale-clients")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Clients
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -308,7 +319,7 @@ export default function ClientDetail() {
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Total Spent</div>
             <div className="text-2xl font-bold">${(displayClient.total_spent / 1000).toFixed(0)}k</div>
@@ -331,7 +342,7 @@ export default function ClientDetail() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Reliability</div>
             <div className="flex items-center gap-1 mb-1">
@@ -354,7 +365,7 @@ export default function ClientDetail() {
           </Card>
           <Card className="p-4">
             <div className="text-xs text-muted-foreground mb-1">Payment Terms</div>
-            <div className="text-2xl font-bold">{displayClient.payment_terms.replace('net_', '')} days</div>
+            <div className="text-2xl font-bold">{displayClient.payment_terms ? displayClient.payment_terms.replace('net_', '') : '—'} days</div>
             <div className="text-xs text-muted-foreground">Net terms</div>
           </Card>
           <Card className="p-4">

@@ -33,6 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useLocations } from '@/hooks/useLocations';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface CustomerDeliveryMapProps {
   customerId: string;
@@ -510,7 +511,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
                 Open in Google Maps
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3 p-3 bg-background rounded-lg border">
                 <Building2 className="h-5 w-5 text-emerald-500" />
                 <div>
@@ -625,7 +626,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
                         {delivery.status}
                       </Badge>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(delivery.delivery_date).toLocaleDateString()}
+                        {formatSmartDate(delivery.delivery_date)}
                       </p>
                     </div>
                   </div>

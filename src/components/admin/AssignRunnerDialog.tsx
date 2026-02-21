@@ -1,12 +1,16 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Star, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAssignDelivery } from "@/hooks/useWholesaleData";
-import { useState } from "react";
-import { Star, AlertTriangle } from "lucide-react";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
+import { formatPhoneNumber } from "@/lib/formatters";
 
 interface AssignRunnerDialogProps {
   orderId: string;
@@ -17,21 +21,27 @@ interface AssignRunnerDialogProps {
 
 export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }: AssignRunnerDialogProps) {
   const [selectedRunner, setSelectedRunner] = useState("");
+  const { tenant } = useTenantAdminAuth();
   const assignDelivery = useAssignDelivery();
 
   const { data: runners, isLoading, isError } = useQuery({
-    queryKey: ["available-runners"],
+    queryKey: queryKeys.runners.available(),
     queryFn: async () => {
+      if (!tenant?.id) throw new Error('No tenant context');
       const { data, error } = await supabase
         .from("wholesale_runners")
         .select("*")
+        .eq("tenant_id", tenant.id)
         .eq("status", "available")
         .order("rating", { ascending: false });
-      
-      if (error) throw error;
+
+      if (error) {
+        logger.error('Failed to load available runners', error, { component: 'AssignRunnerDialog' });
+        throw error;
+      }
       return data;
     },
-    enabled: open
+    enabled: open && !!tenant?.id
   });
 
   const handleAssign = async () => {
@@ -100,7 +110,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
                   <>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Phone:</span>
-                      <span className="font-medium">{runner.phone}</span>
+                      <span className="font-medium">{formatPhoneNumber(runner.phone)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Deliveries:</span>

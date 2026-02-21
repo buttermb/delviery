@@ -25,6 +25,7 @@ export interface ShopCartItem {
 
 const getCartKey = (storeId: string) => `shop_cart_${storeId}`;
 const GUEST_CART_KEY = 'guest_cart';
+const getCouponKey = (storeId: string) => `shop_coupon_${storeId}`;
 const MAX_QUANTITY_PER_ITEM = 10; // Maximum quantity per product in cart
 
 interface UseShopCartOptions {
@@ -92,13 +93,13 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                     const parsed = JSON.parse(guestCart);
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         // Convert guest cart format to shop cart format if needed
-                        const migrated = parsed.map((item: any) => ({
-                            productId: item.product_id || item.productId,
-                            quantity: item.quantity || 1,
-                            price: item.price || 0,
-                            name: item.name || 'Unknown Product',
-                            imageUrl: item.imageUrl || item.image_url || null,
-                            variant: item.selected_weight || item.variant,
+                        const migrated = parsed.map((item: Record<string, unknown>) => ({
+                            productId: (item.product_id || item.productId) as string,
+                            quantity: (item.quantity as number) || 1,
+                            price: (item.price as number) || 0,
+                            name: (item.name as string) || 'Unknown Product',
+                            imageUrl: (item.imageUrl || item.image_url || null) as string | null,
+                            variant: (item.selected_weight || item.variant) as string | undefined,
                         }));
                         // Save migrated cart and clear old
                         safeStorage.setItem(cartKey, JSON.stringify(migrated));
@@ -160,6 +161,35 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
 
         window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
         return () => window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
+    }, [storeId]);
+
+    // Load saved coupon from localStorage
+    useEffect(() => {
+        if (storeId && isInitialized) {
+            try {
+                const savedCoupon = safeStorage.getItem(getCouponKey(storeId));
+                if (savedCoupon) {
+                    setAppliedCoupon(JSON.parse(savedCoupon));
+                }
+            } catch (e) {
+                logger.error('Failed to load saved coupon', e);
+            }
+        }
+    }, [storeId, isInitialized]);
+
+    // Persist coupon to localStorage
+    const persistCoupon = useCallback((coupon: AppliedCoupon | null) => {
+        if (!storeId) return;
+        try {
+            const key = getCouponKey(storeId);
+            if (coupon) {
+                safeStorage.setItem(key, JSON.stringify(coupon));
+            } else {
+                safeStorage.removeItem(key);
+            }
+        } catch (e) {
+            logger.error('Failed to persist coupon', e);
+        }
     }, [storeId]);
 
     // Add item to cart
@@ -243,8 +273,10 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
     // Clear entire cart
     const clearCart = useCallback(() => {
         saveCart([]);
+        setAppliedCoupon(null);
+        persistCoupon(null);
         return [];
-    }, [saveCart]);
+    }, [saveCart, persistCoupon]);
 
     // Get cart count
     const getCartCount = useCallback(() => {
@@ -374,70 +406,69 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         }
     }, [storeId, cartItems]);
 
-    // Apply coupon code
-    const applyCoupon = useCallback(async (code: string, subtotal: number): Promise<{ success: boolean; error?: string; coupon?: AppliedCoupon }> => {
+    // Apply coupon code via marketplace coupon validation
+    const applyCoupon = useCallback(async (code: string, currentSubtotal: number): Promise<{ success: boolean; error?: string; coupon?: AppliedCoupon }> => {
         if (!storeId) return { success: false, error: 'No store' };
 
         try {
-            const { supabase } = await import('@/integrations/supabase/client');
-
-            const { data, error } = await (supabase.rpc as any)('validate_coupon', {
+            const { data, error } = await (supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)('validate_marketplace_coupon', {
                 p_store_id: storeId,
                 p_code: code,
-                p_subtotal: subtotal,
-                p_cart_items: cartItems.map(i => ({ product_id: i.productId, quantity: i.quantity }))
+                p_subtotal: currentSubtotal,
             });
 
             if (error) {
+                const rpcError = error as { message?: string; code?: string };
+                if (rpcError.message?.includes('function') || rpcError.code === '42883') {
+                    return { success: false, error: 'Coupons not available for this store' };
+                }
                 logger.error('Coupon validation failed', error);
                 return { success: false, error: 'Failed to validate coupon' };
             }
 
-            const result = data as unknown as {
-                valid: boolean;
-                error?: string;
-                coupon_id?: string;
-                code?: string;
-                discount_type?: 'percentage' | 'fixed_amount' | 'free_shipping';
-                discount_value?: number;
-                calculated_discount?: number;
-                free_shipping?: boolean;
-            };
+            const results = data as Array<{ is_valid?: boolean; discount_amount?: number; discount_type?: string; error_message?: string; coupon_id?: string; discount_value?: number; free_shipping?: boolean }> | null;
+            const result = results?.[0];
 
-            if (!result.valid) {
-                return { success: false, error: result.error };
+            if (!result?.is_valid) {
+                return { success: false, error: result?.error_message || 'Invalid coupon' };
             }
 
             const coupon: AppliedCoupon = {
                 coupon_id: result.coupon_id || '',
-                code: result.code || code,
-                discount_type: result.discount_type || 'percentage',
-                discount_value: result.discount_value || 0,
-                calculated_discount: result.calculated_discount || 0,
+                code: code.toUpperCase(),
+                discount_type: (result.discount_type === 'fixed' ? 'fixed_amount' : result.discount_type || 'percentage') as AppliedCoupon['discount_type'],
+                discount_value: result.discount_value || result.discount_amount || 0,
+                calculated_discount: result.discount_amount || 0,
                 free_shipping: result.free_shipping || false
             };
 
             setAppliedCoupon(coupon);
+            persistCoupon(coupon);
             return { success: true, coupon };
         } catch (e) {
             logger.error('Coupon apply error', e);
             return { success: false, error: 'Failed to apply coupon' };
         }
-    }, [storeId, cartItems]);
+    }, [storeId, persistCoupon]);
 
     // Remove applied coupon
     const removeCoupon = useCallback(() => {
         setAppliedCoupon(null);
-    }, []);
+        persistCoupon(null);
+    }, [persistCoupon]);
 
     // Get discount amount from coupon
-    const getCouponDiscount = useCallback((subtotal: number): number => {
+    const getCouponDiscount = useCallback((currentSubtotal: number): number => {
         if (!appliedCoupon) return 0;
-
+        // Use pre-calculated discount from validation RPC, capped at subtotal
+        if (appliedCoupon.calculated_discount > 0) {
+            return Math.min(appliedCoupon.calculated_discount, currentSubtotal);
+        }
+        // Fallback calculation
         if (appliedCoupon.discount_type === 'percentage') {
-            return Math.min(subtotal * (appliedCoupon.discount_value / 100), appliedCoupon.calculated_discount);
+            return Math.min(currentSubtotal * (appliedCoupon.discount_value / 100), currentSubtotal);
         } else if (appliedCoupon.discount_type === 'fixed_amount') {
-            return Math.min(appliedCoupon.discount_value, subtotal);
+            return Math.min(appliedCoupon.discount_value, currentSubtotal);
         }
         return 0;
     }, [appliedCoupon]);

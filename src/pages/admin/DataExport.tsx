@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,9 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { formatSmartDate } from '@/lib/formatters';
 import { Download } from 'lucide-react';
+import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { humanizeError } from '@/lib/humanizeError';
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
 
@@ -80,7 +82,7 @@ export default function DataExport() {
       });
 
       // 1. Create Job Record
-      const { data: job, error: dbError } = await supabase
+      const { data: job, error: dbError } = await (supabase as any)
         .from('data_exports')
         .insert({
           tenant_id: tenantId,
@@ -126,11 +128,11 @@ export default function DataExport() {
       /* refetch() if we had the query handle handy, but react-query will re-fetch on window focus 
          or we can invalidate queries */
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Export initiation failed", error);
       toast({
         title: "Export Failed",
-        description: error.message,
+        description: humanizeError(error),
         variant: "destructive"
       });
     }
@@ -190,11 +192,13 @@ export default function DataExport() {
               <CreditCostIndicator actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} />
             )}
 
-            <Button onClick={triggerExport} className="w-full" disabled={!exportType}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Data
-              {isFreeTier && <CreditCostBadge actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} className="ml-2" />}
-            </Button>
+            <DisabledTooltip disabled={!exportType} reason="Select a data type to export">
+              <Button onClick={triggerExport} className="w-full" disabled={!exportType}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+                {isFreeTier && <CreditCostBadge actionKey={format === 'csv' ? 'export_csv' : 'export_pdf'} className="ml-2" />}
+              </Button>
+            </DisabledTooltip>
           </CardContent>
         </Card>
 
@@ -226,7 +230,7 @@ export default function DataExport() {
                     <div>
                       <div className="font-medium">{exportItem.data_type || 'Unknown'}</div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(exportItem.created_at).toLocaleString()}
+                        {formatSmartDate(exportItem.created_at, { includeTime: true })}
                       </div>
                     </div>
                     <Badge>{exportItem.format || 'csv'}</Badge>

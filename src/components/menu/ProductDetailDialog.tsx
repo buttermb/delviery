@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Package } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { formatCurrency } from '@/lib/formatters';
 
 interface Product {
   id: string;
@@ -78,8 +79,8 @@ export function ProductDetailDialog({
               <div>
                 <div className="text-3xl font-bold text-primary">
                   {product.prices && Object.keys(product.prices).length > 0 
-                    ? `$${Math.min(...Object.values(product.prices)).toFixed(2)}+` 
-                    : `$${product.price.toFixed(2)}`
+                    ? `${formatCurrency(Math.min(...Object.values(product.prices)))}+`
+                    : formatCurrency(product.price)
                   }
                 </div>
                 {product.lineage && (

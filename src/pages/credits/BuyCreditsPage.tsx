@@ -14,7 +14,9 @@ import { validatePromoCode } from '@/lib/credits';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function BuyCreditsPage() {
@@ -94,7 +96,7 @@ export function BuyCreditsPage() {
 
       if (error) {
         logger.error('Purchase error', error);
-        toast.error('Failed to start purchase', { description: error.message });
+        toast.error('Failed to start purchase', { description: humanizeError(error) });
         return;
       }
 
@@ -316,7 +318,7 @@ function PackageCard({
 
         {/* Price */}
         <div className="text-2xl font-semibold">
-          {formatCents(pkg.price_cents)}
+          {formatCurrency(pkg.price_cents / 100)}
         </div>
 
         {/* Savings */}
@@ -335,6 +337,3 @@ function PackageCard({
   );
 }
 
-function formatCents(priceCents: number): string {
-  return `$${(priceCents / 100).toFixed(2)}`;
-}

@@ -6,7 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, ShoppingBag, Percent, CreditCard, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { formatCurrency } from '@/lib/formatters';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 export default function SalesDashboardPage() {
@@ -204,11 +206,7 @@ export default function SalesDashboardPage() {
   const isLoading = ordersLoading;
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh bg-background p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
   }
 
   return (
@@ -239,7 +237,7 @@ export default function SalesDashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${metrics.totalSales.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatCurrency(metrics.totalSales)}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               {metrics.salesGrowth >= 0 ? (
                 <>
@@ -262,7 +260,7 @@ export default function SalesDashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${metrics.grossProfit.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatCurrency(metrics.grossProfit)}</div>
             <p className="text-xs text-muted-foreground">After cost of goods</p>
           </CardContent>
         </Card>
@@ -316,7 +314,7 @@ export default function SalesDashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
                     <Area type="monotone" dataKey="sales" stackId="1" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" name="Sales ($)" />
                     <Area type="monotone" dataKey="profit" stackId="2" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" name="Profit ($)" />
@@ -352,7 +350,7 @@ export default function SalesDashboardPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">${product.revenue.toLocaleString()}</p>
+                        <p className="font-bold">{formatCurrency(product.revenue)}</p>
                       </div>
                     </div>
                   ))}
@@ -377,9 +375,9 @@ export default function SalesDashboardPage() {
                 <ResponsiveContainer width="100%" height={350}>
                   <BarChart data={salesByCategory} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tickFormatter={(value) => `$${value.toLocaleString()}`} />
+                    <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
                     <YAxis dataKey="category" type="category" width={100} />
-                    <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Bar dataKey="amount" fill="hsl(var(--chart-1))" name="Revenue ($)" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -409,7 +407,7 @@ export default function SalesDashboardPage() {
                           <span className="font-medium">{method.method}</span>
                         </div>
                         <div className="text-right">
-                          <span className="font-bold">${method.amount.toLocaleString()}</span>
+                          <span className="font-bold">{formatCurrency(method.amount)}</span>
                           <span className="text-sm text-muted-foreground ml-2">({method.percentage}%)</span>
                         </div>
                       </div>

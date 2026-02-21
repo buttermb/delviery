@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -93,6 +92,8 @@ export function TicketForm({
           const { error } = await supabase.from("support_tickets").insert([
             {
               tenant_id: tenant.id,
+              account_id: tenant.id,
+              ticket_number: `TKT-${Date.now()}`,
               ...data,
             },
           ]);

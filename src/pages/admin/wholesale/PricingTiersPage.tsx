@@ -32,7 +32,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Edit2, Trash2, ShieldCheck, Users, DollarSign, Percent } from 'lucide-react';
+import { Plus, MoreVertical, Edit2, Trash2, ShieldCheck, Users, DollarSign, Percent, Loader2 } from 'lucide-react';
 
 interface PricingTier {
     id: string;
@@ -203,7 +203,7 @@ export default function PricingTiersPage() {
                                 </Badge>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <Button variant="ghost" className="h-11 w-11 p-0">
                                             <MoreVertical className="h-4 w-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -313,7 +313,10 @@ export default function PricingTiersPage() {
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                            <Button type="submit">Save Tier</Button>
+                            <Button type="submit" disabled={saveTiersMutation.isPending}>
+                                {saveTiersMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                Save Tier
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

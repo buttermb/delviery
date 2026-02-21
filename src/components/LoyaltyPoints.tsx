@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trophy, Gift, Star, Users, Copy, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { formatSmartDate } from '@/lib/formatters';
 
 const LoyaltyPoints = () => {
   const { user } = useAuth();
@@ -140,10 +141,11 @@ const LoyaltyPoints = () => {
             <div>
               <p className="text-sm font-medium mb-2">Your Referral Link</p>
               <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={referralLink} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={referralLink}
+                  readOnly
+                  aria-label="Referral link"
                   className="flex-1 text-xs px-3 py-2 border rounded-md bg-muted"
                 />
                 <Button size="sm" onClick={copyReferralLink}>
@@ -191,7 +193,7 @@ const LoyaltyPoints = () => {
                   <div>
                     <p className="text-sm font-medium">{transaction.reason}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(transaction.created_at).toLocaleDateString()}
+                      {formatSmartDate(transaction.created_at)}
                     </p>
                   </div>
                   <p className={`font-semibold ${transaction.points > 0 ? "text-green-600" : "text-red-600"}`}>

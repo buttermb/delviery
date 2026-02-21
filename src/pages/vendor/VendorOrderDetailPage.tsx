@@ -4,11 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Truck, Check, X } from "lucide-react";
+import { ArrowLeft, Truck, Check, X } from "lucide-react";
+import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Separator } from '@/components/ui/separator';
 import type { Tables } from '@/integrations/supabase/types';
+import { formatSmartDate } from '@/lib/formatters';
 
 // Extended order type - buyer_business_name exists in DB but not in generated types yet
 interface ShippingAddress {
@@ -68,16 +71,12 @@ export function VendorOrderDetailPage() {
             queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
         },
         onError: (error) => {
-            toast.error(`Failed to update status: ${error.message}`);
+            toast.error('Failed to update order status', { description: humanizeError(error) });
         }
     });
 
     if (isLoading) {
-        return (
-            <div className="flex h-dvh items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <DetailPageSkeleton />;
     }
 
     if (!order) {
@@ -109,7 +108,7 @@ export function VendorOrderDetailPage() {
                         </Badge>
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Placed on {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'} at {order.created_at ? new Date(order.created_at).toLocaleTimeString() : 'N/A'}
+                        Placed on {order.created_at ? formatSmartDate(order.created_at, { includeTime: true }) : 'N/A'}
                     </p>
                 </div>
                 <div className="ml-auto flex gap-2">

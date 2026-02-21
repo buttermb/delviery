@@ -41,6 +41,7 @@ import {
   copyReferralLink,
   REFERRAL_REWARDS,
 } from '@/lib/credits/referralService';
+import { formatSmartDate } from '@/lib/formatters';
 
 export interface ReferralDashboardProps {
   className?: string;
@@ -326,7 +327,7 @@ export function ReferralDashboard({
                         New user signed up
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {referral.date.toLocaleDateString()}
+                        {formatSmartDate(referral.date)}
                       </p>
                     </div>
                   </div>

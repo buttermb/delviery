@@ -2,7 +2,8 @@ import { useParams } from "react-router-dom";
 import { usePublicInvoice } from "@/hooks/crm/usePublicInvoice";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
 import {
@@ -20,12 +21,7 @@ export default function InvoicePublicPage() {
     const { data: invoice, isLoading, error } = usePublicInvoice(token);
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-dvh bg-gradient-to-br from-slate-50 to-slate-100">
-                <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground">Loading invoice...</p>
-            </div>
-        );
+        return <EnhancedLoadingState variant="card" message="Loading invoice..." />;
     }
 
     if (error || !invoice) {
@@ -49,15 +45,20 @@ export default function InvoicePublicPage() {
     const getStatusConfig = (status: string) => {
         switch (status) {
             case "paid":
-                return { icon: CheckCircle2, color: "bg-emerald-100 text-emerald-700", label: "Paid" };
+                return { icon: CheckCircle2, color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300", label: "Paid" };
             case "overdue":
-                return { icon: AlertCircle, color: "bg-red-100 text-red-700", label: "Overdue" };
+                return { icon: AlertCircle, color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300", label: "Overdue" };
             case "sent":
-                return { icon: Clock, color: "bg-blue-100 text-blue-700", label: "Awaiting Payment" };
+                return { icon: Clock, color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", label: "Awaiting Payment" };
+            case "partially_paid":
+                return { icon: Clock, color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", label: "Partially Paid" };
             case "draft":
-                return { icon: FileText, color: "bg-slate-100 text-slate-700", label: "Draft" };
+                return { icon: FileText, color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300", label: "Draft" };
+            case "cancelled":
+            case "void":
+                return { icon: FileText, color: "bg-gray-900 text-white dark:bg-gray-100/10 dark:text-gray-300", label: status === "void" ? "Void" : "Cancelled" };
             default:
-                return { icon: FileText, color: "bg-slate-100 text-slate-700", label: status };
+                return { icon: FileText, color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300", label: status };
         }
     };
 
@@ -202,9 +203,24 @@ export default function InvoicePublicPage() {
                                 )}
                                 <Separator />
                                 <div className="flex justify-between pt-2">
-                                    <span className="text-lg font-bold text-slate-900">Total Due</span>
+                                    <span className="text-lg font-bold text-slate-900">Total</span>
                                     <span className="text-2xl font-bold text-primary">{formatCurrency(invoice.total)}</span>
                                 </div>
+                                {(invoice.amount_paid ?? 0) > 0 && (
+                                    <>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-emerald-600">Amount Paid</span>
+                                            <span className="font-medium text-emerald-600">{formatCurrency(invoice.amount_paid ?? 0)}</span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between pt-1">
+                                            <span className="text-base font-bold text-slate-900">Amount Due</span>
+                                            <span className={`text-xl font-bold ${Math.max(0, invoice.total - (invoice.amount_paid ?? 0)) > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                {formatCurrency(Math.max(0, invoice.total - (invoice.amount_paid ?? 0)))}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 

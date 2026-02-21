@@ -51,6 +51,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 const TIMEZONES = [
   { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
@@ -160,8 +161,8 @@ export default function BusinessSettings() {
       setClearDemoDialogOpen(false);
     },
     onError: (error: Error) => {
-      toast.error('Error', {
-        description: error.message || 'Failed to clear demo data',
+      toast.error('Failed to clear demo data', {
+        description: humanizeError(error, 'Please try again.'),
       });
     },
   });

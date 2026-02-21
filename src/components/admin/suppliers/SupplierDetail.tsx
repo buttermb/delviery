@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
+import { formatSmartDate } from '@/lib/formatters';
 
 type Supplier = Database['public']['Tables']['wholesale_suppliers']['Row'];
 type SupplierTransaction = Database['public']['Tables']['supplier_transactions']['Row'];
@@ -181,7 +182,7 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
                         </div>
                         {transaction.created_at && (
                           <div className="text-xs text-muted-foreground">
-                            {new Date(transaction.created_at).toLocaleDateString()}
+                            {formatSmartDate(transaction.created_at)}
                           </div>
                         )}
                       </div>
@@ -207,7 +208,7 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
                 <span className="text-muted-foreground">Created:</span>
                 <span>
                   {supplier.created_at
-                    ? new Date(supplier.created_at).toLocaleDateString()
+                    ? formatSmartDate(supplier.created_at)
                     : "N/A"}
                 </span>
               </div>
@@ -215,7 +216,7 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Last Updated:</span>
-                  <span>{new Date(supplier.updated_at).toLocaleDateString()}</span>
+                  <span>{formatSmartDate(supplier.updated_at)}</span>
                 </div>
               )}
             </CardContent>

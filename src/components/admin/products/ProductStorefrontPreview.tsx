@@ -172,7 +172,7 @@ function StorefrontProductCard({
   const isOutOfStock = (product.available_quantity ?? 0) <= 0;
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
+    <div className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all duration-300" data-dark-panel>
       {/* Product Image */}
       <div className="aspect-square relative overflow-hidden bg-zinc-800">
         {product.image_url ? (
@@ -321,7 +321,7 @@ function StorefrontProductDetail({
   const isOutOfStock = (product.available_quantity ?? 0) <= 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden" data-dark-panel>
       {/* Image Section */}
       <div className="aspect-square relative bg-zinc-800">
         {product.image_url ? (

@@ -39,6 +39,7 @@ import {
 } from '@/hooks/useOrderAuditLog';
 import { formatRelativeTime, formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderHistoryDiffProps {
   orderId: string;
@@ -112,7 +113,7 @@ function formatValue(value: unknown): string {
   if (typeof value === 'number') {
     // Format as currency if it looks like a price
     if (Number.isFinite(value) && value >= 0 && value < 1000000) {
-      return `$${value.toFixed(2)}`;
+      return formatCurrency(value);
     }
     return value.toString();
   }
@@ -422,7 +423,7 @@ export function OrderHistoryDiff({
     const groups: Record<string, ParsedDiff[]> = {};
 
     for (const parsed of parsedDiffs) {
-      const dateKey = new Date(parsed.entry.created_at).toLocaleDateString();
+      const dateKey = formatSmartDate(parsed.entry.created_at);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -525,7 +526,7 @@ export function OrderHistoryDiff({
                 <div className="flex items-center gap-2 mb-3">
                   <div className="h-px flex-1 bg-border" />
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2">
-                    {dateKey === new Date().toLocaleDateString() ? 'Today' : dateKey}
+                    {dateKey}
                   </span>
                   <div className="h-px flex-1 bg-border" />
                 </div>

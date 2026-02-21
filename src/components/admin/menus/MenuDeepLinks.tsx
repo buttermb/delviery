@@ -518,6 +518,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search products..."
+                        aria-label="Search products"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9 w-48"
@@ -588,7 +589,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-11 w-11"
                                 onClick={() => handleCopyLink(mp.product_id, mp.product!.product_name)}
                                 title="Copy deep link"
                               >
@@ -601,7 +602,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-11 w-11"
                                 onClick={() => handleShowQR(mp.product_id, mp.product!.product_name)}
                                 title="Show QR code"
                               >
@@ -610,7 +611,7 @@ export function MenuDeepLinks({ menuId: propMenuId, className }: MenuDeepLinksPr
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-11 w-11"
                                 onClick={() => handleOpenLink(mp.product_id)}
                                 title="Open deep link"
                               >

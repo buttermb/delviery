@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { cn } from '@/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface TVHeaderBarProps {
     isConnected?: boolean;
@@ -31,21 +32,11 @@ export function TVHeaderBar({ isConnected = true, lastUpdated }: TVHeaderBarProp
     }, []);
 
     const formatTime = (date: Date) => {
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true,
-        });
+        return formatSmartDate(date, { includeTime: true });
     };
 
     const formatDate = (date: Date) => {
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-        });
+        return formatSmartDate(date);
     };
 
     return (

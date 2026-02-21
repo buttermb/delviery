@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
  * Customers can view all orders (retail + wholesale) in one place
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,10 +13,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  Package, 
-  Search, 
+import {
+  Package,
+  Search,
   Filter,
   Eye,
   ShoppingBag,
@@ -36,7 +35,6 @@ import {
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
-import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -57,14 +55,14 @@ interface UnifiedOrder {
 export default function UnifiedOrdersPage() {
   const { slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
-  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const tenantId = tenant?.id;
   const customerId = customer?.customer_id || customer?.id;
+  const customerEmail = customer?.email;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [orderTypeFilter, setOrderTypeFilter] = useState<OrderType>('all');
-  const [mode, setMode] = useReactState<CustomerMode>('retail');
+  const [mode, setMode] = useState<CustomerMode>('retail');
 
   // Load saved mode preference
   useEffect(() => {
@@ -158,15 +156,59 @@ export default function UnifiedOrdersPage() {
     enabled: !!tenantId && (orderTypeFilter === 'all' || orderTypeFilter === 'wholesale'),
   });
 
-  // Combine orders
-  const allOrders = [...retailOrders, ...wholesaleOrders].sort((a, b) => {
-    const dateA = new Date(a.created_at as string).getTime();
-    const dateB = new Date(b.created_at as string).getTime();
-    return dateB - dateA;
+  // Fetch storefront orders (placed via checkout, stored in marketplace_orders by customer_email)
+  const { data: storefrontOrders = [], isLoading: storefrontLoading } = useQuery({
+    queryKey: ['customer-storefront-orders', tenantId, customerEmail, statusFilter],
+    queryFn: async () => {
+      if (!tenantId || !customerEmail) return [];
+
+      let query = supabase
+        .from('marketplace_orders')
+        .select('*')
+        .eq('seller_tenant_id', tenantId)
+        .eq('customer_email', customerEmail.toLowerCase())
+        .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        logger.error('Failed to fetch storefront orders', error, { component: 'UnifiedOrdersPage' });
+        throw error;
+      }
+
+      return (data || []).map((order): UnifiedOrder => ({
+        id: order.id,
+        created_at: order.created_at,
+        order_type: 'retail' as const,
+        display_number: order.order_number,
+        display_total: order.total_amount,
+        display_status: order.status,
+        tracking_number: order.tracking_number,
+      }));
+    },
+    enabled: !!tenantId && !!customerEmail && (orderTypeFilter === 'all' || orderTypeFilter === 'retail'),
   });
 
+  // Combine orders (deduplicate by ID since storefront and wholesale both query marketplace_orders)
+  const seenIds = new Set<string>();
+  const allOrders = [...retailOrders, ...storefrontOrders, ...wholesaleOrders]
+    .filter((order) => {
+      if (seenIds.has(order.id)) return false;
+      seenIds.add(order.id);
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at as string).getTime();
+      const dateB = new Date(b.created_at as string).getTime();
+      return dateB - dateA;
+    });
+
   // Filter by search query
-  const isLoading = retailLoading || wholesaleLoading;
+  const isLoading = retailLoading || wholesaleLoading || storefrontLoading;
 
   const filteredOrders = allOrders.filter((order) => {
     if (!searchQuery) return true;
@@ -290,7 +332,7 @@ export default function UnifiedOrdersPage() {
             <Tabs value={orderTypeFilter} onValueChange={(value) => setOrderTypeFilter(value as OrderType)}>
               <TabsList>
                 <TabsTrigger value="all">All Orders ({filteredOrders.length})</TabsTrigger>
-                <TabsTrigger value="retail">Retail ({retailOrders.length})</TabsTrigger>
+                <TabsTrigger value="retail">Retail ({retailOrders.length + storefrontOrders.length})</TabsTrigger>
                 <TabsTrigger value="wholesale">Wholesale ({wholesaleOrders.length})</TabsTrigger>
               </TabsList>
             </Tabs>

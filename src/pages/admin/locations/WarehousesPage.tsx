@@ -19,7 +19,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Warehouse, Package, AlertTriangle } from 'lucide-react';
+import { Plus, Warehouse, Package, AlertTriangle, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -262,7 +262,7 @@ export default function WarehousesPage() {
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={createWarehouse.isPending}>
-                <Warehouse className="h-4 w-4 mr-2" />
+                {createWarehouse.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Warehouse className="h-4 w-4 mr-2" />}
                 Add Warehouse
               </Button>
             </DialogFooter>

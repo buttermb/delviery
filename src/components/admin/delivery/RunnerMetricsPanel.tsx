@@ -136,7 +136,7 @@ export function RunnerMetricsPanel({ runnerId, className, compact = false }: Run
 
   if (compact) {
     return (
-      <div className={cn('grid grid-cols-2 gap-3', className)}>
+      <div className={cn('grid grid-cols-1 sm:grid-cols-2 gap-3', className)}>
         <MetricCard
           title="Deliveries"
           value={formattedMetrics?.deliveries ?? '-'}

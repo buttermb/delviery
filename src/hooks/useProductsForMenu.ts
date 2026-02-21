@@ -5,11 +5,11 @@ export interface ProductForMenu {
   id: string;
   name: string;
   price: number;
-  sku?: string;
   description?: string;
   image_url?: string;
   category?: string;
   stock_quantity?: number;
+  sku?: string;
 }
 
 export const useProductsForMenu = (tenantId?: string) => {
@@ -33,7 +33,6 @@ export const useProductsForMenu = (tenantId?: string) => {
         id: item.id,
         name: item.product_name,
         price: item.base_price || 0,
-        sku: item.sku,
         description: item.description,
         image_url: item.image_url,
         category: item.category,

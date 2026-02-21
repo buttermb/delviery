@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useRevenueGoalProgress } from '@/hooks/useRevenueGoalProgress';
+import { formatCompactCurrency } from '@/lib/formatters';
 
 interface RevenueGoalProgressProps {
   /** Custom monthly revenue target. If not provided, uses last month's revenue */
@@ -30,35 +31,29 @@ interface RevenueGoalProgressProps {
 export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalProgressProps) {
   const { data, isLoading } = useRevenueGoalProgress({ targetRevenue });
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
-
   // Memoize formatted currency values (must be before early return)
   const formattedActualRevenue = useMemo(
-    () => formatCurrency(data?.actualRevenue || 0),
+    () => formatCompactCurrency(data?.actualRevenue || 0),
     [data?.actualRevenue]
   );
   const formattedTargetRevenue = useMemo(
-    () => formatCurrency(data?.targetRevenue || 0),
+    () => formatCompactCurrency(data?.targetRevenue || 0),
     [data?.targetRevenue]
   );
   const formattedRemainingAmount = useMemo(
-    () => formatCurrency(data?.remainingAmount || 0),
+    () => formatCompactCurrency(data?.remainingAmount || 0),
     [data?.remainingAmount]
   );
   const formattedDailyTargetNeeded = useMemo(
-    () => formatCurrency(data?.dailyTargetNeeded || 0),
+    () => formatCompactCurrency(data?.dailyTargetNeeded || 0),
     [data?.dailyTargetNeeded]
   );
   const formattedCurrentDailyAverage = useMemo(
-    () => formatCurrency(data?.currentDailyAverage || 0),
+    () => formatCompactCurrency(data?.currentDailyAverage || 0),
     [data?.currentDailyAverage]
   );
   const formattedLastMonthRevenue = useMemo(
-    () => formatCurrency(data?.lastMonthRevenue || 0),
+    () => formatCompactCurrency(data?.lastMonthRevenue || 0),
     [data?.lastMonthRevenue]
   );
 
@@ -254,7 +249,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" />
                   At current pace, you&apos;ll exceed your goal by{' '}
-                  {formatCurrency(
+                  {formatCompactCurrency(
                     (data.currentDailyAverage * (data.daysRemaining +
                       Math.ceil(data.actualRevenue / data.currentDailyAverage))) -
                       data.targetRevenue
@@ -263,7 +258,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
               ) : (
                 <span className="flex items-center gap-1.5">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  Need {formatCurrency(data.dailyTargetNeeded)}/day to hit goal
+                  Need {formatCompactCurrency(data.dailyTargetNeeded)}/day to hit goal
                   ({Math.round(((data.dailyTargetNeeded / data.currentDailyAverage) - 1) * 100)}% increase needed)
                 </span>
               )}

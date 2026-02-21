@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Collection Mode Page
  * 
@@ -48,9 +47,11 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 
 // Types
 interface CollectionClient {
@@ -297,11 +298,6 @@ function useCollectionActions() {
   return { logActivity, recordPayment, addNote, isRecordingPayment };
 }
 
-// Format currency
-function formatCurrency(value: number): string {
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toLocaleString()}`;
-}
 
 // Client Card Component
 interface ClientCardProps {
@@ -349,12 +345,12 @@ function ClientCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-foreground truncate">{client.businessName}</h3>
+              <TruncatedText text={client.businessName} className="font-semibold text-foreground" />
               <Badge variant="outline" className={cn("text-xs", statusColors[client.status])}>
                 {statusLabels[client.status]}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground truncate">{client.name}</p>
+            <TruncatedText text={client.name} className="text-sm text-muted-foreground" as="p" />
 
             <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
               {client.phone && (
@@ -364,9 +360,9 @@ function ClientCard({
                 </span>
               )}
               {client.email && (
-                <span className="flex items-center gap-1 truncate max-w-[200px]">
-                  <Mail className="h-3 w-3" />
-                  {client.email}
+                <span className="flex items-center gap-1 max-w-[200px]">
+                  <Mail className="h-3 w-3 shrink-0" />
+                  <TruncatedText text={client.email} />
                 </span>
               )}
             </div>
@@ -393,7 +389,7 @@ function ClientCard({
               client.status === 'overdue' ? 'text-red-400' :
                 client.status === 'due_this_week' ? 'text-amber-400' : 'text-emerald-400'
             )}>
-              ${client.amount.toLocaleString()}
+              {formatCurrency(client.amount)}
             </div>
             <div className="text-xs text-muted-foreground">outstanding</div>
           </div>
@@ -508,14 +504,14 @@ function ClientCard({
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-medium text-foreground capitalize">
                               {activity.type}
-                              {activity.amount && ` - $${activity.amount.toLocaleString()}`}
+                              {activity.amount != null && ` - ${formatCurrency(activity.amount)}`}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {format(activity.createdAt, 'MMM d, h:mm a')}
                             </span>
                           </div>
                           {activity.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 truncate">{activity.notes}</p>
+                            <TruncatedText text={activity.notes} className="text-xs text-muted-foreground mt-1" as="p" />
                           )}
                         </div>
                       </div>
@@ -603,7 +599,7 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
           <div className="p-3 rounded-lg bg-muted/50">
             <div className="text-sm text-muted-foreground">Outstanding Balance</div>
             <div className="text-2xl font-bold text-red-400 font-mono">
-              ${client?.amount.toLocaleString() || 0}
+              {formatCurrency(client?.amount || 0)}
             </div>
           </div>
 
@@ -752,7 +748,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
   const handleEmail = (client: CollectionClient) => {
     if (client.email) {
       const subject = encodeURIComponent(`Payment Reminder - ${client.businessName}`);
-      const body = encodeURIComponent(`Hi ${client.name},\n\nThis is a friendly reminder about your outstanding balance of $${client.amount.toLocaleString()}.\n\nPlease let us know if you have any questions.\n\nThank you!`);
+      const body = encodeURIComponent(`Hi ${client.name},\n\nThis is a friendly reminder about your outstanding balance of ${formatCurrency(client.amount)}.\n\nPlease let us know if you have any questions.\n\nThank you!`);
       window.location.href = `mailto:${client.email}?subject=${subject}&body=${body}`;
       logActivity.mutate({ clientId: client.id, type: 'email' });
     } else {
@@ -826,7 +822,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
             "font-mono font-bold",
             client.status === 'overdue' ? 'text-red-500' : 'text-foreground'
           )}>
-            ${client.amount.toLocaleString()}
+            {formatCurrency(client.amount)}
           </div>
           {client.daysOverdue > 0 && (
             <div className="text-xs text-red-400">{client.daysOverdue} days overdue</div>
@@ -900,7 +896,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
             <CardContent className="p-3">
               <div className="text-xs text-muted-foreground mb-1">Total Outstanding</div>
               <div className="text-lg font-bold font-mono text-foreground">
-                {formatCurrency(data?.totalOutstanding || 0)}
+                {formatCompactCurrency(data?.totalOutstanding || 0)}
               </div>
             </CardContent>
           </Card>
@@ -908,7 +904,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
               <CardContent className="p-3">
                 <div className="text-xs text-red-400/80 mb-1">Overdue ({data?.overdueCount || 0})</div>
                 <div className="text-lg font-bold font-mono text-red-500">
-                  {formatCurrency(data?.overdueAmount || 0)}
+                  {formatCompactCurrency(data?.overdueAmount || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -916,7 +912,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
               <CardContent className="p-3">
                 <div className="text-xs text-amber-400/80 mb-1">Due Week ({data?.dueThisWeekCount || 0})</div>
                 <div className="text-lg font-bold font-mono text-amber-500">
-                  {formatCurrency(data?.dueThisWeekAmount || 0)}
+                  {formatCompactCurrency(data?.dueThisWeekAmount || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -924,7 +920,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
               <CardContent className="p-3">
                 <div className="text-xs text-emerald-400/80 mb-1">Upcoming ({data?.upcomingCount || 0})</div>
                 <div className="text-lg font-bold font-mono text-emerald-500">
-                  {formatCurrency(data?.upcomingAmount || 0)}
+                  {formatCompactCurrency(data?.upcomingAmount || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -954,8 +950,8 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
 
           <div className="w-full md:w-72">
             <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
+              defaultValue={searchQuery}
+              onSearch={setSearchQuery}
               placeholder="Search clients..."
               className="bg-background/50 border-border"
             />

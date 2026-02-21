@@ -36,6 +36,8 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PreOrdersPage() {
     const { navigateToAdmin } = useTenantNavigation();
@@ -44,6 +46,7 @@ export default function PreOrdersPage() {
     const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
     const { data: preOrders, isLoading } = usePreOrders();
+    const mod = useModifierKey();
     const cancelPreOrder = useCancelPreOrder();
 
     const filteredPreOrders = preOrders?.filter((order) => {
@@ -105,9 +108,11 @@ export default function PreOrdersPage() {
                         Manage pre-orders and convert them to invoices.
                     </p>
                 </div>
-                <Button onClick={() => navigateToAdmin("crm/pre-orders/new")}>
-                    <Plus className="mr-2 h-4 w-4" /> Create Pre-Order
-                </Button>
+                <ShortcutHint keys={[mod, "N"]} label="New">
+                    <Button onClick={() => navigateToAdmin("crm/pre-orders/new")}>
+                        <Plus className="mr-2 h-4 w-4" /> Create Pre-Order
+                    </Button>
+                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}
@@ -204,11 +209,15 @@ export default function PreOrdersPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        Loading pre-orders...
-                                    </TableCell>
-                                </TableRow>
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {Array.from({ length: 7 }).map((_, j) => (
+                                            <TableCell key={j} className="h-14">
+                                                <Skeleton className={j === 0 ? "h-4 w-3/4" : "h-4 w-full max-w-[120px]"} />
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
                             ) : filteredPreOrders?.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="h-24 text-center">
@@ -243,7 +252,7 @@ export default function PreOrdersPage() {
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" className="h-11 w-11 p-0" onClick={(e) => e.stopPropagation()}>
                                                         <span className="sr-only">Open menu</span>
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -208,19 +208,19 @@ export function StockAdjustmentDialog({
             />
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={!quantity || !reason || adjustmentMutation.isPending} 
+            <Button
+              type="submit"
+              disabled={!quantity || !reason || adjustmentMutation.isPending}
               className="flex-1"
               variant={adjustmentType === "subtract" ? "destructive" : "default"}
             >
               {adjustmentMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Adjusting...</> : "Adjust Stock"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

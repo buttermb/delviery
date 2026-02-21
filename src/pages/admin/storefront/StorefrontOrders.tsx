@@ -23,6 +23,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import {
   Table,
@@ -324,80 +325,117 @@ export default function StorefrontOrders() {
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3 p-4">
                 {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50">
-                    <TableCell
-                      className="font-medium"
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      {order.order_number}
-                    </TableCell>
-                    <TableCell onClick={() => setSelectedOrder(order)}>
-                      <div>
-                        <p className="font-medium">
-                          <CustomerLink
-                            customerId={order.customer_id}
-                            customerName={order.customer_name || 'Guest'}
-                          />
-                        </p>
-                        <p className="text-sm text-muted-foreground">{order.customer_email}</p>
+                  <div
+                    key={order.id}
+                    className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-mono font-semibold text-sm">{order.order_number}</p>
+                        <TruncatedText text={order.customer_name || 'Guest'} className="text-sm font-medium" as="p" />
+                        <TruncatedText text={order.customer_email || ''} className="text-xs text-muted-foreground" as="p" />
                       </div>
-                    </TableCell>
-                    <TableCell onClick={() => setSelectedOrder(order)}>
-                      {order.items.length} item{order.items.length !== 1 ? 's' : ''}
-                    </TableCell>
-                    <TableCell onClick={() => setSelectedOrder(order)}>
-                      {formatCurrency(order.total)}
-                    </TableCell>
-                    <TableCell onClick={() => setSelectedOrder(order)}>
-                      {getPaymentBadge(order.payment_status)}
-                    </TableCell>
-                    <TableCell onClick={() => setSelectedOrder(order)}>
-                      {getStatusBadge(order.status)}
-                    </TableCell>
-                    <TableCell onClick={() => setSelectedOrder(order)}>
-                      {formatSmartDate(order.created_at)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Select
-                        value={order.status}
-                        onValueChange={(status) =>
-                          updateStatusMutation.mutate({ orderId: order.id, status })
-                        }
-                      >
-                        <SelectTrigger className="w-[140px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_OPTIONS.map((status) => (
-                            <SelectItem key={status.value} value={status.value}>
-                              <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${status.color}`} />
-                                {status.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  </TableRow>
+                      <div className="flex flex-col items-end gap-1 ml-3">
+                        <span className="font-bold">{formatCurrency(order.total)}</span>
+                        {getPaymentBadge(order.payment_status)}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(order.status)}
+                        <span className="text-xs text-muted-foreground">
+                          {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{formatSmartDate(order.created_at)}</span>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Items</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Payment</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrders.map((order) => (
+                      <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50">
+                        <TableCell
+                          className="font-medium"
+                          onClick={() => setSelectedOrder(order)}
+                        >
+                          {order.order_number}
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          <div>
+                            <p className="font-medium">
+                              <CustomerLink
+                                customerId={order.customer_id}
+                                customerName={order.customer_name || 'Guest'}
+                              />
+                            </p>
+                            <p className="text-sm text-muted-foreground">{order.customer_email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          {formatCurrency(order.total)}
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          {getPaymentBadge(order.payment_status)}
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          {getStatusBadge(order.status)}
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          {formatSmartDate(order.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Select
+                            value={order.status}
+                            onValueChange={(status) =>
+                              updateStatusMutation.mutate({ orderId: order.id, status })
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {STATUS_OPTIONS.map((status) => (
+                                <SelectItem key={status.value} value={status.value}>
+                                  <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${status.color}`} />
+                                    {status.label}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

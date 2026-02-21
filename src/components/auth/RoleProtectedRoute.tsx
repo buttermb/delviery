@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import AccessDeniedPage from '@/pages/admin/AccessDeniedPage';
 
 type AdminRole = 'owner' | 'admin' | 'manager' | 'staff' | 'viewer';
 
@@ -60,8 +61,11 @@ export function RoleProtectedRoute({ children, allowedRoles, fallbackPath }: Rol
     path: window.location.pathname,
   });
 
-  // Redirect to fallback or dashboard
-  const slug = tenantSlug || tenant.slug;
-  const redirectTo = fallbackPath || `/${slug}/admin/dashboard`;
-  return <Navigate to={redirectTo} replace />;
+  // If a specific fallback path is provided, redirect there
+  if (fallbackPath) {
+    return <Navigate to={fallbackPath} replace />;
+  }
+
+  // Show Access Denied page instead of silently redirecting
+  return <AccessDeniedPage userRole={userRole} requiredRoles={allowedRoles} />;
 }

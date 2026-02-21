@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -30,7 +31,7 @@ export function QuickReceiving() {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
 
-  const { data: products } = useQuery({
+  const { data: products, isLoading: productsLoading, isError: productsError } = useQuery({
     queryKey: ['products-for-receiving', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -133,7 +134,7 @@ export function QuickReceiving() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to receive items', error, { component: 'QuickReceiving' });
-      toast.error(`Failed to receive items: ${error instanceof Error ? error.message : 'An error occurred'}`);
+      toast.error(humanizeError(error, 'Failed to receive items'));
     },
   });
 
@@ -147,16 +148,27 @@ export function QuickReceiving() {
       <div className="grid gap-4 md:grid-cols-3 mb-4">
         <div className="space-y-2">
           <Label>Product</Label>
-          <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+          <Select value={selectedProduct} onValueChange={setSelectedProduct} disabled={productsLoading}>
             <SelectTrigger>
-              <SelectValue placeholder="Select product" />
+              <SelectValue placeholder={productsLoading ? "Loading products..." : "Select product"} />
             </SelectTrigger>
             <SelectContent>
-              {products?.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
-                  {product.product_name}
-                </SelectItem>
-              ))}
+              {productsLoading ? (
+                <div className="flex items-center gap-2 p-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Loading products...</span>
+                </div>
+              ) : productsError ? (
+                <div className="p-2 text-sm text-destructive">Failed to load products</div>
+              ) : !products?.length ? (
+                <div className="p-2 text-sm text-muted-foreground">No products found</div>
+              ) : (
+                products.map((product) => (
+                  <SelectItem key={product.id} value={product.id}>
+                    {product.product_name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

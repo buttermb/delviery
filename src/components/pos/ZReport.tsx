@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Printer, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { useRealtimeTransactions } from '@/hooks/useRealtimePOS';
+import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 interface ZReportProps {
   shiftId: string;
@@ -14,14 +16,13 @@ interface ZReportProps {
 
 export function ZReport({ shiftId }: ZReportProps) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const tenantId = tenant?.id;
 
   // Enable real-time updates for this shift's transactions
   useRealtimeTransactions(tenantId, shiftId);
 
   const { data: shift, isLoading } = useQuery({
-    queryKey: ['shift-details', shiftId, tenantId],
+    queryKey: queryKeys.pos.shifts.detail(shiftId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data, error } = await supabase
@@ -39,7 +40,7 @@ export function ZReport({ shiftId }: ZReportProps) {
   });
 
   const { data: transactions } = useQuery({
-    queryKey: ['shift-transactions', shiftId, tenantId],
+    queryKey: queryKeys.pos.shifts.transactions(shiftId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase
@@ -58,7 +59,7 @@ export function ZReport({ shiftId }: ZReportProps) {
 
   const handlePrint = () => {
     window.print();
-    toast({ title: 'Printing Z-Report' });
+    toast.success('Printing Z-Report');
   };
 
   const handleDownload = () => {
@@ -75,7 +76,7 @@ export function ZReport({ shiftId }: ZReportProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast({ title: 'Report downloaded' });
+    toast.success('Report downloaded');
   };
 
   const generateReportText = () => {
@@ -98,38 +99,38 @@ Ended: ${shift.ended_at ? new Date(shift.ended_at).toLocaleString() : 'In Progre
 ========================================
 
 Total Transactions: ${shift.total_transactions}
-Total Sales: $${shift.total_sales.toFixed(2)}
-Refunds (${refundCount}): -$${totalRefunds.toFixed(2)}
+Total Sales: ${formatCurrency(shift.total_sales)}
+Refunds (${refundCount}): -${formatCurrency(totalRefunds)}
 
-Net Sales: $${netSales.toFixed(2)}
+Net Sales: ${formatCurrency(netSales)}
 
 ========================================
         PAYMENT METHOD BREAKDOWN
 ========================================
 
-Cash Sales: $${shift.cash_sales.toFixed(2)}
-Card Sales: $${shift.card_sales.toFixed(2)}
-Other: $${shift.other_sales.toFixed(2)}
+Cash Sales: ${formatCurrency(shift.cash_sales)}
+Card Sales: ${formatCurrency(shift.card_sales)}
+Other: ${formatCurrency(shift.other_sales)}
 ${refundCount > 0 ? `
 ========================================
           REFUND BREAKDOWN
 ========================================
 
 Refund Count: ${refundCount}
-Total Refunds: -$${totalRefunds.toFixed(2)}
-${cashRefunds > 0 ? `  Cash Refunds: -$${cashRefunds.toFixed(2)}\n` : ''}${cardRefunds > 0 ? `  Card Refunds: -$${cardRefunds.toFixed(2)}\n` : ''}${otherRefunds > 0 ? `  Other Refunds: -$${otherRefunds.toFixed(2)}\n` : ''}
-Net Sales: $${netSales.toFixed(2)}` : ''}
+Total Refunds: -${formatCurrency(totalRefunds)}
+${cashRefunds > 0 ? `  Cash Refunds: -${formatCurrency(cashRefunds)}\n` : ''}${cardRefunds > 0 ? `  Card Refunds: -${formatCurrency(cardRefunds)}\n` : ''}${otherRefunds > 0 ? `  Other Refunds: -${formatCurrency(otherRefunds)}\n` : ''}
+Net Sales: ${formatCurrency(netSales)}` : ''}
 
 ========================================
          CASH DRAWER BALANCE
 ========================================
 
-Opening Cash: $${shift.opening_cash.toFixed(2)}
-+ Cash Sales: $${shift.cash_sales.toFixed(2)}
-${cashRefunds > 0 ? `- Cash Refunds: -$${cashRefunds.toFixed(2)}\n` : ''}Expected Cash: $${(shift.expected_cash || 0).toFixed(2)}
+Opening Cash: ${formatCurrency(shift.opening_cash)}
++ Cash Sales: ${formatCurrency(shift.cash_sales)}
+${cashRefunds > 0 ? `- Cash Refunds: -${formatCurrency(cashRefunds)}\n` : ''}Expected Cash: ${formatCurrency(shift.expected_cash || 0)}
 
-Closing Cash: $${(shift.closing_cash || 0).toFixed(2)}
-Difference: $${(shift.cash_difference || 0).toFixed(2)}
+Closing Cash: ${formatCurrency(shift.closing_cash || 0)}
+Difference: ${formatCurrency(shift.cash_difference || 0)}
 
 ========================================
          TRANSACTION DETAILS
@@ -137,14 +138,14 @@ Difference: $${(shift.cash_difference || 0).toFixed(2)}
 
 ${transactions?.map((t, i) => `
 ${i + 1}. ${t.transaction_number}
-   Time: ${new Date(t.created_at).toLocaleTimeString()}
-   Amount: $${t.total_amount.toFixed(2)}
+   Time: ${formatSmartDate(t.created_at, { includeTime: true })}
+   Amount: ${formatCurrency(t.total_amount)}
    Payment: ${t.payment_method}
    Status: ${t.payment_status}
 `).join('\n') || 'No transactions'}
 
 ========================================
-    Generated: ${new Date().toLocaleString()}
+    Generated: ${formatSmartDate(new Date(), { includeTime: true })}
 ========================================
     `;
   };
@@ -239,16 +240,16 @@ ${i + 1}. ${t.transaction_number}
               </div>
               <div className="flex justify-between">
                 <span>Total Sales</span>
-                <span className="font-semibold">${shift.total_sales.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.total_sales)}</span>
               </div>
               <div className="flex justify-between text-red-600">
                 <span>Refunds ({refundCount})</span>
-                <span className="font-semibold">-${totalRefunds.toFixed(2)}</span>
+                <span className="font-semibold">-{formatCurrency(totalRefunds)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Net Sales</span>
-                <span>${netSales.toFixed(2)}</span>
+                <span>{formatCurrency(netSales)}</span>
               </div>
             </div>
           </div>
@@ -261,15 +262,15 @@ ${i + 1}. ${t.transaction_number}
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Cash</span>
-                <span className="font-semibold">${shift.cash_sales.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.cash_sales)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Card</span>
-                <span className="font-semibold">${shift.card_sales.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.card_sales)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Other</span>
-                <span className="font-semibold">${shift.other_sales.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.other_sales)}</span>
               </div>
             </div>
           </div>
@@ -288,30 +289,30 @@ ${i + 1}. ${t.transaction_number}
                   </div>
                   <div className="flex justify-between text-red-600">
                     <span>Total Refunds</span>
-                    <span className="font-semibold">-${totalRefunds.toFixed(2)}</span>
+                    <span className="font-semibold">-{formatCurrency(totalRefunds)}</span>
                   </div>
                   {cashRefunds > 0 && (
                     <div className="flex justify-between text-muted-foreground">
                       <span className="pl-4">Cash Refunds</span>
-                      <span>-${cashRefunds.toFixed(2)}</span>
+                      <span>-{formatCurrency(cashRefunds)}</span>
                     </div>
                   )}
                   {cardRefunds > 0 && (
                     <div className="flex justify-between text-muted-foreground">
                       <span className="pl-4">Card Refunds</span>
-                      <span>-${cardRefunds.toFixed(2)}</span>
+                      <span>-{formatCurrency(cardRefunds)}</span>
                     </div>
                   )}
                   {otherRefunds > 0 && (
                     <div className="flex justify-between text-muted-foreground">
                       <span className="pl-4">Other Refunds</span>
-                      <span>-${otherRefunds.toFixed(2)}</span>
+                      <span>-{formatCurrency(otherRefunds)}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Net Sales</span>
-                    <span>${netSales.toFixed(2)}</span>
+                    <span>{formatCurrency(netSales)}</span>
                   </div>
                 </div>
               </div>
@@ -325,26 +326,26 @@ ${i + 1}. ${t.transaction_number}
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Opening Cash</span>
-                <span className="font-semibold">${shift.opening_cash.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.opening_cash)}</span>
               </div>
               <div className="flex justify-between">
                 <span>+ Cash Sales</span>
-                <span className="font-semibold">${shift.cash_sales.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.cash_sales)}</span>
               </div>
               {cashRefunds > 0 && (
                 <div className="flex justify-between text-red-600">
                   <span>- Cash Refunds</span>
-                  <span className="font-semibold">-${cashRefunds.toFixed(2)}</span>
+                  <span className="font-semibold">-{formatCurrency(cashRefunds)}</span>
                 </div>
               )}
               <div className="flex justify-between text-muted-foreground">
                 <span>Expected Cash</span>
-                <span className="font-semibold">${(shift.expected_cash || 0).toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.expected_cash || 0)}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
                 <span>Closing Cash (Counted)</span>
-                <span className="font-semibold">${(shift.closing_cash || 0).toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(shift.closing_cash || 0)}</span>
               </div>
               <div
                 className={`flex justify-between font-bold ${
@@ -352,7 +353,7 @@ ${i + 1}. ${t.transaction_number}
                 }`}
               >
                 <span>Difference</span>
-                <span>${(shift.cash_difference || 0).toFixed(2)}</span>
+                <span>{formatCurrency(shift.cash_difference || 0)}</span>
               </div>
             </div>
           </div>
@@ -363,17 +364,17 @@ ${i + 1}. ${t.transaction_number}
           {transactions && transactions.length > 0 && (
             <div>
               <h3 className="font-semibold mb-4">Transaction Details ({transactions.length})</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto print:max-h-none print:overflow-visible">
                 {transactions.map((transaction, index) => (
                   <div key={transaction.id} className="p-3 border rounded-lg text-sm">
                     <div className="flex justify-between mb-1">
                       <span className="font-semibold">
                         #{index + 1} - {transaction.transaction_number}
                       </span>
-                      <span className="font-semibold">${transaction.total_amount.toFixed(2)}</span>
+                      <span className="font-semibold">{formatCurrency(transaction.total_amount)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>{new Date(transaction.created_at).toLocaleTimeString()}</span>
+                      <span>{formatSmartDate(transaction.created_at, { includeTime: true })}</span>
                       <span>
                         {transaction.payment_method} • {transaction.payment_status}
                       </span>

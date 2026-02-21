@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -96,23 +97,29 @@ export default function MarketingHubPage() {
                 <div className="flex-1 min-h-0 overflow-auto">
                     {/* Loyalty Tab */}
                     <TabsContent value="loyalty" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}>
-                            <LoyaltyProgramPage />
-                        </Suspense>
+                        <ModuleErrorBoundary moduleName="Loyalty Program">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <LoyaltyProgramPage />
+                            </Suspense>
+                        </ModuleErrorBoundary>
                     </TabsContent>
 
                     {/* Campaigns Tab */}
                     <TabsContent value="campaigns" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}>
-                            <MarketingAutomationPage />
-                        </Suspense>
+                        <ModuleErrorBoundary moduleName="Campaigns">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <MarketingAutomationPage />
+                            </Suspense>
+                        </ModuleErrorBoundary>
                     </TabsContent>
 
                     {/* Live Chat Tab */}
                     <TabsContent value="live-chat" className="m-0 h-full">
-                        <Suspense fallback={<TabSkeleton />}>
-                            <AdminLiveChat />
-                        </Suspense>
+                        <ModuleErrorBoundary moduleName="Live Chat">
+                            <Suspense fallback={<TabSkeleton />}>
+                                <AdminLiveChat />
+                            </Suspense>
+                        </ModuleErrorBoundary>
                     </TabsContent>
                 </div>
             </Tabs>

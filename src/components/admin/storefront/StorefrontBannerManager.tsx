@@ -21,6 +21,7 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Plus,
     Trash2,
@@ -55,6 +56,8 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
     const queryClient = useQueryClient();
     const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [bannerToDelete, setBannerToDelete] = useState<Banner | null>(null);
 
     const [formData, setFormData] = useState({
         heading: '',
@@ -320,9 +323,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                                             variant="ghost"
                                             size="sm"
                                             className="text-destructive hover:text-destructive"
-                                            onClick={() => {
-                                                if (confirm('Delete this banner?')) deleteMutation.mutate(banner.id);
-                                            }}
+                                            onClick={() => { setBannerToDelete(banner); setDeleteDialogOpen(true); }}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -333,6 +334,21 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmDeleteDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onConfirm={() => {
+                    if (bannerToDelete) {
+                        deleteMutation.mutate(bannerToDelete.id);
+                        setDeleteDialogOpen(false);
+                        setBannerToDelete(null);
+                    }
+                }}
+                itemName={bannerToDelete?.heading || 'this banner'}
+                itemType="banner"
+                isLoading={deleteMutation.isPending}
+            />
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="max-w-xl">

@@ -17,6 +17,7 @@ interface PublicInvoiceResponse {
     status: string;
     notes: string | null;
     public_token: string;
+    amount_paid: number | null;
     public_view_count: number;
     last_viewed_at: string | null;
     created_at: string;

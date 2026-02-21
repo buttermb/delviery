@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
+import { INVOICE_PAYMENT_METHODS } from "@/lib/constants/paymentMethods";
+import { formatCurrency } from '@/lib/formatters';
 
 interface PaymentDialogProps {
   clientId: string;
@@ -52,7 +54,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
     if (numAmount > outstandingBalance) {
       return {
         valid: false,
-        error: `Payment amount ($${numAmount.toLocaleString()}) cannot exceed outstanding balance ($${outstandingBalance.toLocaleString()})`
+        error: `Payment amount (${formatCurrency(numAmount)}) cannot exceed outstanding balance (${formatCurrency(outstandingBalance)})`
       };
     }
 
@@ -103,7 +105,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
           <div>
             <Label>Outstanding Balance</Label>
             <div className="text-2xl font-mono font-bold text-destructive">
-              ${outstandingBalance.toLocaleString()}
+              {formatCurrency(outstandingBalance)}
             </div>
           </div>
 
@@ -125,7 +127,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             )}
             {parseFloat(amount) > 0 && parseFloat(amount) <= outstandingBalance && (
               <div className="text-xs text-muted-foreground mt-1">
-                Remaining balance after payment: ${Math.max(0, outstandingBalance - parseFloat(amount)).toLocaleString()}
+                Remaining balance after payment: {formatCurrency(Math.max(0, outstandingBalance - parseFloat(amount)))}
               </div>
             )}
           </div>
@@ -134,14 +136,14 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             <Label htmlFor="method">Payment Method *</Label>
             <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cash">💵 Cash</SelectItem>
-                <SelectItem value="check">📄 Check</SelectItem>
-                <SelectItem value="wire_transfer">🏦 Wire Transfer</SelectItem>
-                <SelectItem value="card">💳 Card</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                {INVOICE_PAYMENT_METHODS.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>
+                    {m.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -169,7 +171,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
             />
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
@@ -178,9 +180,10 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
               disabled={!paymentValidation.valid || processPayment.isPending}
               className="flex-1"
             >
+              {processPayment.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {processPayment.isPending ? "Processing..." : "Process Payment"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

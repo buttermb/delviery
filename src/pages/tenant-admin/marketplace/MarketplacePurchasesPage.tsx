@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { humanizeError } from '@/lib/humanizeError';
 import {
     ShoppingBag,
     Search,
@@ -59,8 +59,7 @@ export default function MarketplacePurchasesPage() {
           *,
           marketplace_order_items (*),
           marketplace_profiles (
-            business_name,
-            contact_email
+            business_name
           )
         `)
                 .eq('buyer_tenant_id', tenant.id)
@@ -108,7 +107,7 @@ export default function MarketplacePurchasesPage() {
         },
         onError: (error: Error) => {
             logger.error('Failed to mark order as received', { error });
-            toast({ title: 'Failed to mark as received', description: error.message, variant: 'destructive' });
+            toast({ title: 'Failed to mark as received', description: humanizeError(error), variant: 'destructive' });
         },
     });
 

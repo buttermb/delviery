@@ -31,7 +31,7 @@ export function FloatingCartButton({ primaryColor = '#10b981' }: FloatingCartBut
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 20 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className="fixed bottom-24 right-6 z-40 md:bottom-8"
+        className="fixed bottom-20 right-4 z-50 md:bottom-6 md:right-6"
       >
         <Button
           onClick={openCartDrawer}

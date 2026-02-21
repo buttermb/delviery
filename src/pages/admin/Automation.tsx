@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Zap, Plus, Edit, Play } from 'lucide-react';
+import { humanizeError } from '@/lib/humanizeError';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface AutomationRule {
   id: string;
@@ -103,7 +105,7 @@ export default function Automation() {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create rule',
+        description: humanizeError(error, 'Failed to create rule'),
         variant: 'destructive',
       });
     },
@@ -145,7 +147,7 @@ export default function Automation() {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update automation',
+        description: humanizeError(error, 'Failed to update automation'),
         variant: 'destructive',
       });
     },
@@ -192,11 +194,7 @@ export default function Automation() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading automation rules...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading automation rules..." />;
   }
 
   const enabledCount = (rules || []).filter((r) => r.enabled).length;

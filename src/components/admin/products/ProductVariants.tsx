@@ -69,16 +69,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 import {
   useProductVariants,
@@ -948,40 +939,16 @@ export function ProductVariants({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteVariant} onOpenChange={() => setDeleteVariant(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Variant</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{deleteVariant?.name}"? This action cannot be undone.
-              {deleteVariant && deleteVariant.available_quantity > 0 && (
-                <span className="block mt-2 text-amber-600">
-                  Warning: This variant has {deleteVariant.available_quantity} units in stock.
-                </span>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteVariantMutation.isPending}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleteVariantMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteVariantMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteVariant}
+        onOpenChange={() => setDeleteVariant(null)}
+        onConfirm={handleDelete}
+        title="Delete Variant"
+        description={`Are you sure you want to delete "${deleteVariant?.name}"? This action cannot be undone.${deleteVariant && deleteVariant.available_quantity > 0 ? ` Warning: This variant has ${deleteVariant.available_quantity} units in stock.` : ''}`}
+        itemName={deleteVariant?.name}
+        itemType="variant"
+        isLoading={deleteVariantMutation.isPending}
+      />
     </Card>
   );
 }

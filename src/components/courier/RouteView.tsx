@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import { useState, useEffect } from 'react';
@@ -132,7 +131,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
 
           {/* Route line */}
           {route && (
-            <Source type="geojson" data={route.geometry}>
+            <Source type="geojson" data={route.geometry as unknown as GeoJSON.GeoJSON}>
               <Layer
                 type="line"
                 paint={{

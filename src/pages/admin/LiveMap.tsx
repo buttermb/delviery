@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
 
 interface CourierLocation {
   id: string;
@@ -625,7 +626,7 @@ export default function LiveMap() {
                 </div>
               ` : ''}
               <div class="pt-2 border-t mt-2">
-                <div class="font-semibold text-gray-900">$${order.total_amount.toFixed(2)}</div>
+                <div class="font-semibold text-gray-900">${formatCurrency(order.total_amount)}</div>
               </div>
               ${order.customer_phone ? `
                 <a href="tel:${order.customer_phone}" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium pt-1">
@@ -1046,7 +1047,7 @@ export default function LiveMap() {
                           className="mt-2 flex items-center gap-2 text-xs text-emerald-600 hover:text-emerald-700"
                         >
                           <Phone className="h-3 w-3" />
-                          {courier.phone}
+                          {formatPhoneNumber(courier.phone)}
                         </a>
                       )}
                     </div>
@@ -1248,7 +1249,7 @@ function CourierList({
                     className="mt-2 flex items-center gap-2 text-xs text-emerald-600"
                   >
                     <Phone className="h-3 w-3" />
-                    {courier.phone}
+                    {formatPhoneNumber(courier.phone)}
                   </a>
                 )}
               </Card>

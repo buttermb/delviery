@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/humanizeError";
 import {
   Package,
   DollarSign,
@@ -106,7 +107,7 @@ export default function DriverPortal() {
         nearestDueDate,
       });
     } catch (error: any) {
-      toast.error("Failed to load data: " + error.message);
+      toast.error(humanizeError(error, "Failed to load data"));
     } finally {
       setLoading(false);
     }

@@ -31,6 +31,7 @@ import {
   ChevronRight,
   Check,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -189,7 +190,7 @@ export function WorkflowVersionHistory({
                               onClick={() => handleRestoreClick(version)}
                               disabled={restoreVersion.isPending}
                             >
-                              <RotateCcw className="h-4 w-4 mr-2" />
+                              {restoreVersion.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RotateCcw className="h-4 w-4 mr-2" />}
                               Restore
                             </Button>
                           )}
@@ -309,7 +310,7 @@ export function WorkflowVersionHistory({
               disabled={restoreVersion.isPending}
             >
               {restoreVersion.isPending ? (
-                <>Restoring...</>
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Restoring...</>
               ) : (
                 <>
                   <RotateCcw className="h-4 w-4 mr-2" />

@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Phone, Truck, Package } from "lucide-react";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { SEOHead } from "@/components/SEOHead";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 
 export default function DeliveryTracking() {
   const { id } = useParams();
@@ -39,6 +41,9 @@ export default function DeliveryTracking() {
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 
+  const deliveryOrders = delivery?.orders as Record<string, unknown> | null;
+  useBreadcrumbLabel(delivery ? `Delivery #${deliveryOrders?.order_number ?? (id?.slice(0, 8) ?? '')}` : null);
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       assigned: "bg-accent/10 text-accent-foreground border-accent/20",
@@ -50,13 +55,7 @@ export default function DeliveryTracking() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh bg-background p-6">
-        <div className="flex items-center justify-center h-96">
-          <p className="text-muted-foreground">Loading delivery details...</p>
-        </div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="card" message="Loading delivery details..." />;
   }
 
   if (!delivery) {

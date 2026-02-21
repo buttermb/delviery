@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Duplicate Detection with Fuzzy Matching
  * Uses Fuse.js for finding similar products
@@ -27,7 +26,7 @@ export interface DeduplicationResult {
 }
 
 // Fuse.js options for fuzzy matching
-const FUSE_OPTIONS: Fuse.IFuseOptions<Partial<ParsedProduct>> = {
+const FUSE_OPTIONS = {
   keys: [
     { name: 'name', weight: 0.6 },
     { name: 'category', weight: 0.15 },

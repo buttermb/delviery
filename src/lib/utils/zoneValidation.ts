@@ -11,6 +11,7 @@ import type {
   ZoneMatchResult,
   ZoneValidationResult,
 } from '@/types/delivery-zone';
+import { formatCurrency } from '@/lib/formatters';
 
 /**
  * Check if a point is inside a polygon using ray casting algorithm
@@ -176,7 +177,7 @@ export function validateOrderForZone(
     return {
       isValid: false,
       zone,
-      error: `This zone requires a minimum order of $${zone.minimum_order.toFixed(2)}.`,
+      error: `This zone requires a minimum order of ${formatCurrency(zone.minimum_order)}.`,
       isBelowMinimum: true,
     };
   }

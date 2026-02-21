@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Business Menu Page
  * Customers can browse products from a specific business
@@ -80,7 +78,7 @@ export default function BusinessMenuPage() {
     queryFn: async () => {
       if (!targetBusinessSlug) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenants')
         .select('id, business_name, slug, white_label(*)')
         .eq('slug', targetBusinessSlug)
@@ -104,7 +102,7 @@ export default function BusinessMenuPage() {
     queryFn: async () => {
       if (!businessId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('products')
         .select('*')
         .eq('tenant_id', businessId)
@@ -134,7 +132,7 @@ export default function BusinessMenuPage() {
     queryFn: async () => {
       if (!businessId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('category')
         .eq('tenant_id', businessId)

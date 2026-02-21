@@ -11,10 +11,12 @@ import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/utils/formatters';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { Button } from '@/components/ui/button';
 import FileText from 'lucide-react/dist/esm/icons/file-text';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
@@ -70,6 +72,8 @@ export interface OrderInvoiceData {
   delivery_fee?: number;
   /** Optional notes */
   notes?: string;
+  /** Amount already paid (for partial payments) */
+  amount_paid?: number;
 }
 
 export interface OrderInvoiceGeneratorProps {
@@ -411,7 +415,34 @@ export async function generateOrderInvoicePDF({
   doc.text('Total:', totalsX, yPosition);
   doc.setTextColor(brandColor.r, brandColor.g, brandColor.b);
   doc.text(formatCurrency(order.total_amount), pageWidth - margin, yPosition, { align: 'right' });
-  yPosition += 15;
+  yPosition += 10;
+
+  // Partial payment indicator
+  const amountPaid = order.amount_paid ?? 0;
+  if (amountPaid > 0) {
+    const balanceDue = Math.max(0, order.total_amount - amountPaid);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(34, 197, 94); // Green
+    doc.text('Amount Paid:', totalsX, yPosition);
+    doc.text(formatCurrency(amountPaid), pageWidth - margin, yPosition, { align: 'right' });
+    yPosition += 6;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(totalsX, yPosition, pageWidth - margin, yPosition);
+    yPosition += 6;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(balanceDue > 0 ? 239 : 34, balanceDue > 0 ? 68 : 197, balanceDue > 0 ? 68 : 94);
+    doc.text('Amount Due:', totalsX, yPosition);
+    doc.text(formatCurrency(balanceDue), pageWidth - margin, yPosition, { align: 'right' });
+    yPosition += 10;
+  }
+
+  yPosition += 5;
 
   // Payment & Delivery Method Info
   if (order.payment_method || order.delivery_method) {
@@ -817,7 +848,16 @@ export function useOrderInvoiceSave() {
         .join('\n\n');
 
       // Insert invoice record into customer_invoices table
-      const result = await (supabase as any).from('customer_invoices').insert({
+      const insertClient = supabase as unknown as {
+        from: (table: string) => {
+          insert: (data: Record<string, unknown>) => {
+            select: (columns: string) => {
+              maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }>;
+            };
+          };
+        };
+      };
+      const result = await insertClient.from('customer_invoices').insert({
         tenant_id: tenant.id,
         customer_id: customerId,
         invoice_number: invoiceNumber,
@@ -851,6 +891,14 @@ export function useOrderInvoiceSave() {
       queryClient.invalidateQueries({ queryKey: queryKeys.customerInvoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
 
+      // Cross-panel invalidation — finance hub, dashboard, collections
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'INVOICE_CREATED', tenant.id, {
+          invoiceId: (data as SavedInvoice)?.id,
+          customerId: (data as SavedInvoice)?.customer_id,
+        });
+      }
+
       const invoice = data as SavedInvoice;
       toast.success('Invoice created successfully', {
         description: `Invoice ${invoice.invoice_number} has been created and linked to the order.`,
@@ -861,7 +909,7 @@ export function useOrderInvoiceSave() {
         component: 'useOrderInvoiceSave',
       });
       toast.error('Failed to create invoice', {
-        description: error.message,
+        description: humanizeError(error),
       });
     },
   });

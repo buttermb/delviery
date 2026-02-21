@@ -7,19 +7,19 @@ import { SelfHostedAnalytics } from '@/components/admin/analytics/SelfHostedAnal
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 
 export default function AnalyticsPage() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
 
   return (
     <>
       <SEOHead title="Analytics Dashboard" />
       <div className="container mx-auto p-6">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate(-1)}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigateToAdmin('analytics-hub')}
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

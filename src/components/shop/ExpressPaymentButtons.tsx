@@ -27,12 +27,14 @@ interface ExpressPaymentButtonsProps {
 // Check if Apple Pay is available
 const checkApplePayAvailability = (): boolean => {
   if (typeof window === 'undefined') return false;
-  
+
   // Check if Apple Pay JS is available
-  if ((window as any).ApplePaySession) {
-    return (window as any).ApplePaySession.canMakePayments();
+  const win = window as unknown as Record<string, unknown>;
+  const applePaySession = win.ApplePaySession as { canMakePayments?: () => boolean } | undefined;
+  if (applePaySession?.canMakePayments) {
+    return applePaySession.canMakePayments();
   }
-  
+
   return false;
 };
 

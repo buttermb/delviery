@@ -141,7 +141,7 @@ const DELIVERY_STEPS: Array<{
 // Form validation schema
 const lookupSchema = z.object({
   orderNumber: z.string().min(1, 'Order number is required'),
-  phone: z.string().min(10, 'Valid phone number is required'),
+  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
 });
 
 type LookupFormData = z.infer<typeof lookupSchema>;

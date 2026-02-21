@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 export interface VendorPriceHistoryEntry {
   id: string;
@@ -151,9 +153,13 @@ export function useDismissPriceAlert() {
       }
     },
     onSuccess: () => {
+      toast.success('Price alert dismissed');
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.all, 'price-alerts'],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to dismiss price alert'));
     },
   });
 }
@@ -231,9 +237,13 @@ export function useUpdatePriceAlertSettings() {
       }
     },
     onSuccess: (_, variables) => {
+      toast.success('Alert settings updated successfully');
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.detail(tenant?.id || '', variables.vendorId), 'alert-settings'],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to update alert settings'));
     },
   });
 }
@@ -281,6 +291,7 @@ export function useLogVendorPriceChange() {
       return data;
     },
     onSuccess: (_, variables) => {
+      toast.success('Price change logged successfully');
       // Invalidate price history queries
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.detail(tenant?.id || '', variables.vendorId), 'price-history'],
@@ -289,6 +300,9 @@ export function useLogVendorPriceChange() {
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.vendors.all, 'price-alerts'],
       });
+    },
+    onError: (error) => {
+      toast.error(humanizeError(error, 'Failed to log price change'));
     },
   });
 }

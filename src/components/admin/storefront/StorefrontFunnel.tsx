@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Storefront Funnel Analytics
  * Visual sales funnel showing conversion rates
@@ -209,7 +208,7 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
         </div>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t">
           <div className="text-center">
             <p className="text-2xl font-bold" style={{ color: primaryColor }}>
               {funnel?.conversion_rate || 0}%

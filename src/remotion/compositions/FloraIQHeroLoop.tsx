@@ -1,4 +1,3 @@
-// @ts-nocheck
 // src/remotion/compositions/FloraIQHeroLoop.tsx
 // 10-second looping background video for the homepage hero
 // Shows: floating menu card with data flowing through it

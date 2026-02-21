@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -55,7 +56,7 @@ export function useStockAlertSettings() {
     },
     onError: (error: Error) => {
       toast.error('Failed to update threshold', {
-        description: error.message,
+        description: humanizeError(error),
       });
       logger.error('Failed to update stock alert threshold', { error: error.message });
     },
@@ -108,7 +109,7 @@ export function useStockAlertSettings() {
     },
     onError: (error: Error) => {
       toast.error('Failed to update thresholds', {
-        description: error.message,
+        description: humanizeError(error),
       });
       logger.error('Failed to bulk update stock alert thresholds', { error: error.message });
     },

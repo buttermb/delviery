@@ -750,6 +750,7 @@ export function InventoryAlerts() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search products by name or SKU..."
+              aria-label="Search products by name or SKU"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

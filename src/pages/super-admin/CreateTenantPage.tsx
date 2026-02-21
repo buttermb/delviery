@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
-// @ts-nocheck
 /**
  * Create Tenant Page
  * Form for creating new tenants with trial subscription
@@ -21,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
@@ -68,7 +66,7 @@ export default function CreateTenantPage() {
         title: 'Tenant Created',
         description: 'The tenant has been created successfully.',
       });
-      navigate(`/super-admin/tenants/${result.tenant_id || ''}`);
+      navigate(`/super-admin/tenants/${(result as any).tenant_id || ''}`);
     },
     onError: (error) => {
       logger.error('Failed to create tenant', error);
@@ -284,6 +282,7 @@ export default function CreateTenantPage() {
                 Cancel
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {createMutation.isPending ? 'Creating...' : 'Create Tenant'}
               </Button>
             </div>

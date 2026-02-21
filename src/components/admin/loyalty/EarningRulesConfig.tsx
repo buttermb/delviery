@@ -151,7 +151,7 @@ export function EarningRulesConfig() {
 
           <div className="space-y-4 pt-4 border-t">
             <h3 className="font-semibold">Tier-Based Multipliers</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="bronze_multiplier">Bronze Multiplier</Label>
                 <Input

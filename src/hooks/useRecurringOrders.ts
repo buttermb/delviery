@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from "@/lib/logger";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -134,7 +135,7 @@ export function useRecurringOrders() {
       toast.success("Recurring order schedule created");
     },
     onError: (error) => {
-      toast.error(`Failed to create schedule: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to create schedule'));
     },
   });
 
@@ -265,7 +266,7 @@ export function useRecurringOrders() {
       toast.success("Order created from recurring schedule");
     },
     onError: (error) => {
-      toast.error(`Failed to create order: ${error.message}`);
+      toast.error(humanizeError(error, 'Failed to create order'));
     },
   });
 

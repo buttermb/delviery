@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface ChartExportProps {
   data: Record<string, unknown>[];
@@ -101,7 +102,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
           <table>
             <thead>
               <tr>
-                ${headers.map(h => `<th>${h}</th>`).join('')}
+                ${headers.map(h => `<th scope="col">${h}</th>`).join('')}
               </tr>
             </thead>
             <tbody>
@@ -112,7 +113,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
               `).join('')}
             </tbody>
           </table>
-          <div class="timestamp">Generated: ${new Date().toLocaleString()}</div>
+          <div class="timestamp">Generated: ${formatSmartDate(new Date(), { includeTime: true })}</div>
         </body>
       </html>
     `);

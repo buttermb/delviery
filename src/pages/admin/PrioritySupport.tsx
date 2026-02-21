@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -94,11 +95,7 @@ export default function PrioritySupport() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">Loading support tickets...</div>
-      </div>
-    );
+    return <EnhancedLoadingState variant="table" message="Loading support tickets..." />;
   }
 
   const openTickets = tickets?.filter((t: any) => t.status === 'open').length || 0;

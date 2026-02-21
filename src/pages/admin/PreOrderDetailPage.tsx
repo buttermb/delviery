@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
+import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 import { usePreOrder, useCancelPreOrder } from "@/hooks/crm/usePreOrders";
 import { RelatedEntitiesPanel } from "@/components/admin/RelatedEntitiesPanel";
 import { useRelatedPreOrderInvoices } from "@/hooks/useRelatedEntities";
@@ -47,8 +49,10 @@ export default function PreOrderDetailPage() {
     const relatedInvoices = useRelatedPreOrderInvoices(preOrder?.client_id, preOrderId);
     const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
 
+    useBreadcrumbLabel(preOrder ? `Pre-Order #${preOrder.pre_order_number}` : null);
+
     if (isLoading) {
-        return <div className="p-8 text-center">Loading pre-order details...</div>;
+        return <EnhancedLoadingState variant="card" message="Loading pre-order details..." />;
     }
 
     if (!preOrder) {

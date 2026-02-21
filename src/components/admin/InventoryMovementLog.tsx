@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, TrendingUp, TrendingDown, RefreshCw, FileDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { formatSmartDate } from '@/lib/formatters';
 
 interface InventoryMovement {
   id: string;
@@ -105,10 +106,9 @@ export function InventoryMovementLog() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Date", "Time", "Product", "Type", "Quantity", "Location", "Notes"];
+    const headers = ["Date & Time", "Product", "Type", "Quantity", "Location", "Notes"];
     const rows = movements.map(m => [
-      new Date(m.created_at).toLocaleDateString(),
-      new Date(m.created_at).toLocaleTimeString(),
+      formatSmartDate(m.created_at, { includeTime: true }),
       m.product_name,
       m.movement_type,
       m.quantity_change,
@@ -188,11 +188,7 @@ export function InventoryMovementLog() {
 
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span>
-                      {new Date(movement.created_at).toLocaleDateString()}{" "}
-                      {new Date(movement.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatSmartDate(movement.created_at, { includeTime: true })}
                     </span>
 
                     {movement.from_location && (

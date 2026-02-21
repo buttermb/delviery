@@ -28,6 +28,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { queryKeys } from '@/lib/queryKeys';
+import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 import { logger } from '@/lib/logger';
 import { VendorProductCatalog } from '@/components/admin/vendors/VendorProductCatalog';
 import { VendorOrderHistory } from '@/components/admin/vendors/VendorOrderHistory';
@@ -84,11 +85,7 @@ export default function VendorDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <DetailPageSkeleton />;
   }
 
   if (error || !vendor) {

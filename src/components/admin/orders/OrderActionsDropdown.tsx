@@ -133,7 +133,7 @@ export function OrderActionsDropdown({
   const destructiveActions = visibleActions.filter((config) => config.destructive);
 
   const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4';
-  const buttonSize = size === 'sm' ? 'h-7 w-7' : 'h-8 w-8';
+  const buttonSize = size === 'sm' ? 'h-11 w-11' : 'h-11 w-11';
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

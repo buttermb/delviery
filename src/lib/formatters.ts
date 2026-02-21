@@ -24,10 +24,14 @@ export {
   formatNumber,
   formatPercent,
   formatQuantity,
+  pluralize,
   formatCompactNumber,
   formatDuration,
   formatFileSize,
 } from './utils/formatNumber';
+
+// Phone formatting
+export { formatPhoneNumber } from './utils/formatPhone';
 
 // Time validation
 export {
@@ -47,6 +51,9 @@ export {
   generateExportFilename,
   ExportColumnHelpers,
 } from './utils/exportUtils';
+
+// Display value (null/undefined handling)
+export { displayValue, displayName } from './utils/displayValue';
 
 // Status colors
 export {
@@ -73,10 +80,23 @@ export {
  * - formatNumber(1234) → "1,234"
  * - formatPercent(12.5) → "12.5%"
  * - formatQuantity(5, 'items') → "5 items"
+ * - pluralize(1, 'item') → "1 item"
+ * - pluralize(5, 'item') → "5 items"
+ * - pluralize(1, 'category', 'categories') → "1 category"
  * - formatCompactNumber(1234567) → "1.2M"
  * - formatDuration(90) → "1 hour 30 min"
  * - formatFileSize(1024) → "1 KB"
  * 
+ * PHONE:
+ * - formatPhoneNumber('5551234567') → "(555) 123-4567"
+ * - formatPhoneNumber(null) → "—"
+ *
+ * DISPLAY VALUE:
+ * - displayValue(null) → "—"
+ * - displayValue('hello') → "hello"
+ * - displayName('John', 'Doe') → "John Doe"
+ * - displayName(null, null) → "Unknown"
+ *
  * STATUS:
  * - getStatusColors('pending') → { bg: '...', text: '...', ... }
  * - getStatusBadgeClasses('success') → "bg-green-100 text-green-800 ..."

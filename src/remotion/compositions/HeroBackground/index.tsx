@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * HeroBackground — 4-second looping gradient mesh (120 frames @ 30fps).
  * Two SVG radial-gradient blobs oscillating positions with sin/cos.

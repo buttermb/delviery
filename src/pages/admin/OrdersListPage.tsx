@@ -16,8 +16,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 
 import { DataTable, type SortState } from '@/components/shared/DataTable';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { TruncatedText } from '@/components/shared/TruncatedText';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,6 +111,10 @@ export function OrdersListPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
   // Use the order filters hook for state management with persistence
   const {
@@ -369,7 +376,7 @@ export function OrdersListPage() {
       return ids;
     },
     onSuccess: (ids) => {
-      toast.success(`${ids.length} order${ids.length > 1 ? 's' : ''} deleted`);
+      toast.success(`${ids.length} ${ids.length !== 1 ? 'orders' : 'order'} deleted`);
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
     },
     onError: (error) => {
@@ -409,11 +416,9 @@ export function OrdersListPage() {
       header: 'Customer',
       cell: ({ original }: { original: Order }) => (
         <div className="flex flex-col max-w-[180px]">
-          <span className="font-medium truncate">
-            {original.user?.full_name || original.user?.phone || 'Unknown'}
-          </span>
+          <TruncatedText text={original.user?.full_name || original.user?.phone || 'Unknown'} className="font-medium" />
           {original.user?.phone && original.user.full_name && (
-            <span className="text-xs text-muted-foreground truncate">{original.user.phone}</span>
+            <TruncatedText text={original.user.phone} className="text-xs text-muted-foreground" />
           )}
         </div>
       ),
@@ -436,7 +441,7 @@ export function OrdersListPage() {
       header: 'Total',
       sortable: true,
       cell: ({ original }: { original: Order }) => (
-        <span className="font-mono font-medium">${original.total_amount?.toFixed(2)}</span>
+        <span className="font-mono font-medium">{formatCurrency(original.total_amount)}</span>
       ),
     },
     {
@@ -455,7 +460,7 @@ export function OrdersListPage() {
       cell: ({ original }: { original: Order }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+            <Button size="sm" variant="ghost" className="h-11 w-11 p-0">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -468,7 +473,10 @@ export function OrdersListPage() {
               <Printer className="mr-2 h-4 w-4" />
               Print Order
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => toast.success('Invoice generated')}>
+            <DropdownMenuItem onClick={() => {
+              navigate(`crm/invoices/new?order_id=${original.id}`);
+              toast.success(`Creating invoice for order #${original.order_number || original.id.slice(0, 8)}`);
+            }}>
               <FileText className="mr-2 h-4 w-4" />
               Generate Invoice
             </DropdownMenuItem>
@@ -483,7 +491,10 @@ export function OrdersListPage() {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
-              onClick={() => deleteMutation.mutate([original.id])}
+              onClick={() => {
+                setOrderToDelete(original.id);
+                setDeleteDialogOpen(true);
+              }}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -514,7 +525,7 @@ export function OrdersListPage() {
             <h1>Order #${order.order_number || order.id.slice(0, 8)}</h1>
             <div class="info"><span class="label">Status:</span> ${order.status}</div>
             <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || 'Unknown'}</div>
-            <div class="info"><span class="label">Total:</span> $${order.total_amount?.toFixed(2)}</div>
+            <div class="info"><span class="label">Total:</span> ${formatCurrency(order.total_amount)}</div>
             <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
             <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
           </body>
@@ -640,9 +651,11 @@ export function OrdersListPage() {
         sort={sort}
         onSortChange={setSort}
         emptyMessage={
-          Object.keys(activeFilters).length > 0 || searchValue
-            ? "No orders match your filters"
-            : "No orders found"
+          searchValue
+            ? `No orders match your search "${searchValue}"`
+            : Object.keys(activeFilters).length > 0
+              ? "No orders match your filters"
+              : "No orders found"
         }
         enableSelection
         enableColumnVisibility
@@ -662,6 +675,20 @@ export function OrdersListPage() {
             Delete Selected
           </Button>
         }
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (orderToDelete) {
+            deleteMutation.mutate([orderToDelete]);
+            setDeleteDialogOpen(false);
+            setOrderToDelete(null);
+          }
+        }}
+        itemType="order"
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

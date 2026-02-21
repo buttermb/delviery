@@ -12,8 +12,10 @@ import { MarketplaceStore, type SectionConfig, type ExtendedThemeConfig } from '
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,9 +24,9 @@ import {
     GripVertical, Trash2, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
     Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2
+    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2, Loader2
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
@@ -47,7 +49,7 @@ import { detectAdvancedCustomizations } from '@/lib/storefrontPresets';
 import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
 
 // Define available section types (8 total)
@@ -182,7 +184,7 @@ export function StorefrontBuilder({
     onDirtyChange,
 }: StorefrontBuilderProps) {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
+    const { navigateToAdmin } = useTenantNavigation();
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();
 
@@ -203,12 +205,11 @@ export function StorefrontBuilder({
     useEffect(() => {
         if (fromMenuId) {
             logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
-            toast({
-                title: 'Creating Storefront from Menu',
+            toast.info('Creating Storefront from Menu', {
                 description: `Starting with products from "${menuName || 'your menu'}"`,
             });
         }
-    }, [fromMenuId, menuName, toast]);
+    }, [fromMenuId, menuName]);
 
     const [activeTab, setActiveTab] = useState('sections');
     const [builderMode, setBuilderMode] = useState<'simple' | 'advanced'>('simple');
@@ -257,11 +258,10 @@ export function StorefrontBuilder({
                 fontFamily: theme.typography.fontFamily.split(',')[0].trim(),
             }
         }));
-        toast({
-            title: 'Theme Applied',
+        toast.success('Theme Applied', {
             description: `${theme.name} theme has been applied to your storefront`,
         });
-    }, [toast]);
+    }, []);
 
     // History for undo/redo
     const [history, setHistory] = useState<SectionConfig[][]>([]);
@@ -361,14 +361,13 @@ export function StorefrontBuilder({
                 setThemeConfig(easyModeBuilder.derivedThemeConfig);
                 saveToHistory(sections);
             }
-            toast({
-                title: 'Advanced Mode',
+            toast.success('Advanced Mode', {
                 description: 'You now have full control over all sections and styles.',
             });
         }
 
         setBuilderMode(targetMode);
-    }, [builderMode, layoutConfig, easyModeBuilder, toast]);
+    }, [builderMode, layoutConfig, easyModeBuilder]);
 
     // Save to history
     const saveToHistory = useCallback((newConfig: SectionConfig[]) => {
@@ -465,9 +464,8 @@ export function StorefrontBuilder({
         },
         onSuccess: (newStore: unknown) => {
             const storeData = newStore as { store_name: string };
-            toast({
-                title: "Store created!",
-                description: `Your storefront "${storeData.store_name}" has been created. 500 credits have been deducted.`
+            toast.success('Store created!', {
+                description: `Your storefront "${storeData.store_name}" has been created. 500 credits have been deducted.`,
             });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
             setShowCreateDialog(false);
@@ -475,10 +473,8 @@ export function StorefrontBuilder({
             setNewStoreSlug('');
         },
         onError: (err) => {
-            toast({
-                title: "Creation failed",
-                description: "Could not create storefront. Please try again.",
-                variant: "destructive"
+            toast.error('Creation failed', {
+                description: 'Could not create storefront. Please try again.',
             });
             logger.error('Failed to create storefront', err);
         }
@@ -517,32 +513,64 @@ export function StorefrontBuilder({
         return { layoutConfig, themeConfig };
     }, [builderMode, easyModeBuilder, layoutConfig, themeConfig]);
 
+    // Sync layout_config and theme_config to marketplace_profiles so the
+    // public shop RPC (get_marketplace_store_by_slug) returns fresh data.
+    const syncToMarketplaceProfiles = async (
+        layoutCfg: SectionConfig[],
+        themeCfg: ExtendedThemeConfig,
+    ) => {
+        try {
+            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
+                .from('marketplace_profiles')
+                .update({
+                    layout_config: JSON.parse(JSON.stringify(layoutCfg)),
+                    theme_config: themeCfg,
+                })
+                .eq('tenant_id', tenant?.id || '');
+            if (error) {
+                logger.warn('Failed to sync config to marketplace_profiles', error);
+            }
+        } catch (e) {
+            logger.warn('marketplace_profiles sync error', e);
+        }
+    };
+
     // Save draft mutation
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
             const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
+            const colors = (themeToSave as ExtendedThemeConfig)?.colors;
 
-            const { error } = await (supabase as any)
+            const updatePayload: Record<string, unknown> = {
+                layout_config: JSON.parse(JSON.stringify(configToSave)),
+                theme_config: themeToSave,
+                updated_at: new Date().toISOString(),
+            };
+
+            // Sync top-level color columns so the shop shell (header/footer) reflects builder changes
+            if (colors?.primary) updatePayload.primary_color = colors.primary;
+            if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
+            if (colors?.accent) updatePayload.accent_color = colors.accent;
+
+            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
-                .update({
-                    layout_config: JSON.parse(JSON.stringify(configToSave)),
-                    theme_config: themeToSave,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
+
+            // Sync to marketplace_profiles so live store RPC picks up changes
+            await syncToMarketplaceProfiles(configToSave, themeToSave as ExtendedThemeConfig);
         },
         onSuccess: () => {
-            toast({ title: "Draft saved", description: "Your changes have been saved as a draft." });
+            toast.success('Draft saved', { description: 'Your changes have been saved as a draft.' });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             easyModeBuilder.markClean();
         },
         onError: (err) => {
-            toast({
-                title: "Save failed",
-                description: "Could not save changes. Please try again.",
-                variant: "destructive"
+            toast.error('Save failed', {
+                description: 'Could not save changes. Please try again.',
             });
             logger.error('Failed to save draft', err);
         }
@@ -552,29 +580,39 @@ export function StorefrontBuilder({
     const publishMutation = useMutation({
         mutationFn: async () => {
             const { layoutConfig: configToSave, themeConfig: themeToSave } = getConfigToSave();
+            const colors = (themeToSave as ExtendedThemeConfig)?.colors;
 
-            const { error } = await (supabase as any)
+            const updatePayload: Record<string, unknown> = {
+                layout_config: JSON.parse(JSON.stringify(configToSave)),
+                theme_config: themeToSave,
+                is_public: true,
+                updated_at: new Date().toISOString(),
+            };
+
+            // Sync top-level color columns so the shop shell (header/footer) reflects builder changes
+            if (colors?.primary) updatePayload.primary_color = colors.primary;
+            if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
+            if (colors?.accent) updatePayload.accent_color = colors.accent;
+
+            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
-                .update({
-                    layout_config: JSON.parse(JSON.stringify(configToSave)),
-                    theme_config: themeToSave,
-                    is_public: true,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('tenant_id', tenant?.id || '');
 
             if (error) throw error;
+
+            // Sync to marketplace_profiles so live store RPC picks up changes
+            await syncToMarketplaceProfiles(configToSave, themeToSave as ExtendedThemeConfig);
         },
         onSuccess: () => {
-            toast({ title: "Store published!", description: "Your storefront is now live and visible to customers." });
+            toast.success('Store published!', { description: 'Your storefront is now live and visible to customers.' });
             queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             easyModeBuilder.markClean();
         },
         onError: (err) => {
-            toast({
-                title: "Publish failed",
-                description: "Could not publish storefront. Please try again.",
-                variant: "destructive"
+            toast.error('Publish failed', {
+                description: 'Could not publish storefront. Please try again.',
             });
             logger.error('Failed to publish storefront', err);
         }
@@ -606,7 +644,7 @@ export function StorefrontBuilder({
         saveToHistory(newConfig);
         if (selectedSectionId === sectionToDelete) setSelectedSectionId(null);
         setSectionToDelete(null);
-        toast({ title: "Section deleted" });
+        toast.success('Section deleted');
     };
 
     const cancelRemoveSection = () => {
@@ -630,7 +668,7 @@ export function StorefrontBuilder({
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
         setSelectedSectionId(duplicated.id);
-        toast({ title: "Section duplicated" });
+        toast.success('Section duplicated');
     };
 
     const toggleVisibility = (id: string, e: React.MouseEvent) => {
@@ -681,7 +719,7 @@ export function StorefrontBuilder({
         }));
         setLayoutConfig(newSections);
         saveToHistory(newSections);
-        toast({ title: `Applied "${template.name}" template` });
+        toast.success(`Applied "${template.name}" template`);
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -722,9 +760,9 @@ export function StorefrontBuilder({
         if (onRequestClose) {
             onRequestClose();
         } else {
-            window.history.back();
+            navigateToAdmin('storefront');
         }
-    }, [onRequestClose]);
+    }, [onRequestClose, navigateToAdmin]);
 
     return (
         <div
@@ -744,15 +782,15 @@ export function StorefrontBuilder({
                     <div className="flex rounded-md bg-muted p-1">
                         <Button
                             variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
-                            size="icon" className="h-7 w-7"
+                            size="icon" className="h-11 w-11"
                             onClick={() => setDevicePreview('desktop')}><Monitor className="w-4 h-4" /></Button>
                         <Button
                             variant={devicePreview === 'tablet' ? 'secondary' : 'ghost'}
-                            size="icon" className="h-7 w-7"
+                            size="icon" className="h-11 w-11"
                             onClick={() => setDevicePreview('tablet')}><Tablet className="w-4 h-4" /></Button>
                         <Button
                             variant={devicePreview === 'mobile' ? 'secondary' : 'ghost'}
-                            size="icon" className="h-7 w-7"
+                            size="icon" className="h-11 w-11"
                             onClick={() => setDevicePreview('mobile')}><Smartphone className="w-4 h-4" /></Button>
                     </div>
                     <Separator orientation="vertical" className="h-6" />
@@ -760,7 +798,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-11 w-11"
                             onClick={undo}
                             disabled={historyIndex <= 0}
                         >
@@ -769,7 +807,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-11 w-11"
                             onClick={redo}
                             disabled={historyIndex >= history.length - 1}
                         >
@@ -782,7 +820,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
                             disabled={previewZoom <= 0.5}
                         >
@@ -792,7 +830,7 @@ export function StorefrontBuilder({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
                             disabled={previewZoom >= 1.2}
                         >
@@ -838,20 +876,23 @@ export function StorefrontBuilder({
                         </Button>
                     </div>
 
-                    <Button
-                        disabled={saveDraftMutation.isPending || publishMutation.isPending}
+                    <SaveButton
+                        isPending={saveDraftMutation.isPending}
+                        isSuccess={saveDraftMutation.isSuccess}
+                        disabled={publishMutation.isPending}
                         onClick={() => saveDraftMutation.mutate()}
                         variant="outline"
                         size="sm"
                     >
-                        {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
-                    </Button>
+                        Save Draft
+                    </SaveButton>
                     <Button
                         disabled={publishMutation.isPending}
                         onClick={() => publishMutation.mutate()}
                         size="sm"
                         className="bg-green-600 hover:bg-green-700"
                     >
+                        {publishMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Publish
                     </Button>
                 </div>
@@ -1093,7 +1134,7 @@ export function StorefrontBuilder({
                                 <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
                                 <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRightPanelOpen(false)}>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-6 sm:w-6" onClick={() => setRightPanelOpen(false)}>
                                 <X className="w-4 h-4" />
                             </Button>
                         </div>
@@ -1179,22 +1220,14 @@ export function StorefrontBuilder({
             </Dialog>
 
             {/* Delete Section Confirmation Dialog */}
-            <AlertDialog open={!!sectionToDelete} onOpenChange={(open) => !open && cancelRemoveSection()}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Section?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete this section? This action cannot be undone.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={cancelRemoveSection}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmRemoveSection} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDeleteDialog
+                open={!!sectionToDelete}
+                onOpenChange={(open) => !open && cancelRemoveSection()}
+                onConfirm={confirmRemoveSection}
+                title="Delete Section?"
+                description="Are you sure you want to delete this section? This action cannot be undone."
+                itemType="section"
+            />
 
             {/* Out of Credits Modal */}
             <OutOfCreditsModal

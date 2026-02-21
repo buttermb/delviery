@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Quick Data Export Panel
  * Export orders, users, products with filters
@@ -74,7 +73,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         const profilesMap: Record<string, any> = {};
 
         if (userIds.length > 0) {
-          const { data: profiles } = await supabase
+          const { data: profiles } = await (supabase as any)
             .from('profiles')
             .select('user_id, full_name, email')
             .in('user_id', userIds);

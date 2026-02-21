@@ -5,7 +5,8 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
@@ -18,7 +19,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 import { useStorefrontOrders, type OrderStatusFilter, type OrderFilters } from '@/hooks/useStorefrontOrders';
 import {
   User,
@@ -37,11 +37,13 @@ import {
   Mail,
   Loader2,
   Filter,
-  Calendar
+  Calendar,
+  UserPen
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface CustomerOrder {
   id: string;
@@ -59,11 +61,11 @@ export default function AccountPage() {
   const navigate = useNavigate();
   const { store } = useShop();
   const { accentColor } = useLuxuryTheme();
-  const { toast } = useToast();
 
   const [email, setEmail] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState<string | null>(null);
   const [trackingNumber, setTrackingNumber] = useState('');
 
   // Magic Link state
@@ -82,6 +84,7 @@ export default function AccountPage() {
           const customer = JSON.parse(savedCustomer);
           setCustomerId(customer.id);
           setEmail(customer.email);
+          setCustomerName(customer.first_name || null);
           setIsLoggedIn(true);
         } catch {
           // Invalid data
@@ -124,10 +127,8 @@ export default function AccountPage() {
       });
 
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
-      toast({
-        title: 'Account not found',
+      toast.error('Account not found', {
         description: 'No account found with this email. Please check the email or place an order first.',
-        variant: 'destructive',
       });
       return;
     }
@@ -137,8 +138,9 @@ export default function AccountPage() {
     // Save to localStorage
     localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(customer));
     setCustomerId(customer.id);
+    setCustomerName(customer.first_name || null);
     setIsLoggedIn(true);
-    toast({ title: `Welcome back, ${customer.first_name || 'Customer'}!` });
+    toast.success(`Welcome back, ${customer.first_name || 'Customer'}!`);
   };
 
   // Track order by number
@@ -158,10 +160,8 @@ export default function AccountPage() {
     if (orderData?.tracking_token) {
       navigate(`/shop/${storeSlug}/track/${orderData.tracking_token}`);
     } else {
-      toast({
-        title: 'Order not found',
+      toast.error('Order not found', {
         description: 'Please check your order number and try again.',
-        variant: 'destructive',
       });
     }
   };
@@ -176,7 +176,7 @@ export default function AccountPage() {
     setEmail('');
     setShowMagicCode(false);
     setCodeSentTo(null);
-    toast({ title: 'Logged out successfully' });
+    toast.success('Logged out successfully');
   };
 
   // Send magic code
@@ -195,8 +195,7 @@ export default function AccountPage() {
 
       // In production, this would be sent via email.
       // For this demo/MVP, we show it in the toast as confirmed by requirement.
-      toast({
-        title: 'Magic code sent!',
+      toast.success('Magic code sent!', {
         description: `Check your email at ${email}. (Code: ${code})`,
       });
 
@@ -204,10 +203,8 @@ export default function AccountPage() {
       setShowMagicCode(true);
     } catch (error) {
       logger.error('Failed to send magic code', error);
-      toast({
-        title: 'Failed to send code',
+      toast.error('Failed to send code', {
         description: 'Please try again or use email lookup.',
-        variant: 'destructive',
       });
     } finally {
       setIsSendingCode(false);
@@ -230,10 +227,8 @@ export default function AccountPage() {
       if (error) throw error;
 
       if (!customer) {
-        toast({
-          title: 'Account not found',
+        toast.error('Account not found', {
           description: 'No account found with this email. Please sign up or place an order.',
-          variant: 'destructive',
         });
         return;
       }
@@ -242,18 +237,18 @@ export default function AccountPage() {
       localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(customer));
       setCustomerId(customer.id);
       setEmail(customer.email);
+      setCustomerName(customer.first_name || null);
       setIsLoggedIn(true);
 
-      toast({ title: `Welcome back, ${customer.first_name || 'Customer'}!` });
+      toast.success(`Welcome back, ${customer.first_name || 'Customer'}!`);
       setShowMagicCode(false);
       setMagicCode('');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Failed to verify magic code', error);
-      toast({
-        title: 'Verification failed',
-        description: error.message || 'Invalid code or expired.',
-        variant: 'destructive',
+      const message = error instanceof Error ? error.message : 'Invalid code or expired.';
+      toast.error('Verification failed', {
+        description: message,
       });
     } finally {
       setIsVerifyingCode(false);
@@ -479,7 +474,9 @@ export default function AccountPage() {
             {email.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">My Account</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">
+              {customerName ? `Hi, ${customerName}` : 'My Account'}
+            </h1>
             <div className="flex items-center gap-2 text-neutral-500 font-medium">
               <Mail className="w-4 h-4" />
               {email}
@@ -501,6 +498,10 @@ export default function AccountPage() {
           <TabsTrigger value="wishlist">
             <Heart className="w-4 h-4 mr-2" />
             Wishlist
+          </TabsTrigger>
+          <TabsTrigger value="profile">
+            <UserPen className="w-4 h-4 mr-2" />
+            Profile
           </TabsTrigger>
           <TabsTrigger value="track">
             <Search className="w-4 h-4 mr-2" />
@@ -652,6 +653,28 @@ export default function AccountPage() {
           />
         </TabsContent>
 
+        {/* Profile Tab */}
+        <TabsContent value="profile">
+          <ProfileSection
+            customerId={customerId!}
+            storeId={store.id}
+            tenantId={store.tenant_id}
+            primaryColor={store.primary_color}
+            onProfileUpdated={(name: string | null) => {
+              setCustomerName(name);
+              // Update localStorage with new name
+              const saved = localStorage.getItem(`shop_customer_${store.id}`);
+              if (saved) {
+                try {
+                  const parsed = JSON.parse(saved);
+                  parsed.first_name = name;
+                  localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(parsed));
+                } catch { /* ignore */ }
+              }
+            }}
+          />
+        </TabsContent>
+
         {/* Track Order Tab */}
         <TabsContent value="track">
           <Card className="border-none shadow-sm">
@@ -703,7 +726,6 @@ function WishlistSection({
   primaryColor: string;
   accentColor?: string;
 }) {
-  const { toast } = useToast();
   const { setCartItemCount } = useShop();
 
   // Get wishlist from localStorage with error handling
@@ -737,9 +759,9 @@ function WishlistSection({
       const newWishlist = wishlistIds.filter((id) => id !== productId);
       localStorage.setItem(`shop_wishlist_${storeId}`, JSON.stringify(newWishlist));
       refetch();
-      toast({ title: 'Removed from wishlist' });
+      toast.success('Removed from wishlist');
     } catch {
-      toast({ title: 'Removed from wishlist', description: 'Changes may not persist' });
+      toast.success('Removed from wishlist', { description: 'Changes may not persist' });
       refetch();
     }
   };
@@ -764,10 +786,10 @@ function WishlistSection({
 
       localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, item: any) => sum + item.quantity, 0));
-      toast({ title: 'Added to cart' });
+      toast.success('Added to cart');
     } catch (error) {
       logger.error('Failed to add to cart from wishlist', error);
-      toast({ title: 'Failed to add to cart', variant: 'destructive' });
+      toast.error('Failed to add to cart');
     }
   };
 
@@ -895,9 +917,7 @@ function OrderCard({
   getStatusBadge: (status: string) => React.ReactNode;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { toast } = useToast();
   const { setCartItemCount } = useShop();
-  const _navigate = useNavigate();
 
   // Add individual item to cart
   const addItemToCart = (item: any) => {
@@ -920,16 +940,10 @@ function OrderCard({
       localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, c: any) => sum + c.quantity, 0));
 
-      toast({
-        title: 'Added to bag!',
-        description: item.name,
-      });
+      toast.success('Added to bag!', { description: item.name });
     } catch (error) {
       logger.error('Failed to add item to cart', error);
-      toast({
-        title: 'Failed to add item',
-        variant: 'destructive',
-      });
+      toast.error('Failed to add item');
     }
   };
 
@@ -1049,7 +1063,6 @@ function QuickReorderButton({
   primaryColor: string;
 }) {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { setCartItemCount } = useShop();
   const { storeSlug } = useParams();
   const [isReordering, setIsReordering] = useState(false);
@@ -1084,20 +1097,15 @@ function QuickReorderButton({
       localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, c: any) => sum + c.quantity, 0));
 
-      toast({
-        title: 'Items added to cart',
-        description: `${order.items?.length || 0} item(s) from order ${order.order_number}`,
+      toast.success('Items added to cart', {
+        description: `${(order.items?.length || 0) === 1 ? '1 item' : `${order.items?.length || 0} items`} from order ${order.order_number}`,
       });
 
       // Navigate to cart
       navigate(`/shop/${storeSlug}/cart`);
     } catch (error) {
       logger.error('Failed to reorder', error, { component: 'QuickReorderButton' });
-      toast({
-        title: 'Failed to reorder',
-        description: 'Please try again',
-        variant: 'destructive',
-      });
+      toast.error('Failed to reorder', { description: 'Please try again' });
     } finally {
       setIsReordering(false);
     }
@@ -1114,5 +1122,356 @@ function QuickReorderButton({
       <RefreshCw className={`w-4 h-4 mr-2 ${isReordering ? 'animate-spin' : ''}`} />
       Reorder
     </Button>
+  );
+}
+
+// Profile Section Component
+interface ProfileFormData {
+  first_name: string;
+  last_name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+}
+
+function ProfileSection({
+  customerId,
+  storeId: _storeId,
+  tenantId,
+  primaryColor,
+  onProfileUpdated,
+}: {
+  customerId: string;
+  storeId: string;
+  tenantId: string;
+  primaryColor: string;
+  onProfileUpdated: (name: string | null) => void;
+}) {
+  const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<ProfileFormData>({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip_code: '',
+  });
+
+  // Fetch customer profile
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['customer-profile', customerId, tenantId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('first_name, last_name, phone, address, city, state, zip_code, email')
+        .eq('id', customerId)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (error) {
+        logger.error('Failed to fetch customer profile', error, { component: 'ProfileSection' });
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!customerId && !!tenantId,
+  });
+
+  // Populate form when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip_code: profile.zip_code || '',
+      });
+    }
+  }, [profile]);
+
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: ProfileFormData) => {
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          first_name: data.first_name.trim(),
+          last_name: data.last_name.trim(),
+          phone: data.phone.trim() || null,
+          address: data.address.trim() || null,
+          city: data.city.trim() || null,
+          state: data.state.trim() || null,
+          zip_code: data.zip_code.trim() || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', customerId)
+        .eq('tenant_id', tenantId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Profile updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['customer-profile', customerId, tenantId] });
+      setIsEditing(false);
+      onProfileUpdated(formData.first_name.trim() || null);
+    },
+    onError: (error) => {
+      logger.error('Failed to update profile', error, { component: 'ProfileSection' });
+      toast.error('Failed to update profile', { description: 'Please try again.' });
+    },
+  });
+
+  const handleSave = () => {
+    if (!formData.first_name.trim()) {
+      toast.error('First name is required');
+      return;
+    }
+    updateProfileMutation.mutate(formData);
+  };
+
+  const handleCancel = () => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip_code: profile.zip_code || '',
+      });
+    }
+    setIsEditing(false);
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="border-none shadow-sm">
+        <CardHeader>
+          <CardTitle>My Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-12 rounded-lg" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <Card className="border-none shadow-sm">
+        <CardHeader>
+          <CardTitle>My Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <User className="w-12 h-12 mx-auto mb-3 text-neutral-300" />
+            <p className="text-neutral-500">Profile not found. Place an order to create your profile.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-none shadow-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl font-bold">My Profile</CardTitle>
+            <CardDescription>Manage your personal information and delivery address</CardDescription>
+          </div>
+          {!isEditing && (
+            <Button
+              variant="outline"
+              onClick={() => setIsEditing(true)}
+              className="rounded-full px-6"
+            >
+              <UserPen className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="max-w-lg space-y-6">
+          {/* Name */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="first_name">First Name</Label>
+              {isEditing ? (
+                <Input
+                  id="first_name"
+                  value={formData.first_name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, first_name: e.target.value }))}
+                  placeholder="First name"
+                  className="h-11"
+                />
+              ) : (
+                <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                  {profile.first_name || '—'}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              {isEditing ? (
+                <Input
+                  id="last_name"
+                  value={formData.last_name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, last_name: e.target.value }))}
+                  placeholder="Last name"
+                  className="h-11"
+                />
+              ) : (
+                <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                  {profile.last_name || '—'}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email (read-only) */}
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center text-neutral-500">
+              {profile.email}
+            </p>
+          </div>
+
+          {/* Phone */}
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            {isEditing ? (
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                placeholder="(555) 123-4567"
+                className="h-11"
+              />
+            ) : (
+              <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                {formatPhoneNumber(profile.phone)}
+              </p>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Address */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-neutral-900">Delivery Address</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">Street Address</Label>
+              {isEditing ? (
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                  placeholder="123 Main St"
+                  className="h-11"
+                />
+              ) : (
+                <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                  {profile.address || '—'}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                {isEditing ? (
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                    placeholder="City"
+                    className="h-11"
+                  />
+                ) : (
+                  <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                    {profile.city || '—'}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                {isEditing ? (
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, state: e.target.value }))}
+                    placeholder="State"
+                    className="h-11"
+                  />
+                ) : (
+                  <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                    {profile.state || '—'}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="zip_code">ZIP Code</Label>
+                {isEditing ? (
+                  <Input
+                    id="zip_code"
+                    value={formData.zip_code}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, zip_code: e.target.value }))}
+                    placeholder="12345"
+                    className="h-11"
+                  />
+                ) : (
+                  <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                    {profile.zip_code || '—'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          {isEditing && (
+            <div className="flex gap-3 pt-4">
+              <Button
+                className="font-bold rounded-lg px-8"
+                style={{ backgroundColor: primaryColor }}
+                onClick={handleSave}
+                disabled={updateProfileMutation.isPending}
+              >
+                {updateProfileMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-lg px-6"
+                onClick={handleCancel}
+                disabled={updateProfileMutation.isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

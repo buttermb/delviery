@@ -50,6 +50,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Union type for all communication sources
 interface CommunicationItem {
@@ -86,6 +87,7 @@ export function CommunicationHistory({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { navigateToAdmin } = useTenantNavigation();
+  const isMobile = useIsMobile();
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [newMessage, setNewMessage] = useState({
     type: 'email' as 'email' | 'sms',
@@ -501,7 +503,7 @@ export function CommunicationHistory({
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
                     <Calendar
                       initialFocus
                       mode="range"
@@ -516,7 +518,7 @@ export function CommunicationHistory({
                           to: range?.to,
                         });
                       }}
-                      numberOfMonths={2}
+                      numberOfMonths={isMobile ? 1 : 2}
                     />
                   </PopoverContent>
                 </Popover>

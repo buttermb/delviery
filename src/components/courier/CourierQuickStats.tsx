@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Package, DollarSign, TrendingUp, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from '@/lib/formatters';
 
 interface CourierQuickStatsProps {
   todayDeliveries: number;
@@ -39,7 +40,7 @@ export function CourierQuickStats({
     {
       icon: DollarSign,
       label: "Today's Earnings",
-      value: `$${todayEarned.toFixed(2)}`,
+      value: formatCurrency(todayEarned),
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
@@ -53,7 +54,7 @@ export function CourierQuickStats({
     {
       icon: TrendingUp,
       label: "Per Delivery",
-      value: todayDeliveries > 0 ? `$${(todayEarned / todayDeliveries).toFixed(2)}` : "$0.00",
+      value: todayDeliveries > 0 ? formatCurrency(todayEarned / todayDeliveries) : "$0.00",
       color: "text-orange-600",
       bgColor: "bg-orange-100",
     },

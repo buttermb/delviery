@@ -18,7 +18,7 @@ export function TableSkeleton({ rows = 5, cols = 4, className }: TableSkeletonPr
         <thead className="border-b bg-muted/50">
           <tr>
             {Array.from({ length: cols }).map((_, i) => (
-              <th key={i} className="h-12 px-4 text-left">
+              <th key={i} scope="col" className="h-12 px-4 text-left">
                 <Skeleton className="h-4 w-20" />
               </th>
             ))}

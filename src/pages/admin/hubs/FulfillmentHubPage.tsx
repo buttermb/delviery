@@ -24,6 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
@@ -82,7 +83,7 @@ export default function FulfillmentHubPage() {
                         hubHref="fulfillment-hub"
                         currentTab={tabs.find(t => t.id === activeTab)?.label}
                     />
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
                             <h1 className="text-2xl font-bold">Fulfillment & Delivery</h1>
                             <p className="text-muted-foreground text-sm">
@@ -118,58 +119,74 @@ export default function FulfillmentHubPage() {
 
                 {/* Dashboard Tab */}
                 <TabsContent value="dashboard" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <DeliveryManagement />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Delivery Dashboard">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <DeliveryManagement />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Pending Shipments Tab */}
                 <TabsContent value="pending" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders statusFilter="pending" />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Pending Shipments">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LiveOrders statusFilter="pending" />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* In Transit Tab */}
                 <TabsContent value="in-transit" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LiveOrders statusFilter="in_transit" />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="In Transit">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LiveOrders statusFilter="in_transit" />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Live Map Tab */}
                 <TabsContent value="map" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <LiveMap />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Live Map">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <LiveMap />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Couriers Tab */}
                 <TabsContent value="couriers" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <Couriers />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Couriers">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <Couriers />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Fleet Tab */}
                 <TabsContent value="fleet" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <FleetManagement />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Fleet Management">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <FleetManagement />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Routes Tab */}
                 <TabsContent value="routes" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <RouteOptimization />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Route Optimization">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <RouteOptimization />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
 
                 {/* Returns Tab */}
                 <TabsContent value="returns" className="m-0">
-                    <Suspense fallback={<TabSkeleton />}>
-                        <ReturnsManagementPage />
-                    </Suspense>
+                    <ModuleErrorBoundary moduleName="Returns">
+                        <Suspense fallback={<TabSkeleton />}>
+                            <ReturnsManagementPage />
+                        </Suspense>
+                    </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
         </div>

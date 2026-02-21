@@ -7,6 +7,7 @@ import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   Dialog,
   DialogContent,
@@ -202,8 +203,9 @@ export function OrderCloneToB2BDialog({
       }
 
       // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
 
       toast.success('B2B Order Created', {
         description: `Order #${data.order_number} created for ${selectedClient.business_name}`,
@@ -358,6 +360,7 @@ export function OrderCloneToB2BDialog({
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search clients..."
+                      aria-label="Search clients"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"

@@ -5,13 +5,13 @@ import { formatDistanceToNow } from 'date-fns';
 interface MenuHeaderProps {
   title: string;
   description: string | null;
-  expiresAt: string;
+  expiresAt: string | null;
   customerName?: string;
 }
 
 export function MenuHeader({ title, description, expiresAt, customerName }: MenuHeaderProps) {
-  const expiresDate = new Date(expiresAt);
-  const isExpired = expiresDate < new Date();
+  const expiresDate = expiresAt ? new Date(expiresAt) : null;
+  const isExpired = expiresDate ? expiresDate < new Date() : false;
 
   return (
     <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b">
@@ -37,18 +37,20 @@ export function MenuHeader({ title, description, expiresAt, customerName }: Menu
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className={isExpired ? 'text-destructive' : 'text-muted-foreground'}>
-                  {isExpired ? (
-                    'This menu has expired'
-                  ) : (
-                    <>
-                      Expires {formatDistanceToNow(expiresDate, { addSuffix: true })}
-                    </>
-                  )}
-                </span>
-              </div>
+              {expiresDate && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className={isExpired ? 'text-destructive' : 'text-muted-foreground'}>
+                    {isExpired ? (
+                      'This menu has expired'
+                    ) : (
+                      <>
+                        Expires {formatDistanceToNow(expiresDate, { addSuffix: true })}
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

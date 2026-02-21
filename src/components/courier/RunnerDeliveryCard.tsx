@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Phone, Package, Clock, Navigation } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { WholesaleDelivery } from '@/hooks/useWholesaleRunnerDeliveries';
+import { formatPhoneNumber } from '@/lib/formatters';
 
 interface RunnerDeliveryCardProps {
   delivery: WholesaleDelivery;
@@ -101,7 +102,7 @@ export function RunnerDeliveryCard({
               href={`tel:${delivery.client.phone}`}
               className="text-sm text-primary hover:underline"
             >
-              {delivery.client.phone}
+              {formatPhoneNumber(delivery.client.phone)}
             </a>
           </div>
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * useFreeTierLimits Hook
  * 
@@ -131,7 +130,7 @@ export function useFreeTierLimits() {
       if (!tenantId || !isFreeTier) return null;
 
       // Get or create usage record
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_free_tier_usage')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -192,7 +191,7 @@ export function useFreeTierLimits() {
     mutationFn: async ({ actionType }: { actionType: string }) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error } = await supabase.rpc('increment_free_tier_usage', {
+      const { error } = await (supabase as any).rpc('increment_free_tier_usage', {
         p_tenant_id: tenantId,
         p_action_type: actionType,
       });

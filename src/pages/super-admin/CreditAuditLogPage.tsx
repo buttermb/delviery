@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Credit Audit Log Page - Super Admin
  * 
@@ -74,8 +73,8 @@ export default function CreditAuditLogPage() {
     if (!search) return true;
     const searchLower = search.toLowerCase();
     return (
-      tx.metadata?.tenantName?.toLowerCase().includes(searchLower) ||
-      tx.metadata?.tenantSlug?.toLowerCase().includes(searchLower) ||
+      (tx.metadata?.tenantName as string)?.toLowerCase().includes(searchLower) ||
+      (tx.metadata?.tenantSlug as string)?.toLowerCase().includes(searchLower) ||
       tx.actionType?.toLowerCase().includes(searchLower) ||
       tx.description?.toLowerCase().includes(searchLower)
     );
@@ -314,9 +313,9 @@ export default function CreditAuditLogPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-sm">{tx.metadata?.tenantName || 'Unknown'}</p>
+                        <p className="font-medium text-sm">{String(tx.metadata?.tenantName || 'Unknown')}</p>
                         <p className="text-xs text-muted-foreground">
-                          @{tx.metadata?.tenantSlug || ''}
+                          @{String(tx.metadata?.tenantSlug || '')}
                         </p>
                       </div>
                     </TableCell>

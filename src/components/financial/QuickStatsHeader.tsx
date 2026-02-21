@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useQuickStats } from '@/hooks/useFinancialCommandCenter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { formatCompactCurrency } from '@/lib/formatters';
 
 interface StatItemProps {
   icon: React.ReactNode;
@@ -75,19 +76,13 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
     );
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-    return `$${value.toLocaleString()}`;
-  };
-
   return (
     <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 shadow-lg shadow-black/10">
       <div className="max-w-7xl mx-auto flex items-center justify-center md:justify-between px-2 sm:px-4 md:px-6 py-2 overflow-x-auto scrollbar-hide gap-1 sm:gap-2">
         <StatItem
           icon={<Wallet className="h-5 w-5" />}
           label="Cash"
-          value={formatCurrency(stats?.cashPosition || 0)}
+          value={formatCompactCurrency(stats?.cashPosition || 0)}
           color="success"
           onClick={() => onStatClick?.('cash')}
         />
@@ -98,8 +93,8 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
           icon={<TrendingUp className="h-5 w-5" />}
           label="Today P&L"
           value={(stats?.todayPnL || 0) >= 0 
-            ? `+${formatCurrency(stats?.todayPnL || 0)}` 
-            : formatCurrency(stats?.todayPnL || 0)
+            ? `+${formatCompactCurrency(stats?.todayPnL || 0)}` 
+            : formatCompactCurrency(stats?.todayPnL || 0)
           }
           color={(stats?.todayPnL || 0) >= 0 ? 'success' : 'danger'}
           onClick={() => onStatClick?.('pnl')}
@@ -110,7 +105,7 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <StatItem
           icon={<AlertCircle className="h-5 w-5" />}
           label="Outstanding"
-          value={formatCurrency(stats?.outstandingAR || 0)}
+          value={formatCompactCurrency(stats?.outstandingAR || 0)}
           color={(stats?.outstandingAR || 0) > 50000 ? 'danger' : 'warning'}
           onClick={() => onStatClick?.('ar')}
         />
@@ -120,7 +115,7 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <StatItem
           icon={<Package className="h-5 w-5" />}
           label="Fronted"
-          value={formatCurrency(stats?.frontedValue || 0)}
+          value={formatCompactCurrency(stats?.frontedValue || 0)}
           color="default"
           onClick={() => onStatClick?.('fronted')}
         />

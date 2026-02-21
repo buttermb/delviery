@@ -32,7 +32,9 @@ import {
   Eye,
   Clock,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useDeadLetterQueue } from '@/hooks/useDeadLetterQueue';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -45,6 +47,8 @@ export function DeadLetterQueue() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
   
   const handleViewDetails = (entry: DeadLetterEntry) => {
     setSelectedEntry(entry);
@@ -144,12 +148,13 @@ export function DeadLetterQueue() {
           <div className="flex gap-4">
             <Input
               placeholder="Search workflows..."
+              aria-label="Search workflows"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="max-w-sm"
             />
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" aria-label="Filter by status">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -214,14 +219,17 @@ export function DeadLetterQueue() {
                           onClick={() => handleRetry(entry as DeadLetterEntry)}
                           disabled={retryExecution.isPending}
                         >
-                          <RefreshCw className="h-4 w-4 mr-2" />
+                          {retryExecution.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
                           Retry
                         </Button>
                       )}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteEntry.mutate(entry.id)}
+                        onClick={() => {
+                          setEntryToDelete(entry.id);
+                          setDeleteDialogOpen(true);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -313,6 +321,20 @@ export function DeadLetterQueue() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (entryToDelete) {
+            deleteEntry.mutate(entryToDelete);
+            setDeleteDialogOpen(false);
+            setEntryToDelete(null);
+          }
+        }}
+        itemType="entry"
+        isLoading={deleteEntry.isPending}
+      />
     </div>
   );
 }

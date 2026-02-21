@@ -244,6 +244,58 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     menuName: string;
   } | null>(null);
 
+  // Reset all form state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setCurrentStep(1);
+      setName('');
+      setDescription('');
+      setSelectedProducts([]);
+      setProductSearch('');
+      setMinOrder('5');
+      setMaxOrder('50');
+      setCustomPrices({});
+      setApplyDiscount(false);
+      setDiscountPercent(10);
+      setExpirationHours(168);
+      setMaxViews(100);
+      setNeverExpires(false);
+      setAccessType('invite_only');
+      setRequireAccessCode(true);
+      setAccessCode(generateAccessCode());
+      setRequireGeofence(false);
+      setGeofenceLat('40.7128');
+      setGeofenceLng('-74.0060');
+      setGeofenceRadius('25');
+      setGeofenceLocation('New York City');
+      setTimeRestrictions(false);
+      setAllowedHoursStart('9');
+      setAllowedHoursEnd('21');
+      setScreenshotProtection(true);
+      setScreenshotWatermark(true);
+      setDeviceLocking(false);
+      setAutoBurnHours('never');
+      setWhitelistEnabled(false);
+      setWhitelistedEmails([]);
+      setWhitelistedPhones([]);
+      setNewEmail('');
+      setNewPhone('');
+      setNotifyOnSuspiciousIp(true);
+      setNotifyOnFailedCode(true);
+      setNotifyOnHighViews(true);
+      setNotifyOnShareAttempt(true);
+      setNotifyOnGeofenceViolation(true);
+      setShowBranding(true);
+      setAppearanceStyle('professional');
+      setShowProductImages(true);
+      setShowAvailability(true);
+      setShowContactInfo(false);
+      setCustomMessage('');
+      setHeaderImage('');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   const { data: inventory } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
   const bulkGenerateImages = useBulkGenerateImages();
@@ -622,6 +674,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products by name, category, or strain..."
+                  aria-label="Search products"
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   className="pl-9"
@@ -697,7 +750,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="minOrder">Min Order (lbs)</Label>
                   <Input
@@ -794,7 +847,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0"
+                              className="h-11 w-11 p-0"
                               onClick={() => removeCustomPrice(productId)}
                             >
                               <X className="h-3 w-3" />

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -97,7 +96,8 @@ export function useMigration() {
     try {
       setState(prev => ({ ...prev, error: null }));
       
-      const format = detectFormat(file);
+      const formatResult = await detectFormat(file);
+      const format = formatResult.format;
       
       if (format === 'excel' || format === 'csv') {
         const arrayBuffer = await file.arrayBuffer();

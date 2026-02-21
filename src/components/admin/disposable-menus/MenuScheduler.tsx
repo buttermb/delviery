@@ -10,6 +10,7 @@ import Repeat from "lucide-react/dist/esm/icons/repeat";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
 import { Separator } from '@/components/ui/separator';
+import { formatSmartDate } from '@/lib/formatters';
 import {
   Select,
   SelectContent,
@@ -56,23 +57,10 @@ const formatDateTimeLocal = (isoString: string | null): string => {
   }
 };
 
-const formatDisplayDate = (isoString: string | null, timezone: string): string => {
+const formatDisplayDate = (isoString: string | null, _timezone: string): string => {
   if (!isoString) return 'Not set';
-  try {
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleString('en-US', {
-      timeZone: timezone,
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  } catch {
-    return 'Invalid date';
-  }
+  const result = formatSmartDate(isoString, { includeTime: true });
+  return result === '—' ? 'Invalid date' : result;
 };
 
 export const MenuScheduler = ({ schedule, onChange, disabled = false }: MenuSchedulerProps) => {

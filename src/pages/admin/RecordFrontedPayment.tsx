@@ -21,6 +21,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
 import type { PaymentMethod } from '@/lib/services/paymentService';
+import { formatCurrency } from '@/lib/formatters';
 
 export default function RecordFrontedPayment() {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ export default function RecordFrontedPayment() {
 
       toast({
         title: 'Success!',
-        description: `Payment of $${paymentAmount.toFixed(2)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${result.remaining > 0 ? `Remaining: $${result.remaining.toFixed(2)}` : 'Fully paid!'}`
+        description: `Payment of ${formatCurrency(paymentAmount)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${result.remaining > 0 ? `Remaining: ${formatCurrency(result.remaining)}` : 'Fully paid!'}`
       });
 
       navigateToAdmin('inventory/fronted');
@@ -120,7 +121,7 @@ export default function RecordFrontedPayment() {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin('fronted-inventory')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -135,15 +136,15 @@ export default function RecordFrontedPayment() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Expected:</span>
-                <span className="font-bold">${frontedItem.expected_revenue?.toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(frontedItem.expected_revenue)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Already Paid:</span>
-                <span className="font-bold">${frontedItem.payment_received?.toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(frontedItem.payment_received)}</span>
               </div>
               <div className="flex justify-between text-lg border-t pt-2">
                 <span className="font-bold">Amount Owed:</span>
-                <span className="font-bold text-red-600">${amountOwed.toFixed(2)}</span>
+                <span className="font-bold text-red-600">{formatCurrency(amountOwed)}</span>
               </div>
             </div>
           </CardContent>

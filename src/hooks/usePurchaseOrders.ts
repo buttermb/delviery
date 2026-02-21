@@ -5,6 +5,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface POItem {
   product_id: string;
@@ -66,7 +67,7 @@ export function usePurchaseOrders() {
     },
     onError: (error: Error) => {
       logger.error('Failed to create purchase order', error, { component: 'usePurchaseOrders' });
-      toast.error(error.message || 'Failed to create purchase order');
+      toast.error(humanizeError(error, 'Failed to create purchase order'));
     },
   });
 
