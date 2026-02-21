@@ -1,70 +1,74 @@
 
-# Fix All Build Errors
+# Fix All Remaining Build Errors
 
 ## Objective
-Fix all 18+ TypeScript build errors across the project to achieve a clean build.
+Resolve all ~50+ TypeScript build errors across admin pages, platform pages, marketplace pages, and service files to achieve a clean build.
 
-## Changes
+## Root Causes
 
-### 1. Fix `useDirtyFormGuard.tsx` - Wrong event types (fixes 7 dialog errors)
+There are 4 main categories of errors:
 
-**File:** `src/hooks/useDirtyFormGuard.tsx`
+1. **`useUrlFilters` returns `{}` for filter values** -- The generic type inference fails when `FILTER_CONFIG` arrays use inline objects. Filter values like `searchQuery`, `statusFilter` are typed as `{}` instead of `string`, causing `.toLowerCase()`, `.replace()`, and assignment errors across Orders.tsx, ClientsPage.tsx, WholesaleOrdersPage.tsx.
 
-The `onPointerDownOutside` uses `React.PointerEvent` but Radix expects `PointerDownOutsideEvent` (a `CustomEvent`). Fix by changing the type to `Event` (or the specific Radix type) so it's compatible.
+2. **Supabase tables/RPCs not in generated types** -- Tables like `data_exports`, `referral_codes`, `marketplace_categories`, `marketplace_listings`, and RPCs like `log_vendor_price_change`, `admin_grant_tenant_access`, `get_platform_metrics`, `redeem_referral_code` aren't in the auto-generated types. Requires `(supabase as any)` casting.
 
-- Change `(e: React.PointerEvent)` to `(e: Event)` on line 51
-- Change `(e: KeyboardEvent)` to `(e: Event)` on line 57 (if needed, though this one may already work)
+3. **Type mismatches in data access** -- Properties accessed on query results typed as `unknown` or `SelectQueryError` (e.g., `CustomerDetails.tsx` arithmetic on unknown, `RevenueReports.tsx` accessing `.total`, `WhiteLabelSettings.tsx` unknown values in theme object).
 
-This single fix resolves all 7 dialog type errors in: `CreateClientDialog`, `EditClientDialog`, `OrderEditModal`, `EditMenuDialog`, `InvoicePaymentDialog`, `OrderRefundModal`, `POSRefundDialog`.
+4. **Component prop mismatches** -- `SearchInput` in `CollectionMode.tsx` passes `value`/`onChange` props that don't exist on `SearchInputProps` (it uses `defaultValue`/`onSearch`). `CashRegister.tsx` references `setCustomerDialogOpen` which is never declared.
 
-### 2. Fix `RoleBasedSidebar.tsx` - Missing `useEffect` import
+---
 
-**File:** `src/components/admin/RoleBasedSidebar.tsx` (line 5)
+## Changes by File
 
-- Add `useEffect` to the React import: `import { useState, useEffect } from 'react';`
+### Group 1: Fix `useUrlFilters` type inference (fixes ~15 errors across 3 files)
 
-### 3. Fix `OrderPaymentStatusSync.tsx` - Wrong export name
+**Files:** `Orders.tsx`, `ClientsPage.tsx`, `WholesaleOrdersPage.tsx`
 
-**File:** `src/components/admin/orders/OrderPaymentStatusSync.tsx`
+In each file, add `as const satisfies` or explicitly type the filter config, and cast the destructured filter values to `string`:
+- `const searchQuery = filters.q as string;`
+- `const statusFilter = (filters.status || 'all') as string;`
 
-- Line 53: Change `ORDER_ORDER_PAYMENT_METHODS` to `ORDER_PAYMENT_METHODS` in the import
-- Line 500: The local usage already says `ORDER_PAYMENT_METHODS`, so just fixing the import resolves both errors
+This fixes all `.toLowerCase()`, `.replace()`, `.includes()`, `ReactNode`, and assignment errors.
 
-### 4. Fix `MenuBuilderProductSelector.tsx` - `sku` not on `MenuProduct`
+### Group 2: Cast Supabase calls for untyped tables/RPCs (fixes ~20 errors)
 
-**File:** `src/components/admin/disposable-menus/MenuBuilderProductSelector.tsx`
+**Files and fixes:**
+- **`DataExport.tsx` (line 85):** `(supabase as any).from('data_exports')`
+- **`NewPurchaseOrder.tsx` (lines 142, 168, 178):** `(supabase as any).from('purchase_orders')`, `(supabase as any).from('purchase_order_items')`, `(supabase as any).rpc('log_vendor_price_change', ...)`
+- **`OfflineOrderCreate.tsx` (line 91):** `(supabase as any).from('products')`
+- **`AllTenantsPage.tsx` (line 44):** `(supabase as any).rpc('admin_grant_tenant_access', ...)`
+- **`CommissionTrackingPage.tsx` (line 16):** `(supabase as any).rpc('get_platform_metrics')`
+- **`MarketplaceCategoryManager.tsx` (line 47):** Already uses `as any` but the return cast is wrong -- change `data as MarketplaceCategory[]` to `(data as unknown as MarketplaceCategory[])`
+- **`ProductVisibilityManager.tsx` (line 46):** `(supabase as any).from('marketplace_listings')`
+- **`BusinessMenuPage.tsx`:** Cast supabase calls with `(supabase as any)`
+- **`PublicMarketplacePage.tsx`:** Cast supabase calls with `(supabase as any)`
 
-The `MenuProduct` type lacks `sku`. Add optional `sku` casting or remove sku references. Safest fix: cast `product` access to use optional chaining with `(product as any).sku` at lines 266, 268, and 464, or add `sku` to the `MenuProduct` interface.
+### Group 3: Fix type mismatches in data access
 
-### 5. Fix `TicketForm.tsx` and `CreateTicketFromChatDialog.tsx` - Missing `account_id` and `ticket_number`
+- **`AdminQuickExport.tsx` (line 81):** The `profiles` query column `email` doesn't exist in generated types. Cast: `(supabase as any).from('profiles').select('user_id, full_name, email')`
+- **`CustomerDetails.tsx` (lines 159, 229-231, 299):** Cast arithmetic expressions: `(sum + (Number((o as Record<string, unknown>).total_amount) || 0))` and `computedTotalSpent` is already a number so `.toFixed(2)` should work after fixing line 229.
+- **`CustomerInsights.tsx` (line 42):** Change cast to go through `unknown` first: `(customer as unknown as Record<string, unknown>)`
+- **`RevenueReports.tsx` (line 98):** `order.total` doesn't exist on the typed result -- it already handles this with `order.total_amount?.toString() || order.total?.toString()`. Fix: cast order as `any` in the forEach or access via `(order as any).total`.
+- **`WhiteLabelSettings.tsx` (line 88):** Cast `whiteLabelConfig as any` before assigning to `white_label` field, or cast the theme color values to `string`.
 
-**Files:**
-- `src/components/admin/support/TicketForm.tsx` (line 92-96)
-- `src/components/admin/support/CreateTicketFromChatDialog.tsx` (line 139-141)
+### Group 4: Fix component/state issues
 
-Add `account_id` and `ticket_number` to the insert objects. Use a generated ticket number (e.g., `TKT-${Date.now()}`) and a placeholder account_id or the user's ID.
+- **`CashRegister.tsx` (line 801):** Add missing state declaration: `const [customerDialogOpen, setCustomerDialogOpen] = useState(false);` near the other dialog state declarations.
+- **`CollectionMode.tsx` (line 952-956):** Change `SearchInput` props from `value={searchQuery} onChange={setSearchQuery}` to `defaultValue={searchQuery} onSearch={setSearchQuery}` to match the `SearchInputProps` interface.
+- **`Orders.tsx` (line 1425):** The `Order` type collision -- the local `Order` interface conflicts with an imported `Order` type. Fix by renaming the local interface to `LocalOrder` or casting `editOrder as any` when passing to `OrderEditModal`.
+- **`WholesaleOrdersPage.tsx` (lines 252, 258):** The filtered result type `(PurchaseOrder | WholesaleOrder)[]` can't be assigned to `PurchaseOrder[] | WholesaleOrder[]`. Fix by casting: `result as any` or typing the `filteredOrders` variable as `(PurchaseOrder | WholesaleOrder)[]`.
+- **`NewPurchaseOrder.tsx` (line 170):** Add missing `product_name` field to order items and remove `tenant_id` from the insert object (not in schema).
 
-### 6. Fix `WorkflowCanvas.tsx` - Json vs WorkflowAction[] type mismatch
+---
 
-**File:** `src/components/admin/workflow/WorkflowCanvas.tsx`
+## Technical Summary
 
-- Line 105: Change `(data as Workflow[])` to `(data as unknown as Workflow[])`
-- Line 196 and 204: Cast `workflowData` through unknown: `(workflowData as unknown as Record<string, unknown>)`
+| Category | Error Count | Fix Pattern |
+|---|---|---|
+| useUrlFilters `{}` types | ~15 | Cast filter values to `string` |
+| Untyped tables/RPCs | ~20 | `(supabase as any).from(...)` |
+| Data access type mismatches | ~10 | Cast through `unknown` or `any` |
+| Component/state issues | ~5 | Fix props, add missing state, rename types |
 
-### 7. Fix `POCreateForm.tsx` - Excessively deep type instantiation
-
-**File:** `src/components/admin/purchase-orders/POCreateForm.tsx` (line 73)
-
-Cast the supabase client to `any` for this query per the project's established pattern: `(supabase as any).from("vendors")`
-
-## Technical Details
-
-| Error Category | Files Affected | Root Cause | Fix |
-|---|---|---|---|
-| Dialog event types | 7 files | Wrong `PointerEvent` type in hook | Fix types in `useDirtyFormGuard.tsx` |
-| Missing import | 1 file | `useEffect` not imported | Add to import |
-| Wrong export name | 1 file | Typo `ORDER_ORDER_PAYMENT_METHODS` | Fix import name |
-| Missing property | 1 file | `sku` not on `MenuProduct` | Add optional property or cast |
-| Missing fields | 2 files | `account_id`, `ticket_number` required | Add required fields |
-| Type mismatch | 1 file | `Json` vs `WorkflowAction[]` | Cast through `unknown` |
-| Deep instantiation | 1 file | Supabase type complexity | Cast to `any` |
+## Estimated Files Modified
+~18 files total, all single-line or few-line fixes using the established `(supabase as any)` pattern and explicit string casts.
