@@ -523,7 +523,7 @@ export function WorkflowCanvas() {
                   <NodePalette onNodeDragStart={handleNodeDragStart} />
                   <div className="flex-1">
                     <VisualWorkflowEditor
-                      workflow={selectedWorkflow}
+                      workflow={selectedWorkflow as any}
                       onSave={handleVisualWorkflowSave}
                     />
                   </div>
@@ -604,7 +604,7 @@ export function WorkflowCanvas() {
                     <div className="space-y-2">
                       <Label>Table Name</Label>
                       <Select
-                        value={selectedWorkflow.trigger_config.table_name}
+                        value={selectedWorkflow.trigger_config.table_name as string}
                         onValueChange={(value) =>
                           setSelectedWorkflow({
                             ...selectedWorkflow,
@@ -628,7 +628,7 @@ export function WorkflowCanvas() {
                       
                       <Label>Event Type</Label>
                       <Select
-                        value={selectedWorkflow.trigger_config.event_type}
+                        value={selectedWorkflow.trigger_config.event_type as string}
                         onValueChange={(value) =>
                           setSelectedWorkflow({
                             ...selectedWorkflow,
@@ -699,14 +699,14 @@ export function WorkflowCanvas() {
 
                   {/* Add Action Button */}
                   <div className="grid grid-cols-2 gap-2">
-                    {actionTemplates.slice(0, 6).map((template) => (
+                    {actionTemplates.slice(0, 6).map((template, index) => (
                       <Button
-                        key={template.id}
+                        key={(template.id as string) || index}
                         variant="outline"
                         size="sm"
                         onClick={() => handleAddAction(template)}
                       >
-                        <span className="mr-2">{template.icon}</span>
+                        <span className="mr-2">{template.icon as React.ReactNode}</span>
                         {template.name}
                       </Button>
                     ))}

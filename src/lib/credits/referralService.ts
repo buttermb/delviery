@@ -81,19 +81,18 @@ export const REFERRAL_REWARDS = {
 export async function getOrCreateReferralCode(tenantId: string): Promise<ReferralCode | null> {
   try {
     // Check for existing code
-    const { data: existing } = await supabase
+    const { data: existing } = await sb
       .from('referral_codes')
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
       .maybeSingle();
-
     if (existing) {
       return mapDbToReferralCode(existing);
     }
 
     // Create new code using DB function
-    const { data: newCode, error: createError } = await supabase
+    const { data: newCode, error: createError } = await sb
       .rpc('generate_referral_code', { p_tenant_id: tenantId });
 
     if (createError) {
@@ -102,7 +101,7 @@ export async function getOrCreateReferralCode(tenantId: string): Promise<Referra
     }
 
     // Fetch the created code
-    const { data: created, error: refetchError } = await supabase
+    const { data: created, error: refetchError } = await sb
       .from('referral_codes')
       .select('*')
       .eq('code', newCode)
@@ -125,7 +124,7 @@ export async function getOrCreateReferralCode(tenantId: string): Promise<Referra
  */
 export async function getReferralCode(tenantId: string): Promise<ReferralCode | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('referral_codes')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -152,7 +151,7 @@ export async function validateReferralCode(code: string): Promise<{
   error?: string;
 }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('referral_codes')
       .select('*')
       .eq('code', code.toUpperCase())
@@ -190,7 +189,7 @@ export async function redeemReferralCode(
   code: string
 ): Promise<RedeemResult> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .rpc('redeem_referral_code', {
         p_referee_tenant_id: refereeTenantId,
         p_code: code.toUpperCase(),
@@ -246,7 +245,7 @@ export async function getReferralStats(tenantId: string): Promise<ReferralStats>
     }
 
     // Get redemptions
-    const { data: redemptions, error } = await supabase
+    const { data: redemptions, error } = await sb
       .from('referral_redemptions')
       .select(`
         id,
@@ -311,7 +310,7 @@ export async function getReferralLeaderboard(
   limit: number = 10
 ): Promise<Array<{ tenantId: string; referralCount: number }>> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('referral_codes')
       .select('tenant_id, uses_count')
       .order('uses_count', { ascending: false })
@@ -344,7 +343,7 @@ export async function grantConversionBonus(
 ): Promise<{ success: boolean; bonusGranted?: number }> {
   try {
     // Find the referral redemption for this tenant
-    const { data: redemption, error: findError } = await supabase
+    const { data: redemption, error: findError } = await sb
       .from('referral_redemptions')
       .select('id, referrer_tenant_id, conversion_bonus_granted')
       .eq('referee_tenant_id', convertedTenantId)
@@ -357,7 +356,7 @@ export async function grantConversionBonus(
     }
 
     // Grant bonus to referrer
-    const { error: updateCreditsError } = await supabase.rpc('purchase_credits', {
+    const { error: updateCreditsError } = await sb.rpc('purchase_credits', {
       p_tenant_id: redemption.referrer_tenant_id,
       p_amount: REFERRAL_REWARDS.paidConversionBonus,
       p_transaction_type: 'bonus',
@@ -370,13 +369,13 @@ export async function grantConversionBonus(
     }
 
     // Mark conversion as granted
-    await supabase
+    await sb
       .from('referral_redemptions')
       .update({ conversion_bonus_granted: true })
       .eq('id', redemption.id);
 
     // Create notification for referrer
-    await supabase
+    await sb
       .from('notifications')
       .insert({
         tenant_id: redemption.referrer_tenant_id,

@@ -346,10 +346,10 @@ export function parseRowsWithMapping(
 
     const row: ParsedRow = {
       rowIndex: i,
-      raw: rawRow.reduce((acc, cell, idx) => {
+      raw: rawRow.reduce<Record<string, unknown>>((acc, cell, idx) => {
         acc[`col_${idx}`] = cell;
         return acc;
-      }, {} as Record<string, unknown>),
+      }, {}),
       parsed: {},
       errors: [],
       warnings: [],
@@ -375,7 +375,7 @@ export function rowsToProducts(rows: ParsedRow[]): Partial<ParsedProduct>[] {
   return rows.map(row => {
     const product: Partial<ParsedProduct> = {
       name: String(row.parsed.name || '').trim(),
-      category: String(row.parsed.category || '').trim() || undefined,
+      category: (String(row.parsed.category || '').trim() || undefined) as any,
       strainType: parseStrainType(row.parsed.strainType),
       thcPercentage: parsePercentage(row.parsed.thc),
       cbdPercentage: parsePercentage(row.parsed.cbd),
@@ -555,8 +555,8 @@ export function getSuggestedMappings(headers: string[]): Array<{
   suggestions
     .sort((a, b) => b.confidence - a.confidence)
     .forEach(suggestion => {
-      if (!fieldMap.has(suggestion.field)) {
-        fieldMap.set(suggestion.field, suggestion);
+      if (!fieldMap.has(suggestion.field as string)) {
+        fieldMap.set(suggestion.field as string, suggestion);
       }
     });
 

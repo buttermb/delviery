@@ -5,7 +5,7 @@
 
 // Format detection
 export { detectFormat, validateInput, isCSVContent, looksLikeCannabisMenu } from './format-detector';
-export type { FormatDetectionResult } from '@/types/migration';
+// FormatDetectionResult re-exported below in types block
 
 // Excel/CSV parsing
 export {
@@ -47,7 +47,6 @@ export {
   getStandardCategories,
   isWholesaleCategory,
 } from './normalizers/category';
-export type { CannabisCategory, CategoryResult } from './normalizers/category';
 
 export {
   lookupStrain,
@@ -58,7 +57,6 @@ export {
   getStrainsByType,
   getTypicalTerpenes,
 } from './normalizers/strain';
-export type { StrainType, StrainInfo } from './normalizers/strain';
 
 // AI Prompts
 export {
