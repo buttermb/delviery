@@ -156,11 +156,11 @@ export default function CustomerDetails() {
       setPayments(paymentsData || []);
 
       // Load notes (customer_notes not in generated types)
-      const notesResult = await (supabase
-        .from('customer_notes' as 'customers')
+      const notesResult = await ((supabase as any)
+        .from('customer_notes')
         .select('id, created_at, note, note_type')
         .eq('customer_id', id as string)
-        .order('created_at', { ascending: false })) as unknown as {
+        .order('created_at', { ascending: false })) as {
           data: Array<{ id: string; created_at: string; note: string; note_type: string }> | null;
           error: unknown;
         };
@@ -226,9 +226,9 @@ export default function CustomerDetails() {
 
   // Customer Lifetime Value: compute from orders for accuracy
   const totalOrdersCount = orders.length;
-  const totalSpentFromOrders = orders.reduce((sum, o) => sum + ((o as Record<string, unknown>).total_amount as number || 0), 0);
-  const computedTotalSpent = totalSpentFromOrders > 0 ? totalSpentFromOrders : (customer?.total_spent || 0);
-  const averageOrderValue = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
+  const totalSpentFromOrders = orders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0) as number;
+  const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number((customer as any)?.total_spent || 0);
+  const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>

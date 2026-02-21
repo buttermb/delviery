@@ -82,7 +82,7 @@ export default function DataExport() {
       });
 
       // 1. Create Job Record
-      const { data: job, error: dbError } = await supabase
+      const { data: job, error: dbError } = await (supabase as any)
         .from('data_exports')
         .insert({
           tenant_id: tenantId,

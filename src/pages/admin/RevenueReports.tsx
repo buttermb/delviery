@@ -95,7 +95,7 @@ export default function RevenueReports() {
     const revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
 
     rawOrders.forEach(order => {
-      const orderTotal = parseFloat(order.total_amount?.toString() || order.total?.toString() || '0');
+      const orderTotal = parseFloat(order.total_amount?.toString() || (order as any).total?.toString() || '0');
       const status = order.status || 'unknown';
 
       // Status counts include all orders

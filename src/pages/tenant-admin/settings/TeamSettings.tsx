@@ -229,7 +229,7 @@ export default function TeamSettings() {
   };
 
   const activeMembers = teamMembers.filter(m => m.status === 'active');
-  const pendingMembers = teamMembers.filter(m => m.status === 'invited' || m.status === 'pending');
+  const pendingMembers = teamMembers.filter(m => m.status === 'invited' || (m.status as string) === 'pending');
 
   const getInitials = (name: string) => {
     return name

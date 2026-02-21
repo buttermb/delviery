@@ -37,7 +37,7 @@ export default function VendorPayoutsPage() {
             if (!tenant?.id) return { pending: 0, available: 0 };
 
             // Orders that are complete but not paid out
-            const { data: orders, error } = await supabase
+            const { data: orders, error } = await (supabase as any)
                 .from('marketplace_orders')
                 .select('total_amount, platform_fee, status, payout_id')
                 .eq('seller_tenant_id', tenant.id)

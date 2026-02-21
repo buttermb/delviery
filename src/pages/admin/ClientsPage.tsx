@@ -36,7 +36,7 @@ export default function ClientsPage() {
 
     // Filter state — persisted in URL for back-button & navigation support
     const [filters, setFilters] = useUrlFilters(CLIENTS_FILTER_CONFIG);
-    const searchTerm = filters.q;
+    const searchTerm = filters.q as string;
     const statusFilter = (filters.status || 'active') as 'active' | 'archived';
 
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);

@@ -19,36 +19,28 @@ export const SCENE_DURATIONS = {
 };
 
 export const SPRING_PRESETS = {
-  snappy: { damping: 20, mass: 0.8, stiffness: 200 },
-  smooth: { damping: 30, mass: 1, stiffness: 120 },
-  bouncy: { damping: 12, mass: 0.5, stiffness: 250 },
+  snappy: { damping: 20, mass: 0.8, stiffness: 200, overshootClamping: false },
+  smooth: { damping: 30, mass: 1, stiffness: 120, overshootClamping: false },
+  bouncy: { damping: 12, mass: 0.5, stiffness: 250, overshootClamping: false },
 };
 export const MOBILE_RESOLUTION = {
   width: 1080,
   height: 1920,
 };
 export const COLORS = {
-  // Premium Layout Colors
-  primary: '#2E1679', // Deep Indigo (Marketing Primary)
-  secondary: '#4c32a0', // Lighter Indigo
-  accent: '#F3A73D', // Gold (Marketing Accent)
+  primary: '#2E1679',
+  secondary: '#4c32a0',
+  accent: '#F3A73D',
   background: '#FFFFFF',
-
-  // Text
-  text: '#1e293b', // Slate 800
-  textLight: '#64748b', // Slate 500
-
-  // UI Elements
+  bg: '#FFFFFF',
+  text: '#1e293b',
+  textLight: '#64748b',
   border: '#e2e8f0',
   bgSubtle: '#f8fafc',
-
-  // Functional Colors
-  success: '#10B981', // Emerald 500
+  success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',
   info: '#3B82F6',
-
-  // Shadows (CSS values represented as strings for use in style objects)
   shadowElegant: '0 20px 60px -10px rgba(46, 22, 121, 0.15)',
   shadowGlass: '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5)',
 };

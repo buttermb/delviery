@@ -59,8 +59,7 @@ export default function MarketplacePurchasesPage() {
           *,
           marketplace_order_items (*),
           marketplace_profiles (
-            business_name,
-            contact_email
+            business_name
           )
         `)
                 .eq('buyer_tenant_id', tenant.id)
