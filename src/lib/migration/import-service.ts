@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+const sb = supabase as any;
 import type { ParsedProduct, ImportResult, ImportProgress } from '@/types/migration';
 import { logger } from '@/lib/logger';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
@@ -43,7 +44,7 @@ async function createImportRecord(
   fileName?: string,
   format?: string
 ): Promise<string> {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('product_imports')
     .insert({
       tenant_id: tenantId,
@@ -67,7 +68,7 @@ async function updateImportStatus(
   status: 'processing' | 'completed' | 'failed',
   summary?: Record<string, unknown>
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await sb
     .from('product_imports')
     .update({
       status,
@@ -91,7 +92,7 @@ async function createImportItem(
   status: 'pending' | 'validated' | 'imported' | 'failed',
   errors?: unknown[]
 ): Promise<string | null> {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('product_import_items')
     .insert({
       import_id: importId,
@@ -154,7 +155,7 @@ async function importSingleProduct(
 
   try {
     // Check for existing product
-    const { data: existing } = await supabase
+    const { data: existing } = await sb
       .from('products')
       .select('id, name')
       .eq('tenant_id', tenantId)
@@ -169,7 +170,7 @@ async function importSingleProduct(
       }
 
       if (options.updateExisting) {
-        const { error } = await supabase
+        const { error } = await sb
           .from('products')
           .update(toInventoryRecord(product, tenantId))
           .eq('id', existing.id);
@@ -184,7 +185,7 @@ async function importSingleProduct(
     }
 
     // Insert new product
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('products')
       .insert(toInventoryRecord(product, tenantId))
       .select('id')
@@ -338,7 +339,7 @@ export async function rollbackImport(importId: string): Promise<{
 }> {
   try {
     // Get all imported items
-    const { data: items, error: fetchError } = await supabase
+    const { data: items, error: fetchError } = await sb
       .from('product_import_items')
       .select('parsed_data')
       .eq('import_id', importId)
@@ -357,7 +358,7 @@ export async function rollbackImport(importId: string): Promise<{
 
     // Delete from products
     // Note: This is a simplified rollback - in production you'd track actual inserted IDs
-    const { error: deleteError, count } = await supabase
+    const { error: deleteError, count } = await sb
       .from('products')
       .delete()
       .in('name', productNames);
@@ -368,7 +369,7 @@ export async function rollbackImport(importId: string): Promise<{
     await updateImportStatus(importId, 'failed');
 
     // Update item statuses
-    await supabase
+    await sb
       .from('product_import_items')
       .update({ status: 'pending' })
       .eq('import_id', importId);
@@ -396,7 +397,7 @@ export async function getImportHistory(
   createdAt: string;
   itemCount?: number;
 }>> {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('product_imports')
     .select(`
       id,
@@ -443,7 +444,7 @@ export async function getImportDetails(importId: string): Promise<{
     errors?: unknown[];
   }>;
 } | null> {
-  const { data: importData, error: importError } = await supabase
+  const { data: importData, error: importError } = await sb
     .from('product_imports')
     .select('*')
     .eq('id', importId)
@@ -451,7 +452,7 @@ export async function getImportDetails(importId: string): Promise<{
 
   if (importError || !importData) return null;
 
-  const { data: items, error: itemsError } = await supabase
+  const { data: items, error: itemsError } = await sb
     .from('product_import_items')
     .select('*')
     .eq('import_id', importId)
