@@ -177,6 +177,7 @@ function CashRegisterContent() {
 
   // Customer state
   const [selectedCustomer, setSelectedCustomer] = useState<POSCustomer | null>(null);
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
 
   // Customer credit balance (for showing available store credit)
   const { balance: customerCreditBalance } = useCustomerCredit(selectedCustomer?.id);

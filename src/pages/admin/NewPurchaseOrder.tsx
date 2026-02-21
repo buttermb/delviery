@@ -139,7 +139,7 @@ export default function NewPurchaseOrder() {
             // 1. Create Purchase Order
             const poNumber = `PO-${format(new Date(), 'yyMMdd')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
-            const { data: po, error: poError } = await supabase
+            const { data: po, error: poError } = await (supabase as any)
                 .from('purchase_orders')
                 .insert({
                     tenant_id: tenant.id,
@@ -159,13 +159,13 @@ export default function NewPurchaseOrder() {
             const orderItems = poData.items.map(item => ({
                 purchase_order_id: po.id,
                 product_id: item.id,
+                product_name: item.name || 'Unknown Product',
                 quantity: item.qty,
                 unit_cost: item.unitCost,
                 total_cost: item.qty * item.unitCost,
-                tenant_id: tenant.id
             }));
 
-            const { error: itemsError } = await supabase
+            const { error: itemsError } = await (supabase as any)
                 .from('purchase_order_items')
                 .insert(orderItems);
 
@@ -175,7 +175,7 @@ export default function NewPurchaseOrder() {
             for (const item of poData.items) {
                 if (item.unitCost !== item.originalCost) {
                     // Call the RPC to log vendor price change
-                    await supabase.rpc('log_vendor_price_change', {
+                    await (supabase as any).rpc('log_vendor_price_change', {
                         p_product_id: item.id,
                         p_tenant_id: tenant.id,
                         p_vendor_id: poData.vendor.id,

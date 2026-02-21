@@ -39,7 +39,7 @@ export default function CustomerInsights() {
     enabled: !!id && !!tenantId,
   });
 
-  const customerRecord = customer as Record<string, unknown> | null;
+  const customerRecord = (customer as unknown) as Record<string, unknown> | null;
   useBreadcrumbLabel(customerRecord ? `${customerRecord.first_name ?? ''} ${customerRecord.last_name ?? ''}`.trim() || null : null);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({

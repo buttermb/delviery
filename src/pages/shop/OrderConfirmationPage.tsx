@@ -181,7 +181,7 @@ export function OrderConfirmationPage() {
 
   const displayOrderNumber = orderDetails?.order_number || orderNumber;
   const displayTotal = orderDetails?.total ?? total;
-  const items = (orderDetails?.items ?? []) as OrderItem[];
+  const items = (orderDetails?.items ?? []) as unknown as OrderItem[];
   const trackingUrl = trackingToken
     ? `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`
     : null;
@@ -315,7 +315,7 @@ export function OrderConfirmationPage() {
                 <div className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm">{orderDetails.delivery_address}</p>
+                    <p className="text-sm">{String(orderDetails.delivery_address)}</p>
                   </div>
                 </div>
               )}

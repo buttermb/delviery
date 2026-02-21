@@ -41,7 +41,7 @@ export default function AllTenantsPage() {
 
     const accessMutation = useMutation({
         mutationFn: async (tenantId: string) => {
-            const { data, error } = await supabase.rpc('admin_grant_tenant_access', {
+            const { data, error } = await (supabase as any).rpc('admin_grant_tenant_access', {
                 target_tenant_id: tenantId
             });
             if (error) throw error;

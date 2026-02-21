@@ -136,9 +136,9 @@ export default function WholesaleOrdersPage() {
 
   // Filter state — persisted in URL for back-button & navigation support
   const [filters, setFilters, clearUrlFilters] = useUrlFilters(WHOLESALE_FILTER_CONFIG);
-  const searchQuery = filters.q;
-  const statusFilter = filters.status;
-  const viewMode = (filters.view || 'selling') as 'selling' | 'buying';
+  const searchQuery = filters.q as string;
+  const statusFilter = filters.status as string;
+  const viewMode = ((filters.view as string) || 'selling') as 'selling' | 'buying';
 
   const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
   const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
@@ -244,8 +244,8 @@ export default function WholesaleOrdersPage() {
     enabled: !!tenant?.id,
   });
 
-  const filteredOrders = useMemo(() => {
-    let result = orders;
+  const filteredOrders = useMemo((): OrderType[] => {
+    let result: OrderType[] = orders;
 
     // Status filter (client-side for consistent combined filtering)
     if (statusFilter !== 'all') {
@@ -254,7 +254,7 @@ export default function WholesaleOrdersPage() {
 
     // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const query = (searchQuery as string).toLowerCase();
       result = result.filter((order) => {
         if (viewMode === 'selling') {
           const o = order as WholesaleOrder;

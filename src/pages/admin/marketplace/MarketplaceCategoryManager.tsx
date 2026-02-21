@@ -44,13 +44,13 @@ export default function MarketplaceCategoryManager() {
         queryKey: ['marketplace-categories', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await supabase
-                .from('marketplace_categories' as any) // Type assertion until types generated
+            const { data, error } = await (supabase as any)
+                .from('marketplace_categories')
                 .select('*')
                 .eq('tenant_id', tenant.id)
                 .order('display_order', { ascending: true });
             if (error) throw error;
-            return data as MarketplaceCategory[];
+            return (data ?? []) as MarketplaceCategory[];
         },
         enabled: !!tenant?.id
     });

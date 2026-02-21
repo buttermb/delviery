@@ -950,8 +950,8 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
 
           <div className="w-full md:w-72">
             <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
+              defaultValue={searchQuery}
+              onSearch={setSearchQuery}
               placeholder="Search clients..."
               className="bg-background/50 border-border"
             />
