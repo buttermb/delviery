@@ -908,7 +908,6 @@ const App = () => {
 
 
                                         {/* Marketplace Admin (B2C) */}
-                                        <Route path="marketplace" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceDashboard /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/settings" element={<FeatureProtectedRoute featureId="marketplace"><StoreSettings /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/products" element={<FeatureProtectedRoute featureId="marketplace"><ProductVisibilityManager /></FeatureProtectedRoute>} />
                                         <Route path="marketplace/coupons" element={<FeatureProtectedRoute featureId="marketplace" feature="marketing_hub"><CouponManager /></FeatureProtectedRoute>} />
