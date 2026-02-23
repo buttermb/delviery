@@ -269,7 +269,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                 <FormItem>
                   <FormLabel required>Business Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="BigMike Wholesale" {...field} />
+                    <Input placeholder="BigMike Wholesale" autoFocus {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

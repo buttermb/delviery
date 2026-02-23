@@ -158,13 +158,11 @@ const AdminLiveChat = function AdminLiveChat() {
   const [isUploading, setIsUploading] = useState(false);
   const [quickResponseCategory, setQuickResponseCategory] = useState('All');
   const [showQuickResponses, setShowQuickResponses] = useState(false);
-  const [_isTyping, setIsTyping] = useState(false);
   const [customerTyping, setCustomerTyping] = useState(false);
   const [attachmentPreview, setAttachmentPreview] = useState<{
     file: File;
     preview: string;
   } | null>(null);
-  const [_showAttachmentDialog, setShowAttachmentDialog] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -420,16 +418,14 @@ const AdminLiveChat = function AdminLiveChat() {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    setIsTyping(true);
     supabase.channel(`typing_${selectedSession}`).send({
       type: 'broadcast',
       event: 'typing',
       payload: { user_type: 'admin' }
     }).catch(err => logger.error('Error broadcasting typing', err as Error, { component: 'AdminLiveChat' }));
 
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-    }, 3000);
+    // Debounce: prevent re-broadcasting within 3 seconds
+    typingTimeoutRef.current = setTimeout(() => undefined, 3000);
   }, [selectedSession]);
 
   // Handle input change with typing indicator
@@ -528,7 +524,6 @@ const AdminLiveChat = function AdminLiveChat() {
       : '';
 
     setAttachmentPreview({ file, preview });
-    setShowAttachmentDialog(true);
 
     // Reset file input
     if (fileInputRef.current) {
@@ -542,7 +537,6 @@ const AdminLiveChat = function AdminLiveChat() {
       URL.revokeObjectURL(attachmentPreview.preview);
     }
     setAttachmentPreview(null);
-    setShowAttachmentDialog(false);
   };
 
   // Take over AI chat

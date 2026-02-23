@@ -170,6 +170,7 @@ export function StockAdjustmentDialog({
               onChange={(e) => setQuantity(e.target.value)}
               placeholder="0.00"
               required
+              autoFocus
             />
             {quantity && (
               <div className="mt-2 text-sm">

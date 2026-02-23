@@ -67,7 +67,7 @@ export default function CustomerDetails() {
   const id = rawId && isValidUUID(rawId) ? rawId : undefined;
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
-  const { isReady: _encryptionIsReady } = useEncryption();
+  useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<unknown[]>([]);
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; created_at: string; payment_method: string; payment_status: string }>>([]);

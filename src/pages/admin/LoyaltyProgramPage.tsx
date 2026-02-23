@@ -624,6 +624,7 @@ export default function LoyaltyProgramPage() {
               <Input
                 value={configForm.program_name || ""}
                 onChange={(e) => setConfigForm({ ...configForm, program_name: e.target.value })}
+                autoFocus
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -672,6 +673,7 @@ export default function LoyaltyProgramPage() {
               <Input
                 value={tierForm.name || ""}
                 onChange={(e) => setTierForm({ ...tierForm, name: e.target.value })}
+                autoFocus
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -728,6 +730,7 @@ export default function LoyaltyProgramPage() {
               <Input
                 value={rewardForm.reward_name || ""}
                 onChange={(e) => setRewardForm({ ...rewardForm, reward_name: e.target.value })}
+                autoFocus
               />
             </div>
             <div className="space-y-2">

@@ -269,6 +269,7 @@ export default function PrioritySupport() {
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   required
+                  autoFocus
                 />
               </div>
               <div className="space-y-2">

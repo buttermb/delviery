@@ -329,6 +329,7 @@ export default function CustomIntegrations() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
+                  autoFocus
                 />
               </div>
               <div className="space-y-2">

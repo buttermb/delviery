@@ -320,7 +320,7 @@ export function OrderSearchBar({
             <button
               type="button"
               onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+              className="text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-4 w-4" />
             </button>

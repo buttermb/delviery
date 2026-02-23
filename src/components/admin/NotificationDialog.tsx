@@ -259,7 +259,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
                 <FormItem>
                   <FormLabel required>Subject</FormLabel>
                   <FormControl>
-                    <Input placeholder="Important Update" {...field} />
+                    <Input placeholder="Important Update" autoFocus {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

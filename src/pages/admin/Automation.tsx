@@ -304,6 +304,7 @@ export default function Automation() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
+                  autoFocus
                 />
               </div>
               <div className="space-y-2">

@@ -117,6 +117,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
               required
+              autoFocus
               className={paymentValidation.error ? "border-destructive" : ""}
             />
             {paymentValidation.error && (
