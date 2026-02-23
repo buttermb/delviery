@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import {
   Shield,
   Activity,
@@ -30,7 +30,6 @@ import { Progress } from "@/components/ui/progress";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 const SystemSettings = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { tenant } = useTenantAdminAuth();
   const [isRunningOperation, setIsRunningOperation] = useState(false);
@@ -145,10 +144,7 @@ const SystemSettings = () => {
       return rules;
     },
     onSuccess: () => {
-      toast({
-        title: "Settings saved",
-        description: "Fraud detection rules have been updated successfully.",
-      });
+      toast.success('Fraud detection rules have been updated successfully.');
       queryClient.invalidateQueries({ queryKey: ["fraud-rules"] });
     },
   });
@@ -168,18 +164,11 @@ const SystemSettings = () => {
         throw new Error(errorMessage);
       }
 
-      toast({
-        title: "Success",
-        description: data?.message || 'Operation completed successfully',
-      });
+      toast.success(data?.message || 'Operation completed successfully');
     } catch (error) {
       logger.error('Database operation error', error, { component: 'SystemSettings' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to perform database operation';
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setIsRunningOperation(false);
     }
@@ -198,18 +187,11 @@ const SystemSettings = () => {
         throw new Error(errorMessage);
       }
 
-      toast({
-        title: "Backup Initiated",
-        description: data?.message || 'Backup started successfully',
-      });
+      toast.success(data?.message || 'Backup started successfully');
     } catch (error) {
       logger.error('Database backup error', error, { component: 'SystemSettings' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to create database backup';
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setIsRunningOperation(false);
     }
@@ -233,9 +215,9 @@ const SystemSettings = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">System Settings</h1>
+        <h1 className="text-xl font-bold">System Settings</h1>
         <p className="text-muted-foreground">
           Configure fraud detection, monitoring, and system preferences
         </p>

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Bell, Plus, Edit, Loader2, Trash2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
@@ -32,7 +32,6 @@ export default function Notifications() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<NotificationTemplate | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -97,7 +96,7 @@ export default function Notifications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
-      toast({ title: 'Template created', description: 'Notification template has been created.' });
+      toast.success('Notification template has been created.');
       resetForm();
     },
     onError: (error) => {
@@ -138,7 +137,7 @@ export default function Notifications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
-      toast({ title: 'Template updated', description: 'Notification template has been updated.' });
+      toast.success('Notification template has been updated.');
       resetForm();
     },
     onError: (error) => {
@@ -167,7 +166,7 @@ export default function Notifications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
-      toast({ title: 'Template deleted', description: 'Notification template has been removed.' });
+      toast.success('Notification template has been removed.');
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);
     },

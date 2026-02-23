@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -79,7 +79,6 @@ interface _LoyaltyStats {
 export default function LoyaltyProgramPage() {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
   const { dialogState, confirm, closeDialog, setLoading: setDialogLoading } = useConfirmDialog();
 
@@ -120,11 +119,11 @@ export default function LoyaltyProgramPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-config"] });
-      toast({ title: "Success", description: "Program configuration saved" });
+      toast.success('Program configuration saved');
       setIsConfigOpen(false);
     },
     onError: (error) => {
-      toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
+      toast.error(humanizeError(error));
     },
   });
 
@@ -138,12 +137,12 @@ export default function LoyaltyProgramPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
-      toast({ title: "Success", description: "Tier saved successfully" });
+      toast.success('Tier saved successfully');
       setIsTierOpen(false);
       setEditingTier(null);
     },
     onError: (error) => {
-      toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
+      toast.error(humanizeError(error));
     },
   });
 
@@ -157,12 +156,12 @@ export default function LoyaltyProgramPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
-      toast({ title: "Success", description: "Reward saved successfully" });
+      toast.success('Reward saved successfully');
       setIsRewardOpen(false);
       setEditingReward(null);
     },
     onError: (error) => {
-      toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
+      toast.error(humanizeError(error));
     },
   });
 
@@ -173,7 +172,7 @@ export default function LoyaltyProgramPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
-      toast({ title: "Success", description: "Tier deleted" });
+      toast.success('Tier deleted');
     },
   });
 
@@ -184,7 +183,7 @@ export default function LoyaltyProgramPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
-      toast({ title: "Success", description: "Reward deleted" });
+      toast.success('Reward deleted');
     },
   });
 
@@ -315,11 +314,11 @@ export default function LoyaltyProgramPage() {
   });
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-4 p-4 sm:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
+          <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Trophy className="h-8 w-8 text-emerald-500" />
             {config?.program_name || "Loyalty Program"}
           </h1>

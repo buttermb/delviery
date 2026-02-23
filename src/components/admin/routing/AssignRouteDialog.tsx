@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
 import {
     Dialog,
@@ -49,7 +49,6 @@ export const AssignRouteDialog = ({
     const [selectedCourierId, setSelectedCourierId] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [assigning, setAssigning] = useState(false);
-    const { toast } = useToast();
     const { session: _session } = useAuth();
 
     useEffect(() => {
@@ -69,11 +68,7 @@ export const AssignRouteDialog = ({
                 setCouriers(data || []);
             } catch (error) {
                 logger.error("Failed to fetch couriers:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to load available couriers",
-                });
+                toast.error('Failed to load available couriers');
             } finally {
                 setLoading(false);
             }
@@ -82,7 +77,7 @@ export const AssignRouteDialog = ({
         if (open) {
             fetchAvailableCouriers();
         }
-    }, [open, toast]);
+    }, [open]);
 
     const handleAssign = () => {
         if (!selectedCourierId) return;

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { X, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface BulkActionsProps {
@@ -19,7 +19,6 @@ export function BulkActions({
   selectedProducts,
   onClearSelection,
 }: BulkActionsProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const bulkUpdate = useMutation({
@@ -37,11 +36,7 @@ export function BulkActions({
     },
     onError: (error: unknown) => {
       logger.error('Bulk update failed', error, { component: 'BulkActions' });
-      toast({
-        title: "Bulk update failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
+      toast.error(error instanceof Error ? error.message : 'Bulk update failed');
     }
   });
 
@@ -56,16 +51,12 @@ export function BulkActions({
     },
     onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["admin-products"] });
-      toast({ title: `✓ ${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} deleted` });
+      toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} deleted`);
       onClearSelection();
     },
     onError: (error: unknown) => {
       logger.error('Bulk delete failed', error, { component: 'BulkActions' });
-      toast({
-        title: "Bulk delete failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
+      toast.error(error instanceof Error ? error.message : 'Bulk delete failed');
     }
   });
 
@@ -73,7 +64,7 @@ export function BulkActions({
     bulkUpdate.mutate(
       { updates: { in_stock: true } },
       {
-        onSuccess: () => toast({ title: `${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to active` }),
+        onSuccess: () => toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to active`),
       }
     );
   };
@@ -82,7 +73,7 @@ export function BulkActions({
     bulkUpdate.mutate(
       { updates: { in_stock: false } },
       {
-        onSuccess: () => toast({ title: `${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to inactive` }),
+        onSuccess: () => toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} set to inactive`),
       }
     );
   };

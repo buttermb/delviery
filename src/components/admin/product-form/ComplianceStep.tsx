@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Upload, FileText, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 
 interface ProductFormData {
   name?: string;
@@ -21,7 +21,6 @@ interface ComplianceStepProps {
 
 export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps) {
   const [uploading, setUploading] = useState(false);
-  const { toast } = useToast();
 
   const uploadCOA = async (file: File) => {
     try {
@@ -41,13 +40,9 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
         .getPublicUrl(filePath);
 
       updateFormData({ coa_url: publicUrl });
-      toast({ title: "COA uploaded successfully" });
+      toast.success('COA uploaded successfully');
     } catch (error: unknown) {
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : 'Upload failed');
     } finally {
       setUploading(false);
     }
@@ -58,11 +53,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
     if (file && file.type === "application/pdf") {
       uploadCOA(file);
     } else {
-      toast({
-        title: "Invalid file",
-        description: "Please upload a PDF file",
-        variant: "destructive",
-      });
+      toast.error('Please upload a PDF file');
     }
   };
 

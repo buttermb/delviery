@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput } from "@/lib/utils/sanitize";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { apiFetch } from "@/lib/utils/apiClient";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import {
@@ -70,7 +70,6 @@ export const AddCourierDialog = ({
     }
   };
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
 
   const form = useForm<CourierFormData>({
@@ -132,21 +131,14 @@ export const AddCourierDialog = ({
 
       const result = await response.json();
 
-      toast({
-        title: "Success",
-        description: result.message || "Courier added successfully",
-      });
+      toast.success(result.message || 'Courier added successfully');
 
       form.reset();
       setOpen(false);
       onSuccess();
     } catch (error: unknown) {
       logger.error("Failed to add courier", error as Error, { component: 'AddCourierDialog' });
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add courier",
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to add courier');
     } finally {
       setIsSubmitting(false);
     }

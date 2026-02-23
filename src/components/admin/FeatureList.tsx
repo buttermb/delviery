@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { Loader2 } from "lucide-react";
 
 interface FeatureListProps {
@@ -37,17 +37,10 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
     onSuccess: (newFeatures) => {
       setLocalFeatures(newFeatures);
       queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
-      toast({
-        title: "Features updated",
-        description: "Tenant features have been updated successfully",
-      });
+      toast.success('Tenant features have been updated successfully');
     },
     onError: (error: unknown) => {
-      toast({
-        variant: "destructive",
-        title: "Failed to update features",
-        description: error instanceof Error ? error.message : "An error occurred",
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to update features');
     },
   });
 

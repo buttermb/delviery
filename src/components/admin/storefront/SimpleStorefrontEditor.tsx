@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Palette, ImageIcon, Layout, Box, Sparkles, Loader2 } from "lucide-react";
 import { ThemePresetStrip } from "@/components/admin/storefront/ThemePresetSelector";
 import { type ThemePreset } from "@/lib/storefrontThemes";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { StorefrontBannerManager } from "@/components/admin/storefront/StorefrontBannerManager";
 
 interface SectionConfig {
@@ -41,7 +41,6 @@ export function SimpleStorefrontEditor({
     onPublish,
     isSaving
 }: SimpleViewProps) {
-    const { toast } = useToast();
     const [selectedThemeId, setSelectedThemeId] = useState<string>('minimalist');
 
     // Helper to find specific section visibility
@@ -64,10 +63,7 @@ export function SimpleStorefrontEditor({
             // but for now we assume the builder initializes with sections or we rely on the parent to handle defaults.
             // Simplified: we just won't add it if it's missing in simple mode, 
             // assuming the template was applied correctly.
-            toast({
-                title: "Section not found",
-                description: "Switch to Advanced Mode to add this section first.",
-            });
+            toast.info('Section not found -- switch to Advanced Mode to add this section first.');
         }
     };
 
@@ -92,7 +88,7 @@ export function SimpleStorefrontEditor({
                 fontFamily: theme.typography.fontFamily.split(',')[0].trim(),
             }
         });
-        toast({ title: `Theme set to ${theme.name}` });
+        toast.success(`Theme set to ${theme.name}`);
     };
 
     return (

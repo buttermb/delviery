@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import {
   validateImageDimensions,
   IMAGE_DIMENSION_CONSTRAINTS,
@@ -31,8 +31,6 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
   const [dragActive, setDragActive] = useState(false);
   const [mainPreview, setMainPreview] = useState<string | null>(null);
   const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
-  const { toast } = useToast();
-
   // Clean up object URLs on unmount
   useEffect(() => {
     return () => {
@@ -49,11 +47,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
 
   const validateFileSize = (file: File): boolean => {
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast({
-        title: "File too large",
-        description: `Maximum file size is ${MAX_FILE_SIZE_MB}MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`,
-        variant: "destructive",
-      });
+      toast.error(`Maximum file size is ${MAX_FILE_SIZE_MB}MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`);
       return false;
     }
     return true;
@@ -92,11 +86,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
       );
 
       if (!dimensionResult.valid) {
-        toast({
-          title: "Invalid image dimensions",
-          description: dimensionResult.error,
-          variant: "destructive",
-        });
+        toast.error(dimensionResult.error || 'Invalid image dimensions');
         // Clean up preview on validation failure
         if (isMain) {
           URL.revokeObjectURL(previewUrl);
@@ -164,7 +154,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
         updateFormData({ images: [...currentImages, publicUrl] });
       }
 
-      toast({ title: "Image uploaded successfully" });
+      toast.success('Image uploaded successfully');
     } catch (error: unknown) {
       logger.error("Product image upload error", error instanceof Error ? error : new Error(String(error)), { component: 'ImagesStep' });
       // Clean up preview on error
@@ -181,11 +171,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
           return prev;
         });
       }
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : 'Upload failed');
     } finally {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 500);

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { FileText, Plus, Edit, Download, Trash2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -31,7 +31,6 @@ export default function CustomReports() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<CustomReport | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -97,15 +96,11 @@ export default function CustomReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
-      toast({ title: 'Report created', description: 'Custom report has been created.' });
+      toast.success('Custom report has been created.');
       resetForm();
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to create report'),
-        variant: 'destructive',
-      });
+      toast.error(humanizeError(error, 'Failed to create report'));
     },
   });
 
@@ -138,15 +133,11 @@ export default function CustomReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
-      toast({ title: 'Report updated', description: 'Custom report has been updated.' });
+      toast.success('Custom report has been updated.');
       resetForm();
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to update report'),
-        variant: 'destructive',
-      });
+      toast.error(humanizeError(error, 'Failed to update report'));
     },
   });
 
@@ -167,16 +158,12 @@ export default function CustomReports() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
-      toast({ title: 'Report deleted', description: 'Custom report has been removed.' });
+      toast.success('Custom report has been removed.');
       setDeleteDialogOpen(false);
       setReportToDelete(null);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to delete report'),
-        variant: 'destructive',
-      });
+      toast.error(humanizeError(error, 'Failed to delete report'));
     },
   });
 
@@ -251,7 +238,7 @@ export default function CustomReports() {
                     </Button>
                     <Button variant="ghost" size="sm" onClick={async () => {
                       try {
-                        toast({ title: "Generating Report", description: "Please wait while we generate your report..." });
+                        toast.loading('Generating report, please wait...');
 
                         const { data, error } = await supabase.functions.invoke('generate-custom-report', {
                           body: { reportId: report.id }
@@ -286,18 +273,14 @@ export default function CustomReports() {
                             window.URL.revokeObjectURL(url);
                             document.body.removeChild(a);
 
-                            toast({ title: "Success", description: "Report downloaded successfully" });
+                            toast.success('Report downloaded successfully');
                           } else {
-                            toast({ title: "Empty Report", description: "No data found for this report configuration" });
+                            toast.info('No data found for this report configuration');
                           }
                         }
                       } catch (error) {
                         logger.error('Download failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomReports' });
-                        toast({
-                          title: "Download Failed",
-                          description: "Failed to generate report. Please try again.",
-                          variant: "destructive"
-                        });
+                        toast.error('Failed to generate report. Please try again.');
                       }
                     }}>
                       <Download className="h-4 w-4" />
