@@ -1431,7 +1431,7 @@ export default function Orders() {
       />
 
       <OrderEditModal
-        order={editOrder as any}
+        order={editOrder}
         open={editModalOpen}
         onOpenChange={(open) => {
           setEditModalOpen(open);
