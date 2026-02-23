@@ -26,17 +26,22 @@ interface CreateClientDialogProps {
   onSuccess?: () => void;
 }
 
-interface ClientFormData {
-  business_name: string;
-  contact_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  client_type: string;
-  credit_limit: string;
-  payment_terms: string;
-  notes: string;
-}
+const clientFormSchema = z.object({
+  business_name: z.string().min(1, 'Business name is required').max(200, 'Business name must be 200 characters or less'),
+  contact_name: z.string().min(1, 'Contact name is required').max(200, 'Contact name must be 200 characters or less'),
+  email: z.string().email('Invalid email address').max(254, 'Email must be 254 characters or less').optional().or(z.literal('')),
+  phone: z.string()
+    .regex(/^[\d\s\-+()]+$/, 'Invalid phone number')
+    .min(7, 'Phone number must be at least 7 characters')
+    .max(20, 'Phone number must be 20 characters or less'),
+  address: z.string().max(500, 'Address must be 500 characters or less').optional().or(z.literal('')),
+  client_type: z.enum(['sub_dealer', 'small_shop', 'network', 'supplier']),
+  credit_limit: z.string().refine((val) => !val || !isNaN(parseFloat(val)), 'Credit limit must be a valid number'),
+  payment_terms: z.string(),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional().or(z.literal('')),
+});
+
+type ClientFormData = z.infer<typeof clientFormSchema>;
 
 const defaultFormData: ClientFormData = {
   business_name: "",
@@ -54,6 +59,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const isContextReady = !tenantLoading && !!tenant?.id;
   const contextError = !tenantLoading && !tenant?.id
@@ -65,6 +71,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
   useEffect(() => {
     if (!open) {
       setFormData(defaultFormData);
+      setFormErrors({});
     }
   }, [open]);
 
@@ -79,23 +86,21 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.business_name || !formData.contact_name || !formData.phone) {
-      showErrorToast("Please fill in all required fields");
-      return;
-    }
 
-    const emailCheck = z.string().email("Invalid email address");
-    if (formData.email && !emailCheck.safeParse(formData.email).success) {
-      showErrorToast("Invalid email address");
+    const result = clientFormSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0];
+        if (field && !fieldErrors[field as string]) {
+          fieldErrors[field as string] = err.message;
+        }
+      });
+      setFormErrors(fieldErrors);
+      showErrorToast("Please fix the validation errors");
       return;
     }
-
-    const phoneRegex = /^[\d\s\-+()]+$/;
-    if (!phoneRegex.test(formData.phone) || formData.phone.length < 7 || formData.phone.length > 20) {
-      showErrorToast("Invalid phone number", "Must be 7-20 characters with only digits, spaces, dashes, or parentheses");
-      return;
-    }
+    setFormErrors({});
 
     if (!tenant?.id) {
       showErrorToast("Tenant information not available");
@@ -191,6 +196,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 maxLength={200}
                 required
               />
+              {formErrors.business_name && <p className="text-sm text-destructive">{formErrors.business_name}</p>}
             </div>
 
             <div className="space-y-2">
@@ -203,6 +209,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 maxLength={200}
                 required
               />
+              {formErrors.contact_name && <p className="text-sm text-destructive">{formErrors.contact_name}</p>}
             </div>
           </div>
 
@@ -218,6 +225,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 maxLength={20}
                 required
               />
+              {formErrors.phone && <p className="text-sm text-destructive">{formErrors.phone}</p>}
             </div>
 
             <div className="space-y-2">
@@ -230,6 +238,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 placeholder="mike@example.com"
                 maxLength={254}
               />
+              {formErrors.email && <p className="text-sm text-destructive">{formErrors.email}</p>}
             </div>
           </div>
 
@@ -242,6 +251,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               placeholder="123 Main St, Bronx, NY"
               maxLength={500}
             />
+            {formErrors.address && <p className="text-sm text-destructive">{formErrors.address}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -249,7 +259,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Label htmlFor="client_type">Client Type</Label>
               <Select
                 value={formData.client_type}
-                onValueChange={(value) => setFormData({ ...formData, client_type: value })}
+                onValueChange={(value: "sub_dealer" | "small_shop" | "network" | "supplier") => setFormData({ ...formData, client_type: value })}
               >
                 <SelectTrigger id="client_type">
                   <SelectValue />
@@ -273,6 +283,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 onChange={(e) => setFormData({ ...formData, credit_limit: e.target.value })}
                 placeholder="50000"
               />
+              {formErrors.credit_limit && <p className="text-sm text-destructive">{formErrors.credit_limit}</p>}
             </div>
 
             <div className="space-y-2">
@@ -305,6 +316,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               rows={3}
               maxLength={1000}
             />
+            {formErrors.notes && <p className="text-sm text-destructive">{formErrors.notes}</p>}
           </div>
 
           <DialogFooter>
