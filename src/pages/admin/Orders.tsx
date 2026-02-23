@@ -311,20 +311,38 @@ export default function Orders() {
       if (error) throw error;
       return { id, status };
     },
+    onMutate: async ({ id, status }) => {
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ['orders', tenant?.id] });
+
+      // Snapshot previous value for rollback
+      const previousOrders = queryClient.getQueryData<Order[]>(['orders', tenant?.id]);
+
+      // Optimistically update the UI immediately
+      queryClient.setQueryData(['orders', tenant?.id], (old: Order[] = []) =>
+        old.map(o => o.id === id ? { ...o, status } : o)
+      );
+
+      return { previousOrders };
+    },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status}`);
-      // Optimistic local update for immediate UI feedback
-      queryClient.setQueryData(['orders', tenant?.id], (old: Order[] = []) =>
-        old.map(o => o.id === data.id ? { ...o, status: data.status } : o)
-      );
       // Cross-panel invalidation for dashboard, analytics, badges, fulfillment
       if (tenant?.id) {
         invalidateOnEvent(queryClient, 'ORDER_STATUS_CHANGED', tenant.id, { orderId: data.id });
       }
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      // Rollback to previous state on failure
+      if (context?.previousOrders) {
+        queryClient.setQueryData(['orders', tenant?.id], context.previousOrders);
+      }
       logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update status");
+    },
+    onSettled: () => {
+      // Always refetch to ensure server consistency
+      queryClient.invalidateQueries({ queryKey: ['orders', tenant?.id] });
     }
   });
 
