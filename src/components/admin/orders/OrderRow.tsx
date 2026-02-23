@@ -25,6 +25,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import CopyButton from '@/components/CopyButton';
 import { CustomerLink } from '@/components/admin/cross-links';
 import { OrderSourceBadge } from '@/components/admin/orders/OrderSourceBadge';
@@ -121,34 +126,53 @@ export const OrderRow = React.memo<OrderRowProps>(({
       </td>
 
       {/* Customer */}
-      <td className="px-4 py-3">
-        <div className="flex flex-col gap-1">
-          <CustomerLink
-            customerId={order.customer_id || order.user_id}
-            customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
-            customerEmail={order.user?.email}
-            customerAvatar={order.user?.avatar_url}
-            className="font-medium"
-          />
+      <td className="px-4 py-3 max-w-[200px]">
+        <div className="flex flex-col gap-1 min-w-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="truncate">
+                <CustomerLink
+                  customerId={order.customer_id || order.user_id}
+                  customerName={order.user?.full_name || order.user?.email || order.user?.phone || ''}
+                  customerEmail={order.user?.email}
+                  customerAvatar={order.user?.avatar_url}
+                  className="font-medium"
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}
+            </TooltipContent>
+          </Tooltip>
           {order.user?.email && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {order.user.email}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="truncate">{order.user.email}</span>
+                </TooltipTrigger>
+                <TooltipContent>{order.user.email}</TooltipContent>
+              </Tooltip>
               <CopyButton
                 text={order.user.email}
                 label="Email"
                 showLabel={false}
-                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
               />
             </div>
           )}
           {!order.user?.email && order.user?.phone && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {order.user.phone}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="truncate">{order.user.phone}</span>
+                </TooltipTrigger>
+                <TooltipContent>{order.user.phone}</TooltipContent>
+              </Tooltip>
               <CopyButton
                 text={order.user.phone}
                 label="Phone"
                 showLabel={false}
-                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
               />
             </div>
           )}
@@ -175,8 +199,13 @@ export const OrderRow = React.memo<OrderRowProps>(({
       </td>
 
       {/* Method */}
-      <td className="px-4 py-3 capitalize">
-        {order.delivery_method || 'N/A'}
+      <td className="px-4 py-3 max-w-[120px]">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="truncate block capitalize">{order.delivery_method || 'N/A'}</span>
+          </TooltipTrigger>
+          <TooltipContent className="capitalize">{order.delivery_method || 'N/A'}</TooltipContent>
+        </Tooltip>
       </td>
 
       {/* Total */}
