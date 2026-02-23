@@ -37,6 +37,7 @@ import { CustomerRelatedEntitiesPanel } from '@/components/admin/customers/Custo
 import { CustomerComplianceVerification } from '@/components/admin/customers/CustomerComplianceVerification';
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { isValidUUID } from '@/lib/utils/uuidValidation';
 import { displayName, displayValue } from '@/lib/formatters';
 
 interface Customer {
@@ -61,7 +62,8 @@ interface Customer {
 }
 
 export default function CustomerDetails() {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  const id = rawId && isValidUUID(rawId) ? rawId : undefined;
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const { isReady: _encryptionIsReady } = useEncryption();
