@@ -222,7 +222,7 @@ export function CustomerInvoicesTab({ customerId, onCreateInvoice }: CustomerInv
                 )}
 
                 {invoice.notes && (
-                  <p className="text-sm text-muted-foreground mb-3 italic line-clamp-2">"{invoice.notes}"</p>
+                  <p className="text-sm text-muted-foreground mb-3 italic line-clamp-2" title={invoice.notes || undefined}>"{invoice.notes}"</p>
                 )}
 
                 {/* Actions */}

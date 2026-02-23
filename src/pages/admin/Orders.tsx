@@ -1273,7 +1273,7 @@ export default function Orders() {
                         </span>
                         {getSourceBadge(order.order_source)}
                       </div>
-                      <p className="text-sm font-medium truncate min-w-0 pl-7">
+                      <p className="text-sm font-medium truncate min-w-0 pl-7" title={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}>
                         <CustomerLink
                           customerId={order.user_id}
                           customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}

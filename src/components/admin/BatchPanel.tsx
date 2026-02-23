@@ -53,7 +53,7 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatch
               className="flex items-center justify-between p-2 bg-muted rounded-md hover:bg-muted/80 transition-colors"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{product.name}</p>
+                <p className="text-sm font-medium truncate" title={product.name}>{product.name}</p>
                 <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
               </div>
               <Button

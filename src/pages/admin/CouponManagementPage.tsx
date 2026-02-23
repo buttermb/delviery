@@ -343,7 +343,7 @@ export default function CouponManagementPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <code className="text-sm bg-muted px-2 py-1 rounded truncate">
+                          <code className="text-sm bg-muted px-2 py-1 rounded truncate" title={coupon.code}>
                             {coupon.code}
                           </code>
                           <CopyButton

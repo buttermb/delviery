@@ -1155,7 +1155,7 @@ function CashRegisterContent() {
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center gap-1.5 sm:gap-2 p-2 border rounded">
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">{item.name}</div>
+                      <div className="font-medium text-sm truncate" title={item.name}>{item.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {formatCurrency(item.price)} × {item.quantity}
                       </div>

@@ -233,7 +233,7 @@ function KanbanCard({
             >
                 <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                        <h4 className="font-medium text-sm line-clamp-2">{item.title}</h4>
+                        <h4 className="font-medium text-sm line-clamp-2" title={item.title}>{item.title}</h4>
                         {item.value && (
                             <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground whitespace-nowrap">
                                 <DollarSign className="h-3 w-3" />

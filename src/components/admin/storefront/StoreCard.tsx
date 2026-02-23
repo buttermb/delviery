@@ -73,7 +73,7 @@ export function StoreCard({
               </div>
             )}
             <div>
-              <h3 className="font-semibold line-clamp-1">{store.store_name}</h3>
+              <h3 className="font-semibold line-clamp-1" title={store.store_name}>{store.store_name}</h3>
               <p className="text-xs text-muted-foreground">/shop/{store.slug}</p>
             </div>
           </div>

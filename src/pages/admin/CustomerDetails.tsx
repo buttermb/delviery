@@ -340,7 +340,7 @@ export default function CustomerDetails() {
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2 truncate">
                       <Mail className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{displayValue(customer.email)}</span>
+                      <span className="truncate" title={customer.email || undefined}>{displayValue(customer.email)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 shrink-0" />

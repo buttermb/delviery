@@ -710,7 +710,7 @@ export default function NewWholesaleOrder() {
                           <Card key={product.id} className="p-3">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
-                                <div className="font-medium truncate">{product.name}</div>
+                                <div className="font-medium truncate" title={product.name}>{product.name}</div>
                                 <div className="text-xs text-muted-foreground">
                                   {formatCurrency(product.price)}/lb
                                 </div>
