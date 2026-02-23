@@ -28,6 +28,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 const SystemSettings = () => {
   const queryClient = useQueryClient();
@@ -146,6 +147,13 @@ const SystemSettings = () => {
     onSuccess: () => {
       toast.success('Fraud detection rules have been updated successfully.');
       queryClient.invalidateQueries({ queryKey: ["fraud-rules"] });
+    },
+    onError: (error) => {
+      handleError(error, {
+        component: 'SystemSettings.saveFraudRules',
+        toastTitle: 'Error',
+        showToast: true
+      });
     },
   });
 

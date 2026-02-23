@@ -30,6 +30,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { humanizeError } from '@/lib/humanizeError';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface LoyaltyConfig {
   program_name?: string;
@@ -178,6 +179,13 @@ export default function LoyaltyProgramPage() {
       queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
       toast.success('Tier deleted');
     },
+    onError: (error) => {
+      handleError(error, {
+        component: 'LoyaltyProgram.deleteTier',
+        toastTitle: 'Error',
+        showToast: true
+      });
+    },
   });
 
   const deleteRewardMutation = useMutation({
@@ -188,6 +196,13 @@ export default function LoyaltyProgramPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
       toast.success('Reward deleted');
+    },
+    onError: (error) => {
+      handleError(error, {
+        component: 'LoyaltyProgram.deleteReward',
+        toastTitle: 'Error',
+        showToast: true
+      });
     },
   });
 
