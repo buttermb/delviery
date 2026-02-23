@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { User, Phone, Mail, DollarSign, Users, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
@@ -37,6 +38,75 @@ const CLIENTS_FILTER_CONFIG: Array<{ key: keyof ClientFilters; defaultValue: str
     { key: 'status', defaultValue: 'active' },
 ];
 
+function ClientsPageSkeleton() {
+    return (
+        <div className="container mx-auto py-8 space-y-6">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-9 w-40" />
+                    <Skeleton className="h-4 w-72" />
+                </div>
+                <Skeleton className="h-10 w-32" />
+            </div>
+            {/* Search and filter controls */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <Skeleton className="h-10 w-full md:w-96" />
+                <Skeleton className="h-10 w-[180px]" />
+            </div>
+            {/* Table skeleton */}
+            <div className="border rounded-lg">
+                {/* Table header */}
+                <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b bg-muted/50">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-16 ml-auto" />
+                </div>
+                {/* Table rows */}
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="hidden md:grid grid-cols-5 gap-4 p-4 border-b last:border-b-0 items-center">
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <Skeleton className="h-4 w-28" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <Skeleton className="h-3 w-36" />
+                            <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                        <Skeleton className="h-8 w-24 ml-auto" />
+                    </div>
+                ))}
+                {/* Mobile card skeletons */}
+                <div className="md:hidden space-y-4 p-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="border rounded-lg p-4 space-y-3">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="space-y-1">
+                                    <Skeleton className="h-4 w-28" />
+                                    <Skeleton className="h-5 w-16 rounded-full" />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-3 w-40" />
+                                <Skeleton className="h-3 w-28" />
+                            </div>
+                            <div className="pt-2 border-t flex items-center justify-between">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-8 w-24" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function ClientsPage() {
     const { navigateToAdmin } = useTenantNavigation();
 
@@ -49,6 +119,10 @@ export default function ClientsPage() {
     const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
 
     const { data: clients, isLoading } = useClients(statusFilter);
+
+    if (isLoading && !clients) {
+        return <ClientsPageSkeleton />;
+    }
 
     const filteredClients = clients?.filter(client =>
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
