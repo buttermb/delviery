@@ -9,7 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   Search,
+  MessageSquare,
 } from "lucide-react";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { TicketList } from "@/components/admin/support/TicketList";
 import { TicketForm } from "@/components/admin/support/TicketForm";
 import { TicketDetail } from "@/components/admin/support/TicketDetail";
@@ -139,6 +141,44 @@ export default function SupportTicketsPage() {
                 queryClient.invalidateQueries({ queryKey: queryKeys.support.tickets() });
                 setSelectedTicket(null);
               }}
+            />
+          ) : !isLoading && filteredTickets.length === 0 ? (
+            <EnhancedEmptyState
+              icon={MessageSquare}
+              title={
+                searchTerm
+                  ? "No tickets match your search"
+                  : activeTab !== "all"
+                    ? "No tickets in this category"
+                    : "No support tickets yet"
+              }
+              description={
+                searchTerm
+                  ? `No results for "${searchTerm}". Try a different search term or clear your search.`
+                  : activeTab !== "all"
+                    ? "Try switching to a different tab or create a new ticket."
+                    : "Create your first support ticket to start tracking customer requests."
+              }
+              primaryAction={
+                searchTerm || activeTab !== "all"
+                  ? {
+                      label: "Clear Filters",
+                      onClick: () => {
+                        setSearchTerm("");
+                        setActiveTab("all");
+                      },
+                    }
+                  : {
+                      label: "New Ticket",
+                      onClick: () => {
+                        setSelectedTicket(null);
+                        setIsFormOpen(true);
+                      },
+                      icon: Plus,
+                    }
+              }
+              compact
+              designSystem="tenant-admin"
             />
           ) : (
             <TicketList
