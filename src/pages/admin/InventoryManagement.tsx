@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
 import { TruncatedText } from '@/components/shared/TruncatedText';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 
 interface Product {
@@ -93,7 +94,7 @@ export function InventoryManagement() {
   }, [products]);
 
   const _filteredProducts = products.filter(p => {
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = sanitizeSearchInput(searchTerm).toLowerCase();
     return (
       p.name?.toLowerCase().includes(searchLower) ||
       p.sku?.toLowerCase().includes(searchLower) ||
