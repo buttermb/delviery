@@ -83,7 +83,7 @@ export function WeeklyTrendsWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">📊</span> WEEKLY PROGRESS
+                        WEEKLY PROGRESS
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -100,7 +100,7 @@ export function WeeklyTrendsWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">📊</span> WEEKLY PROGRESS
+                        WEEKLY PROGRESS
                         <Badge variant="outline" className="text-xs ml-auto">
                             Starting fresh
                         </Badge>
@@ -143,7 +143,7 @@ export function WeeklyTrendsWidget() {
         <Card>
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">📊</span> WEEKLY PROGRESS
+                    WEEKLY PROGRESS
                     <Badge variant="outline" className="text-xs ml-auto">
                         vs last week +10%
                     </Badge>
@@ -169,7 +169,7 @@ export function WeeklyTrendsWidget() {
                                 'text-xs text-right',
                                 isAhead ? 'text-green-600 font-medium' : 'text-muted-foreground'
                             )}>
-                                {percent}% of goal {isAhead && '🎉'}
+                                {percent}% of goal {isAhead && '- Goal met!'}
                             </div>
                         </div>
                     );

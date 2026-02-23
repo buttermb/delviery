@@ -64,7 +64,7 @@ export function SmartAlertsDashboard({
         <div className="space-y-3">
           {alerts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <div className="text-4xl mb-2">✨</div>
+              <div className="text-4xl mb-2"></div>
               <div className="font-medium">All clear!</div>
               <div className="text-sm">No alerts at this time</div>
             </div>

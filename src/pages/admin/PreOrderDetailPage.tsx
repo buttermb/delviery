@@ -86,7 +86,7 @@ export default function PreOrderDetailPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/pre-orders")}>
+                    <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/pre-orders")} aria-label="Back to pre-orders">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
@@ -112,7 +112,7 @@ export default function PreOrderDetailPage() {
 
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="icon">
+                                    <Button variant="destructive" size="icon" aria-label="Cancel pre-order">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </AlertDialogTrigger>

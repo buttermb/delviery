@@ -102,7 +102,7 @@ export default function FinancialCenter() {
       {/* Today's Snapshot - Real-time Completed Orders Data */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">📊 Today's Snapshot</h2>
+          <h2 className="text-lg font-semibold">Today's Snapshot</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -215,7 +215,7 @@ export default function FinancialCenter() {
       {/* Credit Out (Who Owes You) */}
       <Card className="p-6 border-l-4 border-l-yellow-500">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          🔴 Credit Out (Who Owes You)
+          Credit Out (Who Owes You)
           <FieldHelp tooltip={fieldHelpTexts.creditSystem.tooltip} size="md" />
         </h2>
         
@@ -232,7 +232,7 @@ export default function FinancialCenter() {
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="h-5 w-5 text-destructive" />
-                <span className="font-semibold text-destructive">OVERDUE (🚨 Priority)</span>
+                <span className="font-semibold text-destructive">OVERDUE (Priority)</span>
                 <span className="font-mono font-bold ml-auto">
                   ${creditOutData.overdue.reduce((sum, c) => sum + c.amount, 0).toLocaleString()}
                 </span>

@@ -67,7 +67,7 @@ export function TeamActivityWidget() {
                             : isCashier 
                             ? `${posTransactions} sales`
                             : member.role === 'owner' ? 'Managing' : 'Online',
-                        avatar: isCourier ? '🚗' : isCashier ? '💵' : '👤',
+                        avatar: isCourier ? 'DR' : isCashier ? 'CS' : 'TM',
                     };
                 })
             );
@@ -83,7 +83,7 @@ export function TeamActivityWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">👥</span> TEAM TODAY
+                        TEAM TODAY
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -100,7 +100,7 @@ export function TeamActivityWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">👥</span> TEAM TODAY
+                        TEAM TODAY
                         <Badge variant="outline" className="text-xs ml-auto">
                             0 active
                         </Badge>
@@ -122,7 +122,7 @@ export function TeamActivityWidget() {
         <Card>
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">👥</span> TEAM TODAY
+                    TEAM TODAY
                     <Badge variant="outline" className="text-xs ml-auto">
                         {team.length} active
                     </Badge>

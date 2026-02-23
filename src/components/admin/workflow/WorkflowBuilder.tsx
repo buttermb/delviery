@@ -45,20 +45,20 @@ interface Workflow {
 }
 
 const TRIGGER_TYPES = [
-  { value: 'order_created', label: 'Order Created', icon: '🛒' },
-  { value: 'customer_registered', label: 'Customer Registered', icon: '👤' },
-  { value: 'low_stock', label: 'Low Stock Alert', icon: '⚠️' },
-  { value: 'payment_received', label: 'Payment Received', icon: '💰' },
-  { value: 'schedule', label: 'Scheduled', icon: '⏰' },
+  { value: 'order_created', label: 'Order Created', icon: '' },
+  { value: 'customer_registered', label: 'Customer Registered', icon: '' },
+  { value: 'low_stock', label: 'Low Stock Alert', icon: '' },
+  { value: 'payment_received', label: 'Payment Received', icon: '' },
+  { value: 'schedule', label: 'Scheduled', icon: '' },
 ];
 
 const ACTION_TYPES = [
-  { value: 'send_email', label: 'Send Email', icon: '📧' },
-  { value: 'send_sms', label: 'Send SMS', icon: '💬' },
-  { value: 'create_task', label: 'Create Task', icon: '✅' },
-  { value: 'update_inventory', label: 'Update Inventory', icon: '📦' },
-  { value: 'webhook', label: 'Webhook', icon: '🔗' },
-  { value: 'notify_team', label: 'Notify Team', icon: '🔔' },
+  { value: 'send_email', label: 'Send Email', icon: '' },
+  { value: 'send_sms', label: 'Send SMS', icon: '' },
+  { value: 'create_task', label: 'Create Task', icon: '' },
+  { value: 'update_inventory', label: 'Update Inventory', icon: '' },
+  { value: 'webhook', label: 'Webhook', icon: '' },
+  { value: 'notify_team', label: 'Notify Team', icon: '' },
 ];
 
 export function WorkflowBuilder() {

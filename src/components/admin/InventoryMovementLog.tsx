@@ -193,12 +193,12 @@ export function InventoryMovementLog() {
 
                     {movement.from_location && (
                       <span className="flex items-center gap-1">
-                        📍 {movement.from_location}
+                        {movement.from_location}
                       </span>
                     )}
 
                     {movement.notes && (
-                      <span className="italic">"{movement.notes}"</span>
+                      <span className="italic line-clamp-2">"{movement.notes}"</span>
                     )}
                   </div>
                 </div>

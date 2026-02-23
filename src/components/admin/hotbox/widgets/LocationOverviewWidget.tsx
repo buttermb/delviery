@@ -85,7 +85,7 @@ export function LocationOverviewWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">📍</span> NETWORK OVERVIEW
+                        NETWORK OVERVIEW
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -107,7 +107,7 @@ export function LocationOverviewWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">📍</span> NETWORK OVERVIEW
+                        NETWORK OVERVIEW
                         <Badge variant="outline" className="text-xs ml-auto">
                             $0 • 0 orders
                         </Badge>
@@ -129,7 +129,7 @@ export function LocationOverviewWidget() {
         <Card>
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">📍</span> NETWORK OVERVIEW
+                    NETWORK OVERVIEW
                     <Badge variant="outline" className="text-xs ml-auto">
                         ${totalRevenue.toLocaleString()} • {totalOrders} orders
                     </Badge>
@@ -156,11 +156,11 @@ export function LocationOverviewWidget() {
                                     <td className="text-right py-2">{loc.orders}</td>
                                     <td className="text-right py-2">
                                         {loc.issues === 0 ? (
-                                            <span className="text-green-500">0 ✓</span>
+                                            <span className="text-green-500">0 OK</span>
                                         ) : loc.issues <= 2 ? (
-                                            <span className="text-yellow-500">{loc.issues} 🟡</span>
+                                            <span className="text-yellow-500">{loc.issues} warn</span>
                                         ) : (
-                                            <span className="text-red-500">{loc.issues} 🔴</span>
+                                            <span className="text-red-500">{loc.issues} alert</span>
                                         )}
                                     </td>
                                 </tr>

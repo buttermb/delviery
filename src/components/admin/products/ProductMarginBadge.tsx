@@ -98,12 +98,12 @@ export function ProductMarginBadge({
       )}
       {isLowMargin && !isNegativeMargin && (
         <div className="text-amber-500 pt-1 border-t">
-          ⚠️ Below {marginThreshold}% threshold
+          Below {marginThreshold}% threshold
         </div>
       )}
       {isNegativeMargin && (
         <div className="text-red-500 pt-1 border-t">
-          🚨 Selling at a loss!
+          Selling at a loss!
         </div>
       )}
     </div>

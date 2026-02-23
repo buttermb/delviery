@@ -151,8 +151,9 @@ export const OrderDetailsDialog = ({
               </div>
 
               <div className="space-y-2">
-                <Label>Update Status</Label>
+                <Label htmlFor="order-update-status">Update Status</Label>
                 <select
+                  id="order-update-status"
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                   className="w-full p-2 border rounded-md bg-background"
@@ -165,8 +166,9 @@ export const OrderDetailsDialog = ({
               </div>
 
               <div className="space-y-2">
-                <Label>Add Note (Optional)</Label>
+                <Label htmlFor="order-note">Add Note (Optional)</Label>
                 <Textarea
+                  id="order-note"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add internal notes about this order..."

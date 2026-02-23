@@ -544,6 +544,7 @@ export function ProductForm({
                                                 accept="image/*"
                                                 className="hidden"
                                                 onChange={handleImageChange}
+                                                aria-label="Replace product image"
                                             />
                                         </label>
                                         <Button
@@ -564,6 +565,7 @@ export function ProductForm({
                                         accept="image/*"
                                         className="absolute inset-0 opacity-0 cursor-pointer"
                                         onChange={handleImageChange}
+                                        aria-label="Upload product image"
                                     />
                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                                         <div className="bg-primary/10 p-3 rounded-full">

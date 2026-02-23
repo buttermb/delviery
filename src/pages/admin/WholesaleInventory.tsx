@@ -160,9 +160,9 @@ export default function WholesaleInventory() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      good: "🟢 Stock",
-      low: "🟡 Low",
-      very_low: "🔴 Very Low"
+      good: "In Stock",
+      low: "Low",
+      very_low: "Very Low"
     };
     return labels[status] || status;
   };
@@ -450,7 +450,7 @@ export default function WholesaleInventory() {
                 return (
                   <div key={idx} className="flex items-center gap-2 text-sm">
                     <span className={isVeryLow ? "text-destructive" : "text-yellow-500"}>
-                      {isVeryLow ? "🔴" : "🟡"}
+                      {isVeryLow ? "!" : "*"}
                     </span>
                     <span>
                       {item.product_name}: {qty} lbs left

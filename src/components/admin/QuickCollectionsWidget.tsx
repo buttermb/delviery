@@ -48,7 +48,7 @@ export function QuickCollectionsWidget() {
       <Card className="p-5 border-warning/20 bg-warning/5">
         <div className="flex items-center gap-2 mb-4">
           <AlertCircle className="h-5 w-5 text-warning" />
-          <h3 className="font-semibold text-warning">⚠️ Collections Needed</h3>
+          <h3 className="font-semibold text-warning">Collections Needed</h3>
         </div>
 
         <div className="space-y-3">

@@ -155,6 +155,7 @@ export default function WhiteLabel() {
                   id="logo-upload"
                   className="hidden"
                   accept="image/*"
+                  aria-label="Upload brand logo"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;

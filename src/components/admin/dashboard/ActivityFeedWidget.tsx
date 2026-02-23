@@ -172,7 +172,7 @@ export function ActivityFeedWidget() {
           >
             <div className="mt-0.5">{activity.icon}</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm">{activity.message}</div>
+              <div className="text-sm line-clamp-2">{activity.message}</div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 {formatTime(activity.time)}
               </div>

@@ -347,7 +347,7 @@ export function AttentionQueueKanban({
         return (
             <Card className={className}>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="text-4xl mb-4">✨</div>
+                    <div className="text-4xl mb-4"></div>
                     <h3 className="font-semibold text-lg">All Caught Up!</h3>
                     <p className="text-muted-foreground text-sm">
                         No items need your attention right now.

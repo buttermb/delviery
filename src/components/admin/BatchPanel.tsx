@@ -39,6 +39,7 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatch
             size="icon"
             onClick={onClear}
             className="h-11 w-11"
+            aria-label="Close batch panel"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -60,6 +61,7 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatch
                 size="icon"
                 onClick={() => onRemove(product.id)}
                 className="h-8 w-8 flex-shrink-0"
+                aria-label="Remove from batch"
               >
                 <X className="h-3 w-3" />
               </Button>

@@ -775,7 +775,7 @@ export function StorefrontBuilder({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-background border-b shrink-0 z-20">
                 <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" onClick={handleClose}>
+                    <Button variant="ghost" size="icon" onClick={handleClose} aria-label={isFullScreen ? 'Close editor' : 'Back'}>
                         {isFullScreen ? <X className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
                     </Button>
                     <span className="font-semibold">{isFullScreen ? 'Storefront Editor' : 'Store Builder'}</span>
@@ -1134,7 +1134,7 @@ export function StorefrontBuilder({
                                 <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
                                 <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-6 sm:w-6" onClick={() => setRightPanelOpen(false)}>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-6 sm:w-6" onClick={() => setRightPanelOpen(false)} aria-label="Close editor panel">
                                 <X className="w-4 h-4" />
                             </Button>
                         </div>

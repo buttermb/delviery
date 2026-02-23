@@ -171,7 +171,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span className="text-destructive">⚠️</span> SKU Missing
+              SKU Missing
             </DialogTitle>
             <DialogDescription>
               This product cannot generate labels because it's missing a SKU (Stock Keeping Unit).
@@ -342,7 +342,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           {/* Debug Info */}
           <details className="text-xs border border-border rounded-lg">
             <summary className="p-2 cursor-pointer hover:bg-muted/50 rounded-t-lg font-medium">
-              🔍 Debug Information
+              Debug Information
             </summary>
             <div className="p-3 space-y-2 bg-muted/20 border-t border-border">
               <div><strong>Product:</strong> {product.name}</div>
@@ -521,9 +521,9 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             {/* Compliance Info (for larger labels) */}
             {(labelSize === 'large' || labelSize === 'sheet') && (
               <div className="pt-3 border-t border-border text-xs text-muted-foreground space-y-1">
-                <p>⚠️ For adult use only (21+)</p>
-                <p>🚫 Keep out of reach of children</p>
-                <p>📅 Packaged: {formatSmartDate(new Date())}</p>
+                <p>For adult use only (21+)</p>
+                <p>Keep out of reach of children</p>
+                <p>Packaged: {formatSmartDate(new Date())}</p>
               </div>
             )}
             </div>

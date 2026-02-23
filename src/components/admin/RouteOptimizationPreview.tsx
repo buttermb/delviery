@@ -108,7 +108,7 @@ export function RouteOptimizationPreview({
         <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
           <div className="flex gap-2">
             <div className="text-blue-600 text-sm">
-              💡 <span className="font-medium">Optimization Tips:</span> Route avoids traffic hotspots and minimizes backtracking. Consider weather conditions for final adjustments.
+              <span className="font-medium">Optimization Tips:</span> Route avoids traffic hotspots and minimizes backtracking. Consider weather conditions for final adjustments.
             </div>
           </div>
         </div>

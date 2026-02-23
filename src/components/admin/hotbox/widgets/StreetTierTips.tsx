@@ -9,7 +9,7 @@ export function StreetTierTips() {
     const tips = [
         {
             id: 'add-products',
-            emoji: '📦',
+            emoji: '',
             title: 'Add your first products',
             description: 'Start by adding your inventory to the system',
             action: '/admin/products/new',
@@ -17,7 +17,7 @@ export function StreetTierTips() {
         },
         {
             id: 'setup-menu',
-            emoji: '📋',
+            emoji: '',
             title: 'Create a Disposable Menu',
             description: 'Share product links with customers securely',
             action: '/admin/disposable-menus',
@@ -25,7 +25,7 @@ export function StreetTierTips() {
         },
         {
             id: 'first-sale',
-            emoji: '💰',
+            emoji: '',
             title: 'Make your first sale',
             description: 'Use the POS system for walk-in customers',
             action: '/admin/pos-system',
@@ -41,7 +41,7 @@ export function StreetTierTips() {
         <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">💡</span> GETTING STARTED
+                    GETTING STARTED
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

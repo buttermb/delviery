@@ -46,7 +46,7 @@ export function ReportsDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">📊 Business Reports</h2>
+        <h2 className="text-2xl font-bold text-foreground">Business Reports</h2>
         <Button variant="outline">Export PDF</Button>
       </div>
 
@@ -164,7 +164,7 @@ export function ReportsDashboard() {
 
       {/* Top Clients */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4 text-foreground">💎 Top Clients by Revenue</h3>
+        <h3 className="text-lg font-semibold mb-4 text-foreground">Top Clients by Revenue</h3>
         <div className="space-y-3">
           {clientRevenue.map((client, idx) => (
             <div key={client.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">

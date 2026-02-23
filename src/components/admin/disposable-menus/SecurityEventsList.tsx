@@ -90,7 +90,7 @@ export const SecurityEventsList = ({ events, onAcknowledge }: SecurityEventsList
               </div>
 
               {event.event_data && (
-                <div className="bg-muted/50 p-2 rounded text-xs font-mono mb-3">
+                <div className="bg-muted/50 p-2 rounded text-xs font-mono mb-3 max-h-[120px] overflow-y-auto whitespace-pre-wrap break-all">
                   {JSON.stringify(event.event_data, null, 2)}
                 </div>
               )}

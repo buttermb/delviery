@@ -724,6 +724,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
         className="hidden"
         onChange={handleFileChange}
         disabled={loading}
+        aria-label="Upload CSV or Excel file for customer import"
       />
     </div>
   );

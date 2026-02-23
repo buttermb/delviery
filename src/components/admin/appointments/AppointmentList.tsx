@@ -68,7 +68,7 @@ export function AppointmentList({
                   {apt.type} • {apt.duration_minutes} minutes
                 </div>
                 {apt.notes && (
-                  <div className="text-xs text-muted-foreground mt-1">{apt.notes}</div>
+                  <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{apt.notes}</div>
                 )}
               </div>
               <Button

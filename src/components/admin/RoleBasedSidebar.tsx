@@ -98,7 +98,7 @@ export function RoleBasedSidebar() {
         )}
         {isCollapsed && (
           <div className="flex justify-center">
-            <span className="text-2xl">🌿</span>
+            <span className="text-2xl font-bold">FIQ</span>
           </div>
         )}
       </SidebarHeader>

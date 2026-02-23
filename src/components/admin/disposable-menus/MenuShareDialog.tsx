@@ -190,7 +190,7 @@ export const MenuShareDialog = ({
           {/* Security Warning */}
           <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
             <div className="text-sm font-semibold text-destructive mb-1">
-              ⚠️ Security Notice
+              Security Notice
             </div>
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>• Only share with authorized customers</li>

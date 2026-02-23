@@ -217,7 +217,7 @@ function AuditEntryItem({ entry }: { entry: OrderAuditLogEntry }) {
                     {entry.changes && Object.keys(entry.changes).length > 0 && (
                       <div>
                         <strong>Changes:</strong>
-                        <pre className="mt-1 p-1 bg-muted rounded text-[10px] overflow-x-auto">
+                        <pre className="mt-1 p-1 bg-muted rounded text-[10px] overflow-x-auto max-h-[120px] overflow-y-auto whitespace-pre-wrap break-all">
                           {JSON.stringify(entry.changes, null, 2)}
                         </pre>
                       </div>

@@ -448,7 +448,7 @@ function RuleCard({
           )}
         />
 
-        <Button type="button" variant="ghost" size="icon" onClick={onRemove}>
+        <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label="Remove rule">
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </div>

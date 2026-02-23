@@ -60,7 +60,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>🚚 Assign Runner</DialogTitle>
+          <DialogTitle>Assign Runner</DialogTitle>
           <DialogDescription>
             Assign a runner to deliver order {orderNumber}
           </DialogDescription>

@@ -129,12 +129,12 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
 ];
 
 const PAYMENT_METHOD_OPTIONS = [
-  { id: 'cash', label: 'Cash', icon: '💵' },
-  { id: 'card', label: 'Credit/Debit Card', icon: '💳' },
-  { id: 'apple_pay', label: 'Apple Pay', icon: '🍎' },
-  { id: 'google_pay', label: 'Google Pay', icon: '📱' },
-  { id: 'venmo', label: 'Venmo', icon: '💸' },
-  { id: 'zelle', label: 'Zelle', icon: '🏦' },
+  { id: 'cash', label: 'Cash', icon: '' },
+  { id: 'card', label: 'Credit/Debit Card', icon: '' },
+  { id: 'apple_pay', label: 'Apple Pay', icon: '' },
+  { id: 'google_pay', label: 'Google Pay', icon: '' },
+  { id: 'venmo', label: 'Venmo', icon: '' },
+  { id: 'zelle', label: 'Zelle', icon: '' },
 ];
 
 export default function StorefrontSettings() {
@@ -1285,7 +1285,7 @@ export default function StorefrontSettings() {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-                      💡 Daily and weekly limits are tracked by customer email address.
+                      Daily and weekly limits are tracked by customer email address.
                       Customers must provide an email to enforce these limits.
                     </p>
                   </div>

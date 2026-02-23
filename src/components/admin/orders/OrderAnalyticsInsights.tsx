@@ -75,11 +75,11 @@ function getTimeOfDayLabel(hour: number): string {
   return 'Night';
 }
 
-function getTimeEmoji(hour: number): string {
-  if (hour >= 5 && hour < 12) return '🌅';
-  if (hour >= 12 && hour < 17) return '☀️';
-  if (hour >= 17 && hour < 21) return '🌆';
-  return '🌙';
+function getTimePeriodPrefix(hour: number): string {
+  if (hour >= 5 && hour < 12) return 'Morning';
+  if (hour >= 12 && hour < 17) return 'Afternoon';
+  if (hour >= 17 && hour < 21) return 'Evening';
+  return 'Night';
 }
 
 export function OrderAnalyticsInsights({
@@ -280,7 +280,7 @@ export function OrderAnalyticsInsights({
       type: 'info',
       icon: <Clock className="h-4 w-4 text-blue-500" />,
       label: 'Order Time',
-      value: `${getTimeEmoji(orderHour)} ${analytics.timeOfDayLabel}`,
+      value: `${getTimePeriodPrefix(orderHour)} - ${analytics.timeOfDayLabel}`,
       description: `Placed at ${formatSmartDate(orderDate, { includeTime: true })}`,
     });
 

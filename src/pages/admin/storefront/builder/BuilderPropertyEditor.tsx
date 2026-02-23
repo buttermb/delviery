@@ -29,7 +29,7 @@ export function BuilderPropertyEditor({
                     <h3 className="font-semibold text-xs uppercase text-muted-foreground mb-1">Editing</h3>
                     <p className="font-medium text-sm">{SECTION_TYPES[selectedSection.type as keyof typeof SECTION_TYPES]?.label}</p>
                 </div>
-                <Button variant="ghost" size="icon" className="h-11 w-11" onClick={onClose}>
+                <Button variant="ghost" size="icon" className="h-11 w-11" onClick={onClose} aria-label="Close property editor">
                     <X className="w-4 h-4" />
                 </Button>
             </div>

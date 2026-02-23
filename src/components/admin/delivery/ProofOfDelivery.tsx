@@ -383,11 +383,13 @@ export function ProofOfDelivery({
                       </div>
                       <input
                         ref={fileInputRef}
+                        id="delivery-photo-upload"
                         type="file"
                         accept="image/*"
                         capture="environment"
                         onChange={handlePhotoSelect}
                         className="hidden"
+                        aria-label="Upload delivery photo"
                       />
                     </div>
                   ) : (

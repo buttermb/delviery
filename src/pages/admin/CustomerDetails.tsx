@@ -334,7 +334,7 @@ export default function CustomerDetails() {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-800'
                       }
                     >
-                      {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
+                      {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                     </Badge>
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
@@ -562,10 +562,10 @@ export default function CustomerDetails() {
                             (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                       }>
-                        {(customer.loyalty_points || 0) >= 1000 ? '⭐ VIP' :
-                          (customer.loyalty_points || 0) >= 500 ? '🥇 Gold' :
-                            (customer.loyalty_points || 0) >= 100 ? '🥈 Silver' :
-                              '🥉 Bronze'}
+                        {(customer.loyalty_points || 0) >= 1000 ? 'VIP' :
+                          (customer.loyalty_points || 0) >= 500 ? 'Gold' :
+                            (customer.loyalty_points || 0) >= 100 ? 'Silver' :
+                              'Bronze'}
                       </Badge>
                     </div>
                   </CardContent>

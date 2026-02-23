@@ -426,13 +426,13 @@ export function InventoryManagement() {
             <Card key={warehouseName} className="p-3 sm:p-4 md:p-6 overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-base sm:text-lg font-semibold text-foreground">🏢 {warehouseName}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground">{warehouseName}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Capacity: {capacity} lbs | Current: {warehouseTotal.toFixed(0)} lbs ({((warehouseTotal / capacity) * 100).toFixed(0)}%) | Value: ${(warehouseValue / 1000).toFixed(0)}k
                   </p>
                 </div>
                 <Badge variant={warehouseTotal / capacity > 0.5 ? "default" : "secondary"} className="text-xs sm:text-sm flex-shrink-0">
-                  {warehouseTotal / capacity > 0.5 ? "🟢 GOOD" : "🟡 LOW"}
+                  {warehouseTotal / capacity > 0.5 ? "GOOD" : "LOW"}
                 </Badge>
               </div>
 

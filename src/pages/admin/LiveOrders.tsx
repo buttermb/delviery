@@ -190,7 +190,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     // Play sound if we have more orders than before
     if (currentCount > previousOrderCountRef.current && soundEnabled) {
       playNewOrderSound();
-      toast.info('🔔 New order received!', {
+      toast.info('New order received!', {
         duration: 3000,
       });
     }

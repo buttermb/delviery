@@ -9,11 +9,11 @@ import { useUpdateDeliveryStatus } from "@/hooks/useWholesaleData";
 import { Badge } from "@/components/ui/badge";
 
 const STATUS_OPTIONS = [
-  { value: "assigned", label: "📋 Assigned", variant: "secondary" as const },
-  { value: "picked_up", label: "📦 Picked Up", variant: "default" as const },
-  { value: "in_transit", label: "🚚 In Transit", variant: "default" as const },
-  { value: "delivered", label: "✅ Delivered", variant: "default" as const },
-  { value: "failed", label: "❌ Failed", variant: "destructive" as const }
+  { value: "assigned", label: "Assigned", variant: "secondary" as const },
+  { value: "picked_up", label: "Picked Up", variant: "default" as const },
+  { value: "in_transit", label: "In Transit", variant: "default" as const },
+  { value: "delivered", label: "Delivered", variant: "default" as const },
+  { value: "failed", label: "Failed", variant: "destructive" as const }
 ] as const;
 
 type StatusValue = typeof STATUS_OPTIONS[number]['value'];
@@ -70,7 +70,7 @@ export function DeliveryStatusDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>📍 Update Delivery Status</DialogTitle>
+          <DialogTitle>Update Delivery Status</DialogTitle>
           <DialogDescription>
             Update status for order {orderNumber}
           </DialogDescription>

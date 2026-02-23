@@ -52,7 +52,7 @@ export function SidebarHotItems() {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-orange-600 dark:text-orange-400 px-3 py-2 min-h-[40px]">
-        <span className="text-xs font-semibold uppercase tracking-wider">🔥 Quick Access</span>
+        <span className="text-xs font-semibold uppercase tracking-wider">Quick Access</span>
       </SidebarGroupLabel>
       <SidebarGroupContent className="mt-1">
         <SidebarMenu>

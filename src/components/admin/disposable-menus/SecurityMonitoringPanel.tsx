@@ -64,7 +64,7 @@ export const SecurityMonitoringPanel = () => {
           if (newEvent.severity === 'critical' || newEvent.severity === 'high') {
             toast({
               variant: 'destructive',
-              title: '🚨 Security Alert',
+              title: 'Security Alert',
               description: `${newEvent.event_type || 'Security Event'}: ${newEvent.description || 'New threat detected'}`,
             });
           }
@@ -265,7 +265,7 @@ export const SecurityMonitoringPanel = () => {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>🚨 {criticalEvents.length} Active Security Threats</strong> requiring immediate attention
+            <strong>{criticalEvents.length} Active Security Threats</strong> requiring immediate attention
           </AlertDescription>
         </Alert>
       )}

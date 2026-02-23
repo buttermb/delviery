@@ -139,7 +139,7 @@ export function StorePreviewButton({ storeSlug, storeName }: StorePreviewButtonP
             >
               {/* Admin Preview Banner */}
               <div className="bg-amber-500 text-amber-950 px-4 py-2 text-sm text-center font-medium">
-                ⚠️ Admin Preview Mode - Customer actions are disabled
+                Admin Preview Mode - Customer actions are disabled
               </div>
               <iframe
                 src={`${storeUrl}?preview=true`}

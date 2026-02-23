@@ -484,13 +484,13 @@ export function DeliveryScheduler({ className }: DeliverySchedulerProps) {
             <CardHeader className="py-3 px-4 border-b">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
+                  <Button variant="outline" size="icon" onClick={goToPreviousWeek} aria-label="Previous week">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" onClick={goToToday}>
                     Today
                   </Button>
-                  <Button variant="outline" size="icon" onClick={goToNextWeek}>
+                  <Button variant="outline" size="icon" onClick={goToNextWeek} aria-label="Next week">
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>

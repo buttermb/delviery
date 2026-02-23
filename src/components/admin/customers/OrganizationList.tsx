@@ -278,6 +278,14 @@ export function OrganizationList({
                     key={org.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => onViewClick(org)}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onViewClick(org);
+                      }
+                    }}
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">

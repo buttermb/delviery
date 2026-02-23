@@ -810,8 +810,8 @@ export default function NewWholesaleOrder() {
 
               <div className="space-y-3">
                 {[
-                  { value: 'cash' as const, label: 'Paid in Full (Cash/Transfer)', icon: '✅', description: 'Payment collected at time of order' },
-                  { value: 'credit' as const, label: 'Credit (Invoice) - Net 7 days', icon: '📄', description: 'Add to client credit balance' },
+                  { value: 'cash' as const, label: 'Paid in Full (Cash/Transfer)', icon: '', description: 'Payment collected at time of order' },
+                  { value: 'credit' as const, label: 'Credit (Invoice) - Net 7 days', icon: '', description: 'Add to client credit balance' },
                 ].map((option) => (
                   <Card
                     key={option.value}

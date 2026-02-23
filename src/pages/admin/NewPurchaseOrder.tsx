@@ -217,7 +217,7 @@ export default function NewPurchaseOrder() {
         <div className="max-w-5xl mx-auto p-4 md:p-4 space-y-4">
             {/* Header */}
             <div className="flex items-center gap-4 mb-6">
-                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('wholesale-orders')}>
+                <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('wholesale-orders')} aria-label="Back to wholesale orders">
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
@@ -325,7 +325,7 @@ export default function NewPurchaseOrder() {
                                                     <div className="w-24 text-right font-semibold">
                                                         {formatCurrency(item.qty * item.unitCost)}
                                                     </div>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)}>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id)} aria-label="Remove item">
                                                         <Trash2 className="h-4 w-4 text-destructive" />
                                                     </Button>
                                                 </div>

@@ -35,19 +35,19 @@ export const EmptyState = ({ onCreateMenu }: EmptyStateProps) => {
         {/* Feature Highlights */}
         <div className="grid md:grid-cols-3 gap-4 mt-8 text-left">
           <div className="space-y-2">
-            <div className="font-semibold text-sm">🔐 Encrypted Links</div>
+            <div className="font-semibold text-sm">Encrypted Links</div>
             <p className="text-xs text-muted-foreground">
               Cryptographically secure URLs with access codes
             </p>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold text-sm">📍 Geofencing</div>
+            <div className="font-semibold text-sm">Geofencing</div>
             <p className="text-xs text-muted-foreground">
               Location-based access restrictions
             </p>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold text-sm">🔥 Self-Destruct</div>
+            <div className="font-semibold text-sm">Self-Destruct</div>
             <p className="text-xs text-muted-foreground">
               Soft or hard burn capabilities
             </p>

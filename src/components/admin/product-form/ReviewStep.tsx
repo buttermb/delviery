@@ -202,7 +202,7 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
       {missingRequired.length > 0 && (
         <Card className="p-4 border-red-200 bg-red-50">
           <p className="text-red-600 font-medium">
-            ⚠️ Cannot publish: {missingRequired.length} required field
+            Cannot publish: {missingRequired.length} required field
             {missingRequired.length > 1 ? "s" : ""} missing
           </p>
           <ul className="mt-2 space-y-1">

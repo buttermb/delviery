@@ -736,16 +736,18 @@ export default function LoyaltyProgramPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Points Cost</Label>
+                <Label htmlFor="reward-points-cost">Points Cost</Label>
                 <Input
+                  id="reward-points-cost"
                   type="number"
                   value={rewardForm.points_required || 0}
                   onChange={(e) => setRewardForm({ ...rewardForm, points_required: parseInt(e.target.value) })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Type</Label>
+                <Label htmlFor="reward-type">Type</Label>
                 <select
+                  id="reward-type"
                   className="w-full p-2 border rounded-md"
                   value={rewardForm.reward_type}
                   onChange={(e) => setRewardForm({ ...rewardForm, reward_type: e.target.value })}

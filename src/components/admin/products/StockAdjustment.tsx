@@ -57,14 +57,14 @@ interface AdjustmentReason {
 }
 
 const ADJUSTMENT_REASONS: AdjustmentReason[] = [
-  { value: 'restock', label: 'Restock', icon: '📦' },
-  { value: 'damaged', label: 'Damaged', icon: '💔' },
-  { value: 'correction', label: 'Count Correction', icon: '🔢' },
-  { value: 'audit', label: 'Audit Adjustment', icon: '📋' },
-  { value: 'expired', label: 'Expired', icon: '⏰' },
-  { value: 'theft', label: 'Theft/Loss', icon: '🚨' },
-  { value: 'transfer', label: 'Transfer', icon: '🔄' },
-  { value: 'other', label: 'Other', icon: '📝' },
+  { value: 'restock', label: 'Restock', icon: '' },
+  { value: 'damaged', label: 'Damaged', icon: '' },
+  { value: 'correction', label: 'Count Correction', icon: '' },
+  { value: 'audit', label: 'Audit Adjustment', icon: '' },
+  { value: 'expired', label: 'Expired', icon: '' },
+  { value: 'theft', label: 'Theft/Loss', icon: '' },
+  { value: 'transfer', label: 'Transfer', icon: '' },
+  { value: 'other', label: 'Other', icon: '' },
 ];
 
 type ReasonValue = (typeof ADJUSTMENT_REASONS)[number]['value'] | '';

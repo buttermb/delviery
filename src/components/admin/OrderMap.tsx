@@ -196,7 +196,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
             transition: all 0.3s ease;
             position: relative;
           ">
-            📦
+            &#x25CF;
             ${order.status === 'out_for_delivery' ? `
               <div style="
                 position: absolute;
@@ -218,14 +218,14 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
               ${order.tracking_code}
             </div>
             <div style="font-size: 14px; margin-bottom: 4px;">
-              📍 ${order.delivery_address}
+              ${order.delivery_address}
             </div>
             <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
               Status: <span style="color: ${statusColor}; font-weight: 600;">${formatStatus(order.status).toUpperCase()}</span>
             </div>
             ${order.eta_minutes ? `
               <div style="font-size: 12px; background: #eff6ff; padding: 6px; border-radius: 4px; border-left: 3px solid #3b82f6;">
-                ⏱️ ETA: ${order.eta_minutes} min
+                ETA: ${order.eta_minutes} min
               </div>
             ` : ''}
           </div>
@@ -272,7 +272,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
             animation: float 3s ease-in-out infinite;
             position: relative;
           ">
-            🚗
+            &#x25CF;
             <div style="
               position: absolute;
               width: 100%;
@@ -287,7 +287,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         const courierPopup = `
           <div style="padding: 12px;">
             <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #8b5cf6;">
-              🚗 ${order.courier.full_name}
+              ${order.courier.full_name}
             </div>
             <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
               Delivering: ${order.tracking_code}
@@ -353,7 +353,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
               animation: float 3s ease-in-out infinite;
               position: relative;
             ">
-              🚗
+              &#x25CF;
               <div style="
                 position: absolute;
                 top: -2px;
@@ -371,7 +371,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
           const courierPopup = `
             <div style="padding: 12px;">
               <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #10b981;">
-                🚗 ${courier.full_name}
+                ${courier.full_name}
               </div>
               <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
                 Status: <span style="color: #10b981; font-weight: 600;">AVAILABLE</span>
@@ -380,7 +380,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
                 Vehicle: ${courier.vehicle_type || 'N/A'}
               </div>
               <div style="font-size: 12px; color: #666;">
-                Rating: ⭐ ${courier.rating?.toFixed(1) || '5.0'}
+                Rating: ${courier.rating?.toFixed(1) || '5.0'}
               </div>
             </div>
           `;

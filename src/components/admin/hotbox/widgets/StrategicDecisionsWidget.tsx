@@ -38,7 +38,7 @@ export function StrategicDecisionsWidget() {
             if (wholesalePipelineValue > 10000) {
                 items.push({
                     id: 'wholesale-pipeline',
-                    emoji: '💼',
+                    emoji: '',
                     title: 'High-Value Wholesale Pipeline',
                     description: `${formatCurrency(wholesalePipelineValue)} in pending approvals`,
                     priority: wholesalePipelineValue > 50000 ? 'critical' : 'high',
@@ -60,7 +60,7 @@ export function StrategicDecisionsWidget() {
             if (inventoryValue > 50000) {
                 items.push({
                     id: 'inventory-investment',
-                    emoji: '📦',
+                    emoji: '',
                     title: 'Inventory Investment Review',
                     description: `${formatCurrency(inventoryValue)} tied up in inventory`,
                     priority: inventoryValue > 100000 ? 'high' : 'medium',
@@ -82,7 +82,7 @@ export function StrategicDecisionsWidget() {
             if (arOutstanding > 5000) {
                 items.push({
                     id: 'ar-collection',
-                    emoji: '💳',
+                    emoji: '',
                     title: 'Accounts Receivable',
                     description: `${formatCurrency(arOutstanding)} outstanding from customers`,
                     priority: arOutstanding > 20000 ? 'critical' : 'high',
@@ -100,7 +100,7 @@ export function StrategicDecisionsWidget() {
             if ((teamSize || 0) >= 30) {
                 items.push({
                     id: 'team-expansion',
-                    emoji: '👥',
+                    emoji: '',
                     title: 'Team Scaling Review',
                     description: `${teamSize} team members - consider organizational structure`,
                     priority: 'medium',
@@ -115,7 +115,7 @@ export function StrategicDecisionsWidget() {
             if (daysUntilMonthEnd <= 5) {
                 items.push({
                     id: 'month-close',
-                    emoji: '📅',
+                    emoji: '',
                     title: 'Month-End Close',
                     description: `${daysUntilMonthEnd} days until month-end`,
                     priority: daysUntilMonthEnd <= 2 ? 'critical' : 'high',
@@ -139,7 +139,7 @@ export function StrategicDecisionsWidget() {
             if (monthlyRevenue > 200000) {
                 items.push({
                     id: 'expansion',
-                    emoji: '🗺️',
+                    emoji: '',
                     title: 'Expansion Opportunity',
                     description: 'Revenue supports new market entry',
                     priority: 'medium',
@@ -162,7 +162,7 @@ export function StrategicDecisionsWidget() {
             <Card className="border-yellow-500/50 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">🎯</span> STRATEGIC DECISIONS
+                        STRATEGIC DECISIONS
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -179,7 +179,7 @@ export function StrategicDecisionsWidget() {
             <Card className="border-green-500/50 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">✅</span> ALL CLEAR
+                        ALL CLEAR
                         <Badge variant="outline" className="text-xs ml-auto bg-green-100 text-green-700">
                             No action needed
                         </Badge>
@@ -203,7 +203,7 @@ export function StrategicDecisionsWidget() {
         <Card className="border-yellow-500/50 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30">
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">🎯</span> STRATEGIC DECISIONS
+                    STRATEGIC DECISIONS
                     <Badge variant="outline" className="text-xs ml-auto">
                         {decisions.length} items
                     </Badge>

@@ -266,7 +266,7 @@ const DisposableMenusHelp = () => {
             <h3 className="text-xl font-bold mb-4">Customer Access Flow</h3>
             <div className="space-y-4">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 text-2xl">1️⃣</div>
+                <div className="flex-shrink-0 text-2xl font-bold">1.</div>
                 <div>
                   <div className="font-semibold">Customer receives link</div>
                   <div className="text-sm text-muted-foreground mt-1">
@@ -276,7 +276,7 @@ const DisposableMenusHelp = () => {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 text-2xl">2️⃣</div>
+                <div className="flex-shrink-0 text-2xl font-bold">2.</div>
                 <div>
                   <div className="font-semibold">Location check</div>
                   <div className="text-sm text-muted-foreground mt-1">
@@ -286,7 +286,7 @@ const DisposableMenusHelp = () => {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 text-2xl">3️⃣</div>
+                <div className="flex-shrink-0 text-2xl font-bold">3.</div>
                 <div>
                   <div className="font-semibold">Enter access code</div>
                   <div className="text-sm text-muted-foreground mt-1">
@@ -296,7 +296,7 @@ const DisposableMenusHelp = () => {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 text-2xl">4️⃣</div>
+                <div className="flex-shrink-0 text-2xl font-bold">4.</div>
                 <div>
                   <div className="font-semibold">Validation</div>
                   <div className="text-sm text-muted-foreground mt-1">
@@ -306,7 +306,7 @@ const DisposableMenusHelp = () => {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 text-2xl">5️⃣</div>
+                <div className="flex-shrink-0 text-2xl font-bold">5.</div>
                 <div>
                   <div className="font-semibold">Browse & order</div>
                   <div className="text-sm text-muted-foreground mt-1">

@@ -109,7 +109,7 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-sm">
-                    {item.priority === 'critical' ? '🔴' : item.priority === 'important' ? '🟡' : '🟢'}
+                    {item.priority === 'critical' ? 'Critical' : item.priority === 'important' ? 'Important' : 'Info'}
                   </span>
                   <div>
                     <div className="font-medium text-sm">{item.title}</div>

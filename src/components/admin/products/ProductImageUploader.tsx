@@ -521,6 +521,7 @@ export function ProductImageUploader({
 
         <input
           ref={fileInputRef}
+          id="product-main-image-upload"
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           className="hidden"
@@ -530,6 +531,7 @@ export function ProductImageUploader({
             e.target.value = '';
           }}
           disabled={disabled}
+          aria-label="Upload main product image"
         />
       </div>
 
@@ -629,6 +631,7 @@ export function ProductImageUploader({
 
         <input
           ref={additionalFileInputRef}
+          id="product-additional-images-upload"
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           multiple
@@ -638,6 +641,7 @@ export function ProductImageUploader({
             e.target.value = '';
           }}
           disabled={disabled}
+          aria-label="Upload additional product images"
         />
       </div>
 

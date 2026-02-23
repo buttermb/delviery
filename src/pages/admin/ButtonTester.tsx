@@ -645,34 +645,34 @@ const ButtonTester = () => {
     const recommendations = [];
     
     if (stats.error > 0) {
-      recommendations.push(`🔴 Fix ${stats.error} broken button(s) that are causing errors`);
+      recommendations.push(`Fix ${stats.error} broken button(s) that are causing errors`);
     }
     if (stats.notFound > 0) {
-      recommendations.push(`⚠️ Fix ${stats.notFound} button(s) leading to 404 pages`);
+      recommendations.push(`Fix ${stats.notFound} button(s) leading to 404 pages`);
     }
     
     const highSeverityBugs = pageResults.reduce((sum, p) => sum + p.bugs.filter(b => b.severity === 'high').length, 0);
     if (highSeverityBugs > 0) {
-      recommendations.push(`🚨 Address ${highSeverityBugs} high-severity bug(s) immediately`);
+      recommendations.push(`Address ${highSeverityBugs} high-severity bug(s) immediately`);
     }
     
     const accessibilityIssues = pageResults.reduce((sum, p) => sum + p.bugs.filter(b => b.type === 'accessibility').length, 0);
     if (accessibilityIssues > 0) {
-      recommendations.push(`♿ Improve ${accessibilityIssues} accessibility issue(s)`);
+      recommendations.push(`Improve ${accessibilityIssues} accessibility issue(s)`);
     }
     
     const seoIssues = pageResults.reduce((sum, p) => sum + p.bugs.filter(b => b.type === 'seo').length, 0);
     if (seoIssues > 0) {
-      recommendations.push(`📈 Optimize ${seoIssues} SEO issue(s)`);
+      recommendations.push(`Optimize ${seoIssues} SEO issue(s)`);
     }
     
     const perfIssues = pageResults.reduce((sum, p) => sum + p.bugs.filter(b => b.type === 'performance').length, 0);
     if (perfIssues > 0) {
-      recommendations.push(`⚡ Improve performance on ${perfIssues} page(s)`);
+      recommendations.push(`Improve performance on ${perfIssues} page(s)`);
     }
     
     if (recommendations.length === 0) {
-      recommendations.push("✅ All tests passed! Your site is looking great.");
+      recommendations.push("All tests passed! Your site is looking great.");
     }
     
     return recommendations;
@@ -870,7 +870,7 @@ const ButtonTester = () => {
                         {/* Show bugs found on this page */}
                         {page.bugs.length > 0 && (
                           <div className="bg-muted/50 rounded p-3 space-y-2">
-                            <h4 className="font-semibold text-sm">🐛 Bugs Detected:</h4>
+                            <h4 className="font-semibold text-sm">Bugs Detected:</h4>
                             {page.bugs.map((bug, bugIndex) => {
                               // Validate bug object
                               if (!isValidBugReport(bug)) {

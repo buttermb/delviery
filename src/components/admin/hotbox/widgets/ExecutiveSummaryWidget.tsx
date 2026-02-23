@@ -106,7 +106,7 @@ export function ExecutiveSummaryWidget() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <span className="text-xl">📈</span> EXECUTIVE SUMMARY
+                        EXECUTIVE SUMMARY
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -124,7 +124,7 @@ export function ExecutiveSummaryWidget() {
         <Card>
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-xl">📈</span> EXECUTIVE SUMMARY
+                    EXECUTIVE SUMMARY
                     <Badge variant="outline" className="text-xs ml-auto">
                         {format(new Date(), 'MMMM yyyy')}
                     </Badge>

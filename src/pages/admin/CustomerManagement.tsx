@@ -477,7 +477,7 @@ export function CustomerManagement() {
             <h1 className="text-xl font-bold">Customer Management</h1>
             {tenant && (
               <TooltipGuide
-                title="💡 Customer Management"
+                title="Customer Management"
                 content="Import customers from your existing spreadsheet. Add contact info, preferences, and track purchase history."
                 placement="right"
                 tenantId={tenant.id}
@@ -694,7 +694,7 @@ export function CustomerManagement() {
                     </td>
                     <td className="px-4 py-2.5">
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-                        {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
+                        {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                       </Badge>
                     </td>
                     <td className="px-4 py-2.5 text-sm font-semibold">

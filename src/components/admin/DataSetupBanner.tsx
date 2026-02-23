@@ -21,7 +21,7 @@ export function DataSetupBanner() {
         <Alert className="border-yellow-500 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 shadow-lg">
           <AlertCircle className="h-6 w-6 text-yellow-500" />
           <AlertTitle className="text-yellow-600 dark:text-yellow-500 font-bold text-lg">
-            🚀 Ready to Launch? Your System is Empty
+            Ready to Launch? Your System is Empty
           </AlertTitle>
           <AlertDescription className="space-y-4 mt-2">
             <p className="text-sm font-medium text-foreground">
@@ -46,7 +46,7 @@ export function DataSetupBanner() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              💡 Quick Start creates sample clients, products, and runners so you can explore features immediately
+              Quick Start creates sample clients, products, and runners so you can explore features immediately
             </p>
           </AlertDescription>
         </Alert>

@@ -1038,6 +1038,7 @@ export function CatalogSync({ vendorId, vendorName }: CatalogSyncProps) {
                     accept=".csv"
                     onChange={handleFileUpload}
                     className="max-w-xs mx-auto"
+                    aria-label="Upload vendor catalog CSV file"
                   />
                 </>
               )}

@@ -109,19 +109,19 @@ function getPaymentMethodIcon(method: string | null): string {
   switch (method?.toLowerCase()) {
     case 'credit_card':
     case 'card':
-      return '💳';
+      return 'Card';
     case 'cash':
-      return '💵';
+      return 'Cash';
     case 'check':
-      return '📝';
+      return 'Check';
     case 'bank_transfer':
     case 'wire':
     case 'ach':
-      return '🏦';
+      return 'Bank';
     case 'crypto':
-      return '₿';
+      return 'Crypto';
     default:
-      return '💰';
+      return 'Payment';
   }
 }
 

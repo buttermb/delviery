@@ -129,7 +129,7 @@ export function CommunicationTimeline({ customers }: CommunicationTimelineProps)
                     >
                       <Icon className="h-4 w-4 text-muted-foreground mt-1" />
                       <div className="flex-1">
-                        <div className="font-medium">{event.description}</div>
+                        <div className="font-medium line-clamp-2">{event.description}</div>
                         <div className="text-sm text-muted-foreground">
                           {formatSmartDate(event.date, { includeTime: true })}
                         </div>

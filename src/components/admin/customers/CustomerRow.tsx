@@ -104,7 +104,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       </td>
       <td className="px-4 py-2.5">
         <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-          {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
+          {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
         </Badge>
       </td>
       <td className="px-4 py-2.5 text-sm font-semibold">

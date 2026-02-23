@@ -846,7 +846,7 @@ const AdminLiveChat = function AdminLiveChat() {
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="More actions">
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -932,10 +932,12 @@ const AdminLiveChat = function AdminLiveChat() {
                     {/* File Upload */}
                     <input
                       ref={fileInputRef}
+                      id="chat-file-upload"
                       type="file"
                       className="hidden"
                       accept="image/*,.pdf,.doc,.docx,.txt"
                       onChange={handleFileSelect}
+                      aria-label="Attach file to chat message"
                     />
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -956,7 +958,7 @@ const AdminLiveChat = function AdminLiveChat() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" aria-label="Quick responses">
                               <Zap className="w-4 h-4" />
                             </Button>
                           </PopoverTrigger>

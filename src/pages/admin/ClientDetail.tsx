@@ -272,7 +272,7 @@ export default function ClientDetail() {
 
       {/* Financial Overview */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">💰 Financial Overview</h2>
+        <h2 className="text-lg font-semibold mb-4">Financial Overview</h2>
 
         {displayClient.outstanding_balance > 0 && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
@@ -378,7 +378,7 @@ export default function ClientDetail() {
 
       {/* Recent Orders */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">📋 Recent Orders</h2>
+        <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
         <ResponsiveTable
           keyExtractor={(order: any) => order.id || order.order_number}
           columns={[
@@ -412,16 +412,16 @@ export default function ClientDetail() {
                   <>
                     {isPending && (
                       <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-                        ⚠️ PENDING
+                        PENDING
                       </Badge>
                     )}
                     {isDelivered && (
                       <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                        ✅ Delivered
+                        Delivered
                       </Badge>
                     )}
                     {order.status === "cancelled" && (
-                      <Badge variant="destructive">❌ Cancelled</Badge>
+                      <Badge variant="destructive">Cancelled</Badge>
                     )}
                     {!isPending && !isDelivered && order.status !== "cancelled" && (
                       <Badge variant="outline">{order.status}</Badge>
@@ -452,16 +452,16 @@ export default function ClientDetail() {
                 <div>
                   {order.status === "pending" && (
                     <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-xs">
-                      ⚠️ PENDING
+                      PENDING
                     </Badge>
                   )}
                   {order.status === "delivered" && (
                     <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs">
-                      ✅ Delivered
+                      Delivered
                     </Badge>
                   )}
                   {order.status === "cancelled" && (
-                    <Badge variant="destructive" className="text-xs">❌ Cancelled</Badge>
+                    <Badge variant="destructive" className="text-xs">Cancelled</Badge>
                   )}
                   {order.status !== "pending" && order.status !== "delivered" && order.status !== "cancelled" && (
                     <Badge variant="outline" className="text-xs">{order.status}</Badge>

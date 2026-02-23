@@ -154,7 +154,7 @@ export function IntegrationManager() {
   return (
     <div className="space-y-4">
       <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-        <h4 className="font-medium text-sm mb-1">💳 About Stripe Integration</h4>
+        <h4 className="font-medium text-sm mb-1">About Stripe Integration</h4>
         <p className="text-sm text-muted-foreground">
           This Stripe integration is for <strong>accepting payments from your customers</strong>. 
           Your platform subscription billing (what you pay us) uses a separate Stripe account. 

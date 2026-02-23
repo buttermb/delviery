@@ -174,7 +174,7 @@ describe('CustomerRow', () => {
       renderCustomerRow();
 
       const badges = screen.getAllByTestId('badge');
-      const medicalBadge = badges.find((badge) => badge.textContent === '🏥 Medical');
+      const medicalBadge = badges.find((badge) => badge.textContent === 'Medical');
       expect(medicalBadge).toBeInTheDocument();
       expect(medicalBadge?.getAttribute('data-variant')).toBe('default');
     });

@@ -104,7 +104,7 @@ export function TenantActivityTimeline({ tenantId, limit = 20 }: TenantActivityT
                                 </span>
                             </div>
                             {activity.metadata && (
-                                <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded mt-1">
+                                <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded mt-1 max-h-[120px] overflow-y-auto whitespace-pre-wrap break-all font-mono">
                                     {JSON.stringify(activity.metadata, null, 2)}
                                 </div>
                             )}

@@ -164,10 +164,10 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
 
           {/* Instructions */}
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>📱 Hold your device steady</p>
-            <p>🔍 Center the barcode in the frame</p>
-            <p>💡 Ensure good lighting for best results</p>
-            {batchMode && <p className="text-primary font-medium">✨ Scanner stays open - scan multiple items!</p>}
+            <p>Hold your device steady</p>
+            <p>Center the barcode in the frame</p>
+            <p>Ensure good lighting for best results</p>
+            {batchMode && <p className="text-primary font-medium">Scanner stays open - scan multiple items!</p>}
           </div>
           
           {batchMode && scannedCount > 0 && (

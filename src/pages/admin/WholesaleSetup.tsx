@@ -45,7 +45,7 @@ export default function WholesaleSetup() {
 
           <div className="space-y-4">
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-left">
-              <h4 className="font-semibold text-sm mb-2">✨ Getting Started:</h4>
+              <h4 className="font-semibold text-sm mb-2">Getting Started:</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• Add your wholesale clients with contact details</li>
                 <li>• Configure your delivery runners</li>
@@ -74,7 +74,7 @@ export default function WholesaleSetup() {
           </div>
 
           <div className="text-xs text-muted-foreground pt-4 border-t">
-            💡 Add your real business data to unlock the full power of your wholesale CRM.
+            Add your real business data to unlock the full power of your wholesale CRM.
           </div>
         </div>
       </Card>

@@ -150,7 +150,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
               {item.badge}
             </Badge>
           ) : item.hot ? (
-            <span className="flex-shrink-0 text-orange-500">🔥</span>
+            <span className="flex-shrink-0 text-orange-500 font-bold text-xs">HOT</span>
           ) : isFavorite ? (
             <Star
               className="h-4 w-4 flex-shrink-0 text-warning fill-warning"

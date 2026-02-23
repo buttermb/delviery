@@ -211,6 +211,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
               className="border rounded-md px-3"
               value="grams"
               disabled
+              aria-label="Weight unit"
             >
               <option value="grams">grams</option>
             </select>

@@ -13,12 +13,12 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { invalidateOnEvent } from "@/lib/invalidation";
 
 const REASON_OPTIONS = [
-  { value: "receiving", label: "📦 Receiving/Restock" },
-  { value: "damage", label: "💔 Damage/Loss" },
-  { value: "theft", label: "🚨 Theft" },
-  { value: "quality", label: "❌ Quality Issue" },
-  { value: "count", label: "🔢 Count Correction" },
-  { value: "sale", label: "💰 Sale" },
+  { value: "receiving", label: "Receiving/Restock" },
+  { value: "damage", label: "Damage/Loss" },
+  { value: "theft", label: "Theft" },
+  { value: "quality", label: "Quality Issue" },
+  { value: "count", label: "Count Correction" },
+  { value: "sale", label: "Sale" },
   { value: "other", label: "Other" },
 ] as const;
 
@@ -132,7 +132,7 @@ export function StockAdjustmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>⚖️ Adjust Stock</DialogTitle>
+          <DialogTitle>Adjust Stock</DialogTitle>
           <DialogDescription>
             Adjust quantity for {productName} at {warehouse}
           </DialogDescription>
@@ -153,8 +153,8 @@ export function StockAdjustmentDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="add">➕ Add Stock</SelectItem>
-                <SelectItem value="subtract">➖ Reduce Stock</SelectItem>
+                <SelectItem value="add">Add Stock</SelectItem>
+                <SelectItem value="subtract">Reduce Stock</SelectItem>
               </SelectContent>
             </Select>
           </div>

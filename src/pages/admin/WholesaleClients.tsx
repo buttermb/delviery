@@ -844,6 +844,7 @@ export default function WholesaleClients() {
                 accept=".csv"
                 onChange={(e) => setImportFile(e.target.files?.[0] || null)}
                 className="min-h-[44px]"
+                aria-label="Upload CSV file for client import"
               />
               <div className="flex gap-2">
                 <Button

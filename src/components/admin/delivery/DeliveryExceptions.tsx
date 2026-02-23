@@ -1518,11 +1518,13 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
               )}
               <input
                 ref={fileInputRef}
+                id="exception-photo-upload"
                 type="file"
                 accept="image/*"
                 capture="environment"
                 onChange={handlePhotoSelect}
                 className="hidden"
+                aria-label="Upload exception photo"
               />
             </div>
 

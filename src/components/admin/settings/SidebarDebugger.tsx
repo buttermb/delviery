@@ -91,7 +91,7 @@ export function SidebarDebugger() {
                         <div>Features in ENTERPRISE_SIDEBAR: <Badge variant="outline">{enterpriseCount}</Badge></div>
                         {missingFromEnterprise.length > 0 ? (
                             <div className="text-yellow-600 dark:text-yellow-400">
-                                ⚠️ Missing from ENTERPRISE: <Badge variant="destructive">{missingFromEnterprise.length}</Badge>
+                                Missing from ENTERPRISE: <Badge variant="destructive">{missingFromEnterprise.length}</Badge>
                                 <div className="mt-1 text-xs">{missingFromEnterprise.join(', ')}</div>
                             </div>
                         ) : (

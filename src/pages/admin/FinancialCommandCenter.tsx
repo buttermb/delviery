@@ -199,7 +199,6 @@ export default function FinancialCommandCenter() {
         {/* Cash Flow - Default Open */}
         <MobileSection
           title="Today's Cash Flow"
-          icon={<span className="text-lg">💰</span>}
           defaultOpen={true}
         >
           <CashFlowPulse />
@@ -208,7 +207,6 @@ export default function FinancialCommandCenter() {
         {/* AR - Badge for count */}
         <MobileSection
           title="Needs Action"
-          icon={<span className="text-lg">🚨</span>}
         >
           <ARCommand />
         </MobileSection>
@@ -216,7 +214,6 @@ export default function FinancialCommandCenter() {
         {/* Fronted Inventory */}
         <MobileSection
           title="Fronted Inventory"
-          icon={<span className="text-lg">📦</span>}
         >
           <FrontedInventoryZone />
         </MobileSection>
@@ -224,7 +221,6 @@ export default function FinancialCommandCenter() {
         {/* Performance */}
         <MobileSection
           title="This Month"
-          icon={<span className="text-lg">📈</span>}
         >
           <PerformancePulse />
         </MobileSection>

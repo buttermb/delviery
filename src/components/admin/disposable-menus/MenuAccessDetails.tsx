@@ -122,7 +122,7 @@ export const MenuAccessDetails = ({
 
           {/* Security Notice */}
           <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
-            ⚠️ Keep this access code secure. Anyone with this code can access the menu.
+            Keep this access code secure. Anyone with this code can access the menu.
           </div>
         </div>
       </DialogContent>

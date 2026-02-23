@@ -506,10 +506,12 @@ export function VendorDocumentManager({ vendorId, vendorName }: VendorDocumentMa
                   >
                     <input
                       ref={fileInputRef}
+                      id="vendor-document-upload"
                       type="file"
                       className="hidden"
                       accept="application/pdf,image/jpeg,image/png"
                       onChange={handleFileChange}
+                      aria-label="Upload vendor document"
                     />
                     {selectedFile ? (
                       <div className="flex items-center justify-center gap-2">

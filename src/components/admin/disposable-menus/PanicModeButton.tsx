@@ -81,7 +81,7 @@ export const PanicModeButton = () => {
       });
 
       toast.success(
-        `🚨 Panic Mode Activated - ${activeMenus?.length || 0} menus burned`,
+        `Panic Mode Activated - ${activeMenus?.length || 0} menus burned`,
         {
           description: 'All active menus have been disabled and access revoked.',
           duration: 5000,
@@ -111,7 +111,7 @@ export const PanicModeButton = () => {
         className="gap-2"
       >
         <AlertTriangle className="h-4 w-4" />
-        🚨 PANIC MODE
+        PANIC MODE
       </Button>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
@@ -119,7 +119,7 @@ export const PanicModeButton = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
-              🚨 EMERGENCY PANIC MODE
+              EMERGENCY PANIC MODE
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p className="font-semibold">This will immediately:</p>
@@ -130,7 +130,7 @@ export const PanicModeButton = () => {
                 <li>Log security event for investigation</li>
               </ul>
               <p className="text-destructive font-semibold mt-4">
-                ⚠️ This action is IMMEDIATE and IRREVERSIBLE
+                This action is IMMEDIATE and IRREVERSIBLE
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -172,7 +172,7 @@ export const PanicModeButton = () => {
                   Activating...
                 </>
               ) : (
-                '🚨 ACTIVATE PANIC MODE'
+                'ACTIVATE PANIC MODE'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

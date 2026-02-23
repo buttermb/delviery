@@ -95,7 +95,7 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>💰 Process Payment</DialogTitle>
+          <DialogTitle>Process Payment</DialogTitle>
           <DialogDescription>
             Record payment for {clientName}
           </DialogDescription>

@@ -89,7 +89,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
                       {isEnabled ? "ON" : "OFF"}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{feature.description}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}

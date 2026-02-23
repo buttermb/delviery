@@ -149,11 +149,11 @@ export const OrderReviewCard = ({ order, onReview }: OrderReviewCardProps) => {
         {/* Delivery Method & Payment */}
         <div className="flex gap-4 text-sm">
           <Badge variant="outline">
-            {order.delivery_method === 'delivery' ? '🚚 Delivery' : '📦 Pickup'}
+            {order.delivery_method === 'delivery' ? 'Delivery' : 'Pickup'}
           </Badge>
           <Badge variant="outline">
-            {order.payment_method === 'cash' ? '💵 Cash' : 
-             order.payment_method === 'crypto' ? '₿ Crypto' : '💳 Credit'}
+            {order.payment_method === 'cash' ? 'Cash' :
+             order.payment_method === 'crypto' ? 'Crypto' : 'Credit'}
           </Badge>
         </div>
       </div>

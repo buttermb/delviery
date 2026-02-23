@@ -418,7 +418,7 @@ export default function DispatchInventory() {
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-4 mb-4">
-          <h1 className="text-xl font-bold">🚚 Dispatch/Front Inventory</h1>
+          <h1 className="text-xl font-bold">Dispatch/Front Inventory</h1>
         </div>
 
         {/* Step 1: Scan Products */}

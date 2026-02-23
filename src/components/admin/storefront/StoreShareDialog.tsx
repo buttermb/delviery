@@ -133,7 +133,7 @@ export function StoreShareDialog({
 
   const shareViaWhatsApp = () => {
     const message = encodeURIComponent(
-      `Check out ${store.store_name}! 🛒\n\n` +
+      `Check out ${store.store_name}!\n\n` +
       `Shop here: ${shareUrl}\n\n` +
       `Browse our products and place your order online.`
     );

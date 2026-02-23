@@ -1179,7 +1179,7 @@ export default function ProductManagement() {
             <h1 className="text-xl font-bold truncate">Product Management</h1>
             {tenant?.id && (
               <TooltipGuide
-                title="💡 Product Management"
+                title="Product Management"
                 content="Upload CSV to add 100+ products instantly. Products can be organized by category and tracked by batch numbers."
                 placement="right"
                 tenantId={tenant.id}

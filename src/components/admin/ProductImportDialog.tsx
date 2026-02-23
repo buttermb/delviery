@@ -335,6 +335,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                                 className="hidden"
                                 onChange={handleFileChange}
                                 disabled={loading}
+                                aria-label="Upload CSV or Excel file for product import"
                             />
                         </div>
                     )}

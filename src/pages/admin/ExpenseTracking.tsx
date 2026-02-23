@@ -319,7 +319,7 @@ export default function ExpenseTracking() {
                   </SelectContent>
                 </Select>
                 {categoryFilter !== 'all' && (
-                  <Button variant="ghost" size="icon" onClick={() => setCategoryFilter('all')}>
+                  <Button variant="ghost" size="icon" onClick={() => setCategoryFilter('all')} aria-label="Clear category filter">
                     <X className="h-4 w-4" />
                   </Button>
                 )}

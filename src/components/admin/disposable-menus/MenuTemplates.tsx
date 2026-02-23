@@ -177,22 +177,22 @@ export const MenuTemplates = ({ onSelectTemplate, selectedTemplateId }: MenuTemp
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {template.security_settings.screenshot_protection_enabled && (
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    📸 Screenshot Protection
+                    Screenshot Protection
                   </Badge>
                 )}
                 {template.security_settings.require_geofence && (
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    📍 Geofenced
+                    Geofenced
                   </Badge>
                 )}
                 {template.burnAfterRead && (
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    🔥 Auto-Burn
+                    Auto-Burn
                   </Badge>
                 )}
                 {template.security_settings.device_fingerprinting && (
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    🔒 Device Lock
+                    Device Lock
                   </Badge>
                 )}
               </div>

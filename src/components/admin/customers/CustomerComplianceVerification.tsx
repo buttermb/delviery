@@ -203,7 +203,7 @@ export function CustomerComplianceVerification({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={() => refetch()}>
+                    <Button variant="ghost" size="icon" onClick={() => refetch()} aria-label="Refresh compliance data">
                       <RefreshCw className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -213,7 +213,7 @@ export function CustomerComplianceVerification({
 
               {compact && (
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" aria-label={isExpanded ? "Collapse" : "Expand"}>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (

@@ -126,7 +126,7 @@ export function EnhancedMenuDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">🔐 Disposable Menus</h1>
+          <h1 className="text-3xl font-bold mb-2">Disposable Menus</h1>
           <p className="text-muted-foreground">
             Secure, encrypted, self-destructing catalogs with advanced access control
           </p>
@@ -173,7 +173,7 @@ export function EnhancedMenuDashboard() {
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <div className="space-y-2">
-              <strong>🚨 Recent Security Alerts:</strong>
+              <strong>Recent Security Alerts:</strong>
               {recentAlerts.slice(0, 3).map((alert: SecurityAlert) => (
                 <div key={alert.id} className="text-sm">
                   • {alert.event_type?.replace(/_/g, ' ')} - {format(new Date(alert.created_at), 'MMM d, h:mm a')}
@@ -191,7 +191,7 @@ export function EnhancedMenuDashboard() {
 
       {/* Active Menus */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">🟢 Active Menus</h2>
+        <h2 className="text-xl font-semibold">Active Menus</h2>
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground">Loading menus...</div>
         ) : activeMenus.length === 0 ? (
@@ -297,17 +297,17 @@ export function EnhancedMenuDashboard() {
                       Preview Menu
                     </Button>
                     <Button variant="outline" size="sm">
-                      👥 Manage Access
+                      Manage Access
                     </Button>
                     <Button variant="outline" size="sm">
-                      📊 Analytics
+                      Analytics
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => setSelectedMenuForBurn(menu)}
                     >
-                      🔥 BURN
+                      BURN
                     </Button>
                   </div>
                 </Card>
@@ -320,7 +320,7 @@ export function EnhancedMenuDashboard() {
       {/* Burned Menus History */}
       {recentBurnedMenus && recentBurnedMenus.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">🔴 Burned Menus (Last 30 days)</h2>
+          <h2 className="text-xl font-semibold">Burned Menus (Last 30 days)</h2>
           <div className="space-y-2">
             {recentBurnedMenus.map((menu) => (
               <Card key={menu.id} className="p-4 bg-muted/50">
@@ -339,7 +339,7 @@ export function EnhancedMenuDashboard() {
                     </div>
                     {(menu as any).regenerated_from && (
                       <div className="text-sm text-green-600 mt-1">
-                        ✅ Regenerated as new menu
+                        Regenerated as new menu
                       </div>
                     )}
                   </div>

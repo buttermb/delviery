@@ -626,6 +626,7 @@ export function ProductBulkImport({ open, onOpenChange, onSuccess }: ProductBulk
                   className="hidden"
                   onChange={handleFileChange}
                   disabled={loading}
+                  aria-label="Upload CSV or Excel file for bulk product import"
                 />
               </div>
 

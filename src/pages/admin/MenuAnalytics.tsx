@@ -201,8 +201,8 @@ const MenuAnalytics = () => {
                           {format(new Date(event.created_at), 'MMM dd, yyyy HH:mm')}
                         </div>
                         {event.event_data && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {JSON.stringify(event.event_data)}
+                          <div className="text-xs text-muted-foreground mt-1 max-h-[120px] overflow-y-auto whitespace-pre-wrap break-all">
+                            {JSON.stringify(event.event_data, null, 2)}
                           </div>
                         )}
                       </div>
