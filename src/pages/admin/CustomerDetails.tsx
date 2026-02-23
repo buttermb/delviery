@@ -211,39 +211,39 @@ export default function CustomerDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
           {/* Header skeleton */}
-          <div className="mb-8">
-            <Skeleton className="h-9 w-40 mb-4" />
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4">
-                <Skeleton className="w-20 h-20 rounded-full" />
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-48" />
-                    <Skeleton className="h-6 w-20 rounded-full" />
+          <div className="mb-4 sm:mb-8">
+            <Skeleton className="h-9 w-24 sm:w-40 mb-4" />
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <Skeleton className="w-14 h-14 sm:w-20 sm:h-20 rounded-full shrink-0" />
+                <div className="space-y-3 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <Skeleton className="h-6 sm:h-8 w-36 sm:w-48" />
+                    <Skeleton className="h-5 sm:h-6 w-20 rounded-full" />
                   </div>
-                  <Skeleton className="h-4 w-56" />
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="h-4 w-52" />
+                  <Skeleton className="h-4 w-48 sm:w-56" />
+                  <Skeleton className="h-4 w-32 sm:w-40" />
+                  <Skeleton className="h-4 w-40 sm:w-52" />
                 </div>
               </div>
-              <Skeleton className="h-10 w-28" />
+              <Skeleton className="h-11 w-full sm:w-28" />
             </div>
           </div>
 
           {/* Stats cards skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i} className="shadow-sm">
-                <CardContent className="pt-6">
+                <CardContent className="p-3 sm:pt-6 sm:px-6">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-8 w-32" />
+                    <div className="flex-1 space-y-2 min-w-0">
+                      <Skeleton className="h-3 sm:h-4 w-16 sm:w-24" />
+                      <Skeleton className="h-6 sm:h-8 w-20 sm:w-32" />
                     </div>
-                    <Skeleton className="h-12 w-12 rounded-lg" />
+                    <Skeleton className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -251,13 +251,13 @@ export default function CustomerDetails() {
           </div>
 
           {/* Tabs skeleton */}
-          <div className="space-y-6">
-            <div className="flex gap-2 flex-wrap">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex gap-1 sm:gap-2 flex-wrap overflow-x-auto">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-9 w-24 rounded-md" />
+                <Skeleton key={i} className="h-8 sm:h-9 w-20 sm:w-24 rounded-md shrink-0" />
               ))}
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               <Card className="shadow-sm">
                 <CardContent className="pt-6 space-y-4">
                   <Skeleton className="h-5 w-32" />
@@ -272,7 +272,7 @@ export default function CustomerDetails() {
                   <Skeleton className="h-5 w-40" />
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-8 w-8 rounded-full shrink-0" />
                       <div className="flex-1 space-y-1">
                         <Skeleton className="h-4 w-3/4" />
                         <Skeleton className="h-3 w-1/2" />
@@ -306,25 +306,26 @@ export default function CustomerDetails() {
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
-      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
+      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-6">
         <SEOHead title={`${displayName(customer.first_name, customer.last_name)} | Customer Details`} />
 
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
           {/* Header */}
-          <div className="mb-8">
-            <Button variant="ghost" onClick={() => navigateToAdmin('customer-management')} className="mb-4">
+          <div className="mb-4 sm:mb-8">
+            <Button variant="ghost" onClick={() => navigateToAdmin('customer-management')} className="mb-4 min-h-[44px]">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Customers
+              <span className="hidden sm:inline">Back to Customers</span>
+              <span className="sm:hidden">Back</span>
             </Button>
 
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <User className="w-10 h-10 text-emerald-600" />
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                  <User className="w-7 h-7 sm:w-10 sm:h-10 text-emerald-600" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">
                       {displayName(customer.first_name, customer.last_name)}
                     </h1>
                     <Badge
@@ -337,16 +338,16 @@ export default function CustomerDetails() {
                     </Badge>
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      {displayValue(customer.email)}
+                    <div className="flex items-center gap-2 truncate">
+                      <Mail className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{displayValue(customer.email)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
+                      <Phone className="w-4 h-4 shrink-0" />
                       {displayValue(customer.phone)}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-4 h-4 shrink-0" />
                       Member since {format(new Date(customer.created_at), 'MMM d, yyyy')}
                     </div>
                   </div>
@@ -355,7 +356,7 @@ export default function CustomerDetails() {
 
               <Button
                 onClick={() => navigateToAdmin(`customer-management/${id}/edit`)}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white min-h-[44px] w-full sm:w-auto"
               >
                 Edit Profile
               </Button>
@@ -363,64 +364,64 @@ export default function CustomerDetails() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Spent</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Spent</p>
+                    <p className="text-lg sm:text-2xl md:text-3xl font-bold font-mono text-[hsl(var(--tenant-text))] truncate">
                       ${computedTotalSpent.toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                    <DollarSign className="w-6 h-6 text-emerald-600" />
+                  <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg shrink-0">
+                    <DollarSign className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{totalOrdersCount}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
+                    <p className="text-lg sm:text-2xl md:text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{totalOrdersCount}</p>
                   </div>
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                    <ShoppingBag className="w-6 h-6 text-blue-600" />
+                  <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0">
+                    <ShoppingBag className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">First Order</p>
-                    <p className="text-2xl font-bold font-mono text-[hsl(var(--tenant-text))]">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">First Order</p>
+                    <p className="text-base sm:text-xl md:text-2xl font-bold font-mono text-[hsl(var(--tenant-text))] truncate">
                       {firstOrderDate ? format(new Date(firstOrderDate), 'MMM d, yyyy') : 'No orders'}
                     </p>
                   </div>
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                    <Calendar className="w-6 h-6 text-emerald-600" />
+                  <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Average Order</p>
-                    <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Average Order</p>
+                    <p className="text-lg sm:text-2xl md:text-3xl font-bold font-mono text-[hsl(var(--tenant-text))] truncate">
                       ${averageOrderValue.toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                    <Star className="w-6 h-6 text-purple-600" />
+                  <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg shrink-0">
+                    <Star className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" />
                   </div>
                 </div>
               </CardContent>
@@ -428,8 +429,8 @@ export default function CustomerDetails() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))] flex-wrap">
+          <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+            <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))] flex-wrap h-auto gap-1 p-1 overflow-x-auto max-w-full">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="compliance">Compliance</TabsTrigger>
               <TabsTrigger value="addresses">Addresses</TabsTrigger>
@@ -645,18 +646,18 @@ export default function CustomerDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="border rounded-lg p-4">
-                        <p className="text-sm text-muted-foreground">Total Lifetime Payments</p>
-                        <p className="text-2xl font-bold">${totalPayments.toFixed(2)}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                      <div className="border rounded-lg p-3 sm:p-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Total Lifetime Payments</p>
+                        <p className="text-lg sm:text-2xl font-bold truncate">${totalPayments.toFixed(2)}</p>
                       </div>
-                      <div className="border rounded-lg p-4">
-                        <p className="text-sm text-muted-foreground">Store Credit</p>
-                        <p className="text-2xl font-bold text-green-600">${storeCredit.toFixed(2)}</p>
+                      <div className="border rounded-lg p-3 sm:p-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Store Credit</p>
+                        <p className="text-lg sm:text-2xl font-bold text-green-600 truncate">${storeCredit.toFixed(2)}</p>
                       </div>
-                      <div className="border rounded-lg p-4">
-                        <p className="text-sm text-muted-foreground">Outstanding Balance</p>
-                        <p className={`text-2xl font-bold ${outstandingBalance > 0 ? 'text-red-600' : ''}`}>
+                      <div className="border rounded-lg p-3 sm:p-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Outstanding Balance</p>
+                        <p className={`text-lg sm:text-2xl font-bold truncate ${outstandingBalance > 0 ? 'text-red-600' : ''}`}>
                           ${outstandingBalance.toFixed(2)}
                         </p>
                       </div>
@@ -692,9 +693,10 @@ export default function CustomerDetails() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-4">
+                    <div className="flex flex-wrap gap-2 pt-4">
                       <Button
                         variant="outline"
+                        className="min-h-[44px]"
                         onClick={() => navigateToAdmin(`inventory/fronted/record-payment?customer=${id}`)}
                       >
                         <DollarSign className="w-4 h-4 mr-2" />
@@ -702,12 +704,14 @@ export default function CustomerDetails() {
                       </Button>
                       <Button
                         variant="outline"
+                        className="min-h-[44px]"
                         onClick={() => setStoreCreditDialogOpen(true)}
                       >
                         Add Store Credit
                       </Button>
                       <Button
                         variant="outline"
+                        className="min-h-[44px]"
                         onClick={() => navigateToAdmin(`customers/${id}/invoices`)}
                       >
                         Create Invoice
@@ -819,7 +823,7 @@ export default function CustomerDetails() {
 
       {/* Store Credit Dialog */}
       <Dialog open={storeCreditDialogOpen} onOpenChange={setStoreCreditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Store Credit</DialogTitle>
           </DialogHeader>
