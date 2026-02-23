@@ -78,13 +78,14 @@ export default function CustomerInsights() {
     );
   }
 
-  const totalSpent = orders?.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0) || 0;
-  const orderCount = orders?.length || 0;
+  const orderRecords = (orders || []) as unknown as Record<string, unknown>[];
+  const totalSpent = orderRecords.reduce((sum: number, o) => sum + parseFloat(String(o.total ?? 0)), 0) || 0;
+  const orderCount = orderRecords.length;
   const avgOrderValue = orderCount > 0 ? totalSpent / orderCount : 0;
 
-  const orderHistory = (orders || []).map((order: any) => ({
-    date: new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    revenue: parseFloat(order.total || 0),
+  const orderHistory = orderRecords.map((order) => ({
+    date: new Date(String(order.created_at)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    revenue: parseFloat(String(order.total ?? 0)),
     orders: 1,
   }));
 
@@ -93,7 +94,7 @@ export default function CustomerInsights() {
       <div>
         <h1 className="text-3xl font-bold">Customer Insights</h1>
         <p className="text-muted-foreground">
-          Detailed analytics for {(customer as any).first_name} {(customer as any).last_name}
+          Detailed analytics for {customerRecord?.first_name as string} {customerRecord?.last_name as string}
         </p>
       </div>
 
@@ -106,20 +107,20 @@ export default function CustomerInsights() {
             <div>
               <div className="text-sm font-medium">Name</div>
               <div className="text-lg">
-                {(customer as any).first_name} {(customer as any).last_name}
+                {customerRecord?.first_name as string} {customerRecord?.last_name as string}
               </div>
             </div>
             <div>
               <div className="text-sm font-medium">Email</div>
-              <div className="text-sm text-muted-foreground">{(customer as any).email || 'N/A'}</div>
+              <div className="text-sm text-muted-foreground">{(customerRecord?.email as string) || 'N/A'}</div>
             </div>
             <div>
               <div className="text-sm font-medium">Phone</div>
-              <div className="text-sm text-muted-foreground">{(customer as any).phone || 'N/A'}</div>
+              <div className="text-sm text-muted-foreground">{(customerRecord?.phone as string) || 'N/A'}</div>
             </div>
             <div>
               <div className="text-sm font-medium">Type</div>
-              <Badge>{(customer as any).customer_type || 'regular'}</Badge>
+              <Badge>{(customerRecord?.customer_type as string) || 'regular'}</Badge>
             </div>
           </div>
         </CardContent>
@@ -162,7 +163,7 @@ export default function CustomerInsights() {
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{(customer as any).loyalty_points || 0}</div>
+            <div className="text-2xl font-bold">{(customerRecord?.loyalty_points as number) || 0}</div>
           </CardContent>
         </Card>
       </div>
