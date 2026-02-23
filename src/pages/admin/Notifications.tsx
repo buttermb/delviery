@@ -16,7 +16,6 @@ import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { logger } from '@/lib/logger';
 
 interface NotificationTemplate {
   id: string;

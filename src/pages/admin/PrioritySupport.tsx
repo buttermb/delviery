@@ -16,7 +16,6 @@ import { Headphones, Plus, MessageCircle, Clock, CheckCircle, Trash2, Loader2 } 
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { logger } from '@/lib/logger';
 
 interface SupportTicket {
   id: string;

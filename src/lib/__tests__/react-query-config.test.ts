@@ -17,7 +17,6 @@ import {
   LIST_QUERY_CONFIG,
   ADMIN_PANEL_QUERY_CONFIG,
 } from '../react-query-config';
-import { logger } from '@/lib/logger';
 
 describe('React Query Configuration', () => {
   describe('createQueryClient', () => {
