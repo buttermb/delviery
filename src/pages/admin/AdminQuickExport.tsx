@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Download } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -25,8 +25,6 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('month');
   const [customStartDate, _setCustomStartDate] = useState<Date>();
   const [customEndDate, _setCustomEndDate] = useState<Date>();
-  const { toast } = useToast();
-
   const { data: exportData, isLoading } = useQuery({
     queryKey: ['quick-export', exportType, dateRange, tenantId],
     queryFn: async () => {
@@ -110,7 +108,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
     try {
       const data = exportData || [];
       if (data.length === 0) {
-        toast({ title: "No data to export", variant: "destructive" });
+        toast.error("No data to export");
         return;
       }
 
@@ -178,10 +176,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       a.click();
       window.URL.revokeObjectURL(url);
 
-      toast({
-        title: '✓ Export successful',
-        description: `Exported ${data.length} records`,
-      });
+      toast.success("Exported ${data.length} records");
 
       onExportComplete?.();
     } catch (error) {
@@ -199,7 +194,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Export Type */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {(['orders', 'users', 'products'] as const).map((type) => (
             <Button
               key={type}

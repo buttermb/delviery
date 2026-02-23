@@ -122,7 +122,7 @@ export function ConsoleMonitor() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 mb-4">
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-0 sm:min-w-[200px]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -136,7 +136,7 @@ export function ConsoleMonitor() {
             </div>
 
             <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-full sm:w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>

@@ -81,7 +81,7 @@ export default function AdvancedReportingPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           <TabsTrigger value="builder" className="min-h-[44px] touch-manipulation">
             <BarChart3 className="h-4 w-4 mr-2" />
             Builder

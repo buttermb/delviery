@@ -108,7 +108,7 @@ export default function FinancialCenterReal() {
       {/* Today's Snapshot */}
       <div>
         <h2 className="text-lg font-semibold mb-3 flex items-center gap-2"><BarChart className="h-5 w-5" /> Today's Snapshot</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4">
             <div className="text-sm text-muted-foreground mb-1">Revenue</div>
             <div className="text-3xl font-bold text-emerald-500">
@@ -208,7 +208,7 @@ export default function FinancialCenterReal() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="bg-red-500/10 rounded-lg p-3">
             <div className="text-sm text-muted-foreground mb-1">Total Expenses</div>
             <div className="text-2xl font-bold text-red-600">

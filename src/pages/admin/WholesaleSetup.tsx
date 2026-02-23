@@ -17,7 +17,7 @@ export default function WholesaleSetup() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-8">
             <div className="space-y-2">
               <div className="h-16 w-16 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center">
                 <Users className="h-8 w-8 text-emerald-500" />

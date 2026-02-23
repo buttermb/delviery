@@ -263,7 +263,7 @@ export default function RecordFrontedReturn() {
           )}
 
           {/* Summary */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
             <div className="text-center">
               <p className="text-2xl font-bold">{scannedReturns.length}</p>
               <p className="text-sm text-muted-foreground">Total Scanned</p>

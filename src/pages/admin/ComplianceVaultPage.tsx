@@ -133,7 +133,7 @@ export default function ComplianceVaultPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
           <TabsTrigger value="all" className="min-h-[44px] touch-manipulation">
             All
           </TabsTrigger>
