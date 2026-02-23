@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Package, Info } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import { useMenuCart } from '@/contexts/MenuCartContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Product {
   id: string;
@@ -36,10 +36,7 @@ export function MenuProductGrid({ products, menuId: _menuId, whitelistEntryId: _
       price: product.price,
       image_url: product.image_url,
     });
-    toast({
-      title: 'Added to Cart',
-      description: `${product.name} has been added to your cart.`,
-    });
+    toast.success(`${product.name} has been added to your cart.`);
   };
 
   const getCartQuantity = (productId: string) => {

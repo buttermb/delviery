@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Download, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface QueryResultsProps {
   data: any[];
@@ -26,7 +26,6 @@ interface QueryResultsProps {
 }
 
 export function QueryResults({ data, columns, onExport }: QueryResultsProps) {
-  const { toast } = useToast();
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -128,10 +127,7 @@ export function QueryResults({ data, columns, onExport }: QueryResultsProps) {
     a.click();
     URL.revokeObjectURL(url);
 
-    toast({
-      title: 'Export Complete',
-      description: `Exported ${data.length} rows to ${filename}`,
-    });
+    toast.success(`Exported ${data.length} rows to ${filename}`);
   };
 
   return (

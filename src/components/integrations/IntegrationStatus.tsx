@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { format } from "date-fns/format";
 
@@ -27,7 +27,6 @@ export function IntegrationStatus({
     testButtonLabel = "Test Connection",
 }: IntegrationStatusProps) {
     const [testing, setTesting] = useState(false);
-    const { toast } = useToast();
 
     const handleTest = async () => {
         if (!onTest) return;
@@ -35,16 +34,9 @@ export function IntegrationStatus({
         setTesting(true);
         try {
             await onTest();
-            toast({
-                title: "Test successful",
-                description: `${name} connection is working correctly.`,
-            });
+            toast.success(`${name} connection is working correctly.`);
         } catch (error: unknown) {
-            toast({
-                title: "Test failed",
-                description: humanizeError(error, `Failed to connect to ${name}.`),
-                variant: "destructive",
-            });
+            toast.error(humanizeError(error, `Failed to connect to ${name}.`));
         } finally {
             setTesting(false);
         }

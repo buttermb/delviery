@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { initScreenshotDetection, addWatermark, disableRightClick, ScreenshotAttempt } from '@/utils/screenshotDetection';
 
@@ -52,8 +52,6 @@ export const useScreenshotProtection = ({
   autoBurnEnabled = false,
   autoBurnAction = 'log',
 }: UseScreenshotProtectionOptions) => {
-  const { toast } = useToast();
-
   useEffect(() => {
     if (!enabled) return;
 
@@ -115,11 +113,7 @@ export const useScreenshotProtection = ({
 
         // Show toast notification
         if (showToast) {
-          toast({
-            title: 'Screenshot Detected',
-            description: 'This action has been logged for security purposes.',
-            variant: 'destructive',
-          });
+          toast.error('This action has been logged for security purposes.');
         }
       }
     );
@@ -155,6 +149,5 @@ export const useScreenshotProtection = ({
     showToast,
     autoBurnEnabled,
     autoBurnAction,
-    toast,
   ]);
 };

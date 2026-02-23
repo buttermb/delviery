@@ -8,7 +8,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CreditCard } from "lucide-react";
 
@@ -28,7 +27,6 @@ export function AddPaymentMethodDialog({
     onSuccess: _onSuccess,
 }: AddPaymentMethodDialogProps) {
     const [loading, setLoading] = useState(false);
-    const { toast: _toast } = useToast();
 
     const handleAddPaymentMethod = async () => {
         setLoading(true);

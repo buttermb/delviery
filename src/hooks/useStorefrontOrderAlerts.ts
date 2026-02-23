@@ -6,7 +6,7 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
@@ -24,7 +24,6 @@ export function useStorefrontOrderAlerts({
     playSound = true,
 }: UseStorefrontOrderAlertsOptions = {}) {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const channelRef = useRef<RealtimeChannel | null>(null);
     const storeIdsRef = useRef<string[]>([]);
@@ -85,10 +84,8 @@ export function useStorefrontOrderAlerts({
                         const total = order.total || 0;
 
                         // Show toast notification
-                        toast({
-                            title: `🛒 New Order from ${storeName}`,
-                            description: `${customerName} placed an order for ${formatCurrency(total)}`,
-                            duration: 10000, // 10 seconds
+                        toast.success(`${customerName} placed an order for ${formatCurrency(total)}`, {
+                            duration: 10000,
                         });
 
                         // Cross-panel invalidation: storefront order affects admin orders, dashboard, inventory
@@ -134,7 +131,7 @@ export function useStorefrontOrderAlerts({
                 channelRef.current = null;
             }
         };
-    }, [enabled, tenant?.id, toast, queryClient]);
+    }, [enabled, tenant?.id, queryClient]);
 
     return {
         isActive: !!channelRef.current,

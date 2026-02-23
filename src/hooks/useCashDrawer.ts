@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
@@ -72,7 +72,6 @@ export function calculateCashCountTotal(count: CashCount): number {
  */
 export function useCashDrawer(shiftId: string | undefined) {
   const { tenant, admin } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -171,17 +170,10 @@ export function useCashDrawer(shiftId: string | undefined) {
         deposit: 'deposit recorded',
       };
 
-      toast({
-        title: 'Cash Drawer Updated',
-        description: `Drawer ${eventLabels[data.event_type]}: ${formatCurrency(data.amount)}`,
-      });
+      toast.success(`Drawer ${eventLabels[data.event_type]}: ${formatCurrency(data.amount)}`);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error),
-        variant: 'destructive',
-      });
+      toast.error(humanizeError(error));
     },
   });
 

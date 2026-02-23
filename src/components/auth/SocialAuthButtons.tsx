@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 
 type OAuthProvider = "google" | "apple" | "github";
 
@@ -86,13 +86,9 @@ export function SocialAuthButtons({
       }
     } catch (error) {
       logger.error(`${provider} sign-in error`, error, { component: "SocialAuthButtons" });
-      toast({
-        variant: "destructive",
-        title: "Sign in failed",
-        description: error instanceof Error
+      toast.error(error instanceof Error
           ? error.message
-          : `Failed to sign in with ${PROVIDER_CONFIG[provider].label}`,
-      });
+          : `Failed to sign in with ${PROVIDER_CONFIG[provider].label}`);
       setLoadingProvider(null);
     }
   };

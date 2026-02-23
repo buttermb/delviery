@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Camera, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
@@ -93,11 +93,7 @@ export function AvatarUpload({
     // Validate file type and size
     const validationError = validateFile(file);
     if (validationError) {
-      toast({
-        title: 'Invalid file',
-        description: validationError,
-        variant: 'destructive',
-      });
+      toast.error(validationError);
       return;
     }
 
@@ -108,11 +104,7 @@ export function AvatarUpload({
     );
 
     if (!dimensionResult.valid) {
-      toast({
-        title: 'Invalid image dimensions',
-        description: dimensionResult.error,
-        variant: 'destructive',
-      });
+      toast.error(dimensionResult.error);
       return;
     }
 
@@ -162,21 +154,14 @@ export function AvatarUpload({
       setUploadProgress(100);
       setPreviewUrl(publicUrl);
 
-      toast({
-        title: 'Avatar updated',
-        description: 'Your profile picture has been changed.',
-      });
+      toast.success('Avatar updated — Your profile picture has been changed.');
 
       onUploadComplete?.(publicUrl);
     } catch (error: unknown) {
       logger.error('Avatar upload failed', error);
       // Revert preview on failure
       setPreviewUrl(null);
-      toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload avatar',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to upload avatar');
     } finally {
       setIsUploading(false);
       // Reset progress after a brief delay so user sees 100%

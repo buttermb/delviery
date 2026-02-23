@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Monitor, Smartphone, Tablet, LogOut, AlertTriangle } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/utils/apiClient';
 // Helper function to format time ago
 const formatTimeAgo = (date: string): string => {
@@ -76,11 +76,7 @@ export function SessionManagement() {
       setSessions(sessionsWithCurrent);
     } catch (error: unknown) {
       logger.error('Failed to load sessions', error, { component: 'SessionManagement' });
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load active sessions',
-      });
+      toast.error('Failed to load active sessions');
     } finally {
       setLoading(false);
     }
@@ -88,11 +84,7 @@ export function SessionManagement() {
 
   const handleRevokeSession = async (sessionId: string, isCurrent: boolean) => {
     if (isCurrent) {
-      toast({
-        variant: 'destructive',
-        title: 'Cannot Revoke',
-        description: 'You cannot revoke your current session. Please log out instead.',
-      });
+      toast.error('You cannot revoke your current session. Please log out instead.');
       return;
     }
 
@@ -105,19 +97,12 @@ export function SessionManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Session Revoked',
-        description: 'The session has been revoked successfully.',
-      });
+      toast.success('Session Revoked — The session has been revoked successfully.');
 
       loadSessions();
     } catch (error: unknown) {
       logger.error('Failed to revoke session', error, { component: 'SessionManagement' });
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to revoke session',
-      });
+      toast.error('Failed to revoke session');
     } finally {
       setRevoking(null);
     }
@@ -141,19 +126,12 @@ export function SessionManagement() {
         throw new Error('Failed to revoke sessions');
       }
 
-      toast({
-        title: 'All Sessions Revoked',
-        description: 'All other sessions have been revoked. You will remain logged in on this device.',
-      });
+      toast.success('All Sessions Revoked — All other sessions have been revoked. You will remain logged in on this device.');
 
       loadSessions();
     } catch (error: unknown) {
       logger.error('Failed to revoke all sessions', error, { component: 'SessionManagement' });
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to revoke sessions',
-      });
+      toast.error('Failed to revoke sessions');
     } finally {
       setRevoking(null);
     }

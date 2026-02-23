@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { logger } from '@/lib/logger';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface QueuedAuthAttempt {
   email: string;
@@ -58,10 +58,7 @@ export function useAuthOffline(
     const handleOnline = () => {
       setIsOnline(true);
       logger.info('Auth: Network connection restored');
-      toast({
-        title: 'Back online',
-        description: 'Your connection has been restored.',
-      });
+      toast.success('Your connection has been restored.');
     };
 
     const handleOffline = () => {
@@ -83,10 +80,7 @@ export function useAuthOffline(
     if (isOnline && queuedAttempt && onRetryLoginRef.current) {
       const { email, password, tenantSlug } = queuedAttempt;
       logger.info('Auth: Retrying queued login attempt');
-      toast({
-        title: 'Retrying login...',
-        description: 'Connection restored. Attempting to sign in.',
-      });
+      toast('Connection restored. Attempting to sign in.');
 
       onRetryLoginRef.current(email, password, tenantSlug)
         .then(() => {
@@ -95,11 +89,7 @@ export function useAuthOffline(
         .catch((error: unknown) => {
           logger.error('Auth: Queued login retry failed', error);
           setQueuedAttempt(null);
-          toast({
-            variant: 'destructive',
-            title: 'Login retry failed',
-            description: error instanceof Error ? error.message : 'Please try again.',
-          });
+          toast.error(error instanceof Error ? error.message : 'Please try again.');
         });
     }
   }, [isOnline, queuedAttempt]);
@@ -113,10 +103,7 @@ export function useAuthOffline(
     };
     setQueuedAttempt(attempt);
     logger.info('Auth: Login attempt queued for when connection restores');
-    toast({
-      title: 'Login queued',
-      description: 'Your login will be attempted when the connection is restored.',
-    });
+    toast('Your login will be attempted when the connection is restored.');
   }, []);
 
   const clearQueuedAttempt = useCallback(() => {
@@ -126,11 +113,7 @@ export function useAuthOffline(
   const preventSubmit = useCallback((e: React.FormEvent): boolean => {
     if (!isOnline) {
       e.preventDefault();
-      toast({
-        variant: 'destructive',
-        title: 'You are offline',
-        description: 'Please check your internet connection and try again.',
-      });
+      toast.error('Please check your internet connection and try again.');
       return true;
     }
     return false;

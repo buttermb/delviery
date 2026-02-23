@@ -73,7 +73,7 @@ import { SystemStatusIndicator } from '../SystemStatusIndicator';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface TopNavProps {
   onCommandPaletteOpen?: () => void;
@@ -274,17 +274,10 @@ export function TopNav({
                       document.body.removeChild(link);
                       window.URL.revokeObjectURL(url);
                       
-                      toast({
-                        title: 'Export successful',
-                        description: 'Tenant data exported to CSV',
-                      });
+                      toast.success('Tenant data exported to CSV');
                     } catch (error: unknown) {
                       logger.error('Export failed', error, { component: 'TopNav' });
-                      toast({
-                        variant: 'destructive',
-                        title: 'Export failed',
-                        description: 'Failed to export tenant data. Please try again.',
-                      });
+                      toast.error('Failed to export tenant data. Please try again.');
                     }
                   }}
                 />

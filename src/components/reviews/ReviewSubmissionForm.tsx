@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarRating } from './StarRating';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
 
@@ -32,7 +32,6 @@ export function ReviewSubmissionForm({
     tenantId,
     onSuccess,
 }: ReviewSubmissionFormProps) {
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [rating, setRating] = useState(5);
     const [title, setTitle] = useState('');
@@ -62,10 +61,7 @@ export function ReviewSubmissionForm({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['product-reviews', productId] });
-            toast({
-                title: 'Review submitted!',
-                description: 'Your review has been submitted for moderation.',
-            });
+            toast.success('Your review has been submitted for moderation.');
             // Reset form
             setRating(5);
             setTitle('');
@@ -74,11 +70,7 @@ export function ReviewSubmissionForm({
         },
         onError: (error) => {
             logger.error('Failed to submit review', error);
-            toast({
-                title: 'Failed to submit review',
-                description: 'Please try again later.',
-                variant: 'destructive',
-            });
+            toast.error('Failed to submit review. Please try again later.');
         },
     });
 
@@ -86,11 +78,7 @@ export function ReviewSubmissionForm({
         e.preventDefault();
 
         if (!content.trim()) {
-            toast({
-                title: 'Review content required',
-                description: 'Please write your review before submitting.',
-                variant: 'destructive',
-            });
+            toast.error('Please write your review before submitting.');
             return;
         }
 

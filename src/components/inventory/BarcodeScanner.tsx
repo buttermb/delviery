@@ -4,7 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, CameraOff, Keyboard } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -12,7 +12,6 @@ interface BarcodeScannerProps {
 }
 
 export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProps) {
-  const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [manualEntry, setManualEntry] = useState('');
   const [showManual, setShowManual] = useState(false);
@@ -44,11 +43,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
       setIsScanning(true);
     } catch (err) {
       logger.error('Scanner start error:', err);
-      toast({
-        title: 'Camera Error',
-        description: 'Could not access camera. Please check permissions.',
-        variant: 'destructive'
-      });
+      toast.error('Could not access camera. Please check permissions.');
     }
   };
 

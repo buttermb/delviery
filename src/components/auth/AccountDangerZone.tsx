@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2, Trash2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { haptics } from '@/utils/haptics';
 
@@ -150,10 +150,7 @@ export function AccountDangerZone({
 
       haptics.success();
 
-      toast({
-        title: 'Account Deleted',
-        description: 'Your account has been permanently deleted. Your data has been anonymized.',
-      });
+      toast.success('Account Deleted — Your account has been permanently deleted. Your data has been anonymized.');
 
       onAccountDeleted();
     } catch (err: unknown) {
@@ -166,11 +163,7 @@ export function AccountDangerZone({
       setError(message);
       haptics.error();
 
-      toast({
-        variant: 'destructive',
-        title: 'Deletion Failed',
-        description: message,
-      });
+      toast.error(`Deletion Failed — ${message}`);
     } finally {
       setLoading(false);
     }

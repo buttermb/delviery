@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Card } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useKeyboardDetection } from '@/hooks/useKeyboardDetection';
 import { cn } from '@/lib/utils';
@@ -32,7 +32,6 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isKeyboardOpen } = useKeyboardDetection();
 
@@ -56,11 +55,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
 
         if (error) {
           logger.error('Error creating session', error as Error, { component: 'LiveChatWidget' });
-          toast({
-            title: "Error",
-            description: "Failed to start chat session",
-            variant: "destructive"
-          });
+          toast.error("Failed to start chat session");
           return;
         }
 
@@ -76,7 +71,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
     };
 
     initSession();
-  }, [isOpen, sessionId, toast]);
+  }, [isOpen, sessionId]);
 
   // Load messages
   useEffect(() => {
@@ -154,11 +149,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
 
     } catch (error) {
       logger.error('Error sending message', error as Error, { component: 'LiveChatWidget' });
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+      toast.error("Failed to send message");
     } finally {
       setLoading(false);
     }

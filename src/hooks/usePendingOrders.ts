@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface PendingOrder {
     id: string;
@@ -20,7 +20,6 @@ export interface PendingOrder {
 export function usePendingOrders(tenantId?: string) {
     const [orders, setOrders] = useState<PendingOrder[]>([]);
     const [loading, setLoading] = useState(true);
-    const { toast } = useToast();
 
     useEffect(() => {
         if (!tenantId) return;
@@ -47,10 +46,7 @@ export function usePendingOrders(tenantId?: string) {
                             const audio = new Audio('/sounds/notification.mp3');
                             audio.play().catch(e => logger.warn('Error playing sound:', { error: e }));
 
-                            toast({
-                                title: "New Pickup Order",
-                                description: "A new order is ready for pickup.",
-                            });
+                            toast.success('A new order is ready for pickup.');
                             loadPendingOrders();
                         }
                     } else {

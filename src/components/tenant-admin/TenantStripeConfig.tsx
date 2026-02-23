@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 
@@ -71,20 +71,12 @@ export function TenantStripeConfig() {
     const keyToTest = secretKey || config.secretKey;
 
     if (!keyToTest) {
-      toast({
-        title: "Missing API Key",
-        description: "Please enter your Stripe Secret Key first",
-        variant: "destructive",
-      });
+      toast.error("Please enter your Stripe Secret Key first");
       return;
     }
 
     if (!keyToTest.startsWith("sk_")) {
-      toast({
-        title: "Invalid Key Format",
-        description: "Secret key must start with 'sk_', not 'pk_' or 'rk_'",
-        variant: "destructive",
-      });
+      toast.error("Secret key must start with 'sk_', not 'pk_' or 'rk_'");
       return;
     }
 
@@ -104,23 +96,16 @@ export function TenantStripeConfig() {
         setIsTestMode(data.testMode);
 
         if (!silent) {
-          toast({
-            title: "Connection Successful",
-            description: data.testMode
+          toast.success(data.testMode
               ? "Test mode credentials verified successfully"
-              : "Live mode credentials verified successfully",
-          });
+              : "Live mode credentials verified successfully");
         }
       } else {
         setConnectionStatus("error");
         setStatusMessage(data.error || "Connection failed");
 
         if (!silent) {
-          toast({
-            title: "Connection Failed",
-            description: data.error || "Unable to verify Stripe credentials",
-            variant: "destructive",
-          });
+          toast.error(data.error || "Unable to verify Stripe credentials");
         }
       }
     } catch (error: unknown) {
@@ -128,11 +113,7 @@ export function TenantStripeConfig() {
       setStatusMessage(humanizeError(error, "Connection test failed"));
 
       if (!silent) {
-        toast({
-          title: "Connection Error",
-          description: humanizeError(error, "Failed to test Stripe connection"),
-          variant: "destructive",
-        });
+        toast.error(humanizeError(error, "Failed to test Stripe connection"));
       }
     } finally {
       setTestLoading(false);
@@ -141,29 +122,17 @@ export function TenantStripeConfig() {
 
   const saveConfiguration = async () => {
     if (!tenantId) {
-      toast({
-        title: "Error",
-        description: "Tenant ID not found",
-        variant: "destructive",
-      });
+      toast.error("Tenant ID not found");
       return;
     }
 
     if (!config.secretKey) {
-      toast({
-        title: "Missing Secret Key",
-        description: "Please enter your Stripe Secret Key",
-        variant: "destructive",
-      });
+      toast.error("Please enter your Stripe Secret Key");
       return;
     }
 
     if (!config.secretKey.startsWith("sk_")) {
-      toast({
-        title: "Invalid Key Format",
-        description: "Secret key must start with 'sk_', not 'pk_' or 'rk_'",
-        variant: "destructive",
-      });
+      toast.error("Secret key must start with 'sk_', not 'pk_' or 'rk_'");
       return;
     }
 
@@ -174,11 +143,7 @@ export function TenantStripeConfig() {
       await testConnection(config.secretKey, true);
 
       if (connectionStatus === "error") {
-        toast({
-          title: "Invalid Credentials",
-          description: "Please verify your Stripe API keys are correct",
-          variant: "destructive",
-        });
+        toast.error("Please verify your Stripe API keys are correct");
         setLoading(false);
         return;
       }
@@ -207,20 +172,13 @@ export function TenantStripeConfig() {
 
       if (updateError) throw updateError;
 
-      toast({
-        title: "✅ Configuration Saved",
-        description: "Your Stripe credentials have been saved successfully",
-      });
+      toast.success("Your Stripe credentials have been saved successfully");
 
       // Reload to confirm
       await loadConfiguration();
     } catch (error: unknown) {
       logger.error("Error saving Stripe configuration:", error);
-      toast({
-        title: "Error",
-        description: humanizeError(error, "Failed to save Stripe configuration"),
-        variant: "destructive",
-      });
+      toast.error(humanizeError(error, "Failed to save Stripe configuration"));
     } finally {
       setLoading(false);
     }

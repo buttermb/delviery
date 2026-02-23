@@ -8,7 +8,7 @@ import {
     DialogFooter,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, ArrowRight, Store, Truck, Users, Coins } from "lucide-react";
 import { logger } from "@/lib/logger";
@@ -24,7 +24,6 @@ interface OnboardingWizardProps {
 export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const { toast } = useToast();
     const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
     const { isFreeTier } = useCredits();
@@ -40,11 +39,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         // Create timeout protection
         const timeoutId = setTimeout(() => {
             setLoading(false);
-            toast({
-                title: "Request Timeout",
-                description: "The save operation took too long. Please try again.",
-                variant: "destructive",
-            });
+            toast.error("The save operation took too long. Please try again.");
         }, 10000); // 10 second timeout
 
         try {
@@ -61,10 +56,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
             if (error) throw error;
 
-            toast({
-                title: "Setup Complete!",
-                description: "Welcome to your new dashboard.",
-            });
+            toast.success("Welcome to your new dashboard.");
 
             // Close dialog after brief delay to show success message
             setTimeout(() => {
@@ -73,11 +65,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         } catch (error: any) {
             clearTimeout(timeoutId);
             logger.error("Failed to complete onboarding", error, { component: "OnboardingWizard" });
-            toast({
-                title: "Error",
-                description: error?.message || "Failed to save progress. Please try again.",
-                variant: "destructive",
-            });
+            toast.error(error?.message || "Failed to save progress. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -100,19 +88,12 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
             if (error) throw error;
 
-            toast({
-                title: "Skipped Setup",
-                description: "You can complete setup anytime from Settings.",
-            });
+            toast.success("You can complete setup anytime from Settings.");
 
             onOpenChange(false);
         } catch (error: any) {
             logger.error("Failed to skip onboarding", error, { component: "OnboardingWizard" });
-            toast({
-                title: "Error",
-                description: error?.message || "Failed to save. Please try again.",
-                variant: "destructive",
-            });
+            toast.error(error?.message || "Failed to save. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -133,10 +114,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
             if (error) throw error;
 
-            toast({
-                title: "Setup Saved",
-                description: "Redirecting you now...",
-            });
+            toast.success("Redirecting you now...");
 
             onOpenChange(false);
 

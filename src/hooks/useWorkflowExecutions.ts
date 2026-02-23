@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ExecutionLog {
   status: 'success' | 'error';
@@ -47,7 +47,6 @@ interface ExecutionMetrics {
 
 export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [metrics, setMetrics] = useState<ExecutionMetrics>({
     total: 0,
     completed: 0,
@@ -137,16 +136,9 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
           if (payload.eventType === 'UPDATE') {
             const newExecution = payload.new as WorkflowExecution;
             if (newExecution.status === 'completed') {
-              toast({
-                title: 'Workflow Completed',
-                description: `Workflow executed successfully in ${newExecution.duration_ms}ms`,
-              });
+              toast.success(`Workflow executed successfully in ${newExecution.duration_ms}ms`);
             } else if (newExecution.status === 'failed') {
-              toast({
-                title: 'Workflow Failed',
-                description: newExecution.error_message || 'Workflow execution failed',
-                variant: 'destructive',
-              });
+              toast.error(newExecution.error_message || 'Workflow execution failed');
             }
           }
         }
@@ -160,7 +152,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tenant?.id, refetch, toast]);
+  }, [tenant?.id, refetch]);
 
   return {
     executions: (executions as WorkflowExecution[]) || [],

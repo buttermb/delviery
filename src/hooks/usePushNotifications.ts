@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
@@ -29,11 +29,7 @@ export function usePushNotifications() {
 
   const requestPermission = async (): Promise<boolean> => {
     if (!isSupported) {
-      toast({
-        title: "Not Supported",
-        description: "Push notifications are not supported on this device",
-        variant: "destructive"
-      });
+      toast.error('Push notifications are not supported on this device');
       return false;
     }
 
@@ -41,11 +37,7 @@ export function usePushNotifications() {
       const permission = await Notification.requestPermission();
       
       if (permission !== 'granted') {
-        toast({
-          title: "Permission Denied",
-          description: "Please enable notifications in your browser settings",
-          variant: "destructive"
-        });
+        toast.error('Please enable notifications in your browser settings');
         return false;
       }
 
@@ -66,19 +58,12 @@ export function usePushNotifications() {
         });
       }
 
-      toast({
-        title: "Notifications Enabled",
-        description: "You'll receive delivery notifications",
-      });
+      toast.success("You'll receive delivery notifications");
 
       return true;
     } catch (error) {
       logger.error('Error requesting permission:', error);
-      toast({
-        title: "Error",
-        description: "Failed to enable notifications",
-        variant: "destructive"
-      });
+      toast.error('Failed to enable notifications');
       return false;
     }
   };
@@ -93,17 +78,10 @@ export function usePushNotifications() {
       setIsSubscribed(false);
       localStorage.removeItem('notifications_enabled');
 
-      toast({
-        title: "Notifications Disabled",
-        description: "You won't receive push notifications",
-      });
+      toast("You won't receive push notifications");
     } catch (error) {
       logger.error('Error unsubscribing:', error);
-      toast({
-        title: "Error",
-        description: "Failed to disable notifications",
-        variant: "destructive"
-      });
+      toast.error('Failed to disable notifications');
     }
   };
 

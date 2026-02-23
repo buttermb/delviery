@@ -14,7 +14,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import QRCode from "qrcode";
 import { Loader2, ShieldCheck, AlertTriangle, Download, Copy } from "lucide-react";
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -186,11 +186,7 @@ export function TwoFactorSetup() {
             return true;
         } catch (error) {
             logger.error("Failed to save backup codes", error);
-            toast({
-                title: "Warning",
-                description: "Failed to save backup codes. Please try regenerating them later.",
-                variant: "destructive",
-            });
+            toast.error("Failed to save backup codes. Please try regenerating them later.");
             return false;
         }
     };
@@ -227,10 +223,7 @@ export function TwoFactorSetup() {
             setSecret(null);
             setFactorId(null);
             setVerificationCode("");
-            toast({
-                title: "2FA Enabled",
-                description: "Two-factor authentication has been successfully enabled.",
-            });
+            toast.success("2FA Enabled — Two-factor authentication has been successfully enabled.");
             checkStatus();
         } catch (error) {
             handleError(error, { component: 'TwoFactorSetup', toastTitle: 'Verification failed' });
@@ -257,10 +250,7 @@ export function TwoFactorSetup() {
             setIsEnabled(false);
             setFactors([]);
             setSetupStep('idle');
-            toast({
-                title: "2FA Disabled",
-                description: "Two-factor authentication has been disabled.",
-            });
+            toast.success("2FA Disabled — Two-factor authentication has been disabled.");
         } catch (error) {
             handleError(error, { component: 'TwoFactorSetup', toastTitle: 'Error disabling 2FA' });
         } finally {
@@ -287,9 +277,9 @@ export function TwoFactorSetup() {
     const copyBackupCodes = async () => {
         try {
             await navigator.clipboard.writeText(backupCodes.join('\n'));
-            toast({ title: "Copied", description: "Backup codes copied to clipboard." });
+            toast.success("Backup codes copied to clipboard.");
         } catch {
-            toast({ title: "Failed", description: "Could not copy to clipboard.", variant: "destructive" });
+            toast.error("Could not copy to clipboard.");
         }
     };
 

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Search, Download, Eye, Database } from 'lucide-react';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface TenantDataInspectorProps {
   tenantId: string;
@@ -35,7 +35,6 @@ const tenantTables = [
 ];
 
 export function TenantDataInspector({ tenantId }: TenantDataInspectorProps) {
-  const { toast } = useToast();
   const [selectedTable, setSelectedTable] = useState<string>('wholesale_orders');
   const [searchTerm, setSearchTerm] = useState('');
   const [limit, setLimit] = useState(100);
@@ -90,10 +89,7 @@ export function TenantDataInspector({ tenantId }: TenantDataInspectorProps) {
     a.click();
     URL.revokeObjectURL(url);
 
-    toast({
-      title: 'Export Complete',
-      description: `Exported ${tableData.data.length} rows to ${filename}`,
-    });
+    toast.success(`Exported ${tableData.data.length} rows to ${filename}`);
   };
 
   return (

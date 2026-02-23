@@ -10,14 +10,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { REPORT_TYPES, REPORT_FIELDS, DATE_RANGES, SCHEDULE_OPTIONS, ReportField } from '@/lib/constants/reportFields';
 import { Plus, X, Calendar, Mail } from 'lucide-react';
 
 export function ReportBuilder({ onClose }: { onClose?: () => void }) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -84,11 +83,11 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
-      toast({ title: 'Report created', description: 'Your custom report has been saved.' });
+      toast.success('Your custom report has been saved.');
       onClose?.();
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: humanizeError(error), variant: 'destructive' });
+      toast.error(humanizeError(error));
     },
   });
 

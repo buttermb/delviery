@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Webhook, Plus, Edit, Trash2, Loader2, Link2, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { WebhookLogs } from './WebhookLogs';
@@ -46,7 +46,6 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState<WebhookConfig | null>(null);
   const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null);
@@ -111,7 +110,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
-      toast({ title: 'Webhook created', description: 'Webhook has been linked to this integration.' });
+      toast.success('Webhook created — Webhook has been linked to this integration.');
       resetForm();
     },
     onError: (error) => {
@@ -145,7 +144,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
-      toast({ title: 'Webhook updated', description: 'Webhook configuration has been updated.' });
+      toast.success('Webhook updated — Webhook configuration has been updated.');
       resetForm();
     },
     onError: (error) => {
@@ -171,7 +170,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
-      toast({ title: 'Webhook deleted', description: 'Webhook has been removed from this integration.' });
+      toast.success('Webhook deleted — Webhook has been removed from this integration.');
       if (selectedWebhookId) setSelectedWebhookId(null);
     },
     onError: (error) => {

@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface CourierData {
   id: string;
@@ -40,7 +40,6 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
   const [courier, setCourier] = useState<CourierData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
-  const { toast } = useToast();
   const updateLocationRef = useRef<(lat: number, lng: number) => Promise<void>>();
 
   useEffect(() => {
@@ -66,11 +65,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         logger.error('Location error', error, { component: 'CourierContext' });
-        toast({
-          title: "Location Error",
-          description: "Unable to track your location. Please enable GPS.",
-          variant: "destructive"
-        });
+        toast.error('Unable to track your location. Please enable GPS.');
       },
       {
         enableHighAccuracy: true,
@@ -110,7 +105,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       navigator.geolocation.clearWatch(watchId);
       clearInterval(forceUpdateInterval);
     };
-  }, [isOnline, courier, toast]);
+  }, [isOnline, courier]);
 
   const loadCourierData = async () => {
     try {
@@ -219,20 +214,13 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       setIsOnline(newStatus);
       setCourier(data.courier);
       
-      toast({
-        title: newStatus ? "You're now online" : "You're now offline",
-        description: newStatus ? "You can now receive orders" : "You won't receive new orders"
-      });
+      toast.success(newStatus ? 'You can now receive orders' : "You won't receive new orders");
     } catch (error) {
       logger.error('Failed to toggle status', error as Error, { component: 'CourierContext' });
       // Only show error if user is still authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        toast({
-          title: "Error",
-          description: "Failed to update status",
-          variant: "destructive"
-        });
+        toast.error('Failed to update status');
       }
     }
   };

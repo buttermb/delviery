@@ -11,7 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useMenuInventorySync } from '@/hooks/useMenuInventorySync';
 import type { ProductStockChange, MenuProductStockStatus } from '@/hooks/useMenuInventorySync';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { Badge } from '@/components/ui/badge';
@@ -72,11 +72,7 @@ export function MenuLiveInventorySync({
 
     // Show admin notification if enabled
     if (showAdminNotifications) {
-      toast({
-        title: 'Product Auto-Hidden',
-        description: `"${change.productName}" is now out of stock and has been hidden from the menu.`,
-        variant: 'destructive',
-      });
+      toast.error(`"${change.productName}" is now out of stock and has been hidden from the menu.`);
     }
 
     // Invalidate menu queries to refresh UI
@@ -103,10 +99,7 @@ export function MenuLiveInventorySync({
 
     // Show admin notification if enabled
     if (showAdminNotifications) {
-      toast({
-        title: 'Product Restored',
-        description: `"${change.productName}" is back in stock and available on the menu.`,
-      });
+      toast.success(`"${change.productName}" is back in stock and available on the menu.`);
     }
 
     // Invalidate menu queries to refresh UI

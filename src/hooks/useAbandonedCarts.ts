@@ -7,7 +7,7 @@ import { useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 
 export interface AbandonedCartItem {
@@ -64,7 +64,6 @@ export function useAbandonedCarts({
   includeRecovered = false,
 }: UseAbandonedCartsOptions = {}) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   // Fetch abandoned carts
   const {
@@ -194,18 +193,11 @@ export function useAbandonedCarts({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.abandonedCarts.all });
-      toast({
-        title: 'Cart Recovered',
-        description: 'The abandoned cart has been marked as recovered.',
-      });
+      toast.success('The abandoned cart has been marked as recovered.');
     },
     onError: (error) => {
       logger.error('Failed to mark cart as recovered', error, 'useAbandonedCarts');
-      toast({
-        title: 'Error',
-        description: 'Failed to mark cart as recovered.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to mark cart as recovered.');
     },
   });
 
@@ -276,18 +268,11 @@ export function useAbandonedCarts({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.abandonedCarts.all });
-      toast({
-        title: 'Cart Deleted',
-        description: 'The abandoned cart record has been deleted.',
-      });
+      toast.success('The abandoned cart record has been deleted.');
     },
     onError: (error) => {
       logger.error('Failed to delete abandoned cart', error, 'useAbandonedCarts');
-      toast({
-        title: 'Error',
-        description: 'Failed to delete abandoned cart.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to delete abandoned cart.');
     },
   });
 

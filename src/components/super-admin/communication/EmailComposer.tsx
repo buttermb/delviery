@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Mail, Send, Save } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface EmailDraft {
   subject: string;
@@ -28,7 +28,6 @@ interface EmailDraft {
 }
 
 export function EmailComposer() {
-  const { toast } = useToast();
   const [draft, setDraft] = useState<EmailDraft>({
     subject: '',
     body: '',
@@ -38,25 +37,15 @@ export function EmailComposer() {
 
   const handleSend = () => {
     if (!draft.subject || !draft.body) {
-      toast({
-        title: 'Error',
-        description: 'Please fill in subject and body',
-        variant: 'destructive',
-      });
+      toast.error('Please fill in subject and body');
       return;
     }
 
-    toast({
-      title: 'Email Sent',
-      description: `Email will be sent to ${draft.recipientType} tenants`,
-    });
+    toast.success(`Email will be sent to ${draft.recipientType} tenants`);
   };
 
   const handleSaveDraft = () => {
-    toast({
-      title: 'Draft Saved',
-      description: 'Email draft has been saved',
-    });
+    toast.success('Email draft has been saved');
   };
 
   return (

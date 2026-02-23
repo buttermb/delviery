@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { formatCurrency } from '@/lib/formatters';
 
 export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void) {
-  const { toast } = useToast();
   const hasShownNotificationRef = useRef(false);
 
   useEffect(() => {
@@ -54,9 +53,7 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
             }
 
             // Show toast notification
-            toast({
-              title: '🚀 New Order Available!',
-              description: `Order #${payload.new.order_number || 'N/A'} is ready for pickup`,
+            toast.success(`Order #${payload.new.order_number || 'N/A'} is ready for pickup`, {
               duration: 5000,
             });
 
@@ -78,5 +75,5 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [enabled, onNewOrder, toast]);
+  }, [enabled, onNewOrder]);
 }

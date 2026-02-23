@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Loader2, Copy, Check, Share2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { formatSmartDate } from '@/lib/formatters';
 
@@ -35,7 +35,7 @@ export function QuickMenuWizard({ open, onOpenChange, cartItems, tenantId }: Qui
 
     const handleCreate = async () => {
         if (!name.trim()) {
-            toast({ title: 'Name required', variant: 'destructive' });
+            toast.error('Name required');
             return;
         }
 
@@ -81,7 +81,7 @@ export function QuickMenuWizard({ open, onOpenChange, cartItems, tenantId }: Qui
         navigator.clipboard.writeText(generatedUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-        toast({ title: 'Link copied to clipboard' });
+        toast.success('Link copied to clipboard');
     };
 
     const handleClose = () => {

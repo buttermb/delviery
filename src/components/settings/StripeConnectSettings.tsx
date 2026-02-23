@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { logger } from "@/lib/logger";
@@ -9,7 +9,6 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export function StripeConnectSettings() {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [checkingStatus, setCheckingStatus] = useState(true);
     const [stripeStatus, setStripeStatus] = useState<{
@@ -58,11 +57,7 @@ export function StripeConnectSettings() {
             }
         } catch (error: any) {
             logger.error('Failed to start Stripe Connect', error, { component: 'StripeConnectSettings' });
-            toast({
-                title: "Error",
-                description: "Failed to connect to Stripe. Please try again.",
-                variant: "destructive",
-            });
+            toast.error("Failed to connect to Stripe. Please try again.");
             setLoading(false);
         }
     };

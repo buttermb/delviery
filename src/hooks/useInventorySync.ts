@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -15,7 +15,6 @@ interface UseInventorySyncProps {
 
 export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncProps) {
     const [lastSynced, setLastSynced] = useState<Date | null>(null);
-    const { toast } = useToast();
     const queryClient = useQueryClient();
 
     useEffect(() => {
@@ -48,20 +47,13 @@ export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncP
 
                     // Show toast for out-of-stock events
                     if (newStock === 0 && oldStock > 0) {
-                        toast({
-                            title: "Product Out of Stock",
-                            description: `${payload.new.name} is now out of stock.`,
-                            variant: "destructive"
-                        });
+                        toast.error(`${payload.new.name} is now out of stock.`);
                     }
 
                     // Show toast for low stock threshold crossing
                     const threshold = payload.new.low_stock_alert ?? 10;
                     if (newStock > 0 && newStock <= threshold && oldStock > threshold) {
-                        toast({
-                            title: "Low Stock Warning",
-                            description: `${payload.new.name} is running low (${newStock} remaining).`,
-                        });
+                        toast.warning(`${payload.new.name} is running low (${newStock} remaining).`);
                     }
                 }
             )
@@ -70,7 +62,7 @@ export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncP
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [tenantId, enabled, toast, queryClient]);
+    }, [tenantId, enabled, queryClient]);
 
     return {
         lastSynced,
@@ -116,7 +108,6 @@ interface InventorySyncContext {
 export function useConfirmOrderInventory() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
-    const { toast } = useToast();
 
     return useMutation<void, Error, ConfirmOrderInventoryInput, InventorySyncContext>({
         mutationFn: async ({ items }: ConfirmOrderInventoryInput) => {
@@ -182,11 +173,7 @@ export function useConfirmOrderInventory() {
             queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
             queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
 
-            toast({
-                title: "Inventory Update Failed",
-                description: humanizeError(error, "Failed to update stock levels. Please try again."),
-                variant: "destructive",
-            });
+            toast.error(humanizeError(error, "Failed to update stock levels. Please try again."));
         },
 
         onSuccess: (_data, { items }) => {
@@ -207,10 +194,7 @@ export function useConfirmOrderInventory() {
                 }
             }
 
-            toast({
-                title: "Inventory Updated",
-                description: `Stock decremented for ${items.length} product${items.length > 1 ? 's' : ''}.`,
-            });
+            toast.success(`Stock decremented for ${items.length} product${items.length > 1 ? 's' : ''}.`);
         },
     });
 }
@@ -223,7 +207,6 @@ export function useConfirmOrderInventory() {
 export function useCancelOrderInventory() {
     const { tenant } = useTenantAdminAuth();
     const queryClient = useQueryClient();
-    const { toast } = useToast();
 
     return useMutation<void, Error, CancelOrderInventoryInput, InventorySyncContext>({
         mutationFn: async ({ items }: CancelOrderInventoryInput) => {
@@ -289,11 +272,7 @@ export function useCancelOrderInventory() {
             queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
             queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
 
-            toast({
-                title: "Inventory Restoration Failed",
-                description: humanizeError(error, "Failed to restore stock levels. Please try again."),
-                variant: "destructive",
-            });
+            toast.error(humanizeError(error, "Failed to restore stock levels. Please try again."));
         },
 
         onSuccess: (_data, { items }) => {
@@ -314,10 +293,7 @@ export function useCancelOrderInventory() {
                 }
             }
 
-            toast({
-                title: "Inventory Restored",
-                description: `Stock restored for ${items.length} product${items.length > 1 ? 's' : ''}.`,
-            });
+            toast.success(`Stock restored for ${items.length} product${items.length > 1 ? 's' : ''}.`);
         },
     });
 }

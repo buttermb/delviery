@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { CodeBlock } from "./CodeBlock";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 
 export interface ApiEndpoint {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -32,7 +32,7 @@ export function ApiEndpointCard({ endpoint }: ApiEndpointCardProps) {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: "Copied to clipboard!" });
+    toast.success("Copied to clipboard!");
   };
 
   const methodColors = {

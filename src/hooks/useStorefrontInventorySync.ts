@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface UseStorefrontInventorySyncProps {
   storeId: string | undefined;
@@ -53,7 +53,6 @@ export function useStorefrontInventorySync({
   showNotifications = false,
 }: UseStorefrontInventorySyncProps) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Memoized handler for product changes
@@ -90,15 +89,11 @@ export function useStorefrontInventorySync({
 
         // Show notification for out-of-stock events
         if (showNotifications && newStock === 0 && oldStock > 0) {
-          toast({
-            title: 'Product Unavailable',
-            description: `${newProduct.name} is now out of stock.`,
-            variant: 'destructive',
-          });
+          toast.error(`${newProduct.name} is now out of stock.`);
         }
       }
     },
-    [storeId, queryClient, toast, showNotifications]
+    [storeId, queryClient, showNotifications]
   );
 
   // Memoized handler for inventory batch changes

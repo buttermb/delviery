@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble, type Message } from './MessageBubble';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Send, Loader2 } from 'lucide-react';
 
@@ -42,7 +42,6 @@ export function ChatDrawer({
     currentUserType,
     tenantId,
 }: ChatDrawerProps) {
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [messageText, setMessageText] = useState('');
     const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -208,11 +207,7 @@ export function ChatDrawer({
         },
         onError: (error) => {
             logger.error('Failed to send message', error);
-            toast({
-                title: 'Failed to send message',
-                description: 'Please try again',
-                variant: 'destructive',
-            });
+            toast.error('Failed to send message — Please try again');
         },
     });
 

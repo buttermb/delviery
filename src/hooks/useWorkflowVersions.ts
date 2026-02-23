@@ -5,7 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
 interface WorkflowAction {
@@ -44,7 +44,6 @@ interface WorkflowVersion {
 
 export function useWorkflowVersions(workflowId: string | null) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: versions, isLoading } = useQuery<WorkflowVersion[]>({
@@ -96,17 +95,10 @@ export function useWorkflowVersions(workflowId: string | null) {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['workflow-versions'] });
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
-      toast({
-        title: 'Version Restored',
-        description: `Successfully restored to version ${variables.versionNumber}`,
-      });
+      toast.success(`Successfully restored to version ${variables.versionNumber}`);
     },
     onError: (error: unknown) => {
-      toast({
-        title: 'Restore Failed',
-        description: error instanceof Error ? error.message : 'Failed to restore version',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to restore version');
     },
   });
 
@@ -133,11 +125,7 @@ export function useWorkflowVersions(workflowId: string | null) {
     },
     onError: (error: unknown) => {
       logger.error('Failed to compare workflow versions', { error });
-      toast({
-        title: 'Comparison Failed',
-        description: error instanceof Error ? error.message : 'Failed to compare versions',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to compare versions');
     },
   });
 

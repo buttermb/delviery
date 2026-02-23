@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { formatSmartDate } from '@/lib/formatters';
@@ -114,21 +114,14 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
 
       if (error) throw error;
 
-      toast({
-        title: "Order Accepted!",
-        description: "Navigate to pickup location",
-      });
+      toast.success("Order Accepted! — Navigate to pickup location");
 
       // Remove from available orders
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
 
     } catch (error) {
       logger.error('Error accepting order:', error);
-      toast({
-        title: "Order Taken",
-        description: "This order was just accepted by another courier",
-        variant: "destructive"
-      });
+      toast.error("This order was just accepted by another courier");
       fetchAvailableOrders();
     } finally {
       setAcceptingId(null);

@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   Building2, 
   Upload, 
@@ -54,7 +54,6 @@ const LICENSE_TYPES = [
 
 export function BusinessVerificationCard() {
   const { tenant } = useCustomerAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -186,18 +185,11 @@ export function BusinessVerificationCard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-profile-buyer', tenantId] });
-      toast({
-        title: 'Business Profile Submitted',
-        description: 'Your business information has been submitted for verification. You will be notified once verified.',
-      });
+      toast.success('Business Profile Submitted — Your business information has been submitted for verification. You will be notified once verified.');
     },
     onError: (error: unknown) => {
       logger.error('Failed to submit business profile', error, { component: 'BusinessVerificationCard' });
-      toast({
-        title: 'Submission Failed',
-        description: error instanceof Error ? error.message : 'Failed to submit business profile. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to submit business profile. Please try again.');
     },
   });
 
@@ -396,11 +388,7 @@ export function BusinessVerificationCard() {
                     const file = e.target.files?.[0];
                     if (file) {
                       if (file.size > 10 * 1024 * 1024) {
-                        toast({
-                          title: 'File Too Large',
-                          description: 'File must be less than 10MB',
-                          variant: 'destructive',
-                        });
+                        toast.error('File must be less than 10MB');
                         return;
                       }
                       setLicenseFile(file);

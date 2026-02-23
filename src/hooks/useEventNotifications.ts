@@ -10,7 +10,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/formatters';
@@ -71,7 +71,6 @@ export function useEventNotifications({
   onStockAlert,
 }: EventNotificationOptions = {}) {
   const { tenant, admin } = useTenantAdminAuth();
-  const { toast } = useToast();
   const channelsRef = useRef<RealtimeChannel[]>([]);
   const previousStockRef = useRef<Map<string, number>>(new Map());
 
@@ -190,9 +189,7 @@ export function useEventNotifications({
         ? ` from ${orderPayload.source.charAt(0).toUpperCase() + orderPayload.source.slice(1)}`
         : '';
 
-      toast({
-        title: '🛒 New Order Received!',
-        description: `Order #${orderNum}${source} ${amount}`.trim(),
+      toast.success(`Order #${orderNum}${source} ${amount}`.trim(), {
         duration: 8000,
       });
 
@@ -213,7 +210,7 @@ export function useEventNotifications({
         component: 'useEventNotifications',
       });
     },
-    [isNotificationEnabled, playSound, toast, showBrowserNotificationFn, onNewOrder]
+    [isNotificationEnabled, playSound, showBrowserNotificationFn, onNewOrder]
   );
 
   // Handle stock update event
@@ -268,12 +265,11 @@ export function useEventNotifications({
         }
 
         // Show toast notification
-        toast({
-          title,
-          description,
-          duration: alertLevel === 'out_of_stock' ? 10000 : 6000,
-          variant: alertLevel === 'out_of_stock' ? 'destructive' : 'default',
-        });
+        if (alertLevel === 'out_of_stock') {
+          toast.error(description, { duration: 10000 });
+        } else {
+          toast.warning(description, { duration: 6000 });
+        }
 
         // Show browser notification for critical alerts
         if (alertLevel === 'out_of_stock' || alertLevel === 'critical') {
@@ -293,7 +289,7 @@ export function useEventNotifications({
         });
       }
     },
-    [isNotificationEnabled, playSound, toast, showBrowserNotificationFn, onStockAlert]
+    [isNotificationEnabled, playSound, showBrowserNotificationFn, onStockAlert]
   );
 
   // Subscribe to realtime events

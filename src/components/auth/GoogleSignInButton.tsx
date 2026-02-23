@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 
 interface GoogleSignInButtonProps {
   redirectTo?: string;
@@ -43,11 +43,7 @@ export function GoogleSignInButton({
       // The user will be redirected to Google for authentication
     } catch (error) {
       logger.error("Google sign-in error", error, { component: "GoogleSignInButton" });
-      toast({
-        variant: "destructive",
-        title: "Sign in failed",
-        description: error instanceof Error ? error.message : "Failed to sign in with Google",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to sign in with Google");
       setLoading(false);
     }
   };

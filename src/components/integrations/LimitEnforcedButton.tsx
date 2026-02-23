@@ -6,7 +6,7 @@
 import { ReactNode } from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 interface LimitEnforcedButtonProps extends ButtonProps {
@@ -23,7 +23,6 @@ export function LimitEnforcedButton({
   ...props
 }: LimitEnforcedButtonProps) {
   const { canCreate, getCurrent, getLimit } = useTenantLimits();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -41,18 +40,11 @@ export function LimitEnforcedButton({
         return;
       }
       
-      toast({
-        title: 'Limit Reached',
-        description: `You've reached your ${resource} limit (${current}/${limit === Infinity ? '∞' : limit}). Please upgrade your plan.`,
-        variant: 'destructive',
-        action: (
-          <Button
-            size="sm"
-            onClick={() => navigate('/saas/billing')}
-          >
-            Upgrade
-          </Button>
-        ),
+      toast.error(`You've reached your ${resource} limit (${current}/${limit === Infinity ? '\u221E' : limit}). Please upgrade your plan.`, {
+        action: {
+          label: 'Upgrade',
+          onClick: () => navigate('/saas/billing'),
+        },
       });
       return;
     }

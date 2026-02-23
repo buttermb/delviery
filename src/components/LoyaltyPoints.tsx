@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trophy, Gift, Star, Users, Copy, Calendar } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/formatters';
 
 const LoyaltyPoints = () => {
@@ -76,10 +76,7 @@ const LoyaltyPoints = () => {
   
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink);
-    toast({
-      title: "Copied!",
-      description: "Referral link copied to clipboard",
-    });
+    toast.success("Referral link copied to clipboard");
   };
 
   return (

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Clock, Play, Plus } from 'lucide-react';
 import {
   Table,
@@ -33,8 +33,6 @@ interface ScheduledJob {
 }
 
 export function ScheduledJobsManager() {
-  const { toast } = useToast();
-
   // Mock data - in production would come from database
   const { data: jobs } = useQuery({
     queryKey: ['scheduled-jobs'],
@@ -77,17 +75,11 @@ export function ScheduledJobsManager() {
   });
 
   const toggleJob = async (_jobId: string, enabled: boolean) => {
-    toast({
-      title: enabled ? 'Job Enabled' : 'Job Disabled',
-      description: `Scheduled job has been ${enabled ? 'enabled' : 'disabled'}`,
-    });
+    toast.success(`Scheduled job has been ${enabled ? 'enabled' : 'disabled'}`);
   };
 
   const runJobNow = async (_jobId: string) => {
-    toast({
-      title: 'Job Started',
-      description: 'Running scheduled job now...',
-    });
+    toast.success('Running scheduled job now...');
   };
 
   return (

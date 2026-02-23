@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Download, FileText } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +16,9 @@ interface ChartExportProps {
 }
 
 export function ChartExport({ data, filename, title }: ChartExportProps) {
-  const { toast } = useToast();
-
   const exportToCSV = () => {
     if (!data || data.length === 0) {
-      toast({ title: 'No data to export', variant: 'destructive' });
+      toast.error('No data to export');
       return;
     }
 
@@ -53,12 +51,12 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
     link.click();
     document.body.removeChild(link);
 
-    toast({ title: 'Exported to CSV', description: `${filename}.csv downloaded successfully` });
+    toast.success(`Exported to CSV — ${filename}.csv downloaded successfully`);
   };
 
   const exportToJSON = () => {
     if (!data || data.length === 0) {
-      toast({ title: 'No data to export', variant: 'destructive' });
+      toast.error('No data to export');
       return;
     }
 
@@ -74,7 +72,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
     link.click();
     document.body.removeChild(link);
 
-    toast({ title: 'Exported to JSON', description: `${filename}.json downloaded successfully` });
+    toast.success(`Exported to JSON — ${filename}.json downloaded successfully`);
   };
 
   const printReport = () => {
@@ -125,7 +123,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
       printWindow.close();
     }, 250);
 
-    toast({ title: 'Print dialog opened' });
+    toast.success('Print dialog opened');
   };
 
   return (

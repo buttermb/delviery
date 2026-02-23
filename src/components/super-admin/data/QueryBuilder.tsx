@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 // supabase import retained for future use when query execution is implemented
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Database, Play, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatSmartDate } from '@/lib/formatters';
@@ -32,7 +32,6 @@ interface SavedQuery {
 }
 
 export function QueryBuilder() {
-  const { toast } = useToast();
   const [query, setQuery] = useState('');
   const [selectedTable, setSelectedTable] = useState('');
   const [results, setResults] = useState<Record<string, unknown>[]>([]);
@@ -53,11 +52,7 @@ export function QueryBuilder() {
 
   const handleExecute = async () => {
     if (!query.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a SQL query',
-        variant: 'destructive',
-      });
+      toast.error('Please enter a SQL query');
       return;
     }
 
@@ -72,11 +67,7 @@ export function QueryBuilder() {
       // Note: Supabase client doesn't support arbitrary SQL queries directly
       // For production, you would need to create a safe RPC function
       // For now, we'll show a message that this is a demo
-      toast({
-        title: 'Query Execution',
-        description: 'SQL query execution requires a safe RPC function. Please use the table selector for safe queries.',
-        variant: 'default',
-      });
+      toast.success('SQL query execution requires a safe RPC function. Please use the table selector for safe queries.');
       
       // For demo purposes, return empty results
       const data: Record<string, unknown>[] = [];
@@ -84,16 +75,9 @@ export function QueryBuilder() {
       setResults(data || []);
       setQueryHistory([query, ...queryHistory.slice(0, 9)]); // Keep last 10
 
-      toast({
-        title: 'Success',
-        description: `Query executed. ${data?.length || 0} rows returned.`,
-      });
+      toast.success(`Query executed. ${data?.length || 0} rows returned.`);
     } catch (error: unknown) {
-      toast({
-        title: 'Query Error',
-        description: error instanceof Error ? error.message : 'Failed to execute query',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to execute query');
       setResults([]);
     } finally {
       setIsExecuting(false);
@@ -107,11 +91,7 @@ export function QueryBuilder() {
 
   const handleSaveQuery = () => {
     if (!query.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a query to save',
-        variant: 'destructive',
-      });
+      toast.error('Please enter a query to save');
       return;
     }
 
@@ -123,10 +103,7 @@ export function QueryBuilder() {
     };
 
     setSavedQueries([...savedQueries, newQuery]);
-    toast({
-      title: 'Query Saved',
-      description: 'Query has been saved to your library',
-    });
+    toast.success('Query has been saved to your library');
   };
 
   return (

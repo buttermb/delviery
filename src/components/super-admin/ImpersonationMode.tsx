@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { User, AlertTriangle, LogOut } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +22,6 @@ interface ImpersonationModeProps {
 }
 
 export function ImpersonationMode({ tenantId, onStartImpersonation }: ImpersonationModeProps) {
-  const { toast } = useToast();
   const [isImpersonating, setIsImpersonating] = useState(false);
 
   const { data: tenant } = useQuery({
@@ -49,11 +48,7 @@ export function ImpersonationMode({ tenantId, onStartImpersonation }: Impersonat
     setIsImpersonating(true);
     onStartImpersonation(tenantId);
 
-    toast({
-      title: 'Impersonation Started',
-      description: `You are now viewing as ${tenant?.business_name || 'tenant'}`,
-      variant: 'default',
-    });
+    toast.success(`You are now viewing as ${tenant?.business_name || 'tenant'}`);
   };
 
   const handleStop = () => {
@@ -63,10 +58,7 @@ export function ImpersonationMode({ tenantId, onStartImpersonation }: Impersonat
     auditActions.impersonationEnded(tenantId);
 
     setIsImpersonating(false);
-    toast({
-      title: 'Impersonation Ended',
-      description: 'Returned to super admin view',
-    });
+    toast.success('Returned to super admin view');
   };
 
   return (

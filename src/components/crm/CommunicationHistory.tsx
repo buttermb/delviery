@@ -31,7 +31,7 @@ import {
   ExternalLink,
   CalendarIcon,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
@@ -84,7 +84,6 @@ export function CommunicationHistory({
   customerEmail,
   customerPhone,
 }: CommunicationHistoryProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { navigateToAdmin } = useTenantNavigation();
   const isMobile = useIsMobile();
@@ -294,48 +293,29 @@ export function CommunicationHistory({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-direct-comms', customerId, tenantId] });
-      toast({
-        title: 'Message sent',
-        description: `${newMessage.type === 'email' ? 'Email' : 'SMS'} has been sent successfully`,
-      });
+      toast.success(`${newMessage.type === 'email' ? 'Email' : 'SMS'} has been sent successfully`);
       setSendDialogOpen(false);
       setNewMessage({ type: 'email', subject: '', body: '' });
     },
     onError: (error: unknown) => {
       logger.error('Failed to send message', error, { component: 'CommunicationHistory' });
-      toast({
-        title: 'Failed to send message',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'An error occurred');
     },
   });
 
   const handleSendMessage = () => {
     if (!newMessage.body.trim()) {
-      toast({
-        title: 'Message required',
-        description: 'Please enter a message',
-        variant: 'destructive',
-      });
+      toast.error('Please enter a message');
       return;
     }
 
     if (newMessage.type === 'email' && !customerEmail) {
-      toast({
-        title: 'Email required',
-        description: 'Customer email is needed to send email',
-        variant: 'destructive',
-      });
+      toast.error('Customer email is needed to send email');
       return;
     }
 
     if (newMessage.type === 'sms' && !customerPhone) {
-      toast({
-        title: 'Phone required',
-        description: 'Customer phone is needed to send SMS',
-        variant: 'destructive',
-      });
+      toast.error('Customer phone is needed to send SMS');
       return;
     }
 

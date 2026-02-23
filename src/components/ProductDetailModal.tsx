@@ -8,14 +8,13 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Minus, Plus, ShoppingCart, Loader2, Package, Download, Shield, Award, Leaf, Clock, Activity, Heart, Star, X, Check } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { sortProductWeights, getDefaultWeight, formatWeight } from "@/utils/productHelpers";
 import { cleanProductName } from "@/utils/productName";
 import ReactStars from 'react-rating-stars-component';
-import { toast as sonnerToast } from "sonner";
+import { toast } from "sonner";
 import { haptics } from "@/utils/haptics";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import type { Product } from "@/types/product";
@@ -59,7 +58,6 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
-  const { toast } = useToast();
   const { user } = useAuth();
   const { addToGuestCart } = useGuestCart();
   const queryClient = useQueryClient();
@@ -91,11 +89,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
   const handleAddToCart = async () => {
     if (!product.in_stock) {
       haptics.error();
-      toast({
-        title: "Out of Stock",
-        description: "This product is currently unavailable.",
-        variant: "destructive",
-      });
+      toast.error("This product is currently unavailable.");
       return;
     }
 
@@ -112,7 +106,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         // Success feedback with animation
         setAdded(true);
         haptics.success();
-        sonnerToast.success("🎉 Added to cart!", {
+        toast.success("🎉 Added to cart!", {
           description: `${quantity}x ${product.name}`,
           duration: 2000,
         });
@@ -162,7 +156,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
       haptics.success();
       queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      sonnerToast.success("🎉 Added to cart!", {
+      toast.success("🎉 Added to cart!", {
         description: `${quantity}x ${product.name}`,
         duration: 2000,
       });
@@ -174,11 +168,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
       }, 2000);
     } catch {
       haptics.error();
-      toast({
-        title: "Failed to add to cart",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to add to cart. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -215,11 +205,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
     }
 
     if (reviewRating === 0) {
-      toast({
-        title: "Rating Required",
-        description: "Please select a star rating.",
-        variant: "destructive",
-      });
+      toast.error("Please select a star rating.");
       return;
     }
 
@@ -236,21 +222,14 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
 
       if (error) throw error;
 
-      toast({
-        title: "Review Submitted!",
-        description: "Thank you for your feedback.",
-      });
+      toast.success("Thank you for your feedback.");
 
       setReviewRating(0);
       setReviewComment("");
       queryClient.invalidateQueries({ queryKey: ["product-reviews", product.id] });
     } catch (error) {
       logger.error("Error submitting review", error as Error, { component: 'ProductDetailModal' });
-      toast({
-        title: "Failed to Submit Review",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      toast.error("Failed to submit review. Please try again later.");
     } finally {
       setSubmittingReview(false);
     }

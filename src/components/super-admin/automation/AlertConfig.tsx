@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Bell, Plus, Trash2 } from 'lucide-react';
 import {
   Select,
@@ -32,7 +32,6 @@ interface AlertRule {
 }
 
 export function AlertConfig() {
-  const { toast } = useToast();
   const [alerts, setAlerts] = useState<AlertRule[]>([
     {
       id: '1',
@@ -70,11 +69,7 @@ export function AlertConfig() {
 
   const handleAdd = () => {
     if (!newAlert.name) {
-      toast({
-        title: 'Error',
-        description: 'Please enter an alert name',
-        variant: 'destructive',
-      });
+      toast.error('Please enter an alert name');
       return;
     }
 
@@ -93,18 +88,12 @@ export function AlertConfig() {
       channel: 'email',
     });
 
-    toast({
-      title: 'Alert Added',
-      description: 'New alert rule has been created',
-    });
+    toast.success('New alert rule has been created');
   };
 
   const handleDelete = (id: string) => {
     setAlerts(alerts.filter((a) => a.id !== id));
-    toast({
-      title: 'Alert Deleted',
-      description: 'Alert rule has been removed',
-    });
+    toast.success('Alert rule has been removed');
   };
 
   const handleToggle = (id: string) => {

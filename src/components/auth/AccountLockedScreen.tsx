@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, Clock, Mail, Loader2, ArrowLeft, ExternalLink } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { useAccountLockStatus } from '@/hooks/useAccountLockStatus';
 
@@ -56,11 +56,7 @@ export function AccountLockedScreen({
     e.preventDefault();
 
     if (!unlockEmail.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Email Required',
-        description: 'Please enter your email address to request an unlock.',
-      });
+      toast.error('Please enter your email address to request an unlock.');
       return;
     }
 
@@ -87,19 +83,13 @@ export function AccountLockedScreen({
 
       // Always show success to avoid email enumeration
       setUnlockRequested(true);
-      toast({
-        title: 'Unlock Request Sent',
-        description: 'If this email is associated with an account, the admin will be notified.',
-      });
+      toast.success('Unlock Request Sent — If this email is associated with an account, the admin will be notified.');
 
       logger.info('Account unlock requested', { email: unlockEmail, tenantSlug });
     } catch (error: unknown) {
       // Still show success message to prevent email enumeration
       setUnlockRequested(true);
-      toast({
-        title: 'Unlock Request Sent',
-        description: 'If this email is associated with an account, the admin will be notified.',
-      });
+      toast.success('Unlock Request Sent — If this email is associated with an account, the admin will be notified.');
       logger.error('Account unlock request failed', error, { component: 'AccountLockedScreen' });
     } finally {
       setRequestingUnlock(false);

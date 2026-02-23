@@ -11,28 +11,19 @@ import { SuperAdminMobileBottomNav } from './SuperAdminMobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function SaasAdminLayout() {
   const navigate = useNavigate();
   const { superAdmin, logout } = useSuperAdminAuth();
-  const { toast } = useToast();
-
   const handleSignOut = async () => {
     try {
       await logout();
-      toast({
-        title: 'Signed out',
-        description: 'You have been signed out successfully',
-      });
+      toast.success('You have been signed out successfully');
       navigate('/super-admin/login');
     } catch (error) {
       logger.error('Sign out error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to sign out',
-        variant: 'destructive',
-      });
+      toast.error('Failed to sign out');
     }
   };
 

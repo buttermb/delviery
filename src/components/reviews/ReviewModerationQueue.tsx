@@ -16,7 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Search, Filter } from 'lucide-react';
 
@@ -26,7 +26,6 @@ interface ReviewModerationQueueProps {
 }
 
 export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQueueProps) {
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -93,17 +92,11 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['reviews'] });
-            toast({
-                title: variables.status === 'approved' ? 'Review approved' : 'Review rejected',
-            });
+            toast.success(variables.status === 'approved' ? 'Review approved' : 'Review rejected');
         },
         onError: (error) => {
             logger.error('Failed to update review status', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to update review status',
-                variant: 'destructive',
-            });
+            toast.error('Failed to update review status');
         },
     });
 
@@ -126,15 +119,11 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['reviews'] });
-            toast({ title: 'Response submitted' });
+            toast.success('Response submitted');
         },
         onError: (error) => {
             logger.error('Failed to submit response', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to submit response',
-                variant: 'destructive',
-            });
+            toast.error('Failed to submit response');
         },
     });
 

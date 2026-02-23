@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Workflow, Save, Play, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface WorkflowAction {
   id: string;
@@ -53,7 +53,6 @@ const availableActions = [
 ];
 
 export function WorkflowBuilder() {
-  const { toast } = useToast();
   const [workflow, setWorkflow] = useState<WorkflowConfig>({
     name: '',
     description: '',
@@ -90,25 +89,15 @@ export function WorkflowBuilder() {
 
   const handleSave = () => {
     if (!workflow.name) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a workflow name',
-        variant: 'destructive',
-      });
+      toast.error('Please enter a workflow name');
       return;
     }
 
-    toast({
-      title: 'Workflow Saved',
-      description: 'Workflow configuration has been saved',
-    });
+    toast.success('Workflow configuration has been saved');
   };
 
   const handleTest = () => {
-    toast({
-      title: 'Testing Workflow',
-      description: 'Running workflow test...',
-    });
+    toast.success('Running workflow test...');
   };
 
   return (

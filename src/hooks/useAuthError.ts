@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAllAuthTokens, getCurrentUserType } from "@/lib/utils/authHelpers";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 
 /**
  * Hook to handle authentication errors globally
@@ -26,11 +26,7 @@ export function useAuthError() {
         const userType = getCurrentUserType();
         clearAllAuthTokens();
 
-        toast({
-          variant: "destructive",
-          title: "Session Expired",
-          description: "Please log in again to continue",
-        });
+        toast.error('Please log in again to continue');
 
         // Redirect based on user type
         if (userType === "super_admin") {
