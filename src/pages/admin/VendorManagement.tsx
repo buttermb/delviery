@@ -17,6 +17,7 @@ import { Package, Plus, Edit, Trash2, Mail, Phone, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { handleError } from "@/utils/errorHandling/handlers";
 
 interface VendorFormData {
@@ -357,17 +358,18 @@ export function VendorManagement() {
       </div>
 
       {vendors.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">No vendors yet</h3>
-            <p className="text-muted-foreground mb-4">Add your first vendor to get started</p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Vendor
-            </Button>
-          </CardContent>
-        </Card>
+        <EnhancedEmptyState
+          icon={Package}
+          title="No vendors yet"
+          description="Add your first vendor to start managing your suppliers"
+          primaryAction={{
+            label: 'Add Vendor',
+            onClick: () => setIsDialogOpen(true),
+            icon: Plus,
+          }}
+          compact
+          designSystem="tenant-admin"
+        />
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
           {vendors.map((vendor) => (
