@@ -6,6 +6,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  AlertCircle,
   AlertTriangle,
   Plus,
   Users,
@@ -35,7 +36,7 @@ export default function BatchRecallPage() {
   const [selectedRecall, setSelectedRecall] = useState<Recall | null>(null);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
-  const { data: recalls, isLoading } = useQuery({
+  const { data: recalls, isLoading, error } = useQuery({
     queryKey: queryKeys.recall.lists(),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -65,6 +66,17 @@ export default function BatchRecallPage() {
     },
     enabled: !!tenant?.id,
   });
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive">
+          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <p>Failed to load recall data. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">

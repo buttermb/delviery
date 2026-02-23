@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Zap, Plus, Edit, Play, Loader2 } from 'lucide-react';
+import { Zap, Plus, Edit, Play, Loader2, AlertCircle } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
@@ -45,7 +45,7 @@ export default function Automation() {
     enabled: true,
   });
 
-  const { data: rules, isLoading } = useQuery({
+  const { data: rules, isLoading, error } = useQuery({
     queryKey: ['automation-rules', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -187,6 +187,17 @@ export default function Automation() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="table" message="Loading automation rules..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive">
+          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <p>Failed to load automation rules. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
   }
 
   const enabledCount = (rules || []).filter((r) => r.enabled).length;

@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
+    AlertCircle,
     Search,
     Filter,
     ShoppingCart,
@@ -24,7 +25,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Loader2 } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface MarketplaceListing {
     id: string;
@@ -47,7 +48,7 @@ export default function MarketplaceBrowsePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
 
-    const { data: listings, isLoading } = useQuery({
+    const { data: listings, isLoading, error } = useQuery({
         queryKey: ['marketplace-browse', typeFilter],
         queryFn: async () => {
             let query = supabase
@@ -125,11 +126,16 @@ export default function MarketplaceBrowsePage() {
                 </CardContent>
             </Card>
 
-            {/* Listings Grid */}
-            {isLoading ? (
-                <div className="flex justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            {/* Error State */}
+            {error ? (
+                <div className="p-4">
+                    <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <p>Failed to load marketplace listings. Please try refreshing the page.</p>
+                    </div>
                 </div>
+            ) : isLoading ? (
+                <EnhancedLoadingState variant="card" message="Loading marketplace listings..." />
             ) : filteredListings && filteredListings.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredListings.map((listing) => (

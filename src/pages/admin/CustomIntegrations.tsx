@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plug, Plus, Edit, ArrowLeft, Webhook, Loader2 } from 'lucide-react';
+import { Plug, Plus, Edit, ArrowLeft, Webhook, Loader2, AlertCircle } from 'lucide-react';
 import { IntegrationWebhooks } from '@/components/integrations/IntegrationWebhooks';
 import { handleError } from '@/utils/errorHandling/handlers';
 
@@ -48,7 +48,7 @@ export default function CustomIntegrations() {
     config: {},
   });
 
-  const { data: integrations, isLoading } = useQuery({
+  const { data: integrations, isLoading, error } = useQuery({
     queryKey: ['custom-integrations', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -197,6 +197,17 @@ export default function CustomIntegrations() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="card" message="Loading integrations..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive">
+          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <p>Failed to load integrations. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
   }
 
   // Detail view for selected integration
