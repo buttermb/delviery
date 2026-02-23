@@ -133,9 +133,11 @@ export function ProductCard({
               as="p"
             />
             {product.strain_name && (
-              <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
-                {String(product.strain_name)}
-              </p>
+              <TruncatedText
+                text={String(product.strain_name)}
+                className="text-sm text-[hsl(var(--tenant-text-light))] mb-2"
+                as="p"
+              />
             )}
             {product.sku && (
               <TruncatedText
