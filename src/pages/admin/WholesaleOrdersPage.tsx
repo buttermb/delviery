@@ -122,7 +122,13 @@ const PAYMENT_STATUS_CONFIG: Record<string, { label: string; color: string }> = 
   paid: { label: 'Paid', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
 };
 
-const WHOLESALE_FILTER_CONFIG = [
+interface WholesaleOrderFilters {
+  q: string;
+  status: string;
+  view: string;
+}
+
+const WHOLESALE_FILTER_CONFIG: Array<{ key: keyof WholesaleOrderFilters; defaultValue: string }> = [
   { key: 'q', defaultValue: '' },
   { key: 'status', defaultValue: 'all' },
   { key: 'view', defaultValue: 'selling' },
@@ -135,10 +141,10 @@ export default function WholesaleOrdersPage() {
   const { exportCSV } = useExport();
 
   // Filter state — persisted in URL for back-button & navigation support
-  const [filters, setFilters, clearUrlFilters] = useUrlFilters(WHOLESALE_FILTER_CONFIG);
-  const searchQuery = filters.q as string;
-  const statusFilter = filters.status as string;
-  const viewMode = ((filters.view as string) || 'selling') as 'selling' | 'buying';
+  const [filters, setFilters, clearUrlFilters] = useUrlFilters<WholesaleOrderFilters>(WHOLESALE_FILTER_CONFIG);
+  const searchQuery = filters.q;
+  const statusFilter = filters.status;
+  const viewMode = (filters.view || 'selling') as 'selling' | 'buying';
 
   const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
   const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
