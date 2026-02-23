@@ -159,14 +159,7 @@ export default defineConfig(({ mode }) => ({
             name: 'Dashboard',
             short_name: 'Dashboard',
             description: 'Open dashboard',
-            url: '/admin/dashboard',
-            icons: [{ src: '/floraiq-icon.svg', sizes: '192x192' }]
-          },
-          {
-            name: 'Orders',
-            short_name: 'Orders',
-            description: 'View orders',
-            url: '/admin/orders',
+            url: '/',
             icons: [{ src: '/floraiq-icon.svg', sizes: '192x192' }]
           }
         ]
