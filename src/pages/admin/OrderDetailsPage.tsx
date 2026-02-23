@@ -33,6 +33,7 @@ import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeli
 import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
+import { OrderPrintDialog } from '@/components/admin/orders/OrderPrintDialog';
 import { DeliveryExceptions } from '@/components/admin/delivery';
 import { useOrderInvoiceSave } from '@/components/admin/orders/OrderInvoiceGenerator';
 import {
@@ -221,6 +222,9 @@ export function OrderDetailsPage() {
 
   // Refund modal state
   const [showRefundModal, setShowRefundModal] = useState(false);
+
+  // Print dialog state
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   // Delivery exceptions dialog state
   const [showDeliveryExceptionsDialog, setShowDeliveryExceptionsDialog] = useState(false);
@@ -679,7 +683,7 @@ export function OrderDetailsPage() {
           </div>
 
           <div className="flex flex-wrap gap-2 print:hidden">
-            <Button variant="outline" size="sm" onClick={() => window.print()} disabled={updateStatusMutation.isPending}>
+            <Button variant="outline" size="sm" onClick={() => setShowPrintDialog(true)} disabled={updateStatusMutation.isPending}>
               <Printer className="w-4 h-4 mr-1" />
               Print
             </Button>
@@ -1656,6 +1660,44 @@ export function OrderDetailsPage() {
           onOpenChange={setShowAssignRunnerDialog}
           onAssigned={() => {
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+          }}
+        />
+      </div>
+
+      {/* Order Print Dialog — hidden on print */}
+      <div className="print:hidden">
+        <OrderPrintDialog
+          open={showPrintDialog}
+          onOpenChange={setShowPrintDialog}
+          order={{
+            id: order.id,
+            order_number: order.order_number,
+            created_at: order.created_at,
+            status: order.status,
+            total_amount: order.total_amount,
+            subtotal: order.subtotal || 0,
+            tax_amount: order.tax_amount || 0,
+            discount_amount: order.discount_amount || 0,
+            delivery_fee: order.delivery_fee || 0,
+            delivery_method: order.delivery_method || undefined,
+            payment_status: order.payment_status,
+            notes: order.notes || undefined,
+            customer: {
+              name: customerName,
+              email: customerEmail || undefined,
+              phone: customerPhone || undefined,
+            },
+            delivery_address: order.delivery_address
+              ? { street: order.delivery_address }
+              : undefined,
+            items: (order.order_items || []).map(item => ({
+              product_name: item.product_name,
+              quantity: item.quantity,
+              price: item.unit_price,
+            })),
+            business: tenant?.business_name
+              ? { name: tenant.business_name }
+              : undefined,
           }}
         />
       </div>
