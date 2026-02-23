@@ -274,7 +274,7 @@ export default function SupplierManagementPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredSuppliers.map((supplier) => (
-                    <TableRow key={supplier.id} className="cursor-pointer" onClick={() => handleView(supplier)}>
+                    <TableRow key={supplier.id} className="cursor-pointer" onClick={() => handleView(supplier)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(supplier); } }}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />

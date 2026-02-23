@@ -263,6 +263,9 @@ export default function PurchaseOrdersPage() {
                       key={po.id}
                       className="border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors space-y-3"
                       onClick={() => handleView(po)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2 min-w-0">
@@ -329,7 +332,7 @@ export default function PurchaseOrdersPage() {
                     {filteredPOs.map((po) => {
                       const StatusIcon = STATUS_ICONS[po.status || "draft"] || FileText;
                       return (
-                        <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)}>
+                        <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-muted-foreground" />

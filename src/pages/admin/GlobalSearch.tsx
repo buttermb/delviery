@@ -192,7 +192,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="users" className="space-y-4">
                 {searchResults.users.map((user: UserSearchResult) => (
-                  <Card key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/users/${user.user_id}`)}>
+                  <Card key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/users/${user.user_id}`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/${tenant?.slug}/admin/users/${user.user_id}`); } }}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
@@ -230,7 +230,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="orders" className="space-y-4">
                 {searchResults.orders.map((order: OrderSearchResult) => (
-                  <Card key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/orders`)}>
+                  <Card key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/orders`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/${tenant?.slug}/admin/orders`); } }}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
@@ -257,7 +257,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="products" className="space-y-4">
                 {searchResults.products.map((product: ProductSearchResult) => (
-                  <Card key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/products`)}>
+                  <Card key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/products`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/${tenant?.slug}/admin/products`); } }}>
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
                         {product.image_url && (
@@ -287,7 +287,7 @@ const GlobalSearch = () => {
 
               <TabsContent value="addresses" className="space-y-4">
                 {searchResults.addresses.map((address: AddressSearchResult) => (
-                  <Card key={address.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/users/${address.user_id}`)}>
+                  <Card key={address.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/${tenant?.slug}/admin/users/${address.user_id}`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/${tenant?.slug}/admin/users/${address.user_id}`); } }}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">

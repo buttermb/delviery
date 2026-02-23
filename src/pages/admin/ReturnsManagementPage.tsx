@@ -320,7 +320,7 @@ export default function ReturnsManagementPage() {
                   {filteredReturns.map((ra) => {
                     const StatusIcon = STATUS_ICONS[ra.status] || Clock;
                     return (
-                      <TableRow key={ra.id} className="cursor-pointer" onClick={() => handleView(ra)}>
+                      <TableRow key={ra.id} className="cursor-pointer" onClick={() => handleView(ra)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(ra); } }}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <RotateCcw className="h-4 w-4 text-muted-foreground" />

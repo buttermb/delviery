@@ -331,7 +331,10 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                 <div className="space-y-4 py-4 min-h-[300px]">
                     {step === 'upload' && (
                         <div className="border-2 border-dashed rounded-lg p-10 flex flex-col items-center justify-center gap-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                            onClick={() => document.getElementById('csv-upload')?.click()}>
+                            onClick={() => document.getElementById('csv-upload')?.click()}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('csv-upload')?.click(); } }}>
                             {loading ? <Loader2 className="h-10 w-10 animate-spin text-primary" /> : <Upload className="h-10 w-10 text-muted-foreground" />}
                             <div className="text-center">
                                 <p className="text-sm font-medium">Click to upload CSV or Excel</p>

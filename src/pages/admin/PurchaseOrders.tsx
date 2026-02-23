@@ -437,7 +437,7 @@ export default function PurchaseOrders() {
                     const displayStatus = normalizeStatus(po.status);
                     const StatusIcon = STATUS_ICONS[displayStatus] || FileText;
                     return (
-                      <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)}>
+                      <TableRow key={po.id} className="cursor-pointer" onClick={() => handleView(po)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleView(po); } }}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-muted-foreground" />
