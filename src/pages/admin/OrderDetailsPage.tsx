@@ -30,6 +30,7 @@ import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalytics
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
 import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
+import { OrderAssignCourier } from '@/components/admin/OrderAssignCourier';
 import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
@@ -217,6 +218,9 @@ export function OrderDetailsPage() {
 
   // Runner assignment dialog state
   const [showAssignRunnerDialog, setShowAssignRunnerDialog] = useState(false);
+
+  // Courier assignment dialog state
+  const [showAssignCourierDialog, setShowAssignCourierDialog] = useState(false);
 
   // Edit order modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -827,6 +831,19 @@ export function OrderDetailsPage() {
                   )}
                 </Tooltip>
               </TooltipProvider>
+            )}
+
+            {/* Assign Courier Button - show when order needs courier and has delivery address */}
+            {!isCancelled && !order.courier_id && order.delivery_address && ['confirmed', 'preparing', 'ready'].includes(order.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAssignCourierDialog(true)}
+                disabled={updateStatusMutation.isPending}
+              >
+                <Truck className="w-4 h-4 mr-1" />
+                Assign Courier
+              </Button>
             )}
 
             {!isCancelled && (
@@ -1687,6 +1704,20 @@ export function OrderDetailsPage() {
           open={showAssignRunnerDialog}
           onOpenChange={setShowAssignRunnerDialog}
           onAssigned={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+          }}
+        />
+      </div>
+
+      {/* Order Assign Courier Dialog — hidden on print */}
+      <div className="print:hidden">
+        <OrderAssignCourier
+          orderId={order.id}
+          orderAddress={order.delivery_address || ''}
+          orderNumber={order.order_number}
+          open={showAssignCourierDialog}
+          onOpenChange={setShowAssignCourierDialog}
+          onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
           }}
         />
