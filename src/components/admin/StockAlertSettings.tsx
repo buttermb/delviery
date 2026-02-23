@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,11 +21,14 @@ import Package from "lucide-react/dist/esm/icons/package";
 import Save from "lucide-react/dist/esm/icons/save";
 import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { useStockAlertSettings } from '@/hooks/useStockAlertSettings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { logger } from '@/lib/logger';
 
 interface Product {
   id: string;
@@ -48,6 +51,8 @@ export function StockAlertSettings() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [editingThresholds, setEditingThresholds] = useState<Map<string, number>>(new Map());
   const [bulkThreshold, setBulkThreshold] = useState<number>(10);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   // Fetch products
   const { data: products, isLoading: productsLoading } = useQuery({
@@ -69,6 +74,47 @@ export function StockAlertSettings() {
 
   // Hook for saving settings
   const { updateThreshold, updateBulkThresholds, isSaving } = useStockAlertSettings();
+  const queryClient = useQueryClient();
+
+  // Mutation to remove (reset) a product's stock alert threshold
+  const deleteAlertMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      if (!tenantId) throw new Error('No tenant context');
+
+      const { error } = await supabase
+        .from('products')
+        .update({
+          low_stock_alert: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', productId)
+        .eq('tenant_id', tenantId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
+      toast.success('Stock alert threshold removed');
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to remove stock alert threshold', { error: error.message });
+      toast.error('Failed to remove stock alert threshold');
+    },
+  });
+
+  const handleDeleteAlert = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteAlert = () => {
+    if (productToDelete) {
+      deleteAlertMutation.mutate(productToDelete.id);
+    }
+  };
 
   // Derive categories
   const categories = products
@@ -330,6 +376,19 @@ export function StockAlertSettings() {
                           Save
                         </Button>
                       )}
+
+                      {product.low_stock_alert !== null && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteAlert(product)}
+                          title="Remove stock alert threshold"
+                          disabled={deleteAlertMutation.isPending}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
@@ -344,6 +403,17 @@ export function StockAlertSettings() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDeleteAlert}
+        isLoading={deleteAlertMutation.isPending}
+        title="Remove Stock Alert Threshold"
+        description={`Are you sure you want to remove the stock alert threshold for "${productToDelete?.name}"? The threshold will be reset to the default.`}
+        itemName={productToDelete?.name}
+        itemType="stock alert setting"
+      />
     </div>
   );
 }

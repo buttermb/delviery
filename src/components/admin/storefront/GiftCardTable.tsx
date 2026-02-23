@@ -49,7 +49,9 @@ import {
   CheckCircle,
   Gift,
   History,
+  Trash2,
 } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
@@ -80,6 +82,8 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<'disable' | 'enable' | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<GiftCard | null>(null);
 
   const { data: giftCards = [], isLoading } = useQuery({
     queryKey: ['gift-cards', storeId],
@@ -145,6 +149,40 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
       setBulkAction(null);
     },
   });
+
+  const deleteMutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- marketplace_gift_cards not in generated types
+    mutationFn: async (cardId: string) => {
+      const { error } = await (supabase as any)
+        .from('marketplace_gift_cards')
+        .delete()
+        .eq('id', cardId)
+        .eq('store_id', storeId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gift-cards', storeId] });
+      toast.success('Gift card deleted successfully');
+      setDeleteDialogOpen(false);
+      setCardToDelete(null);
+    },
+    onError: (err: Error) => {
+      logger.error('Failed to delete gift card', { error: err.message });
+      toast.error('Failed to delete gift card');
+    },
+  });
+
+  const handleDeleteCard = (card: GiftCard) => {
+    setCardToDelete(card);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCard = () => {
+    if (cardToDelete) {
+      deleteMutation.mutate(cardToDelete.id);
+    }
+  };
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -363,14 +401,25 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
                         {card.expires_at ? formatSmartDate(card.expires_at) : '—'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onViewLedger(card)}
-                          title="View transaction history"
-                        >
-                          <History className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onViewLedger(card)}
+                            title="View transaction history"
+                          >
+                            <History className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteCard(card)}
+                            title="Delete gift card"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -393,6 +442,18 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Gift Card Confirmation */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDeleteCard}
+        isLoading={deleteMutation.isPending}
+        title="Delete Gift Card"
+        description={`Are you sure you want to delete gift card "${cardToDelete?.code}"? This action cannot be undone. Any remaining balance will be forfeited.`}
+        itemName={cardToDelete?.code}
+        itemType="gift card"
+      />
 
       {/* Bulk Action Confirmation */}
       <AlertDialog open={bulkAction !== null} onOpenChange={() => setBulkAction(null)}>

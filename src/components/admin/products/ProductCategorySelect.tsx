@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Popover,
   PopoverContent,
@@ -14,9 +16,14 @@ import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import Search from "lucide-react/dist/esm/icons/search";
 import FolderTree from "lucide-react/dist/esm/icons/folder-tree";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { cn } from '@/lib/utils';
 import { useCategoryTree, useFlattenedCategories, type CategoryTreeNode } from '@/hooks/useCategories';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 // Alias for backward compatibility
 type CategoryNode = CategoryTreeNode;
@@ -64,6 +71,7 @@ export function ProductCategorySelect({
   allowParentSelection = true,
 }: ProductCategorySelectProps) {
   const { tenant: _tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
 
   // Use the tree and flattened hooks
   const { data: tree = [], isLoading: treeLoading, isError } = useCategoryTree();
@@ -73,6 +81,48 @@ export function ProductCategorySelect({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Delete category mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: string) => {
+      if (!_tenant?.id) throw new Error('Tenant ID missing');
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId)
+        .eq('tenant_id', _tenant.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Category deleted successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+      // If the deleted category was the currently selected value, clear it
+      if (categoryToDelete && value === categoryToDelete.id) {
+        onChange('');
+      }
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to delete category', { error: error.message });
+      toast.error('Failed to delete category');
+    },
+  });
+
+  const handleDeleteCategory = useCallback((e: React.MouseEvent, categoryId: string, categoryName: string) => {
+    e.stopPropagation();
+    setCategoryToDelete({ id: categoryId, name: categoryName });
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDeleteCategory = useCallback(() => {
+    if (categoryToDelete) {
+      deleteCategoryMutation.mutate(categoryToDelete.id);
+    }
+  }, [categoryToDelete, deleteCategoryMutation]);
 
   // Find selected category info
   const selectedCategory = useMemo(() => {
@@ -177,7 +227,7 @@ export function ProductCategorySelect({
           type="button"
           onClick={() => handleSelect(node.id, hasChildren)}
           className={cn(
-            'w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+            'w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm group',
             'hover:bg-accent hover:text-accent-foreground',
             'focus:bg-accent focus:text-accent-foreground focus:outline-none',
             isSelected && 'bg-accent font-medium'
@@ -207,6 +257,16 @@ export function ProductCategorySelect({
           {/* Category name */}
           <span className="flex-1 text-left truncate">{node.name}</span>
 
+          {/* Delete button */}
+          <button
+            type="button"
+            onClick={(e) => handleDeleteCategory(e, node.id, node.name)}
+            className="p-0.5 hover:bg-destructive/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Delete category"
+          >
+            <Trash2 className="h-3 w-3 text-destructive" />
+          </button>
+
           {/* Checkmark for selected */}
           {isSelected && <Check className="h-4 w-4 shrink-0" />}
         </button>
@@ -231,6 +291,7 @@ export function ProductCategorySelect({
   const isEmpty = !isLoading && tree.length === 0;
 
   return (
+    <>
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
@@ -317,5 +378,17 @@ export function ProductCategorySelect({
         </ScrollArea>
       </PopoverContent>
     </Popover>
+
+    <ConfirmDeleteDialog
+      open={deleteDialogOpen}
+      onOpenChange={setDeleteDialogOpen}
+      onConfirm={confirmDeleteCategory}
+      isLoading={deleteCategoryMutation.isPending}
+      title="Delete Category"
+      description={`Are you sure you want to delete "${categoryToDelete?.name}"? Products in this category will become uncategorized. This action cannot be undone.`}
+      itemName={categoryToDelete?.name}
+      itemType="category"
+    />
+    </>
   );
 }
