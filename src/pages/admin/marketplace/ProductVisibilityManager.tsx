@@ -110,10 +110,10 @@ export default function ProductVisibilityManager() {
     }
 
     return (
-        <div className="space-y-6 h-full p-4 md:p-8">
+        <div className="space-y-4 h-full p-4 md:p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Product Visibility</h1>
+                    <h1 className="text-xl font-bold tracking-tight">Product Visibility</h1>
                     <p className="text-muted-foreground mt-1">
                         Manage which products are visible in your marketplace store.
                     </p>

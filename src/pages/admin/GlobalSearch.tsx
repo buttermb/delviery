@@ -135,9 +135,9 @@ const GlobalSearch = () => {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">Global Search</h1>
+        <h1 className="text-xl font-bold">Global Search</h1>
         <p className="text-muted-foreground">
           Search across all users, orders, products, and addresses
         </p>

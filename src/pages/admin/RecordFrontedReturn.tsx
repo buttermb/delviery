@@ -239,7 +239,7 @@ export default function RecordFrontedReturn() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Scan Returns</h1>
+          <h1 className="text-xl font-bold">Scan Returns</h1>
           <p className="text-muted-foreground">
             {(front as any).products?.name} • Front #{id.slice(0, 8)}
           </p>

@@ -201,10 +201,10 @@ export default function Automation() {
   const totalRuns = (rules || []).reduce((sum, r) => sum + (r.last_run_at ? 1 : 0), 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Automation</h1>
+          <h1 className="text-xl font-bold">Automation</h1>
           <p className="text-muted-foreground">Automate workflows and business processes</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>

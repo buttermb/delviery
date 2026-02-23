@@ -97,7 +97,7 @@ export default function StorefrontAnalytics() {
 
   if (storeLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -121,7 +121,7 @@ export default function StorefrontAnalytics() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 space-y-4 max-w-7xl mx-auto">
       {/* Header with date range filter */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

@@ -131,7 +131,7 @@ export default function VendorDetailPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight flex items-center gap-3">
                 <Building2 className="h-8 w-8 text-muted-foreground" />
                 {vendor.name}
                 <Badge variant={getStatusBadgeVariant(vendor.status)}>

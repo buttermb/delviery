@@ -100,7 +100,7 @@ export default function PreOrdersPage() {
     const convertedCount = preOrders?.filter((o) => o.status === "converted").length || 0;
 
     return (
-        <div className="space-y-6 p-6 pb-16">
+        <div className="space-y-4 p-4 pb-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Pre-Orders</h1>

@@ -161,7 +161,7 @@ export default function ProductDetailsPage() {
                                 </div>
                             )}
                             <div>
-                                <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3 flex-wrap">
+                                <h1 className="text-xl font-bold tracking-tight flex items-center gap-3 flex-wrap">
                                     {product.name}
                                     {(product as { archived_at?: string | null }).archived_at && (
                                         <Badge variant="secondary">Archived</Badge>

@@ -515,7 +515,7 @@ export default function PointOfSale() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">Point of Sale</h1>
+          <h1 className="text-xl font-bold tracking-tight">Point of Sale</h1>
           <Badge variant={activeOrderId ? "default" : "outline"} className="hidden sm:flex">
             {activeOrderId ? "Online Order Active" : "Walk-In Mode"}
           </Badge>

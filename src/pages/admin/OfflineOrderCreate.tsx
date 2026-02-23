@@ -285,7 +285,7 @@ export default function OfflineOrderCreate() {
         description="Create orders that work offline and sync when back online"
       />
 
-      <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6 overflow-x-hidden pb-24">
+      <div className="w-full max-w-full px-2 sm:px-4 md:px-4 py-2 sm:py-4 md:py-4 space-y-4 sm:space-y-4 overflow-x-hidden pb-24">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex items-center gap-3">

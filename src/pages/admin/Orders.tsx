@@ -589,7 +589,7 @@ export default function Orders() {
   // Loading skeleton — full page placeholder while data fetches
   if (isLoading) {
     return (
-      <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6">
+      <div className="w-full max-w-full px-2 sm:px-4 md:px-4 py-2 sm:py-4 md:py-4 space-y-4 sm:space-y-4">
         {/* Header skeleton */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div className="space-y-2">
@@ -997,12 +997,12 @@ export default function Orders() {
       />
 
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6 overflow-x-hidden pb-24">
+        <div className="w-full max-w-full px-2 sm:px-4 md:px-4 py-2 sm:py-4 md:py-4 space-y-4 sm:space-y-4 overflow-x-hidden pb-24">
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
+              <h1 className="text-xl font-bold">Orders Management</h1>
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
             <div className="flex flex-wrap gap-2">

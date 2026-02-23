@@ -444,11 +444,11 @@ export default function VendorDashboard() {
   ];
 
   return (
-    <div className="container mx-auto py-4 sm:py-6 space-y-6 pb-20">
+    <div className="container mx-auto py-4 sm:py-4 space-y-4 pb-20">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2 sm:px-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Vendor Dashboard</h1>
+          <h1 className="text-xl font-bold">Vendor Dashboard</h1>
           <p className="text-muted-foreground mt-1">
             Overview of your vendor relationships and purchase orders
           </p>

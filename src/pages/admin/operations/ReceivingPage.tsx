@@ -215,11 +215,11 @@ export default function ReceivingPage() {
   const qcPassedReceipts = receipts?.filter(r => r.status === 'qc_passed').length || 0;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Receiving & Packaging</h1>
+          <h1 className="text-xl font-bold">Receiving & Packaging</h1>
           <p className="text-muted-foreground">
             Manage incoming shipments and quality control
           </p>

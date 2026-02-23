@@ -103,10 +103,10 @@ export default function StoreSettings() {
     const currentProfile = { ...profile, ...formState } as MarketplaceProfile;
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto p-4 md:p-8">
+        <div className="space-y-4 max-w-5xl mx-auto p-4 md:p-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Store Settings</h1>
+                    <h1 className="text-xl font-bold tracking-tight">Store Settings</h1>
                     <p className="text-muted-foreground mt-1">
                         Configure your public storefront appearance and policies.
                     </p>

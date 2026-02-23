@@ -147,7 +147,7 @@ export default function FrontedInventoryDetails() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Fronted Inventory #{front.id.slice(0, 8)}</h1>
+            <h1 className="text-xl font-bold">Fronted Inventory #{front.id.slice(0, 8)}</h1>
             <p className="text-muted-foreground">
               {product?.name} • {front.quantity_fronted} units
             </p>

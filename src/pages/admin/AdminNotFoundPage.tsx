@@ -15,7 +15,7 @@ export default function AdminNotFoundPage() {
   }, [location.pathname, tenantSlug]);
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh] p-6">
+    <div className="flex items-center justify-center min-h-[60vh] p-4">
       <Card className="max-w-md w-full">
         <CardContent className="pt-8 pb-8 px-6 text-center space-y-6">
           <div className="flex justify-center">

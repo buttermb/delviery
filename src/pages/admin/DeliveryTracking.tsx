@@ -60,7 +60,7 @@ export default function DeliveryTracking() {
 
   if (!delivery) {
     return (
-      <div className="min-h-dvh bg-background p-6">
+      <div className="min-h-dvh bg-background p-4">
         <div className="flex flex-col items-center justify-center h-96 space-y-4">
           <p className="text-muted-foreground">Delivery not found</p>
           <Button onClick={() => navigate(`/${tenant?.slug}/admin/fulfillment-hub?tab=fleet`)}>
@@ -73,7 +73,7 @@ export default function DeliveryTracking() {
   }
 
   return (
-    <div className="min-h-dvh bg-background p-6">
+    <div className="min-h-dvh bg-background p-4">
       <SEOHead title="Live Delivery Tracking | Admin" description="Track delivery in real-time" />
 
       {/* Header */}
@@ -84,7 +84,7 @@ export default function DeliveryTracking() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Live Delivery Tracking</h1>
+            <h1 className="text-xl font-bold">Live Delivery Tracking</h1>
             <p className="text-sm text-muted-foreground">
               Order #{delivery.orders?.order_number}
             </p>

@@ -269,10 +269,10 @@ export default function FrontedInventoryAnalytics() {
   if (loading) return <EnhancedLoadingState variant="dashboard" message="Loading analytics..." />;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Fronted Inventory Analytics</h1>
+          <h1 className="text-xl font-bold">Fronted Inventory Analytics</h1>
           <p className="text-muted-foreground">Performance insights and metrics</p>
         </div>
         <Button onClick={exportReport}>

@@ -539,7 +539,7 @@ export function OrdersListPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
@@ -552,7 +552,7 @@ export function OrdersListPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

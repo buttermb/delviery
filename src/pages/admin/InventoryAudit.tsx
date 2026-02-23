@@ -447,7 +447,7 @@ export default function InventoryAudit() {
   // Loading state
   if (productsLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
+      <div className="space-y-4 p-4 md:p-4">
         <div className="flex items-center gap-3">
           <ClipboardCheck className="h-6 w-6" />
           <div>
@@ -468,7 +468,7 @@ export default function InventoryAudit() {
   // Error state
   if (productsError) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
+      <div className="space-y-4 p-4 md:p-4">
         <Card>
           <CardContent className="py-12">
             <EnhancedEmptyState
@@ -487,13 +487,13 @@ export default function InventoryAudit() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-4 p-4 md:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <ClipboardCheck className="h-6 w-6 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold">Inventory Audit</h1>
+            <h1 className="text-xl font-bold">Inventory Audit</h1>
             <p className="text-sm text-muted-foreground">
               Physical count verification and adjustment workflow
             </p>

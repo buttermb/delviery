@@ -176,7 +176,7 @@ export default function LocationsManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SEOHead
         title="Locations Management"
         description="Manage your business locations"
@@ -184,7 +184,7 @@ export default function LocationsManagement() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Locations</h1>
+          <h1 className="text-xl font-bold">Locations</h1>
           <p className="text-muted-foreground">Manage your business locations</p>
         </div>
 

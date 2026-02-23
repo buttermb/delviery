@@ -125,7 +125,7 @@ export default function RecordFrontedPayment() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">💳 Record Payment</h1>
+          <h1 className="text-xl font-bold">Record Payment</h1>
         </div>
 
         <Card className="mb-6">

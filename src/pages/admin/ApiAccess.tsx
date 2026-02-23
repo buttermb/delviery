@@ -78,9 +78,9 @@ export default function ApiAccess() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">API Access</h1>
+          <h1 className="text-xl font-bold">API Access</h1>
           <p className="text-muted-foreground">Manage API keys and access tokens</p>
         </div>
         <EnhancedLoadingState variant="card" count={3} />
@@ -89,10 +89,10 @@ export default function ApiAccess() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">API Access</h1>
+          <h1 className="text-xl font-bold">API Access</h1>
           <p className="text-muted-foreground">Manage API keys and access tokens</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>

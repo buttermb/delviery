@@ -456,7 +456,7 @@ import { useAsyncAction } from "@/hooks/useAsyncAction";
 
 function InvoicesPageSkeleton() {
     return (
-        <div className="space-y-6 p-6 pb-16">
+        <div className="space-y-4 p-4 pb-16">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-2">
@@ -794,7 +794,7 @@ export function InvoicesPage() {
         : 0;
 
     return (
-        <div className="space-y-6 p-6 pb-16">
+        <div className="space-y-4 p-4 pb-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>

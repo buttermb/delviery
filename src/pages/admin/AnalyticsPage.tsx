@@ -15,7 +15,7 @@ export default function AnalyticsPage() {
   return (
     <>
       <SEOHead title="Analytics Dashboard" />
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Button
           variant="ghost"
           size="sm"

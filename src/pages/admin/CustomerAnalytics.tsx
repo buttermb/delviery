@@ -71,9 +71,9 @@ export default function CustomerAnalytics() {
 
   if (customersLoading || ordersLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">Customer Analytics</h1>
+          <h1 className="text-xl font-bold">Customer Analytics</h1>
           <p className="text-muted-foreground">Understand your customer base</p>
         </div>
         <EnhancedLoadingState variant="dashboard" />
@@ -97,9 +97,9 @@ export default function CustomerAnalytics() {
   }));
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">Customer Analytics</h1>
+        <h1 className="text-xl font-bold">Customer Analytics</h1>
         <p className="text-muted-foreground">Understand your customer base</p>
       </div>
 

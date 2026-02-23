@@ -331,7 +331,7 @@ export function StorefrontLiveOrders() {
 
   if (!store) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Please create a store first.</p>
@@ -348,7 +348,7 @@ export function StorefrontLiveOrders() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-4 space-y-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

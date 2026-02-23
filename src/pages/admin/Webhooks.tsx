@@ -210,9 +210,9 @@ export default function Webhooks() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">Webhooks</h1>
+          <h1 className="text-xl font-bold">Webhooks</h1>
           <p className="text-muted-foreground">Manage webhook integrations</p>
         </div>
         <EnhancedLoadingState variant="card" count={3} />
@@ -221,10 +221,10 @@ export default function Webhooks() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Webhooks</h1>
+          <h1 className="text-xl font-bold">Webhooks</h1>
           <p className="text-muted-foreground">Configure webhook endpoints for real-time events</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>

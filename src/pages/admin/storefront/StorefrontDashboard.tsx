@@ -373,8 +373,8 @@ export default function StorefrontDashboard() {
   // Loading state
   if (storesLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="space-y-6">
+      <div className="container mx-auto p-4">
+        <div className="space-y-4">
           <Skeleton className="h-10 w-64" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
@@ -389,7 +389,7 @@ export default function StorefrontDashboard() {
   // No stores - show create CTA
   if (stores.length === 0) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl">
+      <div className="container mx-auto p-4 max-w-4xl">
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
@@ -441,7 +441,7 @@ export default function StorefrontDashboard() {
   // Show list view
   if (showListView) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <div className="mb-6">
           <Button
             variant="ghost"
@@ -487,7 +487,7 @@ export default function StorefrontDashboard() {
   const storeUrl = activeStore ? `${window.location.origin}/shop/${activeStore.slug}` : null;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Streamlined Header */}
       <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:items-start md:justify-between">
         <div className="flex items-center gap-4">
@@ -503,7 +503,7 @@ export default function StorefrontDashboard() {
           )}
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold">{activeStore?.store_name}</h1>
+              <h1 className="text-xl md:text-xl font-bold">{activeStore?.store_name}</h1>
               <Badge
                 variant={activeStore?.is_active ? 'default' : 'secondary'}
                 className={activeStore?.is_active ? 'bg-green-500' : ''}

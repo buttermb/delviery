@@ -558,7 +558,7 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -571,7 +571,7 @@ export default function CategoriesPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">Categories & Tags</h1>
+          <h1 className="text-xl font-bold">Categories & Tags</h1>
           <p className="text-muted-foreground">
             Organize products with categories and tags
           </p>

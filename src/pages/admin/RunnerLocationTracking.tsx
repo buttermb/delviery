@@ -217,7 +217,7 @@ export default function RunnerLocationTracking() {
         description="Real-time GPS tracking and historical route replay for delivery runners"
       />
 
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-4 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -230,7 +230,7 @@ export default function RunnerLocationTracking() {
               Back
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">GPS Tracking & Route Replay</h1>
+              <h1 className="text-xl font-bold">GPS Tracking & Route Replay</h1>
               <p className="text-muted-foreground">
                 Track runners in real-time and replay historical routes
               </p>

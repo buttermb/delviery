@@ -917,7 +917,7 @@ function CashRegisterContent() {
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="p-4 sm:p-4 space-y-4 sm:space-y-4">
         {/* Header skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div className="space-y-2">
@@ -973,7 +973,7 @@ function CashRegisterContent() {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="p-4 sm:p-4 space-y-4 sm:space-y-4">
       {/* Offline Alert */}
       {!isOnline && (
         <Alert variant="destructive">
@@ -988,7 +988,7 @@ function CashRegisterContent() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-xl font-bold flex items-center gap-2">
             <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             Cash Register
             {!isOnline && <WifiOff className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />}

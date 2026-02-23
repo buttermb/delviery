@@ -695,7 +695,7 @@ export function ProductsListPage() {
   // Loading state
   if (tenantLoading || isLoading) {
     return (
-      <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+      <div className="w-full max-w-full px-4 sm:px-4 py-4 sm:py-4 space-y-4">
         {/* Header skeleton */}
         <div className="flex items-center justify-between">
           <div className="space-y-2">
@@ -749,11 +749,11 @@ export function ProductsListPage() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+    <div className="w-full max-w-full px-4 sm:px-4 py-4 sm:py-4 space-y-4 sm:space-y-4 overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold">Products</h1>
+          <h1 className="text-xl font-bold">Products</h1>
           <p className="text-muted-foreground text-sm sm:text-base">
             Manage your product catalog
           </p>

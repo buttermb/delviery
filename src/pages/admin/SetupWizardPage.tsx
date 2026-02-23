@@ -94,7 +94,7 @@ export default function SetupWizardPage() {
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Set Up Your Store</h1>
+          <h1 className="text-xl font-bold mb-2">Set Up Your Store</h1>
           <p className="text-muted-foreground">
             Complete these steps to get your store ready for customers
           </p>

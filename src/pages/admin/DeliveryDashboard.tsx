@@ -313,7 +313,7 @@ export default function DeliveryDashboard() {
   const isLoading = loadingOrders || loadingRunners;
 
   return (
-    <div className="min-h-dvh bg-background p-6">
+    <div className="min-h-dvh bg-background p-4">
       <SEOHead
         title="Delivery Dashboard | Admin"
         description="Overview of all deliveries, runners, and assignments"
@@ -322,7 +322,7 @@ export default function DeliveryDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Delivery Dashboard</h1>
+          <h1 className="text-xl font-bold">Delivery Dashboard</h1>
           <p className="text-sm text-muted-foreground">
             Real-time overview of deliveries and runner operations
           </p>

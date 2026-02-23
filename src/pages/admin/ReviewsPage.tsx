@@ -18,12 +18,12 @@ export default function ReviewsPage() {
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="container mx-auto p-4 space-y-4">
             {/* Header */}
             <div>
                 <div className="flex items-center gap-3 mb-2">
                     <MessageSquare className="w-8 h-8" />
-                    <h1 className="text-3xl font-bold">Product Reviews</h1>
+                    <h1 className="text-xl font-bold">Product Reviews</h1>
                 </div>
                 <p className="text-muted-foreground">
                     Manage customer reviews and feedback for your products

@@ -11,10 +11,10 @@ import { Globe, MapPin, TrendingUp, DollarSign, Users, Calculator, AlertCircle }
 
 export default function ExpansionAnalysisPage() {
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
+                <h1 className="text-xl font-bold flex items-center gap-2">
                     <Globe className="h-8 w-8" />
                     Expansion Analysis
                 </h1>

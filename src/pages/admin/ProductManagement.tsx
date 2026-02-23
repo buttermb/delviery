@@ -1116,7 +1116,7 @@ export default function ProductManagement() {
 
   if (tenantLoading) {
     return (
-      <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+      <div className="w-full max-w-full px-4 sm:px-4 py-4 sm:py-4 space-y-4">
         {/* Header skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-2">
@@ -1172,11 +1172,11 @@ export default function ProductManagement() {
   const batchPanelOpen = combinedBatchProducts.length > 0;
 
   return (
-    <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+    <div className="w-full max-w-full px-4 sm:px-4 py-4 sm:py-4 space-y-4 sm:space-y-4 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1 sm:mb-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">Product Management</h1>
+            <h1 className="text-xl font-bold truncate">Product Management</h1>
             {tenant?.id && (
               <TooltipGuide
                 title="💡 Product Management"

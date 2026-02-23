@@ -273,11 +273,11 @@ export default function PayoutsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-xl font-bold flex items-center gap-2">
             <Wallet className="h-8 w-8 text-emerald-500" />
             Payouts
           </h1>

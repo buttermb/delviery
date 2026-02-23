@@ -211,8 +211,8 @@ export default function CustomerDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-6">
-        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-4">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-4">
           {/* Header skeleton */}
           <div className="mb-4 sm:mb-8">
             <Skeleton className="h-9 w-24 sm:w-40 mb-4" />
@@ -251,7 +251,7 @@ export default function CustomerDetails() {
           </div>
 
           {/* Tabs skeleton */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-4">
             <div className="flex gap-1 sm:gap-2 flex-wrap overflow-x-auto">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="h-8 sm:h-9 w-20 sm:w-24 rounded-md shrink-0" />
@@ -306,10 +306,10 @@ export default function CustomerDetails() {
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
-      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-6">
+      <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4 sm:p-4">
         <SEOHead title={`${displayName(customer.first_name, customer.last_name)} | Customer Details`} />
 
-        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-4">
           {/* Header */}
           <div className="mb-4 sm:mb-8">
             <Button variant="ghost" onClick={() => navigateToAdmin('customer-management')} className="mb-4 min-h-[44px]">
@@ -325,7 +325,7 @@ export default function CustomerDetails() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
                       {displayName(customer.first_name, customer.last_name)}
                     </h1>
                     <Badge

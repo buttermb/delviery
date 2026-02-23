@@ -130,7 +130,7 @@ export default function RecordFrontedSale() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">💰 Record Sale</h1>
+          <h1 className="text-xl font-bold">Record Sale</h1>
         </div>
 
         <Card className="mb-6">

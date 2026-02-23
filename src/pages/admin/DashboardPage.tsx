@@ -92,7 +92,7 @@ function ActivityWidgetFallback() {
 // Full-page loading skeleton for initial dashboard load
 function DashboardPageSkeleton() {
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-4 space-y-4">
       <Skeleton className="h-5 w-48" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
@@ -195,7 +195,7 @@ export function DashboardPage() {
     : null;
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 overflow-x-hidden">
+    <div className="p-4 sm:p-4 space-y-4 overflow-x-hidden">
       <HubBreadcrumbs
         hubName="dashboard"
         hubHref="dashboard"

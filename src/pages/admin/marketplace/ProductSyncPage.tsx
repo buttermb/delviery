@@ -196,7 +196,7 @@ export default function ProductSyncPage() {
     );
 
     if (isLoadingStore || isLoadingProducts) {
-        return <div className="p-6 space-y-6">
+        return <div className="p-4 space-y-4">
             <div className="flex justify-between items-center">
                 <Skeleton className="h-8 w-48" />
                 <Skeleton className="h-10 w-32" />
@@ -229,10 +229,10 @@ export default function ProductSyncPage() {
     }
 
     return (
-        <div className="space-y-6 p-6">
+        <div className="space-y-4 p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                    <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
                         <ArrowRightLeft className="h-8 w-8 text-primary" />
                         Product Sync
                     </h1>

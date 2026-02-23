@@ -62,18 +62,18 @@ export default function LocationAnalyticsPage() {
   return (
     <>
       <SEOHead title="Location Analytics" />
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-4 space-y-4">
         <div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigateToAdmin('analytics-hub')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-xl font-bold flex items-center gap-2">
             <MapPin className="h-8 w-8" />
             Location Analytics
           </h1>

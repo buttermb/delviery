@@ -60,9 +60,9 @@ export default function DeliveryAnalytics() {
   const successRate = totalDeliveries > 0 ? (completedDeliveries / totalDeliveries) * 100 : 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">Delivery Analytics</h1>
+        <h1 className="text-xl font-bold">Delivery Analytics</h1>
         <p className="text-muted-foreground">Track delivery performance and metrics</p>
       </div>
 

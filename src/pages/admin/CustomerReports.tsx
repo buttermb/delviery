@@ -138,8 +138,8 @@ export default function CustomerReports() {
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-dvh bg-gray-50 dark:bg-zinc-900 p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <SEOHead
           title="Customer Reports | Admin"
           description="Customer analytics and insights"

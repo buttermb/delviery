@@ -10,7 +10,7 @@ export default function WorkflowAutomationPage() {
   return (
     <>
       <SEOHead title="Workflow Automation" />
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <AdvancedWorkflowBuilder />
       </div>
     </>

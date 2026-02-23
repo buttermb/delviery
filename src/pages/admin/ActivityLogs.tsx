@@ -40,9 +40,9 @@ export function ActivityLogs() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">Activity Feed</h1>
+          <h1 className="text-xl font-bold">Activity Feed</h1>
           <p className="text-muted-foreground">Track all system activities and user actions across your organization</p>
         </div>
         <EnhancedLoadingState variant="list" count={5} />
@@ -51,10 +51,10 @@ export function ActivityLogs() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Activity Feed</h1>
+          <h1 className="text-xl font-bold">Activity Feed</h1>
           <p className="text-muted-foreground">
             Track all system activities and user actions across your organization
           </p>

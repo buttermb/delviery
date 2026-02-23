@@ -86,7 +86,7 @@ export default function RiskFactorManagement() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Neighborhood Risk Management</h1>
+        <h1 className="text-xl font-bold">Neighborhood Risk Management</h1>
         <p className="text-muted-foreground mt-2">
           Manage risk levels for different NYC neighborhoods
         </p>

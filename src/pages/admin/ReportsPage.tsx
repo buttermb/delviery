@@ -164,7 +164,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+    <div className="container mx-auto p-2 sm:p-4 md:p-4 space-y-4 sm:space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
           <Button
@@ -176,7 +176,7 @@ export default function ReportsPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">📊 Reports</h1>
+          <h1 className="text-xl font-bold mb-1 sm:mb-2">Reports</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">Business intelligence and analytics</p>
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">

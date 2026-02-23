@@ -71,7 +71,7 @@ export default function AdvancedAnalytics() {
 
   if (ordersLoading || customersLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <div>
           <h1 className="text-xl font-bold">Advanced Analytics</h1>
           <p className="text-muted-foreground">Deep insights and business intelligence</p>
@@ -168,7 +168,7 @@ export default function AdvancedAnalytics() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">Advanced Analytics</h1>

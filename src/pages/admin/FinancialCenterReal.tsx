@@ -98,10 +98,10 @@ export default function FinancialCenterReal() {
     .slice(0, 3);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2"><DollarSign className="h-7 w-7" /> Financial Command Center</h1>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2"><DollarSign className="h-7 w-7" /> Financial Command Center</h1>
         <p className="text-sm text-muted-foreground mt-1">{format(now, "MMMM d, yyyy")}</p>
       </div>
 

@@ -61,9 +61,9 @@ export default function OrderAnalytics() {
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">Order Analytics</h1>
+        <h1 className="text-xl font-bold">Order Analytics</h1>
         <p className="text-muted-foreground">Insights into your order performance</p>
       </div>
 

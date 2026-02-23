@@ -432,13 +432,13 @@ export default function DeliveryManagement() {
   );
 
   return (
-    <div className="min-h-dvh bg-background p-6">
+    <div className="min-h-dvh bg-background p-4">
       <SEOHead title="Delivery Management | Admin" description="Manage deliveries and couriers" />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Delivery Management</h1>
+          <h1 className="text-xl font-bold">Delivery Management</h1>
           <p className="text-sm text-muted-foreground">Manage deliveries and assign couriers</p>
         </div>
         <div className="flex gap-2">

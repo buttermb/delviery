@@ -233,7 +233,7 @@ export default function OrderDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="space-y-6">
+            <div className="space-y-4">
                 <Card>
                     <CardContent className="py-6">
                         <div className="flex items-center justify-center">
@@ -247,7 +247,7 @@ export default function OrderDetailPage() {
 
     if (!order) {
         return (
-            <div className="space-y-6">
+            <div className="space-y-4">
                 <Card>
                     <CardContent className="py-6">
                         <div className="text-center">
@@ -332,7 +332,7 @@ export default function OrderDetailPage() {
     const canMessage = tenant?.id !== order.buyer_tenant_id;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">

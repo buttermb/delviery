@@ -107,7 +107,7 @@ export default function StrategicDashboardPage() {
 
     return (
         <motion.div
-            className="space-y-6 p-4 sm:p-6"
+            className="space-y-4 p-4 sm:p-4"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -128,7 +128,7 @@ export default function StrategicDashboardPage() {
                             Live Metrics
                         </Badge>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-bold">Strategic Dashboard</h1>
+                    <h1 className="text-xl font-bold">Strategic Dashboard</h1>
                     <p className="text-white/80 mt-1">High-level KPIs and growth metrics for {tenant?.slug || 'your business'}</p>
                 </div>
 

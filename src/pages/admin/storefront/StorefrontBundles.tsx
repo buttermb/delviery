@@ -326,7 +326,7 @@ export default function StorefrontBundles() {
 
   if (bundlesLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Skeleton className="h-10 w-64 mb-6" />
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => (
@@ -520,7 +520,7 @@ export default function StorefrontBundles() {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

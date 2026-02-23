@@ -190,10 +190,10 @@ export default function InventoryTransfers() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Inventory Transfers</h1>
+          <h1 className="text-xl font-bold">Inventory Transfers</h1>
           <p className="text-muted-foreground">Manage inventory transfers between locations</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>

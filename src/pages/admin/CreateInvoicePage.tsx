@@ -149,7 +149,7 @@ export default function CreateInvoicePage() {
     };
 
     return (
-        <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+        <div className="space-y-4 p-4 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/invoices')}>
                     <ArrowLeft className="h-4 w-4" />

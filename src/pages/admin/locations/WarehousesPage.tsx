@@ -220,10 +220,10 @@ export default function WarehousesPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Warehouses</h1>
+          <h1 className="text-xl font-bold mb-2">Warehouses</h1>
           <p className="text-muted-foreground">
             Manage warehouse locations and track inventory by location
           </p>

@@ -40,7 +40,7 @@ interface Product {
 
 function InventoryManagementSkeleton() {
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+    <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="space-y-2">
@@ -336,11 +336,11 @@ export function InventoryManagement() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+    <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2"><Warehouse className="h-6 w-6" /> Inventory Management</h1>
+          <h1 className="text-xl font-bold text-foreground flex items-center gap-2"><Warehouse className="h-6 w-6" /> Inventory Management</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">

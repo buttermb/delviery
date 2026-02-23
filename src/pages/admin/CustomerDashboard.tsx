@@ -380,7 +380,7 @@ export default function CustomerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-6 space-y-6 pb-20 sm:pb-6">
+      <div className="p-4 sm:p-4 space-y-4 pb-20 sm:pb-6">
         <div className="flex items-center justify-between">
           <div className="h-8 w-48 bg-muted animate-pulse rounded" />
           <div className="h-8 w-32 bg-muted animate-pulse rounded" />
@@ -445,11 +445,11 @@ export default function CustomerDashboard() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 pb-20 sm:pb-6">
+    <div className="p-4 sm:p-4 space-y-4 pb-20 sm:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Customer Dashboard</h1>
+          <h1 className="text-xl sm:text-xl font-bold tracking-tight">Customer Dashboard</h1>
           <p className="text-muted-foreground">Overview of your customer base and activity</p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">

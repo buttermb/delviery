@@ -243,8 +243,8 @@ export default function CustomerForm() {
   }
 
   return (
-    <div className="min-h-dvh bg-background p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-dvh bg-background p-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         <SEOHead
           title={isEdit ? 'Edit Customer' : 'Add Customer'}
           description="Customer form"

@@ -179,7 +179,7 @@ const DisposableMenuAnalytics = () => {
 
   if (menusLoading || logsLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-4 space-y-4">
         <Skeleton className="h-10 w-64" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
@@ -192,7 +192,7 @@ const DisposableMenuAnalytics = () => {
 
   if (!menu) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Card className="p-12 text-center">
           <p className="text-lg">Menu not found</p>
           <Button onClick={() => navigateToAdmin('disposable-menus')} className="mt-4">
@@ -204,7 +204,7 @@ const DisposableMenuAnalytics = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -212,7 +212,7 @@ const DisposableMenuAnalytics = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{menu.name}</h1>
+            <h1 className="text-xl font-bold">{menu.name}</h1>
             <p className="text-muted-foreground">Analytics & Monitoring</p>
           </div>
         </div>

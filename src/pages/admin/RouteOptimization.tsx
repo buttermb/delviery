@@ -37,10 +37,10 @@ export default function RouteOptimization() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Route Optimization</h1>
+          <h1 className="text-xl font-bold">Route Optimization</h1>
           <p className="text-muted-foreground">Optimize delivery routes for efficiency</p>
         </div>
         <Button onClick={() => import("sonner").then(({ toast }) => toast.info("Optimization Engine", { description: "AI route optimization coming in next update" }))}>

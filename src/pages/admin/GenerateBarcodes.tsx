@@ -332,7 +332,7 @@ export default function GenerateBarcodes() {
       {/* Header */}
       <div className="flex items-center justify-between print:hidden">
         <div>
-          <h1 className="text-3xl font-bold">Barcode & QR Code Generator</h1>
+          <h1 className="text-xl font-bold">Barcode & QR Code Generator</h1>
           <p className="text-muted-foreground">
             Generate professional barcodes and QR codes for inventory tracking
           </p>

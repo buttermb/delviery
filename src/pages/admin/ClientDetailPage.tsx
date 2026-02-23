@@ -90,7 +90,7 @@ export default function ClientDetailPage() {
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+                            <h1 className="text-xl font-bold tracking-tight flex items-center gap-3">
                                 {client.name}
                                 <Badge variant={client.status === 'active' ? 'default' : 'secondary'}>
                                     {client.status}

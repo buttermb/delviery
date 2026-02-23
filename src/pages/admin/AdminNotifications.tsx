@@ -166,7 +166,7 @@ const AdminNotifications = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto p-4 max-w-6xl">
       <div className="mb-6">
         <h1 className="text-xl font-bold mb-2">Test Notifications</h1>
         <p className="text-muted-foreground">

@@ -216,7 +216,7 @@ export function VendorManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SEOHead
         title="Vendor Management"
         description="Manage your suppliers and vendors"
@@ -224,7 +224,7 @@ export function VendorManagement() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Vendors</h1>
+          <h1 className="text-xl font-bold">Vendors</h1>
           <p className="text-muted-foreground">Manage your suppliers</p>
         </div>
 

@@ -464,14 +464,14 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   // When embedded inside SettingsHubPage, render only general settings content
   if (embedded) {
     return (
-      <div className="p-2 sm:p-6 space-y-6">
+      <div className="p-2 sm:p-4 space-y-4">
         {generalSettingsContent}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-2 sm:p-6 space-y-6">
+    <div className="container mx-auto p-2 sm:p-4 space-y-4">
       <div>
         <Button
           variant="ghost"
@@ -484,7 +484,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         </Button>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Settings</h1>
+            <h1 className="text-xl font-bold mb-2">Settings</h1>
             <p className="text-muted-foreground">Manage your account and system preferences</p>
           </div>
           <Button

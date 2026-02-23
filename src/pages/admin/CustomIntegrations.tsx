@@ -202,7 +202,7 @@ export default function CustomIntegrations() {
   // Detail view for selected integration
   if (selectedIntegration) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBackToList}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -214,7 +214,7 @@ export default function CustomIntegrations() {
           <div className="flex items-center gap-3">
             <Plug className="h-8 w-8" />
             <div>
-              <h1 className="text-3xl font-bold">{selectedIntegration.name}</h1>
+              <h1 className="text-xl font-bold">{selectedIntegration.name}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline">
                   {INTEGRATION_TYPES.find((t) => t.value === selectedIntegration.type)?.label || selectedIntegration.type}
@@ -241,10 +241,10 @@ export default function CustomIntegrations() {
 
   // List view
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Custom Integrations</h1>
+          <h1 className="text-xl font-bold">Custom Integrations</h1>
           <p className="text-muted-foreground">Connect third-party services and APIs</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>

@@ -220,7 +220,7 @@ export default function BatchesPage() {
   const totalQuantity = batches?.reduce((sum, b) => sum + (b.quantity_lbs || 0), 0) || 0;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -233,7 +233,7 @@ export default function BatchesPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">Batches & Lots</h1>
+          <h1 className="text-xl font-bold">Batches & Lots</h1>
           <p className="text-muted-foreground">
             Track inventory batches, expiration dates, and lot numbers
           </p>

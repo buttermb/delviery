@@ -90,9 +90,9 @@ export default function CustomerInsights() {
   }));
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">Customer Insights</h1>
+        <h1 className="text-xl font-bold">Customer Insights</h1>
         <p className="text-muted-foreground">
           Detailed analytics for {customerRecord?.first_name as string} {customerRecord?.last_name as string}
         </p>

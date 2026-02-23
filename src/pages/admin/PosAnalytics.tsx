@@ -141,10 +141,10 @@ export default function PosAnalytics() {
   const openShifts = shifts?.filter((s) => s.status === 'open').length || 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">POS Analytics</h1>
+          <h1 className="text-xl font-bold">POS Analytics</h1>
           <p className="text-muted-foreground">Point of sale performance metrics</p>
         </div>
         <div className="flex items-center gap-3">

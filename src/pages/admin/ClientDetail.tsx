@@ -187,7 +187,7 @@ export default function ClientDetail() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -195,7 +195,7 @@ export default function ClientDetail() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{displayClient.business_name}</h1>
+            <h1 className="text-xl font-bold text-foreground">{displayClient.business_name}</h1>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
               <CustomerRiskBadge

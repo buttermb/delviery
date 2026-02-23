@@ -91,7 +91,7 @@ export default function CRMSettingsPage() {
     }
 
     return (
-        <div className="space-y-6 p-6 pb-16 max-w-4xl mx-auto">
+        <div className="space-y-4 p-4 pb-16 max-w-4xl mx-auto">
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">CRM Settings</h1>
                 <p className="text-muted-foreground">

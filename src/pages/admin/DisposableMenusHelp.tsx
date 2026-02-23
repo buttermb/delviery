@@ -21,7 +21,7 @@ const DisposableMenusHelp = () => {
   const { navigateToAdmin } = useTenantNavigation();
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="container mx-auto p-4 max-w-7xl">
       <Button
         variant="ghost"
         onClick={() => navigateToAdmin('disposable-menus')}

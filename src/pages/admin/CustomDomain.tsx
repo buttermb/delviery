@@ -95,9 +95,9 @@ export default function CustomDomain() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">Custom Domain</h1>
+          <h1 className="text-xl font-bold">Custom Domain</h1>
           <p className="text-muted-foreground">Configure custom domains for your platform</p>
         </div>
         <EnhancedLoadingState variant="card" count={2} />
@@ -106,9 +106,9 @@ export default function CustomDomain() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-3xl font-bold">Custom Domain</h1>
+        <h1 className="text-xl font-bold">Custom Domain</h1>
         <p className="text-muted-foreground">Configure custom domains for your platform</p>
       </div>
 

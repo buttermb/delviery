@@ -92,10 +92,10 @@ export default function FinancialCenter() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">💰 Financial Command Center</h1>
+        <h1 className="text-xl font-bold text-foreground">Financial Command Center</h1>
         <p className="text-sm text-muted-foreground mt-1">November 30, 2024</p>
       </div>
 

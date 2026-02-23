@@ -276,7 +276,7 @@ export default function StorefrontCoupons() {
 
   if (!store) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Please create a store first.</p>
@@ -296,7 +296,7 @@ export default function StorefrontCoupons() {
   const totalUses = coupons.reduce((sum, c) => sum + (c.uses_count || 0), 0);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

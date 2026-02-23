@@ -13,7 +13,7 @@ export default function DeveloperTools() {
   return (
     <>
       <SEOHead title="Developer Tools - Admin" />
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-4 space-y-4">
         <PageHeader
           title="Developer Tools"
           description="Utilities for debugging, token inspection, and API development"

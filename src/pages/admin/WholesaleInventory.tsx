@@ -221,11 +221,11 @@ export default function WholesaleInventory() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">📦 Inventory Management</h1>
+          <h1 className="text-xl font-bold text-foreground">Inventory Management</h1>
           <p className="text-sm text-muted-foreground mt-1">Wholesale scale inventory tracking</p>
         </div>
         <div className="flex gap-2">

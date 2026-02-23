@@ -33,7 +33,7 @@ export function CreateOrderPage() {
     // Show error if context not available
     if (!isContextReady || contextError) {
         return (
-            <div className="space-y-6 p-6 max-w-5xl mx-auto">
+            <div className="space-y-4 p-4 max-w-5xl mx-auto">
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
@@ -100,7 +100,7 @@ export function CreateOrderPage() {
     };
 
     return (
-        <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+        <div className="space-y-4 p-4 pb-16 max-w-5xl mx-auto">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('orders')}>
                     <ArrowLeft className="h-4 w-4" />

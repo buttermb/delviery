@@ -114,7 +114,7 @@ export function SessionsPage() {
   const otherSessionsCount = sessions.filter((s) => !s.isCurrent).length;
 
   return (
-    <div className="space-y-6 p-6 pb-16 max-w-4xl mx-auto">
+    <div className="space-y-4 p-4 pb-16 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">

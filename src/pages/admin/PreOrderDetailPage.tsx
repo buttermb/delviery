@@ -82,7 +82,7 @@ export default function PreOrderDetailPage() {
 
     return (
         <SwipeBackWrapper onBack={() => navigateToAdmin("crm/pre-orders")}>
-            <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+            <div className="space-y-4 p-4 pb-16 max-w-5xl mx-auto">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">

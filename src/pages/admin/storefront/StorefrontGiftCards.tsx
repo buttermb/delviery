@@ -73,10 +73,10 @@ export default function StorefrontGiftCards() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Gift Cards</h2>
+          <h2 className="text-xl font-bold tracking-tight">Gift Cards</h2>
           <p className="text-muted-foreground">
             Issue and manage gift cards for your customers.
           </p>

@@ -64,12 +64,12 @@ export default function AppointmentSchedulerPage() {
   });
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+    <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-            📅 Appointment Scheduling
+          <h1 className="text-xl font-bold text-foreground">
+            Appointment Scheduling
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Manage customer appointments, consultations, and deliveries

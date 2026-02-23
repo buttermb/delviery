@@ -228,10 +228,10 @@ export default function Couriers() {
       />
 
       <PullToRefresh onRefresh={async () => { await refetch(); }}>
-        <div className="w-full max-w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-4 md:space-y-6 overflow-x-hidden">
+        <div className="w-full max-w-full px-3 sm:px-4 md:px-4 py-3 sm:py-4 md:py-4 space-y-4 md:space-y-4 overflow-x-hidden">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Couriers Management</h1>
+              <h1 className="text-xl font-bold">Couriers Management</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {availableForAssignment} courier{availableForAssignment !== 1 ? 's' : ''} available for assignment
               </p>

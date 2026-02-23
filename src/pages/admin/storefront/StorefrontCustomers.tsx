@@ -214,7 +214,7 @@ export default function StorefrontCustomers() {
 
   if (!store) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Please create a store first.</p>
@@ -231,7 +231,7 @@ export default function StorefrontCustomers() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

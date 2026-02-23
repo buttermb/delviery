@@ -209,7 +209,7 @@ export default function ImagesPage() {
   );
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -222,7 +222,7 @@ export default function ImagesPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">Images & Media</h1>
+          <h1 className="text-xl font-bold">Images & Media</h1>
           <p className="text-muted-foreground">
             Manage product images and media files
           </p>

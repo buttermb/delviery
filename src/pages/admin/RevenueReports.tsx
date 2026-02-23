@@ -163,11 +163,11 @@ export default function RevenueReports() {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-4 space-y-4 max-w-[1600px] mx-auto">
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+          <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground">Real-time revenue and operational insights</p>
         </div>
         <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg">

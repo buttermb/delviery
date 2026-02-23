@@ -352,7 +352,7 @@ export default function StorefrontSettings() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl space-y-6">
+      <div className="container mx-auto p-4 max-w-7xl space-y-4">
         {/* Header skeleton */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="space-y-2">
@@ -437,7 +437,7 @@ export default function StorefrontSettings() {
 
   if (!store) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4">
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">No store found. Please create a store first.</p>
@@ -456,7 +456,7 @@ export default function StorefrontSettings() {
   const storeUrl = `${window.location.origin}/shop/${formData.slug || store.slug}`;
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl space-y-6">
+    <div className="container mx-auto p-4 max-w-7xl space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

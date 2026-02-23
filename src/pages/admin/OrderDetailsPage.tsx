@@ -602,7 +602,7 @@ export function OrderDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6 max-w-5xl mx-auto">
+      <div className="space-y-4 p-4 max-w-5xl mx-auto">
         {/* Header skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -738,7 +738,7 @@ export function OrderDetailsPage() {
 
   if (error || !order) {
     return (
-      <div className="space-y-6 p-6 max-w-5xl mx-auto">
+      <div className="space-y-4 p-4 max-w-5xl mx-auto">
         <Card>
           <CardContent className="py-16 text-center">
             <XCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -777,7 +777,7 @@ export function OrderDetailsPage() {
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('orders')}>
-      <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+      <div className="space-y-4 p-4 pb-16 max-w-5xl mx-auto">
         {/* Print-only business header — hidden on screen, shown on print */}
         <div className="hidden print:block print-business-header border-b-2 border-black pb-4 mb-6">
           <div className="flex justify-between items-start">

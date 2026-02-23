@@ -104,7 +104,7 @@ export default function RealtimeDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         <EnhancedLoadingState variant="card" count={4} />
       </div>
     );
@@ -146,10 +146,10 @@ export default function RealtimeDashboard() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 pb-20">
+    <div className="p-4 sm:p-4 space-y-4 pb-20">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-xl sm:text-xl font-bold flex items-center gap-2">
             <Activity className="h-6 w-6 text-green-500 animate-pulse" />
             Realtime Dashboard
           </h1>

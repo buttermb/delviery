@@ -296,7 +296,7 @@ export default function OrdersPage() {
 
     if (!profile) {
         return (
-            <div className="space-y-6">
+            <div className="space-y-4">
                 <Card className="border-warning bg-warning/5">
                     <CardContent className="py-6">
                         <div className="text-center">
@@ -316,7 +316,7 @@ export default function OrdersPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <PageHeader
                 title="Marketplace Orders"
                 description="Manage orders from your storefront"

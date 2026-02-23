@@ -450,7 +450,7 @@ export default function DeliveryZones() {
 
   if (!isReady) {
     return (
-      <div className="w-full max-w-full px-4 py-6 space-y-6">
+      <div className="w-full max-w-full px-4 py-4 space-y-4">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-[500px] w-full" />
       </div>
@@ -462,11 +462,11 @@ export default function DeliveryZones() {
       <SEOHead title="Delivery Zones | Admin" description="Manage delivery zones" />
 
       <PullToRefresh onRefresh={async () => { await refetch(); }}>
-        <div className="w-full max-w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-4 md:space-y-6">
+        <div className="w-full max-w-full px-3 sm:px-4 md:px-4 py-3 sm:py-4 md:py-4 space-y-4 md:space-y-4">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+              <h1 className="text-xl font-bold flex items-center gap-2">
                 <Map className="h-7 w-7" />
                 Delivery Zones
                 <FieldHelp tooltip={fieldHelpTexts.deliveryZonePolygon.tooltip} size="md" />

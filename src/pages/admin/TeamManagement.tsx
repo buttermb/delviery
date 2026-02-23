@@ -493,7 +493,7 @@ export default function TeamManagement() {
 
   if (authLoading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-4 p-4">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-6 w-72" />
         <Skeleton className="h-64 w-full" />
@@ -521,12 +521,12 @@ export default function TeamManagement() {
   const isLimitReached = !isEnterprise && activeUserCount >= (userLimit as number);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SEOHead title="Team Management" description="Manage your team members and permissions" />
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Team</h1>
+          <h1 className="text-xl font-bold">Team</h1>
           <p className="text-muted-foreground">
             Manage your team members, roles, and permissions
             {!isEnterprise && (

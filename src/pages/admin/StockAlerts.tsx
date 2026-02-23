@@ -238,7 +238,7 @@ export function StockAlerts() {
   // Loading Skeleton
   if (isLoading) {
     return (
-      <div className="p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+      <div className="p-2 sm:p-4 md:p-4 space-y-4 sm:space-y-4">
         <div>
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
@@ -255,10 +255,10 @@ export function StockAlerts() {
   }
 
   return (
-    <div className="p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+    <div className="p-2 sm:p-4 md:p-4 space-y-4 sm:space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Stock Alerts</h1>
+          <h1 className="text-xl font-bold">Stock Alerts</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Monitor low stock levels and inventory warnings</p>
         </div>
         <div className="flex items-center gap-2">

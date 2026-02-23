@@ -397,7 +397,7 @@ export default function CustomerInvoices() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SEOHead
         title="Customer Invoices"
         description="Manage customer invoices and payments"

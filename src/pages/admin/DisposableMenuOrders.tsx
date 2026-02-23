@@ -107,7 +107,7 @@ const DisposableMenuOrders = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -120,7 +120,7 @@ const DisposableMenuOrders = () => {
             Back to Menus
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Order Management</h1>
+            <h1 className="text-xl font-bold">Order Management</h1>
             <LastUpdated 
               date={lastUpdated} 
               onRefresh={handleRefresh} 

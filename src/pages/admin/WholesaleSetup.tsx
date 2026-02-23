@@ -7,11 +7,11 @@ export default function WholesaleSetup() {
   const { navigateToAdmin } = useTenantNavigation();
 
   return (
-    <div className="min-h-dvh bg-background flex items-center justify-center p-6">
+    <div className="min-h-dvh bg-background flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full p-8 shadow-xl">
         <div className="text-center space-y-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">💎 Wholesale CRM Setup</h1>
+            <h1 className="text-xl font-bold mb-2">Wholesale CRM Setup</h1>
             <p className="text-muted-foreground">
               Set up your wholesale operations by adding your real business data
             </p>

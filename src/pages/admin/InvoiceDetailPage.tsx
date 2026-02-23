@@ -91,7 +91,7 @@ export default function InvoiceDetailPage() {
 
     if (error || !invoice) {
         return (
-            <div className="space-y-6 p-6 max-w-5xl mx-auto">
+            <div className="space-y-4 p-4 max-w-5xl mx-auto">
                 <Card>
                     <CardContent className="py-16 text-center">
                         <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -195,7 +195,7 @@ export default function InvoiceDetailPage() {
 
     return (
         <SwipeBackWrapper onBack={() => navigateToAdmin("crm/invoices")}>
-            <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto print:p-0 print:max-w-none print:space-y-0">
+            <div className="space-y-4 p-4 pb-16 max-w-5xl mx-auto print:p-0 print:max-w-none print:space-y-0">
                 {/* Header — hidden on print */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
                     <div className="flex items-center gap-4">

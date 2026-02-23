@@ -133,7 +133,7 @@ export default function LocationInventoryPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4">
       <SEOHead
         title={selectedLocation ? `${selectedLocation.name} Inventory` : 'Location Inventory'}
         description="View and manage inventory by location"
@@ -142,7 +142,7 @@ export default function LocationInventoryPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Location Inventory</h1>
+          <h1 className="text-xl font-bold">Location Inventory</h1>
           <p className="text-muted-foreground">
             View inventory levels across your locations
           </p>
