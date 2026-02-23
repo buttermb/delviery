@@ -111,6 +111,7 @@ import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { getStatusColor, getStatusVariant } from '@/lib/utils/statusColors';
+import { isValidUUID } from '@/lib/utils/uuidValidation';
 
 // Status steps for the timeline
 const STATUS_STEPS = [
@@ -204,7 +205,8 @@ interface OrderDetails {
 }
 
 export function OrderDetailsPage() {
-  const { orderId } = useParams<{ orderId: string }>();
+  const { orderId: rawOrderId } = useParams<{ orderId: string }>();
+  const orderId = rawOrderId && isValidUUID(rawOrderId) ? rawOrderId : undefined;
   const { tenant, tenantSlug } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();
