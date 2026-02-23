@@ -26,6 +26,7 @@ import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderBu
 import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
 import { OrderNotesSection } from '@/components/admin/orders/OrderNotesSection';
 import { OrderTimeline } from '@/components/admin/orders/OrderTimeline';
+import { OrderAuditLog } from '@/components/admin/orders/OrderAuditLog';
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
@@ -1592,6 +1593,11 @@ export function OrderDetailsPage() {
             {/* Related Entities Panel — hide on print */}
             <div className="print:hidden">
               <OrderRelatedEntitiesPanel orderId={order.id} />
+            </div>
+
+            {/* Audit Log — hide on print */}
+            <div className="print:hidden">
+              <OrderAuditLog orderId={order.id} maxHeight="400px" />
             </div>
           </div>
         </div>
