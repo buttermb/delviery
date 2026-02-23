@@ -86,6 +86,50 @@ function ActivityWidgetFallback() {
   );
 }
 
+// Full-page loading skeleton for initial dashboard load
+function DashboardPageSkeleton() {
+  return (
+    <div className="p-4 sm:p-6 space-y-6">
+      <Skeleton className="h-5 w-48" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-36" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+        <Skeleton className="h-9 w-64" />
+      </div>
+      {/* Revenue section skeleton */}
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-28" />
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)}
+        </div>
+      </div>
+      {/* Orders section skeleton */}
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-20" />
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
+        </div>
+      </div>
+      {/* Customers section skeleton */}
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-28" />
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)}
+        </div>
+      </div>
+      {/* Inventory section skeleton */}
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-24" />
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Fallback component for AlertsWidget while loading
 function AlertsWidgetFallback() {
   return (
@@ -139,17 +183,8 @@ export function DashboardPage() {
     refetch();
   }, [refetch]);
 
-  if (!tenant) {
-    return (
-      <div className="p-4 sm:p-6 space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <KPICardSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    );
+  if (!tenant || (isLoading && !stats)) {
+    return <DashboardPageSkeleton />;
   }
 
   const lastUpdated = dataUpdatedAt
