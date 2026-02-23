@@ -38,6 +38,16 @@ import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
+interface Expense {
+  id: string;
+  description: string;
+  amount: string | number;
+  category: string;
+  notes: string | null;
+  created_at: string;
+  tenant_id: string;
+}
+
 const EXPENSE_CATEGORIES = [
   'Supplies',
   'Utilities',
@@ -189,21 +199,21 @@ export default function ExpenseTracking() {
   };
 
   // Filter expenses
-  const filteredExpenses = (expenses || []).filter((e: any) =>
+  const filteredExpenses = (expenses || []).filter((e: Expense) =>
     categoryFilter === 'all' || e.category === categoryFilter
   );
 
   // Calculate metrics
-  const totalExpenses = filteredExpenses.reduce((sum: number, e: any) => sum + parseFloat(e.amount || 0), 0);
+  const totalExpenses = filteredExpenses.reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount || 0)), 0);
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'short' });
   const thisMonthExpenses = filteredExpenses
-    .filter((e: any) => new Date(e.created_at).toLocaleDateString('en-US', { month: 'short' }) === currentMonth)
-    .reduce((sum: number, e: any) => sum + parseFloat(e.amount || 0), 0);
+    .filter((e: Expense) => new Date(e.created_at).toLocaleDateString('en-US', { month: 'short' }) === currentMonth)
+    .reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount || 0)), 0);
 
   // Category breakdown for pie chart
-  const categoryBreakdown = (expenses || []).reduce((acc: Record<string, number>, e: any) => {
+  const categoryBreakdown = (expenses || []).reduce((acc: Record<string, number>, e: Expense) => {
     const category = e.category || 'Uncategorized';
-    acc[category] = (acc[category] || 0) + parseFloat(e.amount || 0);
+    acc[category] = (acc[category] || 0) + parseFloat(String(e.amount || 0));
     return acc;
   }, {});
 
@@ -212,7 +222,7 @@ export default function ExpenseTracking() {
     .sort((a, b) => b.value - a.value);
 
   // Get unique categories from data
-  const uniqueCategories = [...new Set((expenses || []).map((e: any) => e.category).filter(Boolean))];
+  const uniqueCategories = [...new Set((expenses || []).map((e: Expense) => e.category).filter(Boolean))];
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" message="Loading expenses..." />;
@@ -342,7 +352,7 @@ export default function ExpenseTracking() {
           <CardContent>
             {filteredExpenses.length > 0 ? (
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                {filteredExpenses.slice(0, 20).map((expense: any) => (
+                {filteredExpenses.slice(0, 20).map((expense: Expense) => (
                   <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="min-w-0 flex-1">
                       <TruncatedText text={expense.description || 'No description'} className="font-medium" as="div" />

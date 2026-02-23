@@ -10,18 +10,27 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Headphones, Plus, MessageCircle, Clock, CheckCircle, Trash2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 
+interface SupportTicket {
+  id: string;
+  subject: string;
+  description: string;
+  priority: string;
+  status: string;
+  created_at: string;
+  tenant_id: string;
+}
+
 export default function PrioritySupport() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     subject: '',
@@ -56,7 +65,7 @@ export default function PrioritySupport() {
   });
 
   const createTicketMutation = useMutation({
-    mutationFn: async (ticket: any) => {
+    mutationFn: async (ticket: Omit<SupportTicket, 'id' | 'created_at' | 'tenant_id' | 'status'>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
@@ -80,7 +89,7 @@ export default function PrioritySupport() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support-tickets', tenantId] });
-      toast({ title: 'Ticket created', description: 'Support ticket has been created with priority support.' });
+      toast.success("Support ticket has been created with priority support.");
       setFormData({ subject: '', description: '', priority: 'high' });
       setIsDialogOpen(false);
     },
@@ -110,7 +119,7 @@ export default function PrioritySupport() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support-tickets', tenantId] });
-      toast({ title: 'Ticket deleted', description: 'Support ticket has been removed.' });
+      toast.success("Support ticket has been removed.");
       setDeleteDialogOpen(false);
       setTicketToDelete(null);
     },
@@ -143,8 +152,8 @@ export default function PrioritySupport() {
     return <EnhancedLoadingState variant="table" message="Loading support tickets..." />;
   }
 
-  const openTickets = tickets?.filter((t: any) => t.status === 'open').length || 0;
-  const resolvedTickets = tickets?.filter((t: any) => t.status === 'resolved').length || 0;
+  const openTickets = tickets?.filter((t: SupportTicket) => t.status === 'open').length || 0;
+  const resolvedTickets = tickets?.filter((t: SupportTicket) => t.status === 'resolved').length || 0;
 
   return (
     <div className="p-4 space-y-4">
@@ -199,7 +208,7 @@ export default function PrioritySupport() {
         <CardContent>
           {tickets && tickets.length > 0 ? (
             <div className="space-y-4">
-              {tickets.map((ticket: any) => (
+              {tickets.map((ticket: SupportTicket) => (
                 <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">

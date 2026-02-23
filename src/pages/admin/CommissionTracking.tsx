@@ -17,6 +17,22 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
+interface CommissionRecord {
+  id: string;
+  amount: number;
+  order_id: string | null;
+  created_at: string;
+  status: string;
+  tenant_id?: string;
+}
+
+interface OrderRecord {
+  id: string;
+  total: string | number;
+  created_at: string;
+  tenant_id: string;
+}
+
 export default function CommissionTracking() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -47,9 +63,9 @@ export default function CommissionTracking() {
           if (orderError) throw orderError;
 
           // Calculate commissions from orders (2% default)
-          return (orders || []).map((order: any) => ({
+          return (orders || []).map((order: OrderRecord) => ({
             id: order.id,
-            amount: parseFloat(order.total || 0) * 0.02,
+            amount: parseFloat(String(order.total || 0)) * 0.02,
             order_id: order.id,
             created_at: order.created_at,
             status: 'pending'
@@ -103,7 +119,7 @@ export default function CommissionTracking() {
     try {
       const csvRows = [
         ['Order ID', 'Amount', 'Status', 'Date'].join(','),
-        ...commissions.map((c: any) => [
+        ...commissions.map((c: CommissionRecord) => [
           c.order_id || 'N/A',
           formatCurrency(c.amount || 0),
           c.status || 'pending',
@@ -135,9 +151,9 @@ export default function CommissionTracking() {
     );
   }
 
-  const totalCommissions = commissions?.reduce((sum: number, c: any) => sum + (c.amount || 0), 0) || 0;
-  const pendingCommissions = commissions?.filter((c: any) => c.status !== 'paid').reduce((sum: number, c: any) => sum + (c.amount || 0), 0) || 0;
-  const paidCommissions = commissions?.filter((c: any) => c.status === 'paid').reduce((sum: number, c: any) => sum + (c.amount || 0), 0) || 0;
+  const totalCommissions = commissions?.reduce((sum: number, c: CommissionRecord) => sum + (c.amount || 0), 0) || 0;
+  const pendingCommissions = commissions?.filter((c: CommissionRecord) => c.status !== 'paid').reduce((sum: number, c: CommissionRecord) => sum + (c.amount || 0), 0) || 0;
+  const paidCommissions = commissions?.filter((c: CommissionRecord) => c.status === 'paid').reduce((sum: number, c: CommissionRecord) => sum + (c.amount || 0), 0) || 0;
   const commissionCount = commissions?.length || 0;
 
   return (
@@ -222,7 +238,7 @@ export default function CommissionTracking() {
         <CardContent>
           {commissions && commissions.length > 0 ? (
             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-              {commissions.slice(0, 20).map((commission: any) => (
+              {commissions.slice(0, 20).map((commission: CommissionRecord) => (
                 <div
                   key={commission.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
