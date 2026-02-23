@@ -31,8 +31,8 @@ export default function DataExport() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('data_exports' as any)
+        const { data, error } = await (supabase as any)
+          .from('data_exports')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
