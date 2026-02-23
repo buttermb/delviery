@@ -9,35 +9,52 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { queryKeys } from '@/lib/queryKeys';
+
+interface MarketplacePayout {
+    id: string;
+    status: string;
+    amount: number;
+    created_at: string;
+    reference_id?: string;
+    method?: string;
+}
+
+interface MarketplaceOrder {
+    total_amount: number;
+    platform_fee: number;
+    status: string;
+    payout_id: string | null;
+}
 
 export default function VendorPayoutsPage() {
     const { tenant } = useTenantAdminAuth();
 
     // Fetch Payouts History
     const { data: payouts = [], isLoading: isLoadingPayouts } = useQuery({
-        queryKey: ['marketplace-payouts', tenant?.id],
+        queryKey: queryKeys.marketplace.payouts.list(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await supabase
-                .from('marketplace_payouts' as any)
+            const { data, error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown })
+                .from('marketplace_payouts')
                 .select('*')
                 .eq('seller_tenant_id', tenant.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data;
+            return (data ?? []) as MarketplacePayout[];
         },
         enabled: !!tenant?.id,
     });
 
     // Calculate Available Balance (Orders delivered but not yet paid out)
     const { data: balanceData, isLoading: isLoadingBalance } = useQuery({
-        queryKey: ['marketplace-balance', tenant?.id],
+        queryKey: queryKeys.marketplace.balance(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return { pending: 0, available: 0 };
 
             // Orders that are complete but not paid out
-            const { data: orders, error } = await (supabase as any)
+            const { data: orders, error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown })
                 .from('marketplace_orders')
                 .select('total_amount, platform_fee, status, payout_id')
                 .eq('seller_tenant_id', tenant.id)
@@ -50,7 +67,7 @@ export default function VendorPayoutsPage() {
             let pending = 0;
             let available = 0;
 
-            orders?.forEach(order => {
+            (orders as MarketplaceOrder[] | null)?.forEach((order: MarketplaceOrder) => {
                 const netAmount = (order.total_amount || 0) - (order.platform_fee || 0);
                 if (order.status === 'delivered') {
                     available += netAmount;
@@ -123,7 +140,7 @@ export default function VendorPayoutsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {formatCurrency(payouts.filter((p: any) => p.status === 'completed').reduce((acc: number, curr: any) => acc + curr.amount, 0))}
+                            {formatCurrency(payouts.filter((p: MarketplacePayout) => p.status === 'completed').reduce((acc: number, curr: MarketplacePayout) => acc + curr.amount, 0))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Lifetime earnings paid out
@@ -158,7 +175,7 @@ export default function VendorPayoutsPage() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        payouts.map((payout: any) => (
+                                        payouts.map((payout: MarketplacePayout) => (
                                             <TableRow key={payout.id}>
                                                 <TableCell>{formatSmartDate(payout.created_at)}</TableCell>
                                                 <TableCell className="font-mono text-xs">{payout.reference_id || '-'}</TableCell>

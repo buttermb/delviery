@@ -467,6 +467,14 @@ export const queryKeys = {
         [...queryKeys.marketplace.sales.lists(), { tenantId, ...filters }] as const,
       detail: (id: string) => [...queryKeys.marketplace.sales.all, id] as const,
     },
+    payouts: {
+      all: ['marketplace-payouts'] as const,
+      lists: () => [...queryKeys.marketplace.payouts.all, 'list'] as const,
+      list: (tenantId?: string) =>
+        [...queryKeys.marketplace.payouts.lists(), { tenantId }] as const,
+    },
+    balance: (tenantId?: string) =>
+      [...queryKeys.marketplace.all, 'balance', tenantId] as const,
   },
 
   // Appointments
