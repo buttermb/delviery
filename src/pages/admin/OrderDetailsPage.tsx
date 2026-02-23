@@ -34,6 +34,7 @@ import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
 import { OrderPrintDialog } from '@/components/admin/orders/OrderPrintDialog';
+import { OrderExportButton } from '@/components/admin/orders/OrderExportButton';
 import { DeliveryExceptions } from '@/components/admin/delivery';
 import { useOrderInvoiceSave } from '@/components/admin/orders/OrderInvoiceGenerator';
 import {
@@ -687,6 +688,33 @@ export function OrderDetailsPage() {
               <Printer className="w-4 h-4 mr-1" />
               Print
             </Button>
+
+            <OrderExportButton
+              orders={[{
+                id: order.id,
+                order_number: order.order_number,
+                status: order.status,
+                total_amount: order.total_amount,
+                created_at: order.created_at,
+                delivery_method: order.delivery_method || undefined,
+                payment_status: order.payment_status,
+                order_source: order.order_source,
+                customer_name: customerName,
+                customer_email: customerEmail || undefined,
+                customer_phone: customerPhone || undefined,
+                order_items: (order.order_items || []).map(item => ({
+                  id: item.id,
+                  product_id: item.product_id,
+                  product_name: item.product_name,
+                  quantity: item.quantity,
+                  unit_price: item.unit_price,
+                })),
+              }]}
+              filenamePrefix={`order-${order.order_number}`}
+              variant="outline"
+              size="sm"
+              disabled={updateStatusMutation.isPending}
+            />
 
             {order.tracking_token && (
               <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl} disabled={updateStatusMutation.isPending}>
