@@ -672,7 +672,10 @@ export default function LoyaltyProgramPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
-            <Button onClick={() => updateConfigMutation.mutate(configForm)}>Save Changes</Button>
+            <Button disabled={updateConfigMutation.isPending} onClick={() => updateConfigMutation.mutate(configForm)}>
+              {updateConfigMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
