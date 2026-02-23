@@ -4,7 +4,7 @@
  */
 
 import { useRef, useEffect, useCallback, useState } from 'react';
-import { hapticLight, hapticMedium } from '@/lib/haptics';
+import { haptics as hapticFeedback } from '@/utils/haptics';
 
 export interface SwipeDirection {
   direction: 'left' | 'right' | 'up' | 'down' | null;
@@ -78,7 +78,7 @@ export function useSwipe(
       }
 
       if (direction) {
-        if (haptics) hapticLight();
+        if (haptics) hapticFeedback.light();
         onSwipe({ direction, distance, velocity });
       }
     };
@@ -176,7 +176,7 @@ export function usePullToRefresh(
         // Haptic feedback at threshold
         if (distance >= threshold && !triggered.current) {
           triggered.current = true;
-          if (haptics) hapticMedium();
+          if (haptics) hapticFeedback.medium();
         } else if (distance < threshold && triggered.current) {
           triggered.current = false;
         }
@@ -242,7 +242,7 @@ export function useLongPress(
   const start = useCallback(() => {
     setIsPressed(true);
     timeoutRef.current = setTimeout(() => {
-      if (haptics) hapticMedium();
+      if (haptics) hapticFeedback.medium();
       onLongPress();
     }, duration);
   }, [duration, haptics, onLongPress]);
