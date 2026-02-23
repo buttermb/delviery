@@ -24,6 +24,7 @@ import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDelivery
 import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
 import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
 import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
+import { OrderNotesSection } from '@/components/admin/orders/OrderNotesSection';
 import { OrderTimeline } from '@/components/admin/orders/OrderTimeline';
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
@@ -1496,20 +1497,22 @@ export function OrderDetailsPage() {
               <OrderTimeline orderId={order.id} maxHeight="350px" />
             </div>
 
-            {/* Notes */}
-            {order.notes && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Notes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
-                </CardContent>
-              </Card>
-            )}
+            {/* Order Notes Section (Internal / Customer tabs) — hide on print */}
+            <div className="print:hidden">
+              <OrderNotesSection
+                orderId={order.id}
+                internalNotes={order.notes}
+                customerNotes={order.delivery_notes}
+                tableName={'unified_orders' as 'marketplace_orders'}
+                internalNotesField="notes"
+                customerNotesField="delivery_notes"
+                additionalFilter={{ field: 'tenant_id', value: tenant?.id || '' }}
+                queryKeysToInvalidate={[
+                  queryKeys.orders.detail(tenant?.id || '', orderId || ''),
+                ]}
+                readOnly={isCancelled}
+              />
+            </div>
 
             {/* Internal Threaded Notes with @mentions — hide on print */}
             <div className="print:hidden">
