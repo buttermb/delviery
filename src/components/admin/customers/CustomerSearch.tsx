@@ -36,7 +36,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
-import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 // ============================================================================
 // Types
@@ -305,8 +305,8 @@ export function CustomerSearch({
         return [];
       }
 
-      const escaped = escapePostgresLike(debouncedQuery);
-      const searchTerm = `%${escaped}%`;
+      const sanitized = sanitizeSearchInput(debouncedQuery);
+      const searchTerm = `%${sanitized}%`;
 
       const { data, error: queryError } = await (supabase as any)
         .from('customers')
