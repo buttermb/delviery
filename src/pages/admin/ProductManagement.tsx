@@ -139,6 +139,9 @@ export default function ProductManagement() {
   const {
     items: products,
     optimisticIds,
+    addOptimistic,
+    updateOptimistic,
+    deleteOptimistic,
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
 
@@ -631,7 +634,7 @@ export default function ProductManagement() {
     }
     setIsDeleting(true);
     try {
-      // Check if product is used in any orders
+      // Check if product is used in any orders (must happen before optimistic delete)
       const { count: orderItemCount } = await supabase
         .from('order_items')
         .select('*', { count: 'exact', head: true })
@@ -654,22 +657,31 @@ export default function ProductManagement() {
       }
 
       const deletedCategory = productToDelete.category;
-      const { error } = await supabase.from('products').delete().eq('id', productToDelete.id).eq('tenant_id', tenant.id);
-      if (error) throw error;
+      const tenantId = tenant.id;
 
-      setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
-      toast.success("Product deleted");
-
-      // Invalidate all product caches so storefront reflects deletion instantly
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId: productToDelete.id,
-        category: deletedCategory || undefined,
-      });
-
+      // Optimistic delete: remove from list immediately, sync in background
       setDeleteDialogOpen(false);
       setProductToDelete(null);
+
+      await deleteOptimistic(
+        productToDelete.id,
+        async () => {
+          const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', productToDelete.id)
+            .eq('tenant_id', tenantId);
+          if (error) throw error;
+
+          // Invalidate all product caches so storefront reflects deletion
+          invalidateProductCaches({
+            tenantId,
+            storeId: store?.id || undefined,
+            productId: productToDelete.id,
+            category: deletedCategory || undefined,
+          });
+        }
+      );
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to delete product');
     } finally {
@@ -860,7 +872,7 @@ export default function ProductManagement() {
     }
   };
 
-  // Inline quick edit handler
+  // Inline quick edit handler — uses optimistic update for instant UI feedback
   const handleInlineUpdate = async (productId: string, field: keyof Product, value: string) => {
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -892,53 +904,53 @@ export default function ProductManagement() {
       updateValue = numValue !== null ? Math.floor(numValue) : null;
     }
 
-    try {
-      const { error } = await supabase
-        .from('products')
-        .update({ [field]: updateValue } as Record<string, unknown>)
-        .eq('id', productId)
-        .eq('tenant_id', tenant.id);
+    // Optimistic update: show change immediately, sync in background
+    await updateOptimistic(
+      productId,
+      { [field]: updateValue } as Partial<Product>,
+      async () => {
+        const { data: updated, error } = await supabase
+          .from('products')
+          .update({ [field]: updateValue } as Record<string, unknown>)
+          .eq('id', productId)
+          .eq('tenant_id', tenant.id)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setProducts((prev) =>
-        prev.map((p) => (p.id === productId ? { ...p, [field]: updateValue } : p))
-      );
-      toast.success('Product updated successfully');
+        // Warn if price changed and product is on active menus (non-blocking)
+        if (field === 'wholesale_price' || field === 'retail_price' || field === 'cost_per_unit') {
+          try {
+            const now = new Date().toISOString();
+            const { count } = await supabase
+              .from('disposable_menu_products')
+              .select('menu_id, disposable_menus!inner(id)', { count: 'exact', head: true })
+              .eq('product_id', productId)
+              .eq('disposable_menus.status', 'active')
+              .is('disposable_menus.burned_at', null)
+              .or(`never_expires.eq.true,expiration_date.gt.${now}`, { referencedTable: 'disposable_menus' });
 
-      // Warn if price changed and product is on active menus
-      if (field === 'wholesale_price' || field === 'retail_price' || field === 'cost_per_unit') {
-        try {
-          const now = new Date().toISOString();
-          const { count } = await supabase
-            .from('disposable_menu_products')
-            .select('menu_id, disposable_menus!inner(id)', { count: 'exact', head: true })
-            .eq('product_id', productId)
-            .eq('disposable_menus.status', 'active')
-            .is('disposable_menus.burned_at', null)
-            .or(`never_expires.eq.true,expiration_date.gt.${now}`, { referencedTable: 'disposable_menus' });
-
-          if (count && count > 0) {
-            toast.warning(
-              `This product is on ${count} active menu${count > 1 ? 's' : ''}. Menu prices won't update automatically.`
-            );
+            if (count && count > 0) {
+              toast.warning(
+                `This product is on ${count} active menu${count > 1 ? 's' : ''}. Menu prices won't update automatically.`
+              );
+            }
+          } catch (menuCheckError) {
+            logger.warn('Failed to check active menus for price change warning', { error: menuCheckError });
           }
-        } catch (menuCheckError) {
-          logger.warn('Failed to check active menus for price change warning', { error: menuCheckError });
         }
-      }
 
-      // Invalidate storefront caches for instant sync
-      invalidateProductCaches({
-        tenantId: tenant.id,
-        storeId: store?.id || undefined,
-        productId,
-      });
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Update failed';
-      toast.error(errorMessage);
-      throw err;
-    }
+        // Invalidate storefront caches for instant sync
+        invalidateProductCaches({
+          tenantId: tenant.id,
+          storeId: store?.id || undefined,
+          productId,
+        });
+
+        return updated as Product;
+      }
+    );
   };
 
   // --- Table Columns Definition ---
