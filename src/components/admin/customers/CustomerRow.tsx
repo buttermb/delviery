@@ -71,6 +71,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
           type="checkbox"
           className="rounded"
           checked={isSelected}
+          aria-label={`Select ${displayName(customer.first_name, customer.last_name)}`}
           onChange={(e) => onSelectChange(customer.id, e.target.checked)}
         />
       </td>
@@ -126,7 +127,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       <td className="px-6 py-4 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" aria-label={`Actions for ${displayName(customer.first_name, customer.last_name)}`}>
               <MoreHorizontal className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
