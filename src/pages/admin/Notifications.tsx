@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Bell, Plus, Edit, Loader2, Trash2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
@@ -324,9 +325,9 @@ export default function Notifications() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="body">Body</Label>
-                <textarea
+                <Textarea
                   id="body"
-                  className="w-full min-h-[100px] px-3 py-2 border rounded-md"
+                  className="min-h-[100px]"
                   value={formData.body}
                   onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                   required

@@ -231,10 +231,10 @@ export default function CustomerInsightsPage() {
     }));
   }, [orders]);
 
-  const isLoading = customersLoading || ordersLoading;
+  const isLoading = customersLoading || ordersLoading || topLoading;
 
   if (isLoading) {
-    return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
+    return <EnhancedLoadingState variant="dashboard" message="Loading customer insights..." />;
   }
 
   return (

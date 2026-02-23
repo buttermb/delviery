@@ -8,6 +8,7 @@ import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
@@ -250,8 +251,8 @@ export default function WhiteLabel() {
             <CardDescription>Add custom styles for advanced customization</CardDescription>
           </CardHeader>
           <CardContent>
-            <textarea
-              className="w-full min-h-[200px] px-3 py-2 border rounded-md font-mono text-sm"
+            <Textarea
+              className="min-h-[200px] font-mono text-sm"
               value={formData.custom_css}
               onChange={(e) => setFormData({ ...formData, custom_css: e.target.value })}
               placeholder="/* Add your custom CSS here */"

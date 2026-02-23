@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Calendar,
+  CalendarX2,
   Clock,
   Plus,
   Settings,
@@ -96,6 +97,15 @@ export default function AppointmentSchedulerPage() {
           </Button>
         </div>
       </div>
+
+      {/* Empty State */}
+      {!isLoading && appointments?.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <CalendarX2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p className="text-lg font-medium">No appointments scheduled</p>
+          <p className="text-sm mt-1">Create your first appointment to get started.</p>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

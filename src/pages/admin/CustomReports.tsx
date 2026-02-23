@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { FileText, Plus, Edit, Download, Trash2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
@@ -363,16 +364,16 @@ export default function CustomReports() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="format">Export Format</Label>
-                <select
-                  id="format"
-                  value={formData.format}
-                  onChange={(e) => setFormData({ ...formData, format: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                >
-                  <option value="csv">CSV</option>
-                  <option value="json">JSON</option>
-                  <option value="excel">Excel</option>
-                </select>
+                <Select value={formData.format} onValueChange={(v) => setFormData({ ...formData, format: v })}>
+                  <SelectTrigger id="format">
+                    <SelectValue placeholder="Select format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="csv">CSV</SelectItem>
+                    <SelectItem value="json">JSON</SelectItem>
+                    <SelectItem value="excel">Excel</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>

@@ -1048,7 +1048,8 @@ function SessionList({
     return (
       <div className="p-4 text-center text-muted-foreground">
         <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No conversations</p>
+        <p className="text-sm">No chat sessions found</p>
+        <p className="text-xs mt-1">Chat sessions will appear here when customers start conversations.</p>
       </div>
     );
   }

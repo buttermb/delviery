@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Download } from 'lucide-react';
+import { AlertCircle, Download } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 interface QuickExportProps {
@@ -25,7 +26,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('month');
   const [customStartDate, _setCustomStartDate] = useState<Date>();
   const [customEndDate, _setCustomEndDate] = useState<Date>();
-  const { data: exportData, isLoading } = useQuery({
+  const { data: exportData, isLoading, error } = useQuery({
     queryKey: ['quick-export', exportType, dateRange, tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -193,6 +194,17 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {isLoading && (
+          <EnhancedLoadingState variant="card" message="Loading export data..." />
+        )}
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span>Failed to load export data. Please try again.</span>
+          </div>
+        )}
+
         {/* Export Type */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {(['orders', 'users', 'products'] as const).map((type) => (

@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -138,8 +139,9 @@ export default function LoyaltyProgramPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
       toast.success('Tier saved successfully');
-      setIsTierOpen(false);
+      setTierForm({ name: "", color: "#000000", multiplier: 1, min_points: 0, benefits: [] });
       setEditingTier(null);
+      setIsTierOpen(false);
     },
     onError: (error) => {
       toast.error(humanizeError(error));
@@ -157,8 +159,9 @@ export default function LoyaltyProgramPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
       toast.success('Reward saved successfully');
-      setIsRewardOpen(false);
+      setRewardForm({ reward_name: "", reward_description: "", points_required: 100, reward_type: "discount", is_active: true });
       setEditingReward(null);
+      setIsRewardOpen(false);
     },
     onError: (error) => {
       toast.error(humanizeError(error));
@@ -708,7 +711,7 @@ export default function LoyaltyProgramPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
-            <Button onClick={() => upsertTierMutation.mutate(tierForm)}>Save Tier</Button>
+            <Button disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>Save Tier</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -746,16 +749,16 @@ export default function LoyaltyProgramPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="reward-type">Type</Label>
-                <select
-                  id="reward-type"
-                  className="w-full p-2 border rounded-md"
-                  value={rewardForm.reward_type}
-                  onChange={(e) => setRewardForm({ ...rewardForm, reward_type: e.target.value })}
-                >
-                  <option value="discount">Discount</option>
-                  <option value="free_item">Free Item</option>
-                  <option value="cashback">Cashback</option>
-                </select>
+                <Select value={rewardForm.reward_type} onValueChange={(v) => setRewardForm({ ...rewardForm, reward_type: v })}>
+                  <SelectTrigger id="reward-type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="discount">Discount</SelectItem>
+                    <SelectItem value="free_item">Free Item</SelectItem>
+                    <SelectItem value="cashback">Cashback</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex items-center justify-between">
@@ -768,7 +771,7 @@ export default function LoyaltyProgramPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
-            <Button onClick={() => upsertRewardMutation.mutate(rewardForm)}>Save Reward</Button>
+            <Button disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>Save Reward</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

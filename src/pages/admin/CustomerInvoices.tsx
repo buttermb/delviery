@@ -415,20 +415,18 @@ export default function CustomerInvoices() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="customer">Customer *</Label>
-                  <select
-                    id="customer"
-                    className="w-full px-3 py-2 border rounded-md bg-background"
-                    value={formData.customer_id}
-                    onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                    required
-                  >
-                    <option value="">Select customer</option>
-                    {customers.map((customer: Customer) => (
-                      <option key={customer.id} value={customer.id}>
-                        {displayName(customer.first_name, customer.last_name)} ({displayValue(customer.email, 'No email')})
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={formData.customer_id} onValueChange={(v) => setFormData({ ...formData, customer_id: v })}>
+                    <SelectTrigger id="customer">
+                      <SelectValue placeholder="Select customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer: Customer) => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {displayName(customer.first_name, customer.last_name)} ({displayValue(customer.email, 'No email')})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

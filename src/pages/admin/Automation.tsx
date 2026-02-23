@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Zap, Plus, Edit, Play } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
@@ -315,33 +316,31 @@ export default function Automation() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="trigger_type">Trigger Type</Label>
-                <select
-                  id="trigger_type"
-                  value={formData.trigger_type}
-                  onChange={(e) => setFormData({ ...formData, trigger_type: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                >
-                  <option value="order.created">Order Created</option>
-                  <option value="order.completed">Order Completed</option>
-                  <option value="customer.created">Customer Created</option>
-                  <option value="inventory.low">Inventory Low</option>
-                </select>
+                <Select value={formData.trigger_type} onValueChange={(v) => setFormData({ ...formData, trigger_type: v })}>
+                  <SelectTrigger id="trigger_type">
+                    <SelectValue placeholder="Select trigger type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="order.created">Order Created</SelectItem>
+                    <SelectItem value="order.completed">Order Completed</SelectItem>
+                    <SelectItem value="customer.created">Customer Created</SelectItem>
+                    <SelectItem value="inventory.low">Inventory Low</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="action_type">Action Type</Label>
-                <select
-                  id="action_type"
-                  value={formData.action_type}
-                  onChange={(e) => setFormData({ ...formData, action_type: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                >
-                  <option value="send_email">Send Email</option>
-                  <option value="send_sms">Send SMS</option>
-                  <option value="create_task">Create Task</option>
-                  <option value="update_status">Update Status</option>
-                </select>
+                <Select value={formData.action_type} onValueChange={(v) => setFormData({ ...formData, action_type: v })}>
+                  <SelectTrigger id="action_type">
+                    <SelectValue placeholder="Select action type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="send_email">Send Email</SelectItem>
+                    <SelectItem value="send_sms">Send SMS</SelectItem>
+                    <SelectItem value="create_task">Create Task</SelectItem>
+                    <SelectItem value="update_status">Update Status</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex items-center space-x-2">
                 <Switch

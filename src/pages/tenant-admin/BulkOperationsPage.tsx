@@ -182,6 +182,20 @@ export default function BulkOperationsPage() {
     }
   });
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div>
+          <h1 className="text-3xl font-bold">Bulk Operations</h1>
+          <p className="text-muted-foreground">
+            Perform bulk actions on multiple products at once
+          </p>
+        </div>
+        <EnhancedLoadingState variant="card" message="Loading products..." />
+      </div>
+    );
+  }
+
   const handleOperationSelect = (operationId: string) => {
     setSelectedOperation(operationId);
     setOperationParams({});

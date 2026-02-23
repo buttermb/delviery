@@ -27,6 +27,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
 import { Loader2 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
@@ -371,19 +372,18 @@ export default function ImagesPage() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="product-select">Select Product</Label>
-              <select
-                id="product-select"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                value={selectedProductId}
-                onChange={(e) => setSelectedProductId(e.target.value)}
-              >
-                <option value="">-- Select a product --</option>
-                {products.map(product => (
-                  <option key={product.id} value={product.id}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedProductId} onValueChange={(v) => setSelectedProductId(v)}>
+                <SelectTrigger id="product-select">
+                  <SelectValue placeholder="-- Select a product --" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map(product => (
+                    <SelectItem key={product.id} value={product.id}>
+                      {product.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="image-upload">Select Image</Label>

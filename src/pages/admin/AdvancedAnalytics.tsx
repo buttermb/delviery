@@ -81,6 +81,24 @@ export default function AdvancedAnalytics() {
     );
   }
 
+  const hasNoData = (!orders || orders.length === 0) && (!customers || customers.length === 0);
+
+  if (hasNoData) {
+    return (
+      <div className="p-4 space-y-4">
+        <div>
+          <h1 className="text-xl font-bold">Advanced Analytics</h1>
+          <p className="text-muted-foreground">Deep insights and business intelligence</p>
+        </div>
+        <EnhancedEmptyState
+          type="no_analytics"
+          title="No Analytics Data Available"
+          description="Analytics will populate once you have orders and customers in the system."
+        />
+      </div>
+    );
+  }
+
   const revenueByMonth = (orders || []).reduce((acc: any, order: any) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     const existing = acc.find((item: any) => item.month === month);
