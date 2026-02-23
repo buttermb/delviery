@@ -493,6 +493,8 @@ export function ProductForm({
                                 <Input
                                     type="number"
                                     step="0.1"
+                                    min="0"
+                                    max="100"
                                     value={formData.thc_percent}
                                     onChange={(e) => {
                                         setFormData({ ...formData, thc_percent: e.target.value });
@@ -505,6 +507,8 @@ export function ProductForm({
                                 <Input
                                     type="number"
                                     step="0.1"
+                                    min="0"
+                                    max="100"
                                     value={formData.cbd_percent}
                                     onChange={(e) => {
                                         setFormData({ ...formData, cbd_percent: e.target.value });

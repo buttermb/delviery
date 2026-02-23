@@ -698,6 +698,7 @@ export default function DeliveryZones() {
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   id="delivery_fee"
                   {...form.register('delivery_fee', { valueAsNumber: true })}
                 />
@@ -710,6 +711,7 @@ export default function DeliveryZones() {
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   id="minimum_order"
                   {...form.register('minimum_order', { valueAsNumber: true })}
                 />
@@ -725,6 +727,7 @@ export default function DeliveryZones() {
                 <Label htmlFor="estimated_time_min">Est. Time Min (mins)</Label>
                 <Input
                   type="number"
+                  min="0"
                   id="estimated_time_min"
                   {...form.register('estimated_time_min', { valueAsNumber: true })}
                 />
@@ -736,6 +739,7 @@ export default function DeliveryZones() {
                 <Label htmlFor="estimated_time_max">Est. Time Max (mins)</Label>
                 <Input
                   type="number"
+                  min="0"
                   id="estimated_time_max"
                   {...form.register('estimated_time_max', { valueAsNumber: true })}
                 />
