@@ -9,6 +9,7 @@
 import { useParams } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useProduct, useProductInventoryHistory, useProductFrontedInventory } from '@/hooks/useProduct';
+import { isValidUUID } from '@/lib/utils/uuidValidation';
 import { ProductOrderHistory } from '@/components/admin/products/ProductOrderHistory';
 import { ProductInventoryChart } from '@/components/admin/products/ProductInventoryChart';
 import { ProductVendorCard } from '@/components/admin/products/ProductVendorCard';
@@ -53,7 +54,8 @@ import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
 import { useState } from 'react';
 
 export default function ProductDetailsPage() {
-    const { productId } = useParams<{ productId: string }>();
+    const { productId: rawProductId } = useParams<{ productId: string }>();
+    const productId = rawProductId && isValidUUID(rawProductId) ? rawProductId : undefined;
     const { navigateToAdmin } = useTenantNavigation();
     const { tenant } = useTenantAdminAuth();
     const [activeTab, setActiveTab] = useState('info');
