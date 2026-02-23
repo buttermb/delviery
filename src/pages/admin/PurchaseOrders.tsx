@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import {
   Search,
   Plus,
@@ -380,18 +381,40 @@ export default function PurchaseOrders() {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : filteredPOs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No purchase orders found.</p>
-              <p className="text-sm mt-1">Create your first purchase order to get started.</p>
-              <Button
-                className="mt-4 bg-emerald-500 hover:bg-emerald-600"
-                onClick={handleCreate}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Purchase Order
-              </Button>
-            </div>
+            <EnhancedEmptyState
+              icon={Package}
+              title={
+                searchTerm
+                  ? "No purchase orders match your search"
+                  : statusFilter !== "all"
+                    ? "No purchase orders found"
+                    : "No purchase orders yet"
+              }
+              description={
+                searchTerm
+                  ? `No results for "${searchTerm}". Try a different search term or clear your search.`
+                  : statusFilter !== "all"
+                    ? "Try adjusting your filters to find purchase orders."
+                    : "Create your first purchase order to start ordering from vendors."
+              }
+              primaryAction={
+                searchTerm || statusFilter !== "all"
+                  ? {
+                      label: "Clear Filters",
+                      onClick: () => {
+                        setSearchTerm("");
+                        setStatusFilter("all");
+                      },
+                    }
+                  : {
+                      label: "New Purchase Order",
+                      onClick: handleCreate,
+                      icon: Plus,
+                    }
+              }
+              compact
+              designSystem="tenant-admin"
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>
