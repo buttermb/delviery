@@ -49,7 +49,7 @@ export function GoogleSearchPreview({
               {faviconUrl ? (
                 <img
                   src={faviconUrl}
-                  alt=""
+                  alt="Site favicon"
                   className="w-7 h-7 rounded-full object-contain bg-gray-100 p-1"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';

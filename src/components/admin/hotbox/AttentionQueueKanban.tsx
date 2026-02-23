@@ -265,7 +265,7 @@ function KanbanCard({
                 </div>
 
                 {/* Mobile swipe hint */}
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[10px] text-muted-foreground/50 md:hidden">
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[11px] text-muted-foreground/70 md:hidden">
                     <ArrowRight className="h-2.5 w-2.5 rotate-180" />
                     <span>swipe</span>
                     <ArrowRight className="h-2.5 w-2.5" />

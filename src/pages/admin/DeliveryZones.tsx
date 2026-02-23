@@ -288,10 +288,10 @@ export default function DeliveryZones() {
         polygon.bindPopup(`
           <div style="min-width: 150px;">
             <strong>${zone.name}</strong>
-            ${!zone.is_active ? '<span style="color: #888;"> (Inactive)</span>' : ''}
+            ${!zone.is_active ? '<span style="color: #666;"> (Inactive)</span>' : ''}
             <br/>
-            <span style="color: #666;">Fee: ${formatCurrency(zone.delivery_fee)}</span>
-            ${zone.minimum_order > 0 ? `<br/><span style="color: #666;">Min: ${formatCurrency(zone.minimum_order)}</span>` : ''}
+            <span style="color: #555;">Fee: ${formatCurrency(zone.delivery_fee)}</span>
+            ${zone.minimum_order > 0 ? `<br/><span style="color: #555;">Min: ${formatCurrency(zone.minimum_order)}</span>` : ''}
           </div>
         `);
 

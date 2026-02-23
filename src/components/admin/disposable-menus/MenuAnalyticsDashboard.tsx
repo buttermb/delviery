@@ -45,7 +45,7 @@ function StatCard({
           <div className="text-2xl font-bold truncate">{value}</div>
           <div className="text-xs text-muted-foreground">{label}</div>
           {subtitle && (
-            <div className="text-[10px] text-muted-foreground/70 mt-0.5">{subtitle}</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</div>
           )}
         </div>
       </div>
@@ -72,7 +72,7 @@ function FunnelStage({
       </div>
       <Progress value={percentage} className="h-3" />
       {index > 0 && percentage < 100 && (
-        <div className="text-[10px] text-muted-foreground text-right">
+        <div className="text-[11px] text-muted-foreground text-right">
           {percentage.toFixed(1)}% of total
         </div>
       )}
