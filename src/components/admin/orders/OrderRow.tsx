@@ -159,7 +159,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
       <td className="px-4 py-3">
         <div onClick={(e) => e.stopPropagation()}>
           <Select value={order.status} onValueChange={onStatusChange}>
-            <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+            <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0" aria-label={`Change status for order ${order.order_number || order.id.slice(0, 8)}`}>
               <SelectValue>{getStatusBadge(order.status)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -201,6 +201,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
             variant="ghost"
             className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={onView}
+            aria-label={`View order ${order.order_number || order.id.slice(0, 8)}`}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -210,6 +211,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label={`More actions for order ${order.order_number || order.id.slice(0, 8)}`}
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
