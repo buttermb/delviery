@@ -474,7 +474,7 @@ export function OrderDeliveryStatusSync({
                 className="w-full"
                 onClick={() => {
                   const url = `https://www.google.com/maps?q=${delivery.current_lat},${delivery.current_lng}`;
-                  window.open(url, '_blank');
+                  window.open(url, '_blank', 'noopener,noreferrer');
                 }}
               >
                 <Navigation className="w-4 h-4 mr-2" />

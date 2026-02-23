@@ -562,7 +562,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(shareableUrl, '_blank')}
+                        onClick={() => window.open(shareableUrl, '_blank', 'noopener,noreferrer')}
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>

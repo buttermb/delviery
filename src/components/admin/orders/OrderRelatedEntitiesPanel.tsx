@@ -288,7 +288,7 @@ function DeliverySection({ delivery }: { delivery: RelatedDelivery | null }) {
             variant="ghost"
             size="sm"
             className="h-6 text-xs"
-            onClick={() => window.open(delivery.tracking_url!, '_blank')}
+            onClick={() => window.open(delivery.tracking_url!, '_blank', 'noopener,noreferrer')}
           >
             <MapPin className="h-3 w-3 mr-1" />
             Track

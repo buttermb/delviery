@@ -494,7 +494,7 @@ export default function TenantsListPage() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => {
-                                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
                                   }}
                                 >
                                   <UserCog className="h-4 w-4" />
@@ -564,7 +564,7 @@ export default function TenantsListPage() {
               tenant={tenant}
               onView={(id) => navigate(`/super-admin/tenants/${id}`)}
               onLoginAs={(_id) => {
-                window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                window.open(`/${tenant.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
               }}
             />
           ))}

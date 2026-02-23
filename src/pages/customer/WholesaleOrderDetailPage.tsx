@@ -330,7 +330,7 @@ export default function WholesaleOrderDetailPage() {
                         className="mt-2"
                         onClick={() => {
                           // Open tracking in new tab (generic tracking URL - could be customized)
-                          window.open(`https://www.google.com/search?q=${encodeURIComponent(order.tracking_number)}`, '_blank');
+                          window.open(`https://www.google.com/search?q=${encodeURIComponent(order.tracking_number)}`, '_blank', 'noopener,noreferrer');
                         }}
                       >
                         Track Package

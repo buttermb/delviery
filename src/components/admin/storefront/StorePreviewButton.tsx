@@ -42,7 +42,7 @@ export function StorePreviewButton({ storeSlug, storeName }: StorePreviewButtonP
   };
 
   const handleOpenNewTab = () => {
-    window.open(`${storeUrl}?preview=true`, '_blank');
+    window.open(`${storeUrl}?preview=true`, '_blank', 'noopener,noreferrer');
   };
 
   const viewportWidths = {

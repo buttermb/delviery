@@ -272,7 +272,7 @@ export default function SelectPlanPage() {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, '_blank', 'noopener,noreferrer');
         setLoading(null);
         toast.success("Checkout opened in new tab");
       } else {
@@ -357,7 +357,7 @@ export default function SelectPlanPage() {
                   });
                   if (error) throw error;
                   if (data?.url) {
-                    window.open(data.url, '_blank');
+                    window.open(data.url, '_blank', 'noopener,noreferrer');
                   } else {
                     throw new Error('No portal URL received');
                   }

@@ -319,7 +319,7 @@ export default function StorefrontDashboard() {
   };
 
   const handlePreviewStore = (slug: string) => {
-    window.open(`/shop/${slug}`, '_blank');
+    window.open(`/shop/${slug}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleSettingsStore = (storeId: string) => {
@@ -523,7 +523,7 @@ export default function StorefrontDashboard() {
           {activeStore?.slug && (
             <Button
               variant="outline"
-              onClick={() => window.open(`/shop/${activeStore.slug}`, '_blank')}
+              onClick={() => window.open(`/shop/${activeStore.slug}`, '_blank', 'noopener,noreferrer')}
               className="gap-2"
             >
               <ExternalLink className="w-4 h-4" />
@@ -687,7 +687,7 @@ export default function StorefrontDashboard() {
             <Button
               variant="outline"
               className="w-full justify-start h-16 text-lg hover:border-blue-500/50 hover:bg-blue-500/5"
-              onClick={() => storeUrl && window.open(storeUrl, '_blank')}
+              onClick={() => storeUrl && window.open(storeUrl, '_blank', 'noopener,noreferrer')}
               disabled={!storeUrl}
             >
               <ExternalLink className="w-6 h-6 mr-4 text-blue-500" />

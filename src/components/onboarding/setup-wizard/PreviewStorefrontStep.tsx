@@ -64,7 +64,7 @@ export function PreviewStorefrontStep({ onComplete }: PreviewStorefrontStepProps
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => window.open(storefrontUrl, '_blank')}
+            onClick={() => window.open(storefrontUrl, '_blank', 'noopener,noreferrer')}
           >
             <ExternalLink className="mr-2 h-4 w-4" />
             Open Storefront in New Tab

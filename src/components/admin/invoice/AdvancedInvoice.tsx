@@ -157,7 +157,7 @@ Sincerely,
 ${invoice.companyName}
     `);
 
-    window.open(`mailto:${invoice.customerEmail}?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:${invoice.customerEmail}?subject=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
 
     toast.success("Opened default email client with invoice details");
     setInvoice({ ...invoice, status: 'sent' });

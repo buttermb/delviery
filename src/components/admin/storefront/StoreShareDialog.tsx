@@ -136,14 +136,14 @@ export function StoreShareDialog({
       `Shop here: ${shareUrl}\n\n` +
       `Browse our products and place your order online.`
     );
-    window.open(`https://wa.me/?text=${message}`, '_blank');
+    window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   const shareViaSMS = () => {
     const message = encodeURIComponent(
       `Check out ${store.store_name}! Shop here: ${shareUrl}`
     );
-    window.open(`sms:?body=${message}`, '_blank');
+    window.open(`sms:?body=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   const shareViaEmail = () => {
@@ -155,7 +155,7 @@ export function StoreShareDialog({
       `${shareUrl}\n\n` +
       `Check out their products and place an order online!`
     );
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -239,7 +239,7 @@ export function StoreShareDialog({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => window.open(shareUrl, '_blank')}
+                  onClick={() => window.open(shareUrl, '_blank', 'noopener,noreferrer')}
                 >
                   <ExternalLink className="w-4 h-4" />
                 </Button>

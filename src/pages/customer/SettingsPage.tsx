@@ -141,7 +141,7 @@ export default function CustomerSettingsPage() {
       const result = await response.json();
 
       if (result.download_url) {
-        window.open(result.download_url, '_blank');
+        window.open(result.download_url, '_blank', 'noopener,noreferrer');
         toast.success('Data Export Ready', {
           description: 'Your data export is ready. The download link will expire in 7 days.',
         });

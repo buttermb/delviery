@@ -622,7 +622,7 @@ export function ProductsListPage() {
               <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
-              const printWindow = window.open('', '_blank');
+              const printWindow = window.open('', '_blank', 'noopener,noreferrer');
               if (printWindow) {
                 printWindow.document.write(`
                   <html><head><title>Label: ${product.name}</title>

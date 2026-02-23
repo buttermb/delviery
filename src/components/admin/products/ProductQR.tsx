@@ -355,7 +355,7 @@ export function ProductQR({
       return;
     }
 
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) {
       toast.error('Please allow pop-ups to print');
       return;

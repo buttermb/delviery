@@ -406,9 +406,9 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
   const openInMaps = (address: DeliveryAddress) => {
     const fullAddress = formatFullAddress(address);
     if (address.latitude && address.longitude) {
-      window.open(`https://www.google.com/maps?q=${address.latitude},${address.longitude}`, '_blank');
+      window.open(`https://www.google.com/maps?q=${address.latitude},${address.longitude}`, '_blank', 'noopener,noreferrer');
     } else {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`, '_blank');
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`, '_blank', 'noopener,noreferrer');
     }
   };
 

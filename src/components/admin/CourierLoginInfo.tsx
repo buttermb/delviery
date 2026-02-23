@@ -41,7 +41,7 @@ export function CourierLoginInfo() {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => window.open(courierLoginUrl, '_blank')}
+            onClick={() => window.open(courierLoginUrl, '_blank', 'noopener,noreferrer')}
           >
             <ExternalLink className="h-4 w-4" />
           </Button>

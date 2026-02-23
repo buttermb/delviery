@@ -353,7 +353,7 @@ export default function ImagesPage() {
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(image.image_url, '_blank');
+                      window.open(image.image_url, '_blank', 'noopener,noreferrer');
                     }}
                     aria-label="Download image"
                   >
@@ -439,7 +439,7 @@ export default function ImagesPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => window.open(selectedImage?.image_url, '_blank')}
+              onClick={() => window.open(selectedImage?.image_url, '_blank', 'noopener,noreferrer')}
             >
               <Download className="h-4 w-4 mr-2" />
               Download

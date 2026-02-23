@@ -77,7 +77,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
       ? `maps://maps.apple.com/?daddr=${delivery.dropoff_lat},${delivery.dropoff_lng}&dirflg=d`
       : `https://www.google.com/maps/dir/?api=1&destination=${delivery.dropoff_lat},${delivery.dropoff_lng}&travelmode=driving`;
 
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const callCustomer = (phone: string) => {

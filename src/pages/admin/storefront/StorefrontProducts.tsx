@@ -407,7 +407,7 @@ export default function StorefrontProducts() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => window.open(`/shop/${tenantSlug}`, '_blank')}
+          onClick={() => window.open(`/shop/${tenantSlug}`, '_blank', 'noopener,noreferrer')}
           className="gap-2"
         >
           <Eye className="w-4 h-4" />

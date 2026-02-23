@@ -502,7 +502,8 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
                   if (targetAddress?.latitude && targetAddress?.longitude) {
                     window.open(
                       `https://www.google.com/maps/dir/${closestHub.lat},${closestHub.lng}/${targetAddress.latitude},${targetAddress.longitude}`,
-                      '_blank'
+                      '_blank',
+                      'noopener,noreferrer'
                     );
                   }
                 }}

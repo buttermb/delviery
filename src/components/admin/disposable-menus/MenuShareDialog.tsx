@@ -66,7 +66,7 @@ export const MenuShareDialog = ({
       menuUrl,
       accessCode
     );
-    window.open(`https://wa.me/?text=${message}`, '_blank');
+    window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleEmail = () => {
@@ -79,7 +79,7 @@ export const MenuShareDialog = ({
       `Important: This link is confidential and expires ${menu.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
       `Best regards`
     );
-    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -112,7 +112,7 @@ export const MenuShareDialog = ({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => window.open(menuUrl, '_blank')}
+                onClick={() => window.open(menuUrl, '_blank', 'noopener,noreferrer')}
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>

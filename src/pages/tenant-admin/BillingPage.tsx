@@ -221,7 +221,7 @@ export default function TenantAdminBillingPage() {
     },
     onSuccess: (data) => {
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, '_blank', 'noopener,noreferrer');
         toast.success('Redirecting to Stripe', { description: 'Opening checkout in new tab...' });
       }
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
@@ -348,7 +348,7 @@ export default function TenantAdminBillingPage() {
 
       if (data?.url) {
         logger.info('[BillingPage] Opening portal URL:', { url: data.url, component: 'BillingPage' });
-        window.open(data.url, '_blank');
+        window.open(data.url, '_blank', 'noopener,noreferrer');
         toast.success('Success', { description: 'Opening Stripe Customer Portal...' });
       } else {
         logger.error('[BillingPage] No URL in portal response:', data, { component: 'BillingPage' });

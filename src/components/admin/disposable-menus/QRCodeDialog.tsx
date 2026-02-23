@@ -88,7 +88,7 @@ export function QRCodeDialog({ open, onClose, menuTitle, accessUrl, menuId }: QR
   };
 
   const printQRCode = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) return;
 
     const svg = qrRef.current?.querySelector('svg');

@@ -54,7 +54,7 @@ export function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalP
 
       if (data?.checkout_url) {
         // Open Stripe checkout in new tab
-        window.open(data.checkout_url, '_blank');
+        window.open(data.checkout_url, '_blank', 'noopener,noreferrer');
         toast.success('Checkout opened', { description: 'Complete your purchase in the new tab' });
         onOpenChange(false);
       } else {

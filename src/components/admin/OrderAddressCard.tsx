@@ -131,7 +131,7 @@ function openDirections(lat: number, lng: number, address: string) {
     ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
     : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodedAddress}&travelmode=driving`;
 
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /**
@@ -140,7 +140,7 @@ function openDirections(lat: number, lng: number, address: string) {
 function openInMaps(lat: number, lng: number, address: string) {
   const encodedAddress = encodeURIComponent(address);
   const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${encodedAddress}`;
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export function OrderAddressCard({

@@ -265,7 +265,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
 
   const handleEmail = (contact: VendorContact) => {
     if (contact.email) {
-      window.open(`mailto:${contact.email}`, '_blank');
+      window.open(`mailto:${contact.email}`, '_blank', 'noopener,noreferrer');
       logInteraction({
         vendor_contact_id: contact.id,
         action: 'email',

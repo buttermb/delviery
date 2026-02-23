@@ -93,7 +93,7 @@ export function OrderPrintDialog({
     });
 
     // Open print window with the content
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=800,height=600');
     if (!printWindow) {
       setIsPrinting(false);
       toast.error('Could not open print window. Please check popup settings.');

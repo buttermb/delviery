@@ -141,7 +141,7 @@ export default function CourierActiveOrderPage() {
   const openNavigation = () => {
     if (order) {
       const address = encodeURIComponent(order.delivery_address);
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank', 'noopener,noreferrer');
     }
   };
 

@@ -90,7 +90,7 @@ export function DocumentDetail({
             <div className="pt-4 border-t">
               <Button
                 variant="outline"
-                onClick={() => window.open(document.file_url, "_blank")}
+                onClick={() => window.open(document.file_url, "_blank", "noopener,noreferrer")}
                 className="min-h-[44px] touch-manipulation"
               >
                 <Download className="h-4 w-4 mr-2" />

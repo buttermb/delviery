@@ -139,7 +139,7 @@ export const MenuWhitelistTab = ({
       `Thank you!`
     );
     const phone = String(entry.customer_phone || '').replace(/\D/g, '');
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {

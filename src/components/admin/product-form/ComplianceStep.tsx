@@ -84,7 +84,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(formData.coa_url, "_blank")}
+                  onClick={() => window.open(formData.coa_url, "_blank", "noopener,noreferrer")}
                 >
                   View
                 </Button>

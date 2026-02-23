@@ -27,7 +27,7 @@ export function UnifiedDeliveryView({
 
   const handleNavigate = (address: string) => {
     const encoded = encodeURIComponent(address);
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}`, '_blank');
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}`, '_blank', 'noopener,noreferrer');
   };
 
   if (role === 'runner') {

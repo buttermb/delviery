@@ -508,7 +508,7 @@ export function OrdersListPage() {
 
   // Print handler
   const handlePrint = (order: Order) => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (printWindow) {
       printWindow.document.write(`
         <html>

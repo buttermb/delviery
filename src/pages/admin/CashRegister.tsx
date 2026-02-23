@@ -608,7 +608,7 @@ function CashRegisterContent() {
 
     setIsPrinting(true);
     try {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open('', '_blank', 'noopener,noreferrer');
       if (printWindow) {
         const businessName = tenant?.business_name || 'Store';
         const isRefund = !!lastRefundData;

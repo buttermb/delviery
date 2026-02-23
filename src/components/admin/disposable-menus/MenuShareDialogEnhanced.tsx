@@ -253,7 +253,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
       `Access URL: ${menuUrl}\n` +
       `Access Code: ${accessCode}\n\n` +
       `This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleEmail = () => {
@@ -272,7 +272,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
       `Access Code: ${accessCode}\n\n` +
       `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
       `Best regards`;
-    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
+    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -319,7 +319,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => window.open(menuUrl, '_blank')}
+                  onClick={() => window.open(menuUrl, '_blank', 'noopener,noreferrer')}
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Button>

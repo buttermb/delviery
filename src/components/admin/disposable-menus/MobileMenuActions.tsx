@@ -50,7 +50,7 @@ export function MobileMenuActions({ menu, trigger }: MobileMenuActionsProps) {
   };
 
   const openMenu = () => {
-    window.open(`/m/${menu.encrypted_url_token}`, '_blank');
+    window.open(`/m/${menu.encrypted_url_token}`, '_blank', 'noopener,noreferrer');
     setSheetOpen(false);
   };
 

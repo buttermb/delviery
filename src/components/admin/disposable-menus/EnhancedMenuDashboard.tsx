@@ -291,7 +291,7 @@ export function EnhancedMenuDashboard() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(`/m/${menu.encrypted_url_token}`, '_blank')}
+                      onClick={() => window.open(`/m/${menu.encrypted_url_token}`, '_blank', 'noopener,noreferrer')}
                     >
                       <ExternalLink className="h-3 w-3 mr-1" />
                       Preview Menu

@@ -216,7 +216,7 @@ export function SuperAdminLayout() {
             onOpenInNewTab={() => {
               const tenantId = safeStorage.getItem('impersonating_tenant_id');
               if (tenantId) {
-                window.open(`/super-admin/tenants/${tenantId}`, '_blank');
+                window.open(`/super-admin/tenants/${tenantId}`, '_blank', 'noopener,noreferrer');
               }
             }}
           />

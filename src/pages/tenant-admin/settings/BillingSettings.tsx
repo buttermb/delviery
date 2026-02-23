@@ -265,7 +265,7 @@ export default function BillingSettings() {
     },
     onSuccess: (data) => {
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, '_blank', 'noopener,noreferrer');
         toast.success('Redirecting to Stripe', { description: 'Opening checkout in new tab...' });
       }
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
@@ -321,7 +321,7 @@ export default function BillingSettings() {
       if (data?.error) throw new Error(data.error);
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, '_blank', 'noopener,noreferrer');
         toast.success('Success', { description: 'Opening Stripe Customer Portal...' });
       }
     } catch (error: unknown) {
@@ -347,7 +347,7 @@ export default function BillingSettings() {
       if (data?.error) throw new Error(data.error);
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, '_blank', 'noopener,noreferrer');
         toast.success('Manage Subscription', { description: 'Opening Stripe portal to manage your subscription...' });
       }
     } catch (error: unknown) {

@@ -135,7 +135,7 @@ export function ProductQRGenerator({
   };
 
   const printQRCode = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) {
       toast.error("Please allow pop-ups to print the QR code");
       return;

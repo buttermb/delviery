@@ -329,7 +329,7 @@ export default function MarketplaceProductDetailPage() {
                         )}
 
                         {product.lab_results_url && (
-                            <Button variant="outline" className="w-full justify-start mt-2" onClick={() => window.open(product.lab_results_url, '_blank')}>
+                            <Button variant="outline" className="w-full justify-start mt-2" onClick={() => window.open(product.lab_results_url, '_blank', 'noopener,noreferrer')}>
                                 <FileText className="h-4 w-4 mr-2" />
                                 View Lab Results (COA)
                             </Button>

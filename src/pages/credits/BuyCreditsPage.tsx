@@ -101,7 +101,7 @@ export function BuyCreditsPage() {
       }
 
       if (data?.checkout_url) {
-        window.open(data.checkout_url, '_blank');
+        window.open(data.checkout_url, '_blank', 'noopener,noreferrer');
         toast.success('Checkout opened', { description: 'Complete your purchase in the new tab' });
       } else {
         toast.error('No checkout URL returned');

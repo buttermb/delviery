@@ -273,7 +273,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
       const url = URL.createObjectURL(pdfBlob);
 
       // Open in new window for printing
-      const printWindow = window.open(url, '_blank');
+      const printWindow = window.open(url, '_blank', 'noopener,noreferrer');
       if (printWindow) {
         printWindow.onload = () => {
           printWindow.print();

@@ -34,7 +34,7 @@ export const MenuAccessDetails = ({
 
   const shareViaWhatsApp = () => {
     const message = `Access your private catalog: ${menuName}\n\nURL: ${shareableUrl}\nAccess Code: ${accessCode}\n\nThis link is secure and confidential.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
 
   const shareViaSMS = () => {

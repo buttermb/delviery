@@ -295,7 +295,7 @@ export default function TenantDetailPage() {
             <Button
               variant="outline"
               onClick={() => {
-                window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                window.open(`/${tenant.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
               }}
               className="border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
             >
@@ -389,7 +389,7 @@ export default function TenantDetailPage() {
                 tenantId={tenantId}
                 onStartImpersonation={(id) => {
                   if (tenant && tenant.id === id) {
-                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
                   }
                 }}
               />
@@ -660,7 +660,7 @@ export default function TenantDetailPage() {
 
                           if (sessionError) throw sessionError;
                           if (sessionData?.url) {
-                            window.open(sessionData.url, '_blank');
+                            window.open(sessionData.url, '_blank', 'noopener,noreferrer');
                           } else {
                             showInfoToast("Update Card", "Opening payment method update...");
                           }
@@ -732,7 +732,7 @@ export default function TenantDetailPage() {
                                     size="sm"
                                     onClick={() => {
                                       // Open invoice view dialog
-                                      const invoiceWindow = window.open('', '_blank');
+                                      const invoiceWindow = window.open('', '_blank', 'noopener,noreferrer');
                                       if (invoiceWindow) {
                                         invoiceWindow.document.write(`
                                           <!DOCTYPE html>

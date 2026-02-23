@@ -203,7 +203,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
       return;
     }
 
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!printWindow) {
       toast.error('Failed to open print window. Please check your popup blocker.');
       return;
@@ -297,7 +297,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
       toast.error('Please select a store first');
       return;
     }
-    window.open(productUrl, '_blank');
+    window.open(productUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (

@@ -152,12 +152,12 @@ export default function HelpHubPage() {
 
     const handleViewGuide = () => {
         // Open documentation in new tab (placeholder URL)
-        window.open('https://docs.floraiq.com/user-guide', '_blank');
+        window.open('https://docs.floraiq.com/user-guide', '_blank', 'noopener,noreferrer');
     };
 
     const handleViewApiDocs = () => {
         // Open API documentation in new tab
-        window.open('https://docs.floraiq.com/api', '_blank');
+        window.open('https://docs.floraiq.com/api', '_blank', 'noopener,noreferrer');
     };
 
     const handleWatchVideos = () => {

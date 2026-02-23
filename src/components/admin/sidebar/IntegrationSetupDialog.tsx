@@ -391,7 +391,7 @@ export function IntegrationSetupDialog({
                   variant="link"
                   size="sm"
                   className="h-auto p-0"
-                  onClick={() => window.open(config.docsUrl, '_blank')}
+                  onClick={() => window.open(config.docsUrl, '_blank', 'noopener,noreferrer')}
                 >
                   View Documentation
                   <ExternalLink className="h-3 w-3 ml-1" />

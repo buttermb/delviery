@@ -470,17 +470,17 @@ export default function RunnerView() {
       // Try Google Maps first, fallback to Apple Maps
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
-        window.open(`maps://maps.apple.com/?daddr=${coords}`, '_blank');
+        window.open(`maps://maps.apple.com/?daddr=${coords}`, '_blank', 'noopener,noreferrer');
       } else {
-        window.open(`https://www.google.com/maps/dir/?api=1&destination=${coords}`, '_blank');
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${coords}`, '_blank', 'noopener,noreferrer');
       }
     } else {
       // Fallback to address-based navigation
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
-        window.open(`maps://maps.apple.com/?daddr=${address}`, '_blank');
+        window.open(`maps://maps.apple.com/?daddr=${address}`, '_blank', 'noopener,noreferrer');
       } else {
-        window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank', 'noopener,noreferrer');
       }
     }
   }, []);

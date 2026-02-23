@@ -509,7 +509,7 @@ export function ProductStorefrontPreview({
   // Open storefront in new tab
   const handleOpenStorefront = () => {
     if (selectedStore?.store.slug) {
-      window.open(`/shop/${selectedStore.store.slug}/products/${product.id}`, '_blank');
+      window.open(`/shop/${selectedStore.store.slug}/products/${product.id}`, '_blank', 'noopener,noreferrer');
     }
   };
 
