@@ -305,13 +305,13 @@ const AdminLayout = () => {
               <main
                 id="main-content"
                 tabIndex={-1}
-                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-24 lg:pb-6 focus:outline-none"
+                className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 pb-24 lg:pb-6 focus:outline-none"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   minHeight: 0,
                 }}
               >
-                <div className="max-w-7xl mx-auto w-full">
+                <div className="max-w-[1920px] mx-auto w-full">
                   <AdminErrorBoundary>
                     <Suspense fallback={<LoadingFallback />}>
                       <Outlet />

@@ -136,8 +136,8 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
 
     return (
         <>
-            <Card className="mb-3 hover:shadow-md transition-all border-l-4 overflow-hidden relative group">
-                <CardContent className="p-3 space-y-3">
+            <Card className="mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group">
+                <CardContent className="p-2.5 space-y-3">
                     {/* Header */}
                     <div className="flex justify-between items-start">
                         <div>
@@ -246,9 +246,9 @@ export function LiveOrdersKanban({ orders, onStatusChange, isLoading }: LiveOrde
 
     return (
         <div className="h-[calc(100vh-200px)] overflow-x-auto">
-            <div className="flex gap-4 min-w-[1200px] h-full pb-4 px-1">
+            <div className="flex gap-2 h-full pb-4 px-1">
                 {columns.map(col => (
-                    <div key={col.id} className="flex-1 min-w-[280px] flex flex-col h-full rounded-xl bg-slate-50/50 dark:bg-slate-900/20 border border-slate-200/60 dark:border-slate-800/60">
+                    <div key={col.id} className="flex-1 min-w-[200px] flex flex-col h-full rounded-xl bg-slate-50/50 dark:bg-slate-900/20 border border-slate-200/60 dark:border-slate-800/60">
                         {/* Column Header */}
                         <div className={cn("p-3 border-b flex items-center justify-between mb-2", col.borderColor, col.color, "rounded-t-xl bg-opacity-50")}>
                             <div className="flex items-center gap-2 font-semibold text-sm">

@@ -274,7 +274,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
 
       {/* Header */}
       <div className="flex-none px-6 py-4 border-b bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-        <div className="flex justify-between items-center max-w-[1800px] mx-auto">
+        <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               Live Orders
@@ -336,9 +336,9 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       </div>
 
       {/* Kanban Board Container */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-3">
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
-          <div className="max-w-[1800px] mx-auto h-full">
+          <div className="h-full">
             {!isLoading && orders.length === 0 ? (
               <EmptyState
                 icon={Radio}

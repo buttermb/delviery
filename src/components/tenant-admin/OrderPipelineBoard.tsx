@@ -75,7 +75,7 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
     };
 
     return (
-        <div className="flex-1 min-w-[280px] flex flex-col h-full bg-muted/30 rounded-lg border border-border/50">
+        <div className="flex-1 min-w-[200px] flex flex-col h-full bg-muted/30 rounded-lg border border-border/50">
             <div className={`p-3 border-b flex items-center justify-between ${color} bg-opacity-10`}>
                 <div className="flex items-center gap-2 font-semibold">
                     <Icon className="h-4 w-4" />
@@ -87,14 +87,14 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
             </div>
 
             <ScrollArea className="flex-1 p-3">
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {orders.map((order) => (
                         <Card
                             key={order.id}
                             className="cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group"
                             onClick={() => navigate(`/admin/orders/${order.id}`)}
                         >
-                            <CardContent className="p-3 space-y-2">
+                            <CardContent className="p-2.5 space-y-2">
                                 <div className="flex items-start justify-between">
                                     <div className="font-medium truncate pr-2 flex items-center gap-1">
                                         {order.customer_name}
@@ -381,7 +381,7 @@ export function OrderPipelineBoard() {
             )}
 
             {/* Pipeline Columns */}
-            <div className="h-[calc(100vh-300px)] min-h-[500px] flex gap-4 overflow-x-auto pb-4">
+            <div className="h-[calc(100vh-300px)] min-h-[500px] flex gap-2 overflow-x-auto pb-4">
                 <PipelineColumn
                     title="Pending"
                     status="pending"

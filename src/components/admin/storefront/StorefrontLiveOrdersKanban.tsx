@@ -338,7 +338,7 @@ export function StorefrontLiveOrdersKanban({
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {COLUMNS.map((column) => {
                 const columnOrders = ordersByColumn[column.id] || [];
 
@@ -346,7 +346,7 @@ export function StorefrontLiveOrdersKanban({
                     <div
                         key={column.id}
                         className={cn(
-                            'rounded-lg p-4 min-h-[400px] flex flex-col',
+                            'rounded-lg p-3 min-h-[400px] flex flex-col',
                             column.color
                         )}
                     >
@@ -363,7 +363,7 @@ export function StorefrontLiveOrdersKanban({
                         </div>
 
                         {/* Orders - scrollable container */}
-                        <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
+                        <div className="space-y-2 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
                             {columnOrders.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground text-sm">
                                     No orders
