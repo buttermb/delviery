@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Package, Plus, Edit, Trash2, Mail, Phone, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -60,7 +60,6 @@ const initialFormData: VendorFormData = {
 
 export function VendorManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -129,10 +128,7 @@ export function VendorManagement() {
 
         if (error) throw error;
 
-        toast({
-          title: 'Success',
-          description: 'Vendor updated successfully'
-        });
+        toast.success('Vendor updated successfully');
       } else {
         const insertClient = supabase as any;
         const { error } = await insertClient
@@ -144,10 +140,7 @@ export function VendorManagement() {
 
         if (error) throw error;
 
-        toast({
-          title: 'Success',
-          description: 'Vendor added successfully'
-        });
+        toast.success('Vendor added successfully');
       }
 
       setIsDialogOpen(false);
@@ -198,10 +191,7 @@ export function VendorManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Vendor deleted successfully'
-      });
+      toast.success('Vendor deleted successfully');
 
       loadVendors();
       setDeleteDialogOpen(false);
