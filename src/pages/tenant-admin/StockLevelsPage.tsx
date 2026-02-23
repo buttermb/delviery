@@ -91,7 +91,8 @@ export default function StockLevelsPage() {
           "id, name, sku, category, available_quantity, low_stock_alert, cost_per_unit, wholesale_price, retail_price"
         )
         .eq("tenant_id", tenant.id)
-        .order("name");
+        .order("name")
+        .limit(500);
 
       if (error) {
         logger.error("Error fetching stock levels", error, {

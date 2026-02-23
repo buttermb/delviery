@@ -45,7 +45,8 @@ export default function AdminUsersPage() {
       const { data, error } = await supabase
         .from('admin_users')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) {
         logger.error('Error fetching admin users', error instanceof Error ? error : new Error(String(error)), { component: 'AdminUsersPage' });

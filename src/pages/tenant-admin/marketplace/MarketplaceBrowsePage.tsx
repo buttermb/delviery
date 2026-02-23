@@ -65,7 +65,7 @@ export default function MarketplaceBrowsePage() {
                 query = query.eq('product_type', typeFilter);
             }
 
-            const { data, error } = await query;
+            const { data, error } = await query.limit(100);
 
             if (error) throw error;
             return data as unknown as MarketplaceListing[];
