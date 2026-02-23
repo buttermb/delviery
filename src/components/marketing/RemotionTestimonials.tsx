@@ -38,7 +38,7 @@ const testimonials: TestimonialData[] = [
     role: 'CEO',
     company: 'Pacific Coast',
     avatar: 'SC',
-    content: 'The disposable menus are a game changer for OPSEC. We generated 847 unique catalogs last month and had zero leakage. Security is actually real here.',
+    content: 'The secure menus are a game changer for compliance. We generated 847 unique catalogs last month with full access control. Security is actually real here.',
     rating: 5,
     highlight: 'Zero data leaks',
   },

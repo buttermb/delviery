@@ -62,7 +62,7 @@ export function SuperstarFeaturesCard({ onViewChange }: SuperstarFeaturesCardPro
           </div>
         </motion.div>
 
-        {/* Disposable Menus Card */}
+        {/* Secure Menus Card */}
         <motion.div
           whileHover={{ scale: 1.02 }}
           className="p-2 bg-background/80 backdrop-blur-sm rounded border border-border/30 cursor-pointer"
@@ -79,13 +79,13 @@ export function SuperstarFeaturesCard({ onViewChange }: SuperstarFeaturesCardPro
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 mb-0.5">
-                <h4 className="text-xs font-semibold">OPSEC Menus</h4>
+                <h4 className="text-xs font-semibold">Secure Menus</h4>
                 <div className="text-[8px] px-1 py-0.5 bg-primary/20 text-primary rounded font-bold">
                   NEW
                 </div>
               </div>
               <p className="text-[9px] text-muted-foreground mb-1">
-                AES-256 encrypted, disposable catalogs
+                AES-256 encrypted, access-controlled catalogs
               </p>
             </div>
           </div>

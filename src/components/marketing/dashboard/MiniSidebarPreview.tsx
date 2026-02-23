@@ -23,7 +23,7 @@ import type { LucideIcon } from 'lucide-react';
 const navItems: Array<{ icon: LucideIcon; label: string; view: DashboardViewKey | null; special?: boolean; pulse?: boolean }> = [
   { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
   { icon: Radio, label: 'Live Tracking', view: 'tracking', special: true, pulse: true },
-  { icon: Shield, label: 'OPSEC Menus', view: 'menus', special: true },
+  { icon: Shield, label: 'Secure Menus', view: 'menus', special: true },
   { icon: Package, label: 'Catalog', view: 'catalog' },
   { icon: ShoppingCart, label: 'Orders', view: 'orders' },
   { icon: Warehouse, label: 'Inventory', view: 'inventory' },

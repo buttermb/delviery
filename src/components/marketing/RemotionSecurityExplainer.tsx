@@ -16,7 +16,7 @@ export function RemotionSecurityExplainer() {
               Built for Security
             </h2>
             <p className="text-xl text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
-              Military-grade encryption with auto-burn protection
+              Enterprise-grade encryption with access controls and audit trails
             </p>
           </div>
 

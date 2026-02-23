@@ -63,7 +63,7 @@ function QRMenuDemoMobile() {
             <QrCode className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="font-bold text-slate-900 text-sm">Disposable Menus</div>
+            <div className="font-bold text-slate-900 text-sm">Secure Menus</div>
             <div className="text-xs text-slate-500">3 menus active</div>
           </div>
         </div>
@@ -193,7 +193,7 @@ export function QRMenuDemo() {
               <QrCode className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Disposable Menus</h3>
+              <h3 className="font-semibold text-[hsl(var(--marketing-text))]">Secure Menus</h3>
               <p className="text-xs text-[hsl(var(--marketing-text-light))]">{menus.length} menus active</p>
             </div>
           </div>

@@ -1161,8 +1161,8 @@ const App = () => {
                               </TenantProvider>
                             </CreditProvider>
                           </CustomerAuthProvider>
-                          {/* Debug Panel - Only visible to admins or in development */}
-                          <AdminDebugPanel />
+                          {/* Debug Panel - Only visible in development */}
+                          {import.meta.env.DEV && <AdminDebugPanel />}
                         </TenantAdminAuthProvider>
                       </SuperAdminAuthProvider>
                     </BrowserRouter>

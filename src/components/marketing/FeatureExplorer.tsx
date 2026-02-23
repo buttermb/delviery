@@ -90,7 +90,7 @@ const features: Feature[] = [
   },
   {
     id: 'menus',
-    title: 'Disposable Menus',
+    title: 'Secure Menus',
     description: 'AES-256 encrypted menus for cannabis distributors with expiration and access controls',
     icon: Lock,
     benefits: [

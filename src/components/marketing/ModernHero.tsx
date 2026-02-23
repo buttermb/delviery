@@ -20,16 +20,16 @@ import { useState, useEffect } from "react";
 
 const ROTATING_FEATURES = [
   {
-    badge: "OPSEC-Grade Security • No Demo Required",
-    sub: "Encrypted URLs • Auto-Burn on Screenshot • Device Fingerprinting"
+    badge: "Enterprise-Grade Security • No Demo Required",
+    sub: "Encrypted URLs • Role-Based Access • Audit Logging"
   },
   {
     badge: "Built for Speed • Live in Seconds",
     sub: "Instant Catalog Creation • One-Click Publishing • Real-Time Sync"
   },
   {
-    badge: "Complete Anonymity • Zero Footprint",
-    sub: "No Tracking • Burner-Friendly • Anti-Forensic Design"
+    badge: "Full Compliance • Built for Cannabis B2B",
+    sub: "Metrc Integration • SOC 2 Ready • Regulatory Reporting"
   }
 ];
 

@@ -1,10 +1,12 @@
 /**
  * JWT Utility Functions
  * For generating and verifying JWT tokens
- * 
+ *
  * Note: In production, use a proper JWT library like 'jose' or 'jsonwebtoken'
  * This is a simplified implementation for Edge Functions
  */
+
+import { logger } from '@/lib/logger';
 
 export interface JWTPayload {
   [key: string]: unknown;
@@ -15,10 +17,13 @@ export interface JWTPayload {
 /**
  * Encode JWT token (simplified - for Edge Functions only)
  * In production, use proper HMAC signing
+ * @deprecated Use Supabase Auth or a proper JWT library (jose/jsonwebtoken) instead. This simplified implementation lacks proper HMAC signing and is not secure for production use.
  */
 export function encodeJWT(payload: JWTPayload, secret: string, expiresIn: number = 7 * 24 * 60 * 60): string {
+  logger.error('[jwt] encodeJWT is deprecated — use Supabase Auth or a proper JWT library instead');
+
   const now = Math.floor(Date.now() / 1000);
-  
+
   const jwtPayload: JWTPayload = {
     ...payload,
     exp: now + expiresIn,
@@ -36,18 +41,20 @@ export function encodeJWT(payload: JWTPayload, secret: string, expiresIn: number
   const header = { alg: 'HS256', typ: 'JWT' };
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = base64UrlEncode(JSON.stringify(jwtPayload));
-  
+
   // In production, calculate proper HMAC signature
   // For now, create a simple signature (DO NOT USE IN PRODUCTION)
   const signature = base64UrlEncode(`${encodedHeader}.${encodedPayload}.${secret}`);
-  
+
   return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
 
 /**
  * Verify JWT token (simplified - for Edge Functions only)
+ * @deprecated Use Supabase Auth or a proper JWT library (jose/jsonwebtoken) instead. This simplified implementation does not verify signatures and is not secure for production use.
  */
 export function verifyJWT(token: string, _secret: string): JWTPayload | null {
+  logger.error('[jwt] verifyJWT is deprecated — use Supabase Auth or a proper JWT library instead');
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
