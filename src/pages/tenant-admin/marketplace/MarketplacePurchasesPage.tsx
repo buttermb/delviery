@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     ShoppingBag,
@@ -41,7 +42,6 @@ import { PageHeader } from '@/components/shared/PageHeader';
 
 export default function MarketplacePurchasesPage() {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState('');
@@ -49,7 +49,7 @@ export default function MarketplacePurchasesPage() {
 
     // Fetch purchases
     const { data: purchases = [], isLoading } = useQuery({
-        queryKey: ['marketplace-purchases', tenant?.id, statusFilter],
+        queryKey: queryKeys.marketplace.purchases.list(tenant?.id, { status: statusFilter }),
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -102,12 +102,12 @@ export default function MarketplacePurchasesPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-purchases'] });
-            toast({ title: 'Order marked as received' });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.purchases.all });
+            toast.success('Order marked as received');
         },
         onError: (error: Error) => {
             logger.error('Failed to mark order as received', { error });
-            toast({ title: 'Failed to mark as received', description: humanizeError(error), variant: 'destructive' });
+            toast.error('Failed to mark as received', { description: humanizeError(error) });
         },
     });
 
@@ -133,7 +133,7 @@ export default function MarketplacePurchasesPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => queryClient.invalidateQueries({ queryKey: ['marketplace-purchases'] })}
+                        onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.marketplace.purchases.all })}
                     >
                         <RefreshCcw className="h-4 w-4 mr-2" />
                         Refresh

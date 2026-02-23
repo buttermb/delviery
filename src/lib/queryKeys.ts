@@ -450,6 +450,25 @@ export const queryKeys = {
     workflows: () => [...queryKeys.marketing.all, 'workflows'] as const,
   },
 
+  // Marketplace
+  marketplace: {
+    all: ['marketplace'] as const,
+    purchases: {
+      all: ['marketplace-purchases'] as const,
+      lists: () => [...queryKeys.marketplace.purchases.all, 'list'] as const,
+      list: (tenantId?: string, filters?: Record<string, unknown>) =>
+        [...queryKeys.marketplace.purchases.lists(), { tenantId, ...filters }] as const,
+      detail: (id: string) => [...queryKeys.marketplace.purchases.all, id] as const,
+    },
+    sales: {
+      all: ['marketplace-sales'] as const,
+      lists: () => [...queryKeys.marketplace.sales.all, 'list'] as const,
+      list: (tenantId?: string, filters?: Record<string, unknown>) =>
+        [...queryKeys.marketplace.sales.lists(), { tenantId, ...filters }] as const,
+      detail: (id: string) => [...queryKeys.marketplace.sales.all, id] as const,
+    },
+  },
+
   // Appointments
   appointments: {
     all: ['appointments'] as const,
