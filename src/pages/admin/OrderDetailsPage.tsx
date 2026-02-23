@@ -24,6 +24,7 @@ import { OrderDeliveryStatusSync } from '@/components/admin/orders/OrderDelivery
 import { OrderProductQuickView } from '@/components/admin/orders/OrderProductQuickView';
 import { DuplicateOrderButton } from '@/components/admin/orders/DuplicateOrderButton';
 import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes';
+import { OrderTimeline } from '@/components/admin/orders/OrderTimeline';
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
@@ -1489,6 +1490,11 @@ export function OrderDetailsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Detailed Activity Timeline from activity_log — hide on print */}
+            <div className="print:hidden">
+              <OrderTimeline orderId={order.id} maxHeight="350px" />
+            </div>
 
             {/* Notes */}
             {order.notes && (
