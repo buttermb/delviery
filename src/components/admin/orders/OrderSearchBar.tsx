@@ -13,7 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
-import { escapePostgresLike } from '@/lib/utils/searchSanitize';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { formatSmartDate } from '@/lib/formatters';
 
 interface OrderSearchResult {
@@ -97,7 +97,7 @@ export function OrderSearchBar({
 
       if (isOrderNumber) {
         // Search by order number (case insensitive)
-        query = query.ilike('order_number', `%${escapePostgresLike(cleanQuery)}%`);
+        query = query.ilike('order_number', `%${sanitizeSearchInput(cleanQuery)}%`);
       }
 
       const { data: ordersData, error } = await query;
