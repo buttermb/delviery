@@ -31,6 +31,7 @@ import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
 import { AssignDeliveryRunnerDialog } from '@/components/admin/orders/AssignDeliveryRunnerDialog';
 import { OrderAssignCourier } from '@/components/admin/OrderAssignCourier';
+import { OrderDeliveryWindow } from '@/components/admin/orders/OrderDeliveryWindow';
 import { DeliveryPLCard } from '@/components/admin/orders/DeliveryPLCard';
 import { OrderEditModal } from '@/components/admin/OrderEditModal';
 import { OrderRefundModal } from '@/components/admin/orders/OrderRefundModal';
@@ -1459,6 +1460,23 @@ export function OrderDetailsPage() {
                 }}
               />
             </div>
+
+            {/* Delivery Window — hide on print */}
+            {order.delivery_address && (
+              <div className="print:hidden">
+                <OrderDeliveryWindow
+                  scheduledDeliveryAt={(order as unknown as Record<string, unknown>).scheduled_delivery_at as string | null}
+                  timeSlotLabel={(order as unknown as Record<string, unknown>).time_slot_label as string | null}
+                  deliveryStatus={
+                    (['pending', 'in_transit', 'delivered', 'cancelled'].includes(order.status)
+                      ? order.status
+                      : order.status === 'completed'
+                        ? 'delivered'
+                        : 'pending') as 'pending' | 'in_transit' | 'delivered' | 'cancelled'
+                  }
+                />
+              </div>
+            )}
 
             {/* Delivery P&L — hide on print */}
             {(order.delivery_fee > 0 || order.delivery_address) && (
