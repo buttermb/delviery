@@ -50,7 +50,7 @@ export default function MarketplaceCategoryManager() {
                 .eq('tenant_id', tenant.id)
                 .order('display_order', { ascending: true });
             if (error) throw error;
-            return (data ?? []) as MarketplaceCategory[];
+            return (data ?? []) as unknown as MarketplaceCategory[];
         },
         enabled: !!tenant?.id
     });
