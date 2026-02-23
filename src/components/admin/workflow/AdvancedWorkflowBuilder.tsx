@@ -82,7 +82,7 @@ export function AdvancedWorkflowBuilder() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+        <TabsList className="flex w-full overflow-x-auto max-w-3xl">
           <TabsTrigger value="builder">
             Workflow Builder
           </TabsTrigger>

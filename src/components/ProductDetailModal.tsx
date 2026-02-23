@@ -458,7 +458,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
 
           {/* Detailed Information Tabs - Simplified for mobile */}
           <Tabs defaultValue="overview" className="px-3 md:px-6 pb-6">
-            <TabsList className="grid w-full grid-cols-4 h-auto gap-1 bg-muted/50 p-1.5">
+            <TabsList className="flex w-full overflow-x-auto h-auto gap-1 bg-muted/50 p-1.5">
               <TabsTrigger 
                 value="overview" 
                 className="text-xs md:text-sm py-3 md:py-2.5 px-2 touch-manipulation min-h-[44px]"

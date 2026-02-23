@@ -820,7 +820,7 @@ export function SmartDashboard() {
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
-          <TabsList className="grid w-full max-w-2xl grid-cols-4 p-1 bg-muted/50">
+          <TabsList className="flex w-full overflow-x-auto max-w-2xl p-1 bg-muted/50">
             <TabsTrigger value="menus" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
               <LayoutGrid className="h-4 w-4" />
               <span className="hidden sm:inline">Menus</span>

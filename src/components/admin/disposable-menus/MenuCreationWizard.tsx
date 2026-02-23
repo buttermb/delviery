@@ -700,7 +700,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
               </p>
 
               <Tabs value={advancedTab} onValueChange={setAdvancedTab}>
-                <TabsList className="grid grid-cols-4 w-full">
+                <TabsList className="flex w-full overflow-x-auto">
                   <TabsTrigger value="pricing" className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3" />
                     <span className="hidden sm:inline">Pricing</span>

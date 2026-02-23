@@ -117,7 +117,7 @@ export default function POSHubPage() {
                         </>
                     )}
                     {/* Tab bar always visible so user can switch tabs */}
-                    <TabsList className="grid w-full max-w-lg grid-cols-4">
+                    <TabsList className="flex w-full overflow-x-auto max-w-lg">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
                                 <tab.icon className="h-4 w-4" />

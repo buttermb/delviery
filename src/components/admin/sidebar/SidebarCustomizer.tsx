@@ -29,7 +29,7 @@ export function SidebarCustomizer() {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className={`grid ${import.meta.env.DEV ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
+          <TabsList className="flex w-full overflow-x-auto mb-6">
             <TabsTrigger value="visibility" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Visibility</span>

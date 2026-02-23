@@ -372,7 +372,7 @@ export default function TenantDetailPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="bg-[hsl(var(--super-admin-surface))]/80 border-white/10 grid w-full grid-cols-8">
+          <TabsList className="bg-[hsl(var(--super-admin-surface))]/80 border-white/10 flex w-full overflow-x-auto">
             <TabsTrigger value="overview" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Overview</TabsTrigger>
             <TabsTrigger value="features" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Features</TabsTrigger>
             <TabsTrigger value="usage" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Usage</TabsTrigger>

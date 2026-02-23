@@ -267,7 +267,7 @@ export function OrganizationForm({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="flex w-full overflow-x-auto">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="contact">Contact</TabsTrigger>
                 <TabsTrigger value="billing">Billing</TabsTrigger>

@@ -505,7 +505,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
         </Card>
       ) : (
         <Tabs defaultValue="share" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 max-w-lg">
+          <TabsList className="flex w-full overflow-x-auto max-w-lg">
             <TabsTrigger value="share" className="flex items-center gap-2">
               <Link2 className="h-4 w-4" />
               <span className="hidden sm:inline">Links</span>

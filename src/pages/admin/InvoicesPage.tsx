@@ -1079,6 +1079,7 @@ export function InvoicesPage() {
                     </div>
 
                     {/* Desktop Table View */}
+                    <div className="overflow-x-auto">
                     <Table className="hidden md:table">
                         <TableHeader>
                             <TableRow>
@@ -1275,6 +1276,7 @@ export function InvoicesPage() {
                             )}
                         </TableBody>
                     </Table>
+                    </div>
                 </CardContent>
 
                 {/* Pagination */}

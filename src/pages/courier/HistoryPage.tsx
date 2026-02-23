@@ -168,7 +168,7 @@ export default function CourierHistoryPage() {
       <main className="container px-4 py-6 space-y-6">
         {/* Status Filter Tabs */}
         <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-          <TabsList className={`grid w-full ${role === 'runner' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <TabsList className="flex w-full overflow-x-auto">
             <TabsTrigger value="all">
               All ({counts.all})
             </TabsTrigger>

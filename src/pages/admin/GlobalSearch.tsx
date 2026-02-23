@@ -175,7 +175,7 @@ const GlobalSearch = () => {
             <EnhancedLoadingState variant="spinner" message="Searching across the platform..." className="py-12" />
           ) : searchResults && searchResults.totalResults > 0 ? (
             <Tabs defaultValue="users" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="flex w-full overflow-x-auto">
                 <TabsTrigger value="users">
                   Users ({searchResults.users.length})
                 </TabsTrigger>

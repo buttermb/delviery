@@ -323,7 +323,7 @@ export default function ProductDetailsPage() {
 
                 {/* Main Content Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+                    <TabsList className="flex w-full overflow-x-auto lg:w-[500px]">
                         <TabsTrigger value="info">
                             <FileText className="h-4 w-4 mr-2 hidden sm:block" />
                             Info

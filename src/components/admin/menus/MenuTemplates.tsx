@@ -630,7 +630,7 @@ function TemplateEditor({ template, tenantId, adminId, onSave, onCancel, isSavin
       </div>
 
       <Tabs defaultValue="layout" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="flex w-full overflow-x-auto">
           <TabsTrigger value="layout" className="gap-1.5">
             <Layout className="h-4 w-4" />
             Layout

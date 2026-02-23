@@ -320,7 +320,7 @@ export function TransactionHistoryPage() {
         {/* Filter Tabs */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto">
-            <TabsList className="grid w-full grid-cols-4 sm:w-auto sm:inline-flex">
+            <TabsList className="flex w-full overflow-x-auto sm:w-auto sm:inline-flex">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="purchases">Purchases</TabsTrigger>
               <TabsTrigger value="usage">Usage</TabsTrigger>

@@ -224,7 +224,7 @@ const SystemSettings = () => {
       </div>
 
       <Tabs defaultValue="health" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="flex w-full overflow-x-auto">
           <TabsTrigger value="health">System Health</TabsTrigger>
           <TabsTrigger value="fraud">Fraud Detection</TabsTrigger>
           <TabsTrigger value="database">Database</TabsTrigger>

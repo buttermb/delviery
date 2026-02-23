@@ -78,7 +78,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="flex w-full overflow-x-auto">
             <TabsTrigger value="overview">
               <Eye className="h-4 w-4 mr-2" />
               Overview

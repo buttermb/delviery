@@ -314,7 +314,7 @@ export default function GenerateBarcodes() {
       </div>
 
       <Tabs defaultValue={mode} onValueChange={(v) => setMode(v as GenerationMode)} className="space-y-6 print:hidden">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="flex w-full overflow-x-auto">
           <TabsTrigger value="product">
             <Package className="h-4 w-4 mr-2" />
             Products

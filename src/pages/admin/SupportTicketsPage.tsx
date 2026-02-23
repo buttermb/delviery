@@ -117,7 +117,7 @@ export default function SupportTicketsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="flex w-full overflow-x-auto">
           <TabsTrigger value="all" className="min-h-[44px] touch-manipulation">
             All
           </TabsTrigger>

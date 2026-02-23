@@ -934,7 +934,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
             onValueChange={(v) => setActiveTab(v as any)}
             className="w-full md:w-auto"
           >
-            <TabsList className="bg-muted border border-border w-full md:w-auto grid grid-cols-4 md:flex">
+            <TabsList className="bg-muted border border-border w-full md:w-auto flex overflow-x-auto">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="overdue" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
                 Overdue
