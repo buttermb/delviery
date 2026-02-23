@@ -260,7 +260,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                 <p className="text-xs opacity-70 mt-1">
-                  {new Date(msg.created_at).toLocaleTimeString()}
+                  {new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>

@@ -187,7 +187,7 @@ export function ConsoleMonitor() {
                     <div className="flex items-start gap-2 mb-1">
                       {getTypeBadge(log.type)}
                       <span className="text-xs text-muted-foreground">
-                        {log.timestamp.toLocaleTimeString()}.{log.timestamp.getMilliseconds()}
+                        {log.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}.{log.timestamp.getMilliseconds()}
                       </span>
                     </div>
                     <pre className="whitespace-pre-wrap break-all text-xs">

@@ -75,7 +75,7 @@ interface EventsByType {
 export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: AnalyticsChartsProps) => {
   // Process access logs by date
   const viewsByDate = accessLogs.reduce((acc: DateViews, log) => {
-    const date = new Date(log.accessed_at).toLocaleDateString();
+    const date = new Date(log.accessed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     acc[date] = (acc[date] || 0) + 1;
     return acc;
   }, {});
@@ -87,7 +87,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
 
   // Process orders by date
   const ordersByDate = orders.reduce((acc: OrderByDate, order) => {
-    const date = new Date(order.created_at).toLocaleDateString();
+    const date = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     if (!acc[date]) {
       acc[date] = { date, orders: 0, revenue: 0 };
     }

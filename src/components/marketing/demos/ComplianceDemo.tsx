@@ -110,7 +110,7 @@ export function ComplianceDemo() {
                     id: Date.now(),
                     action: ['SYNC', 'CHECK', 'UPLOAD'][Math.floor(Math.random() * 3)],
                     details: ['Verifying manifest ID...', 'Syncing package #1A4F...', 'Updating license status...'][Math.floor(Math.random() * 3)],
-                    time: new Date().toLocaleTimeString(),
+                    time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
                     status: 'success'
                 };
                 return [...prev.slice(1), newLog];

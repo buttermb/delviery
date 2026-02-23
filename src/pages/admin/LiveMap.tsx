@@ -872,7 +872,7 @@ export default function LiveMap() {
             </h1>
             <p className="text-sm text-muted-foreground flex items-center gap-2">
               <Clock className="h-3 w-3" />
-              Last updated: {lastRefresh.toLocaleTimeString()}
+              Last updated: {lastRefresh.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
 

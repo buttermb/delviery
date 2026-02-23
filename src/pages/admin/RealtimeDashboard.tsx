@@ -221,7 +221,7 @@ export default function RealtimeDashboard() {
                           <div className="font-bold text-sm sm:text-base">#{order.id.slice(0, 8)}</div>
                           <div className="text-xs text-muted-foreground flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {new Date(order.created_at).toLocaleTimeString()}
+                            {new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
                       </div>

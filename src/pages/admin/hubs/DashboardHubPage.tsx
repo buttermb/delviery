@@ -510,7 +510,7 @@ export function DashboardHubPage() {
     );
   }
 
-  const lastUpdated = new Date().toLocaleTimeString();
+  const lastUpdated = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="p-4 space-y-4">
