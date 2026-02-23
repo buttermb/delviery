@@ -10,12 +10,11 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
-import { formatSmartDate } from '@/lib/formatters';
 
 // Mobile-optimized static fallback
 function ComplianceDemoMobile() {
     return (
-        <div className="w-full min-h-[280px] bg-slate-50 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative p-5">
+        <div className="w-full min-h-[280px] bg-slate-50 dark:bg-zinc-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative p-5">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -111,7 +110,7 @@ export function ComplianceDemo() {
                     id: Date.now(),
                     action: ['SYNC', 'CHECK', 'UPLOAD'][Math.floor(Math.random() * 3)],
                     details: ['Verifying manifest ID...', 'Syncing package #1A4F...', 'Updating license status...'][Math.floor(Math.random() * 3)],
-                    time: formatSmartDate(new Date(), { includeTime: true }),
+                    time: new Date().toLocaleTimeString(),
                     status: 'success'
                 };
                 return [...prev.slice(1), newLog];

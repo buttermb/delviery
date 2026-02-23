@@ -1,27 +1,60 @@
-import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
+import { useInView } from 'react-intersection-observer';
 
 interface CountUpNumberProps {
   end: number;
   duration?: number;
+  prefix?: string;
+  suffix?: string;
   decimals?: number;
+  className?: string;
 }
 
-export function CountUpNumber({ end, duration = 2000, decimals = 0 }: CountUpNumberProps) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-  const count = useMotionValue(0);
-  const display = useTransform(count, (v) => v.toFixed(decimals));
+export function CountUpNumber({ 
+  end, 
+  duration = 2000, 
+  prefix = '', 
+  suffix = '',
+  decimals = 0,
+  className = ''
+}: CountUpNumberProps) {
+  const [count, setCount] = useState(0);
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (isInView) {
-      const controls = animate(count, end, {
-        duration: duration / 1000,
-        ease: "easeOut",
-      });
-      return controls.stop;
-    }
-  }, [isInView, end, duration, count]);
+    if (!inView || hasAnimated.current) return;
+    hasAnimated.current = true;
 
-  return <motion.span ref={ref}>{display}</motion.span>;
+    let startTime: number;
+    const startValue = 0;
+    const endValue = end;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const currentValue = startValue + (endValue - startValue) * easeOutQuart;
+      
+      setCount(currentValue);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(endValue);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [inView, end, duration]);
+
+  const formattedNumber = count.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  return (
+    <span ref={ref} className={className}>
+      {prefix}{formattedNumber}{suffix}
+    </span>
+  );
 }

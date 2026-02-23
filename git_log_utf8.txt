@@ -1,0 +1,15 @@
+﻿8395e9ff chore: Ralph R5 cleanup ΓÇö update sitemap, version, script
+24c7d242 fix: Task 400 ΓÇö Production build verified with zero errors
+e2e28d15 fix: Task 399 ΓÇö Full TypeScript check passes with zero errors
+d2e8b3e1 fix: Task 398 ΓÇö Prefetch data on sidebar link hover for faster navigation
+24ff5037 fix: Task 397 ΓÇö Add proper staleTime to queries that don't need real-time
+1c00db83 fix: Task 396 ΓÇö Replace bare text loading states with skeleton components to prevent layout shift
+b8c37e5c fix: Task 395 ΓÇö Add skeleton loaders to all pages that show blank while loading
+0898169e fix: Task 394 ΓÇö TypeScript checkpoint passes with zero errors
+5d5f39f9 fix: Task 393 ΓÇö Image alt text: all img tags have meaningful alt or role='presentation'
+46453c88 fix: Task 392 ΓÇö Skip-to-content link targets all layouts with id="main-content"
+c37f9e94 fix: Task 391 ΓÇö Table header scope th scope='col' on all table headers
+fa5939dc fix: Task 390 ΓÇö Form label associations for all inputs via aria-label
+e2110122 fix: Task 389 ΓÇö Focus trap in modals keeps Tab within dialog, restores focus on close
+55e4b0d5 fix: Task 388 ΓÇö Color contrast meets WCAG AA 4.5:1 ratio for all text
+ab04ca6f fix: Task 387 ΓÇö Focus ring visibility uses high-contrast Indigo instead of low-contrast Gold

@@ -1,0 +1,17 @@
+﻿ea25bca0 fix: standardize marketing colors on emerald CSS variables
+56fdcb85 fix: replace marketing hero copy with accurate platform messaging
+72cd72da fix: remove heavy marketing components to fix LCP
+d78e6ad0 feat(marketing): Visual polish and consistency updates
+a684471a 208/410 tasks complete - full integration, no build errors
+bb35fd42 feat: Complete panel interconnectivity system and codebase cleanup
+20121844 fix: resolve critical site issues
+28cf42a6 Design: Standardize typography to Inter across all pages (SaaS and Shop)
+6b63afa7 feat(ui): unify typography and branding across all main pages
+a8dea569 fix: Resolve mobile scroll-jacking on marketing page
+bdb6e85d feat: Mobile optimizations (PWA, Scanner, Offline) and Marketing Hero redesign
+409b9fe0 feat(marketing): Redesign homepage hero for OPSEC menu wedge
+9fb74356 Merge mobile optimization changes with remote updates
+bb30bee9 feat: Add enhanced feature pages with comprehensive SEO
+f28959d2 fix(marketing): Allow vertical scroll on hero card stack
+6dbaa664 fix: Admin panel friction points - StockAlerts, LiveOrders, HubBreadcrumbs
+c0d9b330 feat: improve marketing UX with simplified signup and enhanced CTAs

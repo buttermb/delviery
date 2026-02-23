@@ -11,7 +11,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, ShoppingBag, DollarSign, Package, Clock, Wifi, Zap } from 'lucide-react';
 import { useMobileOptimized } from '@/hooks/useMobileOptimized';
-import { formatSmartDate } from '@/lib/formatters';
 
 const MOCK_METRICS = [
     { label: "Today's Revenue", value: 12450, prefix: '$', trend: '+18%' },
@@ -145,7 +144,7 @@ export function DashboardDemo() {
                 </div>
                 <div className="text-center">
                     <div className="text-2xl font-mono font-bold text-[hsl(var(--marketing-accent))] tabular-nums shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                        {formatSmartDate(time, { includeTime: true })}
+                        {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-[hsl(var(--marketing-accent))]">
