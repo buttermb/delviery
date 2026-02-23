@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { logger } from "@/lib/logger";
-import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import { Skeleton } from '@/components/ui/skeleton';
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
@@ -36,6 +36,89 @@ interface Product {
   cost_per_unit?: number | null;
   wholesale_price?: number | null;
   price_per_lb?: number | null;
+}
+
+function InventoryManagementSkeleton() {
+  return (
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-11 w-32" />
+          <Skeleton className="h-11 w-36" />
+        </div>
+      </div>
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="border rounded-lg p-3 sm:p-4 md:p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-5 rounded" />
+            </div>
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+        ))}
+      </div>
+      {/* Warehouse Card with Table */}
+      <div className="border rounded-lg p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
+          <div className="space-y-1">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+        {/* Table header */}
+        <div className="hidden md:grid grid-cols-6 gap-4 p-3 border-b bg-muted/50 rounded-t-md">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-14" />
+          <Skeleton className="h-4 w-14" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-14" />
+          <Skeleton className="h-4 w-14" />
+        </div>
+        {/* Table rows */}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="hidden md:grid grid-cols-6 gap-4 p-3 border-b last:border-b-0 items-center">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-16 ml-auto" />
+            <Skeleton className="h-4 w-16 ml-auto" />
+            <Skeleton className="h-4 w-20 ml-auto" />
+            <Skeleton className="h-5 w-16 rounded-full mx-auto" />
+            <Skeleton className="h-8 w-8 mx-auto rounded" />
+          </div>
+        ))}
+        {/* Mobile card skeletons */}
+        <div className="md:hidden space-y-3 mt-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="border rounded-lg p-3 space-y-3">
+              <div className="flex items-start justify-between">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Skeleton className="h-3 w-12" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="space-y-1">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </div>
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function InventoryManagement() {
@@ -247,6 +330,10 @@ export function InventoryManagement() {
     );
   };
 
+  if (loading && products.length === 0) {
+    return <InventoryManagementSkeleton />;
+  }
+
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
@@ -323,9 +410,7 @@ export function InventoryManagement() {
       </div>
 
       {/* Warehouses */}
-      {loading ? (
-        <EnhancedLoadingState variant="table" message="Loading inventory..." />
-      ) : Object.keys(groupedInventory).length === 0 ? (
+      {Object.keys(groupedInventory).length === 0 ? (
         <Card className="p-8 text-center">
           <Package className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">No inventory data. Add products to get started.</p>
