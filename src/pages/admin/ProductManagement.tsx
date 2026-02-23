@@ -1106,26 +1106,26 @@ export default function ProductManagement() {
     return (
       <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-6">
         {/* Header skeleton */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-7 sm:h-8 w-48 sm:w-64" />
+            <Skeleton className="h-3 sm:h-4 w-64 sm:w-96" />
           </div>
           <div className="flex gap-2">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-11 w-11 sm:w-32" />
+            <Skeleton className="h-11 w-11 sm:w-32" />
           </div>
         </div>
         {/* Stats skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-8 w-8 rounded" />
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded" />
                   <div className="space-y-2">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-5 sm:h-6 w-12 sm:w-16" />
+                    <Skeleton className="h-3 sm:h-4 w-16 sm:w-24" />
                   </div>
                 </div>
               </CardContent>
@@ -1138,7 +1138,7 @@ export default function ProductManagement() {
             <Skeleton className="h-6 w-32" />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="border rounded-lg p-4 space-y-3">
                   <Skeleton className="h-32 w-full rounded" />
@@ -1161,10 +1161,10 @@ export default function ProductManagement() {
 
   return (
     <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-bold">Product Management</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-1 sm:mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">Product Management</h1>
             {tenant?.id && (
               <TooltipGuide
                 title="💡 Product Management"
@@ -1174,11 +1174,11 @@ export default function ProductManagement() {
               />
             )}
           </div>
-          <p className="text-muted-foreground text-sm sm:text-base">
+          <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
             Manage products, batches, and inventory packages
           </p>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 flex-wrap">
           {canExport('products') && (
             <ExportButton
               data={filteredProducts.map(p => ({
@@ -1202,9 +1202,9 @@ export default function ProductManagement() {
             />
           )}
           {canEdit('products') && (
-            <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
-              <Barcode className="h-4 w-4 mr-2" />
-              Generate Barcodes
+            <Button onClick={() => navigateTenant("/admin/generate-barcodes")} className="min-h-[44px]">
+              <Barcode className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Generate Barcodes</span>
             </Button>
           )}
           {canEdit('products') && (
@@ -1224,13 +1224,13 @@ export default function ProductManagement() {
           >
             {canEdit('products') && (
               <DialogTrigger asChild>
-                <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
+                <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }} className="min-h-[44px]">
+                  <Plus className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Product</span>
                 </Button>
               </DialogTrigger>
             )}
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
               <DialogHeader>
                 <DialogTitle>
                   {editingProduct ? "Edit Product" : "Add New Product"}
@@ -1251,50 +1251,50 @@ export default function ProductManagement() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <Package className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{products.length}</p>
-                <p className="text-sm text-muted-foreground">Total Products</p>
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">{products.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Products</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <DollarSign className="h-8 w-8 text-green-500" />
-              <div>
-                <p className="text-2xl font-bold">
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">
                   {products.reduce((sum, p) => sum + (p.available_quantity || 0), 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">Available Units</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Available Units</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <Package className="h-8 w-8 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">
                   {products.reduce((sum, p) => sum + (p.fronted_quantity || 0), 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">Fronted Units</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Fronted Units</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <DollarSign className="h-8 w-8 text-yellow-500" />
-              <div>
-                <p className="text-2xl font-bold">
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">
                   $
                   {products
                     .reduce(
@@ -1305,7 +1305,7 @@ export default function ProductManagement() {
                     )
                     .toFixed(0)}
                 </p>
-                <p className="text-sm text-muted-foreground">Inventory Value</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Inventory Value</p>
               </div>
             </div>
           </CardContent>
@@ -1333,7 +1333,7 @@ export default function ProductManagement() {
                 setBatchScanMode(false);
                 setScannerOpen(true);
               }}
-              className="flex-1 sm:flex-initial"
+              className="flex-1 sm:flex-initial min-h-[44px]"
             >
               <Barcode className="h-4 w-4 mr-2" />
               Scan
@@ -1341,7 +1341,7 @@ export default function ProductManagement() {
             <Button
               variant="outline"
               onClick={startBatchScan}
-              className="flex-1 sm:flex-initial"
+              className="flex-1 sm:flex-initial min-h-[44px]"
             >
               <Barcode className="h-4 w-4 mr-2" />
               Batch
@@ -1440,7 +1440,7 @@ export default function ProductManagement() {
             </div>
           ) : productsLoading ? (
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-0">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="border rounded-lg p-4 space-y-3">
                     <Skeleton className="h-32 w-full rounded" />
@@ -1473,7 +1473,7 @@ export default function ProductManagement() {
             )
           ) : filteredProducts.length > 0 ? (
             viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-0">
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
