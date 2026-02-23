@@ -8,6 +8,7 @@ import { MapPin, Warehouse, Truck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
+import { logger } from '@/lib/logger';
 import { LeafletMapWidget } from './LeafletMapWidget';
 
 // Deterministic hash for stable coordinates based on string
@@ -52,10 +53,12 @@ export function LocationMapWidget() {
       }
 
       // Get warehouses from products (grouped by category)
-      const { data: inventory } = await supabase
+      const { data: inventory, error: inventoryError } = await supabase
         .from('products')
         .select('category, stock_quantity')
         .eq('tenant_id', account.id);
+
+      if (inventoryError) logger.error('Failed to fetch inventory for location map', inventoryError, { component: 'LocationMapWidget' });
 
       const warehouses = (inventory || []).reduce((acc: Record<string, { lbs: number; count: number }>, item: InventoryItem) => {
         const wh = item.category || 'Uncategorized';
@@ -68,11 +71,13 @@ export function LocationMapWidget() {
       }, {});
 
       // Get active runners with location data
-      const { data: runners } = await (supabase as any)
+      const { data: runners, error: runnersError } = await (supabase as any)
         .from('wholesale_runners')
         .select('id, full_name, status, current_lat, current_lng')
         .eq('account_id', account.id)
         .eq('status', 'active');
+
+      if (runnersError) logger.error('Failed to fetch runners for location map', runnersError, { component: 'LocationMapWidget' });
 
       // Base coordinates (NYC)
       const BASE_LAT = 40.7128;

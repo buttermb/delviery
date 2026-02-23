@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -28,9 +29,14 @@ export function CouponAnalytics({ open, onOpenChange, coupons }: CouponAnalytics
       if (!tenant?.id) return null;
 
       try {
-        const { data: usage } = await supabase
+        const { data: usage, error } = await supabase
           .from("coupon_usage")
           .select("coupon_id, discount_amount");
+
+        if (error) {
+          logger.error('Failed to fetch coupon usage', error, { component: 'CouponAnalytics' });
+          return null;
+        }
 
         if (!usage) return null;
 

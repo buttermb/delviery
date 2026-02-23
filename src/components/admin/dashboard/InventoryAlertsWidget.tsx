@@ -11,6 +11,7 @@ import { AlertTriangle, ArrowRight, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
+import { logger } from '@/lib/logger';
 
 export function InventoryAlertsWidget() {
   const navigate = useNavigate();
@@ -36,13 +37,15 @@ export function InventoryAlertsWidget() {
       }
 
       // Fetch low stock products
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select('name, stock_quantity, category')
         .eq('tenant_id', account.id)
         .lt('stock_quantity', 30)
         .order('stock_quantity', { ascending: true })
         .limit(5);
+
+      if (error) logger.error('Failed to fetch low stock products', error, { component: 'InventoryAlertsWidget' });
 
       // Map to AlertRow interface for compatibility
       return (data || []).map(p => ({

@@ -10,6 +10,7 @@ import { Package, TrendingUp, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
+import { logger } from '@/lib/logger';
 import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
 import { formatWeight } from '@/lib/utils/formatWeight';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -44,12 +45,14 @@ export function TopProductsWidget() {
       const last30Days = subDays(new Date(), 30);
 
       // Get order items from completed orders
-      const { data: orders } = await (supabase as any)
+      const { data: orders, error: ordersError } = await (supabase as any)
         .from('wholesale_orders')
         .select('id, created_at, status')
         .eq('account_id', account.id)
         .eq('status', 'completed')
         .gte('created_at', last30Days.toISOString());
+
+      if (ordersError) logger.error('Failed to fetch wholesale orders for top products', ordersError, { component: 'TopProductsWidget' });
 
       if (!orders || orders.length === 0) return [];
 
@@ -62,10 +65,12 @@ export function TopProductsWidget() {
       const orderIds = (orders as OrderRow[]).map((o) => o.id);
 
       // Get order items
-      const { data: orderItems } = await supabase
+      const { data: orderItems, error: orderItemsError } = await supabase
         .from('wholesale_order_items')
         .select('product_id, quantity_lbs, unit_price')
         .in('order_id', orderIds);
+
+      if (orderItemsError) logger.error('Failed to fetch order items for top products', orderItemsError, { component: 'TopProductsWidget' });
 
       if (!orderItems || orderItems.length === 0) return [];
 
@@ -99,10 +104,12 @@ export function TopProductsWidget() {
 
       // Get product names
       const productIds = Array.from(productMap.keys());
-      const { data: products } = await supabase
+      const { data: products, error: productsError } = await supabase
         .from('products')
         .select('id, name')
         .in('id', productIds);
+
+      if (productsError) logger.error('Failed to fetch product names for top products', productsError, { component: 'TopProductsWidget' });
 
       interface ProductRow {
         id: string;

@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 interface ActivityItem {
   id: string;
@@ -31,12 +32,14 @@ export function ActivityFeedWidget() {
       const allActivities: ActivityItem[] = [];
 
       // Recent orders
-      const { data: orders } = await supabase
+      const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('id, order_number, status, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(3);
+
+      if (ordersError) logger.error('Failed to fetch orders for activity feed', ordersError, { component: 'ActivityFeedWidget' });
 
       orders?.forEach((order) => {
         allActivities.push({
@@ -49,12 +52,14 @@ export function ActivityFeedWidget() {
       });
 
       // Recent menus
-      const { data: menus } = await supabase
+      const { data: menus, error: menusError } = await supabase
         .from('disposable_menus')
         .select('id, name, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(2);
+
+      if (menusError) logger.error('Failed to fetch menus for activity feed', menusError, { component: 'ActivityFeedWidget' });
 
       menus?.forEach((menu) => {
         allActivities.push({
@@ -67,12 +72,14 @@ export function ActivityFeedWidget() {
       });
 
       // Recent products
-      const { data: products } = await supabase
+      const { data: products, error: productsError } = await supabase
         .from('products')
         .select('id, name, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(2);
+
+      if (productsError) logger.error('Failed to fetch products for activity feed', productsError, { component: 'ActivityFeedWidget' });
 
       products?.forEach((product) => {
         allActivities.push({
@@ -85,12 +92,14 @@ export function ActivityFeedWidget() {
       });
 
       // Recent customers (simplified - basic fields only)
-      const { data: customers } = await (supabase as any)
+      const { data: customers, error: customersError } = await (supabase as any)
         .from('customers')
         .select('id, email, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(2);
+
+      if (customersError) logger.error('Failed to fetch customers for activity feed', customersError, { component: 'ActivityFeedWidget' });
 
       customers?.forEach((customer: any) => {
         allActivities.push({
